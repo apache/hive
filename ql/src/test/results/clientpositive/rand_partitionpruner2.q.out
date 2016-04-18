@@ -18,39 +18,6 @@ POSTHOOK: query: explain extended
 insert overwrite table tmptable
 select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-         a
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               tmptable
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-               TOK_TABNAME
-                  a
-      TOK_WHERE
-         and
-            <
-               TOK_FUNCTION
-                  rand
-                  1
-               0.1
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     a
-                  ds
-               '2008-04-08'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

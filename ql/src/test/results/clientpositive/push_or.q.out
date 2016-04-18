@@ -34,48 +34,6 @@ PREHOOK: query: explain extended select key, value, ds from push_or where ds='20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value, ds from push_or where ds='2000-04-09' or key=5 order by key, ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            push_or
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         or
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '2000-04-09'
-            =
-               TOK_TABLE_OR_COL
-                  key
-               5
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -88,21 +88,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns employeeID
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_ANALYZE
-   TOK_TAB
-      TOK_TABNAME
-         Employee_Part
-      TOK_PARTSPEC
-         TOK_PARTVAL
-            employeeSalary
-            2000.0
-   columns
-   TOK_TABCOLNAME
-      employeeID
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -287,21 +272,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 analyze table Employee_Part partition (employeeSalary=4000.0) compute statistics for columns employeeID
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_ANALYZE
-   TOK_TAB
-      TOK_TABNAME
-         Employee_Part
-      TOK_PARTSPEC
-         TOK_PARTVAL
-            employeeSalary
-            4000.0
-   columns
-   TOK_TABCOLNAME
-      employeeID
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0

@@ -594,7 +594,7 @@ public class Driver implements CommandProcessor {
     PrintStream ps = new PrintStream(baos);
     try {
       List<Task<?>> rootTasks = sem.getAllRootTasks();
-      task.getJSONPlan(ps, astTree, rootTasks, sem.getFetchTask(), false, true, true);
+      task.getJSONPlan(ps, rootTasks, sem.getFetchTask(), false, true, true);
       ret = baos.toString();
     } catch (Exception e) {
       LOG.warn("Exception generating explain output: " + e, e);

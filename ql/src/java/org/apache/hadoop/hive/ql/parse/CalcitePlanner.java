@@ -297,8 +297,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
             LOG.info("CBO Succeeded; optimized logical plan.");
             this.ctx.setCboInfo("Plan optimized by CBO.");
             this.ctx.setCboSucceeded(true);
-            if (LOG.isDebugEnabled()) {
-              LOG.debug(newAST.dump());
+            if (LOG.isTraceEnabled()) {
+              LOG.trace(newAST.dump());
             }
           }
         } catch (Exception e) {

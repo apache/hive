@@ -34,41 +34,6 @@ POSTHOOK: query: -- list bucketing DML
 explain extended
 insert overwrite table list_bucketing_dynamic_part partition (ds='2008-04-08', hr) select key, value, hr from srcpart where ds='2008-04-08'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               list_bucketing_dynamic_part
-            TOK_PARTSPEC
-               TOK_PARTVAL
-                  ds
-                  '2008-04-08'
-               TOK_PARTVAL
-                  hr
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               hr
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               ds
-            '2008-04-08'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -402,47 +367,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select key, value, ds, hr from list_bucketing_dynamic_part where ds='2008-04-08' and key = "103" and value ="val_103"
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            list_bucketing_dynamic_part
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               hr
-      TOK_WHERE
-         and
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2008-04-08'
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  "103"
-            =
-               TOK_TABLE_OR_COL
-                  value
-               "val_103"
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

@@ -8,35 +8,6 @@ POSTHOOK: query: -- SORT_QUERY_RESULTS
 EXPLAIN EXTENDED
 SELECT x.* FROM SRCPART x WHERE key IS NOT NULL AND ds = '2008-04-08'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            SRCPART
-         x
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-               TOK_TABNAME
-                  x
-      TOK_WHERE
-         AND
-            TOK_FUNCTION
-               TOK_ISNOTNULL
-               TOK_TABLE_OR_COL
-                  key
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '2008-04-08'
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

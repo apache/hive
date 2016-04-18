@@ -43,45 +43,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 4 on key) where ds is not null group by ds ORDER BY ds ASC
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpartbucket
-         TOK_TABLEBUCKETSAMPLE
-            1
-            4
-            TOK_TABLE_OR_COL
-               key
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_WHERE
-         TOK_FUNCTION
-            TOK_ISNOTNULL
-            TOK_TABLE_OR_COL
-               ds
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            ds
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

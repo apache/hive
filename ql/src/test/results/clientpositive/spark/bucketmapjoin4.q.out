@@ -124,56 +124,6 @@ select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin a join srcbucket_mapjoin b
 on a.key=b.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               srcbucket_mapjoin
-            a
-         TOK_TABREF
-            TOK_TABNAME
-               srcbucket_mapjoin
-            b
-         =
-            .
-               TOK_TABLE_OR_COL
-                  a
-               key
-            .
-               TOK_TABLE_OR_COL
-                  b
-               key
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               bucketmapjoin_tmp_result
-      TOK_SELECT
-         TOK_HINTLIST
-            TOK_HINT
-               TOK_MAPJOIN
-               TOK_HINTARGLIST
-                  b
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  a
-               key
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  a
-               value
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  b
-               value
-
-
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -493,56 +443,6 @@ select /*+mapjoin(a)*/ a.key, a.value, b.value
 from srcbucket_mapjoin a join srcbucket_mapjoin b
 on a.key=b.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               srcbucket_mapjoin
-            a
-         TOK_TABREF
-            TOK_TABNAME
-               srcbucket_mapjoin
-            b
-         =
-            .
-               TOK_TABLE_OR_COL
-                  a
-               key
-            .
-               TOK_TABLE_OR_COL
-                  b
-               key
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               bucketmapjoin_tmp_result
-      TOK_SELECT
-         TOK_HINTLIST
-            TOK_HINT
-               TOK_MAPJOIN
-               TOK_HINTARGLIST
-                  a
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  a
-               key
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  a
-               value
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  b
-               value
-
-
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3

@@ -18,44 +18,6 @@ POSTHOOK: query: EXPLAIN EXTENDED
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest1 SELECT src1.*, src2.*
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               src
-            src1
-         TOK_TABREF
-            TOK_TABNAME
-               src
-            src2
-         =
-            .
-               TOK_TABLE_OR_COL
-                  src1
-               key
-            .
-               TOK_TABLE_OR_COL
-                  src2
-               key
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               dest1
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-               TOK_TABNAME
-                  src1
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-               TOK_TABNAME
-                  src2
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

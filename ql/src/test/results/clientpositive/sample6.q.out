@@ -16,31 +16,6 @@ EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest1 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket
-         TOK_TABLEBUCKETSAMPLE
-            1
-            4
-            TOK_TABLE_OR_COL
-               key
-         s
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               dest1
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-               TOK_TABNAME
-                  s
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -600,39 +575,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 4 OUT OF 4 on key) s
 ORDER BY key, value
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket
-         TOK_TABLEBUCKETSAMPLE
-            4
-            4
-            TOK_TABLE_OR_COL
-               key
-         s
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-               TOK_TABNAME
-                  s
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  value
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1002,39 +944,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
 ORDER BY key, value
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket
-         TOK_TABLEBUCKETSAMPLE
-            1
-            2
-            TOK_TABLE_OR_COL
-               key
-         s
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-               TOK_TABNAME
-                  s
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  value
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1658,39 +1567,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 3 on key) s
 ORDER BY key, value
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket
-         TOK_TABLEBUCKETSAMPLE
-            1
-            3
-            TOK_TABLE_OR_COL
-               key
-         s
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-               TOK_TABNAME
-                  s
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  value
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2156,39 +2032,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 2 OUT OF 3 on key) s
 ORDER BY key, value
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket
-         TOK_TABLEBUCKETSAMPLE
-            2
-            3
-            TOK_TABLE_OR_COL
-               key
-         s
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-               TOK_TABNAME
-                  s
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  value
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2640,39 +2483,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
 ORDER BY key, value
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket2
-         TOK_TABLEBUCKETSAMPLE
-            1
-            2
-            TOK_TABLE_OR_COL
-               key
-         s
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-               TOK_TABNAME
-                  s
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  value
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2972,39 +2782,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 2 OUT OF 4 on key) s
 ORDER BY key, value
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket2
-         TOK_TABLEBUCKETSAMPLE
-            2
-            4
-            TOK_TABLE_OR_COL
-               key
-         s
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-               TOK_TABNAME
-                  s
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  value
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3181,39 +2958,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM empty_bucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
 ORDER BY key, value
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            empty_bucket
-         TOK_TABLEBUCKETSAMPLE
-            1
-            2
-            TOK_TABLE_OR_COL
-               key
-         s
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-               TOK_TABNAME
-                  s
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  value
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

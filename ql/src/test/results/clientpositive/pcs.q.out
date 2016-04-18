@@ -82,62 +82,6 @@ PREHOOK: query: explain extended select key, value, ds from pcs_t1 where (ds='20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value, ds from pcs_t1 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2) order by key, value, ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcs_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         or
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-08'
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  1
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-09'
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  2
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  value
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -313,40 +257,6 @@ PREHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key) in 
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key) in (struct('2000-04-08',1), struct('2000-04-09',2))
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcs_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         TOK_FUNCTION
-            in
-            TOK_FUNCTION
-               struct
-               TOK_TABLE_OR_COL
-                  ds
-               TOK_TABLE_OR_COL
-                  key
-            TOK_FUNCTION
-               struct
-               '2000-04-08'
-               1
-            TOK_FUNCTION
-               struct
-               '2000-04-09'
-               2
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -509,42 +419,6 @@ PREHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key+2) i
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key+2) in (struct('2000-04-08',3), struct('2000-04-09',4))
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcs_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         TOK_FUNCTION
-            in
-            TOK_FUNCTION
-               struct
-               TOK_TABLE_OR_COL
-                  ds
-               +
-                  TOK_TABLE_OR_COL
-                     key
-                  2
-            TOK_FUNCTION
-               struct
-               '2000-04-08'
-               3
-            TOK_FUNCTION
-               struct
-               '2000-04-09'
-               4
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -707,77 +581,6 @@ PREHOOK: query: explain extended select /*+ MAPJOIN(pcs_t1) */ a.ds, b.key from 
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select /*+ MAPJOIN(pcs_t1) */ a.ds, b.key from pcs_t1 a join pcs_t1 b  on a.ds=b.ds where struct(a.ds, a.key, b.ds) in (struct('2000-04-08',1, '2000-04-09'), struct('2000-04-09',2, '2000-04-08'))
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               pcs_t1
-            a
-         TOK_TABREF
-            TOK_TABNAME
-               pcs_t1
-            b
-         =
-            .
-               TOK_TABLE_OR_COL
-                  a
-               ds
-            .
-               TOK_TABLE_OR_COL
-                  b
-               ds
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_HINTLIST
-            TOK_HINT
-               TOK_MAPJOIN
-               TOK_HINTARGLIST
-                  pcs_t1
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  a
-               ds
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  b
-               key
-      TOK_WHERE
-         TOK_FUNCTION
-            in
-            TOK_FUNCTION
-               struct
-               .
-                  TOK_TABLE_OR_COL
-                     a
-                  ds
-               .
-                  TOK_TABLE_OR_COL
-                     a
-                  key
-               .
-                  TOK_TABLE_OR_COL
-                     b
-                  ds
-            TOK_FUNCTION
-               struct
-               '2000-04-08'
-               1
-               '2000-04-09'
-            TOK_FUNCTION
-               struct
-               '2000-04-09'
-               2
-               '2000-04-08'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -971,43 +774,6 @@ PREHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key+key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key+key) in (struct('2000-04-08',1), struct('2000-04-09',2))
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcs_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         TOK_FUNCTION
-            in
-            TOK_FUNCTION
-               struct
-               TOK_TABLE_OR_COL
-                  ds
-               +
-                  TOK_TABLE_OR_COL
-                     key
-                  TOK_TABLE_OR_COL
-                     key
-            TOK_FUNCTION
-               struct
-               '2000-04-08'
-               1
-            TOK_FUNCTION
-               struct
-               '2000-04-09'
-               2
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1267,120 +1033,6 @@ SELECT * FROM (
 WHERE A.ds = '2008-04-08'
 SORT BY A.key, A.value, A.ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_UNIONALL
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        pcs_t1
-                     X
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_ALLCOLREF
-                           TOK_TABNAME
-                              X
-                  TOK_WHERE
-                     TOK_FUNCTION
-                        in
-                        TOK_FUNCTION
-                           struct
-                           .
-                              TOK_TABLE_OR_COL
-                                 X
-                              ds
-                           .
-                              TOK_TABLE_OR_COL
-                                 X
-                              key
-                        TOK_FUNCTION
-                           struct
-                           '2000-04-08'
-                           1
-                        TOK_FUNCTION
-                           struct
-                           '2000-04-09'
-                           2
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        pcs_t1
-                     Y
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_ALLCOLREF
-                           TOK_TABNAME
-                              Y
-                  TOK_WHERE
-                     TOK_FUNCTION
-                        in
-                        TOK_FUNCTION
-                           struct
-                           .
-                              TOK_TABLE_OR_COL
-                                 Y
-                              ds
-                           .
-                              TOK_TABLE_OR_COL
-                                 Y
-                              key
-                        TOK_FUNCTION
-                           struct
-                           '2000-04-08'
-                           1
-                        TOK_FUNCTION
-                           struct
-                           '2000-04-09'
-                           2
-         A
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         =
-            .
-               TOK_TABLE_OR_COL
-                  A
-               ds
-            '2008-04-08'
-      TOK_SORTBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     A
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     A
-                  value
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     A
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1498,42 +1150,6 @@ PREHOOK: query: explain extended select ds from pcs_t1 where struct(case when ds
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select ds from pcs_t1 where struct(case when ds='2000-04-08' then 10 else 20 end) in (struct(10),struct(11))
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcs_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         TOK_FUNCTION
-            in
-            TOK_FUNCTION
-               struct
-               TOK_FUNCTION
-                  when
-                  =
-                     TOK_TABLE_OR_COL
-                        ds
-                     '2000-04-08'
-                  10
-                  20
-            TOK_FUNCTION
-               struct
-               10
-            TOK_FUNCTION
-               struct
-               11
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1634,45 +1250,6 @@ PREHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key, ran
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select ds from pcs_t1 where struct(ds, key, rand(100)) in (struct('2000-04-08',1,0.2), struct('2000-04-09',2,0.3))
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcs_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         TOK_FUNCTION
-            in
-            TOK_FUNCTION
-               struct
-               TOK_TABLE_OR_COL
-                  ds
-               TOK_TABLE_OR_COL
-                  key
-               TOK_FUNCTION
-                  rand
-                  100
-            TOK_FUNCTION
-               struct
-               '2000-04-08'
-               1
-               0.2
-            TOK_FUNCTION
-               struct
-               '2000-04-09'
-               2
-               0.3
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1822,47 +1399,6 @@ PREHOOK: query: explain extended select ds from pcs_t1 where struct(ds='2000-04-
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select ds from pcs_t1 where struct(ds='2000-04-08' or key = 2, key) in (struct(true,2), struct(false,3))
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcs_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         TOK_FUNCTION
-            in
-            TOK_FUNCTION
-               struct
-               or
-                  =
-                     TOK_TABLE_OR_COL
-                        ds
-                     '2000-04-08'
-                  =
-                     TOK_TABLE_OR_COL
-                        key
-                     2
-               TOK_TABLE_OR_COL
-                  key
-            TOK_FUNCTION
-               struct
-               true
-               2
-            TOK_FUNCTION
-               struct
-               false
-               3
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -2036,59 +1572,6 @@ PREHOOK: query: explain extended select ds from pcs_t1 where key = 3 or (struct(
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select ds from pcs_t1 where key = 3 or (struct(ds='2000-04-08' or key = 2, key) in (struct(true,2), struct(false,3)) and key+5 > 0)
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcs_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         or
-            =
-               TOK_TABLE_OR_COL
-                  key
-               3
-            and
-               TOK_FUNCTION
-                  in
-                  TOK_FUNCTION
-                     struct
-                     or
-                        =
-                           TOK_TABLE_OR_COL
-                              ds
-                           '2000-04-08'
-                        =
-                           TOK_TABLE_OR_COL
-                              key
-                           2
-                     TOK_TABLE_OR_COL
-                        key
-                  TOK_FUNCTION
-                     struct
-                     true
-                     2
-                  TOK_FUNCTION
-                     struct
-                     false
-                     3
-               >
-                  +
-                     TOK_TABLE_OR_COL
-                        key
-                     5
-                  0
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

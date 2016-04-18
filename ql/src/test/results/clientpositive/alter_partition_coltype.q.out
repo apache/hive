@@ -89,28 +89,6 @@ PREHOOK: query: explain extended select count(*) from alter_coltype where dt = '
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(*) from alter_coltype where dt = '100'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            alter_coltype
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTIONSTAR
-               count
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               dt
-            '100'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -316,28 +294,6 @@ PREHOOK: query: explain extended select count(*) from alter_coltype where ts = '
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(*) from alter_coltype where ts = '6.30'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            alter_coltype
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTIONSTAR
-               count
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               ts
-            '6.30'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -470,33 +426,6 @@ PREHOOK: query: explain extended select count(*) from alter_coltype where ts = 3
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(*) from alter_coltype where ts = 3.0 and dt=100
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            alter_coltype
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTIONSTAR
-               count
-      TOK_WHERE
-         and
-            =
-               TOK_TABLE_OR_COL
-                  ts
-               3.0
-            =
-               TOK_TABLE_OR_COL
-                  dt
-               100
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -678,37 +607,6 @@ PREHOOK: query: explain extended select key, value, dt, ts from alter_coltype wh
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value, dt, ts from alter_coltype where dt is not null
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            alter_coltype
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               dt
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ts
-      TOK_WHERE
-         TOK_FUNCTION
-            TOK_ISNOTNULL
-            TOK_TABLE_OR_COL
-               dt
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -950,34 +848,6 @@ PREHOOK: query: explain extended select intcol from pt.alterdynamic_part_table w
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select intcol from pt.alterdynamic_part_table where partcol1='1' and partcol2='1'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pt
-            alterdynamic_part_table
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               intcol
-      TOK_WHERE
-         and
-            =
-               TOK_TABLE_OR_COL
-                  partcol1
-               '1'
-            =
-               TOK_TABLE_OR_COL
-                  partcol2
-               '1'
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1045,44 +915,6 @@ PREHOOK: query: explain extended select intcol from pt.alterdynamic_part_table w
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select intcol from pt.alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__')
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pt
-            alterdynamic_part_table
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               intcol
-      TOK_WHERE
-         or
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     partcol1
-                  '2'
-               =
-                  TOK_TABLE_OR_COL
-                     partcol2
-                  '1'
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     partcol1
-                  '1'
-               =
-                  TOK_TABLE_OR_COL
-                     partcol2
-                  '__HIVE_DEFAULT_PARTITION__'
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

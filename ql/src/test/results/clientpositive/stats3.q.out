@@ -20,17 +20,6 @@ PREHOOK: type: LOAD
 POSTHOOK: query: explain extended
 load data local inpath '../../data/files/test.dat' overwrite into table hive_test_src
 POSTHOOK: type: LOAD
-ABSTRACT SYNTAX TREE:
-  
-TOK_LOAD
-   '../../data/files/test.dat'
-   TOK_TAB
-      TOK_TABNAME
-         hive_test_src
-   local
-   overwrite
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0

@@ -26,7 +26,6 @@ import java.util.List;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 
@@ -40,8 +39,6 @@ public class ExplainWork implements Serializable {
   private Path resFile;
   private ArrayList<Task<? extends Serializable>> rootTasks;
   private Task<? extends Serializable> fetchTask;
-  private ASTNode astTree;
-  private String astStringTree;
   private HashSet<ReadEntity> inputs;
   private ParseContext pCtx;
 
@@ -65,7 +62,6 @@ public class ExplainWork implements Serializable {
       ParseContext pCtx,
       List<Task<? extends Serializable>> rootTasks,
       Task<? extends Serializable> fetchTask,
-      ASTNode astTree,
       BaseSemanticAnalyzer analyzer,
       boolean extended,
       boolean formatted,
@@ -77,7 +73,6 @@ public class ExplainWork implements Serializable {
     this.resFile = resFile;
     this.rootTasks = new ArrayList<Task<? extends Serializable>>(rootTasks);
     this.fetchTask = fetchTask;
-    this.astTree = astTree;
     this.analyzer = analyzer;
     if (analyzer != null) {
       this.inputs = analyzer.getInputs();
@@ -114,17 +109,6 @@ public class ExplainWork implements Serializable {
 
   public void setFetchTask(Task<? extends Serializable> fetchTask) {
     this.fetchTask = fetchTask;
-  }
-
-  public ASTNode getAstTree() {
-    return astTree;
-  }
-
-  public String getAstStringTree() {
-    if (astStringTree == null) {
-      astStringTree = astTree.dump();
-    }
-    return astStringTree;
   }
 
   public HashSet<ReadEntity> getInputs() {

@@ -52,48 +52,6 @@ PREHOOK: query: explain extended select key, value, ds from pcr_t1 where ds<='20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value, ds from pcr_t1 where ds<='2000-04-09' and key<5 order by key, ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcr_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         and
-            <=
-               TOK_TABLE_OR_COL
-                  ds
-               '2000-04-09'
-            <
-               TOK_TABLE_OR_COL
-                  key
-               5
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -279,41 +237,6 @@ PREHOOK: query: explain extended select key, value from pcr_t1 where ds<='2000-0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value from pcr_t1 where ds<='2000-04-09' or key<5 order by key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcr_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-      TOK_WHERE
-         or
-            <=
-               TOK_TABLE_OR_COL
-                  ds
-               '2000-04-09'
-            <
-               TOK_TABLE_OR_COL
-                  key
-               5
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -582,53 +505,6 @@ PREHOOK: query: explain extended select key, value, ds from pcr_t1 where ds<='20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value, ds from pcr_t1 where ds<='2000-04-09' and key<5 and value != 'val_2' order by key, ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcr_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         and
-            and
-               <=
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-09'
-               <
-                  TOK_TABLE_OR_COL
-                     key
-                  5
-            !=
-               TOK_TABLE_OR_COL
-                  value
-               'val_2'
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -816,58 +692,6 @@ POSTHOOK: query: explain extended
 select key, value, ds from pcr_t1
 where (ds < '2000-04-09' and key < 5) or (ds > '2000-04-09' and value == 'val_5') order by key, ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcr_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         or
-            and
-               <
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-09'
-               <
-                  TOK_TABLE_OR_COL
-                     key
-                  5
-            and
-               >
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-09'
-               ==
-                  TOK_TABLE_OR_COL
-                     value
-                  'val_5'
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1057,58 +881,6 @@ POSTHOOK: query: explain extended
 select key, value, ds from pcr_t1
 where (ds < '2000-04-10' and key < 5) or (ds > '2000-04-08' and value == 'val_5') order by key, ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcr_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         or
-            and
-               <
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-10'
-               <
-                  TOK_TABLE_OR_COL
-                     key
-                  5
-            and
-               >
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-08'
-               ==
-                  TOK_TABLE_OR_COL
-                     value
-                  'val_5'
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1354,58 +1126,6 @@ POSTHOOK: query: explain extended
 select key, value, ds from pcr_t1
 where (ds < '2000-04-10' or key < 5) and (ds > '2000-04-08' or value == 'val_5') order by key, ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcr_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         and
-            or
-               <
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-10'
-               <
-                  TOK_TABLE_OR_COL
-                     key
-                  5
-            or
-               >
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-08'
-               ==
-                  TOK_TABLE_OR_COL
-                     value
-                  'val_5'
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1659,50 +1379,6 @@ PREHOOK: query: explain extended select key, value from pcr_t1 where (ds='2000-0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value from pcr_t1 where (ds='2000-04-08' or ds='2000-04-09') and key=14 order by key, value
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcr_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-      TOK_WHERE
-         and
-            or
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-08'
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-09'
-            =
-               TOK_TABLE_OR_COL
-                  key
-               14
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  value
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1877,45 +1553,6 @@ PREHOOK: query: explain extended select key, value from pcr_t1 where ds='2000-04
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value from pcr_t1 where ds='2000-04-08' or ds='2000-04-09' order by key, value
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcr_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-      TOK_WHERE
-         or
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '2000-04-08'
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '2000-04-09'
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  value
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2126,45 +1763,6 @@ PREHOOK: query: explain extended select key, value from pcr_t1 where ds>='2000-0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value from pcr_t1 where ds>='2000-04-08' or ds<'2000-04-10' order by key, value
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcr_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-      TOK_WHERE
-         or
-            >=
-               TOK_TABLE_OR_COL
-                  ds
-               '2000-04-08'
-            <
-               TOK_TABLE_OR_COL
-                  ds
-               '2000-04-10'
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  value
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2443,62 +2041,6 @@ PREHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds='20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2) order by key, value, ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcr_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         or
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-08'
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  1
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-09'
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  2
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  value
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2674,58 +2216,6 @@ PREHOOK: query: explain extended select * from pcr_t1 t1 join pcr_t1 t2 on t1.ke
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08' order by t1.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               pcr_t1
-            t1
-         TOK_TABREF
-            TOK_TABNAME
-               pcr_t1
-            t2
-         and
-            and
-               =
-                  .
-                     TOK_TABLE_OR_COL
-                        t1
-                     key
-                  .
-                     TOK_TABLE_OR_COL
-                        t2
-                     key
-               =
-                  .
-                     TOK_TABLE_OR_COL
-                        t1
-                     ds
-                  '2000-04-08'
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     t2
-                  ds
-               '2000-04-08'
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     t1
-                  key
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2980,58 +2470,6 @@ PREHOOK: query: explain extended select * from pcr_t1 t1 join pcr_t1 t2 on t1.ke
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-09' order by t1.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               pcr_t1
-            t1
-         TOK_TABREF
-            TOK_TABNAME
-               pcr_t1
-            t2
-         and
-            and
-               =
-                  .
-                     TOK_TABLE_OR_COL
-                        t1
-                     key
-                  .
-                     TOK_TABLE_OR_COL
-                        t2
-                     key
-               =
-                  .
-                     TOK_TABLE_OR_COL
-                        t1
-                     ds
-                  '2000-04-08'
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     t2
-                  ds
-               '2000-04-09'
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     t1
-                  key
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -3344,67 +2782,6 @@ PREHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds>'20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds>'2000-04-08' and ds<'2000-04-11') or (ds>='2000-04-08' and ds<='2000-04-11' and key=2) order by key, value, ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcr_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         or
-            and
-               >
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-08'
-               <
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-11'
-            and
-               and
-                  >=
-                     TOK_TABLE_OR_COL
-                        ds
-                     '2000-04-08'
-                  <=
-                     TOK_TABLE_OR_COL
-                        ds
-                     '2000-04-11'
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  2
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  value
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3717,62 +3094,6 @@ PREHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds>'20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds>'2000-04-08' and ds<'2000-04-11') or (ds<='2000-04-09' and key=2) order by key, value, ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcr_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         or
-            and
-               >
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-08'
-               <
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-11'
-            and
-               <=
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-09'
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  2
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  value
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4058,49 +3379,6 @@ from pcr_t1
 insert overwrite table pcr_t2 select key, value where ds='2000-04-08'
 insert overwrite table pcr_t3 select key, value where ds='2000-04-08'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcr_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               pcr_t2
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               ds
-            '2000-04-08'
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               pcr_t3
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               ds
-            '2000-04-08'
-
-
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
@@ -4625,59 +3903,6 @@ from pcr_t1
 insert overwrite table pcr_t2 select key, value where ds='2000-04-08' and key=2
 insert overwrite table pcr_t3 select key, value where ds='2000-04-08' and key=3
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcr_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               pcr_t2
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-      TOK_WHERE
-         and
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '2000-04-08'
-            =
-               TOK_TABLE_OR_COL
-                  key
-               2
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               pcr_t3
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-      TOK_WHERE
-         and
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '2000-04-08'
-            =
-               TOK_TABLE_OR_COL
-                  key
-               3
-
-
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
@@ -5284,43 +4509,6 @@ PREHOOK: query: explain extended select key, value from srcpart where ds='2008-0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value from srcpart where ds='2008-04-08' and hr=11 order by key limit 10
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-      TOK_WHERE
-         and
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '2008-04-08'
-            =
-               TOK_TABLE_OR_COL
-                  hr
-               11
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-      TOK_LIMIT
-         10
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -5448,65 +4636,6 @@ PREHOOK: query: explain extended select key, value, ds, hr from srcpart where ds
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value, ds, hr from srcpart where ds='2008-04-08' and (hr='11' or hr='12') and key=11 order by key, ds, hr
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               hr
-      TOK_WHERE
-         and
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2008-04-08'
-               or
-                  =
-                     TOK_TABLE_OR_COL
-                        hr
-                     '11'
-                  =
-                     TOK_TABLE_OR_COL
-                        hr
-                     '12'
-            =
-               TOK_TABLE_OR_COL
-                  key
-               11
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  ds
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  hr
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -5686,55 +4815,6 @@ PREHOOK: query: explain extended select key, value, ds, hr from srcpart where hr
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value, ds, hr from srcpart where hr='11' and key=11 order by key, ds, hr
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               hr
-      TOK_WHERE
-         and
-            =
-               TOK_TABLE_OR_COL
-                  hr
-               '11'
-            =
-               TOK_TABLE_OR_COL
-                  key
-               11
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  ds
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  hr
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

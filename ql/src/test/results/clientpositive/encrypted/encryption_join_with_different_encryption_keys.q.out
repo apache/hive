@@ -60,38 +60,6 @@ PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM table_key_1 t1 JOIN table_key_2 t
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM table_key_1 t1 JOIN table_key_2 t2 WHERE (t1.key = t2.key)
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               table_key_1
-            t1
-         TOK_TABREF
-            TOK_TABNAME
-               table_key_2
-            t2
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         =
-            .
-               TOK_TABLE_OR_COL
-                  t1
-               key
-            .
-               TOK_TABLE_OR_COL
-                  t2
-               key
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

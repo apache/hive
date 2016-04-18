@@ -61,38 +61,6 @@ POSTHOOK: query: explain extended
 create table merge_src2 as 
 select key, value from merge_src
 POSTHOOK: type: CREATETABLE_AS_SELECT
-ABSTRACT SYNTAX TREE:
-  
-TOK_CREATETABLE
-   TOK_TABNAME
-      merge_src2
-   TOK_LIKETABLE
-   TOK_QUERY
-      TOK_FROM
-         TOK_TABREF
-            TOK_TABNAME
-               default
-               merge_src
-            merge_src
-      TOK_INSERT
-         TOK_DESTINATION
-            TOK_DIR
-               TOK_TMP_FILE
-         TOK_SELECT
-            TOK_SELEXPR
-               .
-                  TOK_TABLE_OR_COL
-                     merge_src
-                  key
-               key
-            TOK_SELEXPR
-               .
-                  TOK_TABLE_OR_COL
-                     merge_src
-                  value
-               value
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -2404,38 +2372,6 @@ insert overwrite table merge_src_part2 partition(ds)
 select key, value, ds from merge_src_part
 where ds is not null
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            merge_src_part
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               merge_src_part2
-            TOK_PARTSPEC
-               TOK_PARTVAL
-                  ds
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         TOK_FUNCTION
-            TOK_ISNOTNULL
-            TOK_TABLE_OR_COL
-               ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -4845,52 +4781,6 @@ from (select * from merge_src_part where ds is not null distribute by ds) s
 insert overwrite table merge_src_part2 partition(ds)
 select key, value, ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_QUERY
-            TOK_FROM
-               TOK_TABREF
-                  TOK_TABNAME
-                     merge_src_part
-            TOK_INSERT
-               TOK_DESTINATION
-                  TOK_DIR
-                     TOK_TMP_FILE
-               TOK_SELECT
-                  TOK_SELEXPR
-                     TOK_ALLCOLREF
-               TOK_WHERE
-                  TOK_FUNCTION
-                     TOK_ISNOTNULL
-                     TOK_TABLE_OR_COL
-                        ds
-               TOK_DISTRIBUTEBY
-                  TOK_TABLE_OR_COL
-                     ds
-         s
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               merge_src_part2
-            TOK_PARTSPEC
-               TOK_PARTVAL
-                  ds
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

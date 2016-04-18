@@ -18,45 +18,6 @@ INSERT OVERWRITE TABLE dest1 SELECT s.*
 FROM srcpart TABLESAMPLE (BUCKET 1 OUT OF 1 ON rand()) s
 WHERE s.ds='2008-04-08' and s.hr='11'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-         TOK_TABLEBUCKETSAMPLE
-            1
-            1
-            TOK_FUNCTION
-               rand
-         s
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               dest1
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-               TOK_TABNAME
-                  s
-      TOK_WHERE
-         and
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     s
-                  ds
-               '2008-04-08'
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     s
-                  hr
-               '11'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

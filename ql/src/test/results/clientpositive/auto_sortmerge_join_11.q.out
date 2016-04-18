@@ -105,38 +105,6 @@ PREHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               bucket_small
-            a
-         TOK_TABREF
-            TOK_TABNAME
-               bucket_big
-            b
-         =
-            .
-               TOK_TABLE_OR_COL
-                  a
-               key
-            .
-               TOK_TABLE_OR_COL
-                  b
-               key
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTIONSTAR
-               count
-
-
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-2 depends on stages: Stage-5
@@ -453,38 +421,6 @@ POSTHOOK: query: -- Since size is being used to find the big table, the order of
 -- bucketized mapjoin is not done
 explain extended select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               bucket_small
-            a
-         TOK_TABREF
-            TOK_TABNAME
-               bucket_big
-            b
-         =
-            .
-               TOK_TABLE_OR_COL
-                  a
-               key
-            .
-               TOK_TABLE_OR_COL
-                  b
-               key
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTIONSTAR
-               count
-
-
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-2 depends on stages: Stage-5
@@ -795,43 +731,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- The join is converted to a bucketed mapjoin with a mapjoin hint
 explain extended select /*+ mapjoin(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               bucket_small
-            a
-         TOK_TABREF
-            TOK_TABNAME
-               bucket_big
-            b
-         =
-            .
-               TOK_TABLE_OR_COL
-                  a
-               key
-            .
-               TOK_TABLE_OR_COL
-                  b
-               key
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_HINTLIST
-            TOK_HINT
-               TOK_MAPJOIN
-               TOK_HINTARGLIST
-                  a
-         TOK_SELEXPR
-            TOK_FUNCTIONSTAR
-               count
-
-
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -1097,58 +996,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- HIVE-7023
 explain extended select /* + MAPJOIN(a,b) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key JOIN bucket_big c ON a.key = c.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_JOIN
-            TOK_TABREF
-               TOK_TABNAME
-                  bucket_small
-               a
-            TOK_TABREF
-               TOK_TABNAME
-                  bucket_big
-               b
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     a
-                  key
-               .
-                  TOK_TABLE_OR_COL
-                     b
-                  key
-         TOK_TABREF
-            TOK_TABNAME
-               bucket_big
-            c
-         =
-            .
-               TOK_TABLE_OR_COL
-                  a
-               key
-            .
-               TOK_TABLE_OR_COL
-                  c
-               key
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_HINTLIST
-            TOK_HINT
-               TOK_MAPJOIN
-               TOK_HINTARGLIST
-                  a
-                  b
-         TOK_SELEXPR
-            TOK_FUNCTIONSTAR
-               count
-
-
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-1 depends on stages: Stage-4

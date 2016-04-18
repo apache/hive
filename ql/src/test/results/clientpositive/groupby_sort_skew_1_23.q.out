@@ -54,31 +54,6 @@ EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 GROUP BY key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            T1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl1
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            key
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -413,36 +388,6 @@ EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl2
 SELECT key, val, count(1) FROM T1 GROUP BY key, val
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            T1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl2
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               val
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            key
-         TOK_TABLE_OR_COL
-            val
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -696,46 +641,6 @@ EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM (SELECT key, val FROM T1) subq1 GROUP BY key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_QUERY
-            TOK_FROM
-               TOK_TABREF
-                  TOK_TABNAME
-                     T1
-            TOK_INSERT
-               TOK_DESTINATION
-                  TOK_DIR
-                     TOK_TMP_FILE
-               TOK_SELECT
-                  TOK_SELEXPR
-                     TOK_TABLE_OR_COL
-                        key
-                  TOK_SELEXPR
-                     TOK_TABLE_OR_COL
-                        val
-         subq1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl1
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            key
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -1102,48 +1007,6 @@ EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1) subq1 GROUP BY k
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_QUERY
-            TOK_FROM
-               TOK_TABREF
-                  TOK_TABNAME
-                     T1
-            TOK_INSERT
-               TOK_DESTINATION
-                  TOK_DIR
-                     TOK_TMP_FILE
-               TOK_SELECT
-                  TOK_SELEXPR
-                     TOK_TABLE_OR_COL
-                        key
-                     k
-                  TOK_SELEXPR
-                     TOK_TABLE_OR_COL
-                        val
-                     v
-         subq1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl1
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               k
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            k
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -1520,34 +1383,6 @@ EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl3
 SELECT 1, key, count(1) FROM T1 GROUP BY 1, key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            T1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl3
-      TOK_SELECT
-         TOK_SELEXPR
-            1
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_GROUPBY
-         1
-         TOK_TABLE_OR_COL
-            key
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -1883,39 +1718,6 @@ EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl4
 SELECT key, 1, val, count(1) FROM T1 GROUP BY key, 1, val
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            T1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl4
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            1
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               val
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            key
-         1
-         TOK_TABLE_OR_COL
-            val
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2170,40 +1972,6 @@ EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl3
 SELECT key, key + 1, count(1) FROM T1 GROUP BY key, key + 1
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            T1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl3
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            +
-               TOK_TABLE_OR_COL
-                  key
-               1
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            key
-         +
-            TOK_TABLE_OR_COL
-               key
-            1
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2476,58 +2244,6 @@ SELECT key + key, sum(cnt) from
 (SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
 group by key + key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_QUERY
-            TOK_FROM
-               TOK_TABREF
-                  TOK_TABNAME
-                     T1
-            TOK_INSERT
-               TOK_DESTINATION
-                  TOK_DIR
-                     TOK_TMP_FILE
-               TOK_SELECT
-                  TOK_SELEXPR
-                     TOK_TABLE_OR_COL
-                        key
-                  TOK_SELEXPR
-                     TOK_FUNCTION
-                        count
-                        1
-                     cnt
-               TOK_GROUPBY
-                  TOK_TABLE_OR_COL
-                     key
-         subq1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl1
-      TOK_SELECT
-         TOK_SELEXPR
-            +
-               TOK_TABLE_OR_COL
-                  key
-               TOK_TABLE_OR_COL
-                  key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               sum
-               TOK_TABLE_OR_COL
-                  cnt
-      TOK_GROUPBY
-         +
-            TOK_TABLE_OR_COL
-               key
-            TOK_TABLE_OR_COL
-               key
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2811,63 +2527,6 @@ SELECT key, count(1) FROM T1 GROUP BY key
 SELECT key, count(1) FROM T1 GROUP BY key
 ) subq1
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_UNIONALL
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        T1
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           key
-                     TOK_SELEXPR
-                        TOK_FUNCTION
-                           count
-                           1
-                  TOK_GROUPBY
-                     TOK_TABLE_OR_COL
-                        key
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        T1
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           key
-                     TOK_SELEXPR
-                        TOK_FUNCTION
-                           count
-                           1
-                  TOK_GROUPBY
-                     TOK_TABLE_OR_COL
-                        key
-         subq1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl1
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -3308,70 +2967,6 @@ SELECT key, count(1) FROM T1 GROUP BY key
 SELECT key + key as key, count(1) FROM T1 GROUP BY key + key
 ) subq1
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_UNIONALL
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        T1
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           key
-                     TOK_SELEXPR
-                        TOK_FUNCTION
-                           count
-                           1
-                  TOK_GROUPBY
-                     TOK_TABLE_OR_COL
-                        key
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        T1
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        +
-                           TOK_TABLE_OR_COL
-                              key
-                           TOK_TABLE_OR_COL
-                              key
-                        key
-                     TOK_SELEXPR
-                        TOK_FUNCTION
-                           count
-                           1
-                  TOK_GROUPBY
-                     +
-                        TOK_TABLE_OR_COL
-                           key
-                        TOK_TABLE_OR_COL
-                           key
-         subq1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl1
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-
-
 STAGE DEPENDENCIES:
   Stage-9 is a root stage
   Stage-10 depends on stages: Stage-9
@@ -3997,89 +3592,6 @@ JOIN
 (SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq2
 ON subq1.key = subq2.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_SUBQUERY
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        T1
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           key
-                     TOK_SELEXPR
-                        TOK_FUNCTION
-                           count
-                           1
-                        cnt
-                  TOK_GROUPBY
-                     TOK_TABLE_OR_COL
-                        key
-            subq1
-         TOK_SUBQUERY
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        T1
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           key
-                     TOK_SELEXPR
-                        TOK_FUNCTION
-                           count
-                           1
-                        cnt
-                  TOK_GROUPBY
-                     TOK_TABLE_OR_COL
-                        key
-            subq2
-         =
-            .
-               TOK_TABLE_OR_COL
-                  subq1
-               key
-            .
-               TOK_TABLE_OR_COL
-                  subq2
-               key
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl1
-      TOK_SELECT
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  subq1
-               key
-         TOK_SELEXPR
-            +
-               .
-                  TOK_TABLE_OR_COL
-                     subq1
-                  cnt
-               .
-                  TOK_TABLE_OR_COL
-                     subq2
-                  cnt
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4322,78 +3834,6 @@ JOIN
 (SELECT key, val, count(1) FROM T1 GROUP BY key, val) subq2
 ON subq1.key = subq2.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_SUBQUERY
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        T1
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           key
-                     TOK_SELEXPR
-                        TOK_FUNCTION
-                           count
-                           1
-                  TOK_GROUPBY
-                     TOK_TABLE_OR_COL
-                        key
-            subq1
-         TOK_SUBQUERY
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        T1
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           key
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           val
-                     TOK_SELEXPR
-                        TOK_FUNCTION
-                           count
-                           1
-                  TOK_GROUPBY
-                     TOK_TABLE_OR_COL
-                        key
-                     TOK_TABLE_OR_COL
-                        val
-            subq2
-         =
-            .
-               TOK_TABLE_OR_COL
-                  subq1
-               key
-            .
-               TOK_TABLE_OR_COL
-                  subq2
-               key
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-
-
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -4761,31 +4201,6 @@ EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T2 GROUP BY key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            T2
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl1
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            key
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -5050,39 +4465,6 @@ EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl4
 SELECT key, 1, val, count(1) FROM T2 GROUP BY key, 1, val
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            T2
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl4
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            1
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               val
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            key
-         1
-         TOK_TABLE_OR_COL
-            val
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -5462,42 +4844,6 @@ EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl5
 SELECT key, 1, val, 2, count(1) FROM T2 GROUP BY key, 1, val, 2
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            T2
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl5
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            1
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               val
-         TOK_SELEXPR
-            2
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            key
-         1
-         TOK_TABLE_OR_COL
-            val
-         2
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -5834,59 +5180,6 @@ SELECT key, constant, val, count(1) from
 (SELECT key, 1 as constant, val from T2)subq
 group by key, constant, val
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_QUERY
-            TOK_FROM
-               TOK_TABREF
-                  TOK_TABNAME
-                     T2
-            TOK_INSERT
-               TOK_DESTINATION
-                  TOK_DIR
-                     TOK_TMP_FILE
-               TOK_SELECT
-                  TOK_SELEXPR
-                     TOK_TABLE_OR_COL
-                        key
-                  TOK_SELEXPR
-                     1
-                     constant
-                  TOK_SELEXPR
-                     TOK_TABLE_OR_COL
-                        val
-         subq
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl4
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               constant
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               val
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            key
-         TOK_TABLE_OR_COL
-            constant
-         TOK_TABLE_OR_COL
-            val
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -6270,81 +5563,6 @@ SELECT key, constant as constant2, val, 2 as constant3 from
 )subq2
 group by key, constant3, val
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_QUERY
-            TOK_FROM
-               TOK_SUBQUERY
-                  TOK_QUERY
-                     TOK_FROM
-                        TOK_TABREF
-                           TOK_TABNAME
-                              T2
-                     TOK_INSERT
-                        TOK_DESTINATION
-                           TOK_DIR
-                              TOK_TMP_FILE
-                        TOK_SELECT
-                           TOK_SELEXPR
-                              TOK_TABLE_OR_COL
-                                 key
-                           TOK_SELEXPR
-                              1
-                              constant
-                           TOK_SELEXPR
-                              TOK_TABLE_OR_COL
-                                 val
-                  subq
-            TOK_INSERT
-               TOK_DESTINATION
-                  TOK_DIR
-                     TOK_TMP_FILE
-               TOK_SELECT
-                  TOK_SELEXPR
-                     TOK_TABLE_OR_COL
-                        key
-                  TOK_SELEXPR
-                     TOK_TABLE_OR_COL
-                        constant
-                     constant2
-                  TOK_SELEXPR
-                     TOK_TABLE_OR_COL
-                        val
-                  TOK_SELEXPR
-                     2
-                     constant3
-         subq2
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl4
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               constant3
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               val
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            key
-         TOK_TABLE_OR_COL
-            constant3
-         TOK_TABLE_OR_COL
-            val
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

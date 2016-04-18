@@ -89,19 +89,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_ANALYZE
-   TOK_TAB
-      TOK_TABNAME
-         UserVisits_web_text_none
-   columns
-   TOK_TABCOLNAME
-      sourceIP
-      avgTimeOnSite
-      adRevenue
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -490,20 +477,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_ANALYZE
-   TOK_TAB
-      TOK_TABNAME
-         dummydb
-         UserVisits_in_dummy_db
-   columns
-   TOK_TABCOLNAME
-      sourceIP
-      avgTimeOnSite
-      adRevenue
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0

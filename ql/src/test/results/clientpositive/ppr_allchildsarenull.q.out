@@ -16,50 +16,6 @@ SELECT
    THEN 1
    ELSE 0  end ) > 0
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTION
-               TOK_INT
-               TOK_TABLE_OR_COL
-                  key
-            user_id
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-      TOK_WHERE
-         and
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '2008-04-08'
-            >
-               TOK_FUNCTION
-                  WHEN
-                  OR
-                     LIKE
-                        TOK_TABLE_OR_COL
-                           value
-                        'aaa%'
-                     LIKE
-                        TOK_TABLE_OR_COL
-                           value
-                        'vvv%'
-                  1
-                  0
-               0
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -249,50 +205,6 @@ SELECT
    THEN 1
    ELSE 0  end ) > 0
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTION
-               TOK_INT
-               TOK_TABLE_OR_COL
-                  key
-            user_id
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-      TOK_WHERE
-         and
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '2008-04-08'
-            >
-               TOK_FUNCTION
-                  WHEN
-                  OR
-                     LIKE
-                        TOK_TABLE_OR_COL
-                           value
-                        'aaa%'
-                     LIKE
-                        TOK_TABLE_OR_COL
-                           value
-                        'vvv%'
-                  1
-                  0
-               0
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

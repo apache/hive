@@ -18,38 +18,6 @@ INSERT OVERWRITE TABLE dest1 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s
 WHERE s.key > 100
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket
-         TOK_TABLEBUCKETSAMPLE
-            1
-            4
-            TOK_TABLE_OR_COL
-               key
-         s
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               dest1
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-               TOK_TABNAME
-                  s
-      TOK_WHERE
-         >
-            .
-               TOK_TABLE_OR_COL
-                  s
-               key
-            100
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

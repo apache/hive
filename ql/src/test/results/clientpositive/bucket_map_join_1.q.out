@@ -56,53 +56,6 @@ POSTHOOK: query: -- The tables are bucketed in same columns in different order,
 explain extended
 select /*+ mapjoin(b) */ count(*) from table1 a join table2 b on a.key=b.key and a.value=b.value
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               table1
-            a
-         TOK_TABREF
-            TOK_TABNAME
-               table2
-            b
-         and
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     a
-                  key
-               .
-                  TOK_TABLE_OR_COL
-                     b
-                  key
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     a
-                  value
-               .
-                  TOK_TABLE_OR_COL
-                     b
-                  value
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_HINTLIST
-            TOK_HINT
-               TOK_MAPJOIN
-               TOK_HINTARGLIST
-                  b
-         TOK_SELEXPR
-            TOK_FUNCTIONSTAR
-               count
-
-
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3

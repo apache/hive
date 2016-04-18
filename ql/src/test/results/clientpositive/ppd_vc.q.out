@@ -8,27 +8,6 @@ POSTHOOK: query: --HIVE-3926 PPD on virtual column of partitioned table is not w
 explain extended
 select * from srcpart where BLOCK__OFFSET__INSIDE__FILE<100
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         <
-            TOK_TABLE_OR_COL
-               BLOCK__OFFSET__INSIDE__FILE
-            100
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -332,77 +311,6 @@ select b.* from src a join
   (select *,BLOCK__OFFSET__INSIDE__FILE from srcpart where BLOCK__OFFSET__INSIDE__FILE<100) b
     on a.key=b.key AND b.BLOCK__OFFSET__INSIDE__FILE<50 order by ds,hr,BLOCK__OFFSET__INSIDE__FILE
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               src
-            a
-         TOK_SUBQUERY
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        srcpart
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_ALLCOLREF
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           BLOCK__OFFSET__INSIDE__FILE
-                  TOK_WHERE
-                     <
-                        TOK_TABLE_OR_COL
-                           BLOCK__OFFSET__INSIDE__FILE
-                        100
-            b
-         AND
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     a
-                  key
-               .
-                  TOK_TABLE_OR_COL
-                     b
-                  key
-            <
-               .
-                  TOK_TABLE_OR_COL
-                     b
-                  BLOCK__OFFSET__INSIDE__FILE
-               50
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-               TOK_TABNAME
-                  b
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  ds
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  hr
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  BLOCK__OFFSET__INSIDE__FILE
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
