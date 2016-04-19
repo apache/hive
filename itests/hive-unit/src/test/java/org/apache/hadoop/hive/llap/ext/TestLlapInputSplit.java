@@ -10,6 +10,7 @@ import java.util.HashMap;
 
 import org.apache.hadoop.io.Text;
 
+import org.apache.hadoop.hive.llap.LlapInputSplit;
 import org.apache.hadoop.hive.llap.Schema;
 import org.apache.hadoop.hive.llap.FieldDesc;
 import org.apache.hadoop.hive.llap.TypeDesc;
@@ -40,7 +41,7 @@ public class TestLlapInputSplit {
     colDescs.add(new FieldDesc("col2", new TypeDesc(TypeDesc.Type.INT)));
     Schema schema = new Schema(colDescs);
 
-    org.apache.hadoop.hive.llap.LlapInputSplit split1 = new org.apache.hadoop.hive.llap.LlapInputSplit(
+    LlapInputSplit split1 = new LlapInputSplit(
         splitNum,
         planBytes,
         fragmentBytes,
@@ -52,35 +53,18 @@ public class TestLlapInputSplit {
     split1.write(dataOut);
     ByteArrayInputStream byteInStream = new ByteArrayInputStream(byteOutStream.toByteArray());
     DataInputStream dataIn = new DataInputStream(byteInStream);
-    org.apache.hadoop.hive.llap.LlapInputSplit split2 = new org.apache.hadoop.hive.llap.LlapInputSplit();
+    LlapInputSplit split2 = new LlapInputSplit();
     split2.readFields(dataIn);
 
     // Did we read all the data?
     assertEquals(0, byteInStream.available());
 
     checkLlapSplits(split1, split2);
-
-    // Try JDBC LlapInputSplits
-    org.apache.hive.llap.ext.LlapInputSplit<Text> jdbcSplit1 =
-        new org.apache.hive.llap.ext.LlapInputSplit<Text>(split1, "org.apache.hadoop.hive.llap.LlapInputFormat");
-    byteOutStream.reset();
-    jdbcSplit1.write(dataOut);
-    byteInStream = new ByteArrayInputStream(byteOutStream.toByteArray());
-    dataIn = new DataInputStream(byteInStream);
-    org.apache.hive.llap.ext.LlapInputSplit<Text> jdbcSplit2 = new org.apache.hive.llap.ext.LlapInputSplit<Text>();
-    jdbcSplit2.readFields(dataIn);
-
-    assertEquals(0, byteInStream.available());
-
-    checkLlapSplits(
-        (org.apache.hadoop.hive.llap.LlapInputSplit) jdbcSplit1.getSplit(),
-        (org.apache.hadoop.hive.llap.LlapInputSplit) jdbcSplit2.getSplit());
-    assertEquals(jdbcSplit1.getInputFormat().getClass(), jdbcSplit2.getInputFormat().getClass());
   }
 
   static void checkLlapSplits(
-      org.apache.hadoop.hive.llap.LlapInputSplit split1,
-      org.apache.hadoop.hive.llap.LlapInputSplit split2) throws Exception {
+      LlapInputSplit split1,
+      LlapInputSplit split2) throws Exception {
 
     assertEquals(split1.getSplitNum(), split2.getSplitNum());
     assertArrayEquals(split1.getPlanBytes(), split2.getPlanBytes());

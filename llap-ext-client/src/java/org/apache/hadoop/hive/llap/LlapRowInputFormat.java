@@ -3,6 +3,7 @@ package org.apache.hadoop.hive.llap;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.llap.LlapBaseRecordReader;
+import org.apache.hadoop.hive.llap.LlapInputSplit;
 import org.apache.hadoop.hive.llap.LlapRowRecordReader;
 import org.apache.hadoop.hive.llap.Row;
 import org.apache.hadoop.hive.llap.Schema;
@@ -15,7 +16,6 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hive.llap.ext.LlapInputSplit;
 
 
 public class LlapRowInputFormat implements InputFormat<NullWritable, Row> {
@@ -29,7 +29,7 @@ public class LlapRowInputFormat implements InputFormat<NullWritable, Row> {
   @Override
   public RecordReader<NullWritable, Row> getRecordReader(InputSplit split, JobConf job, Reporter reporter)
       throws IOException {
-    LlapInputSplit<Text> llapSplit = (LlapInputSplit<Text>) split;
+    LlapInputSplit llapSplit = (LlapInputSplit) split;
     LlapBaseRecordReader<Text> reader = (LlapBaseRecordReader<Text>) baseInputFormat.getRecordReader(llapSplit, job, reporter);
     return new LlapRowRecordReader(job, reader.getSchema(), reader);
   }

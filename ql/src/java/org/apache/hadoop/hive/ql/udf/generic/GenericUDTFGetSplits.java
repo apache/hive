@@ -150,10 +150,8 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     stringOI = (StringObjectInspector) arguments[0];
     intOI = (IntObjectInspector) arguments[1];
 
-    List<String> names = Arrays.asList("if_class","split_class","split");
+    List<String> names = Arrays.asList("split");
     List<ObjectInspector> fieldOIs = Arrays.<ObjectInspector>asList(
-      PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-      PrimitiveObjectInspectorFactory.javaStringObjectInspector,
       PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector);
     StructObjectInspector outputOI = ObjectInspectorFactory.getStandardStructObjectInspector(names, fieldOIs);
 
@@ -185,13 +183,11 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
     try {
       for (InputSplit s: getSplits(jc, num, tezWork, schema)) {
-        Object[] os = new Object[3];
-        os[0] = LLAP_INTERNAL_INPUT_FORMAT_NAME;
-        os[1] = s.getClass().getName();
+        Object[] os = new Object[1];
         bos.reset();
         s.write(dos);
         byte[] frozen = bos.toByteArray();
-        os[2] = frozen;
+        os[0] = frozen;
         forward(os);
       }
     } catch(Exception e) {
