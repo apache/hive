@@ -18,14 +18,14 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 
 /**
  * To be used to cast timestamp to decimal.
  */
-public class CastTimestampToDecimal extends FuncLongToDecimal {
+public class CastTimestampToDecimal extends FuncTimestampToDecimal {
 
   private static final long serialVersionUID = 1L;
 
@@ -38,12 +38,7 @@ public class CastTimestampToDecimal extends FuncLongToDecimal {
   }
 
   @Override
-  protected void func(DecimalColumnVector outV, LongColumnVector inV, int i) {
-
-    // The resulting decimal value is 10e-9 * the input long value (i.e. seconds).
-    //
-    HiveDecimal result = HiveDecimal.create(inV.vector[i]);
-    result = result.scaleByPowerOfTen(-9);
-    outV.set(i, result);
+  protected void func(DecimalColumnVector outV, TimestampColumnVector inV, int i) {
+    outV.set(i, TimestampWritable.getHiveDecimal(inV.asScratchTimestamp(i)));
   }
 }

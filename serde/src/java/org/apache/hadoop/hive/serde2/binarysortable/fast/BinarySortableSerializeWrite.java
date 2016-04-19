@@ -349,19 +349,6 @@ public class BinarySortableSerializeWrite implements SerializeWrite {
     BinarySortableSerDe.serializeHiveIntervalDayTime(output, vidt, invert);
   }
 
-  @Override
-  public void writeHiveIntervalDayTime(long totalNanos) throws IOException {
-    final boolean invert = columnSortOrderIsDesc[++index];
-
-    // This field is not a null.
-    BinarySortableSerDe.writeByte(output, (byte) 1, invert);
-
-    long totalSecs = DateUtils.getIntervalDayTimeTotalSecondsFromTotalNanos(totalNanos);
-    int nanos = DateUtils.getIntervalDayTimeNanosFromTotalNanos(totalNanos);
-    BinarySortableSerDe.serializeLong(output, totalSecs, invert);
-    BinarySortableSerDe.serializeInt(output, nanos, invert);
-  }
-
   /*
    * DECIMAL.
    */

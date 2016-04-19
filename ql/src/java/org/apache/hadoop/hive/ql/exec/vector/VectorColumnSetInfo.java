@@ -20,7 +20,10 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Arrays;
 
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * Class to keep information on a set of typed vector columns.  Used by
@@ -52,6 +55,16 @@ public class VectorColumnSetInfo {
   protected int[] decimalIndices;
 
   /**
+   * indices of TIMESTAMP primitive keys.
+   */
+  protected int[] timestampIndices;
+
+  /**
+   * indices of INTERVAL_DAY_TIME primitive keys.
+   */
+  protected int[] intervalDayTimeIndices;
+
+  /**
    * Helper class for looking up a key value based on key index.
    */
   public class KeyLookupHelper {
@@ -59,11 +72,14 @@ public class VectorColumnSetInfo {
     public int doubleIndex;
     public int stringIndex;
     public int decimalIndex;
+    public int timestampIndex;
+    public int intervalDayTimeIndex;
 
     private static final int INDEX_UNUSED = -1;
 
     private void resetIndices() {
-        this.longIndex = this.doubleIndex = this.stringIndex = this.decimalIndex = INDEX_UNUSED;
+        this.longIndex = this.doubleIndex = this.stringIndex = this.decimalIndex =
+            timestampIndex = intervalDayTimeIndex = INDEX_UNUSED;
     }
     public void setLong(int index) {
       resetIndices();
@@ -84,6 +100,16 @@ public class VectorColumnSetInfo {
       resetIndices();
       this.decimalIndex = index;
     }
+
+    public void setTimestamp(int index) {
+      resetIndices();
+      this.timestampIndex= index;
+    }
+
+    public void setIntervalDayTime(int index) {
+      resetIndices();
+      this.intervalDayTimeIndex= index;
+    }
   }
 
   /**
@@ -98,6 +124,8 @@ public class VectorColumnSetInfo {
   protected int doubleIndicesIndex;
   protected int stringIndicesIndex;
   protected int decimalIndicesIndex;
+  protected int timestampIndicesIndex;
+  protected int intervalDayTimeIndicesIndex;
 
   protected VectorColumnSetInfo(int keyCount) {
     this.keyCount = keyCount;
@@ -112,33 +140,62 @@ public class VectorColumnSetInfo {
     stringIndicesIndex = 0;
     decimalIndices = new int[this.keyCount];
     decimalIndicesIndex = 0;
+    timestampIndices = new int[this.keyCount];
+    timestampIndicesIndex = 0;
+    intervalDayTimeIndices = new int[this.keyCount];
+    intervalDayTimeIndicesIndex = 0;
     indexLookup = new KeyLookupHelper[this.keyCount];
   }
 
   protected void addKey(String outputType) throws HiveException {
     indexLookup[addIndex] = new KeyLookupHelper();
-    if (VectorizationContext.isIntFamily(outputType) ||
-        VectorizationContext.isDatetimeFamily(outputType)) {
+
+    String typeName = VectorizationContext.mapTypeNameSynonyms(outputType);
+
+    TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+    Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
+
+    switch (columnVectorType) {
+    case LONG:
       longIndices[longIndicesIndex] = addIndex;
       indexLookup[addIndex].setLong(longIndicesIndex);
       ++longIndicesIndex;
-    } else if (VectorizationContext.isFloatFamily(outputType)) {
+      break;
+
+    case DOUBLE:
       doubleIndices[doubleIndicesIndex] = addIndex;
       indexLookup[addIndex].setDouble(doubleIndicesIndex);
       ++doubleIndicesIndex;
-    } else if (VectorizationContext.isStringFamily(outputType) ||
-        outputType.equalsIgnoreCase("binary")) {
+      break;
+
+    case BYTES:
       stringIndices[stringIndicesIndex]= addIndex;
       indexLookup[addIndex].setString(stringIndicesIndex);
       ++stringIndicesIndex;
-    } else if (VectorizationContext.isDecimalFamily(outputType)) {
-        decimalIndices[decimalIndicesIndex]= addIndex;
-        indexLookup[addIndex].setDecimal(decimalIndicesIndex);
-        ++decimalIndicesIndex;
+      break;
+
+    case DECIMAL:
+      decimalIndices[decimalIndicesIndex]= addIndex;
+      indexLookup[addIndex].setDecimal(decimalIndicesIndex);
+      ++decimalIndicesIndex;
+      break;
+
+    case TIMESTAMP:
+      timestampIndices[timestampIndicesIndex] = addIndex;
+      indexLookup[addIndex].setTimestamp(timestampIndicesIndex);
+      ++timestampIndicesIndex;
+      break;
+
+    case INTERVAL_DAY_TIME:
+      intervalDayTimeIndices[intervalDayTimeIndicesIndex] = addIndex;
+      indexLookup[addIndex].setIntervalDayTime(intervalDayTimeIndicesIndex);
+      ++intervalDayTimeIndicesIndex;
+      break;
+
+    default:
+      throw new HiveException("Unexpected column vector type " + columnVectorType);
     }
-    else {
-      throw new HiveException("Unsuported vector output type: " + outputType);
-    }
+
     addIndex++;
   }
 
@@ -147,5 +204,7 @@ public class VectorColumnSetInfo {
     doubleIndices = Arrays.copyOf(doubleIndices, doubleIndicesIndex);
     stringIndices = Arrays.copyOf(stringIndices, stringIndicesIndex);
     decimalIndices = Arrays.copyOf(decimalIndices, decimalIndicesIndex);
+    timestampIndices = Arrays.copyOf(timestampIndices, timestampIndicesIndex);
+    intervalDayTimeIndices = Arrays.copyOf(intervalDayTimeIndices, intervalDayTimeIndicesIndex);
   }
 }

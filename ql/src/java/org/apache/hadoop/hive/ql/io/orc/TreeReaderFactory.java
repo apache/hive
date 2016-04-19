@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
@@ -997,6 +998,7 @@ public class TreeReaderFactory {
     private final TimeZone readerTimeZone;
     private TimeZone writerTimeZone;
     private boolean hasSameTZRules;
+    private TimestampWritable scratchTimestampWritable;
 
     TimestampTreeReader(int columnId, boolean skipCorrupt) throws IOException {
       this(columnId, null, null, null, null, skipCorrupt);
@@ -1130,24 +1132,26 @@ public class TreeReaderFactory {
 
     @Override
     public Object nextVector(Object previousVector, long batchSize) throws IOException {
-      final LongColumnVector result;
+      final TimestampColumnVector result;
       if (previousVector == null) {
-        result = new LongColumnVector();
+        result = new TimestampColumnVector();
       } else {
-        result = (LongColumnVector) previousVector;
+        result = (TimestampColumnVector) previousVector;
       }
 
       result.reset();
-      Object obj = null;
+      if (scratchTimestampWritable == null) {
+        scratchTimestampWritable = new TimestampWritable();
+      }
+      Object obj;
       for (int i = 0; i < batchSize; i++) {
-        obj = next(obj);
+        obj = next(scratchTimestampWritable);
         if (obj == null) {
           result.noNulls = false;
           result.isNull[i] = true;
         } else {
           TimestampWritable writable = (TimestampWritable) obj;
-          Timestamp timestamp = writable.getTimestamp();
-          result.vector[i] = TimestampUtils.getTimeNanoSec(timestamp);
+          result.set(i, writable.getTimestamp());
         }
       }
 

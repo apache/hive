@@ -35,14 +35,17 @@ import org.apache.hadoop.io.Text;
   DoubleColLessEqualLongScalar.class, DoubleColLessEqualDoubleScalar.class,
   LongScalarLessEqualLongColumn.class, LongScalarLessEqualDoubleColumn.class,
   DoubleScalarLessEqualLongColumn.class, DoubleScalarLessEqualDoubleColumn.class,
+
   StringGroupColLessEqualStringGroupColumn.class, FilterStringGroupColLessEqualStringGroupColumn.class,
   StringGroupColLessEqualStringScalar.class,
   StringGroupColLessEqualVarCharScalar.class, StringGroupColLessEqualCharScalar.class,
   StringScalarLessEqualStringGroupColumn.class,
   VarCharScalarLessEqualStringGroupColumn.class, CharScalarLessEqualStringGroupColumn.class,
+
   FilterStringGroupColLessEqualStringScalar.class, FilterStringScalarLessEqualStringGroupColumn.class,
   FilterStringGroupColLessEqualVarCharScalar.class, FilterVarCharScalarLessEqualStringGroupColumn.class,
   FilterStringGroupColLessEqualCharScalar.class, FilterCharScalarLessEqualStringGroupColumn.class,
+
   FilterLongColLessEqualLongColumn.class, FilterLongColLessEqualDoubleColumn.class,
   FilterDoubleColLessEqualLongColumn.class, FilterDoubleColLessEqualDoubleColumn.class,
   FilterLongColLessEqualLongScalar.class, FilterLongColLessEqualDoubleScalar.class,
@@ -51,16 +54,36 @@ import org.apache.hadoop.io.Text;
   FilterDoubleScalarLessEqualLongColumn.class, FilterDoubleScalarLessEqualDoubleColumn.class,
   FilterDecimalColLessEqualDecimalColumn.class, FilterDecimalColLessEqualDecimalScalar.class,
   FilterDecimalScalarLessEqualDecimalColumn.class,
+
+  TimestampColLessEqualTimestampColumn.class,
   TimestampColLessEqualTimestampScalar.class, TimestampScalarLessEqualTimestampColumn.class,
+  TimestampColLessEqualLongColumn.class,
+  TimestampColLessEqualLongScalar.class, TimestampScalarLessEqualLongColumn.class,
+  TimestampColLessEqualDoubleColumn.class,
+  TimestampColLessEqualDoubleScalar.class, TimestampScalarLessEqualDoubleColumn.class,
+  LongColLessEqualTimestampColumn.class,
+  LongColLessEqualTimestampScalar.class, LongScalarLessEqualTimestampColumn.class,
+  DoubleColLessEqualTimestampColumn.class,
+  DoubleColLessEqualTimestampScalar.class, DoubleScalarLessEqualTimestampColumn.class,
+
+  FilterTimestampColLessEqualTimestampColumn.class,
   FilterTimestampColLessEqualTimestampScalar.class, FilterTimestampScalarLessEqualTimestampColumn.class,
-  TimestampColLessEqualLongScalar.class, LongScalarLessEqualTimestampColumn.class,
-  FilterTimestampColLessEqualLongScalar.class, FilterLongScalarLessEqualTimestampColumn.class,
-  TimestampColLessEqualDoubleScalar.class, DoubleScalarLessEqualTimestampColumn.class,
-  FilterTimestampColLessEqualDoubleScalar.class, FilterDoubleScalarLessEqualTimestampColumn.class,
+  FilterTimestampColLessEqualLongColumn.class,
+  FilterTimestampColLessEqualLongScalar.class, FilterTimestampScalarLessEqualLongColumn.class,
+  FilterTimestampColLessEqualDoubleColumn.class,
+  FilterTimestampColLessEqualDoubleScalar.class, FilterTimestampScalarLessEqualDoubleColumn.class,
+  FilterLongColLessEqualTimestampColumn.class,
+  FilterLongColLessEqualTimestampScalar.class, FilterLongScalarLessEqualTimestampColumn.class,
+  FilterDoubleColLessEqualTimestampColumn.class,
+  FilterDoubleColLessEqualTimestampScalar.class, FilterDoubleScalarLessEqualTimestampColumn.class,
+
   IntervalYearMonthScalarLessEqualIntervalYearMonthColumn.class, FilterIntervalYearMonthScalarLessEqualIntervalYearMonthColumn.class,
   IntervalYearMonthColLessEqualIntervalYearMonthScalar.class, FilterIntervalYearMonthColLessEqualIntervalYearMonthScalar.class,
+
+  IntervalDayTimeColLessEqualIntervalDayTimeColumn.class, FilterIntervalDayTimeColLessEqualIntervalDayTimeColumn.class,
   IntervalDayTimeScalarLessEqualIntervalDayTimeColumn.class, FilterIntervalDayTimeScalarLessEqualIntervalDayTimeColumn.class,
   IntervalDayTimeColLessEqualIntervalDayTimeScalar.class, FilterIntervalDayTimeColLessEqualIntervalDayTimeScalar.class,
+
   DateColLessEqualDateScalar.class,FilterDateColLessEqualDateScalar.class,
   DateScalarLessEqualDateColumn.class,FilterDateScalarLessEqualDateColumn.class,
   })

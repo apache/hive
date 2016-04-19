@@ -28,8 +28,8 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongColumnLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleColumnDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongColumnLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongColumnLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleColumnDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleColumnLongScalar;
@@ -42,12 +42,20 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongScalarLon
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleScalarDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleScalarLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongScalarDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprIntervalDayTimeColumnColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprIntervalDayTimeColumnScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprIntervalDayTimeScalarColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprIntervalDayTimeScalarScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumnStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumnStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumnCharScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumnVarCharScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprCharScalarStringGroupColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprTimestampColumnColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprTimestampColumnScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprTimestampScalarColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprTimestampScalarScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarCharScalar;
@@ -76,6 +84,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStri
   IfExprLongScalarDoubleColumn.class, IfExprDoubleScalarLongColumn.class,
   IfExprLongScalarLongScalar.class, IfExprDoubleScalarDoubleScalar.class,
   IfExprLongScalarDoubleScalar.class, IfExprDoubleScalarLongScalar.class,
+
   IfExprStringGroupColumnStringGroupColumn.class,
   IfExprStringGroupColumnStringScalar.class,
   IfExprStringGroupColumnCharScalar.class, IfExprStringGroupColumnVarCharScalar.class,
@@ -83,7 +92,12 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStri
   IfExprCharScalarStringGroupColumn.class, IfExprVarCharScalarStringGroupColumn.class,
   IfExprStringScalarStringScalar.class,
   IfExprStringScalarCharScalar.class, IfExprStringScalarVarCharScalar.class,
-  IfExprCharScalarStringScalar.class, IfExprVarCharScalarStringScalar.class
+  IfExprCharScalarStringScalar.class, IfExprVarCharScalarStringScalar.class,
+
+  IfExprIntervalDayTimeColumnColumn.class, IfExprIntervalDayTimeColumnScalar.class,
+  IfExprIntervalDayTimeScalarColumn.class, IfExprIntervalDayTimeScalarScalar.class,
+  IfExprTimestampColumnColumn.class, IfExprTimestampColumnScalar.class,
+  IfExprTimestampScalarColumn.class, IfExprTimestampScalarScalar.class,
 })
 public class GenericUDFIf extends GenericUDF {
   private transient ObjectInspector[] argumentOIs;

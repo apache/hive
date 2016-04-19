@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
@@ -1779,7 +1780,7 @@ public class TestInputOutputFormat {
     BytesColumnVector stringColumn = (BytesColumnVector) value.cols[7];
     DecimalColumnVector decimalColumn = (DecimalColumnVector) value.cols[8];
     LongColumnVector dateColumn = (LongColumnVector) value.cols[9];
-    LongColumnVector timestampColumn = (LongColumnVector) value.cols[10];
+    TimestampColumnVector timestampColumn = (TimestampColumnVector) value.cols[10];
     for(int i=0; i < 100; i++) {
       assertEquals("checking boolean " + i, i % 2 == 0 ? 1 : 0,
           booleanColumn.vector[i]);
@@ -1800,8 +1801,8 @@ public class TestInputOutputFormat {
       assertEquals("checking date " + i, i, dateColumn.vector[i]);
       long millis = (long) i * MILLIS_IN_DAY;
       millis -= LOCAL_TIMEZONE.getOffset(millis);
-      assertEquals("checking timestamp " + i, millis * 1000000L,
-          timestampColumn.vector[i]);
+      assertEquals("checking timestamp " + i, millis,
+          timestampColumn.getTime(i));
     }
     assertEquals(false, reader.next(key, value));
   }

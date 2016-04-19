@@ -144,6 +144,8 @@ public abstract class VectorExpression implements Serializable {
     b.append(this.getClass().getSimpleName());
     b.append("[");
     b.append(this.getOutputColumn());
+    b.append(":");
+    b.append(this.getOutputType());
     b.append("]");
     if (childExpressions != null) {
       b.append("(");

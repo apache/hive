@@ -26,8 +26,9 @@ import java.util.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMonthLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMonthDate;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMonthString;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMonthTimestamp;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -47,12 +48,12 @@ import org.apache.hadoop.io.Text;
     + "4. A year-month interval value"
     + "Example:\n"
     + "  > SELECT _FUNC_('2009-07-30') FROM src LIMIT 1;\n" + "  7")
-@VectorizedExpressions({VectorUDFMonthLong.class, VectorUDFMonthString.class})
+@VectorizedExpressions({VectorUDFMonthDate.class, VectorUDFMonthString.class, VectorUDFMonthTimestamp.class})
 public class UDFMonth extends UDF {
   private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private final Calendar calendar = Calendar.getInstance();
 
-  private IntWritable result = new IntWritable();
+  private final IntWritable result = new IntWritable();
 
   public UDFMonth() {
   }

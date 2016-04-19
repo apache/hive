@@ -21,12 +21,14 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.io.Text;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
@@ -36,6 +38,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
   private int colNum;
   private int outputColumn;
   private long longValue;
+  private Timestamp timestampValue = null;
   private byte[] stringValue;
   private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private transient final Text text = new Text();
@@ -49,6 +52,8 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
 
     if (object instanceof Long) {
       this.longValue = (Long) object;
+    } else if (object instanceof Timestamp) {
+      this.timestampValue = (Timestamp) object;
     } else if (object instanceof byte []) {
       this.stringValue = (byte[]) object;
     }
@@ -70,6 +75,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
     /* every line below this is identical for evaluateLong & evaluateString */
     final int n = inputCol.isRepeating ? 1 : batch.size;
     int[] sel = batch.selected;
+    final boolean selectedInUse = (inputCol.isRepeating == false) && batch.selectedInUse;
 
     if(batch.size == 0) {
       /* n != batch.size when isRepeating */
@@ -85,7 +91,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
         break;
 
       case TIMESTAMP:
-        date.setTime(longValue / 1000000);
+        date.setTime(timestampValue.getTime());
         baseDate = DateWritable.dateToDays(date);
         break;
 
@@ -98,7 +104,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
           break;
         } catch (Exception e) {
           outV.noNulls = false;
-          if (batch.selectedInUse) {
+          if (selectedInUse) {
             for(int j=0; j < n; j++) {
               int i = sel[j];
               outV.isNull[i] = true;
@@ -118,7 +124,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
       case DATE:
         if (inputCol.noNulls) {
           outV.noNulls = true;
-          if (batch.selectedInUse) {
+          if (selectedInUse) {
             for(int j=0; j < n; j++) {
               int i = sel[j];
               outV.vector[i] = evaluateDate(inputCol, i);
@@ -132,7 +138,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
           // Handle case with nulls. Don't do function if the value is null, to save time,
           // because calling the function can be expensive.
           outV.noNulls = false;
-          if (batch.selectedInUse) {
+          if (selectedInUse) {
             for(int j = 0; j < n; j++) {
               int i = sel[j];
               outV.isNull[i] = inputCol.isNull[i];
@@ -154,7 +160,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
       case TIMESTAMP:
         if (inputCol.noNulls) {
           outV.noNulls = true;
-          if (batch.selectedInUse) {
+          if (selectedInUse) {
             for(int j=0; j < n; j++) {
               int i = sel[j];
               outV.vector[i] = evaluateTimestamp(inputCol, i);
@@ -168,7 +174,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
           // Handle case with nulls. Don't do function if the value is null, to save time,
           // because calling the function can be expensive.
           outV.noNulls = false;
-          if (batch.selectedInUse) {
+          if (selectedInUse) {
             for(int j = 0; j < n; j++) {
               int i = sel[j];
               outV.isNull[i] = inputCol.isNull[i];
@@ -192,7 +198,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
       case VARCHAR:
         if (inputCol.noNulls) {
           outV.noNulls = true;
-          if (batch.selectedInUse) {
+          if (selectedInUse) {
             for(int j=0; j < n; j++) {
               int i = sel[j];
               evaluateString(inputCol, outV, i);
@@ -206,7 +212,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
           // Handle case with nulls. Don't do function if the value is null, to save time,
           // because calling the function can be expensive.
           outV.noNulls = false;
-          if (batch.selectedInUse) {
+          if (selectedInUse) {
             for(int j = 0; j < n; j++) {
               int i = sel[j];
               outV.isNull[i] = inputCol.isNull[i];
@@ -230,8 +236,8 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
   }
 
   protected int evaluateTimestamp(ColumnVector columnVector, int index) {
-    LongColumnVector lcv = (LongColumnVector) columnVector;
-    date.setTime(lcv.vector[index] / 1000000);
+    TimestampColumnVector tcv = (TimestampColumnVector) columnVector;
+    date.setTime(tcv.getTime(index));
     return baseDate - DateWritable.dateToDays(date);
   }
 

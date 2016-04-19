@@ -56,21 +56,4 @@ public class DateUtils {
     }
     return result;
   }
-
-  public static long getIntervalDayTimeTotalNanos(HiveIntervalDayTime intervalDayTime) {
-    return intervalDayTime.getTotalSeconds() * NANOS_PER_SEC + intervalDayTime.getNanos();
-  }
-
-  public static void setIntervalDayTimeTotalNanos(HiveIntervalDayTime intervalDayTime,
-      long totalNanos) {
-    intervalDayTime.set(totalNanos / NANOS_PER_SEC, (int) (totalNanos % NANOS_PER_SEC));
-  }
-
-  public static long getIntervalDayTimeTotalSecondsFromTotalNanos(long totalNanos) {
-    return totalNanos / NANOS_PER_SEC;
-  }
-
-  public static int getIntervalDayTimeNanosFromTotalNanos(long totalNanos) {
-    return (int) (totalNanos % NANOS_PER_SEC);
-  }
 }

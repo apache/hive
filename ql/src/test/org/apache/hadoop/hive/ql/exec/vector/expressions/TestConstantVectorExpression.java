@@ -44,9 +44,9 @@ public class TestConstantVectorExpression {
     String str = "alpha";
     ConstantVectorExpression bytesCve = new ConstantVectorExpression(2, str.getBytes());
     HiveDecimal decVal = HiveDecimal.create("25.8");
-    ConstantVectorExpression decimalCve = new ConstantVectorExpression(3, decVal);
+    ConstantVectorExpression decimalCve = new ConstantVectorExpression(3, decVal, "decimal");
     ConstantVectorExpression nullCve = new ConstantVectorExpression(4, "string", true);
-    
+
     int size = 20;
     VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(size, 5, 0);
 

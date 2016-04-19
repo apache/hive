@@ -25,7 +25,6 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
-import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -170,8 +169,8 @@ public class VectorSerializeRowNoNulls {
 
     @Override
     void apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      LongColumnVector colVector = (LongColumnVector) batch.cols[columnIndex];
-      TimestampUtils.assignTimeInNanoSec(colVector.vector[colVector.isRepeating ? 0 : batchIndex], scratchTimestamp);
+      TimestampColumnVector colVector = (TimestampColumnVector) batch.cols[columnIndex];
+      colVector.timestampUpdate(scratchTimestamp, colVector.isRepeating ? 0 : batchIndex);
       serializeWrite.writeTimestamp(scratchTimestamp);
     }
   }
@@ -191,14 +190,18 @@ public class VectorSerializeRowNoNulls {
 
   private class IntervalDayTimeWriter extends AbstractLongWriter {
 
+    private HiveIntervalDayTime hiveIntervalDayTime;
+
     IntervalDayTimeWriter(int columnIndex) {
       super(columnIndex);
+      hiveIntervalDayTime = new HiveIntervalDayTime();
     }
 
     @Override
     void apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      LongColumnVector colVector = (LongColumnVector) batch.cols[columnIndex];
-      serializeWrite.writeHiveIntervalDayTime(colVector.vector[colVector.isRepeating ? 0 : batchIndex]);
+      IntervalDayTimeColumnVector colVector = (IntervalDayTimeColumnVector) batch.cols[columnIndex];
+      hiveIntervalDayTime.set(colVector.asScratchIntervalDayTime(colVector.isRepeating ? 0 : batchIndex));
+      serializeWrite.writeHiveIntervalDayTime(hiveIntervalDayTime);
     }
   }
 

@@ -257,10 +257,29 @@ public abstract class VectorExtractRow {
     }
   }
 
-  private class TimestampExtractor extends AbstractLongExtractor {
+  private abstract class AbstractTimestampExtractor extends Extractor {
 
-    private Timestamp timestamp;
-    
+    protected TimestampColumnVector colVector;
+
+    AbstractTimestampExtractor(int columnIndex) {
+      super(columnIndex);
+    }
+
+    @Override
+    void setColumnVector(VectorizedRowBatch batch) {
+      colVector = (TimestampColumnVector) batch.cols[columnIndex];
+    }
+
+    @Override
+    void forgetColumnVector() {
+      colVector = null;
+    }
+  }
+
+  private class TimestampExtractor extends AbstractTimestampExtractor {
+
+    protected Timestamp timestamp;
+
     TimestampExtractor(int columnIndex) {
       super(columnIndex);
       object = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector.create(new Timestamp(0));
@@ -271,8 +290,7 @@ public abstract class VectorExtractRow {
     Object extract(int batchIndex) {
       int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
       if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        long value = vector[adjustedIndex];
-        TimestampUtils.assignTimeInNanoSec(value, timestamp);
+        colVector.timestampUpdate(timestamp, adjustedIndex);
         PrimitiveObjectInspectorFactory.writableTimestampObjectInspector.set(object, timestamp);
         return object;
       } else {
@@ -284,7 +302,7 @@ public abstract class VectorExtractRow {
   private class IntervalYearMonthExtractor extends AbstractLongExtractor {
 
     private HiveIntervalYearMonth hiveIntervalYearMonth;
-    
+
     IntervalYearMonthExtractor(int columnIndex) {
       super(columnIndex);
       object = PrimitiveObjectInspectorFactory.writableHiveIntervalYearMonthObjectInspector.create(new HiveIntervalYearMonth(0));
@@ -305,10 +323,29 @@ public abstract class VectorExtractRow {
     }
   }
 
-  private class IntervalDayTimeExtractor extends AbstractLongExtractor {
+  private abstract class AbstractIntervalDayTimeExtractor extends Extractor {
+
+    protected IntervalDayTimeColumnVector colVector;
+
+    AbstractIntervalDayTimeExtractor(int columnIndex) {
+      super(columnIndex);
+    }
+
+    @Override
+    void setColumnVector(VectorizedRowBatch batch) {
+      colVector = (IntervalDayTimeColumnVector) batch.cols[columnIndex];
+    }
+
+    @Override
+    void forgetColumnVector() {
+      colVector = null;
+    }
+  }
+
+  private class IntervalDayTimeExtractor extends AbstractIntervalDayTimeExtractor {
 
     private HiveIntervalDayTime hiveIntervalDayTime;
-    
+
     IntervalDayTimeExtractor(int columnIndex) {
       super(columnIndex);
       object = PrimitiveObjectInspectorFactory.writableHiveIntervalDayTimeObjectInspector.create(new HiveIntervalDayTime(0, 0));
@@ -319,8 +356,7 @@ public abstract class VectorExtractRow {
     Object extract(int batchIndex) {
       int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
       if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        long value = vector[adjustedIndex];
-        DateUtils.setIntervalDayTimeTotalNanos(hiveIntervalDayTime, value);
+        hiveIntervalDayTime.set(colVector.asScratchIntervalDayTime(adjustedIndex));
         PrimitiveObjectInspectorFactory.writableHiveIntervalDayTimeObjectInspector.set(object, hiveIntervalDayTime);
         return object;
       } else {

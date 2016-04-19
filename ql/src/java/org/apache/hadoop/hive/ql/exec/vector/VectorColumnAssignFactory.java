@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -165,6 +166,27 @@ public class VectorColumnAssignFactory {
     }
   }
 
+  private static abstract class VectorTimestampColumnAssign
+  extends VectorColumnAssignVectorBase<TimestampColumnVector> {
+
+    protected void assignTimestamp(Timestamp value, int index) {
+      outCol.set(index, value);
+    }
+    protected void assignTimestamp(TimestampWritable tw, int index) {
+      outCol.set(index, tw.getTimestamp());
+    }
+  }
+
+  private static abstract class VectorIntervalDayTimeColumnAssign
+  extends VectorColumnAssignVectorBase<IntervalDayTimeColumnVector> {
+
+    protected void assignIntervalDayTime(HiveIntervalDayTime value, int index) {
+      outCol.set(index, value);
+    }
+    protected void assignIntervalDayTime(HiveIntervalDayTimeWritable tw, int index) {
+      outCol.set(index, tw.getHiveIntervalDayTime());
+    }
+  }
 
   public static VectorColumnAssign[] buildAssigners(VectorizedRowBatch outputBatch)
       throws HiveException {
@@ -313,19 +335,17 @@ public class VectorColumnAssignFactory {
         }.init(outputBatch, (LongColumnVector) destCol);
         break;
       case TIMESTAMP:
-        outVCA = new VectorLongColumnAssign() {
+        outVCA = new VectorTimestampColumnAssign() {
           @Override
           public void assignObjectValue(Object val, int destIndex) throws HiveException {
             if (val == null) {
               assignNull(destIndex);
             }
             else {
-              TimestampWritable bw = (TimestampWritable) val;
-              Timestamp t = bw.getTimestamp();
-              assignLong(TimestampUtils.getTimeNanoSec(t), destIndex);
+              assignTimestamp((TimestampWritable) val, destIndex);
             }
           }
-        }.init(outputBatch, (LongColumnVector) destCol);
+        }.init(outputBatch, (TimestampColumnVector) destCol);
         break;
       case DATE:
         outVCA = new VectorLongColumnAssign() {
@@ -355,7 +375,7 @@ public class VectorColumnAssignFactory {
           }
         }.init(outputBatch, (LongColumnVector) destCol);
         break;
-      case INTERVAL_DAY_TIME:outVCA = new VectorLongColumnAssign() {
+      case INTERVAL_DAY_TIME:outVCA = new VectorIntervalDayTimeColumnAssign() {
         @Override
         public void assignObjectValue(Object val, int destIndex) throws HiveException {
           if (val == null) {
@@ -363,12 +383,12 @@ public class VectorColumnAssignFactory {
           }
           else {
             HiveIntervalDayTimeWritable bw = (HiveIntervalDayTimeWritable) val;
-            assignLong(
-                DateUtils.getIntervalDayTimeTotalNanos(bw.getHiveIntervalDayTime()),
+            assignIntervalDayTime(
+                bw.getHiveIntervalDayTime(),
                 destIndex);
           }
         }
-      }.init(outputBatch, (LongColumnVector) destCol);
+      }.init(outputBatch, (IntervalDayTimeColumnVector) destCol);
       break;
       default:
         throw new HiveException("Incompatible Long vector column and primitive category " +

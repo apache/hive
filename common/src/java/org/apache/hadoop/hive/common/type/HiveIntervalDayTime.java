@@ -18,12 +18,16 @@
 package org.apache.hadoop.hive.common.type;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.hive.common.util.DateUtils;
+import org.apache.hive.common.util.IntervalDayTimeUtils;
+
+import sun.util.calendar.BaseCalendar;
 
 /**
  * Day-time interval type representing an offset in days/hours/minutes/seconds,
@@ -85,15 +89,23 @@ public class HiveIntervalDayTime implements Comparable<HiveIntervalDayTime> {
   }
 
   /**
+   *
+   * @return double representation of the interval day time, accurate to nanoseconds
+   */
+  public double getDouble() {
+    return totalSeconds + nanos / 1000000000;
+  }
+
+  /**
    * Ensures that the seconds and nanoseconds fields have consistent sign
    */
   protected void normalizeSecondsAndNanos() {
     if (totalSeconds > 0 && nanos < 0) {
       --totalSeconds;
-      nanos += DateUtils.NANOS_PER_SEC;
+      nanos += IntervalDayTimeUtils.NANOS_PER_SEC;
     } else if (totalSeconds < 0 && nanos > 0) {
       ++totalSeconds;
-      nanos -= DateUtils.NANOS_PER_SEC;
+      nanos -= IntervalDayTimeUtils.NANOS_PER_SEC;
     }
   }
 
@@ -103,7 +115,7 @@ public class HiveIntervalDayTime implements Comparable<HiveIntervalDayTime> {
     totalSeconds += TimeUnit.HOURS.toSeconds(hours);
     totalSeconds += TimeUnit.MINUTES.toSeconds(minutes);
     totalSeconds += TimeUnit.NANOSECONDS.toSeconds(nanos);
-    nanos = nanos % DateUtils.NANOS_PER_SEC;
+    nanos = nanos % IntervalDayTimeUtils.NANOS_PER_SEC;
 
     this.totalSeconds = totalSeconds;
     this.nanos = nanos;
@@ -120,7 +132,7 @@ public class HiveIntervalDayTime implements Comparable<HiveIntervalDayTime> {
   public void set(BigDecimal totalSecondsBd) {
     long totalSeconds = totalSecondsBd.longValue();
     BigDecimal fractionalSecs = totalSecondsBd.remainder(BigDecimal.ONE);
-    int nanos = fractionalSecs.multiply(DateUtils.NANOS_PER_SEC_BD).intValue();
+    int nanos = fractionalSecs.multiply(IntervalDayTimeUtils.NANOS_PER_SEC_BD).intValue();
     set(totalSeconds, nanos);
   }
 
@@ -153,6 +165,13 @@ public class HiveIntervalDayTime implements Comparable<HiveIntervalDayTime> {
       return false;
     }
     return 0 == compareTo((HiveIntervalDayTime) obj);
+  }
+
+  /**
+   * Return a copy of this object.
+   */
+  public Object clone() {
+      return new HiveIntervalDayTime(totalSeconds, nanos);
   }
 
   @Override
@@ -190,23 +209,23 @@ public class HiveIntervalDayTime implements Comparable<HiveIntervalDayTime> {
           sign = -1;
         }
         int days = sign *
-            DateUtils.parseNumericValueWithRange("day", patternMatcher.group(2),
+            IntervalDayTimeUtils.parseNumericValueWithRange("day", patternMatcher.group(2),
                 0, Integer.MAX_VALUE);
         byte hours = (byte) (sign *
-            DateUtils.parseNumericValueWithRange("hour", patternMatcher.group(3), 0, 23));
+            IntervalDayTimeUtils.parseNumericValueWithRange("hour", patternMatcher.group(3), 0, 23));
         byte minutes = (byte) (sign *
-            DateUtils.parseNumericValueWithRange("minute", patternMatcher.group(4), 0, 59));
+            IntervalDayTimeUtils.parseNumericValueWithRange("minute", patternMatcher.group(4), 0, 59));
         int seconds = 0;
         int nanos = 0;
         field = patternMatcher.group(5);
         if (field != null) {
           BigDecimal bdSeconds = new BigDecimal(field);
-          if (bdSeconds.compareTo(DateUtils.MAX_INT_BD) > 0) {
+          if (bdSeconds.compareTo(IntervalDayTimeUtils.MAX_INT_BD) > 0) {
             throw new IllegalArgumentException("seconds value of " + bdSeconds + " too large");
           }
           seconds = sign * bdSeconds.intValue();
           nanos = sign * bdSeconds.subtract(new BigDecimal(bdSeconds.toBigInteger()))
-              .multiply(DateUtils.NANOS_PER_SEC_BD).intValue();
+              .multiply(IntervalDayTimeUtils.NANOS_PER_SEC_BD).intValue();
         }
 
         result = new HiveIntervalDayTime(days, hours, minutes, seconds, nanos);

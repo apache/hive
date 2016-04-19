@@ -63,62 +63,6 @@ public class CastLongToDate extends VectorExpression {
     }
 
     switch (inputTypes[0]) {
-      case TIMESTAMP:
-        if (inV.noNulls) {
-          outV.noNulls = true;
-          if (inV.isRepeating) {
-            outV.isRepeating = true;
-            date.setTime(inV.vector[0] / 1000000);
-            outV.vector[0] = DateWritable.dateToDays(date);
-          } else if (batch.selectedInUse) {
-            for(int j = 0; j != n; j++) {
-              int i = sel[j];
-              date.setTime(inV.vector[i] / 1000000);
-              outV.vector[i] = DateWritable.dateToDays(date);
-            }
-            outV.isRepeating = false;
-          } else {
-            for(int i = 0; i != n; i++) {
-              date.setTime(inV.vector[i] / 1000000);
-              outV.vector[i] = DateWritable.dateToDays(date);
-            }
-            outV.isRepeating = false;
-          }
-        } else {
-
-          // Handle case with nulls. Don't do function if the value is null,
-          // because the data may be undefined for a null value.
-          outV.noNulls = false;
-          if (inV.isRepeating) {
-            outV.isRepeating = true;
-            outV.isNull[0] = inV.isNull[0];
-            if (!inV.isNull[0]) {
-              date.setTime(inV.vector[0] / 1000000);
-              outV.vector[0] = DateWritable.dateToDays(date);
-            }
-          } else if (batch.selectedInUse) {
-            for(int j = 0; j != n; j++) {
-              int i = sel[j];
-              outV.isNull[i] = inV.isNull[i];
-              if (!inV.isNull[i]) {
-                date.setTime(inV.vector[i] / 1000000);
-                outV.vector[i] = DateWritable.dateToDays(date);
-              }
-            }
-            outV.isRepeating = false;
-          } else {
-            System.arraycopy(inV.isNull, 0, outV.isNull, 0, n);
-            for(int i = 0; i != n; i++) {
-              if (!inV.isNull[i]) {
-                date.setTime(inV.vector[i] / 1000000);
-                outV.vector[i] = DateWritable.dateToDays(date);
-              }
-            }
-            outV.isRepeating = false;
-          }
-        }
-        break;
-
       case DATE:
         inV.copySelected(batch.selectedInUse, batch.selected, batch.size, outV);
         break;
@@ -155,7 +99,7 @@ public class CastLongToDate extends VectorExpression {
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(1)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.DATETIME_FAMILY)
+            VectorExpressionDescriptor.ArgumentType.DATE)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN);
     return b.build();

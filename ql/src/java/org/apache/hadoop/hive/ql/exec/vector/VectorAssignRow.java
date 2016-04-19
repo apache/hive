@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.sql.Timestamp;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -228,7 +227,26 @@ public abstract class VectorAssignRow {
     }
   }
 
-  private class TimestampAssigner extends AbstractLongAssigner {
+  private abstract class AbstractTimestampAssigner extends Assigner {
+
+    protected TimestampColumnVector colVector;
+
+    AbstractTimestampAssigner(int columnIndex) {
+      super(columnIndex);
+    }
+
+    @Override
+    void setColumnVector(VectorizedRowBatch batch) {
+      colVector = (TimestampColumnVector) batch.cols[columnIndex];
+    }
+
+    @Override
+    void forgetColumnVector() {
+      colVector = null;
+    }
+  }
+
+  private class TimestampAssigner extends AbstractTimestampAssigner {
 
     TimestampAssigner(int columnIndex) {
       super(columnIndex);
@@ -239,9 +257,8 @@ public abstract class VectorAssignRow {
       if (object == null) {
         VectorizedBatchUtil.setNullColIsNullValue(colVector, batchIndex);
       } else {
-        TimestampWritable tw = (TimestampWritable) object;
-        Timestamp t = tw.getTimestamp();
-        vector[batchIndex] = TimestampUtils.getTimeNanoSec(t);
+        colVector.set(batchIndex, ((TimestampWritable) object).getTimestamp());
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -260,11 +277,31 @@ public abstract class VectorAssignRow {
         HiveIntervalYearMonthWritable iymw = (HiveIntervalYearMonthWritable) object;
         HiveIntervalYearMonth iym = iymw.getHiveIntervalYearMonth();
         vector[batchIndex] = iym.getTotalMonths();
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
 
-  private class IntervalDayTimeAssigner extends AbstractLongAssigner {
+  private abstract class AbstractIntervalDayTimeAssigner extends Assigner {
+
+    protected IntervalDayTimeColumnVector colVector;
+
+    AbstractIntervalDayTimeAssigner(int columnIndex) {
+      super(columnIndex);
+    }
+
+    @Override
+    void setColumnVector(VectorizedRowBatch batch) {
+      colVector = (IntervalDayTimeColumnVector) batch.cols[columnIndex];
+    }
+
+    @Override
+    void forgetColumnVector() {
+      colVector = null;
+    }
+  }
+
+  private class IntervalDayTimeAssigner extends AbstractIntervalDayTimeAssigner {
 
     IntervalDayTimeAssigner(int columnIndex) {
       super(columnIndex);
@@ -277,7 +314,8 @@ public abstract class VectorAssignRow {
       } else {
         HiveIntervalDayTimeWritable idtw = (HiveIntervalDayTimeWritable) object;
         HiveIntervalDayTime idt = idtw.getHiveIntervalDayTime();
-        vector[batchIndex] = DateUtils.getIntervalDayTimeTotalNanos(idt);
+        colVector.set(batchIndex, idt);
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -317,6 +355,7 @@ public abstract class VectorAssignRow {
       } else {
         FloatWritable fw = (FloatWritable) object;
         vector[batchIndex] = fw.get();
+        colVector.isNull[batchIndex] = false;
       }
     }
   }

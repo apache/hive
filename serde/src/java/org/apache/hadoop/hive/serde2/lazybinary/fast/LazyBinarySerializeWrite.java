@@ -673,42 +673,6 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
     }
   }
 
-  @Override
-  public void writeHiveIntervalDayTime(long totalNanos) throws IOException {
-
-    // Every 8 fields we write a NULL byte.
-    if ((fieldIndex % 8) == 0) {
-      if (fieldIndex > 0) {
-        // Write back previous 8 field's NULL byte.
-        output.writeByte(nullOffset, nullByte);
-        nullByte = 0;
-        nullOffset = output.getLength();
-      }
-      // Allocate next NULL byte.
-      output.reserve(1);
-    }
-
-    // Set bit in NULL byte when a field is NOT NULL.
-    nullByte |= 1 << (fieldIndex % 8);
-
-    if (hiveIntervalDayTime == null) {
-      hiveIntervalDayTime = new HiveIntervalDayTime();
-    }
-    if (hiveIntervalDayTimeWritable == null) {
-      hiveIntervalDayTimeWritable = new HiveIntervalDayTimeWritable();
-    }
-    DateUtils.setIntervalDayTimeTotalNanos(hiveIntervalDayTime, totalNanos);
-    hiveIntervalDayTimeWritable.set(hiveIntervalDayTime);
-    hiveIntervalDayTimeWritable.writeToByteStream(output);
-
-    fieldIndex++;
-
-    if (fieldIndex == fieldCount) {
-      // Write back the final NULL byte before the last fields.
-      output.writeByte(nullOffset, nullByte);
-    }
-  }
-
   /*
    * DECIMAL.
    */

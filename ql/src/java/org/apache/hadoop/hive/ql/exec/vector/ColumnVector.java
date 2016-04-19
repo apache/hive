@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -42,6 +41,8 @@ public abstract class ColumnVector {
     DOUBLE,
     BYTES,
     DECIMAL,
+    TIMESTAMP,
+    INTERVAL_DAY_TIME,
     STRUCT,
     LIST,
     MAP,

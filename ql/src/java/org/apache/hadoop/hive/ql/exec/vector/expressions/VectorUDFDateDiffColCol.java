@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -165,29 +166,8 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
 
     switch (colType) {
       case TIMESTAMP:
-        LongColumnVector lcv = (LongColumnVector) inputColVector;
-        lcv.copySelected(batch.selectedInUse, batch.selected, batch.size, dateVector);
-        if (dateVector.isRepeating) {
-          date.setTime(dateVector.vector[0] / 1000000);
-          dateVector.vector[0] = DateWritable.dateToDays(date);
-        } else {
-          if (batch.selectedInUse) {
-            for (int j = 0; j != size; j++) {
-              int i = batch.selected[j];
-              if (!dateVector.isNull[i]) {
-                date.setTime(dateVector.vector[i] / 1000000);
-                dateVector.vector[i] = DateWritable.dateToDays(date);
-              }
-            }
-          } else {
-            for (int i = 0; i != size; i++) {
-              if (!dateVector.isNull[i]) {
-                date.setTime(dateVector.vector[i] / 1000000);
-                dateVector.vector[i] = DateWritable.dateToDays(date);
-              }
-            }
-          }
-        }
+        TimestampColumnVector tcv = (TimestampColumnVector) inputColVector;
+        copySelected(tcv, batch.selectedInUse, batch.selected, batch.size, dateVector);
         return dateVector;
 
       case STRING:
@@ -277,6 +257,73 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
     } catch (ParseException e) {
       output.isNull[i] = true;
       output.noNulls = false;
+    }
+  }
+
+  // Copy the current object contents into the output. Only copy selected entries,
+  // as indicated by selectedInUse and the sel array.
+  public void copySelected(
+      TimestampColumnVector input, boolean selectedInUse, int[] sel, int size, LongColumnVector output) {
+
+    // Output has nulls if and only if input has nulls.
+    output.noNulls = input.noNulls;
+    output.isRepeating = false;
+
+    // Handle repeating case
+    if (input.isRepeating) {
+      output.isNull[0] = input.isNull[0];
+      output.isRepeating = true;
+
+      if (!input.isNull[0]) {
+        date.setTime(input.getTime(0));
+        output.vector[0] = DateWritable.dateToDays(date);
+      }
+      return;
+    }
+
+    // Handle normal case
+
+    // Copy data values over
+    if (input.noNulls) {
+      if (selectedInUse) {
+        for (int j = 0; j < size; j++) {
+          int i = sel[j];
+          date.setTime(input.getTime(i));
+          output.vector[i] = DateWritable.dateToDays(date);
+        }
+      } else {
+        for (int i = 0; i < size; i++) {
+          date.setTime(input.getTime(i));
+          output.vector[i] = DateWritable.dateToDays(date);
+        }
+      }
+    } else {
+      if (selectedInUse) {
+        for (int j = 0; j < size; j++) {
+          int i = sel[j];
+          output.isNull[i] = input.isNull[i];
+        }
+      }
+      else {
+        System.arraycopy(input.isNull, 0, output.isNull, 0, size);
+      }
+
+      if (selectedInUse) {
+        for (int j = 0; j < size; j++) {
+          int i = sel[j];
+          if (!input.isNull[i]) {
+            date.setTime(input.getTime(i));
+            output.vector[i] = DateWritable.dateToDays(date);
+          }
+        }
+      } else {
+        for (int i = 0; i < size; i++) {
+          if (!input.isNull[i]) {
+            date.setTime(input.getTime(i));
+            output.vector[i] = DateWritable.dateToDays(date);
+          }
+        }
+      }
     }
   }
 

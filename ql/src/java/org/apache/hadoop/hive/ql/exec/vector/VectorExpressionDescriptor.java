@@ -43,7 +43,7 @@ public class VectorExpressionDescriptor {
   // LongColumnVector -->
   //    INT_FAMILY
   //    DATE
-  //    TIMESTAMP
+  //    INTERVAL_FAMILY
   //
   // DoubleColumnVector -->
   //    FLOAT_FAMILY
@@ -55,6 +55,12 @@ public class VectorExpressionDescriptor {
   //    STRING
   //    CHAR
   //    VARCHAR
+  //
+  // TimestampColumnVector -->
+  //    TIMESTAMP
+  //
+  // IntervalDayTimeColumnVector -->
+  //    INTERVAL_DAY_TIME
   //
   public enum ArgumentType {
     NONE                    (0x000),
@@ -71,9 +77,8 @@ public class VectorExpressionDescriptor {
     INTERVAL_DAY_TIME       (0x200),
     DATETIME_FAMILY         (DATE.value | TIMESTAMP.value),
     INTERVAL_FAMILY         (INTERVAL_YEAR_MONTH.value | INTERVAL_DAY_TIME.value),
-    INT_TIMESTAMP_FAMILY    (INT_FAMILY.value | TIMESTAMP.value),
-    INT_INTERVAL_FAMILY     (INT_FAMILY.value | INTERVAL_FAMILY.value),
-    INT_DATETIME_INTERVAL_FAMILY  (INT_FAMILY.value | DATETIME_FAMILY.value | INTERVAL_FAMILY.value),
+    INT_INTERVAL_YEAR_MONTH     (INT_FAMILY.value | INTERVAL_YEAR_MONTH.value),
+    INT_DATE_INTERVAL_YEAR_MONTH  (INT_FAMILY.value | DATE.value | INTERVAL_YEAR_MONTH.value),
     STRING_DATETIME_FAMILY  (STRING_FAMILY.value | DATETIME_FAMILY.value),
     ALL_FAMILY              (0xFFF);
 
@@ -146,10 +151,13 @@ public class VectorExpressionDescriptor {
     public static String getVectorColumnSimpleName(ArgumentType argType) {
       if (argType == INT_FAMILY ||
           argType == DATE ||
-          argType == TIMESTAMP ||
-          argType == INTERVAL_YEAR_MONTH ||
-          argType == INTERVAL_DAY_TIME) {
+          argType == INTERVAL_YEAR_MONTH
+          ) {
         return "Long";
+      } else if (argType == TIMESTAMP) {
+        return "Timestamp";
+      } else if (argType == INTERVAL_DAY_TIME) {
+        return "IntervalDayTime";
       } else if (argType == FLOAT_FAMILY) {
         return "Double";
       } else if (argType == DECIMAL) {
@@ -341,7 +349,7 @@ public class VectorExpressionDescriptor {
           return ve;
         }
       } catch (Exception ex) {
-        throw new HiveException(ex);
+        throw new HiveException("Could not instantiate VectorExpression class " + ve.getSimpleName(), ex);
       }
     }
     if (LOG.isDebugEnabled()) {

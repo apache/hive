@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -66,6 +67,7 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
     /* every line below this is identical for evaluateLong & evaluateString */
     final int n = inputCol.isRepeating ? 1 : batch.size;
     int[] sel = batch.selected;
+    final boolean selectedInUse = (inputCol.isRepeating == false) && batch.selectedInUse;
 
     if(batch.size == 0) {
       /* n != batch.size when isRepeating */
@@ -79,7 +81,7 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
       case DATE:
         if (inputCol.noNulls) {
           outV.noNulls = true;
-          if (batch.selectedInUse) {
+          if (selectedInUse) {
             for(int j=0; j < n; j++) {
               int i = sel[j];
               outV.vector[i] = evaluateDate(inputCol, i);
@@ -97,7 +99,7 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
           // Handle case with nulls. Don't do function if the value is null, to save time,
           // because calling the function can be expensive.
           outV.noNulls = false;
-          if (batch.selectedInUse) {
+          if (selectedInUse) {
             for(int j = 0; j < n; j++) {
               int i = sel[j];
               outV.isNull[i] = inputCol.isNull[i];
@@ -207,8 +209,8 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
   }
 
   protected byte[] evaluateTimestamp(ColumnVector columnVector, int index) {
-    LongColumnVector lcv = (LongColumnVector) columnVector;
-    calendar.setTimeInMillis(lcv.vector[index] / 1000000);
+    TimestampColumnVector tcv = (TimestampColumnVector) columnVector;
+    calendar.setTimeInMillis(tcv.getTime(index));
     if (isPositive) {
       calendar.add(Calendar.DATE, numDays);
     } else {

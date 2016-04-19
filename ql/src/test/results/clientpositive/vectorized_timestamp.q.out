@@ -1,0 +1,239 @@
+PREHOOK: query: DROP TABLE IF EXISTS test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS test
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE test(ts TIMESTAMP) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: CREATE TABLE test(ts TIMESTAMP) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: INSERT INTO TABLE test VALUES ('0001-01-01 00:00:00.000000000'), ('9999-12-31 23:59:59.999999999')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@test
+POSTHOOK: query: INSERT INTO TABLE test VALUES ('0001-01-01 00:00:00.000000000'), ('9999-12-31 23:59:59.999999999')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.ts EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: EXPLAIN
+SELECT ts FROM test
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT ts FROM test
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test
+            Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ts (type: timestamp)
+              outputColumnNames: _col0
+              Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT ts FROM test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ts FROM test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+0001-01-01 00:00:00
+9999-12-31 23:59:59.999999999
+PREHOOK: query: EXPLAIN
+SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test
+            Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ts (type: timestamp)
+              outputColumnNames: _col0
+              Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: min(_col0), max(_col0)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: timestamp), _col1 (type: timestamp)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: min(VALUE._col0), max(VALUE._col1)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: timestamp), _col1 (type: timestamp), (_col1 - _col0) (type: interval_day_time)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+0001-01-01 00:00:00	9999-12-31 23:59:59.999999999	3652060 23:59:59.999999999
+PREHOOK: query: EXPLAIN
+SELECT ts FROM test
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT ts FROM test
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test
+            Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ts (type: timestamp)
+              outputColumnNames: _col0
+              Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT ts FROM test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ts FROM test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+0001-01-01 00:00:00
+9999-12-31 23:59:59.999999999
+PREHOOK: query: EXPLAIN
+SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test
+            Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ts (type: timestamp)
+              outputColumnNames: _col0
+              Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: min(_col0), max(_col0)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: timestamp), _col1 (type: timestamp)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: min(VALUE._col0), max(VALUE._col1)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: timestamp), _col1 (type: timestamp), (_col1 - _col0) (type: interval_day_time)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+0001-01-01 00:00:00	9999-12-31 23:59:59.999999999	3652060 23:59:59.999999999

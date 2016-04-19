@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -175,13 +176,8 @@ public class TestVectorizedORCReader {
           } else if (a instanceof TimestampWritable) {
             // Timestamps are stored as long, so convert and compare
             TimestampWritable t = ((TimestampWritable) a);
-            // Timestamp.getTime() is overriden and is 
-            // long time = super.getTime();
-            // return (time + (nanos / 1000000));
-            Long timeInNanoSec = (t.getTimestamp().getTime() * 1000000)
-                + (t.getTimestamp().getNanos() % 1000000);
-            long b = ((LongColumnVector) cv).vector[rowId];
-            Assert.assertEquals(timeInNanoSec.toString(), Long.toString(b));
+            TimestampColumnVector tcv = ((TimestampColumnVector) cv);
+            Assert.assertEquals(t.getTimestamp(), tcv.asScratchTimestamp(rowId));
 
           } else if (a instanceof DateWritable) {
             // Dates are stored as long, so convert and compare

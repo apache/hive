@@ -20,7 +20,10 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 /**
  * This class copies specified columns of a row from one VectorizedRowBatch to another.
  */
@@ -183,10 +186,64 @@ public class VectorCopyRow {
     }
   }
 
+  private class TimestampCopyRow extends CopyRow {
+
+    TimestampCopyRow(int inColumnIndex, int outColumnIndex) {
+      super(inColumnIndex, outColumnIndex);
+    }
+
+    @Override
+    void copy(VectorizedRowBatch inBatch, int inBatchIndex, VectorizedRowBatch outBatch, int outBatchIndex) {
+      TimestampColumnVector inColVector = (TimestampColumnVector) inBatch.cols[inColumnIndex];
+      TimestampColumnVector outColVector = (TimestampColumnVector) outBatch.cols[outColumnIndex];
+
+      if (inColVector.isRepeating) {
+        if (inColVector.noNulls || !inColVector.isNull[0]) {
+          outColVector.setElement(outBatchIndex, 0, inColVector);
+        } else {
+          VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
+        }
+      } else {
+        if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
+          outColVector.setElement(outBatchIndex, inBatchIndex, inColVector);
+        } else {
+          VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
+        }
+      }
+    }
+  }
+
+  private class IntervalDayTimeCopyRow extends CopyRow {
+
+    IntervalDayTimeCopyRow(int inColumnIndex, int outColumnIndex) {
+      super(inColumnIndex, outColumnIndex);
+    }
+
+    @Override
+    void copy(VectorizedRowBatch inBatch, int inBatchIndex, VectorizedRowBatch outBatch, int outBatchIndex) {
+      IntervalDayTimeColumnVector inColVector = (IntervalDayTimeColumnVector) inBatch.cols[inColumnIndex];
+      IntervalDayTimeColumnVector outColVector = (IntervalDayTimeColumnVector) outBatch.cols[outColumnIndex];
+
+      if (inColVector.isRepeating) {
+        if (inColVector.noNulls || !inColVector.isNull[0]) {
+          outColVector.setElement(outBatchIndex, 0, inColVector);
+        } else {
+          VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
+        }
+      } else {
+        if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
+          outColVector.setElement(outBatchIndex, inBatchIndex, inColVector);
+        } else {
+          VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
+        }
+      }
+    }
+  }
+
   private CopyRow[] subRowToBatchCopiersByValue;
   private CopyRow[] subRowToBatchCopiersByReference;
 
-  public void init(VectorColumnMapping columnMapping) {
+  public void init(VectorColumnMapping columnMapping) throws HiveException {
     int count = columnMapping.getCount();
     subRowToBatchCopiersByValue = new CopyRow[count];
     subRowToBatchCopiersByReference = new CopyRow[count];
@@ -194,24 +251,43 @@ public class VectorCopyRow {
     for (int i = 0; i < count; i++) {
       int inputColumn = columnMapping.getInputColumns()[i];
       int outputColumn = columnMapping.getOutputColumns()[i];
-      String typeName = columnMapping.getTypeNames()[i];
+      String typeName = columnMapping.getTypeNames()[i].toLowerCase();
+      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+      Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
 
       CopyRow copyRowByValue = null;
       CopyRow copyRowByReference = null;
 
-      if (VectorizationContext.isIntFamily(typeName) ||
-          VectorizationContext.isDatetimeFamily(typeName)) {
+      switch (columnVectorType) {
+      case LONG:
         copyRowByValue = new LongCopyRow(inputColumn, outputColumn);
-      } else if (VectorizationContext.isFloatFamily(typeName)) {
+        break;
+
+      case TIMESTAMP:
+        copyRowByValue = new TimestampCopyRow(inputColumn, outputColumn);
+        break;
+
+      case INTERVAL_DAY_TIME:
+        copyRowByValue = new IntervalDayTimeCopyRow(inputColumn, outputColumn);
+        break;
+
+      case DOUBLE:
         copyRowByValue = new DoubleCopyRow(inputColumn, outputColumn);
-      } else if (VectorizationContext.isStringFamily(typeName)) {
+        break;
+
+      case BYTES:
         copyRowByValue = new BytesCopyRowByValue(inputColumn, outputColumn);
         copyRowByReference = new BytesCopyRowByReference(inputColumn, outputColumn);
-      } else if (VectorizationContext.decimalTypePattern.matcher(typeName).matches()){
+        break;
+
+      case DECIMAL:
         copyRowByValue = new DecimalCopyRow(inputColumn, outputColumn);
-      } else {
-        throw new RuntimeException("Cannot allocate vector copy row for " + typeName);
+        break;
+
+      default:
+        throw new HiveException("Unexpected column vector type " + columnVectorType);
       }
+
       subRowToBatchCopiersByValue[i] = copyRowByValue;
       if (copyRowByReference == null) {
         subRowToBatchCopiersByReference[i] = copyRowByValue;
@@ -242,5 +318,20 @@ public class VectorCopyRow {
     for (CopyRow copyRow : subRowToBatchCopiersByReference) {
       copyRow.copy(inBatch, inBatchIndex, outBatch, outBatchIndex);
     }
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("VectorCopyRow ");
+    for (CopyRow copyRow : subRowToBatchCopiersByValue) {
+      if (sb.length() > 0) {
+        sb.append(", ");
+      }
+      sb.append(copyRow.getClass().getName());
+      sb.append(" inColumnIndex " + copyRow.inColumnIndex);
+      sb.append(" outColumnIndex " + copyRow.outColumnIndex);
+    }
+    return sb.toString();
   }
 }

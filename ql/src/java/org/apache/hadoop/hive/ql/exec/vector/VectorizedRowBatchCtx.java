@@ -375,13 +375,13 @@ public class VectorizedRowBatchCtx {
         break;
         
         case TIMESTAMP: {
-          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          TimestampColumnVector lcv = (TimestampColumnVector) batch.cols[colIndex];
           if (value == null) {
             lcv.noNulls = false;
             lcv.isNull[0] = true;
             lcv.isRepeating = true;
-          } else { 
-            lcv.fill(TimestampUtils.getTimeNanoSec((Timestamp) value));
+          } else {
+            lcv.fill((Timestamp) value);
             lcv.isNull[0] = false;
           }
         }
@@ -400,14 +400,14 @@ public class VectorizedRowBatchCtx {
         }
 
         case INTERVAL_DAY_TIME: {
-          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          IntervalDayTimeColumnVector icv = (IntervalDayTimeColumnVector) batch.cols[colIndex];
           if (value == null) {
-            lcv.noNulls = false;
-            lcv.isNull[0] = true;
-            lcv.isRepeating = true;
+            icv.noNulls = false;
+            icv.isNull[0] = true;
+            icv.isRepeating = true;
           } else {
-            lcv.fill(DateUtils.getIntervalDayTimeTotalNanos((HiveIntervalDayTime) value));
-            lcv.isNull[0] = false;
+            icv.fill(((HiveIntervalDayTime) value));
+            icv.isNull[0] = false;
           }
         }
 

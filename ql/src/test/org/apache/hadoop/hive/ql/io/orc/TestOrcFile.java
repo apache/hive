@@ -525,7 +525,10 @@ public class TestOrcFile {
     int idx = 0;
     while (rows.hasNext()) {
       Object row = rows.next(null);
-      assertEquals(tslist.get(idx++).getNanos(), ((TimestampWritable) row).getNanos());
+      Timestamp tlistTimestamp = tslist.get(idx++);
+      if (tlistTimestamp.getNanos() != ((TimestampWritable) row).getNanos()) {
+        assertTrue(false);
+      }
     }
     assertEquals(1, OrcUtils.getFlattenedColumnsCount(inspector));
     boolean[] expected = new boolean[] {false};

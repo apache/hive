@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.io.Text;
 
 import java.io.UnsupportedEncodingException;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -38,6 +39,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
   private int colNum;
   private int outputColumn;
   private long longValue = 0;
+  private Timestamp timestampValue = null;
   private byte[] stringValue = null;
   protected boolean isPositive = true;
   private transient final Calendar calendar = Calendar.getInstance();
@@ -56,6 +58,8 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
 
     if (object instanceof Long) {
       this.longValue = (Long) object;
+    } else if (object instanceof Timestamp) {
+        this.timestampValue = (Timestamp) object;
     } else if (object instanceof byte []) {
       this.stringValue = (byte[]) object;
     }
@@ -72,6 +76,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
     /* every line below this is identical for evaluateLong & evaluateString */
     final int n = inputCol.isRepeating ? 1 : batch.size;
     int[] sel = batch.selected;
+    final boolean selectedInUse = (inputCol.isRepeating == false) && batch.selectedInUse;
     BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumn];
 
     switch (inputTypes[0]) {
@@ -80,7 +85,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
         break;
 
       case TIMESTAMP:
-        baseDate.setTime(longValue / 1000000);
+        baseDate.setTime(timestampValue.getTime());
         break;
 
       case STRING:
@@ -91,7 +96,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
           break;
         } catch (Exception e) {
           outV.noNulls = false;
-          if (batch.selectedInUse) {
+          if (selectedInUse) {
             for(int j=0; j < n; j++) {
               int i = sel[j];
               outV.isNull[i] = true;
@@ -117,7 +122,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
 
     if (inputCol.noNulls) {
       outV.noNulls = true;
-      if (batch.selectedInUse) {
+      if (selectedInUse) {
         for(int j=0; j < n; j++) {
           int i = sel[j];
           evaluate(baseDate, inputCol.vector[i], outV, i);
@@ -131,7 +136,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
       // Handle case with nulls. Don't do function if the value is null, to save time,
       // because calling the function can be expensive.
       outV.noNulls = false;
-      if (batch.selectedInUse) {
+      if (selectedInUse) {
         for(int j = 0; j < n; j++) {
           int i = sel[j];
           outV.isNull[i] = inputCol.isNull[i];

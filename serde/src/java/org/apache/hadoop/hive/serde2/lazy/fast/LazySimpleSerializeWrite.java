@@ -473,26 +473,6 @@ public class LazySimpleSerializeWrite implements SerializeWrite {
     index++;
   }
 
-  @Override
-  public void writeHiveIntervalDayTime(long totalNanos) throws IOException {
-
-    if (index > 0) {
-      output.write(separator);
-    }
-
-    if (hiveIntervalDayTime == null) {
-      hiveIntervalDayTime = new HiveIntervalDayTime();
-    }
-    if (hiveIntervalDayTimeWritable == null) {
-      hiveIntervalDayTimeWritable = new HiveIntervalDayTimeWritable();
-    }
-    DateUtils.setIntervalDayTimeTotalNanos(hiveIntervalDayTime, totalNanos);
-    hiveIntervalDayTimeWritable.set(hiveIntervalDayTime);
-    LazyHiveIntervalDayTime.writeUTF8(output, hiveIntervalDayTimeWritable);
-
-    index++;
-  }
-
   /*
    * DECIMAL.
    */

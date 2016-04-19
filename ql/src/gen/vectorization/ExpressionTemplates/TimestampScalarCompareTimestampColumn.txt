@@ -15,34 +15,123 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
-import org.apache.hadoop.hive.ql.udf.UDFToString;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import java.sql.Timestamp;
-import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
-import org.apache.hadoop.io.LongWritable;
 
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 /**
- * Generated from template TimestampScalarCompareTimestampColumn.txt, which covers comparison 
- * expressions between a timestamp column and a timestamp scalar. The boolean output
- * is stored in a separate boolean column.
+ * Generated from template ScalarCompareTimestamp.txt, which covers comparison
+ * expressions between a long/double scalar and a column. The boolean output is stored in a
+ * separate boolean column.
  */
-public class <ClassName> extends <BaseClassName> {
+public class <ClassName> extends VectorExpression {
 
-  public <ClassName>(long value, int colNum, int outputColumn) {
-    super(value, colNum, outputColumn);
+  private static final long serialVersionUID = 1L;
+
+  private int colNum;
+  private <HiveOperandType> value;
+  private int outputColumn;
+
+  public <ClassName>(<HiveOperandType> value, int colNum, int outputColumn) {
+    this.colNum = colNum;
+    this.value = value;
+    this.outputColumn = outputColumn;
   }
 
   public <ClassName>() {
-    super();
+  }
+
+  @Override
+  public void evaluate(VectorizedRowBatch batch) {
+
+    if (childExpressions != null) {
+      super.evaluateChildren(batch);
+    }
+
+     // Input #2 is type <OperandType>.
+    <InputColumnVectorType> inputColVector2 = (<InputColumnVectorType>) batch.cols[colNum];
+
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+
+    int[] sel = batch.selected;
+    boolean[] nullPos = inputColVector2.isNull;
+    boolean[] outNulls = outputColVector.isNull;
+    int n = batch.size;
+    long[] outputVector = outputColVector.vector;
+
+    // return immediately if batch is empty
+    if (n == 0) {
+      return;
+    }
+
+    outputColVector.isRepeating = false;
+    outputColVector.noNulls = inputColVector2.noNulls;
+    if (inputColVector2.noNulls) {
+      if (inputColVector2.isRepeating) {
+        //All must be selected otherwise size would be zero
+        //Repeating property will not change.
+        outputVector[0] = inputColVector2.compareTo(value, 0) <OperatorSymbol> 0 ? 1 : 0;
+        outputColVector.isRepeating = true;
+      } else if (batch.selectedInUse) {
+        for(int j=0; j != n; j++) {
+          int i = sel[j];
+          outputVector[i] = inputColVector2.compareTo(value, i) <OperatorSymbol> 0 ? 1 : 0;
+        }
+      } else {
+        for(int i = 0; i != n; i++) {
+          outputVector[i] = inputColVector2.compareTo(value, i) <OperatorSymbol> 0 ? 1 : 0;
+        }
+      }
+    } else {
+      if (inputColVector2.isRepeating) {
+        //All must be selected otherwise size would be zero
+        //Repeating property will not change.
+        if (!nullPos[0]) {
+          outputVector[0] = inputColVector2.compareTo(value, 0) <OperatorSymbol> 0 ? 1 : 0;
+          outNulls[0] = false;
+        } else {
+          outNulls[0] = true;
+        }
+        outputColVector.isRepeating = true;
+      } else if (batch.selectedInUse) {
+        for(int j=0; j != n; j++) {
+          int i = sel[j];
+          if (!nullPos[i]) {
+            outputVector[i] = inputColVector2.compareTo(value, i) <OperatorSymbol> 0 ? 1 : 0;
+            outNulls[i] = false;
+          } else {
+            //comparison with null is null
+            outNulls[i] = true;
+          }
+        }
+      } else {
+        System.arraycopy(nullPos, 0, outNulls, 0, n);
+        for(int i = 0; i != n; i++) {
+          if (!nullPos[i]) {
+            outputVector[i] = inputColVector2.compareTo(value, i) <OperatorSymbol> 0 ? 1 : 0;
+          }
+        }
+      }
+    }
+  }
+
+  @Override
+  public int getOutputColumn() {
+    return outputColumn;
+  }
+
+  @Override
+  public String getOutputType() {
+    return "long";
   }
 
   @Override
@@ -52,8 +141,8 @@ public class <ClassName> extends <BaseClassName> {
             VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(2)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.getType("timestamp"),
-            VectorExpressionDescriptor.ArgumentType.getType("timestamp"))
+            VectorExpressionDescriptor.ArgumentType.getType("<OperandType>"),
+            VectorExpressionDescriptor.ArgumentType.getType("<OperandType>"))
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.SCALAR,
             VectorExpressionDescriptor.InputExpressionType.COLUMN).build();

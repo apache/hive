@@ -27,8 +27,9 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampDate;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampString;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampTimestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -50,7 +51,7 @@ import org.apache.hadoop.io.Text;
 @Description(name = "to_unix_timestamp",
     value = "_FUNC_(date[, pattern]) - Returns the UNIX timestamp",
     extended = "Converts the specified time to number of seconds since 1970-01-01.")
-@VectorizedExpressions({VectorUDFUnixTimeStampLong.class, VectorUDFUnixTimeStampString.class})
+@VectorizedExpressions({VectorUDFUnixTimeStampDate.class, VectorUDFUnixTimeStampString.class, VectorUDFUnixTimeStampTimestamp.class})
 public class GenericUDFToUnixTimeStamp extends GenericUDF {
 
   private transient DateObjectInspector inputDateOI;
@@ -152,8 +153,12 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
       return retValue;
     }
     Timestamp timestamp = inputTimestampOI.getPrimitiveJavaObject(arguments[0].get());
-    retValue.set(timestamp.getTime() / 1000);
+    setValueFromTs(retValue, timestamp);
     return retValue;
+  }
+
+  protected static void setValueFromTs(LongWritable value, Timestamp timestamp) {
+    value.set(timestamp.getTime() / 1000);
   }
 
   @Override

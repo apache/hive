@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.DateColSubtractDateColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.DateColSubtractDateScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.DateScalarSubtractDateColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 
 

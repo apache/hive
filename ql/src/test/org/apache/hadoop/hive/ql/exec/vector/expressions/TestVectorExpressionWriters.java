@@ -25,14 +25,13 @@ import java.util.Random;
 
 import junit.framework.Assert;
 
-import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -45,7 +44,6 @@ import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -84,6 +82,11 @@ public class TestVectorExpressionWriters {
     return null;
   }
 
+
+  private Writable getWritableValue(TypeInfo ti, Timestamp value) {
+    return new TimestampWritable(value);
+  }
+
   private Writable getWritableValue(TypeInfo ti, HiveDecimal value) {
     return new HiveDecimalWritable(value);
   }
@@ -113,7 +116,6 @@ public class TestVectorExpressionWriters {
       return new BooleanWritable( value == 0 ? false : true);
     } else if (ti.equals(TypeInfoFactory.timestampTypeInfo)) {
       Timestamp ts = new Timestamp(value);
-      TimestampUtils.assignTimeInNanoSec(value, ts);
       TimestampWritable tw = new TimestampWritable(ts);
       return tw;
     }
@@ -199,13 +201,6 @@ public class TestVectorExpressionWriters {
       Writable w = (Writable) vew.writeValue(lcv, i);
       if (w != null) {
         Writable expected = getWritableValue(type, lcv.vector[i]);
-        if (expected instanceof TimestampWritable) {
-          TimestampWritable t1 = (TimestampWritable) expected;
-          TimestampWritable t2 = (TimestampWritable) w;
-          Assert.assertTrue(t1.getNanos() == t2.getNanos());
-          Assert.assertTrue(t1.getSeconds() == t2.getSeconds());
-          continue;
-        }
         Assert.assertEquals(expected, w);
       } else {
         Assert.assertTrue(lcv.isNull[i]);
@@ -226,20 +221,57 @@ public class TestVectorExpressionWriters {
       values[i] = vew.setValue(values[i], lcv, i);
       if (values[i] != null) {
         Writable expected = getWritableValue(type, lcv.vector[i]);
-        if (expected instanceof TimestampWritable) {
-          TimestampWritable t1 = (TimestampWritable) expected;
-          TimestampWritable t2 = (TimestampWritable) values[i];
-          Assert.assertTrue(t1.getNanos() == t2.getNanos());
-          Assert.assertTrue(t1.getSeconds() == t2.getSeconds());
-          continue;
-        }
         Assert.assertEquals(expected, values[i]);
       } else {
         Assert.assertTrue(lcv.isNull[i]);
       }
     }
   }
-  
+
+  private void testWriterTimestamp(TypeInfo type) throws HiveException {
+    Timestamp[] timestampValues = new Timestamp[vectorSize];
+    TimestampColumnVector tcv =
+        VectorizedRowGroupGenUtil.generateTimestampColumnVector(true, false,
+        vectorSize, new Random(10), timestampValues);
+    tcv.isNull[3] = true;
+    VectorExpressionWriter vew = getWriter(type);
+    for (int i = 0; i < vectorSize; i++) {
+      Writable w = (Writable) vew.writeValue(tcv, i);
+      if (w != null) {
+        Writable expected = getWritableValue(type, timestampValues[i]);
+        TimestampWritable t1 = (TimestampWritable) expected;
+        TimestampWritable t2 = (TimestampWritable) w;
+        Assert.assertTrue(t1.equals(t2));
+       } else {
+        Assert.assertTrue(tcv.isNull[i]);
+      }
+    }
+  }
+
+  private void testSetterTimestamp(TypeInfo type) throws HiveException {
+    Timestamp[] timestampValues = new Timestamp[vectorSize];
+    TimestampColumnVector tcv =
+        VectorizedRowGroupGenUtil.generateTimestampColumnVector(true, false,
+        vectorSize, new Random(10), timestampValues);
+    tcv.isNull[3] = true;
+
+    Object[] values = new Object[this.vectorSize];
+
+    VectorExpressionWriter vew = getWriter(type);
+    for (int i = 0; i < vectorSize; i++) {
+      values[i] = null;  // setValue() should be able to handle null input
+      values[i] = vew.setValue(values[i], tcv, i);
+      if (values[i] != null) {
+        Writable expected = getWritableValue(type, timestampValues[i]);
+        TimestampWritable t1 = (TimestampWritable) expected;
+        TimestampWritable t2 = (TimestampWritable) values[i];
+        Assert.assertTrue(t1.equals(t2));
+      } else {
+        Assert.assertTrue(tcv.isNull[i]);
+      }
+    }
+  }
+
   private StructObjectInspector genStructOI() {
     ArrayList<String> fieldNames1 = new ArrayList<String>();
     fieldNames1.add("theInt");
@@ -427,14 +459,14 @@ public class TestVectorExpressionWriters {
 
   @Test
   public void testVectorExpressionWriterTimestamp() throws HiveException {
-    testWriterLong(TypeInfoFactory.timestampTypeInfo);
+    testWriterTimestamp(TypeInfoFactory.timestampTypeInfo);
   }
 
   @Test
   public void testVectorExpressionSetterTimestamp() throws HiveException {
-    testSetterLong(TypeInfoFactory.timestampTypeInfo);
+    testSetterTimestamp(TypeInfoFactory.timestampTypeInfo);
   }
-  
+
   @Test
   public void testVectorExpressionWriterByte() throws HiveException {
     testWriterLong(TypeInfoFactory.byteTypeInfo);
@@ -469,67 +501,9 @@ public class TestVectorExpressionWriters {
   public void testVectorExpressionWriterBinary() throws HiveException {
     testWriterText(TypeInfoFactory.binaryTypeInfo);
   }
-  
+
   @Test
   public void testVectorExpressionSetterBinary() throws HiveException {
     testSetterText(TypeInfoFactory.binaryTypeInfo);
-  }
-
-  @Test
-  public void testTimeStampUtils(){
-    Timestamp ts = new Timestamp(0);
-
-    // Convert positive nanoseconds to timestamp object.
-    TimestampUtils.assignTimeInNanoSec(1234567891, ts);
-    Assert.assertEquals(234567891, ts.getNanos());
-    Assert.assertEquals(1234567891, TimestampUtils.getTimeNanoSec(ts));
-
-    // Test negative nanoseconds
-    TimestampUtils.assignTimeInNanoSec(-1234567891, ts);
-    Assert.assertEquals((1000000000-234567891), ts.getNanos());
-    Assert.assertEquals(-1234567891, TimestampUtils.getTimeNanoSec(ts));
-
-    // Test positive value smaller than a second.
-    TimestampUtils.assignTimeInNanoSec(234567891, ts);
-    Assert.assertEquals(234567891, ts.getNanos());
-    Assert.assertEquals(234567891, TimestampUtils.getTimeNanoSec(ts));
-
-    // Test negative value smaller than a second.
-    TimestampUtils.assignTimeInNanoSec(-234567891, ts);
-    Assert.assertEquals((1000000000-234567891), ts.getNanos());
-    Assert.assertEquals(-234567891, TimestampUtils.getTimeNanoSec(ts));
-
-    // Test a positive long timestamp
-    long big = 152414813551296L;
-    TimestampUtils.assignTimeInNanoSec(big, ts);
-    Assert.assertEquals(big % 1000000000, ts.getNanos());
-    Assert.assertEquals(big, TimestampUtils.getTimeNanoSec(ts));
-
-    // Test a negative long timestamp
-    big = -152414813551296L;
-    TimestampUtils.assignTimeInNanoSec(big, ts);
-    Assert.assertEquals((1000000000 + (big % 1000000000)), ts.getNanos());
-    Assert.assertEquals(big, TimestampUtils.getTimeNanoSec(ts));
-
-    // big/1000000 will yield zero nanoseconds
-    big = -1794750230000828416L;
-    ts = new Timestamp(0);
-    TimestampUtils.assignTimeInNanoSec(big, ts);
-    Assert.assertEquals((1000000000 + big % 1000000000), ts.getNanos());
-    Assert.assertEquals(big, TimestampUtils.getTimeNanoSec(ts));
-
-    // Very small nanosecond part
-    big = 1700000000000000016L;
-    ts = new Timestamp(0);
-    TimestampUtils.assignTimeInNanoSec(big, ts);
-    Assert.assertEquals(big % 1000000000, ts.getNanos());
-    Assert.assertEquals(big, TimestampUtils.getTimeNanoSec(ts));
-
-    // Very small nanosecond part
-    big = -1700000000000000016L;
-    ts = new Timestamp(0);
-    TimestampUtils.assignTimeInNanoSec(big, ts);
-    Assert.assertEquals((1000000000 + big % 1000000000), ts.getNanos());
-    Assert.assertEquals(big, TimestampUtils.getTimeNanoSec(ts));
   }
 }

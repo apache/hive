@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -164,8 +165,8 @@ public class VectorUDFDateAddColCol extends VectorExpression {
   }
 
   protected byte[] evaluateTimestamp(ColumnVector columnVector, int index, long numDays) {
-    LongColumnVector lcv = (LongColumnVector) columnVector;
-    calendar.setTimeInMillis(lcv.vector[index] / 1000000);
+    TimestampColumnVector tcv = (TimestampColumnVector) columnVector;
+    calendar.setTimeInMillis(tcv.getTime(index));
     if (isPositive) {
       calendar.add(Calendar.DATE, (int) numDays);
     } else {

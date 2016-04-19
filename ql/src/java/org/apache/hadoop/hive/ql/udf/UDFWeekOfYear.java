@@ -26,8 +26,9 @@ import java.util.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFWeekOfYearLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFWeekOfYearDate;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFWeekOfYearString;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFWeekOfYearTimestamp;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -44,7 +45,7 @@ import org.apache.hadoop.io.Text;
     + "  > SELECT _FUNC_('2008-02-20') FROM src LIMIT 1;\n"
     + "  8\n"
     + "  > SELECT _FUNC_('1980-12-31 12:59:59') FROM src LIMIT 1;\n" + "  1")
-@VectorizedExpressions({VectorUDFWeekOfYearLong.class, VectorUDFWeekOfYearString.class})
+@VectorizedExpressions({VectorUDFWeekOfYearDate.class, VectorUDFWeekOfYearString.class, VectorUDFWeekOfYearTimestamp.class})
 public class UDFWeekOfYear extends UDF {
   private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private final Calendar calendar = Calendar.getInstance();

@@ -18,19 +18,22 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.sql.Timestamp;
+
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 
 /**
  * Type cast decimal to timestamp. The decimal value is interpreted
  * as NNNN.DDDDDDDDD where NNNN is a number of seconds and DDDDDDDDD
  * is a number of nano-seconds.
  */
-public class CastDecimalToTimestamp extends FuncDecimalToLong {
+public class CastDecimalToTimestamp extends FuncDecimalToTimestamp {
   private static final long serialVersionUID = 1L;
-
-  private static transient HiveDecimal tenE9 = HiveDecimal.create(1000000000);
 
   public CastDecimalToTimestamp(int inputColumn, int outputColumn) {
     super(inputColumn, outputColumn);
@@ -40,13 +43,7 @@ public class CastDecimalToTimestamp extends FuncDecimalToLong {
   }
 
   @Override
-  protected void func(LongColumnVector outV, DecimalColumnVector inV,  int i) {
-    HiveDecimal result = inV.vector[i].getHiveDecimal().multiply(tenE9);
-    if (result == null) {
-      outV.noNulls = false;
-      outV.isNull[i] = true;
-    } else {
-      outV.vector[i] = result.longValue();
-    }
+  protected void func(TimestampColumnVector outV, DecimalColumnVector inV,  int i) {
+    outV.set(i, TimestampWritable.decimalToTimestamp(inV.vector[i].getHiveDecimal()));
   }
 }

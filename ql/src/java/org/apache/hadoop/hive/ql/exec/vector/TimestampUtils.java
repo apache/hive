@@ -18,50 +18,32 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.sql.Timestamp;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 
 public final class TimestampUtils {
 
-  /**
-   * Store the given timestamp in nanoseconds into the timestamp object.
-   * @param timeInNanoSec Given timestamp in nanoseconds
-   * @param t             The timestamp object
-   */
-  public static void assignTimeInNanoSec(long timeInNanoSec, Timestamp t) {
-    /*
-     * java.sql.Timestamp consists of a long variable to store milliseconds and an integer variable for nanoseconds.
-     * The long variable is used to store only the full seconds converted to millis. For example for 1234 milliseconds,
-     * 1000 is stored in the long variable, and 234000000 (234 converted to nanoseconds) is stored as nanoseconds.
-     * The negative timestamps are also supported, but nanoseconds must be positive therefore millisecond part is
-     * reduced by one second.
-     */
-    long integralSecInMillis = (timeInNanoSec / 1000000000) * 1000; // Full seconds converted to millis.
-    long nanos = timeInNanoSec % 1000000000; // The nanoseconds.
-    if (nanos < 0) {
-      nanos = 1000000000 + nanos; // The positive nano-part that will be added to milliseconds.
-      integralSecInMillis = ((timeInNanoSec / 1000000000) - 1) * 1000; // Reduce by one second.
-    }
-    t.setTime(integralSecInMillis);
-    t.setNanos((int) nanos);
-  }
-
-  public static long getTimeNanoSec(Timestamp t) {
-    long time = t.getTime();
-    int nanos = t.getNanos();
-    return (time * 1000000) + (nanos % 1000000);
-  }
-
-  public static long secondsToNanoseconds(long seconds) {
-    return seconds * 1000000000;
-  }
-
-  public static long doubleToNanoseconds(double d) {
-    return (long) (d * 1000000000);
-  }
+  static final long MILLISECONDS_PER_SECOND = TimeUnit.SECONDS.toMillis(1);
+  static final long NANOSECONDS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
 
   public static long daysToNanoseconds(long daysSinceEpoch) {
-    return DateWritable.daysToMillis((int) daysSinceEpoch) * 1000000;
+    return DateWritable.daysToMillis((int) daysSinceEpoch) * NANOSECONDS_PER_MILLISECOND;
+  }
+
+  public static TimestampWritable timestampColumnVectorWritable(
+      TimestampColumnVector timestampColVector, int elementNum,
+      TimestampWritable timestampWritable) {
+    timestampWritable.set(timestampColVector.asScratchTimestamp(elementNum));
+    return timestampWritable;
+  }
+
+  public static HiveIntervalDayTimeWritable intervalDayTimeColumnVectorWritable(
+      IntervalDayTimeColumnVector intervalDayTimeColVector, int elementNum,
+      HiveIntervalDayTimeWritable intervalDayTimeWritable) {
+    intervalDayTimeWritable.set(intervalDayTimeColVector.asScratchIntervalDayTime(elementNum));
+    return intervalDayTimeWritable;
   }
 }

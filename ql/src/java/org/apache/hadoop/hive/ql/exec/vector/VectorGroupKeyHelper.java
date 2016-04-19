@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.IOException;
-import java.util.Arrays;
-
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -116,6 +114,30 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
         // Since we store references to HiveDecimalWritable instances, we must use the update method instead
         // of plain assignment.
         outputColumnVector.set(outputBatch.size, inputColumnVector.vector[0]);
+      } else {
+        outputColumnVector.noNulls = false;
+        outputColumnVector.isNull[outputBatch.size] = true;
+      }
+    }
+    for(int i=0;i<timestampIndices.length; ++i) {
+      int keyIndex = timestampIndices[i];
+      TimestampColumnVector inputColumnVector = (TimestampColumnVector) inputBatch.cols[keyIndex];
+      TimestampColumnVector outputColumnVector = (TimestampColumnVector) outputBatch.cols[keyIndex];
+      if (inputColumnVector.noNulls || !inputColumnVector.isNull[0]) {
+
+        outputColumnVector.setElement(outputBatch.size, 0, inputColumnVector);
+      } else {
+        outputColumnVector.noNulls = false;
+        outputColumnVector.isNull[outputBatch.size] = true;
+      }
+    }
+    for(int i=0;i<intervalDayTimeIndices.length; ++i) {
+      int keyIndex = intervalDayTimeIndices[i];
+      IntervalDayTimeColumnVector inputColumnVector = (IntervalDayTimeColumnVector) inputBatch.cols[keyIndex];
+      IntervalDayTimeColumnVector outputColumnVector = (IntervalDayTimeColumnVector) outputBatch.cols[keyIndex];
+      if (inputColumnVector.noNulls || !inputColumnVector.isNull[0]) {
+
+        outputColumnVector.setElement(outputBatch.size, 0, inputColumnVector);
       } else {
         outputColumnVector.noNulls = false;
         outputColumnVector.isNull[outputBatch.size] = true;

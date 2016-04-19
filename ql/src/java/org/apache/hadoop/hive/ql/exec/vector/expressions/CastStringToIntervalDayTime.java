@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.IntervalDayTimeColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -55,7 +56,7 @@ public class CastStringToIntervalDayTime extends VectorExpression {
     BytesColumnVector inV = (BytesColumnVector) batch.cols[inputColumn];
     int[] sel = batch.selected;
     int n = batch.size;
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+    IntervalDayTimeColumnVector outV = (IntervalDayTimeColumnVector) batch.cols[outputColumn];
 
     if (n == 0) {
 
@@ -112,13 +113,13 @@ public class CastStringToIntervalDayTime extends VectorExpression {
     }
   }
 
-  private void evaluate(LongColumnVector outV, BytesColumnVector inV, int i) {
+  private void evaluate(IntervalDayTimeColumnVector outV, BytesColumnVector inV, int i) {
     try {
       HiveIntervalDayTime interval = HiveIntervalDayTime.valueOf(
           new String(inV.vector[i], inV.start[i], inV.length[i], "UTF-8"));
-      outV.vector[i] = DateUtils.getIntervalDayTimeTotalNanos(interval);
+      outV.set(i, interval);
     } catch (Exception e) {
-      outV.vector[i] = 1;
+      outV.setNullValue(i);
       outV.isNull[i] = true;
       outV.noNulls = false;
     }

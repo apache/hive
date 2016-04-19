@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
 import java.util.ArrayList;
@@ -278,9 +279,10 @@ public class TypeDescription {
       case SHORT:
       case INT:
       case LONG:
-      case TIMESTAMP:
       case DATE:
         return new LongColumnVector();
+      case TIMESTAMP:
+        return new TimestampColumnVector();
       case FLOAT:
       case DOUBLE:
         return new DoubleColumnVector();
