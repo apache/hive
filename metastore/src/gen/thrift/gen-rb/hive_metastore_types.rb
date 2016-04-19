@@ -145,6 +145,78 @@ class FieldSchema
   ::Thrift::Struct.generate_accessors self
 end
 
+class SQLPrimaryKey
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TABLE_DB = 1
+  TABLE_NAME = 2
+  COLUMN_NAME = 3
+  KEY_SEQ = 4
+  PK_NAME = 5
+  ENABLE_CSTR = 6
+  VALIDATE_CSTR = 7
+  RELY_CSTR = 8
+
+  FIELDS = {
+    TABLE_DB => {:type => ::Thrift::Types::STRING, :name => 'table_db'},
+    TABLE_NAME => {:type => ::Thrift::Types::STRING, :name => 'table_name'},
+    COLUMN_NAME => {:type => ::Thrift::Types::STRING, :name => 'column_name'},
+    KEY_SEQ => {:type => ::Thrift::Types::I32, :name => 'key_seq'},
+    PK_NAME => {:type => ::Thrift::Types::STRING, :name => 'pk_name'},
+    ENABLE_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'enable_cstr'},
+    VALIDATE_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'validate_cstr'},
+    RELY_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'rely_cstr'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class SQLForeignKey
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PKTABLE_DB = 1
+  PKTABLE_NAME = 2
+  PKCOLUMN_NAME = 3
+  FKTABLE_DB = 4
+  FKTABLE_NAME = 5
+  FKCOLUMN_NAME = 6
+  KEY_SEQ = 7
+  UPDATE_RULE = 8
+  DELETE_RULE = 9
+  FK_NAME = 10
+  PK_NAME = 11
+  ENABLE_CSTR = 12
+  VALIDATE_CSTR = 13
+  RELY_CSTR = 14
+
+  FIELDS = {
+    PKTABLE_DB => {:type => ::Thrift::Types::STRING, :name => 'pktable_db'},
+    PKTABLE_NAME => {:type => ::Thrift::Types::STRING, :name => 'pktable_name'},
+    PKCOLUMN_NAME => {:type => ::Thrift::Types::STRING, :name => 'pkcolumn_name'},
+    FKTABLE_DB => {:type => ::Thrift::Types::STRING, :name => 'fktable_db'},
+    FKTABLE_NAME => {:type => ::Thrift::Types::STRING, :name => 'fktable_name'},
+    FKCOLUMN_NAME => {:type => ::Thrift::Types::STRING, :name => 'fkcolumn_name'},
+    KEY_SEQ => {:type => ::Thrift::Types::I32, :name => 'key_seq'},
+    UPDATE_RULE => {:type => ::Thrift::Types::I32, :name => 'update_rule'},
+    DELETE_RULE => {:type => ::Thrift::Types::I32, :name => 'delete_rule'},
+    FK_NAME => {:type => ::Thrift::Types::STRING, :name => 'fk_name'},
+    PK_NAME => {:type => ::Thrift::Types::STRING, :name => 'pk_name'},
+    ENABLE_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'enable_cstr'},
+    VALIDATE_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'validate_cstr'},
+    RELY_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'rely_cstr'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class Type
   include ::Thrift::Struct, ::Thrift::Struct_Union
   NAME = 1
@@ -1233,6 +1305,86 @@ class EnvironmentContext
   def struct_fields; FIELDS; end
 
   def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PrimaryKeysRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DB_NAME = 1
+  TBL_NAME = 2
+
+  FIELDS = {
+    DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+    TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field db_name is unset!') unless @db_name
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tbl_name is unset!') unless @tbl_name
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PrimaryKeysResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PRIMARYKEYS = 1
+
+  FIELDS = {
+    PRIMARYKEYS => {:type => ::Thrift::Types::LIST, :name => 'primaryKeys', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLPrimaryKey}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field primaryKeys is unset!') unless @primaryKeys
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ForeignKeysRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PARENT_DB_NAME = 1
+  PARENT_TBL_NAME = 2
+  FOREIGN_DB_NAME = 3
+  FOREIGN_TBL_NAME = 4
+
+  FIELDS = {
+    PARENT_DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'parent_db_name'},
+    PARENT_TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'parent_tbl_name'},
+    FOREIGN_DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'foreign_db_name'},
+    FOREIGN_TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'foreign_tbl_name'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field parent_db_name is unset!') unless @parent_db_name
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field parent_tbl_name is unset!') unless @parent_tbl_name
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field foreign_db_name is unset!') unless @foreign_db_name
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field foreign_tbl_name is unset!') unless @foreign_tbl_name
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ForeignKeysResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  FOREIGNKEYS = 1
+
+  FIELDS = {
+    FOREIGNKEYS => {:type => ::Thrift::Types::LIST, :name => 'foreignKeys', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLForeignKey}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field foreignKeys is unset!') unless @foreignKeys
   end
 
   ::Thrift::Struct.generate_accessors self

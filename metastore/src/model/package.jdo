@@ -184,6 +184,39 @@
       </field>
     </class>
 
+    <class name="MConstraint" identity-type="application" table="KEY_CONSTRAINTS" detachable="true" objectid-class="MConstraint$PK">
+      <field name="constraintName" primary-key="true">
+        <column name="CONSTRAINT_NAME"/>
+      </field>
+      <field name="position" primary-key="true">
+        <column name="POSITION"/>
+      </field>
+      <field name="childColumn">
+        <column name="CHILD_CD_ID"/>
+      </field>
+      <field name="childTable">
+        <column name="CHILD_TBL_ID"/>
+      </field>
+      <field name="parentColumn">
+        <column name="PARENT_CD_ID"/>
+      </field>
+      <field name="parentTable">
+        <column name="PARENT_TBL_ID"/>
+      </field>
+      <field name="constraintType">
+        <column name="CONSTRAINT_TYPE"/>
+      </field>
+      <field name="deleteRule">
+	<column name="DELETE_RULE"/>
+      </field>
+      <field name="updateRule">
+        <column name="UPDATE_RULE"/>
+      </field>
+      <field name="enableValidateRely">
+        <column name="ENABLE_VALIDATE_RELY"/>
+      </field>
+    </class>
+
     <class name="MSerDeInfo" identity-type="datastore" table="SERDES" detachable="true">
       <datastore-identity>
         <column name="SERDE_ID"/>

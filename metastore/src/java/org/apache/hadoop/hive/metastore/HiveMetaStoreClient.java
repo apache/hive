@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.FireEventResponse;
+import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetChangeVersionRequest;
@@ -94,12 +95,15 @@ import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprResult;
 import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PutFileMetadataRequest;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -136,6 +140,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
+
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
@@ -736,7 +741,32 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
   }
 
-  /**
+  @Override
+  public void createTableWithConstraints(Table tbl,
+    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys)
+    throws AlreadyExistsException, InvalidObjectException,
+    MetaException, NoSuchObjectException, TException {
+    HiveMetaHook hook = getHook(tbl);
+    if (hook != null) {
+      hook.preCreateTable(tbl);
+    }
+    boolean success = false;
+    try {
+      // Subclasses can override this step (for example, for temporary tables)
+      client.create_table_with_constraints(tbl, primaryKeys, foreignKeys);
+      if (hook != null) {
+        hook.commitCreateTable(tbl);
+      }
+      success = true;
+    } finally {
+      if (!success && (hook != null)) {
+        hook.rollbackCreateTable(tbl);
+      }
+    }
+  }
+
+
+/**
    * @param type
    * @return true or false
    * @throws AlreadyExistsException
@@ -1527,6 +1557,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       throws NoSuchObjectException, MetaException, TException {
     return filterHook.filterIndexes(client.get_indexes(dbName, tblName, max));
   }
+
+  @Override
+  public List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest req)
+    throws MetaException, NoSuchObjectException, TException {
+    return client.get_primary_keys(req).getPrimaryKeys();
+  }
+
+  @Override
+  public List<SQLForeignKey> getForeignKeys(ForeignKeysRequest req) throws MetaException,
+    NoSuchObjectException, TException {
+    return client.get_foreign_keys(req).getForeignKeys();
+  }
+
 
   /** {@inheritDoc} */
   @Override
@@ -2375,4 +2418,5 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public long getChangeVersion(String topic) throws TException {
     return client.get_change_version(new GetChangeVersionRequest(topic)).getVersion();
   }
+
 }

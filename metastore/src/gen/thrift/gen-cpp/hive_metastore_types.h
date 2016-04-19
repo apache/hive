@@ -149,6 +149,10 @@ class Version;
 
 class FieldSchema;
 
+class SQLPrimaryKey;
+
+class SQLForeignKey;
+
 class Type;
 
 class HiveObjectRef;
@@ -238,6 +242,14 @@ class SetPartitionsStatsRequest;
 class Schema;
 
 class EnvironmentContext;
+
+class PrimaryKeysRequest;
+
+class PrimaryKeysResponse;
+
+class ForeignKeysRequest;
+
+class ForeignKeysResponse;
 
 class PartitionsByExprResult;
 
@@ -496,6 +508,218 @@ class FieldSchema {
 void swap(FieldSchema &a, FieldSchema &b);
 
 inline std::ostream& operator<<(std::ostream& out, const FieldSchema& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _SQLPrimaryKey__isset {
+  _SQLPrimaryKey__isset() : table_db(false), table_name(false), column_name(false), key_seq(false), pk_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false) {}
+  bool table_db :1;
+  bool table_name :1;
+  bool column_name :1;
+  bool key_seq :1;
+  bool pk_name :1;
+  bool enable_cstr :1;
+  bool validate_cstr :1;
+  bool rely_cstr :1;
+} _SQLPrimaryKey__isset;
+
+class SQLPrimaryKey {
+ public:
+
+  SQLPrimaryKey(const SQLPrimaryKey&);
+  SQLPrimaryKey& operator=(const SQLPrimaryKey&);
+  SQLPrimaryKey() : table_db(), table_name(), column_name(), key_seq(0), pk_name(), enable_cstr(0), validate_cstr(0), rely_cstr(0) {
+  }
+
+  virtual ~SQLPrimaryKey() throw();
+  std::string table_db;
+  std::string table_name;
+  std::string column_name;
+  int32_t key_seq;
+  std::string pk_name;
+  bool enable_cstr;
+  bool validate_cstr;
+  bool rely_cstr;
+
+  _SQLPrimaryKey__isset __isset;
+
+  void __set_table_db(const std::string& val);
+
+  void __set_table_name(const std::string& val);
+
+  void __set_column_name(const std::string& val);
+
+  void __set_key_seq(const int32_t val);
+
+  void __set_pk_name(const std::string& val);
+
+  void __set_enable_cstr(const bool val);
+
+  void __set_validate_cstr(const bool val);
+
+  void __set_rely_cstr(const bool val);
+
+  bool operator == (const SQLPrimaryKey & rhs) const
+  {
+    if (!(table_db == rhs.table_db))
+      return false;
+    if (!(table_name == rhs.table_name))
+      return false;
+    if (!(column_name == rhs.column_name))
+      return false;
+    if (!(key_seq == rhs.key_seq))
+      return false;
+    if (!(pk_name == rhs.pk_name))
+      return false;
+    if (!(enable_cstr == rhs.enable_cstr))
+      return false;
+    if (!(validate_cstr == rhs.validate_cstr))
+      return false;
+    if (!(rely_cstr == rhs.rely_cstr))
+      return false;
+    return true;
+  }
+  bool operator != (const SQLPrimaryKey &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SQLPrimaryKey & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SQLPrimaryKey &a, SQLPrimaryKey &b);
+
+inline std::ostream& operator<<(std::ostream& out, const SQLPrimaryKey& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _SQLForeignKey__isset {
+  _SQLForeignKey__isset() : pktable_db(false), pktable_name(false), pkcolumn_name(false), fktable_db(false), fktable_name(false), fkcolumn_name(false), key_seq(false), update_rule(false), delete_rule(false), fk_name(false), pk_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false) {}
+  bool pktable_db :1;
+  bool pktable_name :1;
+  bool pkcolumn_name :1;
+  bool fktable_db :1;
+  bool fktable_name :1;
+  bool fkcolumn_name :1;
+  bool key_seq :1;
+  bool update_rule :1;
+  bool delete_rule :1;
+  bool fk_name :1;
+  bool pk_name :1;
+  bool enable_cstr :1;
+  bool validate_cstr :1;
+  bool rely_cstr :1;
+} _SQLForeignKey__isset;
+
+class SQLForeignKey {
+ public:
+
+  SQLForeignKey(const SQLForeignKey&);
+  SQLForeignKey& operator=(const SQLForeignKey&);
+  SQLForeignKey() : pktable_db(), pktable_name(), pkcolumn_name(), fktable_db(), fktable_name(), fkcolumn_name(), key_seq(0), update_rule(0), delete_rule(0), fk_name(), pk_name(), enable_cstr(0), validate_cstr(0), rely_cstr(0) {
+  }
+
+  virtual ~SQLForeignKey() throw();
+  std::string pktable_db;
+  std::string pktable_name;
+  std::string pkcolumn_name;
+  std::string fktable_db;
+  std::string fktable_name;
+  std::string fkcolumn_name;
+  int32_t key_seq;
+  int32_t update_rule;
+  int32_t delete_rule;
+  std::string fk_name;
+  std::string pk_name;
+  bool enable_cstr;
+  bool validate_cstr;
+  bool rely_cstr;
+
+  _SQLForeignKey__isset __isset;
+
+  void __set_pktable_db(const std::string& val);
+
+  void __set_pktable_name(const std::string& val);
+
+  void __set_pkcolumn_name(const std::string& val);
+
+  void __set_fktable_db(const std::string& val);
+
+  void __set_fktable_name(const std::string& val);
+
+  void __set_fkcolumn_name(const std::string& val);
+
+  void __set_key_seq(const int32_t val);
+
+  void __set_update_rule(const int32_t val);
+
+  void __set_delete_rule(const int32_t val);
+
+  void __set_fk_name(const std::string& val);
+
+  void __set_pk_name(const std::string& val);
+
+  void __set_enable_cstr(const bool val);
+
+  void __set_validate_cstr(const bool val);
+
+  void __set_rely_cstr(const bool val);
+
+  bool operator == (const SQLForeignKey & rhs) const
+  {
+    if (!(pktable_db == rhs.pktable_db))
+      return false;
+    if (!(pktable_name == rhs.pktable_name))
+      return false;
+    if (!(pkcolumn_name == rhs.pkcolumn_name))
+      return false;
+    if (!(fktable_db == rhs.fktable_db))
+      return false;
+    if (!(fktable_name == rhs.fktable_name))
+      return false;
+    if (!(fkcolumn_name == rhs.fkcolumn_name))
+      return false;
+    if (!(key_seq == rhs.key_seq))
+      return false;
+    if (!(update_rule == rhs.update_rule))
+      return false;
+    if (!(delete_rule == rhs.delete_rule))
+      return false;
+    if (!(fk_name == rhs.fk_name))
+      return false;
+    if (!(pk_name == rhs.pk_name))
+      return false;
+    if (!(enable_cstr == rhs.enable_cstr))
+      return false;
+    if (!(validate_cstr == rhs.validate_cstr))
+      return false;
+    if (!(rely_cstr == rhs.rely_cstr))
+      return false;
+    return true;
+  }
+  bool operator != (const SQLForeignKey &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SQLForeignKey & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SQLForeignKey &a, SQLForeignKey &b);
+
+inline std::ostream& operator<<(std::ostream& out, const SQLForeignKey& obj)
 {
   obj.printTo(out);
   return out;
@@ -3369,6 +3593,186 @@ class EnvironmentContext {
 void swap(EnvironmentContext &a, EnvironmentContext &b);
 
 inline std::ostream& operator<<(std::ostream& out, const EnvironmentContext& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class PrimaryKeysRequest {
+ public:
+
+  PrimaryKeysRequest(const PrimaryKeysRequest&);
+  PrimaryKeysRequest& operator=(const PrimaryKeysRequest&);
+  PrimaryKeysRequest() : db_name(), tbl_name() {
+  }
+
+  virtual ~PrimaryKeysRequest() throw();
+  std::string db_name;
+  std::string tbl_name;
+
+  void __set_db_name(const std::string& val);
+
+  void __set_tbl_name(const std::string& val);
+
+  bool operator == (const PrimaryKeysRequest & rhs) const
+  {
+    if (!(db_name == rhs.db_name))
+      return false;
+    if (!(tbl_name == rhs.tbl_name))
+      return false;
+    return true;
+  }
+  bool operator != (const PrimaryKeysRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PrimaryKeysRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(PrimaryKeysRequest &a, PrimaryKeysRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const PrimaryKeysRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class PrimaryKeysResponse {
+ public:
+
+  PrimaryKeysResponse(const PrimaryKeysResponse&);
+  PrimaryKeysResponse& operator=(const PrimaryKeysResponse&);
+  PrimaryKeysResponse() {
+  }
+
+  virtual ~PrimaryKeysResponse() throw();
+  std::vector<SQLPrimaryKey>  primaryKeys;
+
+  void __set_primaryKeys(const std::vector<SQLPrimaryKey> & val);
+
+  bool operator == (const PrimaryKeysResponse & rhs) const
+  {
+    if (!(primaryKeys == rhs.primaryKeys))
+      return false;
+    return true;
+  }
+  bool operator != (const PrimaryKeysResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PrimaryKeysResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(PrimaryKeysResponse &a, PrimaryKeysResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const PrimaryKeysResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class ForeignKeysRequest {
+ public:
+
+  ForeignKeysRequest(const ForeignKeysRequest&);
+  ForeignKeysRequest& operator=(const ForeignKeysRequest&);
+  ForeignKeysRequest() : parent_db_name(), parent_tbl_name(), foreign_db_name(), foreign_tbl_name() {
+  }
+
+  virtual ~ForeignKeysRequest() throw();
+  std::string parent_db_name;
+  std::string parent_tbl_name;
+  std::string foreign_db_name;
+  std::string foreign_tbl_name;
+
+  void __set_parent_db_name(const std::string& val);
+
+  void __set_parent_tbl_name(const std::string& val);
+
+  void __set_foreign_db_name(const std::string& val);
+
+  void __set_foreign_tbl_name(const std::string& val);
+
+  bool operator == (const ForeignKeysRequest & rhs) const
+  {
+    if (!(parent_db_name == rhs.parent_db_name))
+      return false;
+    if (!(parent_tbl_name == rhs.parent_tbl_name))
+      return false;
+    if (!(foreign_db_name == rhs.foreign_db_name))
+      return false;
+    if (!(foreign_tbl_name == rhs.foreign_tbl_name))
+      return false;
+    return true;
+  }
+  bool operator != (const ForeignKeysRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ForeignKeysRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ForeignKeysRequest &a, ForeignKeysRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ForeignKeysRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class ForeignKeysResponse {
+ public:
+
+  ForeignKeysResponse(const ForeignKeysResponse&);
+  ForeignKeysResponse& operator=(const ForeignKeysResponse&);
+  ForeignKeysResponse() {
+  }
+
+  virtual ~ForeignKeysResponse() throw();
+  std::vector<SQLForeignKey>  foreignKeys;
+
+  void __set_foreignKeys(const std::vector<SQLForeignKey> & val);
+
+  bool operator == (const ForeignKeysResponse & rhs) const
+  {
+    if (!(foreignKeys == rhs.foreignKeys))
+      return false;
+    return true;
+  }
+  bool operator != (const ForeignKeysResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ForeignKeysResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ForeignKeysResponse &a, ForeignKeysResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ForeignKeysResponse& obj)
 {
   obj.printTo(out);
   return out;

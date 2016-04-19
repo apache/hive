@@ -41,6 +41,34 @@ struct FieldSchema {
   3: string comment
 }
 
+struct SQLPrimaryKey {
+  1: string table_db,    // table schema
+  2: string table_name,  // table name
+  3: string column_name, // column name
+  4: i32 key_seq,        // sequence number within primary key
+  5: string pk_name,     // primary key name
+  6: bool enable_cstr,   // Enable/Disable
+  7: bool validate_cstr,  // Validate/No validate
+  8: bool rely_cstr      // Rely/No Rely
+}
+
+struct SQLForeignKey {
+  1: string pktable_db,    // primary key table schema
+  2: string pktable_name,  // primary key table name
+  3: string pkcolumn_name, // primary key column name
+  4: string fktable_db,    // foreign key table schema
+  5: string fktable_name,  // foreign key table name
+  6: string fkcolumn_name, // foreign key column name
+  7: i32 key_seq,          // sequence within foreign key
+  8: i32 update_rule,      // what happens to foreign key when parent key is updated
+  9: i32 delete_rule,      // what happens to foreign key when parent key is deleted
+  10: string fk_name,      // foreign key name
+  11: string pk_name,      // primary key name
+  12: bool enable_cstr,    // Enable/Disable
+  13: bool validate_cstr,  // Validate/No validate
+  14: bool rely_cstr       // Rely/No Rely
+}
+
 struct Type {
   1: string          name,             // one of the types in PrimitiveTypes or CollectionTypes or User defined types
   2: optional string type1,            // object type if the name is 'list' (LIST_TYPE), key type if the name is 'map' (MAP_TYPE)
@@ -438,6 +466,27 @@ struct Schema {
 struct EnvironmentContext {
   1: map<string, string> properties
 }
+
+struct PrimaryKeysRequest {
+  1: required string db_name,
+  2: required string tbl_name
+}
+
+struct PrimaryKeysResponse {
+  1: required list<SQLPrimaryKey> primaryKeys
+}
+
+struct ForeignKeysRequest {
+  1: required string parent_db_name,
+  2: required string parent_tbl_name,
+  3: required string foreign_db_name,
+  4: required string foreign_tbl_name
+}
+
+struct ForeignKeysResponse {
+  1: required list<SQLForeignKey> foreignKeys
+}
+
 
 // Return type for get_partitions_by_expr
 struct PartitionsByExprResult {
@@ -940,6 +989,10 @@ service ThriftHiveMetastore extends fb303.FacebookService
       throws (1:AlreadyExistsException o1,
               2:InvalidObjectException o2, 3:MetaException o3,
               4:NoSuchObjectException o4)
+  void create_table_with_constraints(1:Table tbl, 2: list<SQLPrimaryKey> primaryKeys, 3: list<SQLForeignKey> foreignKeys)
+      throws (1:AlreadyExistsException o1,
+              2:InvalidObjectException o2, 3:MetaException o3,
+              4:NoSuchObjectException o4)
   // drops the table and all the partitions associated with it if the table has partitions
   // delete data (including partitions) if deleteData is set to true
   void drop_table(1:string dbname, 2:string name, 3:bool deleteData)
@@ -1178,6 +1231,12 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
   list<string> get_index_names(1:string db_name, 2:string tbl_name, 3:i16 max_indexes=-1)
                        throws(1:MetaException o2)
+
+ //primary keys and foreign keys
+  PrimaryKeysResponse get_primary_keys(1:PrimaryKeysRequest request)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  ForeignKeysResponse get_foreign_keys(1:ForeignKeysRequest request)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // column statistics interfaces
 

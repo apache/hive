@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
+
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -112,6 +113,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.jdo.JDOException;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
@@ -1310,7 +1312,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private void create_table_core(final RawStore ms, final Table tbl,
-        final EnvironmentContext envContext)
+        final EnvironmentContext envContext, List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys)
         throws AlreadyExistsException, MetaException,
         InvalidObjectException, NoSuchObjectException {
 
@@ -1395,7 +1397,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             tbl.getParameters().get(hive_metastoreConstants.DDL_TIME) == null) {
           tbl.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
         }
-        ms.createTable(tbl);
+        if (primaryKeys == null && foreignKeys == null) {
+          ms.createTable(tbl);
+        } else {
+          ms.createTableWithConstraints(tbl, primaryKeys, foreignKeys);
+        }
         success = ms.commitTransaction();
 
       } finally {
@@ -1428,7 +1434,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean success = false;
       Exception ex = null;
       try {
-        create_table_core(getMS(), tbl, envContext);
+        create_table_core(getMS(), tbl, envContext, null, null);
         success = true;
       } catch (NoSuchObjectException e) {
         ex = e;
@@ -1449,6 +1455,34 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @Override
+    public void create_table_with_constraints(final Table tbl,
+        final List<SQLPrimaryKey> primaryKeys, final List<SQLForeignKey> foreignKeys)
+        throws AlreadyExistsException, MetaException, InvalidObjectException {
+      startFunction("create_table", ": " + tbl.toString());
+      boolean success = false;
+      Exception ex = null;
+      try {
+        create_table_core(getMS(), tbl, null, primaryKeys, foreignKeys);
+        success = true;
+      } catch (NoSuchObjectException e) {
+        ex = e;
+        throw new InvalidObjectException(e.getMessage());
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else if (e instanceof InvalidObjectException) {
+          throw (InvalidObjectException) e;
+        } else if (e instanceof AlreadyExistsException) {
+          throw (AlreadyExistsException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("create_table", success, ex, tbl.getTableName());
+      }
+    }
     private boolean is_table_exists(RawStore ms, String dbname, String name)
         throws MetaException {
       return (ms.getTable(dbname, name) != null);
@@ -6131,6 +6165,63 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws TException {
       return new GetChangeVersionResult(getMS().getChangeVersion(req.getTopic()));
     }
+
+
+    @Override
+    public PrimaryKeysResponse get_primary_keys(PrimaryKeysRequest request)
+      throws MetaException, NoSuchObjectException, TException {
+      String db_name = request.getDb_name();
+      String tbl_name = request.getTbl_name();
+      startTableFunction("get_primary_keys", db_name, tbl_name);
+      List<SQLPrimaryKey> ret = null;
+      Exception ex = null;
+      try {
+        ret = getMS().getPrimaryKeys(db_name, tbl_name);
+      } catch (Exception e) {
+       ex = e;
+       if (e instanceof MetaException) {
+         throw (MetaException) e;
+       } else if (e instanceof NoSuchObjectException) {
+         throw (NoSuchObjectException) e;
+       } else {
+         throw newMetaException(e);
+       }
+     } finally {
+       endFunction("get_primary_keys", ret != null, ex, tbl_name);
+     }
+     return new PrimaryKeysResponse(ret);
+    }
+
+    @Override
+    public ForeignKeysResponse get_foreign_keys(ForeignKeysRequest request) throws MetaException,
+      NoSuchObjectException, TException {
+      String parent_db_name = request.getParent_db_name();
+      String parent_tbl_name = request.getParent_tbl_name();
+      String foreign_db_name = request.getForeign_db_name();
+      String foreign_tbl_name = request.getForeign_tbl_name();
+      startFunction("get_foreign_keys", " : parentdb=" + parent_db_name +
+        " parenttbl=" + parent_tbl_name + " foreigndb=" + foreign_db_name +
+        " foreigntbl=" + foreign_tbl_name);
+      List<SQLForeignKey> ret = null;
+      Exception ex = null;
+      try {
+        ret = getMS().getForeignKeys(parent_db_name, parent_tbl_name,
+              foreign_db_name, foreign_tbl_name);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else if (e instanceof NoSuchObjectException) {
+          throw (NoSuchObjectException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("get_foreign_keys", ret != null, ex, foreign_tbl_name);
+      }
+      return new ForeignKeysResponse(ret);
+    }
+
   }
 
 
