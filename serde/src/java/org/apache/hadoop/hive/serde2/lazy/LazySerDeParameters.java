@@ -104,7 +104,8 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
         needsEscape[b & 0xFF] = true;         // Converts the negative byte into positive index
       }
 
-      boolean isEscapeCRLF = Boolean.valueOf(tbl.getProperty(serdeConstants.SERIALIZATION_ESCAPE_CRLF));
+      boolean isEscapeCRLF =
+          Boolean.parseBoolean(tbl.getProperty(serdeConstants.SERIALIZATION_ESCAPE_CRLF));
       if (isEscapeCRLF) {
         needsEscape['\r'] = true;
         needsEscape['\n'] = true;

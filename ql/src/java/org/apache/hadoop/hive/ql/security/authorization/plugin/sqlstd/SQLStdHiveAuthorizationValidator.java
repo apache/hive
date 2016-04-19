@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationValidator;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.QueryContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext.CLIENT_TYPE;
@@ -65,7 +65,7 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
 
   @Override
   public void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,
-      List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context)
+      List<HivePrivilegeObject> outputHObjs, QueryContext context)
       throws HiveAuthzPluginException, HiveAccessControlException {
 
     if (LOG.isDebugEnabled()) {
@@ -141,7 +141,7 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
 
   @Override
   public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
-      HiveAuthzContext context) {
+      QueryContext context) {
     if (LOG.isDebugEnabled()) {
       String msg = "Obtained following objects in  filterListCmdObjects " + listObjs + " for user "
           + authenticator.getUserName() + ". Context Info: " + context;
@@ -151,24 +151,14 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
   }
 
   @Override
-  public String getRowFilterExpression(String database, String table) throws SemanticException {
-    return null;
-  }
-
-  @Override
-  public String getCellValueTransformer(String database, String table, String columnName)
-      throws SemanticException {
-    return null;
-  }
-
-  @Override
   public boolean needTransform() {
     return false;
   }
 
   @Override
-  public boolean needTransform(String database, String table) {
-    return false;
+  public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(QueryContext context,
+      List<HivePrivilegeObject> privObjs) throws SemanticException {
+    return null;
   }
 
 }

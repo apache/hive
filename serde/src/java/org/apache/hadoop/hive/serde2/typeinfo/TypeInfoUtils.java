@@ -68,9 +68,9 @@ public final class TypeInfoUtils {
     registerNumericType(PrimitiveCategory.SHORT, 2);
     registerNumericType(PrimitiveCategory.INT, 3);
     registerNumericType(PrimitiveCategory.LONG, 4);
-    registerNumericType(PrimitiveCategory.FLOAT, 5);
-    registerNumericType(PrimitiveCategory.DOUBLE, 6);
-    registerNumericType(PrimitiveCategory.DECIMAL, 7);
+    registerNumericType(PrimitiveCategory.DECIMAL, 5);
+    registerNumericType(PrimitiveCategory.FLOAT, 6);
+    registerNumericType(PrimitiveCategory.DOUBLE, 7);
     registerNumericType(PrimitiveCategory.STRING, 8);
   }
 
@@ -430,7 +430,7 @@ public final class TypeInfoUtils {
 
           int length = 1;
           if (params.length == 1) {
-            length = Integer.valueOf(params[0]);
+            length = Integer.parseInt(params[0]);
             if (typeEntry.primitiveCategory == PrimitiveCategory.VARCHAR) {
               BaseCharUtils.validateVarcharParameter(length);
               return TypeInfoFactory.getVarcharTypeInfo(length);
@@ -451,8 +451,8 @@ public final class TypeInfoUtils {
             // precision/scale. In this case, the default (10,0) is assumed. Thus, do nothing here.
           } else if (params.length == 2) {
             // New metadata always have two parameters.
-            precision = Integer.valueOf(params[0]);
-            scale = Integer.valueOf(params[1]);
+            precision = Integer.parseInt(params[0]);
+            scale = Integer.parseInt(params[1]);
             HiveDecimalUtils.validateParameter(precision, scale);
           } else if (params.length > 2) {
             throw new IllegalArgumentException("Type decimal only takes two parameter, but " +
@@ -885,10 +885,7 @@ public final class TypeInfoUtils {
     if (fromPg == PrimitiveGrouping.STRING_GROUP && to == PrimitiveCategory.DOUBLE) {
       return true;
     }
-    // Allow implicit String to Decimal conversion
-    if (fromPg == PrimitiveGrouping.STRING_GROUP && to == PrimitiveCategory.DECIMAL) {
-      return true;
-    }
+
     // Void can be converted to any type
     if (from == PrimitiveCategory.VOID) {
       return true;

@@ -423,7 +423,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
     if (altValue != null && altValue.length() > 0) {
       try {
         byte[] b = new byte[1];
-        b[0] = Byte.valueOf(altValue).byteValue();
+        b[0] = Byte.parseByte(altValue);
         return new String(b);
       } catch (NumberFormatException e) {
         return altValue;
@@ -451,11 +451,10 @@ public class TCTLSeparatedProtocol extends TProtocol implements
         rowSeparator);
     mapSeparator = getByteValue(tbl.getProperty(serdeConstants.MAPKEY_DELIM),
         mapSeparator);
-    returnNulls = Boolean.valueOf(
-        tbl.getProperty(ReturnNullsKey, String.valueOf(returnNulls)))
-        .booleanValue();
-    bufferSize = Integer.valueOf(
-        tbl.getProperty(BufferSizeKey, String.valueOf(bufferSize))).intValue();
+    returnNulls = Boolean.parseBoolean(
+        tbl.getProperty(ReturnNullsKey, String.valueOf(returnNulls)));
+    bufferSize = Integer.parseInt(
+        tbl.getProperty(BufferSizeKey, String.valueOf(bufferSize)));
     nullString = tbl.getProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, "\\N");
     quote = tbl.getProperty(serdeConstants.QUOTE_CHAR, null);
 
@@ -766,8 +765,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
   public boolean readBool() throws TException {
     String val = readString();
     lastPrimitiveWasNullFlag = val == null;
-    return val == null || val.isEmpty() ? false : Boolean.valueOf(val)
-        .booleanValue();
+    return val == null || val.isEmpty() ? false : Boolean.parseBoolean(val);
   }
 
   @Override
@@ -775,7 +773,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
     String val = readString();
     lastPrimitiveWasNullFlag = val == null;
     try {
-      return val == null || val.isEmpty() ? 0 : Byte.valueOf(val).byteValue();
+      return val == null || val.isEmpty() ? 0 : Byte.parseByte(val);
     } catch (NumberFormatException e) {
       lastPrimitiveWasNullFlag = true;
       return 0;
@@ -787,7 +785,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
     String val = readString();
     lastPrimitiveWasNullFlag = val == null;
     try {
-      return val == null || val.isEmpty() ? 0 : Short.valueOf(val).shortValue();
+      return val == null || val.isEmpty() ? 0 : Short.parseShort(val);
     } catch (NumberFormatException e) {
       lastPrimitiveWasNullFlag = true;
       return 0;
@@ -799,7 +797,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
     String val = readString();
     lastPrimitiveWasNullFlag = val == null;
     try {
-      return val == null || val.isEmpty() ? 0 : Integer.valueOf(val).intValue();
+      return val == null || val.isEmpty() ? 0 : Integer.parseInt(val);
     } catch (NumberFormatException e) {
       lastPrimitiveWasNullFlag = true;
       return 0;
@@ -811,7 +809,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
     String val = readString();
     lastPrimitiveWasNullFlag = val == null;
     try {
-      return val == null || val.isEmpty() ? 0 : Long.valueOf(val).longValue();
+      return val == null || val.isEmpty() ? 0 : Long.parseLong(val);
     } catch (NumberFormatException e) {
       lastPrimitiveWasNullFlag = true;
       return 0;
@@ -823,8 +821,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
     String val = readString();
     lastPrimitiveWasNullFlag = val == null;
     try {
-      return val == null || val.isEmpty() ? 0 : Double.valueOf(val)
-          .doubleValue();
+      return val == null || val.isEmpty() ? 0 : Double.parseDouble(val);
     } catch (NumberFormatException e) {
       lastPrimitiveWasNullFlag = true;
       return 0;

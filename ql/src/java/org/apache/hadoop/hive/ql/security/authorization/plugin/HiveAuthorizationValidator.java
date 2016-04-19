@@ -34,21 +34,17 @@ public interface HiveAuthorizationValidator {
    * see HiveAuthorizer.checkPrivileges
    */
   void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,
-      List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context) throws HiveAuthzPluginException, HiveAccessControlException;
+      List<HivePrivilegeObject> outputHObjs, QueryContext context) throws HiveAuthzPluginException, HiveAccessControlException;
 
   /**
    * see HiveAuthorizer.filterListCmdObjects
    */
   List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
-      HiveAuthzContext context);
+      QueryContext context);
 
-  public String getRowFilterExpression(String database, String table) throws SemanticException;
-
-  public String getCellValueTransformer(String database, String table, String columnName)
-      throws SemanticException;
+  public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(QueryContext context,
+      List<HivePrivilegeObject> privObjs) throws SemanticException;
 
   public boolean needTransform();
-
-  public boolean needTransform(String database, String table);
 
 }

@@ -20,7 +20,11 @@ package org.apache.hive.service.cli.thrift;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.security.PrivilegedExceptionAction;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -87,6 +91,7 @@ public class ThriftHttpServlet extends TServlet {
   private boolean isHttpOnlyCookie;
   private final HiveAuthFactory hiveAuthFactory;
   private static final String HIVE_DELEGATION_TOKEN_HEADER =  "X-Hive-Delegation-Token";
+  private static final String X_FORWARDED_FOR = "X-Forwarded-For";
 
   public ThriftHttpServlet(TProcessor processor, TProtocolFactory protocolFactory,
       String authType, UserGroupInformation serviceUGI, UserGroupInformation httpUGI,
@@ -166,6 +171,17 @@ public class ThriftHttpServlet extends TServlet {
       LOG.debug("Client IP Address: " + clientIpAddress);
       // Set the thread local ip address
       SessionManager.setIpAddress(clientIpAddress);
+
+      // get forwarded hosts address
+      String forwarded_for = request.getHeader(X_FORWARDED_FOR);
+      if (forwarded_for != null) {
+        LOG.debug("{}:{}", X_FORWARDED_FOR, forwarded_for);
+        List<String> forwardedAddresses = Arrays.asList(forwarded_for.split(","));
+        SessionManager.setForwardedAddresses(forwardedAddresses);
+      } else {
+        SessionManager.setForwardedAddresses(Collections.<String>emptyList());
+      }
+
       // Generate new cookie and add it to the response
       if (requireNewCookie &&
           !authType.equalsIgnoreCase(HiveAuthFactory.AuthTypes.NOSASL.toString())) {
@@ -195,6 +211,7 @@ public class ThriftHttpServlet extends TServlet {
       SessionManager.clearUserName();
       SessionManager.clearIpAddress();
       SessionManager.clearProxyUserName();
+      SessionManager.clearForwardedAddresses();
     }
   }
 

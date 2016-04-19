@@ -51,6 +51,7 @@ public class HookContext {
   private Index depMap;
   private UserGroupInformation ugi;
   private HookType hookType;
+  private String errorMessage;
   final private Map<String, ContentSummary> inputPathToContentSummary;
   private final String ipAddress;
   private final String userName;
@@ -161,7 +162,15 @@ public class HookContext {
 
   public String getIpAddress() {
     return this.ipAddress;
- }
+  }
+
+  public void setErrorMessage(String errorMessage) {
+    this.errorMessage = errorMessage;
+  }
+
+  public String getErrorMessage() {
+    return errorMessage;
+  }
 
   public String getOperationName() {
     return queryPlan.getOperationName();

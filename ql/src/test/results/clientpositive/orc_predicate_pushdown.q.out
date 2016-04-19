@@ -460,7 +460,7 @@ STAGE PLANS:
             alias: orc_pred
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((t = -1) and s is not null) and (s like 'bob%')) (type: boolean)
+              predicate: ((t = -1) and s is not null and (s like 'bob%')) (type: boolean)
               Statistics: Num rows: 262 Data size: 77718 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: -1 (type: tinyint), s (type: string)
@@ -500,10 +500,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: orc_pred
-            filterExpr: (((t = -1) and s is not null) and (s like 'bob%')) (type: boolean)
+            filterExpr: ((t = -1) and s is not null and (s like 'bob%')) (type: boolean)
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((t = -1) and s is not null) and (s like 'bob%')) (type: boolean)
+              predicate: ((t = -1) and s is not null and (s like 'bob%')) (type: boolean)
               Statistics: Num rows: 262 Data size: 77718 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: -1 (type: tinyint), s (type: string)
@@ -591,7 +591,7 @@ STAGE PLANS:
             alias: orc_pred
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((s is not null and (s like 'bob%')) and (not (t) IN (-1, -2, -3))) and t BETWEEN 25 AND 30) (type: boolean)
+              predicate: (s is not null and (s like 'bob%') and (not (t) IN (-1, -2, -3)) and t BETWEEN 25 AND 30) (type: boolean)
               Statistics: Num rows: 131 Data size: 38859 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: t (type: tinyint), s (type: string)
@@ -644,10 +644,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: orc_pred
-            filterExpr: (((s is not null and (s like 'bob%')) and (not (t) IN (-1, -2, -3))) and t BETWEEN 25 AND 30) (type: boolean)
+            filterExpr: (s is not null and (s like 'bob%') and (not (t) IN (-1, -2, -3)) and t BETWEEN 25 AND 30) (type: boolean)
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((s is not null and (s like 'bob%')) and (not (t) IN (-1, -2, -3))) and t BETWEEN 25 AND 30) (type: boolean)
+              predicate: (s is not null and (s like 'bob%') and (not (t) IN (-1, -2, -3)) and t BETWEEN 25 AND 30) (type: boolean)
               Statistics: Num rows: 131 Data size: 38859 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: t (type: tinyint), s (type: string)
@@ -768,7 +768,7 @@ STAGE PLANS:
             alias: orc_pred
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((((d >= 10.0) and (d < 12.0)) and (s like '%son')) and (t > 0)) and si BETWEEN 300 AND 400) and (not (s like '%car%'))) (type: boolean)
+              predicate: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and si BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
               Statistics: Num rows: 5 Data size: 1483 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
@@ -834,10 +834,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: orc_pred
-            filterExpr: ((((((d >= 10.0) and (d < 12.0)) and (s like '%son')) and (t > 0)) and si BETWEEN 300 AND 400) and (not (s like '%car%'))) (type: boolean)
+            filterExpr: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and si BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((((d >= 10.0) and (d < 12.0)) and (s like '%son')) and (t > 0)) and si BETWEEN 300 AND 400) and (not (s like '%car%'))) (type: boolean)
+              predicate: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and si BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
               Statistics: Num rows: 5 Data size: 1483 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
@@ -972,7 +972,7 @@ STAGE PLANS:
             alias: orc_pred
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((((((t > 10) and (t <> 101)) and (d >= 10.0)) and (d < 12.0)) and (s like '%son')) and (not (s like '%car%'))) and (t > 0)) and si BETWEEN 300 AND 400) (type: boolean)
+              predicate: ((t > 10) and (t <> 101) and (d >= 10.0) and (d < 12.0) and (s like '%son') and (not (s like '%car%')) and (t > 0) and si BETWEEN 300 AND 400) (type: boolean)
               Statistics: Num rows: 1 Data size: 296 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
@@ -1068,10 +1068,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: orc_pred
-            filterExpr: ((((((((t > 10) and (t <> 101)) and (d >= 10.0)) and (d < 12.0)) and (s like '%son')) and (not (s like '%car%'))) and (t > 0)) and si BETWEEN 300 AND 400) (type: boolean)
+            filterExpr: ((t > 10) and (t <> 101) and (d >= 10.0) and (d < 12.0) and (s like '%son') and (not (s like '%car%')) and (t > 0) and si BETWEEN 300 AND 400) (type: boolean)
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((((((t > 10) and (t <> 101)) and (d >= 10.0)) and (d < 12.0)) and (s like '%son')) and (not (s like '%car%'))) and (t > 0)) and si BETWEEN 300 AND 400) (type: boolean)
+              predicate: ((t > 10) and (t <> 101) and (d >= 10.0) and (d < 12.0) and (s like '%son') and (not (s like '%car%')) and (t > 0) and si BETWEEN 300 AND 400) (type: boolean)
               Statistics: Num rows: 1 Data size: 296 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)

@@ -542,7 +542,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           int numReducers = totalFiles / numFiles;
 
           if (numReducers > 1) {
-            int currReducer = Integer.valueOf(Utilities.getTaskIdFromFilename(Utilities
+            int currReducer = Integer.parseInt(Utilities.getTaskIdFromFilename(Utilities
                 .getTaskId(hconf)));
 
             int reducerIdx = prtner.getPartition(key, null, numReducers);
@@ -626,7 +626,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         // Only set up the updater for insert.  For update and delete we don't know unitl we see
         // the row.
         ObjectInspector inspector = bDynParts ? subSetOI : outputObjInspector;
-        int acidBucketNum = Integer.valueOf(Utilities.getTaskIdFromFilename(taskId));
+        int acidBucketNum = Integer.parseInt(Utilities.getTaskIdFromFilename(taskId));
         fsp.updaters[filesIdx] = HiveFileFormatUtils.getAcidRecordUpdater(jc, conf.getTableInfo(),
             acidBucketNum, conf, fsp.outPaths[filesIdx], inspector, reporter, -1);
       }

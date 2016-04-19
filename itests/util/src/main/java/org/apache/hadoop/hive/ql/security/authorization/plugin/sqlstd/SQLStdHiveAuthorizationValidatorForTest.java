@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,7 +29,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.QueryContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
@@ -92,7 +93,7 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
 
   @Override
   public void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,
-      List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context) throws HiveAuthzPluginException,
+      List<HivePrivilegeObject> outputHObjs, QueryContext context) throws HiveAuthzPluginException,
       HiveAccessControlException {
     switch (hiveOpType) {
     case DFS:
@@ -105,15 +106,6 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
 
   }
 
-  public String getRowFilterExpression(String database, String table) throws SemanticException {
-    if (table.equals("masking_test")) {
-      return "key % 2 = 0 and key < 10";
-    } else if (table.equals("masking_test_subq")) {
-      return "key in (select key from src where src.key = masking_test_subq.key)";
-    }
-    return null;
-  }
-
   public boolean needTransform() {
     // In the future, we can add checking for username, groupname, etc based on
     // HiveAuthenticationProvider. For example,
@@ -121,16 +113,31 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
     return true;
   }
 
-  public boolean needTransform(String database, String table) {
-    return "masking_test".equals(table) || "masking_test_subq".equals(table);
-  }
-
-  public String getCellValueTransformer(String database, String table, String columnName)
-      throws SemanticException {
-    if (table.equals("masking_test") && columnName.equals("value")) {
-      return "reverse(value)";
+  // Please take a look at the instructions in HiveAuthorizer.java before
+  // implementing applyRowFilterAndColumnMasking
+  public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(QueryContext context,
+      List<HivePrivilegeObject> privObjs) throws SemanticException {
+    List<HivePrivilegeObject> needRewritePrivObjs = new ArrayList<>(); 
+    for (HivePrivilegeObject privObj : privObjs) {
+      if (privObj.getObjectName().equals("masking_test")) {
+        privObj.setRowFilterExpression("key % 2 = 0 and key < 10");
+        List<String> cellValueTransformers = new ArrayList<>();
+        for (String columnName : privObj.getColumns()) {
+          if (columnName.equals("value")) {
+            cellValueTransformers.add("reverse(value)");
+          } else {
+            cellValueTransformers.add(columnName);
+          }
+        }
+        privObj.setCellValueTransformers(cellValueTransformers);
+        needRewritePrivObjs.add(privObj);
+      } else if (privObj.getObjectName().equals("masking_test_subq")) {
+        privObj
+            .setRowFilterExpression("key in (select key from src where src.key = masking_test_subq.key)");
+        needRewritePrivObjs.add(privObj);
+      }
     }
-    return columnName;
+    return needRewritePrivObjs;
   }
 
 }

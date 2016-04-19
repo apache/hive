@@ -24,12 +24,15 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.Writable;
 
+import com.google.common.annotations.VisibleForTesting;
+
 public class VectorMapOperator extends MapOperator {
 
   private static final long serialVersionUID = 1L;
 
   /** Kryo ctor. */
-  protected VectorMapOperator() {
+  @VisibleForTesting
+  public VectorMapOperator() {
     super();
   }
 

@@ -18,21 +18,17 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.util.Collection;
-import java.util.concurrent.Future;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.io.ObjectWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * App Master Event operator implementation.
@@ -61,7 +57,8 @@ public class VectorAppMasterEventOperator extends AppMasterEventOperator {
   }
 
   /** Kryo ctor. */
-  protected VectorAppMasterEventOperator() {
+  @VisibleForTesting
+  public VectorAppMasterEventOperator() {
     super();
   }
 

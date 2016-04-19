@@ -19,11 +19,14 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
@@ -665,7 +668,37 @@ public class StatsOptimizer extends Transform {
             ois.add(TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(colInfo.getType()));
           }
         } else {
-          int aggrPos = 0;
+          // in return path, we may have aggr($f0), aggr($f1) in GBY
+          // and then select aggr($f1), aggr($f0) in SEL.
+          // Thus we need to use colExp to find out which position is
+          // corresponding to which position.
+          Map<String, Integer> nameToIndex = new HashMap<>();
+          for (int index = 0; index < cgbyOp.getConf().getOutputColumnNames().size(); index++) {
+            nameToIndex.put(cgbyOp.getConf().getOutputColumnNames().get(index), index);
+          }
+          List<String> outputColumnNames = cselOp.getConf().getOutputColumnNames();
+          Map<Integer, Integer> cselOpTocgbyOp = new HashMap<>();
+          for (int index = 0; index < outputColumnNames.size(); index++) {
+            if (!posToConstant.containsKey(index)) {
+              String outputColumnName = outputColumnNames.get(index);
+              ExprNodeColumnDesc exprColumnNodeDesc = (ExprNodeColumnDesc) cselOp
+                  .getColumnExprMap().get(outputColumnName);
+              cselOpTocgbyOp.put(index, nameToIndex.get(exprColumnNodeDesc.getColumn()));
+            }
+          }
+          // cselOpTocgbyOp may be 0 to 1, where the 0th position of cgbyOp is '1' and 1st position of cgbyOp is count('1')
+          // Thus, we need to adjust it to the correct position.
+          List<Entry<Integer, Integer>> list = new ArrayList<>(cselOpTocgbyOp.entrySet());
+          Collections.sort(list, new Comparator<Entry<Integer, Integer>>() {
+            public int compare(Entry<Integer, Integer> o1, Entry<Integer, Integer> o2) {
+              return (o1.getValue()).compareTo(o2.getValue());
+            }
+          });
+          cselOpTocgbyOp.clear();
+          // adjust cselOpTocgbyOp
+          for (int index = 0; index < list.size(); index++) {
+            cselOpTocgbyOp.put(list.get(index).getKey(), index);
+          }
           List<Object> oneRowWithConstant = new ArrayList<>();
           for (int pos = 0; pos < cselOp.getSchema().getSignature().size(); pos++) {
             if (posToConstant.containsKey(pos)) {
@@ -673,7 +706,7 @@ public class StatsOptimizer extends Transform {
               oneRowWithConstant.add(posToConstant.get(pos));
             } else {
               // This position is an aggregation.
-              oneRowWithConstant.add(oneRow.get(aggrPos++));
+              oneRowWithConstant.add(oneRow.get(cselOpTocgbyOp.get(pos)));
             }
             ColumnInfo colInfo = cselOp.getSchema().getSignature().get(pos);
             colNames.add(colInfo.getInternalName());

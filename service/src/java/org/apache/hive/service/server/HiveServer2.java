@@ -142,8 +142,8 @@ public class HiveServer2 extends CompositeService {
         if (webUIPort <= 0) {
           LOG.info("Web UI is disabled since port is set to " + webUIPort);
         } else {
-          HttpServer.Builder builder = new HttpServer.Builder();
-          builder.setName("hiveserver2").setPort(webUIPort).setConf(hiveConf);
+          HttpServer.Builder builder = new HttpServer.Builder("hiveserver2");
+          builder.setPort(webUIPort).setConf(hiveConf);
           builder.setHost(hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_BIND_HOST));
           builder.setMaxThreads(
             hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_THREADS));

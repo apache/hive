@@ -157,7 +157,7 @@ public class FosterStorageHandler extends DefaultStorageHandler {
       // we create a temp dir for the associated write job
       if (dynHash != null) {
         // if external table and custom root specified, update the parent path
-        if (Boolean.valueOf((String)tableDesc.getProperties().get("EXTERNAL"))
+        if (Boolean.parseBoolean((String)tableDesc.getProperties().get("EXTERNAL"))
             && jobInfo.getCustomDynamicRoot() != null
             && jobInfo.getCustomDynamicRoot().length() > 0) {
           parentPath = new Path(parentPath, jobInfo.getCustomDynamicRoot()).toString();
@@ -170,14 +170,14 @@ public class FosterStorageHandler extends DefaultStorageHandler {
       String outputLocation;
 
       if ((dynHash != null)
-          && Boolean.valueOf((String)tableDesc.getProperties().get("EXTERNAL"))
+          && Boolean.parseBoolean((String)tableDesc.getProperties().get("EXTERNAL"))
           && jobInfo.getCustomDynamicPath() != null
           && jobInfo.getCustomDynamicPath().length() > 0) {
         // dynamic partitioning with custom path; resolve the custom path
         // using partition column values
         outputLocation = HCatFileUtil.resolveCustomPath(jobInfo, null, true);
       } else if ((dynHash == null)
-           && Boolean.valueOf((String)tableDesc.getProperties().get("EXTERNAL"))
+           && Boolean.parseBoolean((String)tableDesc.getProperties().get("EXTERNAL"))
            && jobInfo.getLocation() != null && jobInfo.getLocation().length() > 0) {
         // honor custom location for external table apart from what metadata specifies
         outputLocation = jobInfo.getLocation();

@@ -86,6 +86,7 @@ public class MiniHS2 extends AbstractHiveService {
     private boolean isMetastoreRemote;
     private boolean usePortsFromConf = false;
     private String authType = "KERBEROS";
+    private boolean isHA = false;
 
     public Builder() {
     }
@@ -117,6 +118,11 @@ public class MiniHS2 extends AbstractHiveService {
       return this;
     }
 
+    public Builder withHA() {
+      this.isHA = true;
+      return this;
+    }
+
     /**
      * Start HS2 with HTTP transport mode, default is binary mode
      * @return this Builder
@@ -137,7 +143,7 @@ public class MiniHS2 extends AbstractHiveService {
         hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_BINARY_MODE);
       }
       return new MiniHS2(hiveConf, miniClusterType, useMiniKdc, serverPrincipal, serverKeytab,
-          isMetastoreRemote, usePortsFromConf, authType);
+          isMetastoreRemote, usePortsFromConf, authType, isHA);
     }
   }
 
@@ -175,7 +181,7 @@ public class MiniHS2 extends AbstractHiveService {
 
   private MiniHS2(HiveConf hiveConf, MiniClusterType miniClusterType, boolean useMiniKdc,
       String serverPrincipal, String serverKeytab, boolean isMetastoreRemote,
-      boolean usePortsFromConf, String authType) throws Exception {
+      boolean usePortsFromConf, String authType, boolean isHA) throws Exception {
     super(hiveConf, "localhost",
         (usePortsFromConf ? hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT) : MetaStoreUtils.findFreePort()),
         (usePortsFromConf ? hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT) : MetaStoreUtils.findFreePort()));
@@ -189,7 +195,7 @@ public class MiniHS2 extends AbstractHiveService {
 
     if (miniClusterType != MiniClusterType.DFS_ONLY) {
       // Initialize dfs
-      dfs = ShimLoader.getHadoopShims().getMiniDfs(hiveConf, 4, true, null);
+      dfs = ShimLoader.getHadoopShims().getMiniDfs(hiveConf, 4, true, null, isHA);
       fs = dfs.getFileSystem();
       String uriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
 
@@ -266,7 +272,8 @@ public class MiniHS2 extends AbstractHiveService {
 
   public MiniHS2(HiveConf hiveConf, MiniClusterType clusterType,
       boolean usePortsFromConf) throws Exception {
-    this(hiveConf, clusterType, false, null, null, false, usePortsFromConf, "KERBEROS");
+    this(hiveConf, clusterType, false, null, null, false, usePortsFromConf,
+      "KERBEROS", false);
   }
 
   public void start(Map<String, String> confOverlay) throws Exception {

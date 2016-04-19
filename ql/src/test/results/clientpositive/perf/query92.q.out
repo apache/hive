@@ -57,7 +57,7 @@ Stage-0
                                 Select Operator [SEL_5] (rows=8116 width=1119)
                                   Output:["_col0"]
                                   Filter Operator [FIL_43] (rows=8116 width=1119)
-                                    predicate:(((d_month_seq >= 1206) and (d_month_seq <= 1217)) and d_date_sk is not null)
+                                    predicate:((d_month_seq >= 1206) and (d_month_seq <= 1217) and d_date_sk is not null)
                                     TableScan [TS_3] (rows=73049 width=1119)
                                       default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_month_seq"]
                 <-Reducer 9 [SIMPLE_EDGE]
@@ -78,7 +78,7 @@ Stage-0
                               Select Operator [SEL_19] (rows=8116 width=1119)
                                 Output:["_col0"]
                                 Filter Operator [FIL_45] (rows=8116 width=1119)
-                                  predicate:(((d_month_seq >= 1206) and (d_month_seq <= 1217)) and d_date_sk is not null)
+                                  predicate:((d_month_seq >= 1206) and (d_month_seq <= 1217) and d_date_sk is not null)
                                   TableScan [TS_17] (rows=73049 width=1119)
                                     default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_month_seq"]
                           <-Map 7 [SIMPLE_EDGE]

@@ -117,20 +117,20 @@ Stage-0
         <-Map 1 [SIMPLE_EDGE] vectorized
           SHUFFLE [RS_23]
             PartitionCols:_col2
-            Select Operator [OP_22] (rows=2 width=102)
+            Select Operator [SEL_22] (rows=2 width=102)
               Output:["_col0","_col1","_col2"]
               TableScan [TS_0] (rows=2 width=102)
                 default@char_tbl1,c1,Tbl:COMPLETE,Col:NONE,Output:["name","age"]
           Dynamic Partitioning Event Operator [EVENT_20] (rows=2 width=102)
-            Group By Operator [OP_25] (rows=2 width=102)
+            Group By Operator [GBY_25] (rows=2 width=102)
               Output:["_col0"],keys:_col0
-              Select Operator [OP_24] (rows=2 width=102)
+              Select Operator [SEL_24] (rows=2 width=102)
                 Output:["_col0"]
-                 Please refer to the previous Select Operator [OP_22]
+                 Please refer to the previous Select Operator [SEL_22]
         <-Map 3 [SIMPLE_EDGE] vectorized
           SHUFFLE [RS_27]
             PartitionCols:_col2
-            Select Operator [OP_26] (rows=2 width=101)
+            Select Operator [SEL_26] (rows=2 width=101)
               Output:["_col0","_col1","_col2"]
               TableScan [TS_3] (rows=2 width=101)
                 default@char_tbl2,c2,Tbl:COMPLETE,Col:NONE,Output:["name","age"]

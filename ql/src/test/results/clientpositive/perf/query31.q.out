@@ -88,7 +88,7 @@ Stage-0
                                       Select Operator [SEL_118] (rows=18262 width=1119)
                                         Output:["_col0"]
                                         Filter Operator [FIL_266] (rows=18262 width=1119)
-                                          predicate:(((d_qoy = 3) and (d_year = 1998)) and d_date_sk is not null)
+                                          predicate:((d_qoy = 3) and (d_year = 1998) and d_date_sk is not null)
                                           TableScan [TS_116] (rows=73049 width=1119)
                                             default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_qoy"]
                 <-Reducer 5 [SIMPLE_EDGE]
@@ -145,7 +145,7 @@ Stage-0
                                               Select Operator [SEL_26] (rows=18262 width=1119)
                                                 Output:["_col0"]
                                                 Filter Operator [FIL_254] (rows=18262 width=1119)
-                                                  predicate:(((d_qoy = 2) and (d_year = 1998)) and d_date_sk is not null)
+                                                  predicate:((d_qoy = 2) and (d_year = 1998) and d_date_sk is not null)
                                                   TableScan [TS_24] (rows=73049 width=1119)
                                                     default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_qoy"]
                         <-Reducer 19 [SIMPLE_EDGE]
@@ -193,7 +193,7 @@ Stage-0
                                               Select Operator [SEL_47] (rows=18262 width=1119)
                                                 Output:["_col0"]
                                                 Filter Operator [FIL_257] (rows=18262 width=1119)
-                                                  predicate:(((d_qoy = 3) and (d_year = 1998)) and d_date_sk is not null)
+                                                  predicate:((d_qoy = 3) and (d_year = 1998) and d_date_sk is not null)
                                                   TableScan [TS_45] (rows=73049 width=1119)
                                                     default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_qoy"]
                         <-Reducer 25 [SIMPLE_EDGE]
@@ -241,7 +241,7 @@ Stage-0
                                               Select Operator [SEL_68] (rows=18262 width=1119)
                                                 Output:["_col0"]
                                                 Filter Operator [FIL_260] (rows=18262 width=1119)
-                                                  predicate:(((d_qoy = 1) and (d_year = 1998)) and d_date_sk is not null)
+                                                  predicate:((d_qoy = 1) and (d_year = 1998) and d_date_sk is not null)
                                                   TableScan [TS_66] (rows=73049 width=1119)
                                                     default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_qoy"]
                         <-Reducer 31 [SIMPLE_EDGE]
@@ -289,7 +289,7 @@ Stage-0
                                               Select Operator [SEL_89] (rows=18262 width=1119)
                                                 Output:["_col0"]
                                                 Filter Operator [FIL_263] (rows=18262 width=1119)
-                                                  predicate:(((d_qoy = 2) and (d_year = 1998)) and d_date_sk is not null)
+                                                  predicate:((d_qoy = 2) and (d_year = 1998) and d_date_sk is not null)
                                                   TableScan [TS_87] (rows=73049 width=1119)
                                                     default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_qoy"]
                         <-Reducer 4 [SIMPLE_EDGE]
@@ -337,7 +337,7 @@ Stage-0
                                               Select Operator [SEL_5] (rows=18262 width=1119)
                                                 Output:["_col0"]
                                                 Filter Operator [FIL_251] (rows=18262 width=1119)
-                                                  predicate:(((d_qoy = 1) and (d_year = 1998)) and d_date_sk is not null)
+                                                  predicate:((d_qoy = 1) and (d_year = 1998) and d_date_sk is not null)
                                                   TableScan [TS_3] (rows=73049 width=1119)
                                                     default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_qoy"]
 

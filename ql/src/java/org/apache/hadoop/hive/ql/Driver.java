@@ -36,13 +36,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.mapreduce.MRJobConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -104,7 +98,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.QueryContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
@@ -118,7 +112,13 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 
 public class Driver implements CommandProcessor {
 
@@ -847,8 +847,8 @@ public class Driver implements CommandProcessor {
     since the insert will get passed the columns from the select.
      */
 
-    HiveAuthzContext.Builder authzContextBuilder = new HiveAuthzContext.Builder();
-    authzContextBuilder.setUserIpAddress(ss.getUserIpAddress());
+    QueryContext.Builder authzContextBuilder = new QueryContext.Builder();
+    authzContextBuilder.setForwardedAddresses(ss.getForwardedAddresses());
     authzContextBuilder.setCommandString(command);
 
     HiveOperationType hiveOpType = getHiveOperationType(op);
@@ -1459,6 +1459,7 @@ public class Driver implements CommandProcessor {
   }
 
   private CommandProcessorResponse createProcessorResponse(int ret) {
+    SessionState.getPerfLogger().cleanupPerfLogMetrics();
     queryDisplay.setErrorMessage(errorMessage);
     return new CommandProcessorResponse(ret, errorMessage, SQLState, downstreamError);
   }
@@ -1630,7 +1631,9 @@ public class Driver implements CommandProcessor {
             continue;
 
           } else {
+            setErrorMsgAndDetail(exitVal, result.getTaskError(), tsk);
             hookContext.setHookType(HookContext.HookType.ON_FAILURE_HOOK);
+            hookContext.setErrorMessage(errorMessage);
             // Get all the failure execution hooks and execute them.
             for (Hook ofh : getHooks(HiveConf.ConfVars.ONFAILUREHOOKS)) {
               perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
@@ -1639,7 +1642,6 @@ public class Driver implements CommandProcessor {
 
               perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
             }
-            setErrorMsgAndDetail(exitVal, result.getTaskError(), tsk);
             SQLState = "08S01";
             console.printError(errorMessage);
             driverCxt.shutdown();

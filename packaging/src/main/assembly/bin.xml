@@ -168,6 +168,15 @@
     </fileSet>
 
     <fileSet>
+      <fileMode>666</fileMode>
+      <directory>${project.parent.basedir}/llap-server/sql</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>scripts/llap/sql/</outputDirectory>
+    </fileSet>
+
+    <fileSet>
       <directory>${project.parent.basedir}/llap-server/src/main/resources/</directory>
       <includes>
         <include>**/*.py</include>

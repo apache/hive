@@ -138,7 +138,7 @@ public final class ParseUtils {
     }
 
     String lengthStr = node.getChild(0).getText();
-    return TypeInfoFactory.getVarcharTypeInfo(Integer.valueOf(lengthStr));
+    return TypeInfoFactory.getVarcharTypeInfo(Integer.parseInt(lengthStr));
   }
 
   public static CharTypeInfo getCharTypeInfo(ASTNode node)
@@ -148,7 +148,7 @@ public final class ParseUtils {
     }
 
     String lengthStr = node.getChild(0).getText();
-    return TypeInfoFactory.getCharTypeInfo(Integer.valueOf(lengthStr));
+    return TypeInfoFactory.getCharTypeInfo(Integer.parseInt(lengthStr));
   }
 
   static int getIndex(String[] list, String elem) {
@@ -212,12 +212,12 @@ public final class ParseUtils {
 
       if (node.getChildCount() >= 1) {
         String precStr = node.getChild(0).getText();
-        precision = Integer.valueOf(precStr);
+        precision = Integer.parseInt(precStr);
       }
 
       if (node.getChildCount() == 2) {
         String scaleStr = node.getChild(1).getText();
-        scale = Integer.valueOf(scaleStr);
+        scale = Integer.parseInt(scaleStr);
       }
 
       return TypeInfoFactory.getDecimalTypeInfo(precision, scale);

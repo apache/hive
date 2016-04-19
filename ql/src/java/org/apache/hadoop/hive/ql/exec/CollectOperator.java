@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -93,5 +91,14 @@ public class CollectOperator extends Operator<CollectDesc> implements
   @Override
   public OperatorType getType() {
     return null;
+  }
+
+  @Override
+  public String getName() {
+    return CollectOperator.getOperatorName();
+  }
+
+  public static String getOperatorName() {
+    return "COLLECT";
   }
 }

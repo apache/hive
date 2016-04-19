@@ -115,7 +115,7 @@ STAGE PLANS:
             alias: default__src_src1_index__
             Statistics: Num rows: 500 Data size: 46311 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((UDFToDouble(key) = 0.0) and _bucketname is not null) and _offset is not null) (type: boolean)
+              predicate: ((UDFToDouble(key) = 0.0) and _bucketname is not null and _offset is not null) (type: boolean)
               Statistics: Num rows: 250 Data size: 23155 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _bucketname (type: string), _offset (type: bigint), _bitmaps (type: array<bigint>)
@@ -131,7 +131,7 @@ STAGE PLANS:
             alias: default__src_src2_index__
             Statistics: Num rows: 500 Data size: 48311 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((value = 'val_0') and _bucketname is not null) and _offset is not null) (type: boolean)
+              predicate: ((value = 'val_0') and _bucketname is not null and _offset is not null) (type: boolean)
               Statistics: Num rows: 250 Data size: 24155 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _bucketname (type: string), _offset (type: bigint), _bitmaps (type: array<bigint>)

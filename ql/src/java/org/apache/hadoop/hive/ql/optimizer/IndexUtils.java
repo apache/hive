@@ -238,6 +238,8 @@ public final class IndexUtils {
     indexMetaChangeTsk.setWork(indexMetaChange);
     rootTask.addDependentTask(indexMetaChangeTsk);
 
+    driver.destroy();
+
     return rootTask;
   }
 

@@ -94,7 +94,7 @@ public class FSStatsAggregator implements StatsAggregator {
       if (null == statVal) { // partition was found, but was empty.
         continue;
       }
-      counter += Long.valueOf(statVal);
+      counter += Long.parseLong(statVal);
     }
     LOG.info("Read stats for : " + partID + "\t" + statType + "\t" + counter);
 

@@ -83,7 +83,7 @@ Stage-0
                                     <-Reducer 4 [SIMPLE_EDGE]
                                       SHUFFLE [RS_24]
                                         PartitionCols:_col3
-                                        Merge Join Operator [MERGEJOIN_87] (rows=24305 width=1119)
+                                        Merge Join Operator [MERGEJOIN_87] (rows=24306 width=1119)
                                           Conds:RS_21._col2=RS_22._col0(Inner),Output:["_col1","_col3","_col5","_col6","_col7"]
                                         <-Map 12 [SIMPLE_EDGE]
                                           SHUFFLE [RS_22]
@@ -97,7 +97,7 @@ Stage-0
                                         <-Reducer 3 [SIMPLE_EDGE]
                                           SHUFFLE [RS_21]
                                             PartitionCols:_col2
-                                            Merge Join Operator [MERGEJOIN_86] (rows=22096 width=1119)
+                                            Merge Join Operator [MERGEJOIN_86] (rows=22097 width=1119)
                                               Conds:RS_18._col4=RS_19._col0(Inner),Output:["_col1","_col2","_col3","_col5","_col6","_col7"]
                                             <-Map 11 [SIMPLE_EDGE]
                                               SHUFFLE [RS_19]
@@ -111,7 +111,7 @@ Stage-0
                                             <-Reducer 2 [SIMPLE_EDGE]
                                               SHUFFLE [RS_18]
                                                 PartitionCols:_col4
-                                                Merge Join Operator [MERGEJOIN_85] (rows=20088 width=1119)
+                                                Merge Join Operator [MERGEJOIN_85] (rows=20089 width=1119)
                                                   Conds:RS_15._col0=RS_16._col0(Inner),Output:["_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
                                                 <-Map 1 [SIMPLE_EDGE]
                                                   SHUFFLE [RS_15]
@@ -119,16 +119,16 @@ Stage-0
                                                     Select Operator [SEL_2] (rows=1 width=0)
                                                       Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
                                                       Filter Operator [FIL_78] (rows=1 width=0)
-                                                        predicate:((((ss_sold_date_sk is not null and ss_store_sk is not null) and ss_hdemo_sk is not null) and ss_addr_sk is not null) and ss_customer_sk is not null)
+                                                        predicate:(ss_sold_date_sk is not null and ss_store_sk is not null and ss_hdemo_sk is not null and ss_addr_sk is not null and ss_customer_sk is not null)
                                                         TableScan [TS_0] (rows=1 width=0)
                                                           default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_sold_date_sk","ss_customer_sk","ss_hdemo_sk","ss_addr_sk","ss_store_sk","ss_ticket_number","ss_coupon_amt","ss_net_profit"]
                                                 <-Map 10 [SIMPLE_EDGE]
                                                   SHUFFLE [RS_16]
                                                     PartitionCols:_col0
-                                                    Select Operator [SEL_5] (rows=18262 width=1119)
+                                                    Select Operator [SEL_5] (rows=18263 width=1119)
                                                       Output:["_col0"]
-                                                      Filter Operator [FIL_79] (rows=18262 width=1119)
-                                                        predicate:(((d_dow) IN (6, 0) and (d_year) IN (1998, 1999, 2000)) and d_date_sk is not null)
+                                                      Filter Operator [FIL_79] (rows=18263 width=1119)
+                                                        predicate:((d_dow) IN (6, 0) and (d_year) IN (1998, 1999, 2000) and d_date_sk is not null)
                                                         TableScan [TS_3] (rows=73049 width=1119)
                                                           default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_dow"]
 

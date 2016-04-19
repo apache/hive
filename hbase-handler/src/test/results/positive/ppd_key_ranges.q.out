@@ -189,7 +189,7 @@ STAGE PLANS:
             alias: hbase_ppd_keyrange
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (((key >= 9) and (key < 17)) and (key = 11)) (type: boolean)
+              predicate: ((key >= 9) and (key < 17) and (key = 11)) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: 11 (type: int), value (type: string)

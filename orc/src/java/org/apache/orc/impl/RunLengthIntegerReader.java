@@ -20,7 +20,7 @@ package org.apache.orc.impl;
 import java.io.EOFException;
 import java.io.IOException;
 
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 
 /**
  * A reader that reads a sequence of integers.
@@ -99,15 +99,17 @@ public class RunLengthIntegerReader implements IntegerReader {
   }
 
   @Override
-  public void nextVector(LongColumnVector previous, final int previousLen) throws IOException {
+  public void nextVector(ColumnVector previous,
+                         long[] data,
+                         int previousLen) throws IOException {
     previous.isRepeating = true;
     for (int i = 0; i < previousLen; i++) {
       if (!previous.isNull[i]) {
-        previous.vector[i] = next();
+        data[i] = next();
       } else {
         // The default value of null for int type in vectorized
         // processing is 1, so set that if the value is null
-        previous.vector[i] = 1;
+        data[i] = 1;
       }
 
       // The default value for nulls in Vectorization for int types is 1
@@ -115,8 +117,27 @@ public class RunLengthIntegerReader implements IntegerReader {
       // when determining the isRepeating flag.
       if (previous.isRepeating
           && i > 0
-          && (previous.vector[i - 1] != previous.vector[i] || previous.isNull[i - 1] != previous.isNull[i])) {
+          && (data[0] != data[i] || previous.isNull[0] != previous.isNull[i])) {
         previous.isRepeating = false;
+      }
+    }
+  }
+
+  @Override
+  public void nextVector(ColumnVector vector,
+                         int[] data,
+                         int size) throws IOException {
+    if (vector.noNulls) {
+      for(int r=0; r < data.length && r < size; ++r) {
+        data[r] = (int) next();
+      }
+    } else if (!(vector.isRepeating && vector.isNull[0])) {
+      for(int r=0; r < data.length && r < size; ++r) {
+        if (!vector.isNull[r]) {
+          data[r] = (int) next();
+        } else {
+          data[r] = 1;
+        }
       }
     }
   }

@@ -277,7 +277,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
    **/
   @Override
   public String getName() {
-    return getOperatorName();
+    return TableScanOperator.getOperatorName();
   }
 
   static public String getOperatorName() {

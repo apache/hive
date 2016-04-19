@@ -446,7 +446,7 @@ public abstract class Operation {
   protected void onNewState(OperationState state, OperationState prevState) {
     switch(state) {
       case RUNNING:
-      markOperationStartTime();
+        markOperationStartTime();
         break;
       case ERROR:
       case FINISHED:

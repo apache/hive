@@ -183,7 +183,7 @@ FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-1.1	1.1	1	NULL
+1.100000023841858	1.1	1.0	NULL
 PREHOOK: query: SELECT GREATEST(-100Y, -80S, -60, -40L, cast(-20 as float), cast(0 as double), cast(0.5 as decimal)),
        GREATEST(100Y, 80S, 60, 40L, cast(20 as float), cast(0 as double), cast(-0.5 as decimal)),
        GREATEST(100Y, 80S, 60, 40L, null, cast(0 as double), cast(-0.5 as decimal))
@@ -198,7 +198,7 @@ FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-1	100	NULL
+1.0	100.0	NULL
 PREHOOK: query: SELECT GREATEST(10L, 'a', date('2001-01-28'))
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY

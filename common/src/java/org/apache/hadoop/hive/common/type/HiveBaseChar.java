@@ -38,6 +38,9 @@ public abstract class HiveBaseChar {
   }
 
   public static String enforceMaxLength(String val, int maxLength) {
+    if (val == null) {
+      return null;
+    }
     String value = val;
 
     if (maxLength > 0) {
@@ -52,6 +55,9 @@ public abstract class HiveBaseChar {
   }
 
   public static String getPaddedValue(String val, int maxLength) {
+    if (val == null) {
+      return null;
+    }
     if (maxLength < 0) {
       return val;
     }

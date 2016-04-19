@@ -159,6 +159,7 @@ public class HiveSessionImpl implements HiveSession {
     sessionState = new SessionState(hiveConf, username);
     sessionState.setUserIpAddress(ipAddress);
     sessionState.setIsHiveServerQuery(true);
+    sessionState.setForwardedAddresses(SessionManager.getForwardedAddresses());
     SessionState.start(sessionState);
     try {
       sessionState.reloadAuxJars();
@@ -326,6 +327,7 @@ public class HiveSessionImpl implements HiveSession {
     // Need to make sure that the this HiveServer2's session's SessionState is
     // stored in the thread local for the handler thread.
     SessionState.setCurrentSessionState(sessionState);
+    sessionState.setForwardedAddresses(SessionManager.getForwardedAddresses());
     if (userAccess) {
       lastAccessTime = System.currentTimeMillis();
     }

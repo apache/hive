@@ -399,6 +399,14 @@ public class LlapServiceDriver {
     IOUtils.copyBytes(loggerContent,
         lfs.create(new Path(confPath, "llap-daemon-log4j2.properties"), true), conf, true);
 
+    URL metrics2 = conf.getResource(LlapDaemon.HADOOP_METRICS2_PROPERTIES_FILE);
+    if (metrics2 != null) {
+      InputStream metrics2FileStream = metrics2.openStream();
+      IOUtils.copyBytes(metrics2FileStream,
+          lfs.create(new Path(confPath, LlapDaemon.HADOOP_METRICS2_PROPERTIES_FILE), true),
+          conf, true);
+    }
+
     PrintWriter udfStream =
         new PrintWriter(lfs.create(new Path(confPath, StaticPermanentFunctionChecker.PERMANENT_FUNCTIONS_LIST)));
     for (String udfClass : allowedUdfs) {

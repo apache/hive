@@ -514,7 +514,7 @@ public class PrimitiveObjectInspectorConverter {
 
     PrimitiveObjectInspector inputOI;
     SettableHiveVarcharObjectInspector outputOI;
-    HiveVarcharWritable hc;
+    Object hc;
 
     public HiveVarcharConverter(PrimitiveObjectInspector inputOI,
         SettableHiveVarcharObjectInspector outputOI) {
@@ -528,7 +528,7 @@ public class PrimitiveObjectInspectorConverter {
       //if (typeParams == null) {
       //  throw new RuntimeException("varchar type used without type params");
       //}
-      hc = new HiveVarcharWritable();
+      hc = outputOI.create(new HiveVarchar("",-1));
     }
 
     @Override
@@ -551,13 +551,13 @@ public class PrimitiveObjectInspectorConverter {
   public static class HiveCharConverter implements Converter {
     PrimitiveObjectInspector inputOI;
     SettableHiveCharObjectInspector outputOI;
-    HiveCharWritable hc;
+    Object hc;
 
     public HiveCharConverter(PrimitiveObjectInspector inputOI,
         SettableHiveCharObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
-      hc = new HiveCharWritable();
+      hc = outputOI.create(new HiveChar("",-1));
     }
 
     @Override

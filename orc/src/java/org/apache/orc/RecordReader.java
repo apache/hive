@@ -30,13 +30,11 @@ public interface RecordReader {
    * controlled by the callers. Caller need to look at
    * VectorizedRowBatch.size of the retunred object to know the batch
    * size read.
-   * @param previousBatch a row batch object that can be reused by the reader
-   * @return the row batch that was read. The batch will have a non-zero row
-   *         count if the pointer isn't at the end of the file
+   * @param batch a row batch object to read into
+   * @return were more rows available to read?
    * @throws java.io.IOException
    */
-  VectorizedRowBatch nextBatch(VectorizedRowBatch previousBatch
-			       ) throws IOException;
+  boolean nextBatch(VectorizedRowBatch batch) throws IOException;
 
   /**
    * Get the row number of the row that will be returned by the following

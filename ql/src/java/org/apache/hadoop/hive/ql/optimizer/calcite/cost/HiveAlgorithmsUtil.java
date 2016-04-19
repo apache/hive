@@ -48,17 +48,17 @@ public class HiveAlgorithmsUtil {
   private final double hdfsRead;
 
   HiveAlgorithmsUtil(HiveConf conf) {
-    cpuCost = Double.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_CPU));
+    cpuCost = Double.parseDouble(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_CPU));
     netCost = cpuCost
-        * Double.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_NET));
+        * Double.parseDouble(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_NET));
     localFSWrite = netCost
-        * Double.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_LFS_WRITE));
+        * Double.parseDouble(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_LFS_WRITE));
     localFSRead = netCost
-        * Double.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_LFS_READ));
+        * Double.parseDouble(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_LFS_READ));
     hdfsWrite = localFSWrite
-        * Double.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_HDFS_WRITE));
+        * Double.parseDouble(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_HDFS_WRITE));
     hdfsRead = localFSRead
-        * Double.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_HDFS_READ));
+        * Double.parseDouble(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_HDFS_READ));
   }
 
   public static RelOptCost computeCardinalityBasedCost(HiveRelNode hr) {

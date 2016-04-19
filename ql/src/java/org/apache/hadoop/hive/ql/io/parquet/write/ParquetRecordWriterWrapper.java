@@ -77,7 +77,7 @@ public class ParquetRecordWriterWrapper implements RecordWriter<NullWritable, Pa
     Configuration conf = ContextUtil.getConfiguration(job);
     if (blockSize != null && !blockSize.isEmpty()) {
       LOG.debug("get override parquet.block.size property via tblproperties");
-      conf.setInt(ParquetOutputFormat.BLOCK_SIZE, Integer.valueOf(blockSize));
+      conf.setInt(ParquetOutputFormat.BLOCK_SIZE, Integer.parseInt(blockSize));
     }
 
     String enableDictionaryPage =
@@ -85,7 +85,7 @@ public class ParquetRecordWriterWrapper implements RecordWriter<NullWritable, Pa
     if (enableDictionaryPage != null && !enableDictionaryPage.isEmpty()) {
       LOG.debug("get override parquet.enable.dictionary property via tblproperties");
       conf.setBoolean(ParquetOutputFormat.ENABLE_DICTIONARY,
-        Boolean.valueOf(enableDictionaryPage));
+        Boolean.parseBoolean(enableDictionaryPage));
     }
 
     String compressionName = tableProperties.getProperty(ParquetOutputFormat.COMPRESSION);

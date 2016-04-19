@@ -1783,7 +1783,7 @@ public class HBaseReadWrite implements MetadataStore {
       // Someone deleted it before we got to it, no worries
       return;
     }
-    int refCnt = Integer.valueOf(new String(serializedRefCnt, HBaseUtils.ENCODING));
+    int refCnt = Integer.parseInt(new String(serializedRefCnt, HBaseUtils.ENCODING));
     HTableInterface htab = conn.getHBaseTable(SD_TABLE);
     if (--refCnt < 1) {
       Delete d = new Delete(key);
@@ -1823,7 +1823,7 @@ public class HBaseReadWrite implements MetadataStore {
       sdCache.put(new ByteArrayWrapper(key), storageDescriptor);
     } else {
       // Just increment the reference count
-      int refCnt = Integer.valueOf(new String(serializedRefCnt, HBaseUtils.ENCODING)) + 1;
+      int refCnt = Integer.parseInt(new String(serializedRefCnt, HBaseUtils.ENCODING)) + 1;
       Put p = new Put(key);
       p.add(CATALOG_CF, REF_COUNT_COL, Integer.toString(refCnt).getBytes(HBaseUtils.ENCODING));
       htab.put(p);
@@ -2377,7 +2377,7 @@ public class HBaseReadWrite implements MetadataStore {
       Result result = iter.next();
       byte[] val =  result.getValue(CATALOG_CF, MASTER_KEY_COL);
       if (val != null) {
-        int seqNo = Integer.valueOf(new String(result.getRow(), HBaseUtils.ENCODING));
+        int seqNo = Integer.parseInt(new String(result.getRow(), HBaseUtils.ENCODING));
         lines.add("Master key " + seqNo + ": " + HBaseUtils.deserializeMasterKey(val));
       } else {
         val = result.getValue(CATALOG_CF, DELEGATION_TOKEN_COL);
@@ -2395,14 +2395,14 @@ public class HBaseReadWrite implements MetadataStore {
 
   long peekAtSequence(byte[] sequence) throws IOException {
     byte[] serialized = read(SEQUENCES_TABLE, sequence, CATALOG_CF, CATALOG_COL);
-    return serialized == null ? 0 : Long.valueOf(new String(serialized, HBaseUtils.ENCODING));
+    return serialized == null ? 0 : Long.parseLong(new String(serialized, HBaseUtils.ENCODING));
   }
 
   long getNextSequence(byte[] sequence) throws IOException {
     byte[] serialized = read(SEQUENCES_TABLE, sequence, CATALOG_CF, CATALOG_COL);
     long val = 0;
     if (serialized != null) {
-      val = Long.valueOf(new String(serialized, HBaseUtils.ENCODING));
+      val = Long.parseLong(new String(serialized, HBaseUtils.ENCODING));
     }
     byte[] incrSerialized = new Long(val + 1).toString().getBytes(HBaseUtils.ENCODING);
     store(SEQUENCES_TABLE, sequence, CATALOG_CF, CATALOG_COL, incrSerialized);

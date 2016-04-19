@@ -81,7 +81,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((((UDFToLong(ctinyint) <= cbigint) and ((UDFToDouble(cint) <= cdouble) or (ctimestamp2 < ctimestamp1))) and (cdouble < UDFToDouble(ctinyint))) and ((cbigint > -257) or (cfloat < UDFToFloat(cint)))) (type: boolean)
+              predicate: ((UDFToLong(ctinyint) <= cbigint) and ((UDFToDouble(cint) <= cdouble) or (ctimestamp2 < ctimestamp1)) and (cdouble < UDFToDouble(ctinyint)) and ((cbigint > -257) or (cfloat < UDFToFloat(cint)))) (type: boolean)
               Statistics: Num rows: 606 Data size: 130292 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ctimestamp1 (type: timestamp), cfloat (type: float), cstring1 (type: string), cboolean1 (type: boolean), cdouble (type: double), (- (-26.28 + cdouble)) (type: double)

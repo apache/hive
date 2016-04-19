@@ -190,6 +190,8 @@ import org.apache.hadoop.hive.ql.plan.UnionDesc;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
@@ -314,7 +316,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   boolean rootTasksResolved;
 
-  private final TableMask tableMask;
+  private TableMask tableMask;
 
   CreateTableDesc tableDesc;
 
@@ -371,7 +373,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     globalLimitCtx = new GlobalLimitCtx();
     viewAliasToInput = new HashMap<String, ReadEntity>();
     noscan = partialscan = false;
-    tableMask = new TableMask(this, conf);
     tabNameToTabObject = new HashMap<>();
   }
 
@@ -565,7 +566,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       assert (expressionTree.getChildCount() != 0);
       if (expressionTree.getChild(expressionTree.getChildCount()-1).getType()
           == HiveParser.TOK_WINDOWSPEC) {
+        // If it is a windowing spec, we include it in the list
+        // Further, we will examine its children AST nodes to check whether
+        // there are aggregation functions within
         wdwFns.add(expressionTree);
+        doPhase1GetAllAggregations((ASTNode) expressionTree.getChild(expressionTree.getChildCount()-1),
+                aggregations, wdwFns);
         return;
       }
       if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
@@ -736,11 +742,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         int seedNum = conf.getIntVar(ConfVars.HIVESAMPLERANDOMNUM);
         sample = new SplitSample(percent, seedNum);
       } else if (type.getType() == HiveParser.TOK_ROWCOUNT) {
-        sample = new SplitSample(Integer.valueOf(value));
+        sample = new SplitSample(Integer.parseInt(value));
       } else {
         assert type.getType() == HiveParser.TOK_LENGTH;
         assertCombineInputFormat(numerator, "Total Length");
-        long length = Integer.valueOf(value.substring(0, value.length() - 1));
+        long length = Integer.parseInt(value.substring(0, value.length() - 1));
         char last = value.charAt(value.length() - 1);
         if (last == 'k' || last == 'K') {
           length <<= 10;
@@ -10361,6 +10367,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     Queue<Node> queue = new LinkedList<>();
     queue.add(ast);
+    Map<HivePrivilegeObject, MaskAndFilterInfo> basicInfos = new LinkedHashMap<>();
     while (!queue.isEmpty()) {
       ASTNode astNode = (ASTNode) queue.poll();
       if (astNode.getToken().getType() == HiveParser.TOK_TABREF) {
@@ -10368,8 +10375,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         StringBuffer additionalTabInfo = new StringBuffer();
         for (int index = 1; index < astNode.getChildCount(); index++) {
           ASTNode ct = (ASTNode) astNode.getChild(index);
-          // TODO: support TOK_TABLEBUCKETSAMPLE, TOK_TABLESPLITSAMPLE, and
-          // TOK_TABLEPROPERTIES
           if (ct.getToken().getType() == HiveParser.TOK_TABLEBUCKETSAMPLE
               || ct.getToken().getType() == HiveParser.TOK_TABLESPLITSAMPLE
               || ct.getToken().getType() == HiveParser.TOK_TABLEPROPERTIES) {
@@ -10408,14 +10413,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException("Table " + tabIdName + " is not found.");
         }
 
-        if (tableMask.needTransform(table.getDbName(), table.getTableName())) {
-          replacementText = tableMask.create(table, additionalTabInfo.toString(), alias);
+        List<String> colNames = new ArrayList<>();
+        List<String> colTypes = new ArrayList<>();
+        for (FieldSchema col : table.getAllCols()) {
+          colNames.add(col.getName());
+          colTypes.add(col.getType());
         }
-        if (replacementText != null) {
-          tableMask.setNeedsRewrite(true);
-          // we replace the tabref with replacementText here.
-          tableMask.addTableMasking(astNode, replacementText);
-        }
+        
+        basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames),
+            new MaskAndFilterInfo(colTypes, additionalTabInfo.toString(), alias, astNode));
       }
       if (astNode.getChildCount() > 0 && !ignoredTokens.contains(astNode.getToken().getType())) {
         for (Node child : astNode.getChildren()) {
@@ -10423,8 +10429,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
+    List<HivePrivilegeObject> basicPrivObjs = new ArrayList<>();
+    basicPrivObjs.addAll(basicInfos.keySet());
+    List<HivePrivilegeObject> needRewritePrivObjs = tableMask
+        .applyRowFilterAndColumnMasking(basicPrivObjs);
+    if (needRewritePrivObjs != null && !needRewritePrivObjs.isEmpty()) {
+      tableMask.setNeedsRewrite(true);
+      for (HivePrivilegeObject privObj : needRewritePrivObjs) {
+        MaskAndFilterInfo info = basicInfos.get(privObj);
+        String replacementText = tableMask.create(privObj, info);
+        tableMask.addTableMasking(info.astNode, replacementText);
+      }
+    }
   }
-
+  
   // We walk through the AST.
   // We replace all the TOK_TABREF by adding additional masking and filter if
   // the table needs to be masked or filtered.
@@ -10544,6 +10562,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // masking and filtering should be done here
     // the basic idea is similar to unparseTranslator.
+    tableMask = new TableMask(this, conf);
     if (!unparseTranslator.isEnabled() && tableMask.isEnabled()) {
       child = rewriteASTWithMaskAndFilter(ast);
     }
@@ -11372,12 +11391,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_ALTERTABLE_BUCKETS:
         bucketCols = getColumnNames((ASTNode) child.getChild(0));
         if (child.getChildCount() == 2) {
-          numBuckets = (Integer.valueOf(child.getChild(1).getText()))
-              .intValue();
+          numBuckets = Integer.parseInt(child.getChild(1).getText());
         } else {
           sortCols = getColumnNamesOrder((ASTNode) child.getChild(1));
-          numBuckets = (Integer.valueOf(child.getChild(2).getText()))
-              .intValue();
+          numBuckets = Integer.parseInt(child.getChild(2).getText());
         }
         break;
       case HiveParser.TOK_TABLEROWFORMAT:

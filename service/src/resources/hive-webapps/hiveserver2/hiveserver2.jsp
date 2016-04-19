@@ -125,15 +125,16 @@ for (HiveSession hiveSession: hiveSessions) {
 </section>
 
 <section>
-<h2>Queries</h2>
+<h2>Open Queries</h2>
 <table id="attributes_table" class="table table-striped">
     <tr>
         <th>User Name</th>
         <th>Query</th>
         <th>Execution Engine</th>
         <th>State</th>
-        <th>Begin Time</th>
-        <th>Elapsed Time (s)</th>
+        <th>Opened Timestamp</th>
+        <th>Opened (s)</th>
+        <th>Latency (s)</th>
         <th>Drilldown Link</th>
     </tr>
     <%
@@ -149,30 +150,32 @@ for (HiveSession hiveSession: hiveSessions) {
         <td><%= operation.getState() %></td>
         <td><%= new Date(operation.getBeginTime()) %></td>
         <td><%= operation.getElapsedTime()/1000 %></td>
+        <td><%= operation.getRuntime() == null ? "Not finished" : operation.getRuntime()/1000 %></td>
         <% String link = "/query_page?operationId=" + operation.getOperationId(); %>
-        <td>  <a href= <%= link %>>Query Drilldown</a> </td>
+        <td>  <a href= <%= link %>>Drilldown</a> </td>
     </tr>
 
 <%
   }
 %>
 <tr>
-  <td colspan="7">Total number of queries: <%= queries %></td>
+  <td colspan="8">Total number of queries: <%= queries %></td>
 </tr>
 </table>
 </section>
 
 
 <section>
-<h2>Last Max <%= conf.get(ConfVars.HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES.varname) %> Completed Queries</h2>
+<h2>Last Max <%= conf.get(ConfVars.HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES.varname) %> Closed Queries</h2>
 <table id="attributes_table" class="table table-striped">
     <tr>
         <th>User Name</th>
         <th>Query</th>
         <th>Execution Engine</th>
         <th>State</th>
-        <th>Elapsed Time (s)</th>
-        <th>End Time</th>
+        <th>Opened (s)</th>
+        <th>Closed Timestamp</th>
+        <th>Latency (s)</th>
         <th>Drilldown Link</th>
     </tr>
     <%
@@ -188,8 +191,9 @@ for (HiveSession hiveSession: hiveSessions) {
         <td><%= operation.getState() %></td>
         <td><%= operation.getElapsedTime()/1000 %></td>
         <td><%= operation.getEndTime() == null ? "In Progress" : new Date(operation.getEndTime()) %></td>
+        <td><%= operation.getRuntime()/1000 %></td>
         <% String link = "/query_page?operationId=" + operation.getOperationId(); %>
-        <td>  <a href= <%= link %>>Query Drilldown</a> </td>
+        <td>  <a href= <%= link %>>Drilldown</a> </td>
     </tr>
 
 <%

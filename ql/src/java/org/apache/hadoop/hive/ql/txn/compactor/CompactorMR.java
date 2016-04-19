@@ -484,7 +484,7 @@ public class CompactorMR {
         LOG.warn("Found a non-bucket file that we thought matched the bucket pattern! " +
             file.toString() + " Matcher=" + matcher.toString());
       }
-      int bucketNum = Integer.valueOf(matcher.group());
+      int bucketNum = Integer.parseInt(matcher.group());
       BucketTracker bt = splitToBucketMap.get(bucketNum);
       if (bt == null) {
         bt = new BucketTracker();
@@ -628,15 +628,15 @@ public class CompactorMR {
     StringableMap(String s) {
       String[] parts = s.split(":", 2);
       // read that many chars
-      int numElements = Integer.valueOf(parts[0]);
+      int numElements = Integer.parseInt(parts[0]);
       s = parts[1];
       for (int i = 0; i < numElements; i++) {
         parts = s.split(":", 2);
-        int len = Integer.valueOf(parts[0]);
+        int len = Integer.parseInt(parts[0]);
         String key = null;
         if (len > 0) key = parts[1].substring(0, len);
         parts = parts[1].substring(len).split(":", 2);
-        len = Integer.valueOf(parts[0]);
+        len = Integer.parseInt(parts[0]);
         String value = null;
         if (len > 0) value = parts[1].substring(0, len);
         s = parts[1].substring(len);
@@ -683,11 +683,11 @@ public class CompactorMR {
     StringableList(String s) {
       String[] parts = s.split(":", 2);
       // read that many chars
-      int numElements = Integer.valueOf(parts[0]);
+      int numElements = Integer.parseInt(parts[0]);
       s = parts[1];
       for (int i = 0; i < numElements; i++) {
         parts = s.split(":", 2);
-        int len = Integer.valueOf(parts[0]);
+        int len = Integer.parseInt(parts[0]);
         String val = parts[1].substring(0, len);
         s = parts[1].substring(len);
         add(new Path(val));

@@ -16,6 +16,8 @@ package org.apache.hadoop.hive.llap.registry.impl;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Comparator;
@@ -52,7 +54,9 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
   private final int port;
   private final int shuffle;
   private final int mngPort;
+  private final int webPort;
   private final int outputFormatPort;
+  private final String webScheme;
   private final String[] hosts;
   private final int memory;
   private final int vcores;
@@ -67,6 +71,11 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
     this.resolveHosts = conf.getBoolean(FIXED_REGISTRY_RESOLVE_HOST_NAMES, true);
     this.mngPort = HiveConf.getIntVar(conf, ConfVars.LLAP_MANAGEMENT_RPC_PORT);
     this.outputFormatPort = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT);
+
+
+    this.webPort = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_WEB_PORT);
+    boolean isSsl = HiveConf.getBoolVar(conf, ConfVars.LLAP_DAEMON_WEB_SSL);
+    this.webScheme = isSsl ? "https" : "http";
 
     for (Map.Entry<String, String> kv : conf) {
       if (kv.getKey().startsWith(HiveConf.PREFIX_LLAP)
@@ -91,8 +100,9 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
   }
 
   @Override
-  public void register() throws IOException {
-    // nothing to register
+  public String register() throws IOException {
+    // nothing to register (return host-<hostname>)
+    return getWorkerIdentity(InetAddress.getLocalHost().getCanonicalHostName());
   }
 
   @Override
@@ -108,6 +118,7 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
   private final class FixedServiceInstance implements ServiceInstance {
 
     private final String host;
+    private final String serviceAddress;
 
     public FixedServiceInstance(String host) {
       if (resolveHosts) {
@@ -125,6 +136,15 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
         }
       }
       this.host = host;
+      final URL serviceURL;
+      try {
+        serviceURL =
+            new URL(LlapFixedRegistryImpl.this.webScheme, host, LlapFixedRegistryImpl.this.webPort,
+                "");
+        this.serviceAddress = serviceURL.toString();
+      } catch (MalformedURLException e) {
+        throw new RuntimeException(e);
+      }
     }
 
     public String getWorkerIdentity() {
@@ -155,6 +175,11 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
     @Override
     public int getOutputFormatPort() {
       return LlapFixedRegistryImpl.this.outputFormatPort;
+    }
+
+    @Override
+    public String getServicesAddress() {
+      return serviceAddress;
     }
 
     @Override

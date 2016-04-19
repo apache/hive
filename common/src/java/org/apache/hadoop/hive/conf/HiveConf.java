@@ -330,6 +330,7 @@ public class HiveConf extends Configuration {
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_WEB_PORT.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_WEB_SSL.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
   }
 
   /**
@@ -1973,6 +1974,8 @@ public class HiveConf extends Configuration {
         "Must be a subclass of org.apache.hadoop.hive.ql.log.PerfLogger"),
     HIVE_START_CLEANUP_SCRATCHDIR("hive.start.cleanup.scratchdir", false,
         "To cleanup the Hive scratchdir when starting the Hive Server"),
+    HIVE_SCRATCH_DIR_LOCK("hive.scratchdir.lock", false,
+        "To hold a lock file in scratchdir to prevent to be removed by cleardanglingscratchdir"),
     HIVE_INSERT_INTO_MULTILEVEL_DIRS("hive.insert.into.multilevel.dirs", false,
         "Where to insert into multilevel directories like\n" +
         "\"insert directory '/HIVEFT25686/chinna/' from table\""),
@@ -2301,6 +2304,8 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_SESSION_CHECK_INTERVAL("hive.server2.session.check.interval", "6h",
         new TimeValidator(TimeUnit.MILLISECONDS, 3000l, true, null, false),
         "The check interval for session/operation timeout, which can be disabled by setting to zero or negative value."),
+    HIVE_SERVER2_CLOSE_SESSION_ON_DISCONNECT("hive.server2.close.session.on.disconnect", true,
+      "Session will be closed when connection is closed. Set this to false to have session outlive its parent connection."),
     HIVE_SERVER2_IDLE_SESSION_TIMEOUT("hive.server2.idle.session.timeout", "7d",
         new TimeValidator(TimeUnit.MILLISECONDS),
         "Session will be closed when it's not accessed for this duration, which can be disabled by setting to zero or negative value."),
@@ -2643,6 +2648,8 @@ public class HiveConf extends Configuration {
     LLAP_DAEMON_QUEUE_NAME("hive.llap.daemon.queue.name", null,
         "Queue name within which the llap slider application will run." +
         " Used in LlapServiceDriver and package.py"),
+    LLAP_DAEMON_CONTAINER_ID("hive.llap.daemon.container.id", null,
+        "ContainerId of a running LlapDaemon. Used to publish to the registry"),
     LLAP_DAEMON_SHUFFLE_DIR_WATCHER_ENABLED("hive.llap.daemon.shuffle.dir.watcher.enabled", false,
       "TODO doc", "llap.daemon.shuffle.dir-watcher.enabled"),
     LLAP_DAEMON_AM_LIVENESS_HEARTBEAT_INTERVAL_MS(
@@ -3188,12 +3195,12 @@ public class HiveConf extends Configuration {
 
   public static long toTime(String value, TimeUnit inputUnit, TimeUnit outUnit) {
     String[] parsed = parseNumberFollowedByUnit(value.trim());
-    return outUnit.convert(Long.valueOf(parsed[0].trim().trim()), unitFor(parsed[1].trim(), inputUnit));
+    return outUnit.convert(Long.parseLong(parsed[0].trim()), unitFor(parsed[1].trim(), inputUnit));
   }
 
   public static long toSizeBytes(String value) {
     String[] parsed = parseNumberFollowedByUnit(value.trim());
-    return Long.valueOf(parsed[0].trim()) * multiplierFor(parsed[1].trim());
+    return Long.parseLong(parsed[0].trim()) * multiplierFor(parsed[1].trim());
   }
 
   private static String[] parseNumberFollowedByUnit(String value) {

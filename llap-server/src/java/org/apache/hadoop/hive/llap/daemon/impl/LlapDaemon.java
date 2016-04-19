@@ -60,6 +60,7 @@ import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.JvmPauseMonitor;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.slf4j.Logger;
@@ -74,6 +75,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   private static final Logger LOG = LoggerFactory.getLogger(LlapDaemon.class);
 
   public static final String LOG4j2_PROPERTIES_FILE = "llap-daemon-log4j2.properties";
+  public static final String HADOOP_METRICS2_PROPERTIES_FILE = "hadoop-metrics2.properties";
   private final Configuration shuffleHandlerConf;
   private final LlapProtocolServerImpl server;
   private final ContainerRunnerImpl containerRunner;
@@ -208,11 +210,13 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         amReporter, executorClassLoader);
     addIfService(containerRunner);
 
+    // Not adding the registry as a service, since we need to control when it is initialized - conf used to pickup properties.
+    this.registry = new LlapRegistryService(true);
 
     if (HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.HIVE_IN_TEST)) {
       this.webServices = null;
     } else {
-      this.webServices = new LlapWebServices(webPort);
+      this.webServices = new LlapWebServices(webPort, this, registry);
       addIfService(webServices);
     }
     // Bring up the server only after all other components have started.
@@ -220,9 +224,6 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     // AMReporter after the server so that it gets the correct address. It knows how to deal with
     // requests before it is started.
     addIfService(amReporter);
-
-    // Not adding the registry as a service, since we need to control when it is initialized - conf used to pickup properties.
-    this.registry = new LlapRegistryService(true);
   }
 
   private void initializeLogging() {
@@ -356,6 +357,14 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       // Cache settings will need to be setup in llap-daemon-site.xml - since the daemons don't read hive-site.xml
       // Ideally, these properties should be part of LlapDameonConf rather than HiveConf
       LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
+
+      String containerIdStr = System.getenv(ApplicationConstants.Environment.CONTAINER_ID.name());
+      if (containerIdStr != null && !containerIdStr.isEmpty()) {
+        daemonConf.set(ConfVars.LLAP_DAEMON_CONTAINER_ID.varname, containerIdStr);
+      } else {
+        daemonConf.unset(ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
+      }
+
       int numExecutors = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
 
       String localDirList = LlapUtil.getDaemonLocalDirList(daemonConf);

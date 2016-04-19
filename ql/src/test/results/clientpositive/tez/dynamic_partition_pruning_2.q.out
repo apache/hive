@@ -206,31 +206,31 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
                             Target column: dim_shops_id (int)
                             Target Input: agg
                             Partition key expr: dim_shops_id
-                            Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                             Target Vertex: Map 1
         Reducer 2 
             Reduce Operator Tree:
@@ -374,16 +374,16 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
         Reducer 2 
             Reduce Operator Tree:
@@ -735,31 +735,31 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
                             Target column: dim_shops_id (int)
                             Target Input: agg
                             Partition key expr: dim_shops_id
-                            Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                             Target Vertex: Map 1
         Reducer 2 
             Reduce Operator Tree:

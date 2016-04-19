@@ -78,7 +78,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: ((VALUE._col0) IN ('val_100', 'val_200', 'val_300') and (KEY._col0) IN (100, 150, 200)) (type: boolean)
-                  Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 63 Data size: 669 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     keys: KEY._col0 (type: string)
@@ -99,7 +99,7 @@ STAGE PLANS:
                             name: default.e1
                 Filter Operator
                   predicate: ((VALUE._col0) IN ('val_400', 'val_500') and (KEY._col0) IN (400, 450)) (type: boolean)
-                  Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 63 Data size: 669 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     keys: KEY._col0 (type: string)
@@ -422,7 +422,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: ((VALUE._col0) IN ('val_100', 'val_200', 'val_300') and (KEY._col0) IN (100, 150, 200)) (type: boolean)
-                  Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 63 Data size: 669 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     keys: KEY._col0 (type: string)
@@ -443,7 +443,7 @@ STAGE PLANS:
                             name: default.e1
                 Filter Operator
                   predicate: ((VALUE._col0) IN ('val_400', 'val_500') and (KEY._col0) IN (400, 450)) (type: boolean)
-                  Statistics: Num rows: 62 Data size: 658 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 63 Data size: 669 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     keys: KEY._col0 (type: string)

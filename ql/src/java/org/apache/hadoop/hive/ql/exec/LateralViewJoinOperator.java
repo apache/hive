@@ -19,9 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -149,7 +147,7 @@ public class LateralViewJoinOperator extends Operator<LateralViewJoinDesc> {
 
   @Override
   public String getName() {
-    return getOperatorName();
+    return LateralViewJoinOperator.getOperatorName();
   }
 
   static public String getOperatorName() {

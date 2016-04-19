@@ -108,9 +108,17 @@ public class ExprNodeDescUtils {
    * bind two predicates by AND op
    */
   public static ExprNodeGenericFuncDesc mergePredicates(ExprNodeDesc prev, ExprNodeDesc next) {
-    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(2);
-    children.add(prev);
-    children.add(next);
+    final List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(2);
+    if (FunctionRegistry.isOpAnd(prev)) {
+      children.addAll(prev.getChildren());
+    } else {
+      children.add(prev);
+    }
+    if (FunctionRegistry.isOpAnd(next)) {
+      children.addAll(next.getChildren());
+    } else {
+      children.add(next);
+    }
     return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
         FunctionRegistry.getGenericUDFForAnd(), children);
   }

@@ -36,12 +36,12 @@ import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.QueryContext;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -55,6 +55,7 @@ import org.mockito.Mockito;
 public class TestHS2AuthzContext {
   private static MiniHS2 miniHS2 = null;
   static HiveAuthorizer mockedAuthorizer;
+  static HiveAuthenticationProvider authenticator;
 
   /**
    * This factory creates a mocked HiveAuthorizer class.
@@ -65,6 +66,7 @@ public class TestHS2AuthzContext {
     public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
         HiveConf conf, HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) {
       TestHS2AuthzContext.mockedAuthorizer = Mockito.mock(HiveAuthorizer.class);
+      TestHS2AuthzContext.authenticator = authenticator;
       return TestHS2AuthzContext.mockedAuthorizer;
     }
   }
@@ -110,19 +112,19 @@ public class TestHS2AuthzContext {
     stmt.close();
     hs2Conn.close();
 
-    ArgumentCaptor<HiveAuthzContext> contextCapturer = ArgumentCaptor
-        .forClass(HiveAuthzContext.class);
+    ArgumentCaptor<QueryContext> contextCapturer = ArgumentCaptor
+        .forClass(QueryContext.class);
 
     verify(mockedAuthorizer).checkPrivileges(any(HiveOperationType.class),
         Matchers.anyListOf(HivePrivilegeObject.class),
         Matchers.anyListOf(HivePrivilegeObject.class), contextCapturer.capture());
 
-    HiveAuthzContext context = contextCapturer.getValue();
+    QueryContext context = contextCapturer.getValue();
 
     assertEquals("Command ", ctxCmd, context.getCommandString());
-    assertTrue("ip address pattern check", context.getIpAddress().matches("[.:a-fA-F0-9]+"));
+    assertTrue("ip address pattern check", authenticator.getUserIpAddress().matches("[.:a-fA-F0-9]+"));
     // ip address size check - check for something better than non zero
-    assertTrue("ip address size check", context.getIpAddress().length() > 7);
+    assertTrue("ip address size check", authenticator.getUserIpAddress().length() > 7);
 
   }
 

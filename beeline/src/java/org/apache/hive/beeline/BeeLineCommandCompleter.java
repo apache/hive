@@ -27,24 +27,26 @@ import jline.console.completer.NullCompleter;
 import jline.console.completer.StringsCompleter;
 
 class BeeLineCommandCompleter extends AggregateCompleter {
-
-  public BeeLineCommandCompleter(List<Completer> completers) {
-    super(completers);
+  public BeeLineCommandCompleter(Iterable<CommandHandler> handlers) {
+    super(getCompleters(handlers));
   }
 
-  public static List<Completer> getCompleters(BeeLine beeLine){
+  public static List<Completer> getCompleters(Iterable<CommandHandler> handlers){
     List<Completer> completers = new LinkedList<Completer>();
 
-    for (int i = 0; i < beeLine.commandHandlers.length; i++) {
-      String[] cmds = beeLine.commandHandlers[i].getNames();
-      for (int j = 0; cmds != null && j < cmds.length; j++) {
-        List<Completer> compl = new LinkedList<Completer>();
-        compl.add(new StringsCompleter(BeeLine.COMMAND_PREFIX + cmds[j]));
-        compl.addAll(Arrays.asList(beeLine.commandHandlers[i].getParameterCompleters()));
-        compl.add(new NullCompleter()); // last param no complete
-        completers.add(new AggregateCompleter(compl.toArray(new Completer[0])));
+    for (CommandHandler handler : handlers) {
+      String[] commandNames = handler.getNames();
+      if (commandNames != null) {
+        for (String commandName : commandNames) {
+          List<Completer> compl = new LinkedList<Completer>();
+          compl.add(new StringsCompleter(BeeLine.COMMAND_PREFIX + commandName));
+          compl.addAll(Arrays.asList(handler.getParameterCompleters()));
+          compl.add(new NullCompleter()); // last param no complete
+          completers.add(new AggregateCompleter(compl.toArray(new Completer[compl.size()])));
+        }
       }
     }
+
     return completers;
   }
 }

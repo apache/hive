@@ -27,9 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.orc.BooleanColumnStatistics;
-import org.apache.orc.OrcUtils;
+import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.BufferChunk;
 import org.apache.orc.ColumnStatistics;
 import org.apache.orc.impl.ColumnStatisticsImpl;
@@ -58,7 +57,6 @@ import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DiskRangeList.CreateHelper;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.orc.BloomFilterIO;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
@@ -98,7 +96,6 @@ public class RecordReaderImpl implements RecordReader {
   private final SargApplier sargApp;
   // an array about which row groups aren't skipped
   private boolean[] includedRowGroups = null;
-  private final Configuration conf;
   private final MetadataReader metadata;
   private final DataReader dataReader;
 
@@ -145,33 +142,33 @@ public class RecordReaderImpl implements RecordReader {
                              FileSystem fileSystem,
                              Path path,
                              Reader.Options options,
+                             TypeDescription fileSchema,
                              List<OrcProto.Type> types,
                              CompressionCodec codec,
                              int bufferSize,
                              long strideRate,
                              Configuration conf
                              ) throws IOException {
-
-    TreeReaderFactory.TreeReaderSchema treeReaderSchema;
+    SchemaEvolution treeReaderSchema;
+    this.included = options.getInclude();
+    included[0] = true;
     if (options.getSchema() == null) {
       if (LOG.isInfoEnabled()) {
         LOG.info("Schema on read not provided -- using file schema " + types.toString());
       }
-      treeReaderSchema = new TreeReaderFactory.TreeReaderSchema().fileTypes(types).schemaTypes(types);
+      treeReaderSchema = new SchemaEvolution(fileSchema, included);
     } else {
 
       // Now that we are creating a record reader for a file, validate that the schema to read
       // is compatible with the file schema.
       //
-      List<OrcProto.Type> schemaTypes = OrcUtils.getOrcTypes(options.getSchema());
-      treeReaderSchema = SchemaEvolution.validateAndCreate(types, schemaTypes);
+      treeReaderSchema = new SchemaEvolution(fileSchema, options.getSchema(),
+          included);
     }
     this.path = path;
     this.codec = codec;
     this.types = types;
     this.bufferSize = bufferSize;
-    this.included = options.getInclude();
-    this.conf = conf;
     this.rowIndexStride = strideRate;
     this.metadata = new MetadataReaderImpl(fileSystem, path, codec, bufferSize, types.size());
     SearchArgument sarg = options.getSearchArgument();
@@ -210,7 +207,8 @@ public class RecordReaderImpl implements RecordReader {
       skipCorrupt = OrcConf.SKIP_CORRUPT_DATA.getBoolean(conf);
     }
 
-    reader = TreeReaderFactory.createTreeReader(0, treeReaderSchema, included, skipCorrupt);
+    reader = TreeReaderFactory.createTreeReader(treeReaderSchema.getReaderSchema(),
+        treeReaderSchema, included, skipCorrupt);
     indexes = new OrcProto.RowIndex[types.size()];
     bloomFilterIndices = new OrcProto.BloomFilterIndex[types.size()];
     advanceToNextRow(reader, 0L, true);
@@ -239,7 +237,7 @@ public class RecordReaderImpl implements RecordReader {
     return metadata.readStripeFooter(stripe);
   }
 
-  static enum Location {
+  enum Location {
     BEFORE, MIN, MIDDLE, MAX, AFTER
   }
 
@@ -1052,31 +1050,27 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   @Override
-  public VectorizedRowBatch nextBatch(VectorizedRowBatch previous) throws IOException {
+  public boolean nextBatch(VectorizedRowBatch batch) throws IOException {
     try {
-      final VectorizedRowBatch result;
       if (rowInStripe >= rowCountInStripe) {
         currentStripe += 1;
+        if (currentStripe >= stripes.size()) {
+          batch.size = 0;
+          return false;
+        }
         readStripe();
       }
 
-      final int batchSize = computeBatchSize(VectorizedRowBatch.DEFAULT_SIZE);
+      int batchSize = computeBatchSize(batch.getMaxSize());
 
       rowInStripe += batchSize;
-      if (previous == null) {
-        ColumnVector[] cols = (ColumnVector[]) reader.nextVector(null, (int) batchSize);
-        result = new VectorizedRowBatch(cols.length);
-        result.cols = cols;
-      } else {
-        result = previous;
-        result.selectedInUse = false;
-        reader.setVectorColumnCount(result.getDataColumnCount());
-        reader.nextVector(result.cols, batchSize);
-      }
+      reader.setVectorColumnCount(batch.getDataColumnCount());
+      reader.nextBatch(batch, batchSize);
 
-      result.size = batchSize;
+      batch.size = (int) batchSize;
+      batch.selectedInUse = false;
       advanceToNextRow(reader, rowInStripe + rowBaseInStripe, true);
-      return result;
+      return batch.size  != 0;
     } catch (IOException e) {
       // Rethrow exception with file name in log message
       throw new IOException("Error reading file: " + path, e);

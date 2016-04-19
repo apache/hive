@@ -20,9 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.util;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -88,5 +86,14 @@ public class FakeVectorDataSourceOperator extends Operator<FakeVectorDataSourceO
   @Override
   public OperatorType getType() {
     return null;
+  }
+
+  @Override
+  public String getName() {
+    return FakeVectorDataSourceOperator.getOperatorName();
+  }
+
+  public static String getOperatorName() {
+    return "FAKE_VECTOR_DS";
   }
 }

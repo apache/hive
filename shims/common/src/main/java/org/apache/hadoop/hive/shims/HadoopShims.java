@@ -113,6 +113,12 @@ public interface HadoopShims {
       boolean format,
       String[] racks) throws IOException;
 
+  MiniDFSShim getMiniDfs(Configuration conf,
+      int numDataNodes,
+      boolean format,
+      String[] racks,
+      boolean isHA) throws IOException;
+
   /**
    * Shim around the functions in MiniDFSCluster that Hive uses.
    */

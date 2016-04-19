@@ -74,7 +74,7 @@ Stage-0
                                 Select Operator [SEL_11] (rows=18262 width=1119)
                                   Output:["_col0"]
                                   Filter Operator [FIL_65] (rows=18262 width=1119)
-                                    predicate:(((d_qoy = 2) and (d_year = 2000)) and d_date_sk is not null)
+                                    predicate:((d_qoy = 2) and (d_year = 2000) and d_date_sk is not null)
                                     TableScan [TS_9] (rows=73049 width=1119)
                                       default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_qoy"]
                             <-Reducer 3 [SIMPLE_EDGE]
@@ -102,7 +102,7 @@ Stage-0
                                         Select Operator [SEL_2] (rows=1 width=0)
                                           Output:["_col0","_col1","_col2","_col3"]
                                           Filter Operator [FIL_62] (rows=1 width=0)
-                                            predicate:((ws_bill_customer_sk is not null and ws_sold_date_sk is not null) and ws_item_sk is not null)
+                                            predicate:(ws_bill_customer_sk is not null and ws_sold_date_sk is not null and ws_item_sk is not null)
                                             TableScan [TS_0] (rows=1 width=0)
                                               default@web_sales,web_sales,Tbl:PARTIAL,Col:NONE,Output:["ws_sold_date_sk","ws_item_sk","ws_bill_customer_sk","ws_sales_price"]
                                     <-Map 8 [SIMPLE_EDGE]

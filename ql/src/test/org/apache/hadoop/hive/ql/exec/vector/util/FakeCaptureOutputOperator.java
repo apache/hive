@@ -20,9 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.util;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -102,4 +100,12 @@ public class FakeCaptureOutputOperator extends Operator<FakeCaptureOutputDesc>
     return null;
   }
 
+  @Override
+  public String getName() {
+    return FakeCaptureOutputOperator.getOperatorName();
+  }
+
+  public static String getOperatorName() {
+    return "FAKE_CAPTURE";
+  }
 }

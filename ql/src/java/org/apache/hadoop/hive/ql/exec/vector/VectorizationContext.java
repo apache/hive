@@ -102,6 +102,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.UDFConv;
+import org.apache.hadoop.hive.ql.udf.UDFFromUnixTime;
 import org.apache.hadoop.hive.ql.udf.UDFHex;
 import org.apache.hadoop.hive.ql.udf.UDFRegExpExtract;
 import org.apache.hadoop.hive.ql.udf.UDFRegExpReplace;
@@ -463,7 +464,7 @@ public class VectorizationContext {
       ve = getColumnVectorExpression((ExprNodeColumnDesc) exprDesc, mode);
     } else if (exprDesc instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc expr = (ExprNodeGenericFuncDesc) exprDesc;
-      if (isCustomUDF(expr) || isNonVectorizedPathUDF(expr)) {
+      if (isCustomUDF(expr) || isNonVectorizedPathUDF(expr, mode)) {
         ve = getCustomUDFExpression(expr);
       } else {
 
@@ -752,7 +753,7 @@ public class VectorizationContext {
    * Depending on performance requirements and frequency of use, these
    * may be implemented in the future with an optimized VectorExpression.
    */
-  public static boolean isNonVectorizedPathUDF(ExprNodeGenericFuncDesc expr) {
+  public static boolean isNonVectorizedPathUDF(ExprNodeGenericFuncDesc expr, Mode mode) {
     GenericUDF gudf = expr.getGenericUDF();
     if (gudf instanceof GenericUDFBridge) {
       GenericUDFBridge bridge = (GenericUDFBridge) gudf;
@@ -761,6 +762,7 @@ public class VectorizationContext {
           || udfClass.equals(UDFRegExpExtract.class)
           || udfClass.equals(UDFRegExpReplace.class)
           || udfClass.equals(UDFConv.class)
+          || udfClass.equals(UDFFromUnixTime.class) && isIntFamily(arg0Type(expr))
           || isCastToIntFamily(udfClass) && isStringFamily(arg0Type(expr))
           || isCastToFloatFamily(udfClass) && isStringFamily(arg0Type(expr))
           || udfClass.equals(UDFToString.class) &&
@@ -793,6 +795,9 @@ public class VectorizationContext {
             (arg0Type(expr).equals("timestamp")
                 || arg0Type(expr).equals("double")
                 || arg0Type(expr).equals("float"))) {
+      return true;
+    } else if (gudf instanceof GenericUDFBetween && (mode == Mode.PROJECTION)) {
+      // between has 4 args here, but can be vectorized like this 
       return true;
     }
     return false;
@@ -1196,7 +1201,7 @@ public class VectorizationContext {
     childExpr = castedChildren;
 
     //First handle special cases
-    if (udf instanceof GenericUDFBetween) {
+    if (udf instanceof GenericUDFBetween && mode == Mode.FILTER) {
       return getBetweenFilterExpression(childExpr, mode, returnType);
     } else if (udf instanceof GenericUDFIn) {
       return getInExpression(childExpr, mode, returnType);

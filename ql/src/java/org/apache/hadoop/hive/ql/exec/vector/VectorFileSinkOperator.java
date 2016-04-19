@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.util.Collection;
-import java.util.concurrent.Future;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -28,6 +25,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * File Sink operator implementation.
@@ -56,7 +55,8 @@ public class VectorFileSinkOperator extends FileSinkOperator {
   }
 
   /** Kryo ctor. */
-  protected VectorFileSinkOperator() {
+  @VisibleForTesting
+  public VectorFileSinkOperator() {
     super();
   }
 

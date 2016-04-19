@@ -38,4 +38,14 @@ public abstract class TerminalOperator<T extends OperatorDesc> extends
   public TerminalOperator(CompilationOpContext ctx) {
     super(ctx);
   }
+
+  @Override
+  public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
+    return "END";
+  }
+
 }

@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLClassLoader;
@@ -46,6 +48,7 @@ import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -105,6 +108,7 @@ public class SessionState {
   private static final String LOCAL_SESSION_PATH_KEY = "_hive.local.session.path";
   private static final String HDFS_SESSION_PATH_KEY = "_hive.hdfs.session.path";
   private static final String TMP_TABLE_SPACE_KEY = "_hive.tmp_table_space";
+  static final String LOCK_FILE_NAME = "inuse.lck";
 
   private final Map<String, Map<String, Table>> tempTables = new HashMap<String, Map<String, Table>>();
   private final Map<String, Map<String, ColumnStatisticsObj>> tempTableColStats =
@@ -228,6 +232,8 @@ public class SessionState {
    */
   private Path hdfsSessionPath;
 
+  private FSDataOutputStream hdfsSessionPathLockFile = null;
+
   /**
    * sub dir of hdfs session path. used to keep tmp tables
    * @return Path for temporary tables created by the current session
@@ -268,6 +274,8 @@ public class SessionState {
   private final ResourceMaps resourceMaps;
 
   private final ResourceDownloader resourceDownloader;
+
+  private List<String> forwardedAddresses;
 
   /**
    * Get the lineage state stored in this session.
@@ -618,8 +626,9 @@ public class SessionState {
    * 2. Local scratch dir
    * 3. Local downloaded resource dir
    * 4. HDFS session path
-   * 5. Local session path
-   * 6. HDFS temp table space
+   * 5. hold a lock file in HDFS session dir to indicate the it is in use
+   * 6. Local session path
+   * 7. HDFS temp table space
    * @param userName
    * @throws IOException
    */
@@ -647,11 +656,19 @@ public class SessionState {
     hdfsSessionPath = new Path(hdfsScratchDirURIString, sessionId);
     createPath(conf, hdfsSessionPath, scratchDirPermission, false, true);
     conf.set(HDFS_SESSION_PATH_KEY, hdfsSessionPath.toUri().toString());
-    // 5. Local session path
+    // 5. hold a lock file in HDFS session dir to indicate the it is in use
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_SCRATCH_DIR_LOCK)) {
+      FileSystem fs = FileSystem.get(conf);
+      hdfsSessionPathLockFile = fs.create(new Path(hdfsSessionPath, LOCK_FILE_NAME), true);
+      hdfsSessionPathLockFile.writeUTF("hostname: " + InetAddress.getLocalHost().getHostName() + "\n");
+      hdfsSessionPathLockFile.writeUTF("process: " + ManagementFactory.getRuntimeMXBean().getName() + "\n");
+      hdfsSessionPathLockFile.hsync();
+    }
+    // 6. Local session path
     localSessionPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR), sessionId);
     createPath(conf, localSessionPath, scratchDirPermission, true, true);
     conf.set(LOCAL_SESSION_PATH_KEY, localSessionPath.toUri().toString());
-    // 6. HDFS temp table space
+    // 7. HDFS temp table space
     hdfsTmpTableSpace = new Path(hdfsSessionPath, TMP_PREFIX);
     createPath(conf, hdfsTmpTableSpace, scratchDirPermission, false, true);
     conf.set(TMP_TABLE_SPACE_KEY, hdfsTmpTableSpace.toUri().toString());
@@ -766,8 +783,18 @@ public class SessionState {
     return this.hdfsTmpTableSpace;
   }
 
+  @VisibleForTesting
+  void releaseSessionLockFile() throws IOException {
+    if (hdfsSessionPath != null && hdfsSessionPathLockFile != null) {
+      hdfsSessionPathLockFile.close();
+    }
+  }
+
   private void dropSessionPaths(Configuration conf) throws IOException {
     if (hdfsSessionPath != null) {
+      if (hdfsSessionPathLockFile != null) {
+        hdfsSessionPathLockFile.close();
+      }
       hdfsSessionPath.getFileSystem(conf).delete(hdfsSessionPath, true);
       LOG.info("Deleted HDFS directory: " + hdfsSessionPath);
     }
@@ -1659,6 +1686,14 @@ public class SessionState {
 
   public ResourceDownloader getResourceDownloader() {
     return resourceDownloader;
+  }
+
+  public void setForwardedAddresses(List<String> forwardedAddresses) {
+    this.forwardedAddresses = forwardedAddresses;
+  }
+
+  public List<String> getForwardedAddresses() {
+    return forwardedAddresses;
   }
 }
 

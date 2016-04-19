@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.Collection;
-import java.util.concurrent.Future;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -44,7 +41,7 @@ public class LateralViewForwardOperator extends Operator<LateralViewForwardDesc>
 
   @Override
   public String getName() {
-    return getOperatorName();
+    return LateralViewForwardOperator.getOperatorName();
   }
 
   static public String getOperatorName() {

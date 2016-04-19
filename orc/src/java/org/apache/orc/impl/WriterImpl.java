@@ -1693,9 +1693,10 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
   }
 
+  public static long MILLIS_PER_DAY = 24 * 60 * 60 * 1000;
+  public static long NANOS_PER_MILLI = 1000000;
   public static final int MILLIS_PER_SECOND = 1000;
   static final int NANOS_PER_SECOND = 1000000000;
-  static final int MILLIS_PER_NANO  = 1000000;
   public static final String BASE_TIMESTAMP_STRING = "2015-01-01 00:00:00";
 
   private static class TimestampTreeWriter extends TreeWriter {
@@ -2261,32 +2262,36 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         }
       } else {
         // write the records in runs of the same tag
-        byte prevTag = 0;
-        int currentRun = 0;
-        boolean started = false;
+        int[] currentStart = new int[vec.fields.length];
+        int[] currentLength = new int[vec.fields.length];
         for(int i=0; i < length; ++i) {
-          if (!vec.isNull[i + offset]) {
+          // only need to deal with the non-nulls, since the nulls were dealt
+          // with in the super method.
+          if (vec.noNulls || !vec.isNull[i + offset]) {
             byte tag = (byte) vec.tags[offset + i];
             tags.write(tag);
-            if (!started) {
-              started = true;
-              currentRun = i;
-              prevTag = tag;
-            } else if (tag != prevTag) {
-              childrenWriters[prevTag].writeBatch(vec.fields[prevTag],
-                  offset + currentRun, i - currentRun);
-              currentRun = i;
-              prevTag = tag;
+            if (currentLength[tag] == 0) {
+              // start a new sequence
+              currentStart[tag] = i + offset;
+              currentLength[tag] = 1;
+            } else if (currentStart[tag] + currentLength[tag] == i + offset) {
+              // ok, we are extending the current run for that tag.
+              currentLength[tag] += 1;
+            } else {
+              // otherwise, we need to close off the old run and start a new one
+              childrenWriters[tag].writeBatch(vec.fields[tag],
+                  currentStart[tag], currentLength[tag]);
+              currentStart[tag] = i + offset;
+              currentLength[tag] = 1;
             }
-          } else if (started) {
-            started = false;
-            childrenWriters[prevTag].writeBatch(vec.fields[prevTag],
-                offset + currentRun, i - currentRun);
           }
         }
-        if (started) {
-          childrenWriters[prevTag].writeBatch(vec.fields[prevTag],
-              offset + currentRun, length - currentRun);
+        // write out any left over sequences
+        for(int tag=0; tag < currentStart.length; ++tag) {
+          if (currentLength[tag] != 0) {
+            childrenWriters[tag].writeBatch(vec.fields[tag], currentStart[tag],
+                currentLength[tag]);
+          }
         }
       }
     }

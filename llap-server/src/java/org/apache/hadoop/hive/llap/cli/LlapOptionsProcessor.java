@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.llap.cli;
 
+import jline.TerminalFactory;
+
 import java.io.IOException;
 import java.util.Properties;
 
@@ -59,9 +61,10 @@ public class LlapOptionsProcessor {
   public static final String OPTION_SLIDER_KEYTAB = "slider-keytab";
   public static final String OPTION_SLIDER_PRINCIPAL = "slider-principal";
   public static final String OPTION_SLIDER_DEFAULT_KEYTAB = "slider-default-keytab";
+  public static final String OPTION_OUTPUT_DIR = "output";
 
 
-  public class LlapOptions {
+  public static class LlapOptions {
     private final int instances;
     private final String directory;
     private final String name;
@@ -206,6 +209,10 @@ public class LlapOptionsProcessor {
         .withLongOpt(OPTION_LLAP_QUEUE)
         .withDescription("The queue within which LLAP will be started").create('q'));
 
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_OUTPUT_DIR)
+        .withLongOpt(OPTION_OUTPUT_DIR)
+        .withDescription("Output directory for the generated scripts").create());
+
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_AUXJARS).withLongOpt(OPTION_AUXJARS)
         .withDescription("additional jars to package (by default, JSON SerDe jar is packaged"
             + " if available)").create('j'));
@@ -224,9 +231,9 @@ public class LlapOptionsProcessor {
         .withDescription("Use value for given property. Overridden by explicit parameters")
         .create());
 
-    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SLIDER_AM_CONTAINER_MB)
+    options.addOption(OptionBuilder.hasArg().withArgName("b")
         .withLongOpt(OPTION_SLIDER_AM_CONTAINER_MB)
-        .withDescription("The size of the slider AppMaster container in MB").create());
+        .withDescription("The size of the slider AppMaster container in MB").create('b'));
 
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_IO_THREADS)
         .withLongOpt(OPTION_IO_THREADS).withDescription("executor per instance").create('t'));
@@ -284,6 +291,14 @@ public class LlapOptionsProcessor {
   }
 
   private void printUsage() {
-    new HelpFormatter().printHelp("llap", options);
+    HelpFormatter hf = new HelpFormatter();
+    try {
+      int width = hf.getWidth();
+      int jlineWidth = TerminalFactory.get().getWidth();
+      width = Math.min(160, Math.max(jlineWidth, width)); // Ignore potentially incorrect values
+      hf.setWidth(width);
+    } catch (Throwable t) { // Ignore
+    }
+    hf.printHelp("llap", options);
   }
 }

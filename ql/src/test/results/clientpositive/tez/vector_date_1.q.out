@@ -534,7 +534,7 @@ STAGE PLANS:
                   alias: vector_date_1
                   Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((((dt1 = dt1) and (dt1 <> dt2)) and (dt1 < dt2)) and (dt1 <= dt2)) and (dt2 > dt1)) and (dt2 >= dt1)) (type: boolean)
+                    predicate: ((dt1 = dt1) and (dt1 <> dt2) and (dt1 < dt2) and (dt1 <= dt2) and (dt2 > dt1) and (dt2 >= dt1)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 74 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: dt1 (type: date), dt2 (type: date)
@@ -649,7 +649,7 @@ STAGE PLANS:
                   alias: vector_date_1
                   Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((((((dt1 = 2001-01-01) and (2001-01-01 = dt1)) and (dt1 <> 1970-01-01)) and (1970-01-01 <> dt1)) and (dt1 > 1970-01-01)) and (dt1 >= 1970-01-01)) and (1970-01-01 < dt1)) and (1970-01-01 <= dt1)) (type: boolean)
+                    predicate: ((dt1 = 2001-01-01) and (2001-01-01 = dt1) and (dt1 <> 1970-01-01) and (1970-01-01 <> dt1) and (dt1 > 1970-01-01) and (dt1 >= 1970-01-01) and (1970-01-01 < dt1) and (1970-01-01 <= dt1)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 74 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: dt2 (type: date)

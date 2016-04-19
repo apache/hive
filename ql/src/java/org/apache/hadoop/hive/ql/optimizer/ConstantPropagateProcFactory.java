@@ -77,6 +77,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
@@ -229,7 +231,7 @@ public final class ConstantPropagateProcFactory {
   public static ExprNodeDesc foldExpr(ExprNodeGenericFuncDesc funcDesc) {
 
     GenericUDF udf = funcDesc.getGenericUDF();
-    if (!isDeterministicUdf(udf)) {
+    if (!isDeterministicUdf(udf, funcDesc.getChildren())) {
       return funcDesc;
     }
     return evaluateFunction(funcDesc.getGenericUDF(),funcDesc.getChildren(), funcDesc.getChildren());
@@ -347,7 +349,7 @@ public final class ConstantPropagateProcFactory {
       }
 
       // Don't evaluate nondeterministic function since the value can only calculate during runtime.
-      if (!isDeterministicUdf(udf)) {
+      if (!isDeterministicUdf(udf, newExprs)) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Function " + udf.getClass() + " is undeterministic. Don't evalulate immediately.");
         }
@@ -406,7 +408,7 @@ public final class ConstantPropagateProcFactory {
       }
 
       // Don't evaluate nondeterministic function since the value can only calculate during runtime.
-      if (!isDeterministicUdf(udf)) {
+      if (!isDeterministicUdf(udf, newExprs)) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Function " + udf.getClass() + " is undeterministic. Don't evaluate immediately.");
         }
@@ -457,12 +459,17 @@ public final class ConstantPropagateProcFactory {
     return desc;
   }
 
-  private static boolean isDeterministicUdf(GenericUDF udf) {
+  private static boolean isDeterministicUdf(GenericUDF udf,  List<ExprNodeDesc> children) {
     UDFType udfType = udf.getClass().getAnnotation(UDFType.class);
     if (udf instanceof GenericUDFBridge) {
       udfType = ((GenericUDFBridge) udf).getUdfClass().getAnnotation(UDFType.class);
     }
     if (udfType.deterministic() == false) {
+      if (udf.getClass().equals(GenericUDFUnixTimeStamp.class) 
+          && children != null && children.size() > 0) {
+        // unix_timestamp is polymorphic (ignore class annotations)
+        return true;
+      }
       return false;
     }
 
@@ -814,6 +821,13 @@ public final class ConstantPropagateProcFactory {
         } else {
           return null;
         }
+      }
+    }
+
+    if (udf instanceof GenericUDFUnixTimeStamp) {
+      if (newExprs.size() >= 1) {
+        // unix_timestamp(args) -> to_unix_timestamp(args)
+        return ExprNodeGenericFuncDesc.newInstance(new GenericUDFToUnixTimeStamp(), newExprs);
       }
     }
 

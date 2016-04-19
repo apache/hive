@@ -67,4 +67,9 @@ public class DummyAuthenticator implements HiveAuthenticationProvider {
     //no op
   }
 
+  @Override
+  public String getUserIpAddress() {
+    return null;
+  }
+
 }

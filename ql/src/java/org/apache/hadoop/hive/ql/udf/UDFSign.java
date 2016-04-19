@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSignLongToDoubl
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 
 @Description(name = "sign",
              value = "_FUNC_(x) - returns the sign of x )",
@@ -44,6 +45,20 @@ public class UDFSign extends UDF {
    * Take sign of a
    */
   public DoubleWritable evaluate(DoubleWritable a) {
+    if (a == null) {
+      return null;
+    }
+    if (a.get() == 0) {
+      result.set(0);
+    } else if (a.get() > 0) {
+      result.set(1);
+    } else {
+      result.set(-1);
+    }
+    return result;
+  }
+
+  public DoubleWritable evaluate(LongWritable a) {
     if (a == null) {
       return null;
     }

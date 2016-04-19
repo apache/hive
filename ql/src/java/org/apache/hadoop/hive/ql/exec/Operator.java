@@ -31,8 +31,6 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
@@ -51,6 +49,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Base operator implementation.
@@ -887,15 +887,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
   }
 
-  /**
-   * Implements the getName function for the Node Interface.
-   *
-   * @return the name of the operator
-   */
   @Override
-  public String getName() {
-    return getOperatorName();
-  }
+  public abstract String getName();
 
   static public String getOperatorName() {
     return "OP";
@@ -1348,6 +1341,15 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     @Override
     public OperatorType getType() {
       return null;
+    }
+
+    @Override
+    public String getName() {
+      return DummyOperator.getOperatorName();
+    }
+
+    public static String getOperatorName() {
+      return "DUMMY";
     }
 
     @Override

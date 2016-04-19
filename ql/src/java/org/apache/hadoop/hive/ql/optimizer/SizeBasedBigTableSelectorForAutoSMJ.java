@@ -57,7 +57,7 @@ public abstract class SizeBasedBigTableSelectorForAutoSMJ {
     // If the size is present in the metastore, use it
     if (size != null) {
       try {
-        return Long.valueOf(size);
+        return Long.parseLong(size);
       } catch (NumberFormatException e) {
         return -1;
       }

@@ -438,7 +438,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (((BLOCK__OFFSET__INSIDE__FILE < 100) and (BLOCK__OFFSET__INSIDE__FILE < 50)) and key is not null) (type: boolean)
+              predicate: ((BLOCK__OFFSET__INSIDE__FILE < 100) and (BLOCK__OFFSET__INSIDE__FILE < 50) and key is not null) (type: boolean)
               Statistics: Num rows: 222 Data size: 2358 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), ds (type: string), hr (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint)

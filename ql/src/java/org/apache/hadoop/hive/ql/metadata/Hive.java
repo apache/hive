@@ -2697,7 +2697,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     String fullF1 = getQualifiedPathWithoutSchemeAndAuthority(srcf, srcFs);
     String fullF2 = getQualifiedPathWithoutSchemeAndAuthority(destf, destFs);
 
-    boolean isInTest = Boolean.valueOf(HiveConf.getBoolVar(srcFs.getConf(), ConfVars.HIVE_IN_TEST));
+    boolean isInTest = HiveConf.getBoolVar(srcFs.getConf(), ConfVars.HIVE_IN_TEST);
     // In the automation, the data warehouse is the local file system based.
     LOG.debug("The source path is " + fullF1 + " and the destination path is " + fullF2);
     if (isInTest) {

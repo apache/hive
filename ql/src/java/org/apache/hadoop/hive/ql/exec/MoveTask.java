@@ -527,6 +527,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     } catch (Exception e) {
       console.printError("Failed with exception " + e.getMessage(), "\n"
           + StringUtils.stringifyException(e));
+      setException(e);
       return (1);
     }
   }

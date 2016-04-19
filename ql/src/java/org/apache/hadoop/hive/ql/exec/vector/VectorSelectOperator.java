@@ -19,9 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -36,6 +34,8 @@ import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Select operator implementation.
@@ -82,7 +82,8 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
   }
 
   /** Kryo ctor. */
-  protected VectorSelectOperator() {
+  @VisibleForTesting
+  public VectorSelectOperator() {
     super();
   }
 
@@ -147,10 +148,6 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
     vrg.projectedColumns = originalProjections;
   }
 
-  static public String getOperatorName() {
-    return "SEL";
-  }
-
   public VectorExpression[] getvExpressions() {
     return vExpressions;
   }
@@ -176,4 +173,14 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
   public OperatorType getType() {
     return OperatorType.SELECT;
   }
+
+  @Override
+  public String getName() {
+    return getOperatorName();
+  }
+
+  static public String getOperatorName() {
+    return "SEL";
+  }
+
 }

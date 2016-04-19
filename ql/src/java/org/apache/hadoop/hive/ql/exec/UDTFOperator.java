@@ -20,13 +20,9 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -37,6 +33,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.udf.generic.UDTFCollector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * UDTFOperator.
@@ -137,7 +135,7 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
 
   @Override
   public String getName() {
-    return getOperatorName();
+    return UDTFOperator.getOperatorName();
   }
 
   static public String getOperatorName() {
