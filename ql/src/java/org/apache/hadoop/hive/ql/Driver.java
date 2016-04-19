@@ -96,12 +96,10 @@ import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationTranslator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.QueryContext;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.ql.session.OperationLog.LoggingLevel;
@@ -842,7 +840,7 @@ public class Driver implements CommandProcessor {
       Map<String, List<String>> updateTab2Cols) throws HiveException {
 
     /* comment for reviewers -> updateTab2Cols needed to be separate from tab2cols because if I
-    pass tab2cols to getHivePrivObjects for the output case it will trip up insert/selects,
+    pass tab2cols to getHivePrivObjectsFromEntity for the output case it will trip up insert/selects,
     since the insert will get passed the columns from the select.
      */
 
@@ -851,74 +849,16 @@ public class Driver implements CommandProcessor {
     authzContextBuilder.setCommandString(command);
 
     HiveOperationType hiveOpType = getHiveOperationType(op);
-    List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputs, tab2cols);
-    List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputs, updateTab2Cols);
+    HiveAuthorizationTranslator translator =
+        (HiveAuthorizationTranslator) ss.getAuthorizerV2()
+            .getHiveAuthorizationTranslator();
+    List<HivePrivilegeObject> inputsHObjs =
+        translator.getHivePrivObjectsFromEntity(inputs, tab2cols);
+    List<HivePrivilegeObject> outputHObjs =
+        translator.getHivePrivObjectsFromEntity(outputs, updateTab2Cols);
 
-    ss.getAuthorizerV2().checkPrivileges(hiveOpType, inputsHObjs, outputHObjs, authzContextBuilder.build());
-  }
-
-  private static List<HivePrivilegeObject> getHivePrivObjects(
-      Set<? extends Entity> privObjects, Map<String, List<String>> tableName2Cols) {
-    List<HivePrivilegeObject> hivePrivobjs = new ArrayList<HivePrivilegeObject>();
-    if(privObjects == null){
-      return hivePrivobjs;
-    }
-    for(Entity privObject : privObjects){
-      HivePrivilegeObjectType privObjType =
-          AuthorizationUtils.getHivePrivilegeObjectType(privObject.getType());
-      if(privObject.isDummy()) {
-        //do not authorize dummy readEntity or writeEntity
-        continue;
-      }
-      if(privObject instanceof ReadEntity && !((ReadEntity)privObject).isDirect()){
-        // In case of views, the underlying views or tables are not direct dependencies
-        // and are not used for authorization checks.
-        // This ReadEntity represents one of the underlying tables/views, so skip it.
-        // See description of the isDirect in ReadEntity
-        continue;
-      }
-      if(privObject instanceof WriteEntity && ((WriteEntity)privObject).isTempURI()){
-        //do not authorize temporary uris
-        continue;
-      }
-      //support for authorization on partitions needs to be added
-      String dbname = null;
-      String objName = null;
-      List<String> partKeys = null;
-      List<String> columns = null;
-      switch(privObject.getType()){
-      case DATABASE:
-        dbname = privObject.getDatabase().getName();
-        break;
-      case TABLE:
-        dbname = privObject.getTable().getDbName();
-        objName = privObject.getTable().getTableName();
-        columns = tableName2Cols == null ? null :
-            tableName2Cols.get(Table.getCompleteName(dbname, objName));
-        break;
-      case DFS_DIR:
-      case LOCAL_DIR:
-        objName = privObject.getD().toString();
-        break;
-      case FUNCTION:
-        if(privObject.getDatabase() != null) {
-          dbname = privObject.getDatabase().getName();
-        }
-        objName = privObject.getFunctionName();
-        break;
-      case DUMMYPARTITION:
-      case PARTITION:
-        // not currently handled
-        continue;
-        default:
-          throw new AssertionError("Unexpected object type");
-      }
-      HivePrivObjectActionType actionType = AuthorizationUtils.getActionType(privObject);
-      HivePrivilegeObject hPrivObject = new HivePrivilegeObject(privObjType, dbname, objName,
-          partKeys, columns, actionType, null);
-      hivePrivobjs.add(hPrivObject);
-    }
-    return hivePrivobjs;
+    ss.getAuthorizerV2().checkPrivileges(hiveOpType, inputsHObjs, outputHObjs,
+        authzContextBuilder.build());
   }
 
   private static HiveOperationType getHiveOperationType(HiveOperation op) {

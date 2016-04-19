@@ -17,8 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
+import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
@@ -32,7 +37,7 @@ import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
  * The API uses several classes that are considered internal to Hive, and it is
  * subject to change across releases.
  */
-@LimitedPrivate(value = { "Apache Sentry (incubating)" })
+@LimitedPrivate(value = { "Apache Sentry" })
 @Evolving
 public interface HiveAuthorizationTranslator {
 
@@ -43,4 +48,8 @@ public interface HiveAuthorizationTranslator {
 
   public HivePrivilegeObject getHivePrivilegeObject(PrivilegeObjectDesc privObject)
       throws HiveException;
+
+  public List<HivePrivilegeObject> getHivePrivObjectsFromEntity(
+      Set<? extends Entity> privObjects,
+      Map<String, List<String>> tableName2Cols);
 }

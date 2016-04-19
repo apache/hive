@@ -19,9 +19,15 @@ package org.apache.hadoop.hive.ql.security.authorization;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.Entity;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
@@ -77,5 +83,69 @@ public class DefaultHiveAuthorizationTranslator implements HiveAuthorizationTran
     return new HivePrivilegeObject(objectType, dbTable[0], dbTable[1], partSpec, columns, null);
   }
 
-
+  @Override
+  public List<HivePrivilegeObject> getHivePrivObjectsFromEntity(
+      Set<? extends Entity> privObjects,
+      Map<String, List<String>> tableName2Cols) {
+    List<HivePrivilegeObject> hivePrivobjs = new ArrayList<HivePrivilegeObject>();
+    if(privObjects == null){
+      return hivePrivobjs;
+    }
+    for(Entity privObject : privObjects){
+      HivePrivilegeObjectType privObjType =
+          AuthorizationUtils.getHivePrivilegeObjectType(privObject.getType());
+      if(privObject.isDummy()) {
+        //do not authorize dummy readEntity or writeEntity
+        continue;
+      }
+      if(privObject instanceof ReadEntity && !((ReadEntity)privObject).isDirect()){
+        // In case of views, the underlying views or tables are not direct dependencies
+        // and are not used for authorization checks.
+        // This ReadEntity represents one of the underlying tables/views, so skip it.
+        // See description of the isDirect in ReadEntity
+        continue;
+      }
+      if(privObject instanceof WriteEntity && ((WriteEntity)privObject).isTempURI()){
+        //do not authorize temporary uris
+        continue;
+      }
+      //support for authorization on partitions needs to be added
+      String dbname = null;
+      String objName = null;
+      List<String> partKeys = null;
+      List<String> columns = null;
+      switch(privObject.getType()){
+        case DATABASE:
+          dbname = privObject.getDatabase().getName();
+          break;
+        case TABLE:
+          dbname = privObject.getTable().getDbName();
+          objName = privObject.getTable().getTableName();
+          columns = tableName2Cols == null ? null :
+              tableName2Cols.get(Table.getCompleteName(dbname, objName));
+          break;
+        case DFS_DIR:
+        case LOCAL_DIR:
+          objName = privObject.getD().toString();
+          break;
+        case FUNCTION:
+          if(privObject.getDatabase() != null) {
+            dbname = privObject.getDatabase().getName();
+          }
+          objName = privObject.getFunctionName();
+          break;
+        case DUMMYPARTITION:
+        case PARTITION:
+          // not currently handled
+          continue;
+        default:
+          throw new AssertionError("Unexpected object type");
+      }
+      HivePrivilegeObject.HivePrivObjectActionType actionType = AuthorizationUtils.getActionType(privObject);
+      HivePrivilegeObject hPrivObject = new HivePrivilegeObject(privObjType, dbname, objName,
+          partKeys, columns, actionType, null);
+      hivePrivobjs.add(hPrivObject);
+    }
+    return hivePrivobjs;
+  }
 }
