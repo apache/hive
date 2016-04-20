@@ -28,6 +28,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputCommitter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -113,8 +114,11 @@ public class HiveHFileOutputFormat extends
     final org.apache.hadoop.mapreduce.TaskAttemptContext tac =
       ShimLoader.getHadoopShims().newTaskAttemptContext(
           job.getConfiguration(), progressable);
-
     final Path outputdir = FileOutputFormat.getOutputPath(tac);
+
+    // Locate the path for the directory of the task attempt being run, which hold the HFile
+    final Path taskAttemptOutputdir = FileOutputCommitter.getTaskAttemptPath(tac, outputdir);
+
     final org.apache.hadoop.mapreduce.RecordWriter<
       ImmutableBytesWritable, KeyValue> fileWriter = getFileWriter(tac);
 
@@ -148,7 +152,7 @@ public class HiveHFileOutputFormat extends
           // location specified by the user.
           FileSystem fs = outputdir.getFileSystem(jc);
           fs.mkdirs(columnFamilyPath);
-          Path srcDir = outputdir;
+          Path srcDir = taskAttemptOutputdir;
           for (;;) {
             FileStatus [] files = fs.listStatus(srcDir, FileUtils.STAGING_DIR_PATH_FILTER);
             if ((files == null) || (files.length == 0)) {
@@ -169,10 +173,12 @@ public class HiveHFileOutputFormat extends
                 columnFamilyPath,
                 regionFile.getPath().getName()));
           }
+
           // Hive actually wants a file as task output (not a directory), so
           // replace the empty directory with an empty file to keep it happy.
-          fs.delete(outputdir, true);
-          fs.createNewFile(outputdir);
+          fs.delete(taskAttemptOutputdir, true);
+          fs.createNewFile(taskAttemptOutputdir);
+
         } catch (InterruptedException ex) {
           throw new IOException(ex);
         }
