@@ -24,8 +24,11 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,10 +52,11 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
-import org.apache.hadoop.hive.llap.LlapBaseRecordReader;
-import org.apache.hadoop.hive.llap.Schema;
-
 import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
+import org.apache.hadoop.hive.llap.LlapRowInputFormat;
+import org.apache.hadoop.hive.llap.LlapRowRecordReader;
+import org.apache.hadoop.hive.llap.Row;
+import org.apache.hadoop.hive.llap.Schema;
 
 public class LlapDump {
 
@@ -90,6 +94,8 @@ public class LlapDump {
       numSplits = cli.getOptionValue("n");
     }
 
+    Properties configProps = cli.getOptionProperties("hiveconf");
+
     if (cli.getArgs().length > 0) {
       query = cli.getArgs()[0];
     }
@@ -98,8 +104,18 @@ public class LlapDump {
     System.out.println("user: "+user);
     System.out.println("query: "+query);
 
-    LlapBaseInputFormat format = new LlapBaseInputFormat(url, user, pwd, query);
+    LlapRowInputFormat format = new LlapRowInputFormat();
+
     JobConf job = new JobConf();
+    job.set(LlapBaseInputFormat.URL_KEY, url);
+    job.set(LlapBaseInputFormat.USER_KEY, user);
+    job.set(LlapBaseInputFormat.PWD_KEY, pwd);
+    job.set(LlapBaseInputFormat.QUERY_KEY, query);
+
+    // Additional conf settings specified on the command line
+    for (String key: configProps.stringPropertyNames()) {
+      job.set(key, configProps.getProperty(key));
+    }
 
     InputSplit[] splits = format.getSplits(job, Integer.parseInt(numSplits));
 
@@ -111,10 +127,10 @@ public class LlapDump {
 
       for (InputSplit s: splits) {
         LOG.info("Processing input split s from " + Arrays.toString(s.getLocations()));
-        RecordReader<NullWritable, Text> reader = format.getRecordReader(s, job, null);
+        RecordReader<NullWritable, Row> reader = format.getRecordReader(s, job, null);
 
-        if (reader instanceof LlapBaseRecordReader && first) {
-          Schema schema = ((LlapBaseRecordReader)reader).getSchema();
+        if (reader instanceof LlapRowRecordReader && first) {
+          Schema schema = ((LlapRowRecordReader)reader).getSchema();
           System.out.println(""+schema);
         }
 
@@ -124,13 +140,25 @@ public class LlapDump {
           first = false;
         }
 
-        Text value = reader.createValue();
+        Row value = reader.createValue();
         while (reader.next(NullWritable.get(), value)) {
-          System.out.println(value);
+          printRow(value);
         }
       }
       System.exit(0);
     }
+  }
+
+  private static void printRow(Row row) {
+    Schema schema = row.getSchema();
+    StringBuilder sb = new StringBuilder();
+    for (int idx = 0; idx < schema.getColumns().size(); ++idx) {
+      if (idx > 0) {
+        sb.append(", ");
+        sb.append(row.getValue(idx));
+      }
+    }
+    System.out.println(sb.toString());
   }
 
   static Options createOptions() {
@@ -159,6 +187,20 @@ public class LlapDump {
         .withDescription("number of splits")
         .hasArg()
         .create('n'));
+
+    result.addOption(OptionBuilder
+        .withValueSeparator()
+        .hasArgs(2)
+        .withArgName("property=value")
+        .withLongOpt("hiveconf")
+        .withDescription("Use value for given property")
+        .create());
+
+    result.addOption(OptionBuilder
+        .withLongOpt("help")
+        .withDescription("help")
+        .hasArg(false)
+        .create('h'));
 
     return result;
   }
