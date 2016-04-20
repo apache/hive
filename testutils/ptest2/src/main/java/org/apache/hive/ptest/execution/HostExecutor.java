@@ -29,7 +29,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Stopwatch;
 import org.apache.hive.ptest.execution.conf.Host;
 import org.apache.hive.ptest.execution.conf.TestBatch;
 import org.apache.hive.ptest.execution.ssh.RSyncCommand;
@@ -66,8 +65,6 @@ class HostExecutor {
   private final File mFailedTestLogDir;
   private final long mNumPollSeconds;
   private volatile boolean mShutdown;
-  private int numParallelBatchesProcessed = 0;
-  private int numIsolatedBatchesProcessed = 0;
   
   HostExecutor(Host host, String privateKey, ListeningExecutorService executor,
       SSHCommandExecutor sshCommandExecutor,
@@ -103,18 +100,7 @@ class HostExecutor {
     return mExecutor.submit(new Callable<Void>() {
       @Override
       public Void call() throws Exception {
-        Stopwatch stopwatch = Stopwatch.createStarted();
-        mLogger.info("Starting SubmitTests on host {}", getHost());
-        try {
-          executeTests(parallelWorkQueue, isolatedWorkQueue, failedTestResults);
-        } finally {
-          stopwatch.stop();
-          mLogger.info("Finishing submitTests on host: {}. ElapsedTime(seconds)={}," +
-              " NumParallelBatchesProcessed={}, NumIsolatedBatchesProcessed={}",
-              new Object[]{getHost().toString(),
-                  stopwatch.elapsed(TimeUnit.SECONDS), numParallelBatchesProcessed,
-                  numIsolatedBatchesProcessed});
-        }
+        executeTests(parallelWorkQueue, isolatedWorkQueue, failedTestResults);
         return null;
       }
 
@@ -157,7 +143,6 @@ class HostExecutor {
         @Override
         public Void call() throws Exception {
           TestBatch batch = null;
-          Stopwatch sw = Stopwatch.createUnstarted();
           try {
             do {
               batch = parallelWorkQueue.poll(mNumPollSeconds, TimeUnit.SECONDS);
@@ -166,16 +151,8 @@ class HostExecutor {
                 return null;
               }
               if(batch != null) {
-                numParallelBatchesProcessed++;
-                sw.reset().start();
-                try {
-                  if (!executeTestBatch(drone, batch, failedTestResults)) {
-                    failedTestResults.add(batch);
-                  }
-                } finally {
-                  sw.stop();
-                  mLogger.info("Finished processing parallel batch [{}] on host {}. ElapsedTime(seconds)={}",
-                      new Object[]{batch.getName(), getHost().toShortString(), sw.elapsed(TimeUnit.SECONDS)});
+                if(!executeTestBatch(drone, batch, failedTestResults)) {
+                  failedTestResults.add(batch);
                 }
               }
             } while(!mShutdown && !parallelWorkQueue.isEmpty());
@@ -199,22 +176,12 @@ class HostExecutor {
     mLogger.info("Starting isolated execution on " + mHost.getName());
     for(Drone drone : ImmutableList.copyOf(mDrones)) {
       TestBatch batch = null;
-      Stopwatch sw = Stopwatch.createUnstarted();
       try {
         do {
-
           batch = isolatedWorkQueue.poll(mNumPollSeconds, TimeUnit.SECONDS);
           if(batch != null) {
-            numIsolatedBatchesProcessed++;
-            sw.reset().start();
-            try {
-              if (!executeTestBatch(drone, batch, failedTestResults)) {
-                failedTestResults.add(batch);
-              }
-            } finally {
-              sw.stop();
-              mLogger.info("Finished processing isolated batch [{}] on host {}. ElapsedTime(seconds)={}",
-                  new Object[]{batch.getName(), getHost().toShortString(), sw.elapsed(TimeUnit.SECONDS)});
+            if(!executeTestBatch(drone, batch, failedTestResults)) {
+              failedTestResults.add(batch);
             }
           }
         } while(!mShutdown && !isolatedWorkQueue.isEmpty());
@@ -248,15 +215,10 @@ class HostExecutor {
     Templates.writeTemplateResult("batch-exec.vm", script, templateVariables);
     copyToDroneFromLocal(drone, script.getAbsolutePath(), "$localDir/$instanceName/scratch/" + scriptName);
     script.delete();
-    Stopwatch sw = Stopwatch.createStarted();
     mLogger.info(drone + " executing " + batch + " with " + command);
     RemoteCommandResult sshResult = new SSHCommand(mSSHCommandExecutor, drone.getPrivateKey(), drone.getUser(),
         drone.getHost(), drone.getInstance(), command, true).
         call();
-    sw.stop();
-    mLogger.info("Completed executing tests for batch [{}] on host {}. ElapsedTime(seconds)={}",
-        new Object[]{batch.getName(),
-            getHost().toShortString(), sw.elapsed(TimeUnit.SECONDS)});
     File batchLogDir = null;
     if(sshResult.getExitCode() == Constants.EXIT_CODE_UNKNOWN) {
       throw new AbortDroneException("Drone " + drone.toString() + " exited with " +
