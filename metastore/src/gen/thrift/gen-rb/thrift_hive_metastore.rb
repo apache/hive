@@ -318,6 +318,24 @@ module ThriftHiveMetastore
       return
     end
 
+    def create_table_with_constraints(tbl, primaryKeys, foreignKeys)
+      send_create_table_with_constraints(tbl, primaryKeys, foreignKeys)
+      recv_create_table_with_constraints()
+    end
+
+    def send_create_table_with_constraints(tbl, primaryKeys, foreignKeys)
+      send_message('create_table_with_constraints', Create_table_with_constraints_args, :tbl => tbl, :primaryKeys => primaryKeys, :foreignKeys => foreignKeys)
+    end
+
+    def recv_create_table_with_constraints()
+      result = receive_message(Create_table_with_constraints_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      return
+    end
+
     def drop_table(dbname, name, deleteData)
       send_drop_table(dbname, name, deleteData)
       recv_drop_table()
@@ -1322,6 +1340,40 @@ module ThriftHiveMetastore
       return result.success unless result.success.nil?
       raise result.o2 unless result.o2.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_index_names failed: unknown result')
+    end
+
+    def get_primary_keys(request)
+      send_get_primary_keys(request)
+      return recv_get_primary_keys()
+    end
+
+    def send_get_primary_keys(request)
+      send_message('get_primary_keys', Get_primary_keys_args, :request => request)
+    end
+
+    def recv_get_primary_keys()
+      result = receive_message(Get_primary_keys_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_primary_keys failed: unknown result')
+    end
+
+    def get_foreign_keys(request)
+      send_get_foreign_keys(request)
+      return recv_get_foreign_keys()
+    end
+
+    def send_get_foreign_keys(request)
+      send_message('get_foreign_keys', Get_foreign_keys_args, :request => request)
+    end
+
+    def recv_get_foreign_keys()
+      result = receive_message(Get_foreign_keys_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_foreign_keys failed: unknown result')
     end
 
     def update_table_column_statistics(stats_obj)
@@ -2635,6 +2687,23 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'create_table_with_environment_context', seqid)
     end
 
+    def process_create_table_with_constraints(seqid, iprot, oprot)
+      args = read_args(iprot, Create_table_with_constraints_args)
+      result = Create_table_with_constraints_result.new()
+      begin
+        @handler.create_table_with_constraints(args.tbl, args.primaryKeys, args.foreignKeys)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::InvalidObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      rescue ::NoSuchObjectException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'create_table_with_constraints', seqid)
+    end
+
     def process_drop_table(seqid, iprot, oprot)
       args = read_args(iprot, Drop_table_args)
       result = Drop_table_result.new()
@@ -3430,6 +3499,32 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_index_names', seqid)
+    end
+
+    def process_get_primary_keys(seqid, iprot, oprot)
+      args = read_args(iprot, Get_primary_keys_args)
+      result = Get_primary_keys_result.new()
+      begin
+        result.success = @handler.get_primary_keys(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_primary_keys', seqid)
+    end
+
+    def process_get_foreign_keys(seqid, iprot, oprot)
+      args = read_args(iprot, Get_foreign_keys_args)
+      result = Get_foreign_keys_result.new()
+      begin
+        result.success = @handler.get_foreign_keys(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_foreign_keys', seqid)
     end
 
     def process_update_table_column_statistics(seqid, iprot, oprot)
@@ -4796,6 +4891,48 @@ module ThriftHiveMetastore
   end
 
   class Create_table_with_environment_context_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_table_with_constraints_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TBL = 1
+    PRIMARYKEYS = 2
+    FOREIGNKEYS = 3
+
+    FIELDS = {
+      TBL => {:type => ::Thrift::Types::STRUCT, :name => 'tbl', :class => ::Table},
+      PRIMARYKEYS => {:type => ::Thrift::Types::LIST, :name => 'primaryKeys', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLPrimaryKey}},
+      FOREIGNKEYS => {:type => ::Thrift::Types::LIST, :name => 'foreignKeys', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLForeignKey}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_table_with_constraints_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
     O2 = 2
@@ -7195,6 +7332,78 @@ module ThriftHiveMetastore
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_primary_keys_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::PrimaryKeysRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_primary_keys_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::PrimaryKeysResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_foreign_keys_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::ForeignKeysRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_foreign_keys_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ForeignKeysResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
     }
 
     def struct_fields; FIELDS; end

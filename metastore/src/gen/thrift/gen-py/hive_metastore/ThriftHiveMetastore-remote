@@ -42,6 +42,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('   get_schema_with_environment_context(string db_name, string table_name, EnvironmentContext environment_context)')
   print('  void create_table(Table tbl)')
   print('  void create_table_with_environment_context(Table tbl, EnvironmentContext environment_context)')
+  print('  void create_table_with_constraints(Table tbl,  primaryKeys,  foreignKeys)')
   print('  void drop_table(string dbname, string name, bool deleteData)')
   print('  void drop_table_with_environment_context(string dbname, string name, bool deleteData, EnvironmentContext environment_context)')
   print('   get_tables(string db_name, string pattern)')
@@ -101,6 +102,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  Index get_index_by_name(string db_name, string tbl_name, string index_name)')
   print('   get_indexes(string db_name, string tbl_name, i16 max_indexes)')
   print('   get_index_names(string db_name, string tbl_name, i16 max_indexes)')
+  print('  PrimaryKeysResponse get_primary_keys(PrimaryKeysRequest request)')
+  print('  ForeignKeysResponse get_foreign_keys(ForeignKeysRequest request)')
   print('  bool update_table_column_statistics(ColumnStatistics stats_obj)')
   print('  bool update_partition_column_statistics(ColumnStatistics stats_obj)')
   print('  ColumnStatistics get_table_column_statistics(string db_name, string tbl_name, string col_name)')
@@ -343,6 +346,12 @@ elif cmd == 'create_table_with_environment_context':
     print('create_table_with_environment_context requires 2 args')
     sys.exit(1)
   pp.pprint(client.create_table_with_environment_context(eval(args[0]),eval(args[1]),))
+
+elif cmd == 'create_table_with_constraints':
+  if len(args) != 3:
+    print('create_table_with_constraints requires 3 args')
+    sys.exit(1)
+  pp.pprint(client.create_table_with_constraints(eval(args[0]),eval(args[1]),eval(args[2]),))
 
 elif cmd == 'drop_table':
   if len(args) != 3:
@@ -697,6 +706,18 @@ elif cmd == 'get_index_names':
     print('get_index_names requires 3 args')
     sys.exit(1)
   pp.pprint(client.get_index_names(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'get_primary_keys':
+  if len(args) != 1:
+    print('get_primary_keys requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_primary_keys(eval(args[0]),))
+
+elif cmd == 'get_foreign_keys':
+  if len(args) != 1:
+    print('get_foreign_keys requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_foreign_keys(eval(args[0]),))
 
 elif cmd == 'update_table_column_statistics':
   if len(args) != 1:

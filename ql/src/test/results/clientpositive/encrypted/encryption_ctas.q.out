@@ -1,0 +1,56 @@
+PREHOOK: query: DROP TABLE IF EXISTS testCT.encrypted_tablectas PURGE
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS testCT.encrypted_tablectas PURGE
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP DATABASE IF EXISTS testCT
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE IF EXISTS testCT
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: CREATE DATABASE testCT
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:testCT
+POSTHOOK: query: CREATE DATABASE testCT
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:testCT
+Encryption key created: 'key_128'
+Encryption zone created: '/build/ql/test/data/warehouse/default/encrypted_tablectas' using key: 'key_128'
+#### A masked pattern was here ####
+AS SELECT * from src where key = 100 limit 1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+PREHOOK: Output: database:testct
+PREHOOK: Output: testCT@encrypted_tablectas
+#### A masked pattern was here ####
+AS SELECT * from src where key = 100 limit 1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: Output: database:testct
+POSTHOOK: Output: testCT@encrypted_tablectas
+PREHOOK: query: select * from testCT.encrypted_tablectas
+PREHOOK: type: QUERY
+PREHOOK: Input: testct@encrypted_tablectas
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testCT.encrypted_tablectas
+POSTHOOK: type: QUERY
+POSTHOOK: Input: testct@encrypted_tablectas
+#### A masked pattern was here ####
+100	val_100
+PREHOOK: query: DROP TABLE testCT.encrypted_tablectas PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: testct@encrypted_tablectas
+PREHOOK: Output: testct@encrypted_tablectas
+POSTHOOK: query: DROP TABLE testCT.encrypted_tablectas PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: testct@encrypted_tablectas
+POSTHOOK: Output: testct@encrypted_tablectas
+Encryption key deleted: 'key_128'
+PREHOOK: query: DROP DATABASE testCT
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:testct
+PREHOOK: Output: database:testct
+POSTHOOK: query: DROP DATABASE testCT
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:testct
+POSTHOOK: Output: database:testct

@@ -151,11 +151,12 @@ public class TestVectorizedORCReader {
         OrcFile.readerOptions(conf));
     RecordReaderImpl vrr = (RecordReaderImpl) vreader.rows();
     RecordReaderImpl rr = (RecordReaderImpl) reader.rows();
-    VectorizedRowBatch batch = reader.getSchema().createRowBatch();
+    VectorizedRowBatch batch = null;
     OrcStruct row = null;
 
     // Check Vectorized ORC reader against ORC row reader
-    while (vrr.nextBatch(batch)) {
+    while (vrr.hasNext()) {
+      batch = vrr.nextBatch(batch);
       for (int i = 0; i < batch.size; i++) {
         row = (OrcStruct) rr.next(row);
         for (int j = 0; j < batch.cols.length; j++) {
@@ -238,6 +239,6 @@ public class TestVectorizedORCReader {
       Assert.assertEquals(false, batch.cols[8].noNulls);
       Assert.assertEquals(false, batch.cols[9].noNulls);
     }
-    Assert.assertEquals(false, rr.nextBatch(batch));
+    Assert.assertEquals(false, rr.hasNext());
   }
 }

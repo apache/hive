@@ -537,13 +537,13 @@ public class TableStatsRequest implements org.apache.thrift.TBase<TableStatsRequ
           case 3: // COL_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list356 = iprot.readListBegin();
-                struct.colNames = new ArrayList<String>(_list356.size);
-                String _elem357;
-                for (int _i358 = 0; _i358 < _list356.size; ++_i358)
+                org.apache.thrift.protocol.TList _list372 = iprot.readListBegin();
+                struct.colNames = new ArrayList<String>(_list372.size);
+                String _elem373;
+                for (int _i374 = 0; _i374 < _list372.size; ++_i374)
                 {
-                  _elem357 = iprot.readString();
-                  struct.colNames.add(_elem357);
+                  _elem373 = iprot.readString();
+                  struct.colNames.add(_elem373);
                 }
                 iprot.readListEnd();
               }
@@ -579,9 +579,9 @@ public class TableStatsRequest implements org.apache.thrift.TBase<TableStatsRequ
         oprot.writeFieldBegin(COL_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.colNames.size()));
-          for (String _iter359 : struct.colNames)
+          for (String _iter375 : struct.colNames)
           {
-            oprot.writeString(_iter359);
+            oprot.writeString(_iter375);
           }
           oprot.writeListEnd();
         }
@@ -608,9 +608,9 @@ public class TableStatsRequest implements org.apache.thrift.TBase<TableStatsRequ
       oprot.writeString(struct.tblName);
       {
         oprot.writeI32(struct.colNames.size());
-        for (String _iter360 : struct.colNames)
+        for (String _iter376 : struct.colNames)
         {
-          oprot.writeString(_iter360);
+          oprot.writeString(_iter376);
         }
       }
     }
@@ -623,13 +623,13 @@ public class TableStatsRequest implements org.apache.thrift.TBase<TableStatsRequ
       struct.tblName = iprot.readString();
       struct.setTblNameIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list361 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.colNames = new ArrayList<String>(_list361.size);
-        String _elem362;
-        for (int _i363 = 0; _i363 < _list361.size; ++_i363)
+        org.apache.thrift.protocol.TList _list377 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.colNames = new ArrayList<String>(_list377.size);
+        String _elem378;
+        for (int _i379 = 0; _i379 < _list377.size; ++_i379)
         {
-          _elem362 = iprot.readString();
-          struct.colNames.add(_elem362);
+          _elem378 = iprot.readString();
+          struct.colNames.add(_elem378);
         }
       }
       struct.setColNamesIsSet(true);

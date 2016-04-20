@@ -112,6 +112,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("create_table_with_environment_context\n");
   }
 
+  void create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys) {
+    // Your implementation goes here
+    printf("create_table_with_constraints\n");
+  }
+
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) {
     // Your implementation goes here
     printf("drop_table\n");
@@ -405,6 +410,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_index_names(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) {
     // Your implementation goes here
     printf("get_index_names\n");
+  }
+
+  void get_primary_keys(PrimaryKeysResponse& _return, const PrimaryKeysRequest& request) {
+    // Your implementation goes here
+    printf("get_primary_keys\n");
+  }
+
+  void get_foreign_keys(ForeignKeysResponse& _return, const ForeignKeysRequest& request) {
+    // Your implementation goes here
+    printf("get_foreign_keys\n");
   }
 
   bool update_table_column_statistics(const ColumnStatistics& stats_obj) {

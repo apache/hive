@@ -98,11 +98,11 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.QueryContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.QueryContext;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.ql.session.OperationLog.LoggingLevel;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -520,8 +520,7 @@ public class Driver implements CommandProcessor {
         }
       }
 
-      if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT) ||
-           conf.isWebUiQueryInfoCacheEnabled()) {
+      if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
         String explainOutput = getExplainOutput(sem, plan, tree);
         if (explainOutput != null) {
           if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
@@ -1505,6 +1504,8 @@ public class Driver implements CommandProcessor {
 
     maxthreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
 
+    HookContext hookContext = null;
+
     try {
       LOG.info("Executing command(queryId=" + queryId + "): " + queryStr);
       // compile and execute can get called from different threads in case of HS2
@@ -1521,7 +1522,7 @@ public class Driver implements CommandProcessor {
       resStream = null;
 
       SessionState ss = SessionState.get();
-      HookContext hookContext = new HookContext(plan, conf, ctx.getPathToCS(), ss.getUserName(),
+      hookContext = new HookContext(plan, conf, ctx.getPathToCS(), ss.getUserName(),
           ss.getUserIpAddress(), operationId);
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
@@ -1632,16 +1633,7 @@ public class Driver implements CommandProcessor {
 
           } else {
             setErrorMsgAndDetail(exitVal, result.getTaskError(), tsk);
-            hookContext.setHookType(HookContext.HookType.ON_FAILURE_HOOK);
-            hookContext.setErrorMessage(errorMessage);
-            // Get all the failure execution hooks and execute them.
-            for (Hook ofh : getHooks(HiveConf.ConfVars.ONFAILUREHOOKS)) {
-              perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
-
-              ((ExecuteWithHookContext) ofh).run(hookContext);
-
-              perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
-            }
+            invokeFailureHooks(perfLogger, hookContext);
             SQLState = "08S01";
             console.printError(errorMessage);
             driverCxt.shutdown();
@@ -1677,6 +1669,7 @@ public class Driver implements CommandProcessor {
       if (driverCxt.isShutdown()) {
         SQLState = "HY008";
         errorMessage = "FAILED: Operation cancelled";
+        invokeFailureHooks(perfLogger, hookContext);
         console.printError(errorMessage);
         return 1000;
       }
@@ -1731,6 +1724,13 @@ public class Driver implements CommandProcessor {
       }
       // TODO: do better with handling types of Exception here
       errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
+      if (hookContext != null) {
+        try {
+          invokeFailureHooks(perfLogger, hookContext);
+        } catch (Exception t) {
+          LOG.warn("Failed to invoke failure hook", t);
+        }
+      }
       SQLState = "08S01";
       downstreamError = e;
       console.printError(errorMessage + "\n"
@@ -1804,6 +1804,20 @@ public class Driver implements CommandProcessor {
       }
     }
   }
+
+  private void invokeFailureHooks(PerfLogger perfLogger, HookContext hookContext) throws Exception {
+    hookContext.setHookType(HookContext.HookType.ON_FAILURE_HOOK);
+    hookContext.setErrorMessage(errorMessage);
+    // Get all the failure execution hooks and execute them.
+    for (Hook ofh : getHooks(HiveConf.ConfVars.ONFAILUREHOOKS)) {
+      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
+
+      ((ExecuteWithHookContext) ofh).run(hookContext);
+
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
+    }
+  }
+
   /**
    * Launches a new task
    *

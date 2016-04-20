@@ -54,6 +54,7 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.identity.IntIdentity;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -97,6 +98,8 @@ import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -108,6 +111,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.model.MChangeVersion;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
+import org.apache.hadoop.hive.metastore.model.MConstraint;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MDelegationToken;
@@ -899,12 +903,31 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
+  public void createTableWithConstraints(Table tbl,
+    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys)
+    throws InvalidObjectException, MetaException {
+    boolean success = false;
+    try {
+      openTransaction();
+      createTable(tbl);
+      addPrimaryKeys(primaryKeys);
+      addForeignKeys(foreignKeys);
+	  success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
   public void createTable(Table tbl) throws InvalidObjectException, MetaException {
     boolean commited = false;
     try {
       openTransaction();
       MTable mtbl = convertToMTable(tbl);
       pm.makePersistent(mtbl);
+
       PrincipalPrivilegeSet principalPrivs = tbl.getPrivileges();
       List<Object> toPersistPrivObjs = new ArrayList<Object>();
       if (principalPrivs != null) {
@@ -1328,7 +1351,7 @@ public class ObjectStore implements RawStore, Configurable {
     // A new table is always created with a new column descriptor
     return new MTable(HiveStringUtils.normalizeIdentifier(tbl.getTableName()), mdb,
         convertToMStorageDescriptor(tbl.getSd()), tbl.getOwner(), tbl
-            .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
+        .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(),
         tableType);
@@ -3198,6 +3221,165 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return sds;
+  }
+
+  private MColumnDescriptor getColumnFromTable(MTable mtbl, String col) {
+   for (MFieldSchema mfs: mtbl.getSd().getCD().getCols()) {
+     if (mfs.getName().equals(col)) {
+       List<MFieldSchema> mfsl = new ArrayList<MFieldSchema>();
+       mfsl.add(mfs);
+       return new MColumnDescriptor(mfsl);
+     }
+   }
+   return null;
+  }
+
+  private  boolean constraintNameAlreadyExists(String name) {
+    boolean commited = false;
+    Query constraintExistsQuery = null;
+    String constraintNameIfExists = null;
+    try {
+      openTransaction();
+      name = HiveStringUtils.normalizeIdentifier(name);
+      constraintExistsQuery = pm.newQuery(MConstraint.class, "constraintName == name");
+      constraintExistsQuery.declareParameters("java.lang.String name");
+      constraintExistsQuery.setUnique(true);
+      constraintExistsQuery.setResult("name");
+      constraintNameIfExists = (String) constraintExistsQuery.execute(name);
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+      if (constraintExistsQuery != null) {
+          constraintExistsQuery.closeAll();
+      }
+    }
+    return constraintNameIfExists != null && !constraintNameIfExists.isEmpty();
+  }
+
+  private String generateConstraintName(String... parameters) throws MetaException {
+    int hashcode = ArrayUtils.toString(parameters).hashCode();
+    int counter = 0;
+    final int MAX_RETRIES = 10;
+    while (counter < MAX_RETRIES) {
+      String currName = (parameters.length == 0 ? "constraint_" : parameters[parameters.length-1]) +
+        "_" + hashcode + "_" + System.currentTimeMillis() + "_" + (counter++);
+      if (!constraintNameAlreadyExists(currName)) {
+        return currName;
+      }
+    }
+    throw new MetaException("Error while trying to generate the constraint name for " + ArrayUtils.toString(parameters));
+  }
+
+  private void addForeignKeys(
+    List<SQLForeignKey> fks) throws InvalidObjectException,
+    MetaException {
+    List<MConstraint> mpkfks = new ArrayList<MConstraint>();
+    String currentConstraintName = null;
+
+    for (int i = 0; i < fks.size(); i++) {
+      MTable parentTable =
+        getMTable(fks.get(i).getPktable_db(), fks.get(i).getPktable_name());
+      MTable childTable =
+        getMTable(fks.get(i).getFktable_db(), fks.get(i).getFktable_name());
+      MColumnDescriptor parentColumn =
+        getColumnFromTable(parentTable, fks.get(i).getPkcolumn_name());
+      MColumnDescriptor childColumn =
+        getColumnFromTable(childTable, fks.get(i).getFkcolumn_name());
+      if (parentTable == null) {
+        throw new InvalidObjectException("Parent table not found: " + fks.get(i).getPktable_name());
+      }
+      if (childTable == null) {
+        throw new InvalidObjectException("Child table not found: " + fks.get(i).getFktable_name());
+      }
+      if (parentColumn == null) {
+        throw new InvalidObjectException("Parent column not found: " + fks.get(i).getPkcolumn_name());
+      }
+      if (childColumn == null) {
+        throw new InvalidObjectException("Child column not found" + fks.get(i).getFkcolumn_name());
+      }
+      if (fks.get(i).getFk_name() == null) {
+        // When there is no explicit foreign key name associated with the constraint and the key is composite,
+        // we expect the foreign keys to be send in order in the input list.
+        // Otherwise, the below code will break.
+        // If this is the first column of the FK constraint, generate the foreign key name
+        // NB: The below code can result in race condition where duplicate names can be generated (in theory).
+        // However, this scenario can be ignored for practical purposes because of
+        // the uniqueness of the generated constraint name.
+        if (fks.get(i).getKey_seq() == 1) {
+          currentConstraintName = generateConstraintName(fks.get(i).getFktable_db(), fks.get(i).getFktable_name(),
+            fks.get(i).getPktable_db(), fks.get(i).getPktable_name(),
+            fks.get(i).getPkcolumn_name(), fks.get(i).getFkcolumn_name(), "fk");
+        }
+      } else {
+        currentConstraintName = fks.get(i).getFk_name();
+      }
+      Integer updateRule = fks.get(i).getUpdate_rule();
+      Integer deleteRule = fks.get(i).getDelete_rule();
+      int enableValidateRely = (fks.get(i).isEnable_cstr() ? 4 : 0) +
+      (fks.get(i).isValidate_cstr() ? 2 : 0) + (fks.get(i).isRely_cstr() ? 1 : 0);
+      MConstraint mpkfk = new MConstraint(
+        currentConstraintName,
+        MConstraint.FOREIGN_KEY_CONSTRAINT,
+        fks.get(i).getKey_seq(),
+        deleteRule,
+        updateRule,
+        enableValidateRely,
+        parentTable,
+        childTable,
+        parentColumn,
+        childColumn
+      );
+      mpkfks.add(mpkfk);
+    }
+    pm.makePersistentAll(mpkfks);
+  }
+
+  private void addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException,
+    MetaException {
+    List<MConstraint> mpks = new ArrayList<MConstraint>();
+    String constraintName = null;
+    for (int i = 0; i < pks.size(); i++) {
+      MTable parentTable =
+        getMTable(pks.get(i).getTable_db(), pks.get(i).getTable_name());
+      MColumnDescriptor parentColumn =
+        getColumnFromTable(parentTable, pks.get(i).getColumn_name());
+      if (parentTable == null) {
+        throw new InvalidObjectException("Parent table not found: " + pks.get(i).getTable_name());
+      }
+      if (parentColumn == null) {
+        throw new InvalidObjectException("Parent column not found: " + pks.get(i).getColumn_name());
+      }
+      if (getPrimaryKeyConstraintName(
+          parentTable.getDatabase().getName(), parentTable.getTableName()) != null) {
+        throw new MetaException(" Primary key already exists for: " +
+          parentTable.getDatabase().getName() + "." + pks.get(i).getTable_name());
+      }
+      if (pks.get(i).getPk_name() == null) {
+        if (pks.get(i).getKey_seq() == 1) {
+          constraintName = generateConstraintName(pks.get(i).getTable_db(), pks.get(i).getTable_name(),
+            pks.get(i).getColumn_name(), "pk");
+        }
+      } else {
+        constraintName = pks.get(i).getPk_name();
+      }
+      int enableValidateRely = (pks.get(i).isEnable_cstr() ? 4 : 0) +
+      (pks.get(i).isValidate_cstr() ? 2 : 0) + (pks.get(i).isRely_cstr() ? 1 : 0);
+      MConstraint mpk = new MConstraint(
+        constraintName,
+        MConstraint.PRIMARY_KEY_CONSTRAINT,
+        pks.get(i).getKey_seq(),
+        null,
+        null,
+        enableValidateRely,
+        parentTable,
+        null,
+        parentColumn,
+        null);
+      mpks.add(mpk);
+    }
+    pm.makePersistentAll(mpks);
   }
 
   @Override
@@ -7940,4 +8122,217 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
   }
+
+  @Override
+  public List<SQLPrimaryKey> getPrimaryKeys(String db_name, String tbl_name) throws MetaException {
+    try {
+      return getPrimaryKeysInternal(db_name, tbl_name, true, true);
+    } catch (NoSuchObjectException e) {
+      throw new MetaException(e.getMessage());
+    }
+  }
+
+  protected List<SQLPrimaryKey> getPrimaryKeysInternal(final String db_name,
+    final String tbl_name,
+    boolean allowSql, boolean allowJdo)
+  throws MetaException, NoSuchObjectException {
+    return new GetListHelper<SQLPrimaryKey>(db_name, tbl_name, allowSql, allowJdo) {
+
+      @Override
+      protected List<SQLPrimaryKey> getSqlResult(GetHelper<List<SQLPrimaryKey>> ctx) throws MetaException {
+        return directSql.getPrimaryKeys(db_name, tbl_name);
+      }
+
+      @Override
+      protected List<SQLPrimaryKey> getJdoResult(
+        GetHelper<List<SQLPrimaryKey>> ctx) throws MetaException, NoSuchObjectException {
+        return getPrimaryKeysViaJdo(db_name, tbl_name);
+      }
+    }.run(false);
+  }
+
+  private List<SQLPrimaryKey> getPrimaryKeysViaJdo(String db_name, String tbl_name) throws MetaException {
+    boolean commited = false;
+    List<SQLPrimaryKey> primaryKeys = null;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MConstraint.class,
+        "parentTable.tableName == tbl_name && parentTable.database.name == db_name &&"
+        + " constraintType == MConstraint.PRIMARY_KEY_CONSTRAINT");
+      query.declareParameters("java.lang.String tbl_name, java.lang.String db_name");
+      Collection<?> constraints = (Collection<?>) query.execute(tbl_name, db_name);
+      pm.retrieveAll(constraints);
+      primaryKeys = new ArrayList<SQLPrimaryKey>();
+      for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
+        MConstraint currPK = (MConstraint) i.next();
+        int enableValidateRely = currPK.getEnableValidateRely();
+        boolean enable = (enableValidateRely & 4) != 0;
+        boolean validate = (enableValidateRely & 2) != 0;
+        boolean rely = (enableValidateRely & 1) != 0;
+        primaryKeys.add(new SQLPrimaryKey(db_name,
+         tbl_name,
+         currPK.getParentColumn().getCols().get(0).getName(),
+         currPK.getPosition(),
+         currPK.getConstraintName(), enable, validate, rely));
+      }
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+    return primaryKeys;
+  }
+
+  private String getPrimaryKeyConstraintName(String db_name, String tbl_name) throws MetaException {
+    boolean commited = false;
+    String ret = null;
+    Query query = null;
+
+    try {
+      openTransaction();
+      query = pm.newQuery(MConstraint.class,
+        "parentTable.tableName == tbl_name && parentTable.database.name == db_name &&"
+        + " constraintType == MConstraint.PRIMARY_KEY_CONSTRAINT");
+      query.declareParameters("java.lang.String tbl_name, java.lang.String db_name");
+      Collection<?> constraints = (Collection<?>) query.execute(tbl_name, db_name);
+      pm.retrieveAll(constraints);
+      for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
+        MConstraint currPK = (MConstraint) i.next();
+        ret = currPK.getConstraintName();
+        break;
+      }
+      commited = commitTransaction();
+     } finally {
+       if (!commited) {
+        rollbackTransaction();
+       }
+       if (query != null) {
+        query.closeAll();
+       }
+     }
+     return ret;
+   }
+
+  @Override
+  public List<SQLForeignKey> getForeignKeys(String parent_db_name,
+    String parent_tbl_name, String foreign_db_name, String foreign_tbl_name) throws MetaException {
+    try {
+      return getForeignKeysInternal(parent_db_name,
+        parent_tbl_name, foreign_db_name, foreign_tbl_name, true, true);
+    } catch (NoSuchObjectException e) {
+      throw new MetaException(e.getMessage());
+    }
+  }
+
+  protected List<SQLForeignKey> getForeignKeysInternal(final String parent_db_name,
+    final String parent_tbl_name, final String foreign_db_name, final String foreign_tbl_name,
+    boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
+    return new GetListHelper<SQLForeignKey>(foreign_db_name, foreign_tbl_name, allowSql, allowJdo) {
+
+      @Override
+      protected List<SQLForeignKey> getSqlResult(GetHelper<List<SQLForeignKey>> ctx) throws MetaException {
+        return directSql.getForeignKeys(parent_db_name,
+          parent_tbl_name, foreign_db_name, foreign_tbl_name);
+      }
+
+      @Override
+      protected List<SQLForeignKey> getJdoResult(
+        GetHelper<List<SQLForeignKey>> ctx) throws MetaException, NoSuchObjectException {
+        return getForeignKeysViaJdo(parent_db_name,
+          parent_tbl_name, foreign_db_name, foreign_tbl_name);
+      }
+    }.run(false);
+  }
+
+  private List<SQLForeignKey> getForeignKeysViaJdo(String parent_db_name,
+    String parent_tbl_name, String foreign_db_name, String foreign_tbl_name) throws MetaException {
+    boolean commited = false;
+    List<SQLForeignKey> foreignKeys = null;
+    Collection<?> constraints = null;
+    Query query = null;
+    Map<String, String> tblToConstraint = new HashMap<String, String>();
+    try {
+      openTransaction();
+      String queryText = (parent_tbl_name != null ? "parentTable.tableName == parent_tbl_name &&" : "")
+        + (parent_db_name != null ? "parentTable.database.name == parent_db_name &&" : "")
+        + (foreign_tbl_name != null ? "childTable.tableName == foreign_tbl_name &&" : "")
+        + (parent_db_name != null ? "childTable.database.name == foreign_db_name &&" : "")
+        + "constraintType == MConstraint.FOREIGN_KEY_CONSTRAINT";
+      queryText = queryText.trim();
+      query = pm.newQuery(MConstraint.class, queryText);
+      String paramText = (parent_tbl_name == null ? "" : "java.lang.String parent_tbl_name,")
+        + (parent_db_name == null ? "" : " java.lang.String parent_db_name, ")
+        + (foreign_tbl_name == null ? "" : "java.lang.String foreign_tbl_name,")
+        + (foreign_db_name == null ? "" : " java.lang.String foreign_db_name");
+      paramText=paramText.trim();
+      if (paramText.endsWith(",")) {
+        paramText = paramText.substring(0, paramText.length()-1);
+      }
+      query.declareParameters(paramText);
+      List<String> params = new ArrayList<String>();
+      if (parent_tbl_name != null) {
+        params.add(parent_tbl_name);
+      }
+      if (parent_db_name != null) {
+        params.add(parent_db_name);
+      }
+      if (foreign_tbl_name != null) {
+        params.add(foreign_tbl_name);
+      }
+      if (parent_db_name != null) {
+        params.add(foreign_db_name);
+      }
+      if (params.size() == 0) {
+        constraints = (Collection<?>) query.execute();
+      } else {
+        constraints = (Collection<?>) query.executeWithArray(params);
+      }
+      pm.retrieveAll(constraints);
+      foreignKeys = new ArrayList<SQLForeignKey>();
+      for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
+        MConstraint currPKFK = (MConstraint) i.next();
+        int enableValidateRely = currPKFK.getEnableValidateRely();
+        boolean enable = (enableValidateRely & 4) != 0;
+        boolean validate = (enableValidateRely & 2) != 0;
+        boolean rely = (enableValidateRely & 1) != 0;
+        String consolidatedtblName =
+          currPKFK.getParentTable().getDatabase().getName() + "." +
+          currPKFK.getParentTable().getTableName();
+        String pkName;
+        if (tblToConstraint.containsKey(consolidatedtblName)) {
+          pkName = tblToConstraint.get(consolidatedtblName);
+        } else {
+          pkName = getPrimaryKeyConstraintName(currPKFK.getParentTable().getDatabase().getName(),
+            currPKFK.getParentTable().getDatabase().getName());
+          tblToConstraint.put(consolidatedtblName, pkName);
+        }
+        foreignKeys.add(new SQLForeignKey(
+          currPKFK.getParentTable().getDatabase().getName(),
+          currPKFK.getParentTable().getDatabase().getName(),
+          currPKFK.getParentColumn().getCols().get(0).getName(),
+          currPKFK.getChildTable().getDatabase().getName(),
+          currPKFK.getChildTable().getTableName(),
+          currPKFK.getChildColumn().getCols().get(0).getName(),
+          currPKFK.getPosition(),
+          currPKFK.getUpdateRule(),
+          currPKFK.getDeleteRule(),
+          currPKFK.getConstraintName(), pkName, enable, validate, rely));
+      }
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+    return foreignKeys;
+  }
+
 }

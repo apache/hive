@@ -2073,7 +2073,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               Path location;
               try {
                 Warehouse wh = new Warehouse(conf);
-                location = wh.getDatabasePath(db.getDatabase(names[0]));
+                //Use destination table's db location.
+                String destTableDb = qb.getTableDesc() != null? qb.getTableDesc().getDatabaseName(): null;
+                if (destTableDb == null) {
+                  destTableDb = names[0];
+                }
+                location = wh.getDatabasePath(db.getDatabase(destTableDb));
               } catch (MetaException e) {
                 throw new SemanticException(e);
               }

@@ -21,11 +21,18 @@ package org.apache.hadoop.hive.ql.io.orc;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -46,9 +53,17 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.orc.ColumnStatistics;
+import org.apache.orc.CompressionCodec;
+import org.apache.orc.DataReader;
+import org.apache.orc.DataReaderFactory;
+import org.apache.orc.MetadataReaderFactory;
+import org.apache.orc.StripeInformation;
 import org.apache.orc.impl.ColumnStatisticsImpl;
 import org.apache.orc.OrcProto;
 
+import org.apache.orc.impl.DataReaderProperties;
+import org.apache.orc.impl.MetadataReader;
+import org.apache.orc.impl.MetadataReaderProperties;
 import org.junit.Test;
 import org.mockito.MockSettings;
 import org.mockito.Mockito;
@@ -148,16 +163,16 @@ public class TestRecordReaderImpl {
     footer.writeTo(buffer);
     ps.writeTo(buffer);
     buffer.write(ps.getSerializedSize());
-    FileSystem fs = Mockito.mock(FileSystem.class, settings);
+    FileSystem fs = mock(FileSystem.class, settings);
     FSDataInputStream file =
         new FSDataInputStream(new BufferInStream(buffer.getData(),
             buffer.getLength()));
     Path p = new Path("/dir/file.orc");
-    Mockito.when(fs.open(p)).thenReturn(file);
+    when(fs.open(p)).thenReturn(file);
     OrcFile.ReaderOptions options = OrcFile.readerOptions(conf);
     options.filesystem(fs);
     options.maxLength(buffer.getLength());
-    Mockito.when(fs.getFileStatus(p))
+    when(fs.getFileStatus(p))
         .thenReturn(new FileStatus(10, false, 3, 3000, 0, p));
     Reader reader = OrcFile.createReader(p, options);
   }
@@ -165,21 +180,21 @@ public class TestRecordReaderImpl {
   @Test
   public void testCompareToRangeInt() throws Exception {
     assertEquals(Location.BEFORE,
-        RecordReaderImpl.compareToRange(19L, 20L, 40L));
+      RecordReaderImpl.compareToRange(19L, 20L, 40L));
     assertEquals(Location.AFTER,
-        RecordReaderImpl.compareToRange(41L, 20L, 40L));
+      RecordReaderImpl.compareToRange(41L, 20L, 40L));
     assertEquals(Location.MIN,
         RecordReaderImpl.compareToRange(20L, 20L, 40L));
     assertEquals(Location.MIDDLE,
         RecordReaderImpl.compareToRange(21L, 20L, 40L));
     assertEquals(Location.MAX,
-        RecordReaderImpl.compareToRange(40L, 20L, 40L));
+      RecordReaderImpl.compareToRange(40L, 20L, 40L));
     assertEquals(Location.BEFORE,
-        RecordReaderImpl.compareToRange(0L, 1L, 1L));
+      RecordReaderImpl.compareToRange(0L, 1L, 1L));
     assertEquals(Location.MIN,
-        RecordReaderImpl.compareToRange(1L, 1L, 1L));
+      RecordReaderImpl.compareToRange(1L, 1L, 1L));
     assertEquals(Location.AFTER,
-        RecordReaderImpl.compareToRange(2L, 1L, 1L));
+      RecordReaderImpl.compareToRange(2L, 1L, 1L));
   }
 
   @Test
@@ -205,43 +220,43 @@ public class TestRecordReaderImpl {
   @Test
   public void testCompareToCharNeedConvert() throws Exception {
     assertEquals(Location.BEFORE,
-        RecordReaderImpl.compareToRange("apple", "hello", "world"));
+      RecordReaderImpl.compareToRange("apple", "hello", "world"));
     assertEquals(Location.AFTER,
-        RecordReaderImpl.compareToRange("zombie", "hello", "world"));
+      RecordReaderImpl.compareToRange("zombie", "hello", "world"));
     assertEquals(Location.MIN,
         RecordReaderImpl.compareToRange("hello", "hello", "world"));
     assertEquals(Location.MIDDLE,
         RecordReaderImpl.compareToRange("pilot", "hello", "world"));
     assertEquals(Location.MAX,
-        RecordReaderImpl.compareToRange("world", "hello", "world"));
+      RecordReaderImpl.compareToRange("world", "hello", "world"));
     assertEquals(Location.BEFORE,
-        RecordReaderImpl.compareToRange("apple", "hello", "hello"));
+      RecordReaderImpl.compareToRange("apple", "hello", "hello"));
     assertEquals(Location.MIN,
-        RecordReaderImpl.compareToRange("hello", "hello", "hello"));
+      RecordReaderImpl.compareToRange("hello", "hello", "hello"));
     assertEquals(Location.AFTER,
-        RecordReaderImpl.compareToRange("zombie", "hello", "hello"));
+      RecordReaderImpl.compareToRange("zombie", "hello", "hello"));
   }
 
   @Test
   public void testGetMin() throws Exception {
     assertEquals(10L, RecordReaderImpl.getMin(
-        ColumnStatisticsImpl.deserialize(createIntStats(10L, 100L))));
+      ColumnStatisticsImpl.deserialize(createIntStats(10L, 100L))));
     assertEquals(10.0d, RecordReaderImpl.getMin(ColumnStatisticsImpl.deserialize(
-        OrcProto.ColumnStatistics.newBuilder()
-            .setDoubleStatistics(OrcProto.DoubleStatistics.newBuilder()
-                .setMinimum(10.0d).setMaximum(100.0d).build()).build())));
+      OrcProto.ColumnStatistics.newBuilder()
+        .setDoubleStatistics(OrcProto.DoubleStatistics.newBuilder()
+          .setMinimum(10.0d).setMaximum(100.0d).build()).build())));
     assertEquals(null, RecordReaderImpl.getMin(ColumnStatisticsImpl.deserialize(
-        OrcProto.ColumnStatistics.newBuilder()
-            .setStringStatistics(OrcProto.StringStatistics.newBuilder().build())
-            .build())));
+      OrcProto.ColumnStatistics.newBuilder()
+        .setStringStatistics(OrcProto.StringStatistics.newBuilder().build())
+        .build())));
     assertEquals("a", RecordReaderImpl.getMin(ColumnStatisticsImpl.deserialize(
-        OrcProto.ColumnStatistics.newBuilder()
-            .setStringStatistics(OrcProto.StringStatistics.newBuilder()
-                .setMinimum("a").setMaximum("b").build()).build())));
+      OrcProto.ColumnStatistics.newBuilder()
+        .setStringStatistics(OrcProto.StringStatistics.newBuilder()
+          .setMinimum("a").setMaximum("b").build()).build())));
     assertEquals("hello", RecordReaderImpl.getMin(ColumnStatisticsImpl
-        .deserialize(createStringStats("hello", "world"))));
+      .deserialize(createStringStats("hello", "world"))));
     assertEquals(HiveDecimal.create("111.1"), RecordReaderImpl.getMin(ColumnStatisticsImpl
-        .deserialize(createDecimalStats("111.1", "112.1"))));
+      .deserialize(createDecimalStats("111.1", "112.1"))));
   }
 
   private static OrcProto.ColumnStatistics createIntStats(Long min,
@@ -262,7 +277,7 @@ public class TestRecordReaderImpl {
     OrcProto.BucketStatistics.Builder boolStats = OrcProto.BucketStatistics.newBuilder();
     boolStats.addCount(trueCount);
     return OrcProto.ColumnStatistics.newBuilder().setNumberOfValues(n).setBucketStatistics(
-        boolStats.build()).build();
+      boolStats.build()).build();
   }
 
   private static OrcProto.ColumnStatistics createIntStats(int min, int max) {
@@ -341,9 +356,9 @@ public class TestRecordReaderImpl {
             .setStringStatistics(OrcProto.StringStatistics.newBuilder()
                 .setMinimum("a").setMaximum("b").build()).build())));
     assertEquals("world", RecordReaderImpl.getMax(ColumnStatisticsImpl
-        .deserialize(createStringStats("hello", "world"))));
+      .deserialize(createStringStats("hello", "world"))));
     assertEquals(HiveDecimal.create("112.1"), RecordReaderImpl.getMax(ColumnStatisticsImpl
-        .deserialize(createDecimalStats("111.1", "112.1"))));
+      .deserialize(createDecimalStats("111.1", "112.1"))));
   }
 
   @Test
@@ -365,15 +380,15 @@ public class TestRecordReaderImpl {
     pred = TestSearchArgumentImpl.createPredicateLeaf(
         PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.BOOLEAN, "x", false, null);
     assertEquals(TruthValue.NO,
-        RecordReaderImpl.evaluatePredicateProto(createBooleanStats(10, 10), pred, null));
+      RecordReaderImpl.evaluatePredicateProto(createBooleanStats(10, 10), pred, null));
     assertEquals(TruthValue.YES_NO,
-        RecordReaderImpl.evaluatePredicateProto(createBooleanStats(10, 0), pred, null));
+      RecordReaderImpl.evaluatePredicateProto(createBooleanStats(10, 0), pred, null));
   }
 
   @Test
   public void testPredEvalWithIntStats() throws Exception {
     PredicateLeaf pred = TestSearchArgumentImpl.createPredicateLeaf(
-        PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.LONG, "x", 15L, null);
+      PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.LONG, "x", 15L, null);
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(10, 100), pred, null));
 
@@ -402,7 +417,7 @@ public class TestRecordReaderImpl {
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
         PredicateLeaf.Type.TIMESTAMP, "x", new Timestamp(15), null);
     assertEquals(TruthValue.YES_NO,
-        RecordReaderImpl.evaluatePredicateProto(createIntStats(10, 100), pred, null));
+      RecordReaderImpl.evaluatePredicateProto(createIntStats(10, 100), pred, null));
   }
 
   @Test
@@ -620,7 +635,7 @@ public class TestRecordReaderImpl {
         RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10, 100), pred, null));
     assertEquals(TruthValue.YES_NO,
         RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10 * 24L * 60L * 60L * 1000L,
-            100 * 24L * 60L * 60L * 1000L), pred, null));
+          100 * 24L * 60L * 60L * 1000L), pred, null));
 
     pred = TestSearchArgumentImpl.createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
         PredicateLeaf.Type.DECIMAL, "x", new HiveDecimalWritable("15"), null);
@@ -738,9 +753,9 @@ public class TestRecordReaderImpl {
     assertEquals(TruthValue.NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(0L, 5L), pred, null));
     assertEquals(TruthValue.NO_NULL,
-        RecordReaderImpl.evaluatePredicateProto(createIntStats(30L, 40L), pred, null));
+      RecordReaderImpl.evaluatePredicateProto(createIntStats(30L, 40L), pred, null));
     assertEquals(TruthValue.YES_NO_NULL,
-        RecordReaderImpl.evaluatePredicateProto(createIntStats(5L, 15L), pred, null));
+      RecordReaderImpl.evaluatePredicateProto(createIntStats(5L, 15L), pred, null));
     assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createIntStats(15L, 25L), pred, null));
     assertEquals(TruthValue.YES_NO_NULL,
@@ -876,10 +891,10 @@ public class TestRecordReaderImpl {
     assertEquals(TruthValue.YES_NO_NULL, // before & min
         RecordReaderImpl.evaluatePredicateProto(createStringStats("f", "g", true), pred, null));
     assertEquals(TruthValue.YES_NO_NULL, // before & middle
-        RecordReaderImpl.evaluatePredicateProto(createStringStats("e", "g", true), pred, null));
+      RecordReaderImpl.evaluatePredicateProto(createStringStats("e", "g", true), pred, null));
 
     assertEquals(TruthValue.YES_NULL, // min & after
-        RecordReaderImpl.evaluatePredicateProto(createStringStats("c", "e", true), pred, null));
+      RecordReaderImpl.evaluatePredicateProto(createStringStats("c", "e", true), pred, null));
     assertEquals(TruthValue.YES_NULL, // min & max
         RecordReaderImpl.evaluatePredicateProto(createStringStats("c", "f", true), pred, null));
     assertEquals(TruthValue.YES_NO_NULL, // min & middle
@@ -1622,5 +1637,57 @@ public class TestRecordReaderImpl {
 
     bf.addString(HiveDecimal.create(15).toString());
     assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+  }
+
+  @Test
+  public void testClose() throws Exception {
+    DataReader mockedDataReader = mock(DataReader.class);
+    MetadataReader mockedMetadataReader = mock(MetadataReader.class);
+
+    closeMockedRecordReader(mockedDataReader, mockedMetadataReader);
+
+    verify(mockedDataReader, atLeastOnce()).close();
+    verify(mockedMetadataReader, atLeastOnce()).close();
+  }
+
+  @Test
+  public void testCloseWithException() throws Exception {
+    DataReader mockedDataReader = mock(DataReader.class);
+    MetadataReader mockedMetadataReader = mock(MetadataReader.class);
+    doThrow(IOException.class).when(mockedDataReader).close();
+
+    try {
+      closeMockedRecordReader(mockedDataReader, mockedMetadataReader);
+      fail("Exception should have been thrown when Record Reader was closed");
+    } catch (IOException expected) {
+
+    }
+
+    verify(mockedMetadataReader, atLeastOnce()).close();
+    verify(mockedDataReader, atLeastOnce()).close();
+  }
+
+  private void closeMockedRecordReader(DataReader mockedDataReader,
+                                       MetadataReader mockedMetadataReader) throws IOException {
+    DataReaderFactory mockedDataReaderFactory = mock(DataReaderFactory.class);
+    MetadataReaderFactory mockedMetadataReaderFactory = mock(MetadataReaderFactory.class);
+    when(mockedDataReaderFactory.create(any(DataReaderProperties.class))).thenReturn(mockedDataReader);
+    when(mockedMetadataReaderFactory.create(any(MetadataReaderProperties.class))).thenReturn(mockedMetadataReader);
+
+    RecordReader recordReader = RecordReaderImpl.builder()
+      .withBufferSize(0)
+      .withCodec(mock(CompressionCodec.class))
+      .withConf(mock(Configuration.class))
+      .withFileSystem(mock(FileSystem.class))
+      .withOptions(mock(Reader.Options.class))
+      .withPath(mock(Path.class))
+      .withStrideRate(0)
+      .withStripes(Collections.singletonList(mock(StripeInformation.class)))
+      .withTypes(Collections.singletonList(OrcProto.Type.getDefaultInstance()))
+      .withDataReaderFactory(mockedDataReaderFactory)
+      .withMetadataReaderFactory(mockedMetadataReaderFactory)
+      .build();
+
+    recordReader.close();
   }
 }

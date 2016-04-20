@@ -347,6 +347,15 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       return false;
     }
 
+    /**
+     * Poll on the operation status, till the operation is complete.
+     * We need to wait only for HiveStatement to complete.
+     * HiveDatabaseMetaData which also uses this ResultSet returns only after the RPC is complete.
+     */
+    if ((statement != null) && (statement instanceof HiveStatement)) {
+      ((HiveStatement) statement).waitForOperationToComplete();
+    }
+
     try {
       TFetchOrientation orientation = TFetchOrientation.FETCH_NEXT;
       if (fetchFirst) {
