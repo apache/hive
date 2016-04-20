@@ -52,6 +52,7 @@ public class HookContext {
   private UserGroupInformation ugi;
   private HookType hookType;
   private String errorMessage;
+  private Throwable exception;
   final private Map<String, ContentSummary> inputPathToContentSummary;
   private final String ipAddress;
   private final String userName;
@@ -170,6 +171,14 @@ public class HookContext {
 
   public String getErrorMessage() {
     return errorMessage;
+  }
+
+  public void setException(Throwable exception) {
+    this.exception = exception;
+  }
+
+  public Throwable getException() {
+    return exception;
   }
 
   public String getOperationName() {
