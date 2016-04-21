@@ -225,7 +225,7 @@ public class TezJobMonitor {
     long startTime = 0;
     boolean isProfileEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY) ||
         Utilities.isPerfOrAboveLogging(conf);
-    boolean llapIoEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_IO_ENABLED, true);
+    boolean llapIoEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_IO_ENABLED, false);
 
     boolean inPlaceEligible = InPlaceUpdates.inPlaceEligible(conf);
     synchronized(shutdownList) {
@@ -357,7 +357,7 @@ public class TezJobMonitor {
       double duration = (System.currentTimeMillis() - startTime) / 1000.0;
       console.printInfo("Status: DAG finished successfully in "
           + String.format("%.2f seconds", duration));
-      console.printInfo("\n");
+      console.printInfo("");
 
       console.printInfo(QUERY_EXEC_SUMMARY_HEADER);
       printQueryExecutionBreakDown();
@@ -367,15 +367,15 @@ public class TezJobMonitor {
       console.printInfo(TASK_SUMMARY_HEADER);
       printDagSummary(progressMap, console, dagClient, conf, dag);
       console.printInfo(SEPARATOR);
-      console.printInfo("");
 
       if (llapIoEnabled) {
+        console.printInfo("");
         console.printInfo(LLAP_IO_SUMMARY_HEADER);
         printLlapIOSummary(progressMap, console, dagClient);
         console.printInfo(SEPARATOR);
       }
 
-      console.printInfo("\n");
+      console.printInfo("");
     }
 
     return rc;
@@ -445,13 +445,18 @@ public class TezJobMonitor {
 
     // accept to start dag (schedule wait time, resource wait time etc.)
     long acceptToStart = perfLogger.getDuration(PerfLogger.TEZ_SUBMIT_TO_RUNNING);
-    console.printInfo(String.format(OPERATION_SUMMARY, "Start",
+    console.printInfo(String.format(OPERATION_SUMMARY, "Start DAG",
         secondsFormat.format(acceptToStart / 1000.0) + "s"));
 
     // time to actually run the dag (actual dag runtime)
-    long startToEnd = perfLogger.getEndTime(PerfLogger.TEZ_RUN_DAG) -
-        perfLogger.getEndTime(PerfLogger.TEZ_SUBMIT_TO_RUNNING);
-    console.printInfo(String.format(OPERATION_SUMMARY, "Finish",
+    final long startToEnd;
+    if (acceptToStart == 0) {
+      startToEnd = perfLogger.getDuration(PerfLogger.TEZ_RUN_DAG);
+    } else {
+      startToEnd = perfLogger.getEndTime(PerfLogger.TEZ_RUN_DAG) -
+          perfLogger.getEndTime(PerfLogger.TEZ_SUBMIT_TO_RUNNING);
+    }
+    console.printInfo(String.format(OPERATION_SUMMARY, "Run DAG",
         secondsFormat.format(startToEnd / 1000.0) + "s"));
 
   }
