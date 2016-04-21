@@ -127,6 +127,12 @@ ltrim
 map
 map_keys
 map_values
+mask
+mask_first_n
+mask_hash
+mask_last_n
+mask_show_first_n
+mask_show_last_n
 matchpath
 max
 md5
@@ -340,6 +346,12 @@ POSTHOOK: type: SHOWFUNCTIONS
 map
 map_keys
 map_values
+mask
+mask_first_n
+mask_hash
+mask_last_n
+mask_show_first_n
+mask_show_last_n
 matchpath
 max
 md5
