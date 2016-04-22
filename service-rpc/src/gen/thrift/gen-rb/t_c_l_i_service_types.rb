@@ -832,11 +832,15 @@ class TRowSet
   STARTROWOFFSET = 1
   ROWS = 2
   COLUMNS = 3
+  BINARYCOLUMNS = 4
+  COLUMNCOUNT = 5
 
   FIELDS = {
     STARTROWOFFSET => {:type => ::Thrift::Types::I64, :name => 'startRowOffset'},
     ROWS => {:type => ::Thrift::Types::LIST, :name => 'rows', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TRow}},
-    COLUMNS => {:type => ::Thrift::Types::LIST, :name => 'columns', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TColumn}, :optional => true}
+    COLUMNS => {:type => ::Thrift::Types::LIST, :name => 'columns', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TColumn}, :optional => true},
+    BINARYCOLUMNS => {:type => ::Thrift::Types::STRING, :name => 'binaryColumns', :binary => true, :optional => true},
+    COLUMNCOUNT => {:type => ::Thrift::Types::I32, :name => 'columnCount', :optional => true}
   }
 
   def struct_fields; FIELDS; end

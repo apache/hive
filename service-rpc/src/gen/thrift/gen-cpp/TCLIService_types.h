@@ -1809,8 +1809,10 @@ inline std::ostream& operator<<(std::ostream& out, const TColumn& obj)
 }
 
 typedef struct _TRowSet__isset {
-  _TRowSet__isset() : columns(false) {}
+  _TRowSet__isset() : columns(false), binaryColumns(false), columnCount(false) {}
   bool columns :1;
+  bool binaryColumns :1;
+  bool columnCount :1;
 } _TRowSet__isset;
 
 class TRowSet {
@@ -1818,13 +1820,15 @@ class TRowSet {
 
   TRowSet(const TRowSet&);
   TRowSet& operator=(const TRowSet&);
-  TRowSet() : startRowOffset(0) {
+  TRowSet() : startRowOffset(0), binaryColumns(), columnCount(0) {
   }
 
   virtual ~TRowSet() throw();
   int64_t startRowOffset;
   std::vector<TRow>  rows;
   std::vector<TColumn>  columns;
+  std::string binaryColumns;
+  int32_t columnCount;
 
   _TRowSet__isset __isset;
 
@@ -1833,6 +1837,10 @@ class TRowSet {
   void __set_rows(const std::vector<TRow> & val);
 
   void __set_columns(const std::vector<TColumn> & val);
+
+  void __set_binaryColumns(const std::string& val);
+
+  void __set_columnCount(const int32_t val);
 
   bool operator == (const TRowSet & rhs) const
   {
@@ -1843,6 +1851,14 @@ class TRowSet {
     if (__isset.columns != rhs.__isset.columns)
       return false;
     else if (__isset.columns && !(columns == rhs.columns))
+      return false;
+    if (__isset.binaryColumns != rhs.__isset.binaryColumns)
+      return false;
+    else if (__isset.binaryColumns && !(binaryColumns == rhs.binaryColumns))
+      return false;
+    if (__isset.columnCount != rhs.__isset.columnCount)
+      return false;
+    else if (__isset.columnCount && !(columnCount == rhs.columnCount))
       return false;
     return true;
   }

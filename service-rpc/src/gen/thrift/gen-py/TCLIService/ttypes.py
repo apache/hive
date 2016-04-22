@@ -2965,6 +2965,8 @@ class TRowSet:
    - startRowOffset
    - rows
    - columns
+   - binaryColumns
+   - columnCount
   """
 
   thrift_spec = (
@@ -2972,12 +2974,16 @@ class TRowSet:
     (1, TType.I64, 'startRowOffset', None, None, ), # 1
     (2, TType.LIST, 'rows', (TType.STRUCT,(TRow, TRow.thrift_spec)), None, ), # 2
     (3, TType.LIST, 'columns', (TType.STRUCT,(TColumn, TColumn.thrift_spec)), None, ), # 3
+    (4, TType.STRING, 'binaryColumns', None, None, ), # 4
+    (5, TType.I32, 'columnCount', None, None, ), # 5
   )
 
-  def __init__(self, startRowOffset=None, rows=None, columns=None,):
+  def __init__(self, startRowOffset=None, rows=None, columns=None, binaryColumns=None, columnCount=None,):
     self.startRowOffset = startRowOffset
     self.rows = rows
     self.columns = columns
+    self.binaryColumns = binaryColumns
+    self.columnCount = columnCount
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3015,6 +3021,16 @@ class TRowSet:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.binaryColumns = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I32:
+          self.columnCount = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3043,6 +3059,14 @@ class TRowSet:
         iter117.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
+    if self.binaryColumns is not None:
+      oprot.writeFieldBegin('binaryColumns', TType.STRING, 4)
+      oprot.writeString(self.binaryColumns)
+      oprot.writeFieldEnd()
+    if self.columnCount is not None:
+      oprot.writeFieldBegin('columnCount', TType.I32, 5)
+      oprot.writeI32(self.columnCount)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3059,6 +3083,8 @@ class TRowSet:
     value = (value * 31) ^ hash(self.startRowOffset)
     value = (value * 31) ^ hash(self.rows)
     value = (value * 31) ^ hash(self.columns)
+    value = (value * 31) ^ hash(self.binaryColumns)
+    value = (value * 31) ^ hash(self.columnCount)
     return value
 
   def __repr__(self):

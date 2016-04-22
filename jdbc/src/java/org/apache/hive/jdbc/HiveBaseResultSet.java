@@ -46,8 +46,8 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.serde2.thrift.Type;
 import org.apache.hive.service.cli.TableSchema;
-import org.apache.hive.service.cli.Type;
 
 /**
  * Data independent base class which implements the common part of

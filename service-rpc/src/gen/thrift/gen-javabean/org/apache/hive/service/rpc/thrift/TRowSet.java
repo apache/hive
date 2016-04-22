@@ -41,6 +41,8 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
   private static final org.apache.thrift.protocol.TField START_ROW_OFFSET_FIELD_DESC = new org.apache.thrift.protocol.TField("startRowOffset", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField ROWS_FIELD_DESC = new org.apache.thrift.protocol.TField("rows", org.apache.thrift.protocol.TType.LIST, (short)2);
   private static final org.apache.thrift.protocol.TField COLUMNS_FIELD_DESC = new org.apache.thrift.protocol.TField("columns", org.apache.thrift.protocol.TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField BINARY_COLUMNS_FIELD_DESC = new org.apache.thrift.protocol.TField("binaryColumns", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField COLUMN_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("columnCount", org.apache.thrift.protocol.TType.I32, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -51,12 +53,16 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
   private long startRowOffset; // required
   private List<TRow> rows; // required
   private List<TColumn> columns; // optional
+  private ByteBuffer binaryColumns; // optional
+  private int columnCount; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     START_ROW_OFFSET((short)1, "startRowOffset"),
     ROWS((short)2, "rows"),
-    COLUMNS((short)3, "columns");
+    COLUMNS((short)3, "columns"),
+    BINARY_COLUMNS((short)4, "binaryColumns"),
+    COLUMN_COUNT((short)5, "columnCount");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,6 +83,10 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
           return ROWS;
         case 3: // COLUMNS
           return COLUMNS;
+        case 4: // BINARY_COLUMNS
+          return BINARY_COLUMNS;
+        case 5: // COLUMN_COUNT
+          return COLUMN_COUNT;
         default:
           return null;
       }
@@ -118,8 +128,9 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
 
   // isset id assignments
   private static final int __STARTROWOFFSET_ISSET_ID = 0;
+  private static final int __COLUMNCOUNT_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.COLUMNS};
+  private static final _Fields optionals[] = {_Fields.COLUMNS,_Fields.BINARY_COLUMNS,_Fields.COLUMN_COUNT};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -131,6 +142,10 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
     tmpMap.put(_Fields.COLUMNS, new org.apache.thrift.meta_data.FieldMetaData("columns", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TColumn.class))));
+    tmpMap.put(_Fields.BINARY_COLUMNS, new org.apache.thrift.meta_data.FieldMetaData("binaryColumns", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
+    tmpMap.put(_Fields.COLUMN_COUNT, new org.apache.thrift.meta_data.FieldMetaData("columnCount", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TRowSet.class, metaDataMap);
   }
@@ -168,6 +183,10 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
       }
       this.columns = __this__columns;
     }
+    if (other.isSetBinaryColumns()) {
+      this.binaryColumns = org.apache.thrift.TBaseHelper.copyBinary(other.binaryColumns);
+    }
+    this.columnCount = other.columnCount;
   }
 
   public TRowSet deepCopy() {
@@ -180,6 +199,9 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
     this.startRowOffset = 0;
     this.rows = null;
     this.columns = null;
+    this.binaryColumns = null;
+    setColumnCountIsSet(false);
+    this.columnCount = 0;
   }
 
   public long getStartRowOffset() {
@@ -280,6 +302,60 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
     }
   }
 
+  public byte[] getBinaryColumns() {
+    setBinaryColumns(org.apache.thrift.TBaseHelper.rightSize(binaryColumns));
+    return binaryColumns == null ? null : binaryColumns.array();
+  }
+
+  public ByteBuffer bufferForBinaryColumns() {
+    return org.apache.thrift.TBaseHelper.copyBinary(binaryColumns);
+  }
+
+  public void setBinaryColumns(byte[] binaryColumns) {
+    this.binaryColumns = binaryColumns == null ? (ByteBuffer)null : ByteBuffer.wrap(Arrays.copyOf(binaryColumns, binaryColumns.length));
+  }
+
+  public void setBinaryColumns(ByteBuffer binaryColumns) {
+    this.binaryColumns = org.apache.thrift.TBaseHelper.copyBinary(binaryColumns);
+  }
+
+  public void unsetBinaryColumns() {
+    this.binaryColumns = null;
+  }
+
+  /** Returns true if field binaryColumns is set (has been assigned a value) and false otherwise */
+  public boolean isSetBinaryColumns() {
+    return this.binaryColumns != null;
+  }
+
+  public void setBinaryColumnsIsSet(boolean value) {
+    if (!value) {
+      this.binaryColumns = null;
+    }
+  }
+
+  public int getColumnCount() {
+    return this.columnCount;
+  }
+
+  public void setColumnCount(int columnCount) {
+    this.columnCount = columnCount;
+    setColumnCountIsSet(true);
+  }
+
+  public void unsetColumnCount() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __COLUMNCOUNT_ISSET_ID);
+  }
+
+  /** Returns true if field columnCount is set (has been assigned a value) and false otherwise */
+  public boolean isSetColumnCount() {
+    return EncodingUtils.testBit(__isset_bitfield, __COLUMNCOUNT_ISSET_ID);
+  }
+
+  public void setColumnCountIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __COLUMNCOUNT_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case START_ROW_OFFSET:
@@ -306,6 +382,22 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
       }
       break;
 
+    case BINARY_COLUMNS:
+      if (value == null) {
+        unsetBinaryColumns();
+      } else {
+        setBinaryColumns((ByteBuffer)value);
+      }
+      break;
+
+    case COLUMN_COUNT:
+      if (value == null) {
+        unsetColumnCount();
+      } else {
+        setColumnCount((Integer)value);
+      }
+      break;
+
     }
   }
 
@@ -319,6 +411,12 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
 
     case COLUMNS:
       return getColumns();
+
+    case BINARY_COLUMNS:
+      return getBinaryColumns();
+
+    case COLUMN_COUNT:
+      return getColumnCount();
 
     }
     throw new IllegalStateException();
@@ -337,6 +435,10 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
       return isSetRows();
     case COLUMNS:
       return isSetColumns();
+    case BINARY_COLUMNS:
+      return isSetBinaryColumns();
+    case COLUMN_COUNT:
+      return isSetColumnCount();
     }
     throw new IllegalStateException();
   }
@@ -381,6 +483,24 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
         return false;
     }
 
+    boolean this_present_binaryColumns = true && this.isSetBinaryColumns();
+    boolean that_present_binaryColumns = true && that.isSetBinaryColumns();
+    if (this_present_binaryColumns || that_present_binaryColumns) {
+      if (!(this_present_binaryColumns && that_present_binaryColumns))
+        return false;
+      if (!this.binaryColumns.equals(that.binaryColumns))
+        return false;
+    }
+
+    boolean this_present_columnCount = true && this.isSetColumnCount();
+    boolean that_present_columnCount = true && that.isSetColumnCount();
+    if (this_present_columnCount || that_present_columnCount) {
+      if (!(this_present_columnCount && that_present_columnCount))
+        return false;
+      if (this.columnCount != that.columnCount)
+        return false;
+    }
+
     return true;
   }
 
@@ -402,6 +522,16 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
     list.add(present_columns);
     if (present_columns)
       list.add(columns);
+
+    boolean present_binaryColumns = true && (isSetBinaryColumns());
+    list.add(present_binaryColumns);
+    if (present_binaryColumns)
+      list.add(binaryColumns);
+
+    boolean present_columnCount = true && (isSetColumnCount());
+    list.add(present_columnCount);
+    if (present_columnCount)
+      list.add(columnCount);
 
     return list.hashCode();
   }
@@ -440,6 +570,26 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
     }
     if (isSetColumns()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.columns, other.columns);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetBinaryColumns()).compareTo(other.isSetBinaryColumns());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetBinaryColumns()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.binaryColumns, other.binaryColumns);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetColumnCount()).compareTo(other.isSetColumnCount());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetColumnCount()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.columnCount, other.columnCount);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -483,6 +633,22 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
       } else {
         sb.append(this.columns);
       }
+      first = false;
+    }
+    if (isSetBinaryColumns()) {
+      if (!first) sb.append(", ");
+      sb.append("binaryColumns:");
+      if (this.binaryColumns == null) {
+        sb.append("null");
+      } else {
+        org.apache.thrift.TBaseHelper.toString(this.binaryColumns, sb);
+      }
+      first = false;
+    }
+    if (isSetColumnCount()) {
+      if (!first) sb.append(", ");
+      sb.append("columnCount:");
+      sb.append(this.columnCount);
       first = false;
     }
     sb.append(")");
@@ -584,6 +750,22 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // BINARY_COLUMNS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.binaryColumns = iprot.readBinary();
+              struct.setBinaryColumnsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 5: // COLUMN_COUNT
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.columnCount = iprot.readI32();
+              struct.setColumnCountIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -626,6 +808,18 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
           oprot.writeFieldEnd();
         }
       }
+      if (struct.binaryColumns != null) {
+        if (struct.isSetBinaryColumns()) {
+          oprot.writeFieldBegin(BINARY_COLUMNS_FIELD_DESC);
+          oprot.writeBinary(struct.binaryColumns);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.isSetColumnCount()) {
+        oprot.writeFieldBegin(COLUMN_COUNT_FIELD_DESC);
+        oprot.writeI32(struct.columnCount);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -655,7 +849,13 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
       if (struct.isSetColumns()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetBinaryColumns()) {
+        optionals.set(1);
+      }
+      if (struct.isSetColumnCount()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetColumns()) {
         {
           oprot.writeI32(struct.columns.size());
@@ -664,6 +864,12 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
             _iter127.write(oprot);
           }
         }
+      }
+      if (struct.isSetBinaryColumns()) {
+        oprot.writeBinary(struct.binaryColumns);
+      }
+      if (struct.isSetColumnCount()) {
+        oprot.writeI32(struct.columnCount);
       }
     }
 
@@ -684,7 +890,7 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
         }
       }
       struct.setRowsIsSet(true);
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
           org.apache.thrift.protocol.TList _list131 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
@@ -698,6 +904,14 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
           }
         }
         struct.setColumnsIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.binaryColumns = iprot.readBinary();
+        struct.setBinaryColumnsIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.columnCount = iprot.readI32();
+        struct.setColumnCountIsSet(true);
       }
     }
   }

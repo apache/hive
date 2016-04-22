@@ -71,6 +71,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SubStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
+import org.apache.hadoop.hive.serde2.thrift.ThriftJDBCBinarySerDe;
 import org.apache.hadoop.hive.shims.HadoopShims.StoragePolicyShim;
 import org.apache.hadoop.hive.shims.HadoopShims.StoragePolicyValue;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -122,7 +123,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient long numRows = 0;
   protected transient long cntr = 1;
   protected transient long logEveryNRows = 0;
-
+  protected transient int rowIndex = 0;
   /**
    * Counters.
    */
@@ -374,7 +375,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // half of the script.timeout but less than script.timeout, we will still
       // be able to report progress.
       timeOut = hconf.getInt("mapred.healthChecker.script.timeout", 600000) / 2;
-
       if (hconf instanceof JobConf) {
         jc = (JobConf) hconf;
       } else {
@@ -656,6 +656,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
   protected Writable recordValue;
 
+
   @Override
   public void process(Object row, int tag) throws HiveException {
     /* Create list bucketing sub-directory only if stored-as-directories is on. */
@@ -717,8 +718,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         } else {
           fpaths = fsp;
         }
-        // use SerDe to serialize r, and write it out
         recordValue = serializer.serialize(row, inputObjInspectors[0]);
+        // if serializer is ThriftJDBCBinarySerDe, then recordValue is null if the buffer is not full (the size of buffer
+        // is kept track of in the SerDe)
+        if (recordValue == null) {
+          return;
+        }
       }
 
       rowOutWriters = fpaths.outWriters;
@@ -745,6 +750,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         LOG.info(toString() + ": records written - " + numRows);
       }
 
+      // This should always be 0 for the final result file
       int writerOffset = findWriterOffset(row);
       // This if/else chain looks ugly in the inner loop, but given that it will be 100% the same
       // for a given operator branch prediction should work quite nicely on it.
@@ -1012,9 +1018,22 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
     lastProgressReport = System.currentTimeMillis();
     if (!abort) {
+      // If serializer is ThriftJDBCBinarySerDe, then it buffers rows to a certain limit (hive.server2.thrift.resultset.max.fetch.size)
+      // and serializes the whole batch when the buffer is full. The serialize returns null if the buffer is not full
+      // (the size of buffer is kept track of in the ThriftJDBCBinarySerDe).
+      if (conf.isHiveServerQuery() && HiveConf.getBoolVar(hconf,
+          HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS) &&
+          serializer.getClass().getName().equalsIgnoreCase(ThriftJDBCBinarySerDe.class.getName())) {
+          try {
+            recordValue = serializer.serialize(null, inputObjInspectors[0]);
+            rowOutWriters = fpaths.outWriters;
+            rowOutWriters[0].write(recordValue);
+          } catch (SerDeException | IOException e) {
+            throw new HiveException(e);
+          }
+      }
       for (FSPaths fsp : valToPaths.values()) {
         fsp.closeWriters(abort);
-
         // before closing the operator check if statistics gathering is requested
         // and is provided by record writer. this is different from the statistics
         // gathering done in processOp(). In processOp(), for each row added

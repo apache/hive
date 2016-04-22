@@ -16,13 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.hive.service.cli;
+package org.apache.hadoop.hive.serde2.thrift;
 
 import java.sql.DatabaseMetaData;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hive.service.rpc.thrift.TTypeId;
-
 /**
  * Type.
  *
@@ -110,7 +111,8 @@ public enum Type {
   private final boolean isComplex;
   private final boolean isCollection;
 
-  Type(String name, int javaSQLType, TTypeId tType, boolean isQualified, boolean isComplex, boolean isCollection) {
+  Type(String name, int javaSQLType, TTypeId tType, boolean isQualified, boolean isComplex,
+      boolean isCollection) {
     this.name = name;
     this.javaSQLType = javaSQLType;
     this.tType = tType;
@@ -166,6 +168,94 @@ public enum Type {
       }
     }
     throw new IllegalArgumentException("Unrecognized type name: " + name);
+  }
+
+  /**
+   * Convert TypeInfo to appropriate Type
+   * @param typeInfo
+   * @return
+   */
+  public static Type getType(TypeInfo typeInfo) {
+    switch (typeInfo.getCategory()) {
+    case PRIMITIVE: {
+      PrimitiveTypeInfo pTypeInfo = (PrimitiveTypeInfo) typeInfo;
+      switch (pTypeInfo.getPrimitiveCategory()) {
+      case VOID: {
+        return Type.NULL_TYPE;
+      }
+      case BOOLEAN: {
+        return Type.BOOLEAN_TYPE;
+      }
+      // Double check if this is the right mapping
+      case BYTE: {
+        return Type.BINARY_TYPE;
+      }
+      // Double check if this is the right mapping
+      case SHORT: {
+        return Type.SMALLINT_TYPE;
+      }
+      case INT: {
+        return Type.INT_TYPE;
+      }
+      // Double check if this is the right mapping
+      case LONG: {
+        return Type.BIGINT_TYPE;
+      }
+      case FLOAT: {
+        return Type.FLOAT_TYPE;
+      }
+      case DOUBLE: {
+        return Type.DOUBLE_TYPE;
+      }
+      case STRING: {
+        return Type.STRING_TYPE;
+      }
+      case CHAR: {
+        return Type.CHAR_TYPE;
+      }
+      case VARCHAR: {
+        return Type.VARCHAR_TYPE;
+      }
+      case BINARY: {
+        return Type.BINARY_TYPE;
+      }
+      case DATE: {
+        return Type.DATE_TYPE;
+      }
+      case TIMESTAMP: {
+        return Type.TIMESTAMP_TYPE;
+      }
+      case INTERVAL_YEAR_MONTH: {
+        return Type.INTERVAL_YEAR_MONTH_TYPE;
+      }
+      case INTERVAL_DAY_TIME: {
+        return Type.INTERVAL_DAY_TIME_TYPE;
+      }
+      case DECIMAL: {
+        return Type.DECIMAL_TYPE;
+      }
+      default: {
+        throw new RuntimeException("Unrecognized type: " + pTypeInfo.getPrimitiveCategory());
+      }
+      }
+    }
+    // Double check if this is the right mapping
+    case LIST: {
+      return Type.STRING_TYPE;
+    }
+    case MAP: {
+      return Type.MAP_TYPE;
+    }
+    case STRUCT: {
+      return Type.STRUCT_TYPE;
+    }
+    case UNION: {
+      return Type.UNION_TYPE;
+    }
+    default: {
+      throw new RuntimeException("Unrecognized type: " + typeInfo.getCategory());
+    }
+    }
   }
 
   /**

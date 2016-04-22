@@ -3858,6 +3858,16 @@ void TRowSet::__set_columns(const std::vector<TColumn> & val) {
 __isset.columns = true;
 }
 
+void TRowSet::__set_binaryColumns(const std::string& val) {
+  this->binaryColumns = val;
+__isset.binaryColumns = true;
+}
+
+void TRowSet::__set_columnCount(const int32_t val) {
+  this->columnCount = val;
+__isset.columnCount = true;
+}
+
 uint32_t TRowSet::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -3929,6 +3939,22 @@ uint32_t TRowSet::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readBinary(this->binaryColumns);
+          this->__isset.binaryColumns = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->columnCount);
+          this->__isset.columnCount = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -3979,6 +4005,16 @@ uint32_t TRowSet::write(::apache::thrift::protocol::TProtocol* oprot) const {
     }
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.binaryColumns) {
+    xfer += oprot->writeFieldBegin("binaryColumns", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeBinary(this->binaryColumns);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.columnCount) {
+    xfer += oprot->writeFieldBegin("columnCount", ::apache::thrift::protocol::T_I32, 5);
+    xfer += oprot->writeI32(this->columnCount);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -3989,6 +4025,8 @@ void swap(TRowSet &a, TRowSet &b) {
   swap(a.startRowOffset, b.startRowOffset);
   swap(a.rows, b.rows);
   swap(a.columns, b.columns);
+  swap(a.binaryColumns, b.binaryColumns);
+  swap(a.columnCount, b.columnCount);
   swap(a.__isset, b.__isset);
 }
 
@@ -3996,12 +4034,16 @@ TRowSet::TRowSet(const TRowSet& other163) {
   startRowOffset = other163.startRowOffset;
   rows = other163.rows;
   columns = other163.columns;
+  binaryColumns = other163.binaryColumns;
+  columnCount = other163.columnCount;
   __isset = other163.__isset;
 }
 TRowSet& TRowSet::operator=(const TRowSet& other164) {
   startRowOffset = other164.startRowOffset;
   rows = other164.rows;
   columns = other164.columns;
+  binaryColumns = other164.binaryColumns;
+  columnCount = other164.columnCount;
   __isset = other164.__isset;
   return *this;
 }
@@ -4011,6 +4053,8 @@ void TRowSet::printTo(std::ostream& out) const {
   out << "startRowOffset=" << to_string(startRowOffset);
   out << ", " << "rows=" << to_string(rows);
   out << ", " << "columns="; (__isset.columns ? (out << to_string(columns)) : (out << "<null>"));
+  out << ", " << "binaryColumns="; (__isset.binaryColumns ? (out << to_string(binaryColumns)) : (out << "<null>"));
+  out << ", " << "columnCount="; (__isset.columnCount ? (out << to_string(columnCount)) : (out << "<null>"));
   out << ")";
 }
 

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hive.service.cli;
+package org.apache.hadoop.hive.serde2.thrift;
 
 import java.nio.ByteBuffer;
 import java.util.AbstractList;
@@ -42,12 +42,10 @@ import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import com.google.common.primitives.Shorts;
 
-import org.apache.hadoop.hive.common.type.HiveDecimal;
-
 /**
- * Column.
+ * ColumnBuffer
  */
-public class Column extends AbstractList {
+public class ColumnBuffer extends AbstractList {
 
   private static final int DEFAULT_SIZE = 100;
 
@@ -65,7 +63,7 @@ public class Column extends AbstractList {
   private List<String> stringVars;
   private List<ByteBuffer> binaryVars;
 
-  public Column(Type type, BitSet nulls, Object values) {
+  public ColumnBuffer(Type type, BitSet nulls, Object values) {
     this.type = type;
     this.nulls = nulls;
     if (type == Type.BOOLEAN_TYPE) {
@@ -97,7 +95,7 @@ public class Column extends AbstractList {
     }
   }
 
-  public Column(Type type) {
+  public ColumnBuffer(Type type) {
     nulls = new BitSet();
     switch (type) {
       case BOOLEAN_TYPE:
@@ -130,7 +128,7 @@ public class Column extends AbstractList {
     this.type = type;
   }
 
-  public Column(TColumn colValues) {
+  public ColumnBuffer(TColumn colValues) {
     if (colValues.isSetBoolVal()) {
       type = Type.BOOLEAN_TYPE;
       nulls = toBitset(colValues.getBoolVal().getNulls());
@@ -176,59 +174,65 @@ public class Column extends AbstractList {
     }
   }
 
-  public Column extractSubset(int start, int end) {
+  public ColumnBuffer extractSubset(int start, int end) {
     BitSet subNulls = nulls.get(start, end);
     if (type == Type.BOOLEAN_TYPE) {
-      Column subset = new Column(type, subNulls, Arrays.copyOfRange(boolVars, start, end));
+      ColumnBuffer subset =
+          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(boolVars, start, end));
       boolVars = Arrays.copyOfRange(boolVars, end, size);
       nulls = nulls.get(start, size);
       size = boolVars.length;
       return subset;
     }
     if (type == Type.TINYINT_TYPE) {
-      Column subset = new Column(type, subNulls, Arrays.copyOfRange(byteVars, start, end));
+      ColumnBuffer subset =
+          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(byteVars, start, end));
       byteVars = Arrays.copyOfRange(byteVars, end, size);
       nulls = nulls.get(start, size);
       size = byteVars.length;
       return subset;
     }
     if (type == Type.SMALLINT_TYPE) {
-      Column subset = new Column(type, subNulls, Arrays.copyOfRange(shortVars, start, end));
+      ColumnBuffer subset =
+          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(shortVars, start, end));
       shortVars = Arrays.copyOfRange(shortVars, end, size);
       nulls = nulls.get(start, size);
       size = shortVars.length;
       return subset;
     }
     if (type == Type.INT_TYPE) {
-      Column subset = new Column(type, subNulls, Arrays.copyOfRange(intVars, start, end));
+      ColumnBuffer subset =
+          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(intVars, start, end));
       intVars = Arrays.copyOfRange(intVars, end, size);
       nulls = nulls.get(start, size);
       size = intVars.length;
       return subset;
     }
     if (type == Type.BIGINT_TYPE) {
-      Column subset = new Column(type, subNulls, Arrays.copyOfRange(longVars, start, end));
+      ColumnBuffer subset =
+          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(longVars, start, end));
       longVars = Arrays.copyOfRange(longVars, end, size);
       nulls = nulls.get(start, size);
       size = longVars.length;
       return subset;
     }
     if (type == Type.DOUBLE_TYPE) {
-      Column subset = new Column(type, subNulls, Arrays.copyOfRange(doubleVars, start, end));
+      ColumnBuffer subset =
+          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(doubleVars, start, end));
       doubleVars = Arrays.copyOfRange(doubleVars, end, size);
       nulls = nulls.get(start, size);
       size = doubleVars.length;
       return subset;
     }
     if (type == Type.BINARY_TYPE) {
-      Column subset = new Column(type, subNulls, binaryVars.subList(start, end));
+      ColumnBuffer subset = new ColumnBuffer(type, subNulls, binaryVars.subList(start, end));
       binaryVars = binaryVars.subList(end, binaryVars.size());
       nulls = nulls.get(start, size);
       size = binaryVars.size();
       return subset;
     }
     if (type == Type.STRING_TYPE) {
-      Column subset = new Column(type, subNulls, stringVars.subList(start, end));
+      ColumnBuffer subset = new ColumnBuffer(type, subNulls, stringVars.subList(start, end));
       stringVars = stringVars.subList(end, stringVars.size());
       nulls = nulls.get(start, size);
       size = stringVars.size();
@@ -297,30 +301,35 @@ public class Column extends AbstractList {
     TColumn value = new TColumn();
     ByteBuffer nullMasks = ByteBuffer.wrap(toBinary(nulls));
     switch (type) {
-      case BOOLEAN_TYPE:
-        value.setBoolVal(new TBoolColumn(Booleans.asList(Arrays.copyOfRange(boolVars, 0, size)), nullMasks));
-        break;
-      case TINYINT_TYPE:
-        value.setByteVal(new TByteColumn(Bytes.asList(Arrays.copyOfRange(byteVars, 0, size)), nullMasks));
-        break;
-      case SMALLINT_TYPE:
-        value.setI16Val(new TI16Column(Shorts.asList(Arrays.copyOfRange(shortVars, 0, size)), nullMasks));
-        break;
-      case INT_TYPE:
-        value.setI32Val(new TI32Column(Ints.asList(Arrays.copyOfRange(intVars, 0, size)), nullMasks));
-        break;
-      case BIGINT_TYPE:
-        value.setI64Val(new TI64Column(Longs.asList(Arrays.copyOfRange(longVars, 0, size)), nullMasks));
-        break;
-      case DOUBLE_TYPE:
-        value.setDoubleVal(new TDoubleColumn(Doubles.asList(Arrays.copyOfRange(doubleVars, 0, size)), nullMasks));
-        break;
-      case STRING_TYPE:
-        value.setStringVal(new TStringColumn(stringVars, nullMasks));
-        break;
-      case BINARY_TYPE:
-        value.setBinaryVal(new TBinaryColumn(binaryVars, nullMasks));
-        break;
+    case BOOLEAN_TYPE:
+      value.setBoolVal(new TBoolColumn(Booleans.asList(Arrays.copyOfRange(boolVars, 0, size)),
+          nullMasks));
+      break;
+    case TINYINT_TYPE:
+      value.setByteVal(new TByteColumn(Bytes.asList(Arrays.copyOfRange(byteVars, 0, size)),
+          nullMasks));
+      break;
+    case SMALLINT_TYPE:
+      value.setI16Val(new TI16Column(Shorts.asList(Arrays.copyOfRange(shortVars, 0, size)),
+          nullMasks));
+      break;
+    case INT_TYPE:
+      value.setI32Val(new TI32Column(Ints.asList(Arrays.copyOfRange(intVars, 0, size)), nullMasks));
+      break;
+    case BIGINT_TYPE:
+      value
+          .setI64Val(new TI64Column(Longs.asList(Arrays.copyOfRange(longVars, 0, size)), nullMasks));
+      break;
+    case DOUBLE_TYPE:
+      value.setDoubleVal(new TDoubleColumn(Doubles.asList(Arrays.copyOfRange(doubleVars, 0, size)),
+          nullMasks));
+      break;
+    case STRING_TYPE:
+      value.setStringVal(new TStringColumn(stringVars, nullMasks));
+      break;
+    case BINARY_TYPE:
+      value.setBinaryVal(new TBinaryColumn(binaryVars, nullMasks));
+      break;
     }
     return value;
   }
@@ -328,52 +337,48 @@ public class Column extends AbstractList {
   private static final ByteBuffer EMPTY_BINARY = ByteBuffer.allocate(0);
   private static final String EMPTY_STRING = "";
 
-  public void addValue(TypeDescriptor typeDescriptor, Object field) {
-    if (field != null && typeDescriptor.getType() == Type.DECIMAL_TYPE) {
-      int scale = typeDescriptor.getDecimalDigits();
-      field = ((HiveDecimal) field).toFormatString(scale);
-    }
-    addValue(typeDescriptor.getType(), field);
+  public void addValue(Object field) {
+    addValue(this.type, field);
   }
 
   public void addValue(Type type, Object field) {
     switch (type) {
-      case BOOLEAN_TYPE:
-        nulls.set(size, field == null);
-        boolVars()[size] = field == null ? true : (Boolean)field;
-        break;
-      case TINYINT_TYPE:
-        nulls.set(size, field == null);
-        byteVars()[size] = field == null ? 0 : (Byte) field;
-        break;
-      case SMALLINT_TYPE:
-        nulls.set(size, field == null);
-        shortVars()[size] = field == null ? 0 : (Short)field;
-        break;
-      case INT_TYPE:
-        nulls.set(size, field == null);
-        intVars()[size] = field == null ? 0 : (Integer)field;
-        break;
-      case BIGINT_TYPE:
-        nulls.set(size, field == null);
-        longVars()[size] = field == null ? 0 : (Long)field;
-        break;
-      case FLOAT_TYPE:
-        nulls.set(size, field == null);
-        doubleVars()[size] = field == null ? 0 : new Double(field.toString());
-        break;
-      case DOUBLE_TYPE:
-        nulls.set(size, field == null);
-        doubleVars()[size] = field == null ? 0 : (Double)field;
-        break;
-      case BINARY_TYPE:
-        nulls.set(binaryVars.size(), field == null);
-        binaryVars.add(field == null ? EMPTY_BINARY : ByteBuffer.wrap((byte[])field));
-        break;
-      default:
-        nulls.set(stringVars.size(), field == null);
-        stringVars.add(field == null ? EMPTY_STRING : String.valueOf(field));
-        break;
+    case BOOLEAN_TYPE:
+      nulls.set(size, field == null);
+      boolVars()[size] = field == null ? true : (Boolean) field;
+      break;
+    case TINYINT_TYPE:
+      nulls.set(size, field == null);
+      byteVars()[size] = field == null ? 0 : (Byte) field;
+      break;
+    case SMALLINT_TYPE:
+      nulls.set(size, field == null);
+      shortVars()[size] = field == null ? 0 : (Short) field;
+      break;
+    case INT_TYPE:
+      nulls.set(size, field == null);
+      intVars()[size] = field == null ? 0 : (Integer) field;
+      break;
+    case BIGINT_TYPE:
+      nulls.set(size, field == null);
+      longVars()[size] = field == null ? 0 : (Long) field;
+      break;
+    case FLOAT_TYPE:
+      nulls.set(size, field == null);
+      doubleVars()[size] = field == null ? 0 : new Double(field.toString());
+      break;
+    case DOUBLE_TYPE:
+      nulls.set(size, field == null);
+      doubleVars()[size] = field == null ? 0 : (Double) field;
+      break;
+    case BINARY_TYPE:
+      nulls.set(binaryVars.size(), field == null);
+      binaryVars.add(field == null ? EMPTY_BINARY : ByteBuffer.wrap((byte[]) field));
+      break;
+    default:
+      nulls.set(stringVars.size(), field == null);
+      stringVars.add(field == null ? EMPTY_STRING : String.valueOf(field));
+      break;
     }
     size++;
   }

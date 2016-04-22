@@ -43,7 +43,7 @@ public class GetCatalogsOperation extends MetadataOperation {
 
   protected GetCatalogsOperation(HiveSession parentSession) {
     super(parentSession, OperationType.GET_CATALOGS);
-    rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion());
+    rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion(), false);
   }
 
   @Override

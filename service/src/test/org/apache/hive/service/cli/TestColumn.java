@@ -17,6 +17,8 @@
  */
 package org.apache.hive.service.cli;
 
+import org.apache.hadoop.hive.serde2.thrift.ColumnBuffer;
+import org.apache.hadoop.hive.serde2.thrift.Type;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -57,7 +59,7 @@ public class TestColumn {
       Type type = (Type)entry.getKey();
       List<Object> values = (List)entry.getValue();
 
-      Column c = new Column(type);
+      ColumnBuffer c = new ColumnBuffer(type);
       for (Object v : values) {
         c.addValue(type, v);
       }
@@ -73,7 +75,7 @@ public class TestColumn {
 
   @Test
   public void testFloatAndDoubleValues() {
-    Column floatColumn = new Column(Type.FLOAT_TYPE);
+    ColumnBuffer floatColumn = new ColumnBuffer(Type.FLOAT_TYPE);
     floatColumn.addValue(Type.FLOAT_TYPE, 1.1f);
     floatColumn.addValue(Type.FLOAT_TYPE, 2.033f);
 
@@ -83,7 +85,7 @@ public class TestColumn {
     assertEquals(1.1, floatColumn.get(0));
     assertEquals(2.033, floatColumn.get(1));
 
-    Column doubleColumn = new Column(Type.DOUBLE_TYPE);
+    ColumnBuffer doubleColumn = new ColumnBuffer(Type.DOUBLE_TYPE);
     doubleColumn.addValue(Type.DOUBLE_TYPE, 1.1);
     doubleColumn.addValue(Type.DOUBLE_TYPE, 2.033);
 
@@ -95,7 +97,7 @@ public class TestColumn {
 
   @Test
   public void testBooleanValues() {
-    Column boolColumn = new Column(Type.BOOLEAN_TYPE);
+    ColumnBuffer boolColumn = new ColumnBuffer(Type.BOOLEAN_TYPE);
     boolColumn.addValue(Type.BOOLEAN_TYPE, true);
     boolColumn.addValue(Type.BOOLEAN_TYPE, false);
 
@@ -107,7 +109,7 @@ public class TestColumn {
 
   @Test
   public void testStringValues() {
-    Column stringColumn = new Column(Type.STRING_TYPE);
+    ColumnBuffer stringColumn = new ColumnBuffer(Type.STRING_TYPE);
     stringColumn.addValue(Type.STRING_TYPE, "12abc456");
     stringColumn.addValue(Type.STRING_TYPE, "~special$&string");
 
@@ -119,7 +121,7 @@ public class TestColumn {
 
   @Test
   public void testBinaryValues() {
-    Column binaryColumn = new Column(Type.BINARY_TYPE);
+    ColumnBuffer binaryColumn = new ColumnBuffer(Type.BINARY_TYPE);
     binaryColumn.addValue(Type.BINARY_TYPE, new byte[]{-1, 0, 3, 4});
 
     assertEquals(Type.BINARY_TYPE, binaryColumn.getType());

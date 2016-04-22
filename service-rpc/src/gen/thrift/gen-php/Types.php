@@ -3772,6 +3772,14 @@ class TRowSet {
    * @var \TColumn[]
    */
   public $columns = null;
+  /**
+   * @var string
+   */
+  public $binaryColumns = null;
+  /**
+   * @var int
+   */
+  public $columnCount = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -3798,6 +3806,14 @@ class TRowSet {
             'class' => '\TColumn',
             ),
           ),
+        4 => array(
+          'var' => 'binaryColumns',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'columnCount',
+          'type' => TType::I32,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -3809,6 +3825,12 @@ class TRowSet {
       }
       if (isset($vals['columns'])) {
         $this->columns = $vals['columns'];
+      }
+      if (isset($vals['binaryColumns'])) {
+        $this->binaryColumns = $vals['binaryColumns'];
+      }
+      if (isset($vals['columnCount'])) {
+        $this->columnCount = $vals['columnCount'];
       }
     }
   }
@@ -3875,6 +3897,20 @@ class TRowSet {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->binaryColumns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->columnCount);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -3925,6 +3961,16 @@ class TRowSet {
         }
         $output->writeListEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->binaryColumns !== null) {
+      $xfer += $output->writeFieldBegin('binaryColumns', TType::STRING, 4);
+      $xfer += $output->writeString($this->binaryColumns);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->columnCount !== null) {
+      $xfer += $output->writeFieldBegin('columnCount', TType::I32, 5);
+      $xfer += $output->writeI32($this->columnCount);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

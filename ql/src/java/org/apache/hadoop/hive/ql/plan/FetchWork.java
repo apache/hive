@@ -63,6 +63,16 @@ public class FetchWork implements Serializable {
    */
   private String serializationNullFormat = "NULL";
 
+  private boolean isHiveServerQuery;
+
+  public boolean isHiveServerQuery() {
+	return isHiveServerQuery;
+  }
+
+  public void setHiveServerQuery(boolean isHiveServerQuery) {
+	this.isHiveServerQuery = isHiveServerQuery;
+  }
+
   public FetchWork() {
   }
 

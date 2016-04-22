@@ -263,6 +263,11 @@ public class QB {
     this.isQuery = isQuery;
   }
 
+  /**
+   * Set to true in SemanticAnalyzer.getMetadataForDestFile,
+   * if destination is a file and query is not CTAS
+   * @return
+   */
   public boolean getIsQuery() {
     return isQuery;
   }

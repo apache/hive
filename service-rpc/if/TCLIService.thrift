@@ -402,6 +402,8 @@ struct TRowSet {
   1: required i64 startRowOffset
   2: required list<TRow> rows
   3: optional list<TColumn> columns
+  4: optional binary binaryColumns
+  5: optional i32 columnCount
 }
 
 // The return status code contained in each response.

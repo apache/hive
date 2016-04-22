@@ -35,6 +35,7 @@ import org.apache.hive.service.rpc.thrift.TGetOperationStatusReq;
 import org.apache.hive.service.rpc.thrift.TGetOperationStatusResp;
 import org.apache.hive.service.rpc.thrift.TOperationHandle;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -881,15 +882,22 @@ public class HiveStatement implements java.sql.Statement {
       }
     } catch (SQLException e) {
       throw e;
+    } catch (TException e) {
+      throw new SQLException("Error when getting query log: " + e, e);
     } catch (Exception e) {
       throw new SQLException("Error when getting query log: " + e, e);
     }
 
-    RowSet rowSet = RowSetFactory.create(tFetchResultsResp.getResults(),
-        connection.getProtocol());
-    for (Object[] row : rowSet) {
-      logs.add(String.valueOf(row[0]));
+    try {
+      RowSet rowSet;
+      rowSet = RowSetFactory.create(tFetchResultsResp.getResults(), connection.getProtocol());
+      for (Object[] row : rowSet) {
+        logs.add(String.valueOf(row[0]));
+      }
+    } catch (TException e) {
+      throw new SQLException("Error building result set for query log: " + e, e);
     }
+
     return logs;
   }
 

@@ -108,6 +108,7 @@ import org.apache.hadoop.hive.ql.session.OperationLog.LoggingLevel;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.thrift.ThriftJDBCBinarySerDe;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobClient;
@@ -930,6 +931,13 @@ public class Driver implements CommandProcessor {
    */
   public QueryPlan getPlan() {
     return plan;
+  }
+
+  /**
+   * @return The current FetchTask associated with the Driver's plan, if any.
+   */
+  public FetchTask getFetchTask() {
+    return fetchTask;
   }
 
   // Write the current set of valid transactions into the conf file so that it can be read by
@@ -1880,6 +1888,17 @@ public class Driver implements CommandProcessor {
       throw new IOException("FAILED: Operation cancelled");
     }
     if (isFetchingTable()) {
+      /**
+       * If resultset serialization to thrift object is enabled, and if the destination table is
+       * indeed written using ThriftJDBCBinarySerDe, read one row from the output sequence file,
+       * since it is a blob of row batches.
+       */
+      if (fetchTask.getWork().isHiveServerQuery() && HiveConf.getBoolVar(conf,
+          HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS)
+          && (fetchTask.getTblDesc().getSerdeClassName()
+              .equalsIgnoreCase(ThriftJDBCBinarySerDe.class.getName()))) {
+        maxRows = 1;
+      }
       fetchTask.setMaxRows(maxRows);
       return fetchTask.fetch(res);
     }

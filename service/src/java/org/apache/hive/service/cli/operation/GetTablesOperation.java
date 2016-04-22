@@ -84,7 +84,7 @@ public class GetTablesOperation extends MetadataOperation {
     } else {
       tableTypeList = null;
     }
-    this.rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion());
+    this.rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion(), false);
   }
 
   @Override

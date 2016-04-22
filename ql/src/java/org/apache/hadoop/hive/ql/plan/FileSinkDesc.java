@@ -97,6 +97,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   private transient Table table;
   private Path destPath;
+  private boolean isHiveServerQuery;
 
   public FileSinkDesc() {
   }
@@ -158,6 +159,14 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     ret.setTransactionId(txnId);
     ret.setStatsTmpDir(statsTmpDir);
     return ret;
+  }
+
+  public boolean isHiveServerQuery() {
+	  return this.isHiveServerQuery;
+  }
+
+  public void setHiveServerQuery(boolean isHiveServerQuery) {
+	  this.isHiveServerQuery = isHiveServerQuery;
   }
 
   @Explain(displayName = "directory", explainLevels = { Level.EXTENDED })

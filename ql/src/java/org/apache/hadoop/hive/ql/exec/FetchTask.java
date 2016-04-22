@@ -48,12 +48,10 @@ import org.apache.hadoop.util.StringUtils;
  **/
 public class FetchTask extends Task<FetchWork> implements Serializable {
   private static final long serialVersionUID = 1L;
-
   private int maxRows = 100;
   private FetchOperator fetch;
   private ListSinkOperator sink;
   private int totalRows;
-
   private static transient final Logger LOG = LoggerFactory.getLogger(FetchTask.class);
 
   public FetchTask() {
@@ -186,4 +184,5 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
       fetch.clearFetchContext();
     }
   }
+
 }

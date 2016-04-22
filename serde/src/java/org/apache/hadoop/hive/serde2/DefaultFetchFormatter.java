@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec;
+package org.apache.hadoop.hive.serde2;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -27,10 +27,6 @@ import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_NULL_FOR
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
-import org.apache.hadoop.hive.serde2.SerDe;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hive.common.util.ReflectionUtil;
 
@@ -42,21 +38,21 @@ public class DefaultFetchFormatter<T> implements FetchFormatter<String> {
   private SerDe mSerde;
 
   @Override
-  public void initialize(Configuration hconf, Properties props) throws HiveException {
-    try {
-      mSerde = initializeSerde(hconf, props);
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
+  public void initialize(Configuration hconf, Properties props) throws SerDeException {
+    mSerde = initializeSerde(hconf, props);
   }
 
-  private SerDe initializeSerde(Configuration conf, Properties props) throws Exception {
+  private SerDe initializeSerde(Configuration conf, Properties props) throws SerDeException {
     String serdeName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE);
-    Class<? extends SerDe> serdeClass = Class.forName(serdeName, true,
-        Utilities.getSessionSpecifiedClassLoader()).asSubclass(SerDe.class);
+    Class<? extends SerDe> serdeClass;
+    try {
+      serdeClass =
+          Class.forName(serdeName, true, JavaUtils.getClassLoader()).asSubclass(SerDe.class);
+    } catch (ClassNotFoundException e) {
+      throw new SerDeException(e);
+    }
     // cast only needed for Hadoop 0.17 compatibility
     SerDe serde = ReflectionUtil.newInstance(serdeClass, null);
-
     Properties serdeProps = new Properties();
     if (serde instanceof DelimitedJSONSerDe) {
       serdeProps.put(SERIALIZATION_FORMAT, props.getProperty(SERIALIZATION_FORMAT));
