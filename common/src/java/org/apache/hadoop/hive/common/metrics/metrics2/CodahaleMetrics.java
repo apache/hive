@@ -34,6 +34,7 @@ import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.joshelser.dropwizard.metrics.hadoop.HadoopMetrics2Reporter;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.cache.CacheBuilder;
@@ -47,6 +48,7 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -371,6 +373,20 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
           final JsonFileReporter jsonFileReporter = new JsonFileReporter();
           jsonFileReporter.start();
           reporters.add(jsonFileReporter);
+          break;
+        case HADOOP2:
+          String applicationName = conf.get(HiveConf.ConfVars.HIVE_METRICS_HADOOP2_COMPONENT_NAME.varname);
+          long reportingInterval = HiveConf.toTime(
+              conf.get(HiveConf.ConfVars.HIVE_METRICS_HADOOP2_INTERVAL.varname),
+              TimeUnit.SECONDS, TimeUnit.SECONDS);
+          final HadoopMetrics2Reporter metrics2Reporter = HadoopMetrics2Reporter.forRegistry(metricRegistry)
+              .convertRatesTo(TimeUnit.SECONDS)
+              .convertDurationsTo(TimeUnit.MILLISECONDS)
+              .build(DefaultMetricsSystem.initialize(applicationName), // The application-level name
+                  applicationName, // Component name
+                  applicationName, // Component description
+                  "General"); // Name for each metric record
+          metrics2Reporter.start(reportingInterval, TimeUnit.SECONDS);
           break;
       }
     }

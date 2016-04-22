@@ -1961,7 +1961,8 @@ public class HiveConf extends Configuration {
             "org.apache.hadoop.hive.common.metrics.LegacyMetrics"),
         "Hive metrics subsystem implementation class."),
     HIVE_METRICS_REPORTER("hive.service.metrics.reporter", "JSON_FILE, JMX",
-        "Reporter type for metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics, comma separated list of JMX, CONSOLE, JSON_FILE"),
+        "Reporter type for metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics, " +
+        "comma separated list of JMX, CONSOLE, JSON_FILE, HADOOP2"),
     HIVE_METRICS_JSON_FILE_LOCATION("hive.service.metrics.file.location", "/tmp/report.json",
         "For metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics JSON_FILE reporter, the location of local JSON metrics file.  " +
         "This file will get overwritten at every interval."),
@@ -1969,6 +1970,15 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.MILLISECONDS),
         "For metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics JSON_FILE reporter, " +
         "the frequency of updating JSON metrics file."),
+    HIVE_METRICS_HADOOP2_INTERVAL("hive.service.metrics.hadoop2.frequency", "30s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "For metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics HADOOP2 reporter, " +
+        "the frequency of updating the HADOOP2 metrics system."),
+    HIVE_METRICS_HADOOP2_COMPONENT_NAME("hive.service.metrics.hadoop2.component",
+        "hive",
+        "Component name to provide to Hadoop2 Metrics system. Ideally 'hivemetastore' for the MetaStore " +
+        " and and 'hiveserver2' for HiveServer2."
+        ),
     HIVE_PERF_LOGGER("hive.exec.perf.logger", "org.apache.hadoop.hive.ql.log.PerfLogger",
         "The class responsible for logging client side performance metrics. \n" +
         "Must be a subclass of org.apache.hadoop.hive.ql.log.PerfLogger"),
