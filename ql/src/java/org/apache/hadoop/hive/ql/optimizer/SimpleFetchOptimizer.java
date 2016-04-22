@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
-import org.apache.hadoop.hive.ql.exec.UDTFOperator;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -141,31 +140,35 @@ public class SimpleFetchOptimizer extends Transform {
   }
 
   private boolean checkThreshold(FetchData data, int limit, ParseContext pctx) throws Exception {
-    boolean result = false;
-
     if (limit > 0) {
       if (data.hasOnlyPruningFilter()) {
         /* partitioned table + query has only pruning filters */
-        result = true;
+        return true;
       } else if (data.isPartitioned() == false && data.isFiltered() == false) {
         /* unpartitioned table + no filters */
-        result = true;
+        return true;
       }
       /* fall through */
-    } else {
-      long threshold = HiveConf.getLongVar(pctx.getConf(),
-	  HiveConf.ConfVars.HIVEFETCHTASKCONVERSIONTHRESHOLD);
-      if (threshold < 0) {
-	result = true;
-      } else {
-	long remaining = threshold;
-	remaining -= data.getInputLength(pctx, remaining);
-	if (remaining >= 0) {
-	  result = true;
-	}
+    }
+    long threshold = HiveConf.getLongVar(pctx.getConf(),
+        HiveConf.ConfVars.HIVEFETCHTASKCONVERSIONTHRESHOLD);
+    if (threshold < 0) {
+      return true;
+    }
+    Operator child = data.scanOp.getChildOperators().get(0);
+    if(child instanceof SelectOperator) {
+      // select *, constant and casts can be allowed without a threshold check
+      if (checkExpressions((SelectOperator)child)) {
+        return true;
       }
     }
-    return result;
+    long remaining = threshold;
+    remaining -= data.getInputLength(pctx, remaining);
+    if (remaining < 0) {
+      LOG.info("Threshold " + remaining + " exceeded for pseudoMR mode");
+      return false;
+    }
+    return true;
   }
 
   // all we can handle is LimitOperator, FilterOperator SelectOperator and final FS
@@ -184,20 +187,23 @@ public class SimpleFetchOptimizer extends Transform {
       return null;
     }
     Table table = ts.getConf().getTableMetadata();
+    if (table == null) {
+      return null;
+    }
     ReadEntity parent = PlanUtils.getParentViewInfo(alias, pctx.getViewAliasToInput());
-    if (table != null && !table.isPartitioned()) {
+    if (!table.isPartitioned()) {
       FetchData fetch = new FetchData(ts, parent, table, splitSample);
       return checkOperators(fetch, aggressive, false);
     }
 
     boolean bypassFilter = false;
-    if (table != null && HiveConf.getBoolVar(pctx.getConf(), HiveConf.ConfVars.HIVEOPTPPD)) {
+    if (HiveConf.getBoolVar(pctx.getConf(), HiveConf.ConfVars.HIVEOPTPPD)) {
       ExprNodeDesc pruner = pctx.getOpToPartPruner().get(ts);
       if (PartitionPruner.onlyContainsPartnCols(table, pruner)) {
         bypassFilter = !pctx.getPrunedPartitions(alias, ts).hasUnknownPartitions();
       }
     }
-    if (table != null && !aggressive && !bypassFilter) {
+    if (!aggressive && !bypassFilter) {
       return null;
     }
     PrunedPartitionList partitions = pctx.getPrunedPartitions(alias, ts);
@@ -225,7 +231,7 @@ public class SimpleFetchOptimizer extends Transform {
         continue;
       }
 
-      if (!(op instanceof LimitOperator || (op instanceof FilterOperator && bypassFilter)) || op instanceof UDTFOperator) {
+      if (!(op instanceof LimitOperator || (op instanceof FilterOperator && bypassFilter))) {
         break;
       }
 
@@ -283,7 +289,7 @@ public class SimpleFetchOptimizer extends Transform {
 
   private boolean isConvertible(FetchData fetch, Operator<?> operator, Set<Operator<?>> traversed) {
     if (operator instanceof ReduceSinkOperator || operator instanceof CommonJoinOperator
-        || operator instanceof ScriptOperator) {
+        || operator instanceof ScriptOperator || operator instanceof UDTFOperator) {
       return false;
     }
 

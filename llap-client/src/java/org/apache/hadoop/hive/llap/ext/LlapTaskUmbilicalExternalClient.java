@@ -102,8 +102,8 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
 
   @Override
   public void serviceStart() throws IOException {
-    int numHandlers = HiveConf.getIntVar(conf,
-        HiveConf.ConfVars.LLAP_TMP_EXT_CLIENT_NUM_SERVER_HANDLERS);
+    // If we use a single server for multiple external clients, then consider using more than one handler.
+    int numHandlers = 1;
     llapTaskUmbilicalServer = new LlapTaskUmbilicalServer(conf, umbilical, numHandlers, tokenIdentifier, sessionToken);
     communicator.start();
   }

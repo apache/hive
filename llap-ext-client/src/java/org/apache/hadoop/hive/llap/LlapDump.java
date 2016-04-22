@@ -40,7 +40,6 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.io.RCFile.Reader;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
@@ -74,7 +73,7 @@ public class LlapDump {
 
     if (cli.hasOption('h')) {
       HelpFormatter formatter = new HelpFormatter();
-      formatter.printHelp("orcfiledump", opts);
+      formatter.printHelp("llapdump", opts);
       return;
     }
 

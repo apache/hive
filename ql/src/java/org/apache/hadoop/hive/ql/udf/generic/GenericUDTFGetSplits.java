@@ -298,15 +298,13 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
 
       // we have the dag now proceed to get the splits:
-      HiveSplitGenerator splitGenerator = new HiveSplitGenerator(null);
       Preconditions.checkState(HiveConf.getBoolVar(wxConf,
               HiveConf.ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS));
       Preconditions.checkState(HiveConf.getBoolVar(wxConf,
               HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS));
-      splitGenerator.initializeSplitGenerator(wxConf, mapWork);
+      HiveSplitGenerator splitGenerator = new HiveSplitGenerator(wxConf, mapWork);
       List<Event> eventList = splitGenerator.initialize();
 
-      // hack - just serializing with kryo for now. This needs to be done properly
       InputSplit[] result = new InputSplit[eventList.size() - 1];
       DataOutputBuffer dob = new DataOutputBuffer();
 
@@ -458,7 +456,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         break;
       case VARCHAR:
         VarcharTypeInfo varcharTypeInfo = (VarcharTypeInfo) typeInfo;
-        typeDesc = new TypeDesc(TypeDesc.Type.CHAR, varcharTypeInfo.getLength());
+        typeDesc = new TypeDesc(TypeDesc.Type.VARCHAR, varcharTypeInfo.getLength());
         break;
       case DATE:
         typeDesc = new TypeDesc(TypeDesc.Type.DATE);

@@ -191,7 +191,7 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
       ReaderEvent event = readerEvents.take();
       return event;
     } catch (InterruptedException ie) {
-      throw new RuntimeException("Interrupted while getting readerEvents, not expected", ie);
+      throw new RuntimeException("Interrupted while getting readerEvents, not expected: " + ie.getMessage(), ie);
     }
   }
 

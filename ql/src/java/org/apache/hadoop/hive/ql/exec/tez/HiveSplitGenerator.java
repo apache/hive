@@ -78,17 +78,16 @@ public class HiveSplitGenerator extends InputInitializer {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveSplitGenerator.class);
 
-  private DynamicPartitionPruner pruner = null;
-  private Configuration conf = null;
-  private JobConf jobConf = null;
-  private MRInputUserPayloadProto userPayloadProto = null;
-  private MapWork work = null;
+  private final DynamicPartitionPruner pruner;
+  private final Configuration conf;
+  private final JobConf jobConf;
+  private final MRInputUserPayloadProto userPayloadProto;
+  private final MapWork work;
   private final SplitGrouper splitGrouper = new SplitGrouper();
-  private SplitLocationProvider splitLocationProvider = null;
+  private final SplitLocationProvider splitLocationProvider;
 
-  
-  // TODO RSHACK This entire method needs to be reworked. Put back final fields, separate into reusable components etc.
-  public void initializeSplitGenerator(Configuration conf, MapWork work) throws IOException {
+  public HiveSplitGenerator(Configuration conf, MapWork work) throws IOException {
+    super(null);
 
     this.conf = conf;
     this.work = work;
@@ -103,8 +102,6 @@ public class HiveSplitGenerator extends InputInitializer {
     // Read all credentials into the credentials instance stored in JobConf.
     ShimLoader.getHadoopShims().getMergedCredentials(jobConf);
 
-    this.work = Utilities.getMapWork(jobConf);
-
     // Events can start coming in the moment the InputInitializer is created. The pruner
     // must be setup and initialized here so that it sets up it's structures to start accepting events.
     // Setting it up in initialize leads to a window where events may come in before the pruner is
@@ -116,9 +113,7 @@ public class HiveSplitGenerator extends InputInitializer {
   public HiveSplitGenerator(InputInitializerContext initializerContext) throws IOException,
       SerDeException {
     super(initializerContext);
-    if (initializerContext == null) {
-      return;
-    }
+
     Preconditions.checkNotNull(initializerContext);
     userPayloadProto =
         MRInputHelpers.parseMRInputPayload(initializerContext.getInputUserPayload());
