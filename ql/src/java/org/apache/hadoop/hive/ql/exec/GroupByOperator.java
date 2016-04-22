@@ -1095,6 +1095,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
         throw new HiveException(e);
       }
     }
+    hashAggregations = null;
   }
 
   // Group by contains the columns needed - no need to aggregate from children
