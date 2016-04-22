@@ -513,6 +513,7 @@ public class QTestUtil {
       dfs.shutdown();
       dfs = null;
     }
+    Hive.closeCurrent();
   }
 
   public String readEntireFileIntoString(File queryFile) throws IOException {
@@ -734,8 +735,9 @@ public class QTestUtil {
       return;
     }
 
-    db.getConf().set("hive.metastore.filter.hook",
+    conf.set("hive.metastore.filter.hook",
         "org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl");
+    db = Hive.get(conf);
     // Delete any tables other than the source tables
     // and any databases other than the default database.
     for (String dbName : db.getAllDatabases()) {
@@ -803,16 +805,20 @@ public class QTestUtil {
       return;
     }
 
-    clearTablesCreatedDuringTests();
-    clearKeysCreatedInTests();
-
     // allocate and initialize a new conf since a test can
     // modify conf by using 'set' commands
     conf = new HiveConf(Driver.class);
     initConf();
+    initConfFromSetup();
+
     // renew the metastore since the cluster type is unencrypted
     db = Hive.get(conf);  // propagate new conf to meta store
 
+    clearTablesCreatedDuringTests();
+    clearKeysCreatedInTests();
+  }
+
+  protected void initConfFromSetup() throws Exception {
     setup.preTest(conf);
   }
 

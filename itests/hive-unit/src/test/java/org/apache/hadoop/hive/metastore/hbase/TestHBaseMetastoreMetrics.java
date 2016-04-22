@@ -41,8 +41,6 @@ import java.io.IOException;
  */
 public class TestHBaseMetastoreMetrics extends HBaseIntegrationTests {
 
-  private CodahaleMetrics metrics;
-
   @BeforeClass
   public static void startup() throws Exception {
     HBaseIntegrationTests.startMiniCluster();
@@ -66,7 +64,6 @@ public class TestHBaseMetastoreMetrics extends HBaseIntegrationTests {
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER, MetricsReporting.JSON_FILE.name() + "," + MetricsReporting.JMX.name());
     SessionState.start(new CliSessionState(conf));
     driver = new Driver(conf);
-    metrics = (CodahaleMetrics) MetricsFactory.getInstance();
   }
 
   @Test
@@ -107,6 +104,7 @@ public class TestHBaseMetastoreMetrics extends HBaseIntegrationTests {
     driver.run("use default");
     driver.run("drop database tempdb cascade");
 
+    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
     String json = metrics.dumpJson();
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.CREATE_TOTAL_DATABASES, 2);
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.CREATE_TOTAL_TABLES, 7);
