@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.llap.cli;
 
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -67,7 +68,7 @@ public class LlapStatusServiceDriver {
   }
 
 
-  private int run(String[] args) {
+  public int run(String[] args) {
 
     SliderClient sliderClient = null;
     try {
@@ -148,14 +149,13 @@ public class LlapStatusServiceDriver {
     }
   }
 
-  private void outputJson() throws LlapStatusCliException {
+  public void outputJson(PrintWriter writer) throws LlapStatusCliException {
     ObjectMapper mapper = new ObjectMapper();
     mapper.configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false);
     mapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
     mapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_EMPTY);
     try {
-      System.out
-          .println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(appStatusBuilder));
+      writer.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(appStatusBuilder));
     } catch (IOException e) {
       throw new LlapStatusCliException(ExitCode.LLAP_JSON_GENERATION_ERROR, "Failed to create JSON",
           e);
@@ -455,7 +455,7 @@ public class LlapStatusServiceDriver {
     private Long appStartTime;
     private Long appFinishTime;
 
-    private List<LlapInstance> llapInstances = new LinkedList<>();
+    private final List<LlapInstance> llapInstances = new LinkedList<>();
 
     private transient Map<String, LlapInstance> containerToInstanceMap = new HashMap<>();
 
@@ -771,7 +771,7 @@ public class LlapStatusServiceDriver {
     RUNNING_ALL, COMPLETE, UNKNOWN
   }
 
-  enum ExitCode {
+  public enum ExitCode {
     SUCCESS(0),
     INCORRECT_USAGE(10),
     YARN_ERROR(20),
@@ -806,7 +806,7 @@ public class LlapStatusServiceDriver {
       LlapStatusServiceDriver statusServiceDriver = new LlapStatusServiceDriver();
       ret = statusServiceDriver.run(args);
       if (ret == ExitCode.SUCCESS.getInt()) {
-          statusServiceDriver.outputJson();
+        statusServiceDriver.outputJson(new PrintWriter(System.out));
       }
 
     } catch (Throwable t) {

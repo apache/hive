@@ -73,17 +73,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * LlapDecider takes care of tagging certain vertices in the execution
- * graph as "llap", which in turn causes them to be submitted to an
- * llap daemon instead of a regular yarn container.
+ * LlapDecider takes care of tagging certain vertices in the execution graph as
+ * "llap", which in turn causes them to be submitted to an llap daemon instead
+ * of a regular yarn container.
  *
- * The actual algoritm used is driven by LLAP_EXECUTION_MODE. "all",
- * "none" and "map" mechanically tag those elements. "auto" tries to
- * be smarter by looking for suitable vertices.
+ * The actual algorithm used is driven by LLAP_EXECUTION_MODE. "all", "none" and
+ * "map" mechanically tag those elements. "auto" tries to be smarter by looking
+ * for suitable vertices.
  *
- * Regardless of the algorithm used, it's always ensured that there's
- * not user code that will be sent to the daemon (ie.: script
- * operators, temporary functions, etc)
+ * Regardless of the algorithm used, it's always ensured that there's not user
+ * code that will be sent to the daemon (ie.: script operators, temporary
+ * functions, etc)
  */
 public class LlapDecider implements PhysicalPlanResolver {
 
