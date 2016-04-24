@@ -1317,10 +1317,16 @@ class EncodedReaderImpl implements EncodedReader {
   /** Pool factory that is used if another one isn't specified - just creates the objects. */
   private static class NoopPoolFactory implements PoolFactory {
     @Override
-    public <T> Pool<T> createPool(int size, final PoolObjectHelper<T> helper) {
+    public <T> Pool<T> createPool(final int size, final PoolObjectHelper<T> helper) {
       return new Pool<T>() {
         public void offer(T t) {
         }
+
+        @Override
+        public int size() {
+          return size;
+        }
+
         public T take() {
           return helper.create();
         }

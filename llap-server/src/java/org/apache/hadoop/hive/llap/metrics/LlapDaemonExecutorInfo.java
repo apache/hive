@@ -26,6 +26,12 @@ import com.google.common.base.Objects;
  */
 public enum LlapDaemonExecutorInfo implements MetricsInfo {
   ExecutorMetrics("Llap daemon cache related metrics"),
+  ExecutorThreadCountPerInstance("Total number of executor threads per node"),
+  ExecutorMemoryPerInstance("Total memory for executors per node in bytes"),
+  ExecutorCacheMemoryPerInstance("Total Cache memory per node in bytes"),
+  ExecutorJvmMaxMemory("Max memory available for JVM in bytes"),
+  ExecutorWaitQueueSize("Size of wait queue per node"),
+  ExecutorRpcNumHandlers("Number of RPC handlers per node"),
   ExecutorThreadCPUTime("Cpu time in nanoseconds"),
   ExecutorThreadUserTime("User time in nanoseconds"),
   ExecutorTotalRequestsHandled("Total number of requests handled by the container"),

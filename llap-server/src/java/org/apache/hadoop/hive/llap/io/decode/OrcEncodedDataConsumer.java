@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
-import org.apache.hadoop.hive.llap.metrics.LlapDaemonQueueMetrics;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.orc.CompressionCodec;
@@ -52,8 +52,8 @@ public class OrcEncodedDataConsumer
 
   public OrcEncodedDataConsumer(
       Consumer<ColumnVectorBatch> consumer, int colCount, boolean skipCorrupt,
-      QueryFragmentCounters counters, LlapDaemonQueueMetrics queueMetrics) {
-    super(consumer, colCount, queueMetrics);
+      QueryFragmentCounters counters, LlapDaemonIOMetrics ioMetrics) {
+    super(consumer, colCount, ioMetrics);
     // TODO: get rid of this
     this.skipCorrupt = skipCorrupt;
     this.counters = counters;

@@ -142,6 +142,11 @@ public class FixedSizedObjectPool<T> implements Pool<T> {
     tryOffer(t);
   }
 
+  @Override
+  public int size() {
+    return pool.length;
+  }
+
   @VisibleForTesting
   public boolean tryOffer(T t) {
     if (t == null || pool.length == 0) return false; // 0 size means no-pooling case - passthru.

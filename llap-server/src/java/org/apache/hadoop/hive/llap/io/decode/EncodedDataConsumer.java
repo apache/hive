@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.common.Pool;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
-import org.apache.hadoop.hive.llap.metrics.LlapDaemonQueueMetrics;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 
@@ -33,15 +33,15 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
   private ConsumerFeedback<BatchType> upstreamFeedback;
   private final Consumer<ColumnVectorBatch> downstreamConsumer;
   private Callable<Void> readCallable;
-  private final LlapDaemonQueueMetrics queueMetrics;
+  private final LlapDaemonIOMetrics ioMetrics;
   // Note that the pool is per EDC - within EDC, CVBs are expected to have the same schema.
   private final static int CVB_POOL_SIZE = 128;
   protected final FixedSizedObjectPool<ColumnVectorBatch> cvbPool;
 
   public EncodedDataConsumer(Consumer<ColumnVectorBatch> consumer, final int colCount,
-      LlapDaemonQueueMetrics queueMetrics) {
+      LlapDaemonIOMetrics ioMetrics) {
     this.downstreamConsumer = consumer;
-    this.queueMetrics = queueMetrics;
+    this.ioMetrics = ioMetrics;
     cvbPool = new FixedSizedObjectPool<ColumnVectorBatch>(CVB_POOL_SIZE,
         new Pool.PoolObjectHelper<ColumnVectorBatch>() {
           @Override
@@ -53,12 +53,17 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
             // Don't reset anything, we are reusing column vectors.
           }
         });
+    this.ioMetrics.setColumnVectorBatchPoolSize(cvbPool.size());
   }
 
   public void init(ConsumerFeedback<BatchType> upstreamFeedback,
       Callable<Void> readCallable) {
     this.upstreamFeedback = upstreamFeedback;
     this.readCallable = readCallable;
+  }
+
+  public LlapDaemonIOMetrics getIOMetrics() {
+    return ioMetrics;
   }
 
   @Override
@@ -75,7 +80,7 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
     long start = System.currentTimeMillis();
     decodeBatch(data, downstreamConsumer);
     long end = System.currentTimeMillis();
-    queueMetrics.addProcessingTime(end - start);
+    ioMetrics.addDecodeBatchTime(end - start);
     returnSourceData(data);
   }
 

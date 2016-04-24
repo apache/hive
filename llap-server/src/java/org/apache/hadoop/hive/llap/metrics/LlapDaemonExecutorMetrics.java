@@ -17,8 +17,13 @@
  */
 package org.apache.hadoop.hive.llap.metrics;
 
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorCacheMemoryPerInstance;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorJvmMaxMemory;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMemoryPerInstance;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumQueuedRequests;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorRpcNumHandlers;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorThreadCPUTime;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorThreadCountPerInstance;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorThreadUserTime;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalAskedToDie;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalExecutionFailure;
@@ -26,6 +31,7 @@ import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.Executo
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalRequestsHandled;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalSuccess;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMetrics;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorWaitQueueSize;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.PreemptionTimeLost;
 import static org.apache.hadoop.metrics2.impl.MsInfo.ProcessName;
 import static org.apache.hadoop.metrics2.impl.MsInfo.SessionId;
@@ -46,6 +52,7 @@ import org.apache.hadoop.metrics2.annotation.Metric;
 import org.apache.hadoop.metrics2.annotation.Metrics;
 import org.apache.hadoop.metrics2.lib.MetricsRegistry;
 import org.apache.hadoop.metrics2.lib.MutableCounterLong;
+import org.apache.hadoop.metrics2.lib.MutableGaugeInt;
 import org.apache.hadoop.metrics2.lib.MutableGaugeLong;
 import org.apache.hadoop.metrics2.source.JvmMetrics;
 
@@ -78,7 +85,16 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
   MutableCounterLong executorTotalExecutionFailed;
   @Metric
   MutableCounterLong preemptionTimeLost;
-
+  @Metric
+  MutableGaugeLong cacheMemoryPerInstance;
+  @Metric
+  MutableGaugeLong memoryPerInstance;
+  @Metric
+  MutableGaugeLong jvmMaxMemory;
+  @Metric
+  MutableGaugeInt waitQueueSize;
+  @Metric
+  MutableGaugeInt rpcNumHandlers;
 
   private LlapDaemonExecutorMetrics(String displayName, JvmMetrics jm, String sessionId,
       int numExecutors) {
@@ -151,6 +167,25 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
     executorTotalIKilled.incr();
   }
 
+  public void setCacheMemoryPerInstance(long value) {
+    cacheMemoryPerInstance.set(value);
+  }
+
+  public void setMemoryPerInstance(long value) {
+    memoryPerInstance.set(value);
+  }
+
+  public void setJvmMaxMemory(long value) {
+    jvmMaxMemory.set(value);
+  }
+
+  public void setWaitQueueSize(int size) {
+    waitQueueSize.set(size);
+  }
+
+  public void setRpcNumHandlers(int numHandlers) {
+    rpcNumHandlers.set(numHandlers);
+  }
 
   private void getExecutorStats(MetricsRecordBuilder rb) {
     updateThreadMetrics(rb);
@@ -160,7 +195,13 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
         .addCounter(ExecutorTotalSuccess, executorTotalSuccess.value())
         .addCounter(ExecutorTotalExecutionFailure, executorTotalExecutionFailed.value())
         .addCounter(ExecutorTotalInterrupted, executorTotalIKilled.value())
-        .addCounter(PreemptionTimeLost, preemptionTimeLost.value());
+        .addCounter(PreemptionTimeLost, preemptionTimeLost.value())
+        .addGauge(ExecutorThreadCountPerInstance, numExecutors)
+        .addGauge(ExecutorMemoryPerInstance, memoryPerInstance.value())
+        .addGauge(ExecutorCacheMemoryPerInstance, cacheMemoryPerInstance.value())
+        .addGauge(ExecutorJvmMaxMemory, jvmMaxMemory.value())
+        .addGauge(ExecutorWaitQueueSize, waitQueueSize.value())
+        .addGauge(ExecutorRpcNumHandlers, rpcNumHandlers.value());
   }
 
   private void updateThreadMetrics(MetricsRecordBuilder rb) {
