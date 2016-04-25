@@ -205,4 +205,19 @@ public class EmbeddedCLIServiceClient extends CLIServiceClient {
       String tokenStr) throws HiveSQLException {
     cliService.renewDelegationToken(sessionHandle, authFactory, tokenStr);
   }
+
+  @Override
+  public OperationHandle getPrimaryKeys(SessionHandle sessionHandle,
+		String catalog, String schema, String table) throws HiveSQLException {
+	return cliService.getPrimaryKeys(sessionHandle, catalog, schema, table);
+  }
+
+  @Override
+  public OperationHandle getCrossReference(SessionHandle sessionHandle,
+		String primaryCatalog, String primarySchema, String primaryTable,
+		String foreignCatalog, String foreignSchema, String foreignTable)
+		throws HiveSQLException {
+    return cliService.getCrossReference(sessionHandle, primaryCatalog, primarySchema,
+      primaryTable, foreignCatalog, foreignSchema, foreignTable);
+  }
 }

@@ -66,6 +66,8 @@ import org.apache.hive.service.rpc.thrift.TGetCatalogsReq;
 import org.apache.hive.service.rpc.thrift.TGetCatalogsResp;
 import org.apache.hive.service.rpc.thrift.TGetColumnsReq;
 import org.apache.hive.service.rpc.thrift.TGetColumnsResp;
+import org.apache.hive.service.rpc.thrift.TGetCrossReferenceReq;
+import org.apache.hive.service.rpc.thrift.TGetCrossReferenceResp;
 import org.apache.hive.service.rpc.thrift.TGetDelegationTokenReq;
 import org.apache.hive.service.rpc.thrift.TGetDelegationTokenResp;
 import org.apache.hive.service.rpc.thrift.TGetFunctionsReq;
@@ -74,6 +76,8 @@ import org.apache.hive.service.rpc.thrift.TGetInfoReq;
 import org.apache.hive.service.rpc.thrift.TGetInfoResp;
 import org.apache.hive.service.rpc.thrift.TGetOperationStatusReq;
 import org.apache.hive.service.rpc.thrift.TGetOperationStatusResp;
+import org.apache.hive.service.rpc.thrift.TGetPrimaryKeysReq;
+import org.apache.hive.service.rpc.thrift.TGetPrimaryKeysResp;
 import org.apache.hive.service.rpc.thrift.TGetResultSetMetadataReq;
 import org.apache.hive.service.rpc.thrift.TGetResultSetMetadataResp;
 import org.apache.hive.service.rpc.thrift.TGetSchemasReq;
@@ -696,6 +700,41 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     return resp;
   }
 
+  @Override
+  public TGetPrimaryKeysResp GetPrimaryKeys(TGetPrimaryKeysReq req)
+		throws TException {
+    TGetPrimaryKeysResp resp = new TGetPrimaryKeysResp();
+    try {
+      OperationHandle opHandle = cliService.getPrimaryKeys(
+      new SessionHandle(req.getSessionHandle()), req.getCatalogName(),
+      req.getSchemaName(), req.getTableName());
+      resp.setOperationHandle(opHandle.toTOperationHandle());
+      resp.setStatus(OK_STATUS);
+    } catch (Exception e) {
+     LOG.warn("Error getting functions: ", e);
+     resp.setStatus(HiveSQLException.toTStatus(e));
+    }
+    return resp;
+  }
+
+  @Override
+  public TGetCrossReferenceResp GetCrossReference(TGetCrossReferenceReq req)
+		throws TException {
+    TGetCrossReferenceResp resp = new TGetCrossReferenceResp();
+    try {
+      OperationHandle opHandle = cliService.getCrossReference(
+        new SessionHandle(req.getSessionHandle()), req.getParentCatalogName(),
+	      req.getParentSchemaName(), req.getParentTableName(),
+          req.getForeignCatalogName(), req.getForeignSchemaName(), req.getForeignTableName());
+          resp.setOperationHandle(opHandle.toTOperationHandle());
+          resp.setStatus(OK_STATUS);
+    } catch (Exception e) {
+      LOG.warn("Error getting functions: ", e);
+	  resp.setStatus(HiveSQLException.toTStatus(e));
+	}
+    return resp;
+  }
+  
   @Override
   public abstract void run();
 

@@ -169,6 +169,25 @@ public class OperationManager extends AbstractService {
     return operation;
   }
 
+  public GetPrimaryKeysOperation newGetPrimaryKeysOperation(HiveSession parentSession,
+	      String catalogName, String schemaName, String tableName) {
+    GetPrimaryKeysOperation operation = new GetPrimaryKeysOperation(parentSession,
+	    catalogName, schemaName, tableName);
+	addOperation(operation);
+	return operation;
+  }
+
+  public GetCrossReferenceOperation newGetCrossReferenceOperation(
+   HiveSession session, String primaryCatalog, String primarySchema,
+   String primaryTable, String foreignCatalog, String foreignSchema,
+   String foreignTable) {
+   GetCrossReferenceOperation operation = new GetCrossReferenceOperation(session,
+     primaryCatalog, primarySchema, primaryTable, foreignCatalog, foreignSchema,
+     foreignTable);
+   addOperation(operation);
+   return operation;
+  }
+
   public Operation getOperation(OperationHandle operationHandle) throws HiveSQLException {
     Operation operation = getOperationInternal(operationHandle);
     if (operation == null) {

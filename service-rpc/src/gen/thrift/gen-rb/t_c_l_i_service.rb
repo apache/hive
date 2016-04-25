@@ -176,6 +176,36 @@ module TCLIService
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'GetFunctions failed: unknown result')
     end
 
+    def GetPrimaryKeys(req)
+      send_GetPrimaryKeys(req)
+      return recv_GetPrimaryKeys()
+    end
+
+    def send_GetPrimaryKeys(req)
+      send_message('GetPrimaryKeys', GetPrimaryKeys_args, :req => req)
+    end
+
+    def recv_GetPrimaryKeys()
+      result = receive_message(GetPrimaryKeys_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'GetPrimaryKeys failed: unknown result')
+    end
+
+    def GetCrossReference(req)
+      send_GetCrossReference(req)
+      return recv_GetCrossReference()
+    end
+
+    def send_GetCrossReference(req)
+      send_message('GetCrossReference', GetCrossReference_args, :req => req)
+    end
+
+    def recv_GetCrossReference()
+      result = receive_message(GetCrossReference_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'GetCrossReference failed: unknown result')
+    end
+
     def GetOperationStatus(req)
       send_GetOperationStatus(req)
       return recv_GetOperationStatus()
@@ -376,6 +406,20 @@ module TCLIService
       result = GetFunctions_result.new()
       result.success = @handler.GetFunctions(args.req)
       write_result(result, oprot, 'GetFunctions', seqid)
+    end
+
+    def process_GetPrimaryKeys(seqid, iprot, oprot)
+      args = read_args(iprot, GetPrimaryKeys_args)
+      result = GetPrimaryKeys_result.new()
+      result.success = @handler.GetPrimaryKeys(args.req)
+      write_result(result, oprot, 'GetPrimaryKeys', seqid)
+    end
+
+    def process_GetCrossReference(seqid, iprot, oprot)
+      args = read_args(iprot, GetCrossReference_args)
+      result = GetCrossReference_result.new()
+      result.success = @handler.GetCrossReference(args.req)
+      write_result(result, oprot, 'GetCrossReference', seqid)
     end
 
     def process_GetOperationStatus(seqid, iprot, oprot)
@@ -780,6 +824,70 @@ module TCLIService
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::TGetFunctionsResp}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class GetPrimaryKeys_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::TGetPrimaryKeysReq}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class GetPrimaryKeys_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::TGetPrimaryKeysResp}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class GetCrossReference_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::TGetCrossReferenceReq}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class GetCrossReference_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::TGetCrossReferenceResp}
     }
 
     def struct_fields; FIELDS; end

@@ -5585,6 +5585,423 @@ class TGetFunctionsResp:
   def __ne__(self, other):
     return not (self == other)
 
+class TGetPrimaryKeysReq:
+  """
+  Attributes:
+   - sessionHandle
+   - catalogName
+   - schemaName
+   - tableName
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'sessionHandle', (TSessionHandle, TSessionHandle.thrift_spec), None, ), # 1
+    (2, TType.STRING, 'catalogName', None, None, ), # 2
+    (3, TType.STRING, 'schemaName', None, None, ), # 3
+    (4, TType.STRING, 'tableName', None, None, ), # 4
+  )
+
+  def __init__(self, sessionHandle=None, catalogName=None, schemaName=None, tableName=None,):
+    self.sessionHandle = sessionHandle
+    self.catalogName = catalogName
+    self.schemaName = schemaName
+    self.tableName = tableName
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.sessionHandle = TSessionHandle()
+          self.sessionHandle.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.catalogName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.schemaName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.tableName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('TGetPrimaryKeysReq')
+    if self.sessionHandle is not None:
+      oprot.writeFieldBegin('sessionHandle', TType.STRUCT, 1)
+      self.sessionHandle.write(oprot)
+      oprot.writeFieldEnd()
+    if self.catalogName is not None:
+      oprot.writeFieldBegin('catalogName', TType.STRING, 2)
+      oprot.writeString(self.catalogName)
+      oprot.writeFieldEnd()
+    if self.schemaName is not None:
+      oprot.writeFieldBegin('schemaName', TType.STRING, 3)
+      oprot.writeString(self.schemaName)
+      oprot.writeFieldEnd()
+    if self.tableName is not None:
+      oprot.writeFieldBegin('tableName', TType.STRING, 4)
+      oprot.writeString(self.tableName)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.sessionHandle is None:
+      raise TProtocol.TProtocolException(message='Required field sessionHandle is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.sessionHandle)
+    value = (value * 31) ^ hash(self.catalogName)
+    value = (value * 31) ^ hash(self.schemaName)
+    value = (value * 31) ^ hash(self.tableName)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class TGetPrimaryKeysResp:
+  """
+  Attributes:
+   - status
+   - operationHandle
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'status', (TStatus, TStatus.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'operationHandle', (TOperationHandle, TOperationHandle.thrift_spec), None, ), # 2
+  )
+
+  def __init__(self, status=None, operationHandle=None,):
+    self.status = status
+    self.operationHandle = operationHandle
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.status = TStatus()
+          self.status.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.operationHandle = TOperationHandle()
+          self.operationHandle.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('TGetPrimaryKeysResp')
+    if self.status is not None:
+      oprot.writeFieldBegin('status', TType.STRUCT, 1)
+      self.status.write(oprot)
+      oprot.writeFieldEnd()
+    if self.operationHandle is not None:
+      oprot.writeFieldBegin('operationHandle', TType.STRUCT, 2)
+      self.operationHandle.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.status is None:
+      raise TProtocol.TProtocolException(message='Required field status is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.status)
+    value = (value * 31) ^ hash(self.operationHandle)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class TGetCrossReferenceReq:
+  """
+  Attributes:
+   - sessionHandle
+   - parentCatalogName
+   - parentSchemaName
+   - parentTableName
+   - foreignCatalogName
+   - foreignSchemaName
+   - foreignTableName
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'sessionHandle', (TSessionHandle, TSessionHandle.thrift_spec), None, ), # 1
+    (2, TType.STRING, 'parentCatalogName', None, None, ), # 2
+    (3, TType.STRING, 'parentSchemaName', None, None, ), # 3
+    (4, TType.STRING, 'parentTableName', None, None, ), # 4
+    (5, TType.STRING, 'foreignCatalogName', None, None, ), # 5
+    (6, TType.STRING, 'foreignSchemaName', None, None, ), # 6
+    (7, TType.STRING, 'foreignTableName', None, None, ), # 7
+  )
+
+  def __init__(self, sessionHandle=None, parentCatalogName=None, parentSchemaName=None, parentTableName=None, foreignCatalogName=None, foreignSchemaName=None, foreignTableName=None,):
+    self.sessionHandle = sessionHandle
+    self.parentCatalogName = parentCatalogName
+    self.parentSchemaName = parentSchemaName
+    self.parentTableName = parentTableName
+    self.foreignCatalogName = foreignCatalogName
+    self.foreignSchemaName = foreignSchemaName
+    self.foreignTableName = foreignTableName
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.sessionHandle = TSessionHandle()
+          self.sessionHandle.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.parentCatalogName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.parentSchemaName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.parentTableName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.foreignCatalogName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.foreignSchemaName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.STRING:
+          self.foreignTableName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('TGetCrossReferenceReq')
+    if self.sessionHandle is not None:
+      oprot.writeFieldBegin('sessionHandle', TType.STRUCT, 1)
+      self.sessionHandle.write(oprot)
+      oprot.writeFieldEnd()
+    if self.parentCatalogName is not None:
+      oprot.writeFieldBegin('parentCatalogName', TType.STRING, 2)
+      oprot.writeString(self.parentCatalogName)
+      oprot.writeFieldEnd()
+    if self.parentSchemaName is not None:
+      oprot.writeFieldBegin('parentSchemaName', TType.STRING, 3)
+      oprot.writeString(self.parentSchemaName)
+      oprot.writeFieldEnd()
+    if self.parentTableName is not None:
+      oprot.writeFieldBegin('parentTableName', TType.STRING, 4)
+      oprot.writeString(self.parentTableName)
+      oprot.writeFieldEnd()
+    if self.foreignCatalogName is not None:
+      oprot.writeFieldBegin('foreignCatalogName', TType.STRING, 5)
+      oprot.writeString(self.foreignCatalogName)
+      oprot.writeFieldEnd()
+    if self.foreignSchemaName is not None:
+      oprot.writeFieldBegin('foreignSchemaName', TType.STRING, 6)
+      oprot.writeString(self.foreignSchemaName)
+      oprot.writeFieldEnd()
+    if self.foreignTableName is not None:
+      oprot.writeFieldBegin('foreignTableName', TType.STRING, 7)
+      oprot.writeString(self.foreignTableName)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.sessionHandle is None:
+      raise TProtocol.TProtocolException(message='Required field sessionHandle is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.sessionHandle)
+    value = (value * 31) ^ hash(self.parentCatalogName)
+    value = (value * 31) ^ hash(self.parentSchemaName)
+    value = (value * 31) ^ hash(self.parentTableName)
+    value = (value * 31) ^ hash(self.foreignCatalogName)
+    value = (value * 31) ^ hash(self.foreignSchemaName)
+    value = (value * 31) ^ hash(self.foreignTableName)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class TGetCrossReferenceResp:
+  """
+  Attributes:
+   - status
+   - operationHandle
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'status', (TStatus, TStatus.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'operationHandle', (TOperationHandle, TOperationHandle.thrift_spec), None, ), # 2
+  )
+
+  def __init__(self, status=None, operationHandle=None,):
+    self.status = status
+    self.operationHandle = operationHandle
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.status = TStatus()
+          self.status.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.operationHandle = TOperationHandle()
+          self.operationHandle.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('TGetCrossReferenceResp')
+    if self.status is not None:
+      oprot.writeFieldBegin('status', TType.STRUCT, 1)
+      self.status.write(oprot)
+      oprot.writeFieldEnd()
+    if self.operationHandle is not None:
+      oprot.writeFieldBegin('operationHandle', TType.STRUCT, 2)
+      self.operationHandle.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.status is None:
+      raise TProtocol.TProtocolException(message='Required field status is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.status)
+    value = (value * 31) ^ hash(self.operationHandle)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class TGetOperationStatusReq:
   """
   Attributes:

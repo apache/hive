@@ -63,7 +63,9 @@ import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.operation.ExecuteStatementOperation;
 import org.apache.hive.service.cli.operation.GetCatalogsOperation;
 import org.apache.hive.service.cli.operation.GetColumnsOperation;
+import org.apache.hive.service.cli.operation.GetCrossReferenceOperation;
 import org.apache.hive.service.cli.operation.GetFunctionsOperation;
+import org.apache.hive.service.cli.operation.GetPrimaryKeysOperation;
 import org.apache.hive.service.cli.operation.GetSchemasOperation;
 import org.apache.hive.service.cli.operation.GetTableTypesOperation;
 import org.apache.hive.service.cli.operation.GetTypeInfoOperation;
@@ -837,5 +839,50 @@ public class HiveSessionImpl implements HiveSession {
   // extract the real user from the given token string
   private String getUserFromToken(HiveAuthFactory authFactory, String tokenStr) throws HiveSQLException {
     return authFactory.getUserFromToken(tokenStr);
+  }
+
+  @Override
+  public OperationHandle getPrimaryKeys(String catalog, String schema,
+    String table) throws HiveSQLException {
+    acquire(true);
+
+    OperationManager operationManager = getOperationManager();
+    GetPrimaryKeysOperation operation = operationManager
+        .newGetPrimaryKeysOperation(getSession(), catalog, schema, table);
+    OperationHandle opHandle = operation.getHandle();
+    try {
+      operation.run();
+      addOpHandle(opHandle);
+      return opHandle;
+    } catch (HiveSQLException e) {
+      operationManager.closeOperation(opHandle);
+      throw e;
+    } finally {
+      release(true);
+    }
+  }
+
+  @Override
+  public OperationHandle getCrossReference(String primaryCatalog,
+    String primarySchema, String primaryTable, String foreignCatalog,
+    String foreignSchema, String foreignTable) throws HiveSQLException {
+    acquire(true);
+
+    OperationManager operationManager = getOperationManager();
+    GetCrossReferenceOperation operation = operationManager
+      .newGetCrossReferenceOperation(getSession(), primaryCatalog,
+         primarySchema, primaryTable, foreignCatalog,
+         foreignSchema, foreignTable);
+    OperationHandle opHandle = operation.getHandle();
+    try {
+      operation.run();
+      addOpHandle(opHandle);
+      return opHandle;
+    } catch (HiveSQLException e) {
+      operationManager.closeOperation(opHandle);
+      throw e;
+    } finally {
+      release(true);
+    }
   }
 }
