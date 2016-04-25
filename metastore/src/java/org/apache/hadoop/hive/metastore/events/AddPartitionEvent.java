@@ -61,18 +61,18 @@ public class AddPartitionEvent extends ListenerEvent {
     return table;
   }
 
-
-  // Note : List<Partition> getPartitions() removed with HIVE-9609 because it will result in OOM errors with large add_partitions.
+  /**
+   * @return List of partitions.
+   */
+  public List<Partition> getPartitions() {
+    return partitions;
+  }
 
   /**
    * @return Iterator for partitions.
    */
   public Iterator<Partition> getPartitionIterator() {
-    if (partitions != null){
-      return partitions.iterator();
-    } else {
-      return partitionSpecProxy == null ? null : partitionSpecProxy.getPartitionIterator();
-    }
+    return partitionSpecProxy == null ? null : partitionSpecProxy.getPartitionIterator();
   }
 
 }

@@ -322,7 +322,7 @@ public class TestEximReplicationTasks{
     addedPtns.add(createPtn(t, Arrays.asList("201", "xyz")));
 
     NotificationEvent event = new NotificationEvent(getEventId(), getTime(),
-        HCatConstants.HCAT_ADD_PARTITION_EVENT, msgFactory.buildAddPartitionMessage(t, addedPtns.iterator()).toString());
+        HCatConstants.HCAT_ADD_PARTITION_EVENT, msgFactory.buildAddPartitionMessage(t, addedPtns).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
 

@@ -63,6 +63,7 @@ import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1225,6 +1226,7 @@ public class TestHCatClient {
    * @throws Exception
    */
   @Test
+  @Ignore 
   public void testPartitionSpecRegistrationWithCustomSchema() throws Exception {
     try {
       startReplicationTargetMetaStoreIfRequired();

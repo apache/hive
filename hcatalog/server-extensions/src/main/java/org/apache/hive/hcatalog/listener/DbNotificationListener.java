@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.messaging.MessageFactory;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -161,7 +162,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
     Table t = partitionEvent.getTable();
     NotificationEvent event = new NotificationEvent(0, now(),
         HCatConstants.HCAT_ADD_PARTITION_EVENT,
-        msgFactory.buildAddPartitionMessage(t, partitionEvent.getPartitionIterator()).toString());
+        msgFactory.buildAddPartitionMessage(t, partitionEvent.getPartitions()).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
     enqueue(event);
