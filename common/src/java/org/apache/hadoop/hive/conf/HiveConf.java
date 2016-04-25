@@ -214,6 +214,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.HIVE_TXN_TIMEOUT,
       HiveConf.ConfVars.HIVE_TXN_HEARTBEAT_THREADPOOL_SIZE,
       HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH,
+      HiveConf.ConfVars.HIVE_TXN_RETRYABLE_SQLEX_REGEX,
       HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION,
       HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_ENABLED,
       HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_SIZE,
@@ -1678,6 +1679,13 @@ public class HiveConf extends Configuration {
         "of delta files created by streaming agents. But it also increases the number of open\n" +
         "transactions that Hive has to track at any given time, which may negatively affect\n" +
         "read performance."),
+
+    HIVE_TXN_RETRYABLE_SQLEX_REGEX("hive.txn.retryable.sqlex.regex", "", "Comma separated list\n" +
+        "of regular expression patterns for SQL state, error code, and error message of\n" +
+        "retryable SQLExceptions, that's suitable for the metastore DB.\n" +
+        "For example: Can't serialize.*,40001$,^Deadlock,.*ORA-08176.*\n" +
+        "The string that the regex will be matched against is of the following form, where ex is a SQLException:\n" +
+        "ex.getMessage() + \" (SQLState=\" + ex.getSQLState() + \", ErrorCode=\" + ex.getErrorCode() + \")\""),
 
     HIVE_COMPACTOR_INITIATOR_ON("hive.compactor.initiator.on", false,
         "Whether to run the initiator and cleaner threads on this metastore instance or not.\n" +
