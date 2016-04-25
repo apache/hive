@@ -78,6 +78,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
@@ -3926,6 +3928,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int createTable(Hive db, CreateTableDesc crtTbl) throws HiveException {
     // create the table
     Table tbl = crtTbl.toTable(conf);
+    List<SQLPrimaryKey> primaryKeys = crtTbl.getPrimaryKeys();
+    List<SQLForeignKey> foreignKeys = crtTbl.getForeignKeys();
     LOG.info("creating table " + tbl.getDbName() + "." + tbl.getTableName() + " on " +
             tbl.getDataLocation());
 
@@ -3938,7 +3942,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         throw new HiveException("Unable to alter table. " + e.getMessage(), e);
       }
     } else {
-      db.createTable(tbl, crtTbl.getIfNotExists());
+      if ((foreignKeys != null && foreignKeys.size() > 0 ) ||
+          (primaryKeys != null && primaryKeys.size() > 0)) {
+        db.createTable(tbl, crtTbl.getIfNotExists(), primaryKeys, foreignKeys);
+      } else {
+        db.createTable(tbl, crtTbl.getIfNotExists());
+      }
       if ( crtTbl.isCTAS()) {
         Table createdTable = db.getTable(tbl.getDbName(), tbl.getTableName());
         DataContainer dc = new DataContainer(createdTable.getTTable());

@@ -318,6 +318,15 @@ KW_LEVEL: 'LEVEL';
 KW_SNAPSHOT: 'SNAPSHOT';
 KW_AUTOCOMMIT: 'AUTOCOMMIT';
 KW_CACHE: 'CACHE';
+KW_PRIMARY: 'PRIMARY';
+KW_FOREIGN: 'FOREIGN';
+KW_REFERENCES: 'REFERENCES';
+KW_CONSTRAINT: 'CONSTRAINT';
+KW_VALIDATE: 'VALIDATE';
+KW_NOVALIDATE: 'NOVALIDATE';
+KW_RELY: 'RELY';
+KW_NORELY: 'NORELY';
+KW_KEY: 'KEY';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

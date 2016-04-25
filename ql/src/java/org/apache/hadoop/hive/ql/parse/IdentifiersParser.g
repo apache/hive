@@ -670,6 +670,11 @@ nonReserved
     | KW_LEVEL
     | KW_SNAPSHOT
     | KW_AUTOCOMMIT
+    | KW_RELY
+    | KW_NORELY
+    | KW_VALIDATE
+    | KW_NOVALIDATE
+    | KW_KEY
 ;
 
 //The following SQL2011 reserved keywords are used as cast function name only, but not as identifiers.
@@ -692,5 +697,9 @@ sql11ReservedKeywordsUsedAsIdentifier
     | KW_ROLLUP | KW_ROW | KW_ROWS | KW_SET | KW_SMALLINT | KW_TABLE | KW_TIMESTAMP | KW_TO | KW_TRIGGER | KW_TRUE 
     | KW_TRUNCATE | KW_UNION | KW_UPDATE | KW_USER | KW_USING | KW_VALUES | KW_WITH 
 //The following two keywords come from MySQL. Although they are not keywords in SQL2011, they are reserved keywords in MySQL.    
-    | KW_REGEXP | KW_RLIKE
+    | KW_REGEXP | KW_RLIKE 
+    | KW_PRIMARY
+    | KW_FOREIGN
+    | KW_CONSTRAINT
+    | KW_REFERENCES
     ;

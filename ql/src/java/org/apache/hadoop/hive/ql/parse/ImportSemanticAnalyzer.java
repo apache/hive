@@ -313,7 +313,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
             .getSkewedColNames(),
         (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
-            .getSkewedColValues());
+            .getSkewedColValues(), null, null);
     tblDesc.setStoredAsSubDirectories(table.getSd().isStoredAsSubDirectories());
     return tblDesc;
   }

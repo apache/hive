@@ -104,6 +104,8 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -780,15 +782,21 @@ public class Hive {
   }
 
   /**
-   * Creates the table with the give objects
+   * Creates the table with the given objects. It takes additional arguments for
+   * primary keys and foreign keys associated with the table.
    *
    * @param tbl
    *          a table object
    * @param ifNotExists
    *          if true, ignore AlreadyExistsException
+   * @param primaryKeys
+   *          primary key columns associated with the table
+   * @param foreignKeys
+   *          foreign key columns associated with the table
    * @throws HiveException
    */
-  public void createTable(Table tbl, boolean ifNotExists) throws HiveException {
+  public void createTable(Table tbl, boolean ifNotExists,
+    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys)  throws HiveException {
     try {
       if (tbl.getDbName() == null || "".equals(tbl.getDbName().trim())) {
         tbl.setDbName(SessionState.get().getCurrentDatabase());
@@ -813,7 +821,12 @@ public class Hive {
           tTbl.setPrivileges(principalPrivs);
         }
       }
-      getMSC().createTable(tTbl);
+      if (primaryKeys == null && foreignKeys == null) {
+        getMSC().createTable(tTbl);
+      } else {
+        getMSC().createTableWithConstraints(tTbl, primaryKeys, foreignKeys);
+      }
+
     } catch (AlreadyExistsException e) {
       if (!ifNotExists) {
         throw new HiveException(e);
@@ -822,6 +835,10 @@ public class Hive {
       throw new HiveException(e);
     }
   }
+
+  public void createTable(Table tbl, boolean ifNotExists) throws HiveException {
+   createTable(tbl, ifNotExists, null, null);
+ }
 
   public static List<FieldSchema> getFieldsFromDeserializerForMsStorage(
       Table tbl, Deserializer deserializer) throws SerDeException, MetaException {
@@ -3583,4 +3600,5 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(e);
     }
   }
+
 };
