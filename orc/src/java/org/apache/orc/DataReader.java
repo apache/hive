@@ -63,6 +63,12 @@ public interface DataReader extends AutoCloseable {
    */
   void releaseBuffer(ByteBuffer toRelease);
 
+  /**
+   * Clone the entire state of the DataReader with the assumption that the
+   * clone will be closed at a different time. Thus, any file handles in the
+   * implementation need to be cloned.
+   * @return a new instance
+   */
   DataReader clone();
 
   @Override

@@ -477,11 +477,14 @@ public class OrcUtils {
       case STRING:
         return TypeDescription.createString();
       case CHAR:
-        return TypeDescription.createChar()
-            .withMaxLength(type.getMaximumLength());
-      case VARCHAR:
-        return TypeDescription.createVarchar()
-            .withMaxLength(type.getMaximumLength());
+      case VARCHAR: {
+        TypeDescription result = type.getKind() == OrcProto.Type.Kind.CHAR ?
+            TypeDescription.createChar() : TypeDescription.createVarchar();
+        if (type.hasMaximumLength()) {
+          result.withMaxLength(type.getMaximumLength());
+        }
+        return result;
+      }
       case BINARY:
         return TypeDescription.createBinary();
       case TIMESTAMP:
