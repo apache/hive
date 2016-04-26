@@ -637,6 +637,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setTaskStatus(operationStatus.getTaskStatus());
       resp.setOperationStarted(operationStatus.getOperationStarted());
       resp.setOperationCompleted(operationStatus.getOperationCompleted());
+      resp.setHasResultSet(operationStatus.getHasResultSet());
       if (opException != null) {
         resp.setSqlState(opException.getSQLState());
         resp.setErrorCode(opException.getErrorCode());

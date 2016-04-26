@@ -8295,6 +8295,11 @@ void TGetOperationStatusResp::__set_operationCompleted(const int64_t val) {
 __isset.operationCompleted = true;
 }
 
+void TGetOperationStatusResp::__set_hasResultSet(const bool val) {
+  this->hasResultSet = val;
+__isset.hasResultSet = true;
+}
+
 uint32_t TGetOperationStatusResp::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -8383,6 +8388,14 @@ uint32_t TGetOperationStatusResp::read(::apache::thrift::protocol::TProtocol* ip
           xfer += iprot->skip(ftype);
         }
         break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->hasResultSet);
+          this->__isset.hasResultSet = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -8441,6 +8454,11 @@ uint32_t TGetOperationStatusResp::write(::apache::thrift::protocol::TProtocol* o
     xfer += oprot->writeI64(this->operationCompleted);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.hasResultSet) {
+    xfer += oprot->writeFieldBegin("hasResultSet", ::apache::thrift::protocol::T_BOOL, 9);
+    xfer += oprot->writeBool(this->hasResultSet);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -8456,6 +8474,7 @@ void swap(TGetOperationStatusResp &a, TGetOperationStatusResp &b) {
   swap(a.taskStatus, b.taskStatus);
   swap(a.operationStarted, b.operationStarted);
   swap(a.operationCompleted, b.operationCompleted);
+  swap(a.hasResultSet, b.hasResultSet);
   swap(a.__isset, b.__isset);
 }
 
@@ -8468,6 +8487,7 @@ TGetOperationStatusResp::TGetOperationStatusResp(const TGetOperationStatusResp& 
   taskStatus = other271.taskStatus;
   operationStarted = other271.operationStarted;
   operationCompleted = other271.operationCompleted;
+  hasResultSet = other271.hasResultSet;
   __isset = other271.__isset;
 }
 TGetOperationStatusResp& TGetOperationStatusResp::operator=(const TGetOperationStatusResp& other272) {
@@ -8479,6 +8499,7 @@ TGetOperationStatusResp& TGetOperationStatusResp::operator=(const TGetOperationS
   taskStatus = other272.taskStatus;
   operationStarted = other272.operationStarted;
   operationCompleted = other272.operationCompleted;
+  hasResultSet = other272.hasResultSet;
   __isset = other272.__isset;
   return *this;
 }
@@ -8493,6 +8514,7 @@ void TGetOperationStatusResp::printTo(std::ostream& out) const {
   out << ", " << "taskStatus="; (__isset.taskStatus ? (out << to_string(taskStatus)) : (out << "<null>"));
   out << ", " << "operationStarted="; (__isset.operationStarted ? (out << to_string(operationStarted)) : (out << "<null>"));
   out << ", " << "operationCompleted="; (__isset.operationCompleted ? (out << to_string(operationCompleted)) : (out << "<null>"));
+  out << ", " << "hasResultSet="; (__isset.hasResultSet ? (out << to_string(hasResultSet)) : (out << "<null>"));
   out << ")";
 }
 
