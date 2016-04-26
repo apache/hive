@@ -34,21 +34,26 @@ public class ColumnAccessAnalyzer {
     pGraphContext = pactx;
   }
 
-  public ColumnAccessInfo analyzeColumnAccess() throws SemanticException {
-    ColumnAccessInfo columnAccessInfo = new ColumnAccessInfo();
+  public ColumnAccessInfo analyzeColumnAccess(ColumnAccessInfo columnAccessInfo) throws SemanticException {
+    if (columnAccessInfo == null) {
+      columnAccessInfo = new ColumnAccessInfo();
+    }
     Collection<TableScanOperator> topOps = pGraphContext.getTopOps().values();
     for (TableScanOperator top : topOps) {
-      Table table = top.getConf().getTableMetadata();
-      String tableName = table.getCompleteName();
-      List<String> referenced = top.getReferencedColumns();
-      for (String column : referenced) {
-        columnAccessInfo.add(tableName, column);
-      }
-      if (table.isPartitioned()) {
-        PrunedPartitionList parts = pGraphContext.getPrunedPartitions(table.getTableName(), top);
-        if (parts.getReferredPartCols() != null) {
-          for (String partKey : parts.getReferredPartCols()) {
-            columnAccessInfo.add(tableName, partKey);
+      // if a table is inside view, we do not care about its authorization.
+      if (!top.isInsideView()) {
+        Table table = top.getConf().getTableMetadata();
+        String tableName = table.getCompleteName();
+        List<String> referenced = top.getReferencedColumns();
+        for (String column : referenced) {
+          columnAccessInfo.add(tableName, column);
+        }
+        if (table.isPartitioned()) {
+          PrunedPartitionList parts = pGraphContext.getPrunedPartitions(table.getTableName(), top);
+          if (parts.getReferredPartCols() != null) {
+            for (String partKey : parts.getReferredPartCols()) {
+              columnAccessInfo.add(tableName, partKey);
+            }
           }
         }
       }

@@ -701,7 +701,7 @@ public class Driver implements CommandProcessor {
         Table tbl = read.getTable();
         if (tbl.isView() && sem instanceof SemanticAnalyzer) {
           tab2Cols.put(tbl,
-              sem.getColumnAccessInfo().getTableToColumnAccessMap().get(tbl.getTableName()));
+              sem.getColumnAccessInfo().getTableToColumnAccessMap().get(tbl.getCompleteName()));
         }
         if (read.getPartition() != null) {
           Partition partition = read.getPartition();

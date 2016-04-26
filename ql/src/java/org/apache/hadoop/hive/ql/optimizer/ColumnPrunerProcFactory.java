@@ -790,7 +790,7 @@ public final class ColumnPrunerProcFactory {
           int index = originalOutputColumnNames.indexOf(col);
           Table tab = cppCtx.getParseContext().getViewProjectToTableSchema().get(op);
           cppCtx.getParseContext().getColumnAccessInfo()
-              .add(tab.getTableName(), tab.getCols().get(index).getName());
+              .add(tab.getCompleteName(), tab.getCols().get(index).getName());
         }
       }
       if (cols.size() < originalOutputColumnNames.size()) {
