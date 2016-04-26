@@ -170,7 +170,7 @@
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.5</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
-    <tez.version>0.8.2</tez.version>
+    <tez.version>0.8.3</tez.version>
     <slider.version>0.90.2-incubating</slider.version>
     <super-csv.version>2.2.0</super-csv.version>
     <spark.version>1.6.0</spark.version>
