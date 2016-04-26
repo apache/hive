@@ -299,6 +299,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     /**
      * Do we have schema on read in the configuration variables?
+     *
+     * NOTE: This code path is NOT used by ACID.  OrcInputFormat.getRecordReader intercepts for
+     * ACID tables creates raw record merger, etc.
      */
     TypeDescription schema = getDesiredRowTypeDescr(conf, /* isAcidRead */ false);
 

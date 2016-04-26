@@ -604,7 +604,8 @@ public class FetchOperator implements Serializable {
   }
 
   private boolean needConversion(PartitionDesc partitionDesc) {
-    if (Utilities.isInputFileFormatSelfDescribing(partitionDesc)) {
+    boolean isAcid = AcidUtils.isTablePropertyTransactional(partitionDesc.getTableDesc().getProperties());
+    if (Utilities.isSchemaEvolutionEnabled(job, isAcid) && Utilities.isInputFileFormatSelfDescribing(partitionDesc)) {
       return false;
     }
     return needConversion(partitionDesc.getTableDesc(), Arrays.asList(partitionDesc));

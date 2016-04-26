@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileTask;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
@@ -3243,6 +3244,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
+  private boolean isSchemaEvolutionEnabled(Table tbl) {
+    boolean isAcid = AcidUtils.isTablePropertyTransactional(tbl.getMetadata());
+    if (isAcid || HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION)) {
+      return true;
+    }
+    return false;
+  }
+
   private int alterTableOrSinglePartition(AlterTableDesc alterTbl, Table tbl, Partition part)
       throws HiveException {
 
@@ -3291,8 +3300,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       boolean first = alterTbl.getFirst();
       String afterCol = alterTbl.getAfterCol();
       // if orc table, restrict reordering columns as it will break schema evolution
-      boolean isOrc = sd.getInputFormat().equals(OrcInputFormat.class.getName());
-      if (isOrc && (first || (afterCol != null && !afterCol.trim().isEmpty()))) {
+      boolean isOrcSchemaEvolution =
+          sd.getInputFormat().equals(OrcInputFormat.class.getName()) &&
+          isSchemaEvolutionEnabled(tbl);
+      if (isOrcSchemaEvolution && (first || (afterCol != null && !afterCol.trim().isEmpty()))) {
         throw new HiveException(ErrorMsg.CANNOT_REORDER_COLUMNS, alterTbl.getOldName());
       }
       FieldSchema column = null;
@@ -3313,7 +3324,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         } else if (oldColName.equalsIgnoreCase(oldName)) {
           // if orc table, restrict changing column types. Only integer type promotion is supported.
           // smallint -> int -> bigint
-          if (isOrc && !isSupportedTypeChange(col.getType(), type)) {
+          if (isOrcSchemaEvolution && !isSupportedTypeChange(col.getType(), type)) {
             throw new HiveException(ErrorMsg.CANNOT_CHANGE_COLUMN_TYPE, col.getType(), type,
                 newName);
           }
@@ -3372,9 +3383,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           && !serializationLib.equals(OrcSerde.class.getName())) {
         throw new HiveException(ErrorMsg.CANNOT_REPLACE_COLUMNS, alterTbl.getOldName());
       }
-      final boolean isOrc = serializationLib.equals(OrcSerde.class.getName());
-      // adding columns and limited integer type promotion is supported for ORC
-      if (isOrc) {
+      final boolean isOrcSchemaEvolution =
+          serializationLib.equals(OrcSerde.class.getName()) &&
+          isSchemaEvolutionEnabled(tbl);
+      // adding columns and limited integer type promotion is supported for ORC schema evolution
+      if (isOrcSchemaEvolution) {
         final List<FieldSchema> existingCols = sd.getCols();
         final List<FieldSchema> replaceCols = alterTbl.getNewCols();
 
@@ -3407,7 +3420,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       String serdeName = alterTbl.getSerdeName();
       String oldSerdeName = sd.getSerdeInfo().getSerializationLib();
       // if orc table, restrict changing the serde as it can break schema evolution
-      if (oldSerdeName.equalsIgnoreCase(OrcSerde.class.getName()) &&
+      if (isSchemaEvolutionEnabled(tbl) &&
+          oldSerdeName.equalsIgnoreCase(OrcSerde.class.getName()) &&
           !serdeName.equalsIgnoreCase(OrcSerde.class.getName())) {
         throw new HiveException(ErrorMsg.CANNOT_CHANGE_SERDE, OrcSerde.class.getSimpleName(),
             alterTbl.getOldName());
@@ -3437,7 +3451,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDFILEFORMAT) {
       StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       // if orc table, restrict changing the file format as it can break schema evolution
-      if (sd.getInputFormat().equals(OrcInputFormat.class.getName())
+      if (isSchemaEvolutionEnabled(tbl) &&
+          sd.getInputFormat().equals(OrcInputFormat.class.getName())
           && !alterTbl.getInputFormat().equals(OrcInputFormat.class.getName())) {
         throw new HiveException(ErrorMsg.CANNOT_CHANGE_FILEFORMAT, "ORC", alterTbl.getOldName());
       }
