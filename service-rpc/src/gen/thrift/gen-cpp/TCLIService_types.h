@@ -3709,7 +3709,7 @@ inline std::ostream& operator<<(std::ostream& out, const TGetOperationStatusReq&
 }
 
 typedef struct _TGetOperationStatusResp__isset {
-  _TGetOperationStatusResp__isset() : operationState(false), sqlState(false), errorCode(false), errorMessage(false), taskStatus(false), operationStarted(false), operationCompleted(false) {}
+  _TGetOperationStatusResp__isset() : operationState(false), sqlState(false), errorCode(false), errorMessage(false), taskStatus(false), operationStarted(false), operationCompleted(false), hasResultSet(false) {}
   bool operationState :1;
   bool sqlState :1;
   bool errorCode :1;
@@ -3717,6 +3717,7 @@ typedef struct _TGetOperationStatusResp__isset {
   bool taskStatus :1;
   bool operationStarted :1;
   bool operationCompleted :1;
+  bool hasResultSet :1;
 } _TGetOperationStatusResp__isset;
 
 class TGetOperationStatusResp {
@@ -3724,7 +3725,7 @@ class TGetOperationStatusResp {
 
   TGetOperationStatusResp(const TGetOperationStatusResp&);
   TGetOperationStatusResp& operator=(const TGetOperationStatusResp&);
-  TGetOperationStatusResp() : operationState((TOperationState::type)0), sqlState(), errorCode(0), errorMessage(), taskStatus(), operationStarted(0), operationCompleted(0) {
+  TGetOperationStatusResp() : operationState((TOperationState::type)0), sqlState(), errorCode(0), errorMessage(), taskStatus(), operationStarted(0), operationCompleted(0), hasResultSet(0) {
   }
 
   virtual ~TGetOperationStatusResp() throw();
@@ -3736,6 +3737,7 @@ class TGetOperationStatusResp {
   std::string taskStatus;
   int64_t operationStarted;
   int64_t operationCompleted;
+  bool hasResultSet;
 
   _TGetOperationStatusResp__isset __isset;
 
@@ -3754,6 +3756,8 @@ class TGetOperationStatusResp {
   void __set_operationStarted(const int64_t val);
 
   void __set_operationCompleted(const int64_t val);
+
+  void __set_hasResultSet(const bool val);
 
   bool operator == (const TGetOperationStatusResp & rhs) const
   {
@@ -3786,6 +3790,10 @@ class TGetOperationStatusResp {
     if (__isset.operationCompleted != rhs.__isset.operationCompleted)
       return false;
     else if (__isset.operationCompleted && !(operationCompleted == rhs.operationCompleted))
+      return false;
+    if (__isset.hasResultSet != rhs.__isset.hasResultSet)
+      return false;
+    else if (__isset.hasResultSet && !(hasResultSet == rhs.hasResultSet))
       return false;
     return true;
   }
