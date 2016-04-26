@@ -6097,6 +6097,7 @@ class TGetOperationStatusResp:
    - taskStatus
    - operationStarted
    - operationCompleted
+   - hasResultSet
   """
 
   thrift_spec = (
@@ -6109,9 +6110,10 @@ class TGetOperationStatusResp:
     (6, TType.STRING, 'taskStatus', None, None, ), # 6
     (7, TType.I64, 'operationStarted', None, None, ), # 7
     (8, TType.I64, 'operationCompleted', None, None, ), # 8
+    (9, TType.BOOL, 'hasResultSet', None, None, ), # 9
   )
 
-  def __init__(self, status=None, operationState=None, sqlState=None, errorCode=None, errorMessage=None, taskStatus=None, operationStarted=None, operationCompleted=None,):
+  def __init__(self, status=None, operationState=None, sqlState=None, errorCode=None, errorMessage=None, taskStatus=None, operationStarted=None, operationCompleted=None, hasResultSet=None,):
     self.status = status
     self.operationState = operationState
     self.sqlState = sqlState
@@ -6120,6 +6122,7 @@ class TGetOperationStatusResp:
     self.taskStatus = taskStatus
     self.operationStarted = operationStarted
     self.operationCompleted = operationCompleted
+    self.hasResultSet = hasResultSet
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -6171,6 +6174,11 @@ class TGetOperationStatusResp:
           self.operationCompleted = iprot.readI64()
         else:
           iprot.skip(ftype)
+      elif fid == 9:
+        if ftype == TType.BOOL:
+          self.hasResultSet = iprot.readBool()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -6213,6 +6221,10 @@ class TGetOperationStatusResp:
       oprot.writeFieldBegin('operationCompleted', TType.I64, 8)
       oprot.writeI64(self.operationCompleted)
       oprot.writeFieldEnd()
+    if self.hasResultSet is not None:
+      oprot.writeFieldBegin('hasResultSet', TType.BOOL, 9)
+      oprot.writeBool(self.hasResultSet)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -6232,6 +6244,7 @@ class TGetOperationStatusResp:
     value = (value * 31) ^ hash(self.taskStatus)
     value = (value * 31) ^ hash(self.operationStarted)
     value = (value * 31) ^ hash(self.operationCompleted)
+    value = (value * 31) ^ hash(self.hasResultSet)
     return value
 
   def __repr__(self):
