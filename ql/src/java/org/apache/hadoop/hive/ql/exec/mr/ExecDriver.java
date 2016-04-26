@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.HiveTotalOrderPartitioner;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -124,7 +125,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   public ExecDriver() {
     super();
     console = new LogHelper(LOG);
-    this.jobExecHelper = new HadoopJobExecHelper(job, console, this, this);
+    this.jobExecHelper = new HadoopJobExecHelper(queryState, job, console, this, this);
   }
 
   @Override
@@ -142,9 +143,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
    * Initialization when invoked from QL.
    */
   @Override
-  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext,
+  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext,
       CompilationOpContext opContext) {
-    super.initialize(conf, queryPlan, driverContext, opContext);
+    super.initialize(queryState, queryPlan, driverContext, opContext);
 
     job = new JobConf(conf, ExecDriver.class);
 
@@ -168,7 +169,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       HiveConf.setVar(job, ConfVars.HIVEADDEDARCHIVES, addedArchives);
     }
     conf.stripHiddenConfigurations(job);
-    this.jobExecHelper = new HadoopJobExecHelper(job, console, this, this);
+    this.jobExecHelper = new HadoopJobExecHelper(queryState, job, console, this, this);
   }
 
   /**
@@ -178,7 +179,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     setWork(plan);
     this.job = job;
     console = new LogHelper(LOG, isSilent);
-    this.jobExecHelper = new HadoopJobExecHelper(job, console, this, this);
+    this.jobExecHelper = new HadoopJobExecHelper(queryState, job, console, this, this);
   }
 
   /**

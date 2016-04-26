@@ -23,23 +23,20 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.orc.DataReaderFactory;
-import org.apache.orc.MetadataReaderFactory;
+import com.google.common.collect.Lists;
+import org.apache.orc.OrcUtils;
+import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.BufferChunk;
 import org.apache.orc.ColumnStatistics;
 import org.apache.orc.impl.ColumnStatisticsImpl;
 import org.apache.orc.CompressionCodec;
-import org.apache.orc.DataReader;
 import org.apache.orc.FileMetaInfo;
 import org.apache.orc.FileMetadata;
-import org.apache.orc.impl.DataReaderProperties;
-import org.apache.orc.impl.DefaultMetadataReaderFactory;
 import org.apache.orc.impl.InStream;
-import org.apache.orc.impl.MetadataReader;
-import org.apache.orc.impl.MetadataReaderProperties;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.StripeStatistics;
 import org.slf4j.Logger;
@@ -56,8 +53,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Text;
 import org.apache.orc.OrcProto;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.protobuf.CodedInputStream;
 
 public class ReaderImpl implements Reader {
@@ -75,13 +70,12 @@ public class ReaderImpl implements Reader {
   private final List<OrcProto.StripeStatistics> stripeStats;
   private final int metadataSize;
   protected final List<OrcProto.Type> types;
+  private final TypeDescription schema;
   private final List<OrcProto.UserMetadataItem> userMetadata;
   private final List<OrcProto.ColumnStatistics> fileStats;
   private final List<StripeInformation> stripes;
   protected final int rowIndexStride;
   private final long contentLength, numberOfRows;
-  private final MetadataReaderFactory metadataReaderFactory = new DefaultMetadataReaderFactory();
-  private final DataReaderFactory dataReaderFactory = new DefaultDataReaderFactory();
 
   private final ObjectInspector inspector;
   private long deserializedSize = -1;
@@ -248,6 +242,11 @@ public class ReaderImpl implements Reader {
     return result;
   }
 
+  @Override
+  public TypeDescription getSchema() {
+    return schema;
+  }
+
   /**
    * Ensure this is an ORC file to prevent users from trying to read text
    * files or RC files as ORC files.
@@ -391,11 +390,13 @@ public class ReaderImpl implements Reader {
       this.writerVersion = footerMetaData.writerVersion;
       this.stripes = convertProtoStripesToStripes(rInfo.footer.getStripesList());
     }
+    this.schema = OrcUtils.convertTypeFromProtobuf(this.types, 0);
   }
+
   /**
    * Get the WriterVersion based on the ORC file postscript.
    * @param writerVersion the integer writer version
-   * @return
+   * @return the writer version of the file
    */
   static OrcFile.WriterVersion getWriterVersion(int writerVersion) {
     for(OrcFile.WriterVersion version: OrcFile.WriterVersion.values()) {
@@ -672,20 +673,7 @@ public class ReaderImpl implements Reader {
       Arrays.fill(include, true);
       options.include(include);
     }
-
-    return RecordReaderImpl.builder()
-        .withMetadataReaderFactory(metadataReaderFactory)
-        .withDataReaderFactory(dataReaderFactory)
-        .withStripes(this.getStripes())
-        .withFileSystem(fileSystem)
-        .withPath(path)
-        .withOptions(options)
-        .withTypes(types)
-        .withCodec(codec)
-        .withBufferSize(bufferSize)
-        .withStrideRate(rowIndexStride)
-        .withConf(conf)
-        .build();
+    return new RecordReaderImpl(this, options);
   }
 
 
@@ -837,7 +825,7 @@ public class ReaderImpl implements Reader {
   }
 
   private int getLastIdx() {
-    Set<Integer> indices = Sets.newHashSet();
+    Set<Integer> indices = new HashSet<>();
     for (OrcProto.Type type : types) {
       indices.addAll(type.getSubtypesList());
     }
@@ -856,7 +844,7 @@ public class ReaderImpl implements Reader {
 
   @Override
   public List<StripeStatistics> getStripeStatistics() {
-    List<StripeStatistics> result = Lists.newArrayList();
+    List<StripeStatistics> result = new ArrayList<>();
     for (OrcProto.StripeStatistics ss : stripeStats) {
       result.add(new StripeStatistics(ss.getColStatsList()));
     }
@@ -868,17 +856,6 @@ public class ReaderImpl implements Reader {
   }
 
   @Override
-  public MetadataReader metadata() throws IOException {
-    return metadataReaderFactory.create(MetadataReaderProperties.builder()
-      .withBufferSize(bufferSize)
-      .withCodec(codec)
-      .withFileSystem(fileSystem)
-      .withPath(path)
-      .withTypeCount(types.size())
-      .build());
-  }
-
-  @Override
   public List<Integer> getVersionList() {
     return versionList;
   }
@@ -886,16 +863,6 @@ public class ReaderImpl implements Reader {
   @Override
   public int getMetadataSize() {
     return metadataSize;
-  }
-
-  @Override
-  public DataReader createDefaultDataReader(boolean useZeroCopy) {
-    return dataReaderFactory.create(DataReaderProperties.builder()
-      .withFileSystem(fileSystem)
-      .withPath(path)
-      .withCodec(codec)
-      .withZeroCopy(useZeroCopy)
-      .build());
   }
 
   @Override

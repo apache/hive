@@ -77,6 +77,16 @@ class TCLIServiceHandler : virtual public TCLIServiceIf {
     printf("GetFunctions\n");
   }
 
+  void GetPrimaryKeys(TGetPrimaryKeysResp& _return, const TGetPrimaryKeysReq& req) {
+    // Your implementation goes here
+    printf("GetPrimaryKeys\n");
+  }
+
+  void GetCrossReference(TGetCrossReferenceResp& _return, const TGetCrossReferenceReq& req) {
+    // Your implementation goes here
+    printf("GetCrossReference\n");
+  }
+
   void GetOperationStatus(TGetOperationStatusResp& _return, const TGetOperationStatusReq& req) {
     // Your implementation goes here
     printf("GetOperationStatus\n");

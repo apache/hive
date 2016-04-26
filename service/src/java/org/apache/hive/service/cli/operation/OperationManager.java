@@ -169,6 +169,25 @@ public class OperationManager extends AbstractService {
     return operation;
   }
 
+  public GetPrimaryKeysOperation newGetPrimaryKeysOperation(HiveSession parentSession,
+	      String catalogName, String schemaName, String tableName) {
+    GetPrimaryKeysOperation operation = new GetPrimaryKeysOperation(parentSession,
+	    catalogName, schemaName, tableName);
+	addOperation(operation);
+	return operation;
+  }
+
+  public GetCrossReferenceOperation newGetCrossReferenceOperation(
+   HiveSession session, String primaryCatalog, String primarySchema,
+   String primaryTable, String foreignCatalog, String foreignSchema,
+   String foreignTable) {
+   GetCrossReferenceOperation operation = new GetCrossReferenceOperation(session,
+     primaryCatalog, primarySchema, primaryTable, foreignCatalog, foreignSchema,
+     foreignTable);
+   addOperation(operation);
+   return operation;
+  }
+
   public Operation getOperation(OperationHandle operationHandle) throws HiveSQLException {
     Operation operation = getOperationInternal(operationHandle);
     if (operation == null) {
@@ -280,11 +299,11 @@ public class OperationManager extends AbstractService {
     return getOperation(opHandle).getNextRowSet(orientation, maxRows);
   }
 
-  public RowSet getOperationLogRowSet(OperationHandle opHandle,
-      FetchOrientation orientation, long maxRows, HiveConf hConf)
-          throws HiveSQLException {
+  public RowSet getOperationLogRowSet(OperationHandle opHandle, FetchOrientation orientation,
+      long maxRows, HiveConf hConf) throws HiveSQLException {
     TableSchema tableSchema = new TableSchema(getLogSchema());
-    RowSet rowSet = RowSetFactory.create(tableSchema, getOperation(opHandle).getProtocolVersion());
+    RowSet rowSet =
+        RowSetFactory.create(tableSchema, getOperation(opHandle).getProtocolVersion(), false);
 
     if (hConf.getBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED) == false) {
       LOG.warn("Try to get operation log when hive.server2.logging.operation.enabled is false, no log will be returned. ");
@@ -296,7 +315,6 @@ public class OperationManager extends AbstractService {
       throw new HiveSQLException("Couldn't find log associated with operation handle: " + opHandle);
     }
 
-
     // read logs
     List<String> logs;
     try {
@@ -305,10 +323,9 @@ public class OperationManager extends AbstractService {
       throw new HiveSQLException(e.getMessage(), e.getCause());
     }
 
-
     // convert logs to RowSet
     for (String log : logs) {
-      rowSet.addRow(new String[] {log});
+      rowSet.addRow(new String[] { log });
     }
 
     return rowSet;

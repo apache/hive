@@ -181,45 +181,6 @@ POSTHOOK: query: -- The first subquery
 -- explain plan shows which directory selected: Truncated Path -> Alias
 explain extended select x from (select x from fact_daily where ds = '1') subq where x = 484
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_QUERY
-            TOK_FROM
-               TOK_TABREF
-                  TOK_TABNAME
-                     fact_daily
-            TOK_INSERT
-               TOK_DESTINATION
-                  TOK_DIR
-                     TOK_TMP_FILE
-               TOK_SELECT
-                  TOK_SELEXPR
-                     TOK_TABLE_OR_COL
-                        x
-               TOK_WHERE
-                  =
-                     TOK_TABLE_OR_COL
-                        ds
-                     '1'
-         subq
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               x
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               x
-            484
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -305,53 +266,6 @@ POSTHOOK: query: -- The second subquery
 -- explain plan shows which directory selected: Truncated Path -> Alias
 explain extended select x1, y1 from(select x as x1, y as y1 from fact_daily where ds ='1') subq where x1 = 484
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_QUERY
-            TOK_FROM
-               TOK_TABREF
-                  TOK_TABNAME
-                     fact_daily
-            TOK_INSERT
-               TOK_DESTINATION
-                  TOK_DIR
-                     TOK_TMP_FILE
-               TOK_SELECT
-                  TOK_SELEXPR
-                     TOK_TABLE_OR_COL
-                        x
-                     x1
-                  TOK_SELEXPR
-                     TOK_TABLE_OR_COL
-                        y
-                     y1
-               TOK_WHERE
-                  =
-                     TOK_TABLE_OR_COL
-                        ds
-                     '1'
-         subq
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               x1
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               y1
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               x1
-            484
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -437,40 +351,6 @@ POSTHOOK: query: -- The third subquery
 -- explain plan shows which directory selected: Truncated Path -> Alias
 explain extended  select y, count(1) from fact_daily where ds ='1' and x = 484 group by y
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            fact_daily
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               y
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_WHERE
-         and
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '1'
-            =
-               TOK_TABLE_OR_COL
-                  x
-               484
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            y
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -612,56 +492,6 @@ POSTHOOK: query: -- The fourth subquery
 -- explain plan shows which directory selected: Truncated Path -> Alias
 explain extended  select x, c from (select x, count(1) as c from fact_daily where ds = '1' group by x) subq where x = 484
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_QUERY
-            TOK_FROM
-               TOK_TABREF
-                  TOK_TABNAME
-                     fact_daily
-            TOK_INSERT
-               TOK_DESTINATION
-                  TOK_DIR
-                     TOK_TMP_FILE
-               TOK_SELECT
-                  TOK_SELEXPR
-                     TOK_TABLE_OR_COL
-                        x
-                  TOK_SELEXPR
-                     TOK_FUNCTION
-                        count
-                        1
-                     c
-               TOK_WHERE
-                  =
-                     TOK_TABLE_OR_COL
-                        ds
-                     '1'
-               TOK_GROUPBY
-                  TOK_TABLE_OR_COL
-                     x
-         subq
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               x
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               c
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               x
-            484
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

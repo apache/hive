@@ -365,6 +365,36 @@ public class CLIService extends CompositeService implements ICLIService {
   }
 
   /* (non-Javadoc)
+   * @see org.apache.hive.service.cli.ICLIService#getPrimaryKeys(org.apache.hive.service.cli.SessionHandle)
+   */
+  @Override
+  public OperationHandle getPrimaryKeys(SessionHandle sessionHandle,
+		  String catalog, String schema, String table)
+          throws HiveSQLException {
+    OperationHandle opHandle = sessionManager.getSession(sessionHandle)
+        .getPrimaryKeys(catalog, schema, table);
+    LOG.debug(sessionHandle + ": getPrimaryKeys()");
+    return opHandle;
+  }
+
+  /* (non-Javadoc)
+   * @see org.apache.hive.service.cli.ICLIService#getCrossReference(org.apache.hive.service.cli.SessionHandle)
+   */
+  @Override
+  public OperationHandle getCrossReference(SessionHandle sessionHandle,
+		  String primaryCatalog,
+	      String primarySchema, String primaryTable, String foreignCatalog,
+	      String foreignSchema, String foreignTable)
+          throws HiveSQLException {
+    OperationHandle opHandle = sessionManager.getSession(sessionHandle)
+        .getCrossReference(primaryCatalog, primarySchema, primaryTable, 
+         foreignCatalog,
+         foreignSchema, foreignTable);
+    LOG.debug(sessionHandle + ": getCrossReference()");
+    return opHandle;
+  }
+  
+  /* (non-Javadoc)
    * @see org.apache.hive.service.cli.ICLIService#getOperationStatus(org.apache.hive.service.cli.OperationHandle)
    */
   @Override

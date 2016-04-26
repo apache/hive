@@ -1346,6 +1346,21 @@ public class TestTxnHandler {
       error = e;
     }
   }
+
+  @Test
+  public void testRetryableRegex() throws Exception {
+    SQLException sqlException = new SQLException("ORA-08177: can't serialize access for this transaction", "72000");
+    // Note that we have 3 regex'es below
+    conf.setVar(HiveConf.ConfVars.HIVE_TXN_RETRYABLE_SQLEX_REGEX, "^Deadlock detected, roll back,.*08177.*,.*08178.*");
+    boolean result = TxnHandler.isRetryable(conf, sqlException);
+    Assert.assertTrue("regex should be retryable", result);
+
+    sqlException = new SQLException("This error message, has comma in it");
+    conf.setVar(HiveConf.ConfVars.HIVE_TXN_RETRYABLE_SQLEX_REGEX, ".*comma.*");
+    result = TxnHandler.isRetryable(conf, sqlException);
+    Assert.assertTrue("regex should be retryable", result);
+  }
+
   private void updateTxns(Connection conn) throws SQLException {
     Statement stmt = conn.createStatement();
     stmt.executeUpdate("update TXNS set txn_last_heartbeat = txn_last_heartbeat + 1");

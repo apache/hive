@@ -832,11 +832,15 @@ class TRowSet
   STARTROWOFFSET = 1
   ROWS = 2
   COLUMNS = 3
+  BINARYCOLUMNS = 4
+  COLUMNCOUNT = 5
 
   FIELDS = {
     STARTROWOFFSET => {:type => ::Thrift::Types::I64, :name => 'startRowOffset'},
     ROWS => {:type => ::Thrift::Types::LIST, :name => 'rows', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TRow}},
-    COLUMNS => {:type => ::Thrift::Types::LIST, :name => 'columns', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TColumn}, :optional => true}
+    COLUMNS => {:type => ::Thrift::Types::LIST, :name => 'columns', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TColumn}, :optional => true},
+    BINARYCOLUMNS => {:type => ::Thrift::Types::STRING, :name => 'binaryColumns', :binary => true, :optional => true},
+    COLUMNCOUNT => {:type => ::Thrift::Types::I32, :name => 'columnCount', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1429,6 +1433,96 @@ class TGetFunctionsReq
 end
 
 class TGetFunctionsResp
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  STATUS = 1
+  OPERATIONHANDLE = 2
+
+  FIELDS = {
+    STATUS => {:type => ::Thrift::Types::STRUCT, :name => 'status', :class => ::TStatus},
+    OPERATIONHANDLE => {:type => ::Thrift::Types::STRUCT, :name => 'operationHandle', :class => ::TOperationHandle, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field status is unset!') unless @status
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TGetPrimaryKeysReq
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SESSIONHANDLE = 1
+  CATALOGNAME = 2
+  SCHEMANAME = 3
+  TABLENAME = 4
+
+  FIELDS = {
+    SESSIONHANDLE => {:type => ::Thrift::Types::STRUCT, :name => 'sessionHandle', :class => ::TSessionHandle},
+    CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
+    SCHEMANAME => {:type => ::Thrift::Types::STRING, :name => 'schemaName', :optional => true},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field sessionHandle is unset!') unless @sessionHandle
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TGetPrimaryKeysResp
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  STATUS = 1
+  OPERATIONHANDLE = 2
+
+  FIELDS = {
+    STATUS => {:type => ::Thrift::Types::STRUCT, :name => 'status', :class => ::TStatus},
+    OPERATIONHANDLE => {:type => ::Thrift::Types::STRUCT, :name => 'operationHandle', :class => ::TOperationHandle, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field status is unset!') unless @status
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TGetCrossReferenceReq
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SESSIONHANDLE = 1
+  PARENTCATALOGNAME = 2
+  PARENTSCHEMANAME = 3
+  PARENTTABLENAME = 4
+  FOREIGNCATALOGNAME = 5
+  FOREIGNSCHEMANAME = 6
+  FOREIGNTABLENAME = 7
+
+  FIELDS = {
+    SESSIONHANDLE => {:type => ::Thrift::Types::STRUCT, :name => 'sessionHandle', :class => ::TSessionHandle},
+    PARENTCATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'parentCatalogName', :optional => true},
+    PARENTSCHEMANAME => {:type => ::Thrift::Types::STRING, :name => 'parentSchemaName', :optional => true},
+    PARENTTABLENAME => {:type => ::Thrift::Types::STRING, :name => 'parentTableName', :optional => true},
+    FOREIGNCATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'foreignCatalogName', :optional => true},
+    FOREIGNSCHEMANAME => {:type => ::Thrift::Types::STRING, :name => 'foreignSchemaName', :optional => true},
+    FOREIGNTABLENAME => {:type => ::Thrift::Types::STRING, :name => 'foreignTableName', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field sessionHandle is unset!') unless @sessionHandle
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TGetCrossReferenceResp
   include ::Thrift::Struct, ::Thrift::Struct_Union
   STATUS = 1
   OPERATIONHANDLE = 2

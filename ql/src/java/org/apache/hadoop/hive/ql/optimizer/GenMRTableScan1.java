@@ -204,7 +204,7 @@ public class GenMRTableScan1 implements NodeProcessor {
     // partial scan task
     DriverContext driverCxt = new DriverContext();
     Task<PartialScanWork> psTask = TaskFactory.get(scanWork, parseCtx.getConf());
-    psTask.initialize(parseCtx.getConf(), null, driverCxt, op.getCompilationOpContext());
+    psTask.initialize(parseCtx.getQueryState(), null, driverCxt, op.getCompilationOpContext());
     psTask.setWork(scanWork);
 
     // task dependency

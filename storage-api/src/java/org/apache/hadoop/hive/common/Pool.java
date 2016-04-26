@@ -29,4 +29,5 @@ public interface Pool<T> {
 
   T take();
   void offer(T t);
+  int size();
 }

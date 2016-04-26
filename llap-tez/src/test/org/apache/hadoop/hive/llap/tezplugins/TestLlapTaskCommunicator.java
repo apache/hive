@@ -55,6 +55,7 @@ import org.apache.tez.dag.records.TezTaskID;
 import org.apache.tez.dag.records.TezVertexID;
 import org.apache.tez.runtime.api.impl.InputSpec;
 import org.apache.tez.runtime.api.impl.TaskSpec;
+import org.apache.tez.serviceplugins.api.DagInfo;
 import org.apache.tez.serviceplugins.api.TaskAttemptEndReason;
 import org.apache.tez.serviceplugins.api.TaskCommunicatorContext;
 import org.junit.Test;
@@ -278,9 +279,13 @@ public class TestLlapTaskCommunicator {
 
     public LlapTaskCommunicatorWrapperForTest(LlapProtocolClientProxy llapProxy) throws Exception {
       doReturn(appAttemptId).when(taskCommunicatorContext).getApplicationAttemptId();
-      doReturn(new Credentials()).when(taskCommunicatorContext).getCredentials();
+      doReturn(new Credentials()).when(taskCommunicatorContext).getAMCredentials();
       doReturn(userPayload).when(taskCommunicatorContext).getInitialUserPayload();
       doReturn(appId.toString()).when(taskCommunicatorContext).getCurrentAppIdentifier();
+      DagInfo dagInfo = mock(DagInfo.class);
+      doReturn(dagInfo).when(taskCommunicatorContext).getCurrentDagInfo();
+      doReturn(DAG_NAME).when(dagInfo).getName();
+      doReturn(new Credentials()).when(dagInfo).getCredentials();
       doReturn(new LinkedList<String>()).when(taskCommunicatorContext)
           .getInputVertexNames(any(String.class));
 

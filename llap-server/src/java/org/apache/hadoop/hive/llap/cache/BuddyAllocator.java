@@ -113,6 +113,9 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
 
     this.metrics = metrics;
     metrics.incrAllocatedArena();
+    metrics.setArenaSize(arenaSize);
+    metrics.setMinAllocationSize(minAllocation);
+    metrics.setMaxAllocationSize(maxAllocation);
   }
 
   // TODO: would it make sense to return buffers asynchronously?

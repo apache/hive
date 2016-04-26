@@ -1179,7 +1179,7 @@ public class Commands {
   private void showRemainingLogsIfAny(Statement statement) {
     if (statement instanceof HiveStatement) {
       HiveStatement hiveStatement = (HiveStatement) statement;
-      List<String> logs;
+      List<String> logs = null;
       do {
         try {
           logs = hiveStatement.getQueryLog();

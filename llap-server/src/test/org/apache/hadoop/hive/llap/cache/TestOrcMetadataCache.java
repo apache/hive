@@ -88,7 +88,7 @@ public class TestOrcMetadataCache {
   public void testGetPut() throws Exception {
     DummyMemoryManager mm = new DummyMemoryManager();
     DummyCachePolicy cp = new DummyCachePolicy();
-    OrcMetadataCache cache = new OrcMetadataCache(mm, cp);
+    OrcMetadataCache cache = new OrcMetadataCache(mm, cp, false);
     OrcFileMetadata ofm1 = OrcFileMetadata.createDummy(1), ofm2 = OrcFileMetadata.createDummy(2);
     assertSame(ofm1, cache.putFileMetadata(ofm1));
     assertEquals(1, mm.allocs);

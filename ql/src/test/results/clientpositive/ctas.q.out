@@ -694,49 +694,6 @@ PREHOOK: query: explain extended create table nzhang_ctas5 row format delimited 
 PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: explain extended create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
-ABSTRACT SYNTAX TREE:
-  
-TOK_CREATETABLE
-   TOK_TABNAME
-      nzhang_ctas5
-   TOK_LIKETABLE
-   TOK_TABLEROWFORMAT
-      TOK_SERDEPROPS
-         TOK_TABLEROWFORMATFIELD
-            ','
-         TOK_TABLEROWFORMATLINES
-            '\012'
-   TOK_FILEFORMAT_GENERIC
-      textfile
-   TOK_QUERY
-      TOK_FROM
-         TOK_TABREF
-            TOK_TABNAME
-               src
-      TOK_INSERT
-         TOK_DESTINATION
-            TOK_DIR
-               TOK_TMP_FILE
-         TOK_SELECT
-            TOK_SELEXPR
-               TOK_TABLE_OR_COL
-                  key
-            TOK_SELEXPR
-               TOK_TABLE_OR_COL
-                  value
-         TOK_SORTBY
-            TOK_TABSORTCOLNAMEASC
-               TOK_NULLS_FIRST
-                  TOK_TABLE_OR_COL
-                     key
-            TOK_TABSORTCOLNAMEASC
-               TOK_NULLS_FIRST
-                  TOK_TABLE_OR_COL
-                     value
-         TOK_LIMIT
-            10
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

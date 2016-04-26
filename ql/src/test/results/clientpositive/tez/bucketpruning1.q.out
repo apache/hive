@@ -26,27 +26,6 @@ POSTHOOK: query: -- good cases
 explain extended
 select * from srcbucket_pruned where key = 1
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               key
-            1
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -107,27 +86,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 16
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               key
-            16
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -188,27 +146,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 17
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               key
-            17
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -269,29 +206,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 16+1
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               key
-            +
-               16
-               1
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -352,27 +266,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = '11'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               key
-            '11'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -433,32 +326,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 and ds='2008-04-08'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         and
-            =
-               TOK_TABLE_OR_COL
-                  key
-               1
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '2008-04-08'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -519,37 +386,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 and ds='2008-04-08' and value='One'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         and
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  1
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2008-04-08'
-            =
-               TOK_TABLE_OR_COL
-                  value
-               'One'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -610,37 +446,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where value='One' and key = 1 and ds='2008-04-08'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         and
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     value
-                  'One'
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  1
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '2008-04-08'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -701,29 +506,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key in (2,3)
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         TOK_FUNCTION
-            in
-            TOK_TABLE_OR_COL
-               key
-            2
-            3
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -784,34 +566,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key in (2,3) and ds='2008-04-08'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         and
-            TOK_FUNCTION
-               in
-               TOK_TABLE_OR_COL
-                  key
-               2
-               3
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '2008-04-08'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -872,39 +626,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key in (2,3) and ds='2008-04-08' and value='One'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         and
-            and
-               TOK_FUNCTION
-                  in
-                  TOK_TABLE_OR_COL
-                     key
-                  2
-                  3
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2008-04-08'
-            =
-               TOK_TABLE_OR_COL
-                  value
-               'One'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -965,39 +686,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where value='One' and key in (2,3) and ds='2008-04-08'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         and
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     value
-                  'One'
-               TOK_FUNCTION
-                  in
-                  TOK_TABLE_OR_COL
-                     key
-                  2
-                  3
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '2008-04-08'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1058,37 +746,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where (key=1 or key=2) and ds='2008-04-08'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         and
-            or
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  1
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  2
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '2008-04-08'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1148,42 +805,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where (key=1 or key=2) and value = 'One' and ds='2008-04-08'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         and
-            and
-               or
-                  =
-                     TOK_TABLE_OR_COL
-                        key
-                     1
-                  =
-                     TOK_TABLE_OR_COL
-                        key
-                     2
-               =
-                  TOK_TABLE_OR_COL
-                     value
-                  'One'
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '2008-04-08'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1247,28 +868,6 @@ POSTHOOK: query: -- compat case (-15 = 1 & 15)
 explain extended
 select * from srcbucket_pruned where key = -15
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               key
-            -
-               15
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1333,44 +932,6 @@ POSTHOOK: query: -- valid but irrelevant case (all buckets selected)
 explain extended
 select * from srcbucket_pruned where key in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17)
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         TOK_FUNCTION
-            in
-            TOK_TABLE_OR_COL
-               key
-            1
-            2
-            3
-            4
-            5
-            6
-            7
-            8
-            9
-            10
-            11
-            12
-            13
-            14
-            15
-            16
-            17
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1430,49 +991,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17) and ds='2008-04-08'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         and
-            TOK_FUNCTION
-               in
-               TOK_TABLE_OR_COL
-                  key
-               1
-               2
-               3
-               4
-               5
-               6
-               7
-               8
-               9
-               10
-               11
-               12
-               13
-               14
-               15
-               16
-               17
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '2008-04-08'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1532,54 +1050,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17) and ds='2008-04-08' and value='One'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         and
-            and
-               TOK_FUNCTION
-                  in
-                  TOK_TABLE_OR_COL
-                     key
-                  1
-                  2
-                  3
-                  4
-                  5
-                  6
-                  7
-                  8
-                  9
-                  10
-                  11
-                  12
-                  13
-                  14
-                  15
-                  16
-                  17
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2008-04-08'
-            =
-               TOK_TABLE_OR_COL
-                  value
-               'One'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1639,54 +1109,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where value='One' and key in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17) and ds='2008-04-08'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         and
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     value
-                  'One'
-               TOK_FUNCTION
-                  in
-                  TOK_TABLE_OR_COL
-                     key
-                  1
-                  2
-                  3
-                  4
-                  5
-                  6
-                  7
-                  8
-                  9
-                  10
-                  11
-                  12
-                  13
-                  14
-                  15
-                  16
-                  17
-            =
-               TOK_TABLE_OR_COL
-                  ds
-               '2008-04-08'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1750,37 +1172,6 @@ POSTHOOK: query: -- valid, but unimplemented cases
 explain extended
 select * from srcbucket_pruned where key = 1 and ds='2008-04-08' or key = 2
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         or
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  1
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2008-04-08'
-            =
-               TOK_TABLE_OR_COL
-                  key
-               2
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1840,42 +1231,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 and ds='2008-04-08' and (value='One' or value = 'Two')
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         and
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  1
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2008-04-08'
-            or
-               =
-                  TOK_TABLE_OR_COL
-                     value
-                  'One'
-               =
-                  TOK_TABLE_OR_COL
-                     value
-                  'Two'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1935,42 +1290,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 or value = "One" or key = 2 and value = "Two"
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         or
-            or
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  1
-               =
-                  TOK_TABLE_OR_COL
-                     value
-                  "One"
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  2
-               =
-                  TOK_TABLE_OR_COL
-                     value
-                  "Two"
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2034,27 +1353,6 @@ POSTHOOK: query: -- Invalid cases
 explain extended
 select * from srcbucket_pruned where key = 'x11'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               key
-            'x11'
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2113,32 +1411,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 or value = "One"
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         or
-            =
-               TOK_TABLE_OR_COL
-                  key
-               1
-            =
-               TOK_TABLE_OR_COL
-                  value
-               "One"
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2198,37 +1470,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 or value = "One" or key = 2
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_pruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         or
-            or
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  1
-               =
-                  TOK_TABLE_OR_COL
-                     value
-                  "One"
-            =
-               TOK_TABLE_OR_COL
-                  key
-               2
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2288,29 +1529,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_unpruned where key in (3, 5)
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_unpruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         TOK_FUNCTION
-            in
-            TOK_TABLE_OR_COL
-               key
-            3
-            5
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2370,27 +1588,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcbucket_unpruned where key = 1
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcbucket_unpruned
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               key
-            1
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

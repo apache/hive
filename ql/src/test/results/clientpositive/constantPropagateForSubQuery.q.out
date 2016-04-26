@@ -9,68 +9,6 @@ POSTHOOK: query: -- SORT_QUERY_RESULTS
 explain extended
  select * from (select a.key as ak, a.value as av, b.key as bk, b.value as bv from src a join src1 b where a.key = '429' ) c
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_QUERY
-            TOK_FROM
-               TOK_JOIN
-                  TOK_TABREF
-                     TOK_TABNAME
-                        src
-                     a
-                  TOK_TABREF
-                     TOK_TABNAME
-                        src1
-                     b
-            TOK_INSERT
-               TOK_DESTINATION
-                  TOK_DIR
-                     TOK_TMP_FILE
-               TOK_SELECT
-                  TOK_SELEXPR
-                     .
-                        TOK_TABLE_OR_COL
-                           a
-                        key
-                     ak
-                  TOK_SELEXPR
-                     .
-                        TOK_TABLE_OR_COL
-                           a
-                        value
-                     av
-                  TOK_SELEXPR
-                     .
-                        TOK_TABLE_OR_COL
-                           b
-                        key
-                     bk
-                  TOK_SELEXPR
-                     .
-                        TOK_TABLE_OR_COL
-                           b
-                        value
-                     bv
-               TOK_WHERE
-                  =
-                     .
-                        TOK_TABLE_OR_COL
-                           a
-                        key
-                     '429'
-         c
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

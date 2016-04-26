@@ -136,6 +136,34 @@ public interface HiveSession extends HiveSessionBase {
       String functionName) throws HiveSQLException;
 
   /**
+   * getPrimaryKeys operation handler
+   * @param catalog
+   * @param schema
+   * @param table
+   * @return
+   * @throws HiveSQLException
+   */
+  OperationHandle getPrimaryKeys(String catalog, String schema, String table)
+    throws HiveSQLException;
+
+
+  /**
+   * getCrossReference operation handler
+   * @param primaryCatalog
+   * @param primarySchema
+   * @param primaryTable
+   * @param foreignCatalog
+   * @param foreignSchema
+   * @param foreignTable
+   * @return
+   * @throws HiveSQLException
+   */
+  OperationHandle getCrossReference(String primaryCatalog,
+	      String primarySchema, String primaryTable, String foreignCatalog,
+	      String foreignSchema, String foreignTable) 
+    throws HiveSQLException;
+  
+  /**
    * close the session
    * @throws HiveSQLException
    */

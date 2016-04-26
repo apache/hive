@@ -121,8 +121,6 @@ public class CliDriver {
 
     ss.updateThreadName();
 
-    conf.set(HiveConf.ConfVars.HIVEQUERYID.varname, QueryPlan.makeQueryId());
-
     // Flush the print stream, so it doesn't include output from the last command
     ss.err.flush();
     String cmd_trimmed = cmd.trim();
@@ -401,9 +399,6 @@ public class CliDriver {
         }
 
         ret = processCmd(command);
-        //wipe cli query state
-        SessionState ss = SessionState.get();
-        ss.setCommandType(null);
         command = "";
         lastRet = ret;
         boolean ignoreErrors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS);

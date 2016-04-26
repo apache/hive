@@ -15,19 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.orc.impl;
+
+package org.apache.hadoop.hive.serde2;
 
 import java.io.Closeable;
-import java.io.IOException;
+import java.util.Properties;
 
-import org.apache.orc.OrcProto;
-import org.apache.orc.StripeInformation;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
-public interface MetadataReader extends Closeable {
-  OrcIndex readRowIndex(StripeInformation stripe,
-                                      OrcProto.StripeFooter footer,
-      boolean[] included, OrcProto.RowIndex[] indexes, boolean[] sargColumns,
-      OrcProto.BloomFilterIndex[] bloomFilterIndices) throws IOException;
+/**
+ * internal-use only
+ *
+ * Used in ListSinkOperator for formatting final output
+ */
+public interface FetchFormatter<T> extends Closeable {
 
-  OrcProto.StripeFooter readStripeFooter(StripeInformation stripe) throws IOException;
+  void initialize(Configuration hconf, Properties props) throws Exception;
+
+  T convert(Object row, ObjectInspector rowOI) throws Exception;
 }

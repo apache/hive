@@ -49,6 +49,12 @@
       <artifactId>hive-service-rpc</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-llap-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- inter-project -->
     <dependency>
       <groupId>commons-codec</groupId>

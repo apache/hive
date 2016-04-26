@@ -266,13 +266,9 @@ public class HiveHistoryImpl implements HiveHistory{
   @Override
   public void startTask(String queryId, Task<? extends Serializable> task,
       String taskName) {
-    SessionState ss = SessionState.get();
-    if (ss == null) {
-      return;
-    }
     TaskInfo ti = new TaskInfo();
 
-    ti.hm.put(Keys.QUERY_ID.name(), ss.getQueryId());
+    ti.hm.put(Keys.QUERY_ID.name(), queryId);
     ti.hm.put(Keys.TASK_ID.name(), task.getId());
     ti.hm.put(Keys.TASK_NAME.name(), taskName);
 

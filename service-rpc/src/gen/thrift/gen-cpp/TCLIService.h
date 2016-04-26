@@ -32,6 +32,8 @@ class TCLIServiceIf {
   virtual void GetTableTypes(TGetTableTypesResp& _return, const TGetTableTypesReq& req) = 0;
   virtual void GetColumns(TGetColumnsResp& _return, const TGetColumnsReq& req) = 0;
   virtual void GetFunctions(TGetFunctionsResp& _return, const TGetFunctionsReq& req) = 0;
+  virtual void GetPrimaryKeys(TGetPrimaryKeysResp& _return, const TGetPrimaryKeysReq& req) = 0;
+  virtual void GetCrossReference(TGetCrossReferenceResp& _return, const TGetCrossReferenceReq& req) = 0;
   virtual void GetOperationStatus(TGetOperationStatusResp& _return, const TGetOperationStatusReq& req) = 0;
   virtual void CancelOperation(TCancelOperationResp& _return, const TCancelOperationReq& req) = 0;
   virtual void CloseOperation(TCloseOperationResp& _return, const TCloseOperationReq& req) = 0;
@@ -100,6 +102,12 @@ class TCLIServiceNull : virtual public TCLIServiceIf {
     return;
   }
   void GetFunctions(TGetFunctionsResp& /* _return */, const TGetFunctionsReq& /* req */) {
+    return;
+  }
+  void GetPrimaryKeys(TGetPrimaryKeysResp& /* _return */, const TGetPrimaryKeysReq& /* req */) {
+    return;
+  }
+  void GetCrossReference(TGetCrossReferenceResp& /* _return */, const TGetCrossReferenceReq& /* req */) {
     return;
   }
   void GetOperationStatus(TGetOperationStatusResp& /* _return */, const TGetOperationStatusReq& /* req */) {
@@ -1272,6 +1280,214 @@ class TCLIService_GetFunctions_presult {
 
 };
 
+typedef struct _TCLIService_GetPrimaryKeys_args__isset {
+  _TCLIService_GetPrimaryKeys_args__isset() : req(false) {}
+  bool req :1;
+} _TCLIService_GetPrimaryKeys_args__isset;
+
+class TCLIService_GetPrimaryKeys_args {
+ public:
+
+  TCLIService_GetPrimaryKeys_args(const TCLIService_GetPrimaryKeys_args&);
+  TCLIService_GetPrimaryKeys_args& operator=(const TCLIService_GetPrimaryKeys_args&);
+  TCLIService_GetPrimaryKeys_args() {
+  }
+
+  virtual ~TCLIService_GetPrimaryKeys_args() throw();
+  TGetPrimaryKeysReq req;
+
+  _TCLIService_GetPrimaryKeys_args__isset __isset;
+
+  void __set_req(const TGetPrimaryKeysReq& val);
+
+  bool operator == (const TCLIService_GetPrimaryKeys_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const TCLIService_GetPrimaryKeys_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TCLIService_GetPrimaryKeys_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class TCLIService_GetPrimaryKeys_pargs {
+ public:
+
+
+  virtual ~TCLIService_GetPrimaryKeys_pargs() throw();
+  const TGetPrimaryKeysReq* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _TCLIService_GetPrimaryKeys_result__isset {
+  _TCLIService_GetPrimaryKeys_result__isset() : success(false) {}
+  bool success :1;
+} _TCLIService_GetPrimaryKeys_result__isset;
+
+class TCLIService_GetPrimaryKeys_result {
+ public:
+
+  TCLIService_GetPrimaryKeys_result(const TCLIService_GetPrimaryKeys_result&);
+  TCLIService_GetPrimaryKeys_result& operator=(const TCLIService_GetPrimaryKeys_result&);
+  TCLIService_GetPrimaryKeys_result() {
+  }
+
+  virtual ~TCLIService_GetPrimaryKeys_result() throw();
+  TGetPrimaryKeysResp success;
+
+  _TCLIService_GetPrimaryKeys_result__isset __isset;
+
+  void __set_success(const TGetPrimaryKeysResp& val);
+
+  bool operator == (const TCLIService_GetPrimaryKeys_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const TCLIService_GetPrimaryKeys_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TCLIService_GetPrimaryKeys_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _TCLIService_GetPrimaryKeys_presult__isset {
+  _TCLIService_GetPrimaryKeys_presult__isset() : success(false) {}
+  bool success :1;
+} _TCLIService_GetPrimaryKeys_presult__isset;
+
+class TCLIService_GetPrimaryKeys_presult {
+ public:
+
+
+  virtual ~TCLIService_GetPrimaryKeys_presult() throw();
+  TGetPrimaryKeysResp* success;
+
+  _TCLIService_GetPrimaryKeys_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _TCLIService_GetCrossReference_args__isset {
+  _TCLIService_GetCrossReference_args__isset() : req(false) {}
+  bool req :1;
+} _TCLIService_GetCrossReference_args__isset;
+
+class TCLIService_GetCrossReference_args {
+ public:
+
+  TCLIService_GetCrossReference_args(const TCLIService_GetCrossReference_args&);
+  TCLIService_GetCrossReference_args& operator=(const TCLIService_GetCrossReference_args&);
+  TCLIService_GetCrossReference_args() {
+  }
+
+  virtual ~TCLIService_GetCrossReference_args() throw();
+  TGetCrossReferenceReq req;
+
+  _TCLIService_GetCrossReference_args__isset __isset;
+
+  void __set_req(const TGetCrossReferenceReq& val);
+
+  bool operator == (const TCLIService_GetCrossReference_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const TCLIService_GetCrossReference_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TCLIService_GetCrossReference_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class TCLIService_GetCrossReference_pargs {
+ public:
+
+
+  virtual ~TCLIService_GetCrossReference_pargs() throw();
+  const TGetCrossReferenceReq* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _TCLIService_GetCrossReference_result__isset {
+  _TCLIService_GetCrossReference_result__isset() : success(false) {}
+  bool success :1;
+} _TCLIService_GetCrossReference_result__isset;
+
+class TCLIService_GetCrossReference_result {
+ public:
+
+  TCLIService_GetCrossReference_result(const TCLIService_GetCrossReference_result&);
+  TCLIService_GetCrossReference_result& operator=(const TCLIService_GetCrossReference_result&);
+  TCLIService_GetCrossReference_result() {
+  }
+
+  virtual ~TCLIService_GetCrossReference_result() throw();
+  TGetCrossReferenceResp success;
+
+  _TCLIService_GetCrossReference_result__isset __isset;
+
+  void __set_success(const TGetCrossReferenceResp& val);
+
+  bool operator == (const TCLIService_GetCrossReference_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const TCLIService_GetCrossReference_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TCLIService_GetCrossReference_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _TCLIService_GetCrossReference_presult__isset {
+  _TCLIService_GetCrossReference_presult__isset() : success(false) {}
+  bool success :1;
+} _TCLIService_GetCrossReference_presult__isset;
+
+class TCLIService_GetCrossReference_presult {
+ public:
+
+
+  virtual ~TCLIService_GetCrossReference_presult() throw();
+  TGetCrossReferenceResp* success;
+
+  _TCLIService_GetCrossReference_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _TCLIService_GetOperationStatus_args__isset {
   _TCLIService_GetOperationStatus_args__isset() : req(false) {}
   bool req :1;
@@ -2162,6 +2378,12 @@ class TCLIServiceClient : virtual public TCLIServiceIf {
   void GetFunctions(TGetFunctionsResp& _return, const TGetFunctionsReq& req);
   void send_GetFunctions(const TGetFunctionsReq& req);
   void recv_GetFunctions(TGetFunctionsResp& _return);
+  void GetPrimaryKeys(TGetPrimaryKeysResp& _return, const TGetPrimaryKeysReq& req);
+  void send_GetPrimaryKeys(const TGetPrimaryKeysReq& req);
+  void recv_GetPrimaryKeys(TGetPrimaryKeysResp& _return);
+  void GetCrossReference(TGetCrossReferenceResp& _return, const TGetCrossReferenceReq& req);
+  void send_GetCrossReference(const TGetCrossReferenceReq& req);
+  void recv_GetCrossReference(TGetCrossReferenceResp& _return);
   void GetOperationStatus(TGetOperationStatusResp& _return, const TGetOperationStatusReq& req);
   void send_GetOperationStatus(const TGetOperationStatusReq& req);
   void recv_GetOperationStatus(TGetOperationStatusResp& _return);
@@ -2212,6 +2434,8 @@ class TCLIServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_GetTableTypes(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_GetColumns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_GetFunctions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_GetPrimaryKeys(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_GetCrossReference(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_GetOperationStatus(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_CancelOperation(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_CloseOperation(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -2234,6 +2458,8 @@ class TCLIServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["GetTableTypes"] = &TCLIServiceProcessor::process_GetTableTypes;
     processMap_["GetColumns"] = &TCLIServiceProcessor::process_GetColumns;
     processMap_["GetFunctions"] = &TCLIServiceProcessor::process_GetFunctions;
+    processMap_["GetPrimaryKeys"] = &TCLIServiceProcessor::process_GetPrimaryKeys;
+    processMap_["GetCrossReference"] = &TCLIServiceProcessor::process_GetCrossReference;
     processMap_["GetOperationStatus"] = &TCLIServiceProcessor::process_GetOperationStatus;
     processMap_["CancelOperation"] = &TCLIServiceProcessor::process_CancelOperation;
     processMap_["CloseOperation"] = &TCLIServiceProcessor::process_CloseOperation;
@@ -2380,6 +2606,26 @@ class TCLIServiceMultiface : virtual public TCLIServiceIf {
     return;
   }
 
+  void GetPrimaryKeys(TGetPrimaryKeysResp& _return, const TGetPrimaryKeysReq& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->GetPrimaryKeys(_return, req);
+    }
+    ifaces_[i]->GetPrimaryKeys(_return, req);
+    return;
+  }
+
+  void GetCrossReference(TGetCrossReferenceResp& _return, const TGetCrossReferenceReq& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->GetCrossReference(_return, req);
+    }
+    ifaces_[i]->GetCrossReference(_return, req);
+    return;
+  }
+
   void GetOperationStatus(TGetOperationStatusResp& _return, const TGetOperationStatusReq& req) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -2523,6 +2769,12 @@ class TCLIServiceConcurrentClient : virtual public TCLIServiceIf {
   void GetFunctions(TGetFunctionsResp& _return, const TGetFunctionsReq& req);
   int32_t send_GetFunctions(const TGetFunctionsReq& req);
   void recv_GetFunctions(TGetFunctionsResp& _return, const int32_t seqid);
+  void GetPrimaryKeys(TGetPrimaryKeysResp& _return, const TGetPrimaryKeysReq& req);
+  int32_t send_GetPrimaryKeys(const TGetPrimaryKeysReq& req);
+  void recv_GetPrimaryKeys(TGetPrimaryKeysResp& _return, const int32_t seqid);
+  void GetCrossReference(TGetCrossReferenceResp& _return, const TGetCrossReferenceReq& req);
+  int32_t send_GetCrossReference(const TGetCrossReferenceReq& req);
+  void recv_GetCrossReference(TGetCrossReferenceResp& _return, const int32_t seqid);
   void GetOperationStatus(TGetOperationStatusResp& _return, const TGetOperationStatusReq& req);
   int32_t send_GetOperationStatus(const TGetOperationStatusReq& req);
   void recv_GetOperationStatus(TGetOperationStatusResp& _return, const int32_t seqid);

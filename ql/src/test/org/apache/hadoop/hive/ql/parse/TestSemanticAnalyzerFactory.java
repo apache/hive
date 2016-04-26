@@ -21,27 +21,30 @@ import junit.framework.Assert;
 
 import org.antlr.runtime.CommonToken;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.junit.Before;
 import org.junit.Test;
 
 public class TestSemanticAnalyzerFactory {
 
+  private QueryState queryState;
   private HiveConf conf;
   
   @Before
   public void setup() throws Exception {
-    conf = new HiveConf();
+    queryState = new QueryState(null);
+    conf = queryState.getConf();
   }
   @Test
   public void testCreate() throws Exception {
     BaseSemanticAnalyzer analyzer = SemanticAnalyzerFactory.
-        get(conf, new ASTNode(new CommonToken(HiveParser.TOK_CREATEMACRO)));
+        get(queryState, new ASTNode(new CommonToken(HiveParser.TOK_CREATEMACRO)));
     Assert.assertTrue(analyzer.getClass().getSimpleName(), analyzer instanceof MacroSemanticAnalyzer);
   }
   @Test
   public void testDrop() throws Exception {
     BaseSemanticAnalyzer analyzer = SemanticAnalyzerFactory.
-        get(conf, new ASTNode(new CommonToken(HiveParser.TOK_DROPMACRO)));
+        get(queryState, new ASTNode(new CommonToken(HiveParser.TOK_DROPMACRO)));
     Assert.assertTrue(analyzer.getClass().getSimpleName(), analyzer instanceof MacroSemanticAnalyzer);
   }
 }

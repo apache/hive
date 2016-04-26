@@ -122,7 +122,7 @@ public class SessionState {
   /**
    * current configuration.
    */
-  private final HiveConf conf;
+  private final HiveConf sessionConf;
 
   /**
    * silent mode.
@@ -135,7 +135,7 @@ public class SessionState {
   protected boolean isVerbose;
 
   /**
-   * Is the query served from HiveServer2
+   * The flag to indicate if the session serves the queries from HiveServer2 or not.
    */
   private boolean isHiveServerQuery = false;
 
@@ -170,11 +170,6 @@ public class SessionState {
    * Temporary file name used to store error output of executing non-Hive commands (e.g., set, dfs)
    */
   protected File tmpErrOutputFile;
-
-  /**
-   * type of the command.
-   */
-  private HiveOperation commandType;
 
   private String lastCommand;
 
@@ -287,7 +282,7 @@ public class SessionState {
   }
 
   public HiveConf getConf() {
-    return conf;
+    return sessionConf;
   }
 
 
@@ -316,8 +311,8 @@ public class SessionState {
   }
 
   public boolean getIsSilent() {
-    if(conf != null) {
-      return conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
+    if(sessionConf != null) {
+      return sessionConf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
     } else {
       return isSilent;
     }
@@ -328,8 +323,8 @@ public class SessionState {
   }
 
   public void setIsSilent(boolean isSilent) {
-    if(conf != null) {
-      conf.setBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT, isSilent);
+    if(sessionConf != null) {
+      sessionConf.setBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT, isSilent);
     }
     this.isSilent = isSilent;
   }
@@ -355,7 +350,7 @@ public class SessionState {
   }
 
   public SessionState(HiveConf conf, String userName) {
-    this.conf = conf;
+    this.sessionConf = conf;
     this.userName = userName;
     if (LOG.isDebugEnabled()) {
       LOG.debug("SessionState user: " + userName);
@@ -375,21 +370,9 @@ public class SessionState {
     parentLoader = SessionState.class.getClassLoader();
     // Make sure that each session has its own UDFClassloader. For details see {@link UDFClassLoader}
     final ClassLoader currentLoader = Utilities.createUDFClassLoader((URLClassLoader) parentLoader, new String[]{});
-    this.conf.setClassLoader(currentLoader);
+    this.sessionConf.setClassLoader(currentLoader);
     resourceDownloader = new ResourceDownloader(conf,
         HiveConf.getVar(conf, ConfVars.DOWNLOADED_RESOURCES_DIR));
-  }
-
-  public void setCmd(String cmdString) {
-    conf.setQueryString(cmdString);
-  }
-
-  public String getCmd() {
-    return (conf.getQueryString());
-  }
-
-  public String getQueryId() {
-    return (conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
   }
 
   public Map<String, String> getHiveVariables() {
@@ -404,7 +387,7 @@ public class SessionState {
   }
 
   public String getSessionId() {
-    return (conf.getVar(HiveConf.ConfVars.HIVESESSIONID));
+    return (sessionConf.getVar(HiveConf.ConfVars.HIVESESSIONID));
   }
 
   public void updateThreadName() {
@@ -457,9 +440,9 @@ public class SessionState {
   public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim() throws HiveException {
     if (hdfsEncryptionShim == null) {
       try {
-        FileSystem fs = FileSystem.get(conf);
+        FileSystem fs = FileSystem.get(sessionConf);
         if ("hdfs".equals(fs.getUri().getScheme())) {
-          hdfsEncryptionShim = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
+          hdfsEncryptionShim = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, sessionConf);
         } else {
           LOG.info("Could not get hdfsEncryptionShim, it is only applicable to hdfs filesystem.");
         }
@@ -557,9 +540,9 @@ public class SessionState {
       // Hive object instance should be created with a copy of the conf object. If the conf is
       // shared with SessionState, other parts of the code might update the config, but
       // Hive.get(HiveConf) would not recognize the case when it needs refreshing
-      Hive.get(new HiveConf(startSs.conf)).getMSC();
+      Hive.get(new HiveConf(startSs.sessionConf)).getMSC();
       UserGroupInformation sessionUGI = Utils.getUGI();
-      FileSystem.get(startSs.conf);
+      FileSystem.get(startSs.sessionConf);
 
       // Create scratch dirs for this session
       startSs.createSessionDirs(sessionUGI.getShortUserName());
@@ -611,9 +594,9 @@ public class SessionState {
       }
       // Neither open nor opening.
       if (!isAsync) {
-        startSs.tezSessionState.open(startSs.conf); // should use conf on session start-up
+        startSs.tezSessionState.open(startSs.sessionConf); // should use conf on session start-up
       } else {
-        startSs.tezSessionState.beginOpen(startSs.conf, null, console);
+        startSs.tezSessionState.beginOpen(startSs.sessionConf, null, console);
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -717,7 +700,7 @@ public class SessionState {
    * @return
    * @throws IOException
    */
-  private void createPath(HiveConf conf, Path path, String permission, boolean isLocal,
+  private static void createPath(HiveConf conf, Path path, String permission, boolean isLocal,
       boolean isCleanUp) throws IOException {
     FsPermission fsPermission = new FsPermission(permission);
     FileSystem fs;
@@ -817,18 +800,18 @@ public class SessionState {
     }
 
     try {
-      authenticator = HiveUtils.getAuthenticator(conf,
+      authenticator = HiveUtils.getAuthenticator(sessionConf,
           HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER);
       authenticator.setSessionState(this);
 
-      String clsStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER);
-      authorizer = HiveUtils.getAuthorizeProviderManager(conf,
+      String clsStr = HiveConf.getVar(sessionConf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER);
+      authorizer = HiveUtils.getAuthorizeProviderManager(sessionConf,
           clsStr, authenticator, true);
 
       if (authorizer == null) {
         // if it was null, the new (V2) authorization plugin must be specified in
         // config
-        HiveAuthorizerFactory authorizerFactory = HiveUtils.getAuthorizerFactory(conf,
+        HiveAuthorizerFactory authorizerFactory = HiveUtils.getAuthorizerFactory(sessionConf,
             HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER);
 
         HiveAuthzSessionContext.Builder authzContextBuilder = new HiveAuthzSessionContext.Builder();
@@ -837,12 +820,12 @@ public class SessionState {
         authzContextBuilder.setSessionString(getSessionId());
 
         authorizerV2 = authorizerFactory.createHiveAuthorizer(new HiveMetastoreClientFactoryImpl(),
-            conf, authenticator, authzContextBuilder.build());
+            sessionConf, authenticator, authzContextBuilder.build());
         setAuthorizerV2Config();
 
       }
       // create the create table grants with new config
-      createTableGrants = CreateTableAutomaticGrant.create(conf);
+      createTableGrants = CreateTableAutomaticGrant.create(sessionConf);
 
     } catch (HiveException e) {
       LOG.error("Error setting up authorization: " + e.getMessage(), e);
@@ -858,23 +841,23 @@ public class SessionState {
 
   private void setAuthorizerV2Config() throws HiveException {
     // avoid processing the same config multiple times, check marker
-    if (conf.get(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, "").equals(Boolean.TRUE.toString())) {
+    if (sessionConf.get(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, "").equals(Boolean.TRUE.toString())) {
       return;
     }
-    String metastoreHook = conf.get(ConfVars.METASTORE_FILTER_HOOK.name());
+    String metastoreHook = sessionConf.get(ConfVars.METASTORE_FILTER_HOOK.name());
     if (!ConfVars.METASTORE_FILTER_HOOK.getDefaultValue().equals(metastoreHook) &&
         !AuthorizationMetaStoreFilterHook.class.getName().equals(metastoreHook)) {
       LOG.warn(ConfVars.METASTORE_FILTER_HOOK.name() +
           " will be ignored, since hive.security.authorization.manager" +
           " is set to instance of HiveAuthorizerFactory.");
     }
-    conf.setVar(ConfVars.METASTORE_FILTER_HOOK,
+    sessionConf.setVar(ConfVars.METASTORE_FILTER_HOOK,
         AuthorizationMetaStoreFilterHook.class.getName());
 
-    authorizerV2.applyAuthorizationConfigPolicy(conf);
+    authorizerV2.applyAuthorizationConfigPolicy(sessionConf);
     // update config in Hive thread local as well and init the metastore client
     try {
-      Hive.get(conf).getMSC();
+      Hive.get(sessionConf).getMSC();
     } catch (Exception e) {
       // catch-all due to some exec time dependencies on session state
       // that would cause ClassNoFoundException otherwise
@@ -882,7 +865,7 @@ public class SessionState {
     }
 
     // set a marker that this conf has been processed.
-    conf.set(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, Boolean.TRUE.toString());
+    sessionConf.set(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, Boolean.TRUE.toString());
   }
 
   public Object getActiveAuthorizer() {
@@ -1124,7 +1107,7 @@ public class SessionState {
   public void reloadAuxJars() throws IOException {
     final Set<String> reloadedAuxJars = new HashSet<String>();
 
-    final String renewableJarPath = conf.getVar(ConfVars.HIVERELOADABLEJARS);
+    final String renewableJarPath = sessionConf.getVar(ConfVars.HIVERELOADABLEJARS);
     // do nothing if this property is not specified or empty
     if (renewableJarPath == null || renewableJarPath.isEmpty()) {
       return;
@@ -1154,7 +1137,7 @@ public class SessionState {
         currentCLoader =
             (URLClassLoader) Utilities.addToClassPath(currentCLoader,
                 reloadedAuxJars.toArray(new String[0]));
-        conf.setClassLoader(currentCLoader);
+        sessionConf.setClassLoader(currentCLoader);
         Thread.currentThread().setContextClassLoader(currentCLoader);
       }
       preReloadableAuxJars.clear();
@@ -1394,21 +1377,6 @@ public class SessionState {
     }
   }
 
-  public String getCommandType() {
-    if (commandType == null) {
-      return null;
-    }
-    return commandType.getOperationName();
-  }
-
-  public HiveOperation getHiveOperation() {
-    return commandType;
-  }
-
-  public void setCommandType(HiveOperation commandType) {
-    this.commandType = commandType;
-  }
-
   public HiveAuthorizationProvider getAuthorizer() {
     setupAuth();
     return authorizer;
@@ -1499,7 +1467,7 @@ public class SessionState {
   public void close() throws IOException {
     registry.clear();
     if (txnMgr != null) txnMgr.closeTxnManager();
-    JavaUtils.closeClassLoadersTo(conf.getClassLoader(), parentLoader);
+    JavaUtils.closeClassLoadersTo(sessionConf.getClassLoader(), parentLoader);
     File resourceDir =
         new File(getConf().getVar(HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
     LOG.debug("Removing resource dir " + resourceDir);
@@ -1526,7 +1494,7 @@ public class SessionState {
     try {
       closeSparkSession();
       registry.closeCUDFLoaders();
-      dropSessionPaths(conf);
+      dropSessionPaths(sessionConf);
       unCacheDataNucleusClassLoaders();
     } finally {
       // removes the threadlocal variables, closes underlying HMS connection
@@ -1536,10 +1504,10 @@ public class SessionState {
 
   private void unCacheDataNucleusClassLoaders() {
     try {
-      Hive threadLocalHive = Hive.get(conf);
+      Hive threadLocalHive = Hive.get(sessionConf);
       if ((threadLocalHive != null) && (threadLocalHive.getMSC() != null)
           && (threadLocalHive.getMSC().isLocalMetaStore())) {
-        if (conf.getVar(ConfVars.METASTORE_RAW_STORE_IMPL).equals(ObjectStore.class.getName())) {
+        if (sessionConf.getVar(ConfVars.METASTORE_RAW_STORE_IMPL).equals(ObjectStore.class.getName())) {
           ObjectStore.unCacheDataNucleusClassLoaders();
         }
       }
@@ -1667,9 +1635,9 @@ public class SessionState {
     queryCurrentTimestamp = new Timestamp(System.currentTimeMillis());
 
     // Provide a facility to set current timestamp during tests
-    if (conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
+    if (sessionConf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
       String overrideTimestampString =
-          HiveConf.getVar(conf, HiveConf.ConfVars.HIVETESTCURRENTTIMESTAMP, (String)null);
+          HiveConf.getVar(sessionConf, HiveConf.ConfVars.HIVETESTCURRENTTIMESTAMP, (String)null);
       if (overrideTimestampString != null && overrideTimestampString.length() > 0) {
         queryCurrentTimestamp = Timestamp.valueOf(overrideTimestampString);
       }

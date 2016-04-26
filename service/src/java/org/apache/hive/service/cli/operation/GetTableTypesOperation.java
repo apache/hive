@@ -47,11 +47,10 @@ public class GetTableTypesOperation extends MetadataOperation {
 
   protected GetTableTypesOperation(HiveSession parentSession) {
     super(parentSession, OperationType.GET_TABLE_TYPES);
-    String tableMappingStr = getParentSession().getHiveConf().
-        getVar(HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING);
-    tableTypeMapping =
-      TableTypeMappingFactory.getTableTypeMapping(tableMappingStr);
-    rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion());
+    String tableMappingStr =
+        getParentSession().getHiveConf().getVar(HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING);
+    tableTypeMapping = TableTypeMappingFactory.getTableTypeMapping(tableMappingStr);
+    rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion(), false);
   }
 
   @Override

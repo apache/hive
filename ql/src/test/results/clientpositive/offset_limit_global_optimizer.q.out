@@ -4,42 +4,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5), ds, hr FROM srcpart LIMIT 400,10
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  srcpart
-               key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               substr
-               .
-                  TOK_TABLE_OR_COL
-                     srcpart
-                  value
-               5
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               hr
-      TOK_LIMIT
-         400
-         10
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -172,42 +136,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5), ds, hr FROM srcpart LIMIT 490,10
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  srcpart
-               key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               substr
-               .
-                  TOK_TABLE_OR_COL
-                     srcpart
-                  value
-               5
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               hr
-      TOK_LIMIT
-         490
-         10
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -481,42 +409,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5), ds, hr FROM srcpart LIMIT 490,20
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  srcpart
-               key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               substr
-               .
-                  TOK_TABLE_OR_COL
-                     srcpart
-                  value
-               5
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               hr
-      TOK_LIMIT
-         490
-         20
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -800,42 +692,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5), ds, hr FROM srcpart LIMIT 490,600
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  srcpart
-               key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               substr
-               .
-                  TOK_TABLE_OR_COL
-                     srcpart
-                  value
-               5
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               hr
-      TOK_LIMIT
-         490
-         600
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1699,42 +1555,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5), ds, hr FROM srcpart LIMIT 400,10
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  srcpart
-               key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               substr
-               .
-                  TOK_TABLE_OR_COL
-                     srcpart
-                  value
-               5
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               hr
-      TOK_LIMIT
-         400
-         10
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1867,42 +1687,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5), ds, hr FROM srcpart LIMIT 490,10
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  srcpart
-               key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               substr
-               .
-                  TOK_TABLE_OR_COL
-                     srcpart
-                  value
-               5
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               hr
-      TOK_LIMIT
-         490
-         10
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2176,42 +1960,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5), ds, hr FROM srcpart LIMIT 490,20
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  srcpart
-               key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               substr
-               .
-                  TOK_TABLE_OR_COL
-                     srcpart
-                  value
-               5
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               hr
-      TOK_LIMIT
-         490
-         20
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2495,42 +2243,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT srcpart.key, substr(srcpart.value,5), ds, hr FROM srcpart LIMIT 490,600
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  srcpart
-               key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               substr
-               .
-                  TOK_TABLE_OR_COL
-                     srcpart
-                  value
-               5
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               hr
-      TOK_LIMIT
-         490
-         600
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

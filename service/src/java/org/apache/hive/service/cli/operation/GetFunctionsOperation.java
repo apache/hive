@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObjectUtils;
+import org.apache.hadoop.hive.serde2.thrift.Type;
 import org.apache.hive.service.cli.CLIServiceUtils;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -38,7 +39,6 @@ import org.apache.hive.service.cli.OperationType;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
-import org.apache.hive.service.cli.Type;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.thrift.TException;
 
@@ -67,13 +67,13 @@ public class GetFunctionsOperation extends MetadataOperation {
 
   private final RowSet rowSet;
 
-  public GetFunctionsOperation(HiveSession parentSession,
-      String catalogName, String schemaName, String functionName) {
+  public GetFunctionsOperation(HiveSession parentSession, String catalogName, String schemaName,
+      String functionName) {
     super(parentSession, OperationType.GET_FUNCTIONS);
     this.catalogName = catalogName;
     this.schemaName = schemaName;
     this.functionName = functionName;
-    this.rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion());
+    this.rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion(), false);
   }
 
   @Override

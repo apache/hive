@@ -431,6 +431,112 @@ public class TestJdbcWithMiniHS2 {
     }
   }
 
+  private void setSerializeInTasksInConf(HiveConf conf) {
+    conf.setBoolean("hive.server2.thrift.resultset.serialize.in.tasks", true);
+    conf.setInt("hive.server2.thrift.resultset.max.fetch.size", 1000);
+  }
+
+  @Test
+  public void testMetadataQueriesWithSerializeThriftInTasks() throws Exception {
+    //stop HiveServer2
+    if (miniHS2.isStarted()) {
+      miniHS2.stop();
+    }
+
+    HiveConf conf = new HiveConf();
+    String userName;
+    setSerializeInTasksInConf(conf);
+    miniHS2 = new MiniHS2(conf);
+    Map<String, String> confOverlay = new HashMap<String, String>();
+    miniHS2.start(confOverlay);
+
+    userName = System.getProperty("user.name");
+    hs2Conn = getConnection(miniHS2.getJdbcURL(), userName, "password");
+    Statement stmt = hs2Conn.createStatement();
+    stmt.execute("drop table if exists testThriftSerializeShow");
+    stmt.execute("create table testThriftSerializeShow (a int)");
+    ResultSet rs = stmt.executeQuery("show tables");
+    assertTrue(rs.next());
+    stmt.execute("describe testThriftSerializeShow");
+    stmt.execute("explain select a from testThriftSerializeShow");
+    stmt.execute("drop table testThriftSerializeShow");
+    stmt.close();
+  }
+
+  @Test
+  public void testSelectThriftSerializeInTasks() throws Exception {
+    if (miniHS2.isStarted()) {
+      miniHS2.stop();
+    }
+
+    HiveConf conf = new HiveConf();
+    String userName;
+    setSerializeInTasksInConf(conf);
+    miniHS2 = new MiniHS2(conf);
+    Map<String, String> confOverlay = new HashMap<String, String>();
+    miniHS2.start(confOverlay);
+
+    userName = System.getProperty("user.name");
+    hs2Conn = getConnection(miniHS2.getJdbcURL(), userName, "password");
+    Statement stmt = hs2Conn.createStatement();
+
+    stmt.execute("drop table if exists testSelectThriftOrders");
+    stmt.execute("drop table if exists testSelectThriftCustomers");
+    stmt.execute("create table testSelectThriftOrders (orderid int, orderdate string, customerid int)");
+    stmt.execute("create table testSelectThriftCustomers (customerid int, customername string, customercountry string)");
+    stmt.execute("insert into testSelectThriftOrders values (1, '2015-09-09', 123), (2, '2015-10-10', 246), (3, '2015-11-11', 356)");
+    stmt.execute("insert into testSelectThriftCustomers values (123, 'David', 'America'), (246, 'John', 'Canada'), (356, 'Mary', 'CostaRica')");
+    ResultSet countOrders = stmt.executeQuery("select count(*) from testSelectThriftOrders");
+    while (countOrders.next()) {
+       assertEquals(3, countOrders.getInt(1));
+    }
+    ResultSet maxOrders = stmt.executeQuery("select max(customerid) from testSelectThriftCustomers");
+    while (maxOrders.next()) {
+      assertEquals(356, maxOrders.getInt(1));
+    }
+    stmt.execute("drop table testSelectThriftOrders");
+    stmt.execute("drop table testSelectThriftCustomers");
+    stmt.close();
+  }
+
+  @Test
+  public void testJoinThriftSerializeInTasks() throws Exception {
+    //stop HiveServer2
+    if (miniHS2.isStarted()) {
+      miniHS2.stop();
+    }
+    HiveConf conf = new HiveConf();
+    String userName;
+
+    setSerializeInTasksInConf(conf);
+
+    miniHS2 = new MiniHS2(conf);
+    Map<String, String> confOverlay = new HashMap<String, String>();
+    miniHS2.start(confOverlay);
+
+    userName = System.getProperty("user.name");
+    hs2Conn = getConnection(miniHS2.getJdbcURL(), userName, "password");
+    Statement stmt = hs2Conn.createStatement();
+    stmt.execute("drop table if exists testThriftJoinOrders");
+    stmt.execute("drop table if exists testThriftJoinCustomers");
+    stmt.execute("create table testThriftJoinOrders (orderid int, orderdate string, customerid int)");
+    stmt.execute("create table testThriftJoinCustomers (customerid int, customername string, customercountry string)");
+    stmt.execute("insert into testThriftJoinOrders values (1, '2015-09-09', 123), (2, '2015-10-10', 246), (3, '2015-11-11', 356)");
+    stmt.execute("insert into testThriftJoinCustomers values (123, 'David', 'America'), (246, 'John', 'Canada'), (356, 'Mary', 'CostaRica')");
+    ResultSet joinResultSet = stmt.executeQuery("select testThriftJoinOrders.orderid, testThriftJoinCustomers.customername from testThriftJoinOrders inner join testThriftJoinCustomers where testThriftJoinOrders.customerid=testThriftJoinCustomers.customerid");
+    Map<Integer, String> expectedResult = new HashMap<Integer, String>();
+    expectedResult.put(1, "David");
+    expectedResult.put(2, "John");
+    expectedResult.put(3, "Mary");
+    for (int i = 1; i < 4; i++) {
+      assertTrue(joinResultSet.next());
+      assertEquals(joinResultSet.getString(2), expectedResult.get(i));
+    }
+    stmt.execute("drop table testThriftJoinOrders");
+    stmt.execute("drop table testThriftJoinCustomers");
+    stmt.close();
+  }
+
   /**
    * Tests the creation of the 3 scratch dirs: hdfs, local, downloaded resources (which is also local).
    * 1. Test with doAs=false: open a new JDBC session and verify the presence of directories/permissions

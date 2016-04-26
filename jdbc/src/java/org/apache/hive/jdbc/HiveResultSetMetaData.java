@@ -22,7 +22,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.apache.hive.service.cli.Type;
+import org.apache.hadoop.hive.serde2.thrift.Type;
 
 /**
  * HiveResultSetMetaData.

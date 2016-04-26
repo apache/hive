@@ -102,6 +102,12 @@ TOK_METADATA;
 TOK_NULL;
 TOK_ISNULL;
 TOK_ISNOTNULL;
+TOK_PRIMARY_KEY;
+TOK_FOREIGN_KEY;
+TOK_VALIDATE;
+TOK_NOVALIDATE;
+TOK_RELY;
+TOK_NORELY;
 TOK_TINYINT;
 TOK_SMALLINT;
 TOK_INT;
@@ -515,7 +521,17 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_UPDATE", "UPDATE");
     xlateMap.put("KW_VALUES", "VALUES");
     xlateMap.put("KW_PURGE", "PURGE");
-
+    xlateMap.put("KW_PRIMARY", "PRIMARY");
+    xlateMap.put("KW_FOREIGN", "FOREIGN");
+    xlateMap.put("KW_KEY", "KEY");
+    xlateMap.put("KW_REFERENCES", "REFERENCES");
+    xlateMap.put("KW_CONSTRAINT", "CONSTRAINT");
+    xlateMap.put("KW_ENABLE", "ENABLE");
+    xlateMap.put("KW_DISABLE", "DISABLE");
+    xlateMap.put("KW_VALIDATE", "VALIDATE");
+    xlateMap.put("KW_NOVALIDATE", "NOVALIDATE");
+    xlateMap.put("KW_RELY", "RELY");
+    xlateMap.put("KW_NORELY", "NORELY");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -890,7 +906,7 @@ createTableStatement
          tableFileFormat?
          tableLocation?
          tablePropertiesPrefixed?
-       | (LPAREN columnNameTypeList RPAREN)?
+       | (LPAREN columnNameTypeOrPKOrFKList RPAREN)?
          tableComment?
          tablePartition?
          tableBuckets?
@@ -903,7 +919,7 @@ createTableStatement
       )
     -> ^(TOK_CREATETABLE $name $temp? $ext? ifNotExists?
          ^(TOK_LIKETABLE $likeName?)
-         columnNameTypeList?
+         columnNameTypeOrPKOrFKList?
          tableComment?
          tablePartition?
          tableBuckets?
@@ -1943,6 +1959,11 @@ columnNameTypeList
 @after { popMsg(state); }
     : columnNameType (COMMA columnNameType)* -> ^(TOK_TABCOLLIST columnNameType+)
     ;
+columnNameTypeOrPKOrFKList
+@init { pushMsg("column name type list with PK and FK", state); }
+@after { popMsg(state); }
+    : columnNameTypeOrPKOrFK (COMMA columnNameTypeOrPKOrFK)* -> ^(TOK_TABCOLLIST columnNameTypeOrPKOrFK+)
+    ;
 
 columnNameColonTypeList
 @init { pushMsg("column name type list", state); }
@@ -1974,6 +1995,61 @@ columnNameOrderList
 @init { pushMsg("column name order list", state); }
 @after { popMsg(state); }
     : columnNameOrder (COMMA columnNameOrder)* -> ^(TOK_TABCOLNAME columnNameOrder+)
+    ;
+
+columnParenthesesList
+@init { pushMsg("column parentheses list", state); }
+@after { popMsg(state); }
+    : LPAREN columnNameList RPAREN
+    ;
+
+enableSpecification
+@init { pushMsg("enable specification", state); }
+@after { popMsg(state); }
+    : KW_ENABLE -> ^(TOK_ENABLE)
+    | KW_DISABLE -> ^(TOK_DISABLE)
+    ;
+
+validateSpecification
+@init { pushMsg("validate specification", state); }
+@after { popMsg(state); }
+    : KW_VALIDATE -> ^(TOK_VALIDATE)
+    | KW_NOVALIDATE -> ^(TOK_NOVALIDATE)
+    ;
+
+relySpecification
+@init { pushMsg("rely specification", state); }
+@after { popMsg(state); }
+    :  KW_RELY -> ^(TOK_RELY)
+    |  (KW_NORELY)? -> ^(TOK_NORELY)
+    ;
+
+primaryKeyWithoutName
+@init { pushMsg("primary key without key name", state); }
+@after { popMsg(state); }
+    : KW_PRIMARY KW_KEY columnParenthesesList enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
+    -> ^(TOK_PRIMARY_KEY columnParenthesesList $relySpec $enableSpec $validateSpec)
+    ;
+
+primaryKeyWithName
+@init { pushMsg("primary key with key name", state); }
+@after { popMsg(state); }
+    : KW_CONSTRAINT idfr=identifier KW_PRIMARY KW_KEY pkCols=columnParenthesesList enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
+    -> ^(TOK_PRIMARY_KEY $pkCols $idfr $relySpec $enableSpec $validateSpec)
+    ;
+
+foreignKeyWithName
+@init { pushMsg("foreign key with key name", state); }
+@after { popMsg(state); }
+    : KW_CONSTRAINT idfr=identifier KW_FOREIGN KW_KEY fkCols=columnParenthesesList  KW_REFERENCES tabName=tableName parCols=columnParenthesesList enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
+    -> ^(TOK_FOREIGN_KEY $idfr $fkCols $tabName $parCols $relySpec $enableSpec $validateSpec)
+    ;
+
+foreignKeyWithoutName
+@init { pushMsg("foreign key without key name", state); }
+@after { popMsg(state); }
+    : KW_FOREIGN KW_KEY fkCols=columnParenthesesList  KW_REFERENCES tabName=tableName parCols=columnParenthesesList enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
+    -> ^(TOK_FOREIGN_KEY $fkCols  $tabName $parCols $relySpec $enableSpec $validateSpec)
     ;
 
 skewedValueElement
@@ -2085,6 +2161,16 @@ columnNameType
     -> {containExcludedCharForCreateTableColumnName($colName.text)}? {throwColumnNameException()}
     -> {$comment == null}? ^(TOK_TABCOL $colName colType)
     ->                     ^(TOK_TABCOL $colName colType $comment)
+    ;
+
+columnNameTypeOrPKOrFK
+@init { pushMsg("column name or primary key or foreign key", state); }
+@after { popMsg(state); }
+    : ( foreignKeyWithName )
+    | ( primaryKeyWithName )
+    | ( primaryKeyWithoutName )
+    | ( foreignKeyWithoutName )
+    | ( columnNameType )
     ;
 
 columnNameColonType

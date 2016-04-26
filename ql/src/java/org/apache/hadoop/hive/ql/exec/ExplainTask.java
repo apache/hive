@@ -39,8 +39,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParserFactory;
@@ -50,7 +48,6 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -68,6 +65,8 @@ import org.apache.hive.common.util.AnnotationUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ExplainTask implementation.
@@ -139,18 +138,6 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       out = null;
     }
 
-    // Print out the parse AST
-    if (work.getAstStringTree() != null) {
-      String jsonAST = outputAST(work.getAstStringTree(), out, jsonOutput, 0);
-      if (out != null) {
-        out.println();
-      }
-
-      if (jsonOutput) {
-        outJSONObject.put("ABSTRACT SYNTAX TREE", jsonAST);
-      }
-    }
-
     if (work.getParseContext() != null) {
       if (out != null) {
         out.print("LOGICAL PLAN:");
@@ -172,11 +159,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
   public JSONObject getJSONPlan(PrintStream out, ExplainWork work)
       throws Exception {
-    return getJSONPlan(out, work.getAstTree(), work.getRootTasks(), work.getFetchTask(),
+    return getJSONPlan(out, work.getRootTasks(), work.getFetchTask(),
                        work.isFormatted(), work.getExtended(), work.isAppendTaskType());
   }
 
-  public JSONObject getJSONPlan(PrintStream out, ASTNode ast, List<Task<?>> tasks, Task<?> fetchTask,
+  public JSONObject getJSONPlan(PrintStream out, List<Task<?>> tasks, Task<?> fetchTask,
       boolean jsonOutput, boolean isExtended, boolean appendTaskType) throws Exception {
 
     // If the user asked for a formatted output, dump the json output
@@ -185,18 +172,6 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     if (jsonOutput) {
       out = null;
-    }
-
-    // Print out the parse AST
-    if (ast != null && isExtended) {
-      String jsonAST = outputAST(ast.dump(), out, jsonOutput, 0);
-      if (out != null) {
-        out.println();
-      }
-
-      if (jsonOutput) {
-        outJSONObject.put("ABSTRACT SYNTAX TREE", jsonAST);
-      }
     }
 
     List<Task> ordered = StageIDsRearranger.getExplainOrder(conf, tasks);
@@ -337,7 +312,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       throws Exception {
 
     BaseSemanticAnalyzer analyzer = work.getAnalyzer();
-    HiveOperation operation = SessionState.get().getHiveOperation();
+    HiveOperation operation = queryState.getHiveOperation();
 
     JSONObject object = new JSONObject(new LinkedHashMap<>());
     Object jsonInput = toJson("INPUTS", toString(analyzer.getInputs()), out, work);
@@ -374,7 +349,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
       SessionState.get().setActiveAuthorizer(authorizer);
       try {
-        Driver.doAuthorization(analyzer, "");
+        Driver.doAuthorization(queryState.getHiveOperation(), analyzer, "");
       } finally {
         SessionState.get().setActiveAuthorizer(delegate);
       }

@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -40,6 +41,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -369,7 +371,8 @@ public class TestHCatMultiOutputFormat {
    * @throws Exception if any error occurs
    */
   private List<String> getTableData(String table, String database) throws Exception {
-    HiveConf conf = new HiveConf();
+    QueryState queryState = new QueryState(null);
+    HiveConf conf = queryState.getConf();
     conf.addResource("hive-site.xml");
     ArrayList<String> results = new ArrayList<String>();
     ArrayList<String> temp = new ArrayList<String>();
@@ -392,7 +395,7 @@ public class TestHCatMultiOutputFormat {
     }
     FetchTask task = new FetchTask();
     task.setWork(work);
-    task.initialize(conf, null, null, new CompilationOpContext());
+    task.initialize(queryState, null, null, new CompilationOpContext());
     task.fetch(temp);
     for (String str : temp) {
       results.add(str.replace("\t", ","));

@@ -72,7 +72,10 @@ public class TezJobMonitor {
 
   private static final int COLUMN_1_WIDTH = 16;
   private static final int SEPARATOR_WIDTH = InPlaceUpdates.MIN_TERMINAL_WIDTH;
+  private static final int FILE_HEADER_SEPARATOR_WIDTH = InPlaceUpdates.MIN_TERMINAL_WIDTH + 34;
   private static final String SEPARATOR = new String(new char[SEPARATOR_WIDTH]).replace("\0", "-");
+  private static final String FILE_HEADER_SEPARATOR =
+      new String(new char[FILE_HEADER_SEPARATOR_WIDTH]).replace("\0", "-");
   private static final String QUERY_EXEC_SUMMARY_HEADER = "Query Execution Summary";
   private static final String TASK_SUMMARY_HEADER = "Task Execution Summary";
   private static final String LLAP_IO_SUMMARY_HEADER = "LLAP IO Summary";
@@ -89,6 +92,12 @@ public class TezJobMonitor {
   private static final String SUMMARY_HEADER_FORMAT = "%10s %14s %13s %12s %14s %15s";
   private static final String SUMMARY_HEADER = String.format(SUMMARY_HEADER_FORMAT,
       "VERTICES", "DURATION(ms)", "CPU_TIME(ms)", "GC_TIME(ms)", "INPUT_RECORDS", "OUTPUT_RECORDS");
+
+  // used when I/O redirection is used
+  private static final String FILE_HEADER_FORMAT = "%10s %12s %16s %13s %14s %13s %12s %14s %15s";
+  private static final String FILE_HEADER = String.format(FILE_HEADER_FORMAT,
+      "VERTICES", "TOTAL_TASKS", "FAILED_ATTEMPTS", "KILLED_TASKS", "DURATION(ms)",
+      "CPU_TIME(ms)", "GC_TIME(ms)", "INPUT_RECORDS", "OUTPUT_RECORDS");
 
   // LLAP counters
   private static final String LLAP_SUMMARY_HEADER_FORMAT = "%10s %9s %9s %10s %9s %10s %11s %8s %9s";
@@ -225,7 +234,7 @@ public class TezJobMonitor {
     long startTime = 0;
     boolean isProfileEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY) ||
         Utilities.isPerfOrAboveLogging(conf);
-    boolean llapIoEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_IO_ENABLED, true);
+    boolean llapIoEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_IO_ENABLED, false);
 
     boolean inPlaceEligible = InPlaceUpdates.inPlaceEligible(conf);
     synchronized(shutdownList) {
@@ -357,7 +366,7 @@ public class TezJobMonitor {
       double duration = (System.currentTimeMillis() - startTime) / 1000.0;
       console.printInfo("Status: DAG finished successfully in "
           + String.format("%.2f seconds", duration));
-      console.printInfo("\n");
+      console.printInfo("");
 
       console.printInfo(QUERY_EXEC_SUMMARY_HEADER);
       printQueryExecutionBreakDown();
@@ -365,17 +374,21 @@ public class TezJobMonitor {
       console.printInfo("");
 
       console.printInfo(TASK_SUMMARY_HEADER);
-      printDagSummary(progressMap, console, dagClient, conf, dag);
-      console.printInfo(SEPARATOR);
-      console.printInfo("");
+      printDagSummary(progressMap, console, dagClient, conf, dag, inPlaceEligible);
+      if (inPlaceEligible) {
+        console.printInfo(SEPARATOR);
+      } else {
+        console.printInfo(FILE_HEADER_SEPARATOR);
+      }
 
       if (llapIoEnabled) {
+        console.printInfo("");
         console.printInfo(LLAP_IO_SUMMARY_HEADER);
         printLlapIOSummary(progressMap, console, dagClient);
         console.printInfo(SEPARATOR);
       }
 
-      console.printInfo("\n");
+      console.printInfo("");
     }
 
     return rc;
@@ -445,19 +458,24 @@ public class TezJobMonitor {
 
     // accept to start dag (schedule wait time, resource wait time etc.)
     long acceptToStart = perfLogger.getDuration(PerfLogger.TEZ_SUBMIT_TO_RUNNING);
-    console.printInfo(String.format(OPERATION_SUMMARY, "Start",
+    console.printInfo(String.format(OPERATION_SUMMARY, "Start DAG",
         secondsFormat.format(acceptToStart / 1000.0) + "s"));
 
     // time to actually run the dag (actual dag runtime)
-    long startToEnd = perfLogger.getEndTime(PerfLogger.TEZ_RUN_DAG) -
-        perfLogger.getEndTime(PerfLogger.TEZ_SUBMIT_TO_RUNNING);
-    console.printInfo(String.format(OPERATION_SUMMARY, "Finish",
+    final long startToEnd;
+    if (acceptToStart == 0) {
+      startToEnd = perfLogger.getDuration(PerfLogger.TEZ_RUN_DAG);
+    } else {
+      startToEnd = perfLogger.getEndTime(PerfLogger.TEZ_RUN_DAG) -
+          perfLogger.getEndTime(PerfLogger.TEZ_SUBMIT_TO_RUNNING);
+    }
+    console.printInfo(String.format(OPERATION_SUMMARY, "Run DAG",
         secondsFormat.format(startToEnd / 1000.0) + "s"));
 
   }
 
   private void printDagSummary(Map<String, Progress> progressMap, LogHelper console,
-      DAGClient dagClient, HiveConf conf, DAG dag) {
+      DAGClient dagClient, HiveConf conf, DAG dag, final boolean inPlaceEligible) {
 
     /* Strings for headers and counters */
     String hiveCountersGroup = HiveConf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP);
@@ -477,15 +495,24 @@ public class TezJobMonitor {
     }
 
     /* Print the per Vertex summary */
-    console.printInfo(SEPARATOR);
-    reprintLineWithColorAsBold(SUMMARY_HEADER, Ansi.Color.CYAN);
-    console.printInfo(SEPARATOR);
+    if (inPlaceEligible) {
+      console.printInfo(SEPARATOR);
+      reprintLineWithColorAsBold(SUMMARY_HEADER, Ansi.Color.CYAN);
+      console.printInfo(SEPARATOR);
+    } else {
+      console.printInfo(FILE_HEADER_SEPARATOR);
+      reprintLineWithColorAsBold(FILE_HEADER, Ansi.Color.CYAN);
+      console.printInfo(FILE_HEADER_SEPARATOR);
+    }
     SortedSet<String> keys = new TreeSet<String>(progressMap.keySet());
     Set<StatusGetOpts> statusOptions = new HashSet<StatusGetOpts>(1);
     statusOptions.add(StatusGetOpts.GET_COUNTERS);
     for (String vertexName : keys) {
       Progress progress = progressMap.get(vertexName);
       if (progress != null) {
+        final int totalTasks = progress.getTotalTaskCount();
+        final int failedTaskAttempts = progress.getFailedTaskAttemptCount();
+        final int killedTaskAttempts = progress.getKilledTaskAttemptCount();
         final double duration = perfLogger.getDuration(PerfLogger.TEZ_RUN_VERTEX + vertexName);
         VertexStatus vertexStatus = null;
         try {
@@ -567,13 +594,27 @@ public class TezJobMonitor {
                     + vertexName.replace(" ", "_"))
                 + hiveOutputIntermediateRecords;
 
-        String vertexExecutionStats = String.format(SUMMARY_HEADER_FORMAT,
-            vertexName,
-            secondsFormat.format((duration)),
-            commaFormat.format(cpuTimeMillis),
-            commaFormat.format(gcTimeMillis),
-            commaFormat.format(hiveInputRecords),
-            commaFormat.format(hiveOutputRecords));
+        final String vertexExecutionStats;
+        if (inPlaceEligible) {
+          vertexExecutionStats = String.format(SUMMARY_HEADER_FORMAT,
+              vertexName,
+              secondsFormat.format((duration)),
+              commaFormat.format(cpuTimeMillis),
+              commaFormat.format(gcTimeMillis),
+              commaFormat.format(hiveInputRecords),
+              commaFormat.format(hiveOutputRecords));
+        } else {
+          vertexExecutionStats = String.format(FILE_HEADER_FORMAT,
+              vertexName,
+              totalTasks,
+              failedTaskAttempts,
+              killedTaskAttempts,
+              secondsFormat.format((duration)),
+              commaFormat.format(cpuTimeMillis),
+              commaFormat.format(gcTimeMillis),
+              commaFormat.format(hiveInputRecords),
+              commaFormat.format(hiveOutputRecords));
+        }
         console.printInfo(vertexExecutionStats);
       }
     }

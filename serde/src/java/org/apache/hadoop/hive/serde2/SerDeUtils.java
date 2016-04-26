@@ -71,7 +71,8 @@ public final class SerDeUtils {
 
   // lower case null is used within json objects
   private static final String JSON_NULL = "null";
-
+  public static final String LIST_SINK_OUTPUT_FORMATTER = "list.sink.output.formatter";
+  public static final String LIST_SINK_OUTPUT_PROTOCOL = "list.sink.output.protocol";
   public static final Logger LOG = LoggerFactory.getLogger(SerDeUtils.class.getName());
 
   /**

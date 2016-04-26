@@ -17,8 +17,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.common.base.Preconditions;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -28,6 +26,8 @@ import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
 import org.apache.hadoop.service.AbstractService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 public class LlapRegistryService extends AbstractService {
 
@@ -59,7 +59,7 @@ public class LlapRegistryService extends AbstractService {
     if (hosts.startsWith("@")) {
       // Caching instances only in case of the YARN registry. Each host based list will get it's own copy.
       String name = hosts.substring(1);
-      if (yarnRegistries.containsKey(name)) {
+      if (yarnRegistries.containsKey(name) && yarnRegistries.get(name).isInState(STATE.STARTED)) {
         registry = yarnRegistries.get(name);
       } else {
         registry = new LlapRegistryService(false);

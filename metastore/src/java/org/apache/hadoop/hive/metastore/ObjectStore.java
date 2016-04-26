@@ -1022,6 +1022,11 @@ public class ObjectStore implements RawStore, Configurable {
           " table " + tableName + " record to delete");
         }
 
+        List<MConstraint> tabConstraints = listAllTableConstraints(dbName, tableName);
+        if (tabConstraints != null && tabConstraints.size() > 0) {
+          pm.deletePersistentAll(tabConstraints);
+        }
+
         preDropStorageDescriptor(tbl.getSd());
         // then remove the table
         pm.deletePersistentAll(tbl);
@@ -1035,7 +1040,41 @@ public class ObjectStore implements RawStore, Configurable {
     return success;
   }
 
-  @Override
+  private List<MConstraint> listAllTableConstraints(String dbName, String tableName) {
+    List<MConstraint> mConstraints = null;
+    List<String> constraintNames = new ArrayList<String>();
+    Query query = null;
+
+    try {
+      query = pm.newQuery("select constraintName from org.apache.hadoop.hive.metastore.model.MConstraint  where "
+        + "(parentTable.tableName == ptblname && parentTable.database.name == pdbname) || "
+        + "(childTable != null && childTable.tableName == ctblname && childTable.database.name == cdbname)");
+      query.declareParameters("java.lang.String ptblname, java.lang.String pdbname,"
+      + "java.lang.String ctblname, java.lang.String cdbname");
+      Collection<?> constraintNamesColl = (Collection<?>) query.
+        executeWithArray(tableName, dbName, tableName, dbName);
+      for (Iterator<?> i = constraintNamesColl.iterator(); i.hasNext();) {
+        String currName = (String) i.next();
+        constraintNames.add(currName);
+      }
+      query = pm.newQuery(MConstraint.class);
+      query.setFilter("param.contains(constraintName)");
+      query.declareParameters("java.util.Collection param");
+      Collection<?> constraints = (Collection<?>)query.execute(constraintNames);
+      mConstraints = new ArrayList<MConstraint>();
+      for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
+        MConstraint currConstraint = (MConstraint) i.next();
+        mConstraints.add(currConstraint);
+      }
+    } finally {
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+    return mConstraints;
+  }
+
+@Override
   public Table getTable(String dbName, String tableName) throws MetaException {
     boolean commited = false;
     Table tbl = null;

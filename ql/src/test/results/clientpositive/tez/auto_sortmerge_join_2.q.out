@@ -89,38 +89,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- Since the leftmost table is assumed as the big table, arrange the tables in the join accordingly
 explain extended select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               bucket_big
-            a
-         TOK_TABREF
-            TOK_TABNAME
-               bucket_small
-            b
-         =
-            .
-               TOK_TABLE_OR_COL
-                  a
-               key
-            .
-               TOK_TABLE_OR_COL
-                  b
-               key
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTIONSTAR
-               count
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -400,38 +368,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- The mapjoin should fail resulting in the sort-merge join
 explain extended select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               bucket_big
-            a
-         TOK_TABREF
-            TOK_TABNAME
-               bucket_small
-            b
-         =
-            .
-               TOK_TABLE_OR_COL
-                  a
-               key
-            .
-               TOK_TABLE_OR_COL
-                  b
-               key
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTIONSTAR
-               count
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

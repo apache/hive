@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ColumnStatsTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
@@ -58,7 +59,15 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.DefaultFetchFormatter;
+import org.apache.hadoop.hive.serde2.NoOpFetchFormatter;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.thrift.ThriftFormatter;
+import org.apache.hadoop.hive.serde2.thrift.ThriftJDBCBinarySerDe;
 
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
@@ -74,10 +83,12 @@ public abstract class TaskCompiler {
   // Assumes one instance of this + single-threaded compilation for each query.
   protected Hive db;
   protected LogHelper console;
+  protected QueryState queryState;
   protected HiveConf conf;
 
-  public void init(HiveConf conf, LogHelper console, Hive db) {
-    this.conf = conf;
+  public void init(QueryState queryState, LogHelper console, Hive db) {
+    this.queryState = queryState;
+    this.conf = queryState.getConf();
     this.db = db;
     this.console = console;
   }
@@ -97,6 +108,20 @@ public abstract class TaskCompiler {
     int outerQueryLimit = pCtx.getQueryProperties().getOuterQueryLimit();
 
     if (pCtx.getFetchTask() != null) {
+      if (pCtx.getFetchTask().getTblDesc() == null) {
+        return;
+      }
+      pCtx.getFetchTask().getWork().setHiveServerQuery(SessionState.get().isHiveServerQuery());
+      TableDesc resultTab = pCtx.getFetchTask().getTblDesc();
+      // If the serializer is ThriftJDBCBinarySerDe, then it requires that NoOpFetchFormatter be used. But when it isn't,
+      // then either the ThriftFormatter or the DefaultFetchFormatter should be used.
+      if (!resultTab.getSerdeClassName().equalsIgnoreCase(ThriftJDBCBinarySerDe.class.getName())) {
+        if (SessionState.get().isHiveServerQuery()) {
+          conf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER,ThriftFormatter.class.getName());
+        } else {
+          conf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER, DefaultFetchFormatter.class.getName());
+        }
+      }
       return;
     }
 
@@ -117,13 +142,34 @@ public abstract class TaskCompiler {
       String cols = loadFileDesc.getColumns();
       String colTypes = loadFileDesc.getColumnTypes();
 
+      String resFileFormat;
       TableDesc resultTab = pCtx.getFetchTableDesc();
       if (resultTab == null) {
-        String resFileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
-        resultTab = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat);
+        resFileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
+        if (SessionState.get().isHiveServerQuery() && (conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS))
+            && (resFileFormat.equalsIgnoreCase("SequenceFile"))) {
+          resultTab =
+              PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat,
+                  ThriftJDBCBinarySerDe.class);
+          // Set the fetch formatter to be a no-op for the ListSinkOperator, since we'll
+          // read formatted thrift objects from the output SequenceFile written by Tasks.
+          conf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER, NoOpFetchFormatter.class.getName());
+        } else {
+          resultTab =
+              PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat,
+                  LazySimpleSerDe.class);
+        }
+      } else {
+        if (resultTab.getProperties().getProperty(serdeConstants.SERIALIZATION_LIB)
+            .equalsIgnoreCase(ThriftJDBCBinarySerDe.class.getName())) {
+          // Set the fetch formatter to be a no-op for the ListSinkOperator, since we'll
+          // read formatted thrift objects from the output SequenceFile written by Tasks.
+          conf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER, NoOpFetchFormatter.class.getName());
+        }
       }
 
       FetchWork fetch = new FetchWork(loadFileDesc.getSourcePath(), resultTab, outerQueryLimit);
+      fetch.setHiveServerQuery(SessionState.get().isHiveServerQuery());
       fetch.setSource(pCtx.getFetchSource());
       fetch.setSink(pCtx.getFetchSink());
 
@@ -322,8 +368,19 @@ public abstract class TaskCompiler {
     String cols = loadFileWork.get(0).getColumns();
     String colTypes = loadFileWork.get(0).getColumnTypes();
 
-    String resFileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
-    TableDesc resultTab = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat);
+    String resFileFormat;
+    TableDesc resultTab;
+    if (SessionState.get().isHiveServerQuery() && conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS)) {
+      resFileFormat = "SequenceFile";
+      resultTab =
+          PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat,
+              ThriftJDBCBinarySerDe.class);
+    } else {
+      resFileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
+      resultTab =
+          PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat,
+              LazySimpleSerDe.class);
+    }
 
     fetch = new FetchWork(loadFileWork.get(0).getSourcePath(), resultTab, outerQueryLimit);
 
@@ -393,7 +450,7 @@ public abstract class TaskCompiler {
    * Create a clone of the parse context
    */
   public ParseContext getParseContext(ParseContext pCtx, List<Task<? extends Serializable>> rootTasks) {
-    ParseContext clone = new ParseContext(conf,
+    ParseContext clone = new ParseContext(queryState,
         pCtx.getOpToPartPruner(), pCtx.getOpToPartList(), pCtx.getTopOps(),
         pCtx.getJoinOps(), pCtx.getSmbMapJoinOps(),
         pCtx.getLoadTableWork(), pCtx.getLoadFileWork(), pCtx.getContext(),

@@ -68,10 +68,13 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -203,6 +206,7 @@ import org.apache.hadoop.hive.ql.util.ResourceDownloader;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
+import org.apache.hadoop.hive.serde2.NoOpFetchFormatter;
 import org.apache.hadoop.hive.serde2.NullStructSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -214,6 +218,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.thrift.ThriftJDBCBinarySerDe;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -338,8 +343,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int nextNum;
   }
 
-  public SemanticAnalyzer(HiveConf conf) throws SemanticException {
-    super(conf);
+  public SemanticAnalyzer(QueryState queryState) throws SemanticException {
+    super(queryState);
     opToPartPruner = new HashMap<TableScanOperator, ExprNodeDesc>();
     opToPartList = new HashMap<TableScanOperator, PrunedPartitionList>();
     opToSamplePruner = new HashMap<TableScanOperator, SampleDesc>();
@@ -440,7 +445,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   public ParseContext getParseContext() {
     // Make sure the basic query properties are initialized
     copyInfoToQueryProperties(queryProperties);
-    return new ParseContext(conf, opToPartPruner, opToPartList, topOps,
+    return new ParseContext(queryState, opToPartPruner, opToPartList, topOps,
         new HashSet<JoinOperator>(joinContext.keySet()),
         new HashSet<SMBMapJoinOperator>(smbMapJoinContext.keySet()),
         loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
@@ -672,7 +677,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ASTNode tableTree = (ASTNode) (tabref.getChild(0));
 
-    String tabIdName = getUnescapedName(tableTree);
+    String tabIdName = getUnescapedName(tableTree).toLowerCase();
 
     String alias;
     if (aliasIndex != 0) {
@@ -1195,18 +1200,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     createTable.addChild(temporary);
     createTable.addChild(cte.cteNode);
 
-    SemanticAnalyzer analyzer = new SemanticAnalyzer(conf);
+    SemanticAnalyzer analyzer = new SemanticAnalyzer(queryState);
     analyzer.initCtx(ctx);
     analyzer.init(false);
 
     // should share cte contexts
     analyzer.aliasToCTEs.putAll(aliasToCTEs);
 
-    HiveOperation operation = SessionState.get().getHiveOperation();
+    HiveOperation operation = queryState.getHiveOperation();
     try {
       analyzer.analyzeInternal(createTable);
     } finally {
-      SessionState.get().setCommandType(operation);
+      queryState.setCommandType(operation);
     }
 
     Table table = analyzer.tableDesc.toTable(conf);
@@ -1562,7 +1567,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_ANALYZE:
         // Case of analyze command
 
-        String table_name = getUnescapedName((ASTNode) ast.getChild(0).getChild(0));
+        String table_name = getUnescapedName((ASTNode) ast.getChild(0).getChild(0)).toLowerCase();
 
 
         qb.setTabAlias(table_name, table_name);
@@ -6834,8 +6839,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if (tblDesc == null) {
         if (qb.getIsQuery()) {
-          String fileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
-          table_desc = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, fileFormat);
+          String fileFormat;
+          if (SessionState.get().isHiveServerQuery() &&
+                   conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS)) {
+              fileFormat = "SequenceFile";
+              HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT, fileFormat);
+              table_desc=
+                         PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, fileFormat,
+                           ThriftJDBCBinarySerDe.class);
+              // Set the fetch formatter to be a no-op for the ListSinkOperator, since we'll
+              // write out formatted thrift objects to SequenceFile
+              conf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER, NoOpFetchFormatter.class.getName());
+          } else {
+              fileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
+              table_desc =
+                         PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, fileFormat,
+                           LazySimpleSerDe.class);
+          }
         } else {
           table_desc = PlanUtils.getDefaultTableDesc(qb.getDirectoryDesc(), cols, colTypes);
         }
@@ -6907,6 +6927,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       dpCtx,
       dest_path);
 
+    fileSinkDesc.setHiveServerQuery(SessionState.get().isHiveServerQuery());
     // If this is an insert, update, or delete on an ACID table then mark that so the
     // FileSinkOperator knows how to properly write to it.
     if (destTableIsAcid) {
@@ -6959,7 +6980,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (ltd != null && SessionState.get() != null) {
       SessionState.get().getLineageState()
           .mapDirToFop(ltd.getSourcePath(), (FileSinkOperator) output);
-    } else if ( SessionState.get().getCommandType().equals(HiveOperation.CREATETABLE_AS_SELECT.getOperationName())) {
+    } else if ( queryState.getCommandType().equals(HiveOperation.CREATETABLE_AS_SELECT.getOperationName())) {
 
       Path tlocation = null;
       String tName = Utilities.getDbTableName(tableDesc.getTableName())[1];
@@ -9322,7 +9343,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             limit.intValue(), extraMRStep);
         qb.getParseInfo().setOuterQueryLimit(limit.intValue());
       }
-      if (!SessionState.get().getHiveOperation().equals(HiveOperation.CREATEVIEW)) {
+      if (!queryState.getHiveOperation().equals(HiveOperation.CREATEVIEW)) {
         curr = genFileSinkPlan(dest, qb, curr);
       }
     }
@@ -10327,7 +10348,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         return true;
       }
     } else {
-      SessionState.get().setCommandType(HiveOperation.QUERY);
+      queryState.setCommandType(HiveOperation.QUERY);
     }
 
     return false;
@@ -10525,14 +10546,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         return false;
       }
     } else {
-      SessionState.get().setCommandType(HiveOperation.QUERY);
+      queryState.setCommandType(HiveOperation.QUERY);
     }
 
     // 3. analyze create view command
     if (ast.getToken().getType() == HiveParser.TOK_CREATEVIEW
         || (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW && ast.getChild(1).getType() == HiveParser.TOK_QUERY)) {
       child = analyzeCreateView(ast, qb);
-      SessionState.get().setCommandType(HiveOperation.CREATEVIEW);
+      queryState.setCommandType(HiveOperation.CREATEVIEW);
       if (child == null) {
         return false;
       }
@@ -10561,7 +10582,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new IllegalStateException(SemanticAnalyzerFactory.getOperation(ast.getToken().getType()) +
             " is not supported yet.");
         }
-        SessionState.get().setCommandType(SemanticAnalyzerFactory.getOperation(ast.getToken().getType()));
+        queryState.setCommandType(SemanticAnalyzerFactory.getOperation(ast.getToken().getType()));
         return false;
     }
 
@@ -10659,7 +10680,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // 4. Generate Parse Context for Optimizer & Physical compiler
     copyInfoToQueryProperties(queryProperties);
-    ParseContext pCtx = new ParseContext(conf, opToPartPruner, opToPartList, topOps,
+    ParseContext pCtx = new ParseContext(queryState, opToPartPruner, opToPartList, topOps,
         new HashSet<JoinOperator>(joinContext.keySet()),
         new HashSet<SMBMapJoinOperator>(smbMapJoinContext.keySet()),
         loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
@@ -10739,7 +10760,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // TEZ..)
     if (!ctx.getExplainLogical()) {
       TaskCompiler compiler = TaskCompilerFactory.getCompiler(conf, pCtx);
-      compiler.init(conf, console, db);
+      compiler.init(queryState, console, db);
       compiler.compile(pCtx, rootTasks, inputs, outputs);
       fetchTask = pCtx.getFetchTask();
     }
@@ -11293,6 +11314,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     List<FieldSchema> partCols = new ArrayList<FieldSchema>();
     List<String> bucketCols = new ArrayList<String>();
+    List<SQLPrimaryKey> primaryKeys = new ArrayList<SQLPrimaryKey>();
+    List<SQLForeignKey> foreignKeys = new ArrayList<SQLForeignKey>();
     List<Order> sortCols = new ArrayList<Order>();
     int numBuckets = -1;
     String comment = null;
@@ -11385,7 +11408,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         selectStmt = child;
         break;
       case HiveParser.TOK_TABCOLLIST:
-        cols = getColumns(child);
+        cols = getColumns(child, true, primaryKeys, foreignKeys);
         break;
       case HiveParser.TOK_TABLECOMMENT:
         comment = unescapeSQLString(child.getChild(0).getText());
@@ -11495,14 +11518,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           comment,
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(), location, storageFormat.getSerde(),
           storageFormat.getStorageHandler(), storageFormat.getSerdeProps(), tblProps, ifNotExists, skewedColNames,
-          skewedValues);
+          skewedValues, primaryKeys, foreignKeys);
       crtTblDesc.setStoredAsSubDirectories(storedAsDirs);
       crtTblDesc.setNullFormat(rowFormatParams.nullFormat);
 
       crtTblDesc.validate(conf);
       // outputs is empty, which means this create table happens in the current
       // database.
-      SessionState.get().setCommandType(HiveOperation.CREATETABLE);
+      queryState.setCommandType(HiveOperation.CREATETABLE);
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           crtTblDesc), conf));
       break;
@@ -11521,7 +11544,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(), location,
           storageFormat.getSerde(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
           likeTableName, isUserStorageFormat);
-      SessionState.get().setCommandType(HiveOperation.CREATETABLE);
+      queryState.setCommandType(HiveOperation.CREATETABLE);
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           crtTblLikeDesc), conf));
       break;
@@ -11589,13 +11612,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           rowFormatParams.lineDelim, comment, storageFormat.getInputFormat(),
           storageFormat.getOutputFormat(), location, storageFormat.getSerde(),
           storageFormat.getStorageHandler(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
-          skewedColNames, skewedValues, true);
+	  skewedColNames, skewedValues, true, primaryKeys, foreignKeys);
       tableDesc.setMaterialization(isMaterialization);
       tableDesc.setStoredAsSubDirectories(storedAsDirs);
       tableDesc.setNullFormat(rowFormatParams.nullFormat);
       qb.setTableDesc(tableDesc);
 
-      SessionState.get().setCommandType(HiveOperation.CREATETABLE_AS_SELECT);
+      queryState.setCommandType(HiveOperation.CREATETABLE_AS_SELECT);
 
       return selectStmt;
     default:

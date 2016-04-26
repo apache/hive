@@ -27,12 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.base.Preconditions;
-import com.google.common.io.Closer;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.orc.BooleanColumnStatistics;
-import org.apache.orc.DataReaderFactory;
-import org.apache.orc.MetadataReaderFactory;
-import org.apache.orc.OrcUtils;
 import org.apache.orc.impl.BufferChunk;
 import org.apache.orc.ColumnStatistics;
 import org.apache.orc.impl.ColumnStatisticsImpl;
@@ -42,12 +38,9 @@ import org.apache.orc.DateColumnStatistics;
 import org.apache.orc.DecimalColumnStatistics;
 import org.apache.orc.DoubleColumnStatistics;
 import org.apache.orc.impl.DataReaderProperties;
-import org.apache.orc.impl.DefaultMetadataReaderFactory;
 import org.apache.orc.impl.InStream;
 import org.apache.orc.IntegerColumnStatistics;
-import org.apache.orc.impl.MetadataReader;
 import org.apache.orc.OrcConf;
-import org.apache.orc.impl.MetadataReaderProperties;
 import org.apache.orc.impl.OrcIndex;
 import org.apache.orc.impl.PositionProvider;
 import org.apache.orc.impl.StreamName;
@@ -56,14 +49,11 @@ import org.apache.orc.StripeInformation;
 import org.apache.orc.TimestampColumnStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DiskRangeList.CreateHelper;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.orc.BloomFilterIO;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
@@ -103,8 +93,6 @@ public class RecordReaderImpl implements RecordReader {
   private final SargApplier sargApp;
   // an array about which row groups aren't skipped
   private boolean[] includedRowGroups = null;
-  private final Configuration conf;
-  private final MetadataReader metadata;
   private final DataReader dataReader;
 
   /**
@@ -146,130 +134,36 @@ public class RecordReaderImpl implements RecordReader {
     return result;
   }
 
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  public static class Builder {
-    private Reader.Options options;
-    private CompressionCodec codec;
-    private List<OrcProto.Type> types;
-    private List<StripeInformation> stripes;
-    private int bufferSize;
-    private FileSystem fileSystem;
-    private Path path;
-    private Configuration conf;
-    private long strideRate;
-    private MetadataReaderFactory metadataReaderFactory = new DefaultMetadataReaderFactory();
-    private DataReaderFactory dataReaderFactory = new DefaultDataReaderFactory();
-
-    private Builder() {
-
-    }
-
-    public Builder withOptions(Reader.Options options) {
-      this.options = options;
-      return this;
-    }
-
-    public Builder withCodec(CompressionCodec codec) {
-      this.codec = codec;
-      return this;
-    }
-
-    public Builder withTypes(List<OrcProto.Type> types) {
-      this.types = types;
-      return this;
-    }
-
-    public Builder withStripes(List<StripeInformation> stripes) {
-      this.stripes = stripes;
-      return this;
-    }
-
-    public Builder withBufferSize(int bufferSize) {
-      this.bufferSize = bufferSize;
-      return this;
-    }
-
-    public Builder withFileSystem(FileSystem fileSystem) {
-      this.fileSystem = fileSystem;
-      return this;
-    }
-
-    public Builder withPath(Path path) {
-      this.path = path;
-      return this;
-    }
-
-    public Builder withConf(Configuration conf) {
-      this.conf = conf;
-      return this;
-    }
-
-    public Builder withStrideRate(long strideRate) {
-      this.strideRate = strideRate;
-      return this;
-    }
-
-    public Builder withMetadataReaderFactory(MetadataReaderFactory metadataReaderFactory) {
-      this.metadataReaderFactory = metadataReaderFactory;
-      return this;
-    }
-
-    public Builder withDataReaderFactory(DataReaderFactory dataReaderFactory) {
-      this.dataReaderFactory = dataReaderFactory;
-      return this;
-    }
-
-    public RecordReaderImpl build() throws IOException {
-      Preconditions.checkNotNull(metadataReaderFactory);
-      Preconditions.checkNotNull(dataReaderFactory);
-      Preconditions.checkNotNull(options);
-      Preconditions.checkNotNull(types);
-      Preconditions.checkNotNull(stripes);
-      Preconditions.checkNotNull(fileSystem);
-      Preconditions.checkNotNull(path);
-      Preconditions.checkNotNull(conf);
-
-      return new RecordReaderImpl(this);
-    }
-  }
-
-  private RecordReaderImpl(Builder builder) throws IOException {
-    Reader.Options options = builder.options;
-    this.types = builder.types;
-    TreeReaderFactory.TreeReaderSchema treeReaderSchema;
+  protected RecordReaderImpl(ReaderImpl fileReader,
+                             Reader.Options options) throws IOException {
+    SchemaEvolution treeReaderSchema;
+    this.included = options.getInclude();
+    included[0] = true;
     if (options.getSchema() == null) {
       if (LOG.isInfoEnabled()) {
-        LOG.info("Schema on read not provided -- using file schema " + types.toString());
+        LOG.info("Schema on read not provided -- using file schema " +
+            fileReader.getSchema());
       }
-      treeReaderSchema = new TreeReaderFactory.TreeReaderSchema().fileTypes(types).schemaTypes(types);
+      treeReaderSchema = new SchemaEvolution(fileReader.getSchema(), included);
     } else {
 
       // Now that we are creating a record reader for a file, validate that the schema to read
       // is compatible with the file schema.
       //
-      List<OrcProto.Type> schemaTypes = OrcUtils.getOrcTypes(options.getSchema());
-      treeReaderSchema = SchemaEvolution.validateAndCreate(types, schemaTypes);
+      treeReaderSchema = new SchemaEvolution(fileReader.getSchema(),
+          options.getSchema(),
+          included);
     }
-    this.path = builder.path;
-    this.codec = builder.codec;
-    this.bufferSize = builder.bufferSize;
-    this.included = options.getInclude();
-    this.conf = builder.conf;
-    this.rowIndexStride = builder.strideRate;
-    this.metadata = builder.metadataReaderFactory.create(MetadataReaderProperties.builder()
-        .withFileSystem(builder.fileSystem)
-        .withPath(path)
-        .withCodec(codec)
-        .withBufferSize(bufferSize)
-        .withTypeCount(types.size())
-        .build());
+    this.path = fileReader.path;
+    this.codec = fileReader.codec;
+    this.types = fileReader.types;
+    this.bufferSize = fileReader.bufferSize;
+    this.rowIndexStride = fileReader.rowIndexStride;
+    FileSystem fileSystem = fileReader.fileSystem;
     SearchArgument sarg = options.getSearchArgument();
-    if (sarg != null && builder.strideRate != 0) {
+    if (sarg != null && rowIndexStride != 0) {
       sargApp = new SargApplier(
-          sarg, options.getColumnNames(), builder.strideRate, types, included.length);
+          sarg, options.getColumnNames(), rowIndexStride, types, included.length);
     } else {
       sargApp = null;
     }
@@ -277,7 +171,7 @@ public class RecordReaderImpl implements RecordReader {
     long skippedRows = 0;
     long offset = options.getOffset();
     long maxOffset = options.getMaxOffset();
-    for(StripeInformation stripe: builder.stripes) {
+    for(StripeInformation stripe: fileReader.getStripes()) {
       long stripeStart = stripe.getOffset();
       if (offset > stripeStart) {
         skippedRows += stripe.getNumberOfRows();
@@ -289,25 +183,30 @@ public class RecordReaderImpl implements RecordReader {
 
     Boolean zeroCopy = options.getUseZeroCopy();
     if (zeroCopy == null) {
-      zeroCopy = OrcConf.USE_ZEROCOPY.getBoolean(conf);
+      zeroCopy = OrcConf.USE_ZEROCOPY.getBoolean(fileReader.conf);
     }
-    // TODO: we could change the ctor to pass this externally
-    this.dataReader = builder.dataReaderFactory.create(DataReaderProperties.builder()
-      .withFileSystem(builder.fileSystem)
-      .withCodec(codec)
-      .withPath(path)
-      .withZeroCopy(zeroCopy)
-      .build());
-    this.dataReader.open();
-
+    if (options.getDataReader() == null) {
+      dataReader = RecordReaderUtils.createDefaultDataReader(
+          DataReaderProperties.builder()
+              .withBufferSize(bufferSize)
+              .withCompression(fileReader.compressionKind)
+              .withFileSystem(fileSystem)
+              .withPath(path)
+              .withTypeCount(types.size())
+              .withZeroCopy(zeroCopy)
+              .build());
+    } else {
+      dataReader = options.getDataReader();
+    }
     firstRow = skippedRows;
     totalRowCount = rows;
     Boolean skipCorrupt = options.getSkipCorruptRecords();
     if (skipCorrupt == null) {
-      skipCorrupt = OrcConf.SKIP_CORRUPT_DATA.getBoolean(conf);
+      skipCorrupt = OrcConf.SKIP_CORRUPT_DATA.getBoolean(fileReader.conf);
     }
 
-    reader = TreeReaderFactory.createTreeReader(0, treeReaderSchema, included, skipCorrupt);
+    reader = TreeReaderFactory.createTreeReader(treeReaderSchema.getReaderSchema(),
+        treeReaderSchema, included, skipCorrupt);
     indexes = new OrcProto.RowIndex[types.size()];
     bloomFilterIndices = new OrcProto.BloomFilterIndex[types.size()];
     advanceToNextRow(reader, 0L, true);
@@ -333,10 +232,10 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   OrcProto.StripeFooter readStripeFooter(StripeInformation stripe) throws IOException {
-    return metadata.readStripeFooter(stripe);
+    return dataReader.readStripeFooter(stripe);
   }
 
-  static enum Location {
+  enum Location {
     BEFORE, MIN, MIDDLE, MAX, AFTER
   }
 
@@ -895,7 +794,7 @@ public class RecordReaderImpl implements RecordReader {
     return sargApp.pickRowGroups(stripes.get(currentStripe), indexes, bloomFilterIndices, false);
   }
 
-  private void clearStreams() throws IOException {
+  private void clearStreams()  {
     // explicit close of all streams to de-ref ByteBuffers
     for (InStream is : streams.values()) {
       is.close();
@@ -1149,31 +1048,27 @@ public class RecordReaderImpl implements RecordReader {
   }
 
   @Override
-  public VectorizedRowBatch nextBatch(VectorizedRowBatch previous) throws IOException {
+  public boolean nextBatch(VectorizedRowBatch batch) throws IOException {
     try {
-      final VectorizedRowBatch result;
       if (rowInStripe >= rowCountInStripe) {
         currentStripe += 1;
+        if (currentStripe >= stripes.size()) {
+          batch.size = 0;
+          return false;
+        }
         readStripe();
       }
 
-      final int batchSize = computeBatchSize(VectorizedRowBatch.DEFAULT_SIZE);
+      int batchSize = computeBatchSize(batch.getMaxSize());
 
       rowInStripe += batchSize;
-      if (previous == null) {
-        ColumnVector[] cols = (ColumnVector[]) reader.nextVector(null, (int) batchSize);
-        result = new VectorizedRowBatch(cols.length);
-        result.cols = cols;
-      } else {
-        result = previous;
-        result.selectedInUse = false;
-        reader.setVectorColumnCount(result.getDataColumnCount());
-        reader.nextVector(result.cols, batchSize);
-      }
+      reader.setVectorColumnCount(batch.getDataColumnCount());
+      reader.nextBatch(batch, batchSize);
 
-      result.size = batchSize;
+      batch.size = (int) batchSize;
+      batch.selectedInUse = false;
       advanceToNextRow(reader, rowInStripe + rowBaseInStripe, true);
-      return result;
+      return batch.size  != 0;
     } catch (IOException e) {
       // Rethrow exception with file name in log message
       throw new IOException("Error reading file: " + path, e);
@@ -1216,16 +1111,8 @@ public class RecordReaderImpl implements RecordReader {
 
   @Override
   public void close() throws IOException {
-    Closer closer = Closer.create();
-    try {
-      closer.register(metadata);
-      closer.register(dataReader);
-      clearStreams();
-    } catch (IOException e) {
-      throw closer.rethrow(e);
-    } finally {
-      closer.close();
-    }
+    clearStreams();
+    dataReader.close();
   }
 
   @Override
@@ -1242,10 +1129,6 @@ public class RecordReaderImpl implements RecordReader {
   @Override
   public float getProgress() {
     return ((float) rowBaseInStripe + rowInStripe) / totalRowCount;
-  }
-
-  MetadataReader getMetadataReader() {
-    return metadata;
   }
 
   private int findStripe(long rowNumber) {
@@ -1276,8 +1159,8 @@ public class RecordReaderImpl implements RecordReader {
       sargColumns = sargColumns == null ?
           (sargApp == null ? null : sargApp.sargColumns) : sargColumns;
     }
-    return metadata.readRowIndex(stripe, stripeFooter, included, indexes, sargColumns,
-        bloomFilterIndex);
+    return dataReader.readRowIndex(stripe, stripeFooter, included, indexes,
+        sargColumns, bloomFilterIndex);
   }
 
   private void seekToRowEntry(TreeReaderFactory.TreeReader reader, int rowEntry)

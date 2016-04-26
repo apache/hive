@@ -28,36 +28,6 @@ EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            T1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl1
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               ds
-            '1'
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            key
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -198,36 +168,6 @@ EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            T1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl1
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               ds
-            '1'
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            key
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -371,36 +311,6 @@ EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '2' GROUP BY key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            T1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               outputTbl1
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_WHERE
-         =
-            TOK_TABLE_OR_COL
-               ds
-            '2'
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            key
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

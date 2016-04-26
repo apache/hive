@@ -214,6 +214,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.HIVE_TXN_TIMEOUT,
       HiveConf.ConfVars.HIVE_TXN_HEARTBEAT_THREADPOOL_SIZE,
       HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH,
+      HiveConf.ConfVars.HIVE_TXN_RETRYABLE_SQLEX_REGEX,
       HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION,
       HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_ENABLED,
       HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_SIZE,
@@ -295,6 +296,7 @@ public class HiveConf extends Configuration {
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_LRFU_LAMBDA.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_IO_USE_FILEID_PATH.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_IO_DECODING_METRICS_PERCENTILE_INTERVALS.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_ORC_ENABLE_TIME_COUNTERS.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_IO_THREADPOOL_SIZE.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_KERBEROS_PRINCIPAL.varname);
@@ -1678,6 +1680,13 @@ public class HiveConf extends Configuration {
         "transactions that Hive has to track at any given time, which may negatively affect\n" +
         "read performance."),
 
+    HIVE_TXN_RETRYABLE_SQLEX_REGEX("hive.txn.retryable.sqlex.regex", "", "Comma separated list\n" +
+        "of regular expression patterns for SQL state, error code, and error message of\n" +
+        "retryable SQLExceptions, that's suitable for the metastore DB.\n" +
+        "For example: Can't serialize.*,40001$,^Deadlock,.*ORA-08176.*\n" +
+        "The string that the regex will be matched against is of the following form, where ex is a SQLException:\n" +
+        "ex.getMessage() + \" (SQLState=\" + ex.getSQLState() + \", ErrorCode=\" + ex.getErrorCode() + \")\""),
+
     HIVE_COMPACTOR_INITIATOR_ON("hive.compactor.initiator.on", false,
         "Whether to run the initiator and cleaner threads on this metastore instance or not.\n" +
         "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
@@ -1961,7 +1970,8 @@ public class HiveConf extends Configuration {
             "org.apache.hadoop.hive.common.metrics.LegacyMetrics"),
         "Hive metrics subsystem implementation class."),
     HIVE_METRICS_REPORTER("hive.service.metrics.reporter", "JSON_FILE, JMX",
-        "Reporter type for metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics, comma separated list of JMX, CONSOLE, JSON_FILE"),
+        "Reporter type for metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics, " +
+        "comma separated list of JMX, CONSOLE, JSON_FILE, HADOOP2"),
     HIVE_METRICS_JSON_FILE_LOCATION("hive.service.metrics.file.location", "/tmp/report.json",
         "For metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics JSON_FILE reporter, the location of local JSON metrics file.  " +
         "This file will get overwritten at every interval."),
@@ -1969,6 +1979,15 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.MILLISECONDS),
         "For metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics JSON_FILE reporter, " +
         "the frequency of updating JSON metrics file."),
+    HIVE_METRICS_HADOOP2_INTERVAL("hive.service.metrics.hadoop2.frequency", "30s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "For metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics HADOOP2 reporter, " +
+        "the frequency of updating the HADOOP2 metrics system."),
+    HIVE_METRICS_HADOOP2_COMPONENT_NAME("hive.service.metrics.hadoop2.component",
+        "hive",
+        "Component name to provide to Hadoop2 Metrics system. Ideally 'hivemetastore' for the MetaStore " +
+        " and and 'hiveserver2' for HiveServer2."
+        ),
     HIVE_PERF_LOGGER("hive.exec.perf.logger", "org.apache.hadoop.hive.ql.log.PerfLogger",
         "The class responsible for logging client side performance metrics. \n" +
         "Must be a subclass of org.apache.hadoop.hive.ql.log.PerfLogger"),
@@ -2037,6 +2056,7 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.SECONDS),
         "Number of seconds a request will wait to acquire the compile lock before giving up. " +
         "Setting it to 0s disables the timeout."),
+
     // HiveServer2 WebUI
     HIVE_SERVER2_WEBUI_BIND_HOST("hive.server2.webui.host", "0.0.0.0", "The host address the HiveServer2 WebUI will listen on"),
     HIVE_SERVER2_WEBUI_PORT("hive.server2.webui.port", 10002, "The port the HiveServer2 WebUI will listen on. This can be"
@@ -2167,6 +2187,7 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.SECONDS),
         "Keepalive time (in seconds) for an idle worker thread. When the number of workers exceeds min workers, " +
         "excessive threads are killed after this time interval."),
+
     // Configuration for async thread pool in SessionManager
     HIVE_SERVER2_ASYNC_EXEC_THREADS("hive.server2.async.exec.threads", 100,
         "Number of threads in the async thread pool for HiveServer2"),
@@ -2329,6 +2350,14 @@ public class HiveConf extends Configuration {
       " client"),
     HIVE_SERVER2_THRIFT_CLIENT_PASSWORD("hive.server2.thrift.client.password", "anonymous","Password to use against " +
       "thrift client"),
+
+    // ResultSet serialization settings
+    HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS("hive.server2.thrift.resultset.serialize.in.tasks", false,
+      "Whether we should serialize the Thrift structures used in JDBC ResultSet RPC in task nodes.\n " +
+      "We use SequenceFile and ThriftJDBCBinarySerDe to read and write the final results if this is true."),
+    // TODO: Make use of this config to configure fetch size
+    HIVE_SERVER2_THRIFT_RESULTSET_MAX_FETCH_SIZE("hive.server2.thrift.resultset.max.fetch.size", 1000,
+      "Max number of rows sent in one Fetch RPC call by the server to the client."),
 
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
@@ -2574,6 +2603,10 @@ public class HiveConf extends Configuration {
         "modification time, which is almost certain to identify file uniquely. However, if you\n" +
         "use a FS without file IDs and rewrite files a lot (or are paranoid), you might want\n" +
         "to avoid this setting."),
+    LLAP_CACHE_ENABLE_ORC_GAP_CACHE("hive.llap.orc.gap.cache", true,
+        "Whether LLAP cache for ORC should remember gaps in ORC RG read estimates, to avoid\n" +
+        "re-reading the data that was read once and discarded because it is unneeded. This is\n" +
+        "only necessary for ORC files written before HIVE-9660 (Hive 2.1?)."),
     LLAP_IO_USE_FILEID_PATH("hive.llap.io.use.fileid.path", true,
         "Whether LLAP should use fileId (inode)-based path to ensure better consistency for the\n" +
         "cases of file overwrites. This is supported on HDFS."),
@@ -2602,10 +2635,10 @@ public class HiveConf extends Configuration {
         "Chooses whether query fragments will run in container or in llap"),
     LLAP_OBJECT_CACHE_ENABLED("hive.llap.object.cache.enabled", true,
         "Cache objects (plans, hashtables, etc) in llap"),
-    LLAP_QUEUE_METRICS_PERCENTILE_INTERVALS("hive.llap.queue.metrics.percentiles.intervals", "",
+    LLAP_IO_DECODING_METRICS_PERCENTILE_INTERVALS("hive.llap.io.decoding.metrics.percentiles.intervals", "30",
         "Comma-delimited set of integers denoting the desired rollover intervals (in seconds)\n" +
-        "for percentile latency metrics on the LLAP daemon producer-consumer queue.\n" +
-        "By default, percentile latency metrics are disabled."),
+        "for percentile latency metrics on the LLAP daemon IO decoding time.\n" +
+        "hive.llap.queue.metrics.percentiles.intervals"),
     LLAP_IO_THREADPOOL_SIZE("hive.llap.io.threadpool.size", 10,
         "Specify the number of threads to use for low-level IO thread pool."),
     LLAP_KERBEROS_PRINCIPAL(HIVE_LLAP_DAEMON_SERVICE_PRINCIPAL_NAME, "",
@@ -3651,6 +3684,7 @@ public class HiveConf extends Configuration {
     ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES.varname,
     ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS.varname,
     ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname,
+    ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS.varname,
     ConfVars.HIVE_SUPPORT_SQL11_RESERVED_KEYWORDS.varname,
     ConfVars.JOB_DEBUG_CAPTURE_STACKTRACES.varname,
     ConfVars.JOB_DEBUG_TIMEOUT.varname,

@@ -35,6 +35,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  TGetTableTypesResp GetTableTypes(TGetTableTypesReq req)')
   print('  TGetColumnsResp GetColumns(TGetColumnsReq req)')
   print('  TGetFunctionsResp GetFunctions(TGetFunctionsReq req)')
+  print('  TGetPrimaryKeysResp GetPrimaryKeys(TGetPrimaryKeysReq req)')
+  print('  TGetCrossReferenceResp GetCrossReference(TGetCrossReferenceReq req)')
   print('  TGetOperationStatusResp GetOperationStatus(TGetOperationStatusReq req)')
   print('  TCancelOperationResp CancelOperation(TCancelOperationReq req)')
   print('  TCloseOperationResp CloseOperation(TCloseOperationReq req)')
@@ -164,6 +166,18 @@ elif cmd == 'GetFunctions':
     print('GetFunctions requires 1 args')
     sys.exit(1)
   pp.pprint(client.GetFunctions(eval(args[0]),))
+
+elif cmd == 'GetPrimaryKeys':
+  if len(args) != 1:
+    print('GetPrimaryKeys requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.GetPrimaryKeys(eval(args[0]),))
+
+elif cmd == 'GetCrossReference':
+  if len(args) != 1:
+    print('GetCrossReference requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.GetCrossReference(eval(args[0]),))
 
 elif cmd == 'GetOperationStatus':
   if len(args) != 1:

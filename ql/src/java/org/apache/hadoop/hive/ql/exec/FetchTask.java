@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -48,12 +49,10 @@ import org.apache.hadoop.util.StringUtils;
  **/
 public class FetchTask extends Task<FetchWork> implements Serializable {
   private static final long serialVersionUID = 1L;
-
   private int maxRows = 100;
   private FetchOperator fetch;
   private ListSinkOperator sink;
   private int totalRows;
-
   private static transient final Logger LOG = LoggerFactory.getLogger(FetchTask.class);
 
   public FetchTask() {
@@ -61,9 +60,9 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   }
 
   @Override
-  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx,
+  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext ctx,
       CompilationOpContext opContext) {
-    super.initialize(conf, queryPlan, ctx, opContext);
+    super.initialize(queryState, queryPlan, ctx, opContext);
     work.initializeForFetch(opContext);
 
     try {
@@ -186,4 +185,5 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
       fetch.clearFetchContext();
     }
   }
+
 }

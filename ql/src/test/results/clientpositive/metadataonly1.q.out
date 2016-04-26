@@ -10,25 +10,6 @@ PREHOOK: query: explain extended select max(ds) from TEST1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select max(ds) from TEST1
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            TEST1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTION
-               max
-               TOK_TABLE_OR_COL
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -113,25 +94,6 @@ PREHOOK: query: explain extended select max(ds) from TEST1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select max(ds) from TEST1
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            TEST1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTION
-               max
-               TOK_TABLE_OR_COL
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -255,25 +217,6 @@ PREHOOK: query: explain extended select count(distinct ds) from TEST1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(distinct ds) from TEST1
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            TEST1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTIONDI
-               count
-               TOK_TABLE_OR_COL
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -398,25 +341,6 @@ PREHOOK: query: explain extended select count(ds) from TEST1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(ds) from TEST1
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            TEST1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               TOK_TABLE_OR_COL
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -550,52 +474,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended 
 select count(*) from TEST1 a2 join (select max(ds) m from TEST1) b on a2.ds=b.m
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               TEST1
-            a2
-         TOK_SUBQUERY
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        TEST1
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_FUNCTION
-                           max
-                           TOK_TABLE_OR_COL
-                              ds
-                        m
-            b
-         =
-            .
-               TOK_TABLE_OR_COL
-                  a2
-               ds
-            .
-               TOK_TABLE_OR_COL
-                  b
-               m
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTIONSTAR
-               count
-
-
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -1027,31 +905,6 @@ PREHOOK: query: explain extended select ds, count(distinct hr) from TEST2 group 
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select ds, count(distinct hr) from TEST2 group by ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            TEST2
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-         TOK_SELEXPR
-            TOK_FUNCTIONDI
-               count
-               TOK_TABLE_OR_COL
-                  hr
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1267,31 +1120,6 @@ PREHOOK: query: explain extended select ds, count(hr) from TEST2 group by ds
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select ds, count(hr) from TEST2 group by ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            TEST2
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               TOK_TABLE_OR_COL
-                  hr
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1508,25 +1336,6 @@ PREHOOK: query: explain extended select max(ds) from TEST1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select max(ds) from TEST1
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            TEST1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTION
-               max
-               TOK_TABLE_OR_COL
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1744,31 +1553,6 @@ PREHOOK: query: explain extended select ds, count(distinct hr) from TEST2 group 
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select ds, count(distinct hr) from TEST2 group by ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            TEST2
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-         TOK_SELEXPR
-            TOK_FUNCTIONDI
-               count
-               TOK_TABLE_OR_COL
-                  hr
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

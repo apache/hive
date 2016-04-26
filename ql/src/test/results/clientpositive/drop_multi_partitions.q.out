@@ -46,20 +46,6 @@ PREHOOK: query: explain extended alter table dmp.mp drop partition (b='1')
 PREHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: query: explain extended alter table dmp.mp drop partition (b='1')
 POSTHOOK: type: ALTERTABLE_DROPPARTS
-ABSTRACT SYNTAX TREE:
-  
-TOK_ALTERTABLE
-   TOK_TABNAME
-      dmp
-      mp
-   TOK_ALTERTABLE_DROPPARTS
-      TOK_PARTSPEC
-         TOK_PARTVAL
-            b
-            =
-            '1'
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

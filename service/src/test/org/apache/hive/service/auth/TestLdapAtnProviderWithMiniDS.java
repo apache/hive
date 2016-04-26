@@ -127,6 +127,26 @@ partitions = {
       "sn: group1",
       "member: uid=user2,ou=People,dc=example,dc=com",
 
+      "dn: cn=group3,ou=Groups,dc=example,dc=com",
+      "distinguishedName: cn=group3,ou=Groups,dc=example,dc=com",
+      "objectClass: top",
+      "objectClass: groupOfNames",
+      "objectClass: ExtensibleObject",
+      "cn: group3",
+      "ou: Groups",
+      "sn: group3",
+      "member: cn=user3,ou=People,dc=example,dc=com",
+
+      "dn: cn=group4,ou=Groups,dc=example,dc=com",
+      "distinguishedName: cn=group4,ou=Groups,dc=example,dc=com",
+      "objectClass: top",
+      "objectClass: groupOfUniqueNames",
+      "objectClass: ExtensibleObject",
+      "ou: Groups",
+      "cn: group4",
+      "sn: group4",
+      "uniqueMember: cn=user4,ou=People,dc=example,dc=com",
+
       "dn: uid=user1,ou=People,dc=example,dc=com",
       "distinguishedName: uid=user1,ou=People,dc=example,dc=com",
       "objectClass: inetOrgPerson",
@@ -149,7 +169,32 @@ partitions = {
       "cn: Test User2",
       "sn: user2",
       "uid: user2",
-      "userPassword: user2"
+      "userPassword: user2",
+
+      "dn: cn=user3,ou=People,dc=example,dc=com",
+      "distinguishedName: cn=user3,ou=People,dc=example,dc=com",
+      "objectClass: inetOrgPerson",
+      "objectClass: person",
+      "objectClass: top",
+      "objectClass: ExtensibleObject",
+      "givenName: Test1",
+      "cn: Test User3",
+      "sn: user3",
+      "uid: user3",
+      "userPassword: user3",
+
+      "dn: cn=user4,ou=People,dc=example,dc=com",
+      "distinguishedName: cn=user4,ou=People,dc=example,dc=com",
+      "objectClass: inetOrgPerson",
+      "objectClass: person",
+      "objectClass: top",
+      "objectClass: ExtensibleObject",
+      "givenName: Test4",
+      "cn: Test User4",
+      "sn: user4",
+      "uid: user4",
+      "userPassword: user4"
+
 })
 
 public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
@@ -160,6 +205,11 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   private static byte[] hiveConfBackup;
   private static LdapContext ctx;
   private static LdapAuthenticationProviderImpl ldapProvider;
+
+  static final User USER1 = new User("user1", "user1", "uid=user1,ou=People,dc=example,dc=com");
+  static final User USER2 = new User("user2", "user2", "uid=user2,ou=People,dc=example,dc=com");
+  static final User USER3 = new User("user3", "user3", "cn=user3,ou=People,dc=example,dc=com");
+  static final User USER4 = new User("user4", "user4", "cn=user4,ou=People,dc=example,dc=com");
 
   @Before
   public void setup() throws Exception {
@@ -227,20 +277,22 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     initLdapAtn(ldapProperties);
     String user;
 
-    user = "user1";
+    user = USER1.getUID();
     try {
-      ldapProvider.Authenticate(user, "user1");
-      assertTrue("testUserBindPositive: Authentication succeeded for user1 as expected", true);
+      ldapProvider.Authenticate(user, USER1.getPassword());
+      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
     } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user + " with password user1, expected to succeed");
+      Assert.fail("testUserBindPositive: Authentication failed for user:" + user + " with password "
+                  + USER1.getPassword() + ", expected to succeed");
     }
 
-    user = "user2";
+    user = USER2.getUID();
     try {
-      ldapProvider.Authenticate(user, "user2");
-      assertTrue("testUserBindPositive: Authentication succeeded for user2 as expected", true);
+      ldapProvider.Authenticate(user, USER2.getPassword());
+      assertTrue("testUserBindPositive: Authentication succeeded for " + USER2.getUID() + " as expected", true);
     } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user + " with password user2, expected to succeed");
+      Assert.fail("testUserBindPositive: Authentication failed for user:" + user + " with password "
+                  + USER2.getPassword() + ", expected to succeed");
     }
   }
 
@@ -251,20 +303,22 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     initLdapAtn(ldapProperties);
     String user;
 
-    user = "user1";
+    user = USER1.getUID();
     try {
-      ldapProvider.Authenticate(user, "user1");
-      assertTrue("testUserBindPositive: Authentication succeeded for user1 as expected", true);
+      ldapProvider.Authenticate(user, USER1.getPassword());
+      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
     } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user + " with password user1, expected to succeed");
+      Assert.fail("testUserBindPositive: Authentication failed for user:" + user + " with password "
+                  + USER1.getPassword() + ", expected to succeed");
     }
 
-    user = "user2";
+    user = USER2.getUID();
     try {
-      ldapProvider.Authenticate(user, "user2");
-      assertTrue("testUserBindPositive: Authentication succeeded for user2 as expected", true);
+      ldapProvider.Authenticate(user, USER2.getPassword());
+      assertTrue("testUserBindPositive: Authentication succeeded for " + USER2.getUID() + " as expected", true);
     } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user + " with password user2, expected to succeed");
+      Assert.fail("testUserBindPositive: Authentication failed for user:" + user + " with password "
+                  + USER2.getPassword() + ", expected to succeed");
     }
   }
 
@@ -276,17 +330,18 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     initLdapAtn(ldapProperties);
 
     try {
-      ldapProvider.Authenticate("user1", "user2");
-      Assert.fail("testUserBindNegative: Authentication succeeded for user1 with password user2, expected to fail");
+      ldapProvider.Authenticate(USER1.getUID(), USER2.getPassword());
+      Assert.fail("testUserBindNegative: Authentication succeeded for " + USER1.getUID() + " with password "
+                  + USER2.getPassword() + ", expected to fail");
     } catch (AuthenticationException e) {
-      assertTrue("testUserBindNegative: Authentication failed for user1 as expected", true);
+      assertTrue("testUserBindNegative: Authentication failed for " + USER1.getUID() + " as expected", true);
     }
 
     try {
-      ldapProvider.Authenticate("user2", "user");
-      Assert.fail("testUserBindNegative: Authentication failed for user2 with password user, expected to fail");
+      ldapProvider.Authenticate(USER2.getUID(), "user");
+      Assert.fail("testUserBindNegative: Authentication failed for " + USER2.getUID() + " with password user, expected to fail");
     } catch (AuthenticationException e) {
-      assertTrue("testUserBindNegative: Authentication failed for user2 as expected", true);
+      assertTrue("testUserBindNegative: Authentication failed for " + USER2.getUID() + " as expected", true);
     }
   }
 
@@ -297,17 +352,18 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     initLdapAtn(ldapProperties);
 
     try {
-      ldapProvider.Authenticate("user1", "user2");
-      Assert.fail("testUserBindNegative: Authentication succeeded for user1 with password user2, expected to fail");
+      ldapProvider.Authenticate(USER1.getUID(), USER2.getPassword());
+      Assert.fail("testUserBindNegative: Authentication succeeded for " + USER1.getUID() + " with password "
+                  + USER2.getPassword() + ", expected to fail");
     } catch (AuthenticationException e) {
-      assertTrue("testUserBindNegative: Authentication failed for user1 as expected", true);
+      assertTrue("testUserBindNegative: Authentication failed for " + USER1.getUID() + " as expected", true);
     }
 
     try {
-      ldapProvider.Authenticate("user2", "user");
-      Assert.fail("testUserBindNegative: Authentication failed for user2 with password user, expected to fail");
+      ldapProvider.Authenticate(USER2.getUID(), "user");
+      Assert.fail("testUserBindNegative: Authentication failed for " + USER2.getUID() + " with password user, expected to fail");
     } catch (AuthenticationException e) {
-      assertTrue("testUserBindNegative: Authentication failed for user2 as expected", true);
+      assertTrue("testUserBindNegative: Authentication failed for " + USER2.getUID() + " as expected", true);
     }
   }
 
@@ -321,22 +377,22 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     initLdapAtn(ldapProperties);
     assertTrue(ldapServer.getPort() > 0);
 
-    user = "uid=user1,ou=People,dc=example,dc=com";
+    user = USER1.getDN();
     try {
-      ldapProvider.Authenticate(user, "user1");
+      ldapProvider.Authenticate(user, USER1.getPassword());
       assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
     } catch (AuthenticationException e) {
       Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password user1, expected to succeed:" + e.getMessage());
+                    " with password " + USER1.getPassword() + ", expected to succeed:" + e.getMessage());
     }
 
-    user = "uid=user2,ou=People,dc=example,dc=com";
+    user = USER2.getDN();
     try {
-      ldapProvider.Authenticate(user, "user2");
+      ldapProvider.Authenticate(user, USER2.getPassword());
       assertTrue("testUserBindPositive: Authentication succeeded for " + user + " user as expected", true);
     } catch (AuthenticationException e) {
       Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password user2, expected to succeed:" + e.getMessage());
+                    " with password " + USER2.getPassword() + ", expected to succeed:" + e.getMessage());
     }
   }
 
@@ -349,22 +405,22 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     initLdapAtn(ldapProperties);
     assertTrue(ldapServer.getPort() > 0);
 
-    user = "uid=user1,ou=People,dc=example,dc=com";
+    user = USER1.getDN();
     try {
-      ldapProvider.Authenticate(user, "user1");
+      ldapProvider.Authenticate(user, USER1.getPassword());
       assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
     } catch (AuthenticationException e) {
       Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password user1, expected to succeed");
+                    " with password " + USER1.getPassword() + ", expected to succeed");
     }
 
-    user = "uid=user2,ou=People,dc=example,dc=com";
+    user = USER2.getDN();
     try {
-      ldapProvider.Authenticate(user, "user2");
+      ldapProvider.Authenticate(user, USER2.getPassword());
       assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
     } catch (AuthenticationException e) {
       Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password user2, expected to succeed");
+                    " with password " + USER2.getPassword() + ", expected to succeed");
     }
   }
 
@@ -377,22 +433,23 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     initLdapAtn(ldapProperties);
     assertTrue(ldapServer.getPort() > 0);
 
-    user = "uid=user1,ou=People,dc=example,dc=com";
+    user = USER1.getDN();
     try {
-      ldapProvider.Authenticate(user, "user1");
+      ldapProvider.Authenticate(user, USER1.getPassword());
       assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
     } catch (AuthenticationException e) {
       Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password user1, expected to succeed");
+                    " with password " + USER1.getPassword() + ", expected to succeed");
     }
 
-    user = "uid=user2,ou=People,dc=example,dc=com";
+    user = USER2.getDN();
     try {
-      ldapProvider.Authenticate(user, "user2");
+      ldapProvider.Authenticate(user, USER2.getPassword());
       assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
     } catch (AuthenticationException e) {
       Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password user2, expected to succeed");
+                    " with password "
+                  + USER2.getPassword() + ", expected to succeed");
     }
   }
 
@@ -406,22 +463,22 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     initLdapAtn(ldapProperties);
     assertTrue(ldapServer.getPort() > 0);
 
-    user = "uid=user1,ou=People,dc=example,dc=com";
+    user = USER1.getDN();
     try {
-      ldapProvider.Authenticate(user, "user1");
+      ldapProvider.Authenticate(user, USER1.getPassword());
       assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
     } catch (AuthenticationException e) {
       Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password user1, expected to succeed");
+                    " with password " + USER1.getPassword() + ", expected to succeed");
     }
 
-    user = "uid=user2,ou=People,dc=example,dc=com";
+    user = USER2.getDN();
     try {
-      ldapProvider.Authenticate(user, "user2");
+      ldapProvider.Authenticate(user, USER2.getPassword());
       assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
     } catch (AuthenticationException e) {
       Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password user2, expected to succeed");
+                    " with password " + USER2.getPassword() + ", expected to succeed");
     }
   }
 
@@ -435,22 +492,22 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     initLdapAtn(ldapProperties);
     assertTrue(ldapServer.getPort() > 0);
 
-    user = "uid=user1,ou=People,dc=example,dc=com";
+    user = USER1.getDN();
     try {
-      ldapProvider.Authenticate(user, "user1");
+      ldapProvider.Authenticate(user, USER1.getPassword());
       assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
     } catch (AuthenticationException e) {
       Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password user1, expected to succeed");
+                    " with password " + USER1.getPassword() + ", expected to succeed");
     }
 
-    user = "uid=user2,ou=People,dc=example,dc=com";
+    user = USER2.getDN();
     try {
-      ldapProvider.Authenticate(user, "user2");
+      ldapProvider.Authenticate(user, USER2.getPassword());
       assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
     } catch (AuthenticationException e) {
       Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password user2, expected to succeed");
+                    " with password " + USER2.getPassword() + ", expected to succeed");
     }
   }
 
@@ -463,22 +520,22 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     initLdapAtn(ldapProperties);
     assertTrue(ldapServer.getPort() > 0);
 
-    user = "uid=user1,ou=People,dc=example,dc=com";
+    user = USER1.getDN();
     try {
-      ldapProvider.Authenticate(user, "user1");
+      ldapProvider.Authenticate(user, USER1.getPassword());
       assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
     } catch (AuthenticationException e) {
       Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password user1, expected to succeed");
+                    " with password " + USER1.getPassword() + ", expected to succeed");
     }
 
-    user = "uid=user2,ou=People,dc=example,dc=com";
+    user = USER2.getDN();
     try {
-      ldapProvider.Authenticate(user, "user2");
+      ldapProvider.Authenticate(user, USER2.getPassword());
       assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
     } catch (AuthenticationException e) {
       Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password user2, expected to succeed");
+                    " with password " + USER2.getPassword() + ", expected to succeed");
     }
   }
 
@@ -491,16 +548,16 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     initLdapAtn(ldapProperties);
     assertTrue(ldapServer.getPort() > 0);
 
-    user = "uid=user1,ou=People,dc=example,dc=com";
+    user = USER1.getDN();
     try {
-      ldapProvider.Authenticate(user, "user2");
+      ldapProvider.Authenticate(user, USER2.getPassword());
       Assert.fail("testUserBindNegative: Authentication succeeded for " + user + " with password " +
-                   "user2, expected to fail");
+                   USER2.getPassword() + ", expected to fail");
     } catch (AuthenticationException e) {
       assertTrue("testUserBindNegative: Authentication failed for " + user + " as expected", true);
     }
 
-    user = "uid=user2,ou=People,dc=example,dc=com";
+    user = USER2.getDN();
     try {
       ldapProvider.Authenticate(user, "user");
       Assert.fail("testUserBindNegative: Authentication failed for " + user + " with password user, " +
@@ -518,16 +575,16 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     initLdapAtn(ldapProperties);
     assertTrue(ldapServer.getPort() > 0);
 
-    user = "uid=user1,ou=People,dc=example,dc=com";
+    user = USER1.getDN();
     try {
-      ldapProvider.Authenticate(user, "user2");
+      ldapProvider.Authenticate(user, USER2.getPassword());
       Assert.fail("testUserBindNegative: Authentication succeeded for " + user + " with password " +
-                   "user2, expected to fail");
+                   USER2.getPassword() + ", expected to fail");
     } catch (AuthenticationException e) {
       assertTrue("testUserBindNegative: Authentication failed for " + user + " as expected", true);
     }
 
-    user = "uid=user2,ou=People,dc=example,dc=com";
+    user = USER2.getDN();
     try {
       ldapProvider.Authenticate(user, "user");
       Assert.fail("testUserBindNegative: Authentication failed for " + user + " with password user, " +
@@ -542,16 +599,16 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     String user;
     Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userFilter", "user2");
+    ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER2.getUID());
     initLdapAtn(ldapProperties);
 
-    user = "uid=user2,ou=People,dc=example,dc=com";
+    user = USER2.getDN();
     try {
-      ldapProvider.Authenticate(user, "user2");
+      ldapProvider.Authenticate(user, USER2.getPassword());
       assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
 
-      user = "user2";
-      ldapProvider.Authenticate(user, "user2");
+      user = USER2.getUID();
+      ldapProvider.Authenticate(user, USER2.getPassword());
       assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
     } catch (AuthenticationException e) {
       Assert.fail("testUserFilterPositive: Authentication failed for " + user + ",user expected to pass userfilter");
@@ -559,16 +616,16 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
 
     ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userFilter", "user1");
+    ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER1.getUID());
     initLdapAtn(ldapProperties);
 
     try {
-      user = "uid=user1,ou=People,dc=example,dc=com";
-      ldapProvider.Authenticate(user, "user1");
+      user = USER1.getDN();
+      ldapProvider.Authenticate(user, USER1.getPassword());
       assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
 
-      user = "user1";
-      ldapProvider.Authenticate(user, "user1");
+      user = USER1.getUID();
+      ldapProvider.Authenticate(user, USER1.getPassword());
       assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
     } catch (AuthenticationException e) {
       Assert.fail("testUserFilterPositive: Authentication failed for " + user + ",user expected to pass userfilter");
@@ -576,16 +633,16 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
 
     ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userFilter", "user2,user1");
+    ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER2.getUID() + "," + USER1.getUID());
     initLdapAtn(ldapProperties);
 
     try {
-      user = "uid=user1,ou=People,dc=example,dc=com";
-      ldapProvider.Authenticate(user, "user1");
+      user = USER1.getDN();
+      ldapProvider.Authenticate(user, USER1.getPassword());
       assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
 
-      user = "user2";
-      ldapProvider.Authenticate(user, "user2");
+      user = USER2.getUID();
+      ldapProvider.Authenticate(user, USER2.getPassword());
       assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
 
     } catch (AuthenticationException e) {
@@ -598,20 +655,20 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     String user;
     Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userFilter", "user2");
+    ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER2.getUID());
     initLdapAtn(ldapProperties);
 
-    user = "uid=user1,ou=People,dc=example,dc=com";
+    user = USER1.getDN();
     try {
-      ldapProvider.Authenticate(user, "user1");
+      ldapProvider.Authenticate(user, USER1.getPassword());
       Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user is expected to fail userfilter");
     } catch (AuthenticationException e) {
       assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
     }
 
-    user = "user1";
+    user = USER1.getUID();
     try {
-      ldapProvider.Authenticate(user, "user1");
+      ldapProvider.Authenticate(user, USER1.getPassword());
       Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user is expected to fail userfilter");
     } catch (AuthenticationException e) {
       assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
@@ -619,20 +676,20 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
 
     ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userFilter", "user1");
+    ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER1.getUID());
     initLdapAtn(ldapProperties);
 
-    user = "uid=user2,ou=People,dc=example,dc=com";
+    user = USER2.getDN();
     try {
-      ldapProvider.Authenticate(user, "user2");
+      ldapProvider.Authenticate(user, USER2.getPassword());
       Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user is expected to fail userfilter");
     } catch (AuthenticationException e) {
       assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
     }
 
-    user = "user2";
+    user = USER2.getUID();
     try {
-      ldapProvider.Authenticate(user, "user2");
+      ldapProvider.Authenticate(user, USER2.getPassword());
       Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user is expected to fail userfilter");
     } catch (AuthenticationException e) {
       assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
@@ -640,20 +697,20 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
 
     ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userFilter", "user3");
+    ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER3.getUID());
     initLdapAtn(ldapProperties);
 
-    user = "user1";
+    user = USER1.getUID();
     try {
-      ldapProvider.Authenticate(user, "user1");
+      ldapProvider.Authenticate(user, USER1.getPassword());
       Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user expected to fail userfilter");
     } catch (AuthenticationException e) {
       assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
     }
 
-    user = "uid=user2,ou=People,dc=example,dc=com";
+    user = USER2.getDN();
     try {
-      ldapProvider.Authenticate(user, "user2");
+      ldapProvider.Authenticate(user, USER2.getPassword());
       Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user expected to fail userfilter");
     } catch (AuthenticationException e) {
       assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
@@ -669,17 +726,17 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group1,group2");
     initLdapAtn(ldapProperties);
 
-    user = "uid=user1,ou=People,dc=example,dc=com";
+    user = USER1.getDN();
     try {
-      ldapProvider.Authenticate(user, "user1");
+      ldapProvider.Authenticate(user, USER1.getPassword());
       assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
 
-      user = "user1";
-      ldapProvider.Authenticate(user, "user1");
+      user = USER1.getUID();
+      ldapProvider.Authenticate(user, USER1.getPassword());
       assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
 
-      user = "uid=user2,ou=People,dc=example,dc=com";
-      ldapProvider.Authenticate(user, "user2");
+      user = USER2.getDN();
+      ldapProvider.Authenticate(user, USER2.getPassword());
       assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
     } catch (AuthenticationException e) {
       Assert.fail("testGroupFilterPositive: Authentication failed for " + user + ",user expected to pass groupfilter");
@@ -691,9 +748,9 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group2");
     initLdapAtn(ldapProperties);
 
-    user = "uid=user2,ou=People,dc=example,dc=com";
+    user = USER2.getDN();
     try {
-      ldapProvider.Authenticate(user, "user2");
+      ldapProvider.Authenticate(user, USER2.getPassword());
       assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
     } catch (AuthenticationException e) {
       Assert.fail("testGroupFilterPositive: Authentication failed for " + user + ",user expected to pass groupfilter");
@@ -709,9 +766,9 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group1");
     initLdapAtn(ldapProperties);
 
-    user = "uid=user2,ou=People,dc=example,dc=com";
+    user = USER2.getDN();
     try {
-      ldapProvider.Authenticate(user, "user2");
+      ldapProvider.Authenticate(user, USER2.getPassword());
       Assert.fail("testGroupFilterNegative: Authentication succeeded for " + user + ",user expected to fail groupfilter");
     } catch (AuthenticationException e) {
       assertTrue("testGroupFilterNegative: Authentication failed for " + user + " as expected", true);
@@ -723,12 +780,199 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group2");
     initLdapAtn(ldapProperties);
 
-    user = "uid=user1,ou=People,dc=example,dc=com";
+    user = USER1.getDN();
     try {
-      ldapProvider.Authenticate(user, "user1");
+      ldapProvider.Authenticate(user, USER1.getPassword());
       Assert.fail("testGroupFilterNegative: Authentication succeeded for " + user + ",user expected to fail groupfilter");
     } catch (AuthenticationException e) {
       assertTrue("testGroupFilterNegative: Authentication failed for " + user + " as expected", true);
     }
+  }
+
+  @Test
+  public void testUserAndGroupFilterPositive() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER1.getUID() + "," + USER2.getUID());
+    ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group1,group2");
+    initLdapAtn(ldapProperties);
+
+    user = USER1.getDN();
+    try {
+      ldapProvider.Authenticate(user, USER1.getPassword());
+      assertTrue("testUserAndGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
+
+      user = USER1.getUID();
+      ldapProvider.Authenticate(user, USER1.getPassword());
+      assertTrue("testUserAndGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
+
+    } catch (AuthenticationException e) {
+      Assert.fail("testUserAndGroupFilterPositive: Authentication failed for " + user + ",user expected to pass groupfilter");
+    }
+
+    user = USER2.getUID();
+    try {
+      ldapProvider.Authenticate(user, USER2.getPassword());
+      assertTrue("testUserAndGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testUserAndGroupFilterPositive: Authentication failed for " + user + ",user expected to pass groupfilter");
+    }
+  }
+
+  @Test
+  public void testUserAndGroupFilterNegative() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER1.getUID() + "," + USER2.getUID());
+    ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group1");
+    initLdapAtn(ldapProperties);
+
+    user = USER2.getDN();
+    try {
+      ldapProvider.Authenticate(user, USER2.getPassword());
+      Assert.fail("testUserAndGroupFilterNegative: Authentication succeeded for " + user + ",user expected to fail groupfilter");
+
+      user = USER2.getUID();
+      ldapProvider.Authenticate(user, USER2.getPassword());
+      Assert.fail("testUserAndGroupFilterNegative: Authentication succeeded for " + user + ",user expected to fail groupfilter");
+
+      user = USER3.getUID();
+      ldapProvider.Authenticate(user, USER3.getPassword());
+      Assert.fail("testUserAndGroupFilterNegative: Authentication succeeded for " + user + ",user expected to fail groupfilter");
+    } catch (AuthenticationException e) {
+      assertTrue("testUserAndGroupFilterNegative: Authentication failed for " + user + " as expected", true);
+    }
+  }
+
+  @Test
+  public void testCustomQueryPositive() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com:uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "cn=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery", "(&(objectClass=person)(|(uid="
+                       + USER1.getUID() + ")(uid=" + USER4.getUID() + ")))");
+    initLdapAtn(ldapProperties);
+
+      user = USER1.getDN();
+    try {
+      ldapProvider.Authenticate(user, USER1.getPassword());
+      assertTrue("testCustomQueryPositive: Authentication succeeded for " + user + " as expected", true);
+
+     user = USER1.getUID();
+       ldapProvider.Authenticate(user, USER1.getPassword());
+       assertTrue("testCustomQueryPositive: Authentication succeeded for " + user + " as expected", true);
+
+      user = USER4.getDN();
+      ldapProvider.Authenticate(user, USER4.getPassword());
+      assertTrue("testCustomQueryPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testCustomQueryPositive: Authentication failed for " + user + ",user expected to pass custom LDAP Query");
+    }
+  }
+
+  @Test
+  public void testCustomQueryNegative() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=People,dc=example,dc=com");
+    // ldap query will only return user1
+    ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery", "(&(objectClass=person)(uid="
+                       + USER1.getUID() + "))");
+    initLdapAtn(ldapProperties);
+
+    user = USER2.getDN();
+    try {
+      ldapProvider.Authenticate(user, USER2.getPassword());
+      Assert.fail("testCustomQueryNegative: Authentication succeeded for " + user + ",user expected to fail custom LDAP Query");
+    } catch (AuthenticationException e) {
+      assertTrue("testCustomQueryNegative: Authentication failed for " + user + " as expected", true);
+    }
+
+    try {
+      user = USER2.getUID();
+      ldapProvider.Authenticate(user, USER2.getPassword());
+      Assert.fail("testCustomQueryNegative: Authentication succeeded for " + user + ",user expected to fail custom LDAP Query");
+    } catch (AuthenticationException e) {
+      assertTrue("testCustomQueryNegative: Authentication failed for " + user + " as expected", true);
+    }
+  }
+
+  @Test
+  public void testGroupFilterPositiveWithCustomGUID() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "cn=%s,ou=Groups,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.guidKey", "cn");
+    ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group3");
+    initLdapAtn(ldapProperties);
+
+    user = USER3.getDN();
+    try {
+      ldapProvider.Authenticate(user, USER3.getPassword());
+      assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
+
+      user = USER3.getUID();
+      ldapProvider.Authenticate(user, USER3.getPassword());
+      assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testGroupFilterPositive: Authentication failed for " + user + ",user expected to pass groupfilter");
+    }
+  }
+
+  @Test
+  public void testGroupFilterPositiveWithCustomAttributes() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "cn=%s,ou=Groups,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group4");
+    ldapProperties.put("hive.server2.authentication.ldap.guidKey", "cn");
+    ldapProperties.put("hive.server2.authentication.ldap.groupMembershipKey", "uniqueMember");
+    ldapProperties.put("hive.server2.authentication.ldap.groupClassKey", "groupOfUniqueNames");
+    initLdapAtn(ldapProperties);
+
+    user = USER4.getDN();
+    try {
+      ldapProvider.Authenticate(user, USER4.getPassword());
+      assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
+
+      user = USER4.getUID();
+      ldapProvider.Authenticate(user, USER4.getPassword());
+      assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testGroupFilterPositive: Authentication failed for " + user + ",user expected to pass groupfilter");
+    }
+
+  }
+}
+
+class User {
+  String uid;
+  String pwd;
+  String ldapDN;
+
+  User(String uid, String password, String ldapDN) {
+    this.uid    = uid;
+    this.pwd    = password;
+    this.ldapDN = ldapDN;
+  }
+
+  public String getUID() {
+    return uid;
+  }
+
+  public String getPassword() {
+    return pwd;
+  }
+
+  public String getDN() {
+    return ldapDN;
   }
 }

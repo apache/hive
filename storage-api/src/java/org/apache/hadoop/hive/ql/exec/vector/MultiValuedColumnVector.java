@@ -111,8 +111,8 @@ public abstract class MultiValuedColumnVector extends ColumnVector {
 
   @Override
   public void ensureSize(int size, boolean preserveData) {
+    super.ensureSize(size, preserveData);
     if (size > offsets.length) {
-      super.ensureSize(size, preserveData);
       long[] oldOffsets = offsets;
       offsets = new long[size];
       long oldLengths[] = lengths;

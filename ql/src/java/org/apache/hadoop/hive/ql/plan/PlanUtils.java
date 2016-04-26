@@ -287,13 +287,13 @@ public final class PlanUtils {
   }
 
   public static TableDesc getDefaultQueryOutputTableDesc(String cols, String colTypes,
-      String fileFormat) {
-    TableDesc tblDesc = getTableDesc(LazySimpleSerDe.class, "" + Utilities.ctrlaCode, cols, colTypes,
-        false, false, fileFormat);
-    //enable escaping
+      String fileFormat, Class<? extends Deserializer> serdeClass) {
+    TableDesc tblDesc =
+        getTableDesc(serdeClass, "" + Utilities.ctrlaCode, cols, colTypes, false, false, fileFormat);
+    // enable escaping
     tblDesc.getProperties().setProperty(serdeConstants.ESCAPE_CHAR, "\\");
     tblDesc.getProperties().setProperty(serdeConstants.SERIALIZATION_ESCAPE_CRLF, "true");
-    //enable extended nesting levels
+    // enable extended nesting levels
     tblDesc.getProperties().setProperty(
         LazySerDeParameters.SERIALIZATION_EXTEND_ADDITIONAL_NESTING_LEVELS, "true");
     return tblDesc;

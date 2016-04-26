@@ -48,51 +48,6 @@ POSTHOOK: query: -- it should be converted to a sort-merge join, since the first
 EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.key ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               test_table1
-            a
-         TOK_TABREF
-            TOK_TABNAME
-               test_table2
-            b
-         =
-            .
-               TOK_TABLE_OR_COL
-                  a
-               key
-            .
-               TOK_TABLE_OR_COL
-                  b
-               key
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_HINTLIST
-            TOK_HINT
-               TOK_MAPJOIN
-               TOK_HINTARGLIST
-                  b
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     a
-                  key
-      TOK_LIMIT
-         10
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -312,61 +267,6 @@ POSTHOOK: query: -- it should be converted to a sort-merge join, since the first
 EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.key and a.key2 = b.key2 ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               test_table1
-            a
-         TOK_TABREF
-            TOK_TABNAME
-               test_table2
-            b
-         and
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     a
-                  key
-               .
-                  TOK_TABLE_OR_COL
-                     b
-                  key
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     a
-                  key2
-               .
-                  TOK_TABLE_OR_COL
-                     b
-                  key2
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_HINTLIST
-            TOK_HINT
-               TOK_MAPJOIN
-               TOK_HINTARGLIST
-                  b
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     a
-                  key
-      TOK_LIMIT
-         10
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -534,61 +434,6 @@ POSTHOOK: query: -- it should be converted to a sort-merge join, since the first
 EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key2 = b.key2 and a.key = b.key ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               test_table1
-            a
-         TOK_TABREF
-            TOK_TABNAME
-               test_table2
-            b
-         and
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     a
-                  key2
-               .
-                  TOK_TABLE_OR_COL
-                     b
-                  key2
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     a
-                  key
-               .
-                  TOK_TABLE_OR_COL
-                     b
-                  key
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_HINTLIST
-            TOK_HINT
-               TOK_MAPJOIN
-               TOK_HINTARGLIST
-                  b
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     a
-                  key
-      TOK_LIMIT
-         10
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -756,61 +601,6 @@ POSTHOOK: query: -- it should not be converted to a sort-merge join, since the f
 EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.key and a.value = b.value ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               test_table1
-            a
-         TOK_TABREF
-            TOK_TABNAME
-               test_table2
-            b
-         and
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     a
-                  key
-               .
-                  TOK_TABLE_OR_COL
-                     b
-                  key
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     a
-                  value
-               .
-                  TOK_TABLE_OR_COL
-                     b
-                  value
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_HINTLIST
-            TOK_HINT
-               TOK_MAPJOIN
-               TOK_HINTARGLIST
-                  b
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     a
-                  key
-      TOK_LIMIT
-         10
-
-
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

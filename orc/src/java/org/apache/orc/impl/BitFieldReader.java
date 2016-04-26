@@ -137,7 +137,7 @@ public class BitFieldReader {
                          long previousLen) throws IOException {
     previous.isRepeating = true;
     for (int i = 0; i < previousLen; i++) {
-      if (!previous.isNull[i]) {
+      if (previous.noNulls || !previous.isNull[i]) {
         previous.vector[i] = next();
       } else {
         // The default value of null for int types in vectorized
@@ -150,7 +150,8 @@ public class BitFieldReader {
       // when determining the isRepeating flag.
       if (previous.isRepeating
           && i > 0
-          && ((previous.vector[i - 1] != previous.vector[i]) || (previous.isNull[i - 1] != previous.isNull[i]))) {
+          && ((previous.vector[0] != previous.vector[i]) ||
+          (previous.isNull[0] != previous.isNull[i]))) {
         previous.isRepeating = false;
       }
     }

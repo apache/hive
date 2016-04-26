@@ -18,9 +18,11 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import junit.framework.Assert;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
@@ -42,11 +44,13 @@ import java.util.Map;
  * Tests for parsing and semantic analysis of ALTER TABLE ... compact.
  */
 public class TestQBCompact {
+  static QueryState queryState;
   static HiveConf conf;
 
   @BeforeClass
   public static void init() throws Exception {
-    conf = new HiveConf();
+    queryState = new QueryState(null);
+    conf = queryState.getConf();
     SessionState.start(conf);
 
     // Create a table so we can work against it
@@ -65,7 +69,7 @@ public class TestQBCompact {
   private AlterTableSimpleDesc parseAndAnalyze(String query) throws Exception {
     ParseDriver hd = new ParseDriver();
     ASTNode head = (ASTNode)hd.parse(query).getChild(0);
-    BaseSemanticAnalyzer a = SemanticAnalyzerFactory.get(conf, head);
+    BaseSemanticAnalyzer a = SemanticAnalyzerFactory.get(queryState, head);
     a.analyze(head, new Context(conf));
     List<Task<? extends Serializable>> roots = a.getRootTasks();
     Assert.assertEquals(1, roots.size());

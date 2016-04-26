@@ -23,6 +23,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -30,19 +31,21 @@ import org.junit.Test;
 
 public class TestQBJoinTreeApplyPredicate {
 
+  static QueryState queryState;
   static HiveConf conf;
 
   SemanticAnalyzer sA;
 
   @BeforeClass
   public static void initialize() {
-    conf = new HiveConf(SemanticAnalyzer.class);
+    queryState = new QueryState(new HiveConf(SemanticAnalyzer.class));
+    conf = queryState.getConf();
     SessionState.start(conf);
   }
 
   @Before
   public void setup() throws SemanticException {
-    sA = new CalcitePlanner(conf);
+    sA = new CalcitePlanner(queryState);
   }
 
   static ASTNode constructIdentifier(String nm) {

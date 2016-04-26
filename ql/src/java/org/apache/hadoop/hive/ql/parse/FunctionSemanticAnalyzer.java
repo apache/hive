@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
@@ -49,8 +50,8 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final Logger LOG = LoggerFactory
       .getLogger(FunctionSemanticAnalyzer.class);
 
-  public FunctionSemanticAnalyzer(HiveConf conf) throws SemanticException {
-    super(conf);
+  public FunctionSemanticAnalyzer(QueryState queryState) throws SemanticException {
+    super(queryState);
   }
 
   @Override

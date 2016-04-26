@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnStatsUpdateTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -229,12 +230,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     return typeName;
   }
 
-  public DDLSemanticAnalyzer(HiveConf conf) throws SemanticException {
-    this(conf, createHiveDB(conf));
+  public DDLSemanticAnalyzer(QueryState queryState) throws SemanticException {
+    this(queryState, createHiveDB(queryState.getConf()));
   }
 
-  public DDLSemanticAnalyzer(HiveConf conf, Hive db) throws SemanticException {
-    super(conf, db);
+  public DDLSemanticAnalyzer(QueryState queryState, Hive db) throws SemanticException {
+    super(queryState, db);
     reservedPartitionValues = new HashSet<String>();
     // Partition can't have this name
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME));
@@ -1350,9 +1351,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(0))
         .getChild(0));
     EnvironmentContext environmentContext = null;
-    if (SessionState.get().getCommandType()
+    if (queryState.getCommandType()
         .equals(HiveOperation.ALTERTABLE_UPDATETABLESTATS.getOperationName())
-        || SessionState.get().getCommandType()
+        || queryState.getCommandType()
             .equals(HiveOperation.ALTERTABLE_UPDATEPARTSTATS.getOperationName())) {
       // we need to check if the properties are valid, especially for stats.
       boolean changeStatsSucceeded = false;

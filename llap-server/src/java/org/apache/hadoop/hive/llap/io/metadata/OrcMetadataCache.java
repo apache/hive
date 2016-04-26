@@ -21,22 +21,29 @@ package org.apache.hadoop.hive.llap.io.metadata;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.hadoop.hive.common.io.DiskRange;
+import org.apache.hadoop.hive.common.io.DiskRangeList;
+import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
+import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
 import org.apache.hadoop.hive.llap.cache.LowLevelCachePolicy;
 import org.apache.hadoop.hive.llap.cache.MemoryManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 
 public class OrcMetadataCache {
-  private final ConcurrentHashMap<Object, OrcFileMetadata> metadata =
-      new ConcurrentHashMap<Object, OrcFileMetadata>();
+  private final ConcurrentHashMap<Object, OrcFileMetadata> metadata = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<OrcBatchKey, OrcStripeMetadata> stripeMetadata =
-      new ConcurrentHashMap<OrcBatchKey, OrcStripeMetadata>();
+      new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<Object, OrcFileEstimateErrors> estimateErrors;
   private final MemoryManager memoryManager;
   private final LowLevelCachePolicy policy;
 
-  public OrcMetadataCache(MemoryManager memoryManager, LowLevelCachePolicy policy) {
+  public OrcMetadataCache(MemoryManager memoryManager, LowLevelCachePolicy policy,
+      boolean useEstimateCache) {
     this.memoryManager = memoryManager;
     this.policy = policy;
+    this.estimateErrors = useEstimateCache
+        ? new ConcurrentHashMap<Object, OrcFileEstimateErrors>() : null;
   }
 
   public OrcFileMetadata putFileMetadata(OrcFileMetadata metaData) {
@@ -71,12 +78,51 @@ public class OrcMetadataCache {
     return val;
   }
 
+  public void putIncompleteCbs(Object fileKey, DiskRange[] ranges, long baseOffset) {
+    if (estimateErrors == null) return;
+    OrcFileEstimateErrors errorData = estimateErrors.get(fileKey);
+    boolean isNew = false;
+    // We should technically update memory usage if updating the old object, but we don't do it
+    // for now; there is no mechanism to properly notify the cache policy/etc. wrt parallel evicts.
+    if (errorData == null) {
+      errorData = new OrcFileEstimateErrors(fileKey);
+      for (DiskRange range : ranges) {
+        errorData.addError(range.getOffset(), range.getLength(), baseOffset);
+      }
+      long memUsage = errorData.estimateMemoryUsage();
+      memoryManager.reserveMemory(memUsage, false);
+      OrcFileEstimateErrors old = estimateErrors.putIfAbsent(fileKey, errorData);
+      if (old != null) {
+        errorData = old;
+        memoryManager.releaseMemory(memUsage);
+        policy.notifyLock(errorData);
+      } else {
+        isNew = true;
+        policy.cache(errorData, Priority.NORMAL);
+      }
+    }
+    if (!isNew) {
+      for (DiskRange range : ranges) {
+        errorData.addError(range.getOffset(), range.getLength(), baseOffset);
+      }
+    }
+    policy.notifyUnlock(errorData);
+  }
+
   public OrcStripeMetadata getStripeMetadata(OrcBatchKey stripeKey) throws IOException {
     return stripeMetadata.get(stripeKey);
   }
 
   public OrcFileMetadata getFileMetadata(Object fileKey) throws IOException {
     return metadata.get(fileKey);
+  }
+
+  public DiskRangeList getIncompleteCbs(Object fileKey, DiskRangeList ranges, long baseOffset,
+      DiskRangeListFactory factory, BooleanRef gotAllData) {
+    if (estimateErrors == null) return ranges;
+    OrcFileEstimateErrors errors = estimateErrors.get(fileKey);
+    if (errors == null) return ranges;
+    return errors.getIncompleteCbs(ranges, baseOffset, factory, gotAllData);
   }
 
   public void notifyEvicted(OrcFileMetadata buffer) {
@@ -87,5 +133,9 @@ public class OrcMetadataCache {
   public void notifyEvicted(OrcStripeMetadata buffer) {
     stripeMetadata.remove(buffer.getKey());
     // See OrcStripeMetadata - we don't clear the object, it will be GCed when released by users.
+  }
+
+  public void notifyEvicted(OrcFileEstimateErrors buffer) {
+    estimateErrors.remove(buffer.getFileKey());
   }
 }

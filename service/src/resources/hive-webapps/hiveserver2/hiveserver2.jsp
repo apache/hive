@@ -75,6 +75,7 @@ SessionManager sessionManager =
                 <li><a href="/jmx">Metrics Dump</a></li>
                 <li><a href="/conf">Hive Configuration</a></li>
                 <li><a href="/stacks">Stack Trace</a></li>
+                <li><a href="/llap.html">Llap Daemons</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>

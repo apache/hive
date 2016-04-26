@@ -3,6 +3,7 @@ package org.apache.orc.impl;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.orc.CompressionCodec;
+import org.apache.orc.CompressionKind;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -14,7 +15,6 @@ public class TestDataReaderProperties {
 
   private FileSystem mockedFileSystem = mock(FileSystem.class);
   private Path mockedPath = mock(Path.class);
-  private CompressionCodec mockedCodec = mock(CompressionCodec.class);
   private boolean mockedZeroCopy = false;
 
   @Test
@@ -22,12 +22,12 @@ public class TestDataReaderProperties {
     DataReaderProperties properties = DataReaderProperties.builder()
       .withFileSystem(mockedFileSystem)
       .withPath(mockedPath)
-      .withCodec(mockedCodec)
+      .withCompression(CompressionKind.ZLIB)
       .withZeroCopy(mockedZeroCopy)
       .build();
     assertEquals(mockedFileSystem, properties.getFileSystem());
     assertEquals(mockedPath, properties.getPath());
-    assertEquals(mockedCodec, properties.getCodec());
+    assertEquals(CompressionKind.ZLIB, properties.getCompression());
     assertEquals(mockedZeroCopy, properties.getZeroCopy());
   }
 
@@ -39,7 +39,7 @@ public class TestDataReaderProperties {
       .build();
     assertEquals(mockedFileSystem, properties.getFileSystem());
     assertEquals(mockedPath, properties.getPath());
-    assertNull(properties.getCodec());
+    assertNull(properties.getCompression());
     assertFalse(properties.getZeroCopy());
   }
 
@@ -52,7 +52,7 @@ public class TestDataReaderProperties {
   public void testMissingPath() {
     DataReaderProperties.builder()
       .withFileSystem(mockedFileSystem)
-      .withCodec(mockedCodec)
+      .withCompression(CompressionKind.NONE)
       .withZeroCopy(mockedZeroCopy)
       .build();
   }
@@ -61,7 +61,7 @@ public class TestDataReaderProperties {
   public void testMissingFileSystem() {
     DataReaderProperties.builder()
       .withPath(mockedPath)
-      .withCodec(mockedCodec)
+      .withCompression(CompressionKind.NONE)
       .withZeroCopy(mockedZeroCopy)
       .build();
   }

@@ -26,6 +26,9 @@ import java.util.Map;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HConstants;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
@@ -84,6 +87,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
 
   static final Logger LOG = LoggerFactory.getLogger(HiveHBaseTableInputFormat.class);
   private static final Object hbaseTableMonitor = new Object();
+  private Connection conn = null;
 
   @Override
   public RecordReader<ImmutableBytesWritable, ResultWritable> getRecordReader(
@@ -94,7 +98,11 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     HBaseSplit hbaseSplit = (HBaseSplit) split;
     TableSplit tableSplit = hbaseSplit.getTableSplit();
 
-    setHTable(HiveHBaseInputFormatUtil.getTable(jobConf));
+    if (conn == null) {
+      conn = ConnectionFactory.createConnection(HBaseConfiguration.create(jobConf));
+    }
+    initializeTable(conn, tableSplit.getTable());
+
     setScan(HiveHBaseInputFormatUtil.getScan(jobConf));
 
     Job job = new Job(jobConf);
@@ -107,6 +115,10 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
       recordReader.initialize(tableSplit, tac);
     } catch (InterruptedException e) {
       closeTable(); // Free up the HTable connections
+      if (conn != null) {
+        conn.close();
+        conn = null;
+      }
       throw new IOException("Failed to initialize RecordReader", e);
     }
 
@@ -116,6 +128,10 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
       public void close() throws IOException {
         recordReader.close();
         closeTable();
+        if (conn != null) {
+          conn.close();
+          conn = null;
+        }
       }
 
       @Override
@@ -442,7 +458,12 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     }
 
     String hbaseTableName = jobConf.get(HBaseSerDe.HBASE_TABLE_NAME);
-    setHTable(new HTable(HBaseConfiguration.create(jobConf), Bytes.toBytes(hbaseTableName)));
+    if (conn == null) {
+      conn = ConnectionFactory.createConnection(HBaseConfiguration.create(jobConf));
+    }
+    TableName tableName = TableName.valueOf(hbaseTableName);
+    initializeTable(conn, tableName);
+
     String hbaseColumnsMapping = jobConf.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
     boolean doColumnRegexMatching = jobConf.getBoolean(HBaseSerDe.HBASE_COLUMNS_REGEX_MATCHING, true);
 
@@ -509,6 +530,10 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
       return results;
     } finally {
       closeTable();
+      if (conn != null) {
+        conn.close();
+        conn = null;
+      }
     }
   }
 
@@ -516,6 +541,10 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
   protected void finalize() throws Throwable {
     try {
       closeTable();
+      if (conn != null) {
+        conn.close();
+        conn = null;
+      }
     } finally {
       super.finalize();
     }

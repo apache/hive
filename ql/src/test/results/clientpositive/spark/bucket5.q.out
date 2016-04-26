@@ -30,42 +30,6 @@ FROM src
 INSERT OVERWRITE TABLE bucketed_table SELECT key, value
 INSERT OVERWRITE TABLE unbucketed_table SELECT key, value cluster by key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            src
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               bucketed_table
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_TAB
-            TOK_TABNAME
-               unbucketed_table
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-      TOK_CLUSTERBY
-         TOK_TABLE_OR_COL
-            key
-
-
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2

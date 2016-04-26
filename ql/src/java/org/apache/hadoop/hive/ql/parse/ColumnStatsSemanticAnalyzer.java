@@ -25,15 +25,14 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -62,8 +61,8 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   private List<String> colType;
   private Table tbl;
 
-  public ColumnStatsSemanticAnalyzer(HiveConf conf) throws SemanticException {
-    super(conf);
+  public ColumnStatsSemanticAnalyzer(QueryState queryState) throws SemanticException {
+    super(queryState);
   }
 
   private boolean shouldRewrite(ASTNode tree) {

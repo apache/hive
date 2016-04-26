@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import org.apache.hadoop.hive.llap.io.metadata.OrcFileEstimateErrors;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
 import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
@@ -47,6 +48,10 @@ public final class EvictionDispatcher implements EvictionListener {
   }
 
   public void notifyEvicted(OrcStripeMetadata buffer) {
+    metadataCache.notifyEvicted(buffer);
+  }
+
+  public void notifyEvicted(OrcFileEstimateErrors buffer) {
     metadataCache.notifyEvicted(buffer);
   }
 }

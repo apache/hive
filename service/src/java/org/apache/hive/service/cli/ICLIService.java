@@ -98,5 +98,13 @@ public interface ICLIService {
   void renewDelegationToken(SessionHandle sessionHandle, HiveAuthFactory authFactory,
       String tokenStr) throws HiveSQLException;
 
+  OperationHandle getPrimaryKeys(SessionHandle sessionHandle, String catalog,
+    String schema, String table) throws HiveSQLException;
+
+  OperationHandle getCrossReference(SessionHandle sessionHandle,
+    String primaryCatalog, String primarySchema, String primaryTable,
+    String foreignCatalog, String foreignSchema, String foreignTable)
+    throws HiveSQLException;
+
 
 }

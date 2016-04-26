@@ -116,41 +116,6 @@ POSTHOOK: query: -- pruner only pick up default directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
 explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            fact_daily
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-      TOK_WHERE
-         and
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '1'
-               =
-                  TOK_TABLE_OR_COL
-                     hr
-                  '4'
-            =
-               TOK_TABLE_OR_COL
-                  value
-               'val_484'
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -239,38 +204,6 @@ POSTHOOK: query: -- pruner only pick up default directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
 explain extended SELECT key FROM fact_daily WHERE ds='1' and hr='4' and key= '406'
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            fact_daily
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-      TOK_WHERE
-         and
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '1'
-               =
-                  TOK_TABLE_OR_COL
-                     hr
-                  '4'
-            =
-               TOK_TABLE_OR_COL
-                  key
-               '406'
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -362,56 +295,6 @@ POSTHOOK: query: -- pruner only pick up skewed-value directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
 explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            fact_daily
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-      TOK_WHERE
-         and
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '1'
-               =
-                  TOK_TABLE_OR_COL
-                     hr
-                  '4'
-            or
-               and
-                  =
-                     TOK_TABLE_OR_COL
-                        key
-                     '484'
-                  =
-                     TOK_TABLE_OR_COL
-                        value
-                     'val_484'
-               and
-                  =
-                     TOK_TABLE_OR_COL
-                        key
-                     '238'
-                  =
-                     TOK_TABLE_OR_COL
-                        value
-                     'val_238'
-
-
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

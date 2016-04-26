@@ -25,6 +25,7 @@ import junit.framework.Assert;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -36,16 +37,18 @@ public class TestMacroSemanticAnalyzer {
 
   private ParseDriver parseDriver;
   private MacroSemanticAnalyzer analyzer;
+  private QueryState queryState;
   private HiveConf conf;
   private Context context;
 
   @Before
   public void setup() throws Exception {
-    conf = new HiveConf();
+    queryState = new QueryState(null);
+    conf = queryState.getConf();
     SessionState.start(conf);
     context = new Context(conf);
     parseDriver = new ParseDriver();
-    analyzer = new MacroSemanticAnalyzer(conf);
+    analyzer = new MacroSemanticAnalyzer(queryState);
   }
 
   private ASTNode parse(String command) throws Exception {

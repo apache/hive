@@ -71,6 +71,7 @@ import org.apache.tez.dag.api.TezUncheckedException;
 import org.apache.tez.dag.api.event.VertexStateUpdate;
 import org.apache.tez.dag.app.TezTaskCommunicatorImpl;
 import org.apache.tez.dag.records.TezTaskAttemptID;
+import org.apache.tez.runtime.api.TaskFailureType;
 import org.apache.tez.runtime.api.impl.TaskSpec;
 import org.apache.tez.runtime.api.impl.TezHeartbeatRequest;
 import org.apache.tez.runtime.api.impl.TezHeartbeatResponse;
@@ -114,7 +115,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   public LlapTaskCommunicator(
       TaskCommunicatorContext taskCommunicatorContext) {
     super(taskCommunicatorContext);
-    Credentials credentials = taskCommunicatorContext.getCredentials();
+    Credentials credentials = taskCommunicatorContext.getAMCredentials();
     if (credentials != null) {
       @SuppressWarnings("unchecked")
       Token<LlapTokenIdentifier> llapToken =
@@ -313,7 +314,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
                   "Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
                       containerId, t);
               getContext()
-                  .taskFailed(taskSpec.getTaskAttemptID(), TaskAttemptEndReason.OTHER,
+                  .taskFailed(taskSpec.getTaskAttemptID(), TaskFailureType.NON_FATAL, TaskAttemptEndReason.OTHER,
                       t.toString());
             } else {
               // Exception from the RPC layer - communication failure, consider as KILLED / service down.
@@ -329,7 +330,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
                     "Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
                         containerId, t);
                 getContext()
-                    .taskFailed(taskSpec.getTaskAttemptID(), TaskAttemptEndReason.OTHER,
+                    .taskFailed(taskSpec.getTaskAttemptID(), TaskFailureType.NON_FATAL, TaskAttemptEndReason.OTHER,
                         t.getMessage());
               }
             }
@@ -534,7 +535,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     currentQueryIdentifierProto = constructQueryIdentifierProto(newDagId);
     sourceStateTracker.resetState(newDagId);
     nodesForQuery.clear();
-    LOG.info("CurrentDagId set to: " + newDagId + ", name=" + getContext().getCurrentDagName());
+    LOG.info("CurrentDagId set to: " + newDagId + ", name=" + getContext().getCurrentDagInfo().getName());
     // TODO Is it possible for heartbeats to come in from lost tasks - those should be told to die, which
     // is likely already happening.
   }
@@ -548,15 +549,12 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     builder.setContainerIdString(containerId.toString());
     builder.setAmHost(getAddress().getHostName());
     builder.setAmPort(getAddress().getPort());
-    Credentials taskCredentials = new Credentials();
-    // Credentials can change across DAGs. Ideally construct only once per DAG.
-    taskCredentials.addAll(getContext().getCredentials());
 
     Preconditions.checkState(currentQueryIdentifierProto.getDagIdentifier() ==
         taskSpec.getTaskAttemptID().getTaskID().getVertexID().getDAGId().getId());
     ByteBuffer credentialsBinary = credentialMap.get(currentQueryIdentifierProto);
     if (credentialsBinary == null) {
-      credentialsBinary = serializeCredentials(getContext().getCredentials());
+      credentialsBinary = serializeCredentials(getContext().getCurrentDagInfo().getCredentials());
       credentialMap.putIfAbsent(currentQueryIdentifierProto, credentialsBinary.duplicate());
     } else {
       credentialsBinary = credentialsBinary.duplicate();

@@ -12,31 +12,6 @@ PREHOOK: query: EXPLAIN EXTENDED SELECT explode(array(1,2,3)) AS myCol FROM src 
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            src
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTION
-               explode
-               TOK_FUNCTION
-                  array
-                  1
-                  2
-                  3
-            myCol
-      TOK_LIMIT
-         3
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -141,54 +116,6 @@ PREHOOK: query: EXPLAIN EXTENDED SELECT a.myCol, count(1) FROM (SELECT explode(a
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT a.myCol, count(1) FROM (SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3) a GROUP BY a.myCol
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_QUERY
-            TOK_FROM
-               TOK_TABREF
-                  TOK_TABNAME
-                     src
-            TOK_INSERT
-               TOK_DESTINATION
-                  TOK_DIR
-                     TOK_TMP_FILE
-               TOK_SELECT
-                  TOK_SELEXPR
-                     TOK_FUNCTION
-                        explode
-                        TOK_FUNCTION
-                           array
-                           1
-                           2
-                           3
-                     myCol
-               TOK_LIMIT
-                  3
-         a
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  a
-               myCol
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_GROUPBY
-         .
-            TOK_TABLE_OR_COL
-               a
-            myCol
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -453,67 +380,6 @@ PREHOOK: query: EXPLAIN EXTENDED SELECT a.myKey, a.myVal, count(1) FROM (SELECT 
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT a.myKey, a.myVal, count(1) FROM (SELECT explode(map(1,'one',2,'two',3,'three')) as (myKey,myVal) FROM src LIMIT 3) a GROUP BY a.myKey, a.myVal
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_QUERY
-            TOK_FROM
-               TOK_TABREF
-                  TOK_TABNAME
-                     src
-            TOK_INSERT
-               TOK_DESTINATION
-                  TOK_DIR
-                     TOK_TMP_FILE
-               TOK_SELECT
-                  TOK_SELEXPR
-                     TOK_FUNCTION
-                        explode
-                        TOK_FUNCTION
-                           map
-                           1
-                           'one'
-                           2
-                           'two'
-                           3
-                           'three'
-                     myKey
-                     myVal
-               TOK_LIMIT
-                  3
-         a
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  a
-               myKey
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  a
-               myVal
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_GROUPBY
-         .
-            TOK_TABLE_OR_COL
-               a
-            myKey
-         .
-            TOK_TABLE_OR_COL
-               a
-            myVal
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

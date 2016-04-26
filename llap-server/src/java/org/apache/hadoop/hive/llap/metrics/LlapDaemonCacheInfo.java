@@ -34,7 +34,10 @@ public enum LlapDaemonCacheInfo implements MetricsInfo {
   CacheHitRatio("Ratio of disk ranges cached vs requested"),
   CacheReadRequests("Number of disk range requests to cache"),
   CacheAllocatedArena("Number of arenas allocated"),
-  CacheNumLockedBuffers("Number of locked buffers in cache");
+  CacheNumLockedBuffers("Number of locked buffers in cache"),
+  CacheArenaSize("Size of arena used by allocator"),
+  CacheMinAllocationSize("Minimum allocation size used by allocator"),
+  CacheMaxAllocationSize("Maximum allocation size used by allocator");
 
   private final String desc;
 

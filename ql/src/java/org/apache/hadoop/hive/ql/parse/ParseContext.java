@@ -28,6 +28,7 @@ import java.util.Set;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryProperties;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -78,6 +79,7 @@ public class ParseContext {
   private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
   private Context ctx;
+  private QueryState queryState;
   private HiveConf conf;
   private HashMap<String, String> idToTableNameMap;
   private int destTableId;
@@ -153,7 +155,7 @@ public class ParseContext {
    * @param rootTasks
    */
   public ParseContext(
-      HiveConf conf,
+      QueryState queryState,
       HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner,
       HashMap<TableScanOperator, PrunedPartitionList> opToPartList,
       HashMap<String, TableScanOperator> topOps,
@@ -173,7 +175,8 @@ public class ParseContext {
       List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting,
       AnalyzeRewriteContext analyzeRewrite, CreateTableDesc createTableDesc,
       QueryProperties queryProperties, Map<SelectOperator, Table> viewProjectToTableSchema) {
-    this.conf = conf;
+    this.queryState = queryState;
+    this.conf = queryState.getConf();
     this.opToPartPruner = opToPartPruner;
     this.opToPartList = opToPartList;
     this.joinOps = joinOps;
@@ -238,6 +241,13 @@ public class ParseContext {
    */
   public void setConf(HiveConf conf) {
     this.conf = conf;
+  }
+
+  /**
+   * @return the hive conf
+   */
+  public QueryState getQueryState() {
+    return queryState;
   }
 
   /**

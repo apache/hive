@@ -59,6 +59,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.http.HttpServer;
+import org.apache.hive.http.LlapServlet;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.cli.CLIService;
@@ -181,6 +182,7 @@ public class HiveServer2 extends CompositeService {
             builder.setSPNEGOKeytab(spnegoKeytab);
             builder.setUseSPNEGO(true);
           }
+          builder.addServlet("llap", LlapServlet.class);
           webServer = builder.build();
           webServer.addServlet("query_page", "/query_page", QueryProfileServlet.class);
         }

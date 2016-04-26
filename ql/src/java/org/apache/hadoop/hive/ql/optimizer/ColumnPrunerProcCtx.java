@@ -277,7 +277,7 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
 
     for (Operator<? extends OperatorDesc> child : curOp.getChildOperators()) {
       if (child instanceof UnionOperator) {
-        prunList = genColLists(curOp, child);
+        prunList = genColLists(child);
         if (prunList == null || prunList.size() == 0 || parentPrunList.size() == prunList.size()) {
           continue;
         }

@@ -38,7 +38,9 @@ import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryDisplay;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -52,6 +54,7 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.thrift.ThriftJDBCBinarySerDe;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -123,10 +126,10 @@ public class SQLOperation extends ExecuteStatementOperation {
    * @param sqlOperationConf
    * @throws HiveSQLException
    */
-  public void prepare(HiveConf sqlOperationConf) throws HiveSQLException {
+  public void prepare(QueryState queryState) throws HiveSQLException {
     setState(OperationState.RUNNING);
     try {
-      driver = new Driver(sqlOperationConf, getParentSession().getUserName());
+      driver = new Driver(queryState, getParentSession().getUserName());
       sqlOpDisplay.setQueryDisplay(driver.getQueryDisplay());
 
       // set the operation handle information in Driver, so that thrift API users
@@ -179,7 +182,7 @@ public class SQLOperation extends ExecuteStatementOperation {
     }
   }
 
-  private void runQuery(HiveConf sqlOperationConf) throws HiveSQLException {
+  private void runQuery() throws HiveSQLException {
     try {
       // In Hive server mode, we are not able to retry in the FetchTask
       // case, when calling fetch queries since execute() has returned.
@@ -211,11 +214,10 @@ public class SQLOperation extends ExecuteStatementOperation {
   @Override
   public void runInternal() throws HiveSQLException {
     setState(OperationState.PENDING);
-    final HiveConf opConfig = getConfigForOperation();
 
-    prepare(opConfig);
+    prepare(queryState);
     if (!shouldRunAsync()) {
-      runQuery(opConfig);
+      runQuery();
     } else {
       // We'll pass ThreadLocals in the background thread from the foreground (handler) thread
       final SessionState parentSessionState = SessionState.get();
@@ -224,7 +226,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       final Hive parentHive = parentSession.getSessionHive();
       // Current UGI will get used by metastore when metsatore is in embedded mode
       // So this needs to get passed to the new background thread
-      final UserGroupInformation currentUGI = getCurrentUGI(opConfig);
+      final UserGroupInformation currentUGI = getCurrentUGI();
       // Runnable impl to call runInternal asynchronously,
       // from a different thread
       Runnable backgroundOperation = new Runnable() {
@@ -239,7 +241,7 @@ public class SQLOperation extends ExecuteStatementOperation {
               registerCurrentOperationLog();
               registerLoggingContext();
               try {
-                runQuery(opConfig);
+                runQuery();
               } catch (HiveSQLException e) {
                 setOperationException(e);
                 LOG.error("Error running hive query: ", e);
@@ -290,7 +292,7 @@ public class SQLOperation extends ExecuteStatementOperation {
    * @return UserGroupInformation
    * @throws HiveSQLException
    */
-  private UserGroupInformation getCurrentUGI(HiveConf opConfig) throws HiveSQLException {
+  private UserGroupInformation getCurrentUGI() throws HiveSQLException {
     try {
       return Utils.getUGI();
     } catch (Exception e) {
@@ -356,12 +358,25 @@ public class SQLOperation extends ExecuteStatementOperation {
   private transient final List<Object> convey = new ArrayList<Object>();
 
   @Override
-  public RowSet getNextRowSet(FetchOrientation orientation, long maxRows) throws HiveSQLException {
+  public RowSet getNextRowSet(FetchOrientation orientation, long maxRows)
+    throws HiveSQLException {
+
     validateDefaultFetchOrientation(orientation);
     assertState(new ArrayList<OperationState>(Arrays.asList(OperationState.FINISHED)));
 
-    RowSet rowSet = RowSetFactory.create(resultSchema, getProtocolVersion());
+    FetchTask fetchTask = driver.getFetchTask();
+    boolean isBlobBased = false;
 
+    if (fetchTask != null && fetchTask.getWork().isHiveServerQuery() && HiveConf.getBoolVar(queryState.getConf(),
+        HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS)
+        && (fetchTask.getTblDesc().getSerdeClassName().equalsIgnoreCase(ThriftJDBCBinarySerDe.class
+            .getName()))) {
+      // Just fetch one blob if we've serialized thrift objects in final tasks
+      maxRows = 1;
+      isBlobBased = true;
+    }
+    driver.setMaxRows((int) maxRows);
+    RowSet rowSet = RowSetFactory.create(resultSchema, getProtocolVersion(), isBlobBased);
     try {
       /* if client is requesting fetch-from-start and its not the first time reading from this operation
        * then reset the fetch position to beginning
@@ -500,34 +515,6 @@ public class SQLOperation extends ExecuteStatementOperation {
       throw new SQLException("Could not create ResultSet: " + ex.getMessage(), ex);
     }
     return serde;
-  }
-
-  /**
-   * If there are query specific settings to overlay, then create a copy of config
-   * There are two cases we need to clone the session config that's being passed to hive driver
-   * 1. Async query -
-   *    If the client changes a config setting, that shouldn't reflect in the execution already underway
-   * 2. confOverlay -
-   *    The query specific settings should only be applied to the query config and not session
-   * @return new configuration
-   * @throws HiveSQLException
-   */
-  public HiveConf getConfigForOperation() throws HiveSQLException {
-    HiveConf sqlOperationConf = getParentSession().getHiveConf();
-    if (!confOverlay.isEmpty() || shouldRunAsync()) {
-      // clone the partent session config for this query
-      sqlOperationConf = new HiveConf(sqlOperationConf);
-
-      // apply overlay query specific settings, if any
-      for (Map.Entry<String, String> confEntry : confOverlay.entrySet()) {
-        try {
-          sqlOperationConf.verifyAndSet(confEntry.getKey(), confEntry.getValue());
-        } catch (IllegalArgumentException e) {
-          throw new HiveSQLException("Error applying statement specific settings", e);
-        }
-      }
-    }
-    return sqlOperationConf;
   }
 
   /**

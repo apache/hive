@@ -63,6 +63,7 @@ public class PerfLogger {
   public static final String FAILURE_HOOK = "FailureHook.";
   public static final String DRIVER_RUN = "Driver.run";
   public static final String TIME_TO_SUBMIT = "TimeToSubmit";
+  public static final String TEZ_COMPILER = "TezCompiler";
   public static final String TEZ_SUBMIT_TO_RUNNING = "TezSubmitToRunningDag";
   public static final String TEZ_BUILD_DAG = "TezBuildDag";
   public static final String TEZ_SUBMIT_DAG = "TezSubmitDag";

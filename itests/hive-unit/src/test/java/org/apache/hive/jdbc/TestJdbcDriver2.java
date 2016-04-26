@@ -369,7 +369,7 @@ public class TestJdbcDriver2 {
     assertNull(rs.getStatement());
     rs.close();
 
-    rs = md.getPrimaryKeys(null, null, null);
+    rs = md.getPrimaryKeys(null, "testdb", tableName);
     assertNull(rs.getStatement());
     rs.close();
 
@@ -2145,8 +2145,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
   public void testPrimaryKeys() throws SQLException {
     DatabaseMetaData dbmd = con.getMetaData();
     assertNotNull(dbmd);
-    // currently getPrimaryKeys always returns an empty resultset for Hive
-    ResultSet res = dbmd.getPrimaryKeys(null, null, null);
+    ResultSet res = dbmd.getPrimaryKeys(null, "testdb", tableName);
     ResultSetMetaData md = res.getMetaData();
     assertEquals(md.getColumnCount(), 6);
     assertFalse(res.next());

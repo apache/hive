@@ -20,13 +20,12 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.io.orc.TreeReaderFactory.TreeReaderSchema;
-import org.apache.orc.OrcProto;
-import org.apache.orc.OrcUtils;
 import org.apache.orc.TypeDescription;
 
 /**
@@ -34,103 +33,134 @@ import org.apache.orc.TypeDescription;
  * has been schema evolution.
  */
 public class SchemaEvolution {
-
+  private final Map<TypeDescription, TypeDescription> readerToFile;
+  private final boolean[] included;
+  private final TypeDescription readerSchema;
   private static final Log LOG = LogFactory.getLog(SchemaEvolution.class);
 
-  public static TreeReaderSchema validateAndCreate(List<OrcProto.Type> fileTypes,
-      List<OrcProto.Type> schemaTypes) throws IOException {
-
-    // For ACID, the row is the ROW field in the outer STRUCT.
-    final boolean isAcid = checkAcidSchema(fileTypes);
-    final List<OrcProto.Type> rowSchema;
-    int rowSubtype;
-    if (isAcid) {
-      rowSubtype = OrcRecordUpdater.ROW + 1;
-      rowSchema = fileTypes.subList(rowSubtype, fileTypes.size());
-    } else {
-      rowSubtype = 0;
-      rowSchema = fileTypes;
-    }
-
-    // Do checking on the overlap.  Additional columns will be defaulted to NULL.
-
-    int numFileColumns = rowSchema.get(0).getSubtypesCount();
-    int numDesiredColumns = schemaTypes.get(0).getSubtypesCount();
-
-    int numReadColumns = Math.min(numFileColumns, numDesiredColumns);
-
-    /**
-     * Check type promotion.
-     *
-     * Currently, we only support integer type promotions that can be done "implicitly".
-     * That is, we know that using a bigger integer tree reader on the original smaller integer
-     * column will "just work".
-     *
-     * In the future, other type promotions might require type conversion.
-     */
-    // short -> int -> bigint as same integer readers are used for the above types.
-
-    for (int i = 0; i < numReadColumns; i++) {
-      OrcProto.Type fColType = fileTypes.get(rowSubtype + i);
-      OrcProto.Type rColType = schemaTypes.get(i);
-      if (!fColType.getKind().equals(rColType.getKind())) {
-
-        boolean ok = false;
-        if (fColType.getKind().equals(OrcProto.Type.Kind.SHORT)) {
-
-          if (rColType.getKind().equals(OrcProto.Type.Kind.INT) ||
-              rColType.getKind().equals(OrcProto.Type.Kind.LONG)) {
-            // type promotion possible, converting SHORT to INT/LONG requested type
-            ok = true;
-          }
-        } else if (fColType.getKind().equals(OrcProto.Type.Kind.INT)) {
-
-          if (rColType.getKind().equals(OrcProto.Type.Kind.LONG)) {
-            // type promotion possible, converting INT to LONG requested type
-            ok = true;
-          }
-        }
-
-        if (!ok) {
-          throw new IOException("ORC does not support type conversion from " +
-              fColType.getKind().name() + " to " + rColType.getKind().name());
-        }
-      }
-    }
-
-    List<OrcProto.Type> fullSchemaTypes;
-
-    if (isAcid) {
-      fullSchemaTypes = new ArrayList<OrcProto.Type>();
-
-      // This copies the ACID struct type which is subtype = 0.
-      // It has field names "operation" through "row".
-      // And we copy the types for all fields EXCEPT ROW (which must be last!).
-
-      for (int i = 0; i < rowSubtype; i++) {
-        fullSchemaTypes.add(fileTypes.get(i).toBuilder().build());
-      }
-
-      // Add the row struct type.
-      OrcUtils.appendOrcTypesRebuildSubtypes(fullSchemaTypes, schemaTypes, 0);
-    } else {
-      fullSchemaTypes = schemaTypes;
-    }
-
-    int innerStructSubtype = rowSubtype;
-
-    // LOG.info("Schema evolution: (fileTypes) " + fileTypes.toString() +
-    //     " (schemaEvolutionTypes) " + schemaEvolutionTypes.toString());
-
-    return new TreeReaderSchema().
-        fileTypes(fileTypes).
-        schemaTypes(fullSchemaTypes).
-        innerStructSubtype(innerStructSubtype);
+  public SchemaEvolution(TypeDescription readerSchema, boolean[] included) {
+    this.included = included;
+    readerToFile = null;
+    this.readerSchema = readerSchema;
   }
 
-  private static boolean checkAcidSchema(List<OrcProto.Type> fileSchema) {
-    if (fileSchema.get(0).getKind().equals(OrcProto.Type.Kind.STRUCT)) {
-      List<String> rootFields = fileSchema.get(0).getFieldNamesList();
+  public SchemaEvolution(TypeDescription fileSchema,
+                         TypeDescription readerSchema,
+                         boolean[] included) throws IOException {
+    readerToFile = new HashMap<>(readerSchema.getMaximumId() + 1);
+    this.included = included;
+    if (checkAcidSchema(fileSchema)) {
+      this.readerSchema = createEventSchema(readerSchema);
+    } else {
+      this.readerSchema = readerSchema;
+    }
+    buildMapping(fileSchema, this.readerSchema);
+  }
+
+  public TypeDescription getReaderSchema() {
+    return readerSchema;
+  }
+
+  public TypeDescription getFileType(TypeDescription readerType) {
+    TypeDescription result;
+    if (readerToFile == null) {
+      if (included == null || included[readerType.getId()]) {
+        result = readerType;
+      } else {
+        result = null;
+      }
+    } else {
+      result = readerToFile.get(readerType);
+    }
+    return result;
+  }
+
+  void buildMapping(TypeDescription fileType,
+                    TypeDescription readerType) throws IOException {
+    // if the column isn't included, don't map it
+    if (included != null && !included[readerType.getId()]) {
+      return;
+    }
+    boolean isOk = true;
+    // check the easy case first
+    if (fileType.getCategory() == readerType.getCategory()) {
+      switch (readerType.getCategory()) {
+        case BOOLEAN:
+        case BYTE:
+        case SHORT:
+        case INT:
+        case LONG:
+        case DOUBLE:
+        case FLOAT:
+        case STRING:
+        case TIMESTAMP:
+        case BINARY:
+        case DATE:
+          // these are always a match
+          break;
+        case CHAR:
+        case VARCHAR:
+          isOk = fileType.getMaxLength() == readerType.getMaxLength();
+          break;
+        case DECIMAL:
+          // TODO we don't enforce scale and precision checks, but probably should
+          break;
+        case UNION:
+        case MAP:
+        case LIST: {
+          // these must be an exact match
+          List<TypeDescription> fileChildren = fileType.getChildren();
+          List<TypeDescription> readerChildren = readerType.getChildren();
+          if (fileChildren.size() == readerChildren.size()) {
+            for(int i=0; i < fileChildren.size(); ++i) {
+              buildMapping(fileChildren.get(i), readerChildren.get(i));
+            }
+          } else {
+            isOk = false;
+          }
+          break;
+        }
+        case STRUCT: {
+          // allow either side to have fewer fields than the other
+          List<TypeDescription> fileChildren = fileType.getChildren();
+          List<TypeDescription> readerChildren = readerType.getChildren();
+          int jointSize = Math.min(fileChildren.size(), readerChildren.size());
+          for(int i=0; i < jointSize; ++i) {
+            buildMapping(fileChildren.get(i), readerChildren.get(i));
+          }
+          break;
+        }
+        default:
+          throw new IllegalArgumentException("Unknown type " + readerType);
+      }
+    } else {
+      switch (fileType.getCategory()) {
+        case SHORT:
+          if (readerType.getCategory() != TypeDescription.Category.INT &&
+              readerType.getCategory() != TypeDescription.Category.LONG) {
+            isOk = false;
+          }
+          break;
+        case INT:
+          if (readerType.getCategory() != TypeDescription.Category.LONG) {
+            isOk = false;
+          }
+          break;
+        default:
+          isOk = false;
+      }
+    }
+    if (isOk) {
+      readerToFile.put(readerType, fileType);
+    } else {
+      throw new IOException("ORC does not support type conversion from " +
+          fileType + " to " + readerType);
+    }
+  }
+
+  private static boolean checkAcidSchema(TypeDescription type) {
+    if (type.getCategory().equals(TypeDescription.Category.STRUCT)) {
+      List<String> rootFields = type.getFieldNames();
       if (acidEventFieldNames.equals(rootFields)) {
         return true;
       }
@@ -142,26 +172,14 @@ public class SchemaEvolution {
    * @param typeDescr
    * @return ORC types for the ACID event based on the row's type description
    */
-  public static List<OrcProto.Type> createEventSchema(TypeDescription typeDescr) {
-
-    List<OrcProto.Type> result = new ArrayList<OrcProto.Type>();
-
-    OrcProto.Type.Builder type = OrcProto.Type.newBuilder();
-    type.setKind(OrcProto.Type.Kind.STRUCT);
-    type.addAllFieldNames(acidEventFieldNames);
-    for (int i = 0; i < acidEventFieldNames.size(); i++) {
-      type.addSubtypes(i + 1);
-    }
-    result.add(type.build());
-
-    // Automatically add all fields except the last (ROW).
-    for (int i = 0; i < acidEventOrcTypeKinds.size() - 1; i ++) {
-      type.clear();
-      type.setKind(acidEventOrcTypeKinds.get(i));
-      result.add(type.build());
-    }
-
-    OrcUtils.appendOrcTypesRebuildSubtypes(result, typeDescr);
+  public static TypeDescription createEventSchema(TypeDescription typeDescr) {
+    TypeDescription result = TypeDescription.createStruct()
+        .addField("operation", TypeDescription.createInt())
+        .addField("originalTransaction", TypeDescription.createLong())
+        .addField("bucket", TypeDescription.createInt())
+        .addField("rowId", TypeDescription.createLong())
+        .addField("currentTransaction", TypeDescription.createLong())
+        .addField("row", typeDescr.clone());
     return result;
   }
 
@@ -173,15 +191,5 @@ public class SchemaEvolution {
     acidEventFieldNames.add("rowId");
     acidEventFieldNames.add("currentTransaction");
     acidEventFieldNames.add("row");
-  }
-  public static final List<OrcProto.Type.Kind> acidEventOrcTypeKinds =
-      new ArrayList<OrcProto.Type.Kind>();
-  static {
-    acidEventOrcTypeKinds.add(OrcProto.Type.Kind.INT);
-    acidEventOrcTypeKinds.add(OrcProto.Type.Kind.LONG);
-    acidEventOrcTypeKinds.add(OrcProto.Type.Kind.INT);
-    acidEventOrcTypeKinds.add(OrcProto.Type.Kind.LONG);
-    acidEventOrcTypeKinds.add(OrcProto.Type.Kind.LONG);
-    acidEventOrcTypeKinds.add(OrcProto.Type.Kind.STRUCT);
   }
 }

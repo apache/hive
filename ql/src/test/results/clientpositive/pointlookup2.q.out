@@ -98,62 +98,6 @@ from pcr_t1
 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2)
 order by key, value, ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            pcr_t1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               value
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               ds
-      TOK_WHERE
-         or
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-08'
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  1
-            and
-               =
-                  TOK_TABLE_OR_COL
-                     ds
-                  '2000-04-09'
-               =
-                  TOK_TABLE_OR_COL
-                     key
-                  2
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  value
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               TOK_TABLE_OR_COL
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -324,58 +268,6 @@ from pcr_t1 t1 join pcr_t1 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08'
 order by t1.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               pcr_t1
-            t1
-         TOK_TABREF
-            TOK_TABNAME
-               pcr_t1
-            t2
-         and
-            and
-               =
-                  .
-                     TOK_TABLE_OR_COL
-                        t1
-                     key
-                  .
-                     TOK_TABLE_OR_COL
-                        t2
-                     key
-               =
-                  .
-                     TOK_TABLE_OR_COL
-                        t1
-                     ds
-                  '2000-04-08'
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     t2
-                  ds
-               '2000-04-08'
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     t1
-                  key
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -590,58 +482,6 @@ from pcr_t1 t1 join pcr_t1 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-09'
 order by t1.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               pcr_t1
-            t1
-         TOK_TABREF
-            TOK_TABNAME
-               pcr_t1
-            t2
-         and
-            and
-               =
-                  .
-                     TOK_TABLE_OR_COL
-                        t1
-                     key
-                  .
-                     TOK_TABLE_OR_COL
-                        t2
-                     key
-               =
-                  .
-                     TOK_TABLE_OR_COL
-                        t1
-                     ds
-                  '2000-04-08'
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     t2
-                  ds
-               '2000-04-09'
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     t1
-                  key
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -903,75 +743,6 @@ from pcr_t1 t1 join pcr_t2 t2
 where (t1.ds='2000-04-08' and t2.key=1) or (t1.ds='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               pcr_t1
-            t1
-         TOK_TABREF
-            TOK_TABNAME
-               pcr_t2
-            t2
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         or
-            and
-               =
-                  .
-                     TOK_TABLE_OR_COL
-                        t1
-                     ds
-                  '2000-04-08'
-               =
-                  .
-                     TOK_TABLE_OR_COL
-                        t2
-                     key
-                  1
-            and
-               =
-                  .
-                     TOK_TABLE_OR_COL
-                        t1
-                     ds
-                  '2000-04-09'
-               =
-                  .
-                     TOK_TABLE_OR_COL
-                        t2
-                     key
-                  2
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     t2
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     t2
-                  value
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     t1
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1274,75 +1045,6 @@ from pcr_t1 t1 join pcr_t2 t2
 where (t2.ds='2000-04-08' and t1.key=1) or (t2.ds='2000-04-09' and t1.key=2)
 order by t1.key, t1.value, t2.ds
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               pcr_t1
-            t1
-         TOK_TABREF
-            TOK_TABNAME
-               pcr_t2
-            t2
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         or
-            and
-               =
-                  .
-                     TOK_TABLE_OR_COL
-                        t2
-                     ds
-                  '2000-04-08'
-               =
-                  .
-                     TOK_TABLE_OR_COL
-                        t1
-                     key
-                  1
-            and
-               =
-                  .
-                     TOK_TABLE_OR_COL
-                        t2
-                     ds
-                  '2000-04-09'
-               =
-                  .
-                     TOK_TABLE_OR_COL
-                        t1
-                     key
-                  2
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     t1
-                  key
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     t1
-                  value
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     t2
-                  ds
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

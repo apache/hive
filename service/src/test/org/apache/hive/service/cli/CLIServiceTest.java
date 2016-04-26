@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
-
+import org.apache.hadoop.hive.serde2.thrift.Type;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

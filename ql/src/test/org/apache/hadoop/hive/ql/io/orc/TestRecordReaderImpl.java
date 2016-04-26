@@ -28,11 +28,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -44,6 +44,7 @@ import org.apache.hadoop.fs.PositionedReadable;
 import org.apache.hadoop.fs.Seekable;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hive.common.util.HiveTestUtils;
 import org.apache.orc.BloomFilterIO;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.Location;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
@@ -53,17 +54,12 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.orc.ColumnStatistics;
-import org.apache.orc.CompressionCodec;
 import org.apache.orc.DataReader;
-import org.apache.orc.DataReaderFactory;
-import org.apache.orc.MetadataReaderFactory;
 import org.apache.orc.StripeInformation;
+import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.ColumnStatisticsImpl;
 import org.apache.orc.OrcProto;
 
-import org.apache.orc.impl.DataReaderProperties;
-import org.apache.orc.impl.MetadataReader;
-import org.apache.orc.impl.MetadataReaderProperties;
 import org.junit.Test;
 import org.mockito.MockSettings;
 import org.mockito.Mockito;
@@ -1642,51 +1638,42 @@ public class TestRecordReaderImpl {
   @Test
   public void testClose() throws Exception {
     DataReader mockedDataReader = mock(DataReader.class);
-    MetadataReader mockedMetadataReader = mock(MetadataReader.class);
-
-    closeMockedRecordReader(mockedDataReader, mockedMetadataReader);
+    closeMockedRecordReader(mockedDataReader);
 
     verify(mockedDataReader, atLeastOnce()).close();
-    verify(mockedMetadataReader, atLeastOnce()).close();
   }
 
   @Test
   public void testCloseWithException() throws Exception {
     DataReader mockedDataReader = mock(DataReader.class);
-    MetadataReader mockedMetadataReader = mock(MetadataReader.class);
     doThrow(IOException.class).when(mockedDataReader).close();
 
     try {
-      closeMockedRecordReader(mockedDataReader, mockedMetadataReader);
+      closeMockedRecordReader(mockedDataReader);
       fail("Exception should have been thrown when Record Reader was closed");
     } catch (IOException expected) {
 
     }
 
-    verify(mockedMetadataReader, atLeastOnce()).close();
     verify(mockedDataReader, atLeastOnce()).close();
   }
 
-  private void closeMockedRecordReader(DataReader mockedDataReader,
-                                       MetadataReader mockedMetadataReader) throws IOException {
-    DataReaderFactory mockedDataReaderFactory = mock(DataReaderFactory.class);
-    MetadataReaderFactory mockedMetadataReaderFactory = mock(MetadataReaderFactory.class);
-    when(mockedDataReaderFactory.create(any(DataReaderProperties.class))).thenReturn(mockedDataReader);
-    when(mockedMetadataReaderFactory.create(any(MetadataReaderProperties.class))).thenReturn(mockedMetadataReader);
+  Path workDir = new Path(System.getProperty("test.tmp.dir",
+      "target" + File.separator + "test" + File.separator + "tmp"));
 
-    RecordReader recordReader = RecordReaderImpl.builder()
-      .withBufferSize(0)
-      .withCodec(mock(CompressionCodec.class))
-      .withConf(mock(Configuration.class))
-      .withFileSystem(mock(FileSystem.class))
-      .withOptions(mock(Reader.Options.class))
-      .withPath(mock(Path.class))
-      .withStrideRate(0)
-      .withStripes(Collections.singletonList(mock(StripeInformation.class)))
-      .withTypes(Collections.singletonList(OrcProto.Type.getDefaultInstance()))
-      .withDataReaderFactory(mockedDataReaderFactory)
-      .withMetadataReaderFactory(mockedMetadataReaderFactory)
-      .build();
+  private void closeMockedRecordReader(DataReader mockedDataReader) throws IOException {
+    Configuration conf = new Configuration();
+    FileSystem fs = FileSystem.getLocal(conf).getRaw();
+    fs.delete(workDir, true);
+    fs.mkdirs(workDir);
+    Path path = new Path(workDir, "empty.orc");
+    Writer writer = OrcFile.createWriter(path, OrcFile.writerOptions(conf)
+        .setSchema(TypeDescription.createLong()));
+    writer.close();
+    Reader reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
+
+    RecordReader recordReader = reader.rowsOptions(new Reader.Options()
+        .dataReader(mockedDataReader));
 
     recordReader.close();
   }

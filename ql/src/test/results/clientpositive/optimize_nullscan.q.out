@@ -14,25 +14,6 @@ POSTHOOK: query: -- SORT_QUERY_RESULTS
 explain extended 
 select key from src where false
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            src
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-      TOK_WHERE
-         false
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -144,32 +125,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select count(key) from srcpart where 1=2 group by key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               TOK_TABLE_OR_COL
-                  key
-      TOK_WHERE
-         =
-            1
-            2
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            key
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -256,63 +211,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from (select key from src where false) a left outer join (select key from srcpart limit 0) b on a.key=b.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_LEFTOUTERJOIN
-         TOK_SUBQUERY
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        src
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           key
-                  TOK_WHERE
-                     false
-            a
-         TOK_SUBQUERY
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        srcpart
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           key
-                  TOK_LIMIT
-                     0
-            b
-         =
-            .
-               TOK_TABLE_OR_COL
-                  a
-               key
-            .
-               TOK_TABLE_OR_COL
-                  b
-               key
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-
-
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -724,54 +622,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select count(key) from src where false union all select count(key) from srcpart
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_UNIONALL
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        src
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_FUNCTION
-                           count
-                           TOK_TABLE_OR_COL
-                              key
-                  TOK_WHERE
-                     false
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        srcpart
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_FUNCTION
-                           count
-                           TOK_TABLE_OR_COL
-                              key
-         _u1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -1249,54 +1099,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from (select key from src where false) a left outer join (select value from srcpart limit 0) b
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_LEFTOUTERJOIN
-         TOK_SUBQUERY
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        src
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           key
-                  TOK_WHERE
-                     false
-            a
-         TOK_SUBQUERY
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        srcpart
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           value
-                  TOK_LIMIT
-                     0
-            b
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-
-
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1707,65 +1509,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended 
 select * from (select key from src union all select src.key from src left outer join srcpart on src.key = srcpart.key) a  where false
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_UNIONALL
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        src
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           key
-            TOK_QUERY
-               TOK_FROM
-                  TOK_LEFTOUTERJOIN
-                     TOK_TABREF
-                        TOK_TABNAME
-                           src
-                     TOK_TABREF
-                        TOK_TABNAME
-                           srcpart
-                     =
-                        .
-                           TOK_TABLE_OR_COL
-                              src
-                           key
-                        .
-                           TOK_TABLE_OR_COL
-                              srcpart
-                           key
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        .
-                           TOK_TABLE_OR_COL
-                              src
-                           key
-         a
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         false
-
-
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -2041,40 +1784,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended 
 select * from src s1, src s2 where false and s1.value = s2.value
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               src
-            s1
-         TOK_TABREF
-            TOK_TABNAME
-               src
-            s2
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-      TOK_WHERE
-         and
-            false
-            =
-               .
-                  TOK_TABLE_OR_COL
-                     s1
-                  value
-               .
-                  TOK_TABLE_OR_COL
-                     s2
-                  value
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2222,28 +1931,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select count(1) from src where null = 1
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            src
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_WHERE
-         =
-            TOK_NULL
-            1
-
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

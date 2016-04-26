@@ -35,11 +35,15 @@ import org.apache.hive.service.rpc.thrift.TGetCatalogsReq;
 import org.apache.hive.service.rpc.thrift.TGetCatalogsResp;
 import org.apache.hive.service.rpc.thrift.TGetColumnsReq;
 import org.apache.hive.service.rpc.thrift.TGetColumnsResp;
+import org.apache.hive.service.rpc.thrift.TGetCrossReferenceReq;
+import org.apache.hive.service.rpc.thrift.TGetCrossReferenceResp;
 import org.apache.hive.service.rpc.thrift.TGetFunctionsReq;
 import org.apache.hive.service.rpc.thrift.TGetFunctionsResp;
 import org.apache.hive.service.rpc.thrift.TGetInfoReq;
 import org.apache.hive.service.rpc.thrift.TGetInfoResp;
 import org.apache.hive.service.rpc.thrift.TGetInfoType;
+import org.apache.hive.service.rpc.thrift.TGetPrimaryKeysReq;
+import org.apache.hive.service.rpc.thrift.TGetPrimaryKeysResp;
 import org.apache.hive.service.rpc.thrift.TGetSchemasReq;
 import org.apache.hive.service.rpc.thrift.TGetSchemasResp;
 import org.apache.hive.service.rpc.thrift.TGetTableTypesReq;
@@ -255,7 +259,27 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   public ResultSet getCrossReference(String primaryCatalog,
       String primarySchema, String primaryTable, String foreignCatalog,
       String foreignSchema, String foreignTable) throws SQLException {
-    throw new SQLException("Method not supported");
+   TGetCrossReferenceResp getFKResp;
+   TGetCrossReferenceReq getFKReq = new TGetCrossReferenceReq(sessHandle);
+   getFKReq.setParentTableName(primaryTable);
+   getFKReq.setParentSchemaName(primarySchema);
+   getFKReq.setParentCatalogName(primaryCatalog);
+   getFKReq.setForeignTableName(foreignTable);
+   getFKReq.setForeignSchemaName(foreignSchema);
+   getFKReq.setForeignCatalogName(foreignCatalog);
+
+   try {
+     getFKResp = client.GetCrossReference(getFKReq);
+   } catch (TException e) {
+     throw new SQLException(e.getMessage(), "08S01", e);
+   }
+   Utils.verifySuccess(getFKResp.getStatus());
+
+   return new HiveQueryResultSet.Builder(connection)
+     .setClient(client)
+     .setSessionHandle(sessHandle)
+     .setStmtHandle(getFKResp.getOperationHandle())
+     .build();
   }
 
   public int getDatabaseMajorVersion() throws SQLException {
@@ -493,12 +517,23 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
 
   public ResultSet getPrimaryKeys(String catalog, String schema, String table)
       throws SQLException {
-    // Hive doesn't support primary keys
-    // using local schema with empty resultset
-    return new HiveQueryResultSet.Builder(connection).setClient(client).setEmptyResultSet(true).
-        setSchema(Arrays.asList("TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "COLUMN_NAME", "KEY_SEQ", "PK_NAME" ),
-            Arrays.asList("STRING",    "STRING",      "STRING",     "STRING",       "INT",  "STRING"))
-            .build();
+    TGetPrimaryKeysResp getPKResp;
+    TGetPrimaryKeysReq getPKReq = new TGetPrimaryKeysReq(sessHandle);
+    getPKReq.setTableName(table);
+    getPKReq.setSchemaName(schema);
+    getPKReq.setCatalogName(catalog);
+    try {
+      getPKResp = client.GetPrimaryKeys(getPKReq);
+    } catch (TException e) {
+      throw new SQLException(e.getMessage(), "08S01", e);
+    }
+    Utils.verifySuccess(getPKResp.getStatus());
+
+    return new HiveQueryResultSet.Builder(connection)
+    .setClient(client)
+    .setSessionHandle(sessHandle)
+    .setStmtHandle(getPKResp.getOperationHandle())
+    .build();
   }
 
   public ResultSet getProcedureColumns(String catalog, String schemaPattern,

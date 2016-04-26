@@ -207,6 +207,22 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
     public void closeTransport() {
       tTransport.close();
     }
+
+    @Override
+    public OperationHandle getPrimaryKeys(SessionHandle sessionHandle,
+      String catalog, String schema, String table)
+      throws HiveSQLException {
+      return cliService.getPrimaryKeys(sessionHandle, catalog, schema, table);
+    }
+
+    @Override
+    public OperationHandle getCrossReference(SessionHandle sessionHandle,
+      String primaryCatalog, String primarySchema, String primaryTable,
+      String foreignCatalog, String foreignSchema, String foreignTable)
+      throws HiveSQLException {
+      return cliService.getCrossReference(sessionHandle, primaryCatalog, primarySchema,
+        primaryTable, foreignCatalog, foreignSchema, foreignTable);
+    }
   }
 
   protected RetryingThriftCLIServiceClient(HiveConf conf) {

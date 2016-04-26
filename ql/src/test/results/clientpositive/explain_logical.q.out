@@ -70,35 +70,6 @@ POSTHOOK: query: -- Simple select queries, union queries and join queries
 EXPLAIN LOGICAL 
   SELECT key, count(1) FROM srcpart WHERE ds IS NOT NULL GROUP BY key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            srcpart
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_WHERE
-         TOK_FUNCTION
-            TOK_ISNOTNULL
-            TOK_TABLE_OR_COL
-               ds
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            key
-
-
 LOGICAL PLAN:
 $hdt$_0:srcpart 
   TableScan (TS_0)
@@ -140,45 +111,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN LOGICAL 
   SELECT key, count(1) FROM (SELECT key, value FROM src) subq1 GROUP BY key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_QUERY
-            TOK_FROM
-               TOK_TABREF
-                  TOK_TABNAME
-                     src
-            TOK_INSERT
-               TOK_DESTINATION
-                  TOK_DIR
-                     TOK_TMP_FILE
-               TOK_SELECT
-                  TOK_SELEXPR
-                     TOK_TABLE_OR_COL
-                        key
-                  TOK_SELEXPR
-                     TOK_TABLE_OR_COL
-                        value
-         subq1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_TABLE_OR_COL
-               key
-         TOK_SELEXPR
-            TOK_FUNCTION
-               count
-               1
-      TOK_GROUPBY
-         TOK_TABLE_OR_COL
-            key
-
-
 LOGICAL PLAN:
 $hdt$_0:src 
   TableScan (TS_0)
@@ -224,59 +156,6 @@ POSTHOOK: query: EXPLAIN LOGICAL
     SELECT key, value FROM src UNION ALL SELECT key, value FROM srcpart WHERE ds IS NOT NULL
   ) S1
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_SUBQUERY
-         TOK_UNIONALL
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        src
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           key
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           value
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        srcpart
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           key
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           value
-                  TOK_WHERE
-                     TOK_FUNCTION
-                        TOK_ISNOTNULL
-                        TOK_TABLE_OR_COL
-                           ds
-         S1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-
-
 LOGICAL PLAN:
 null-subquery1:$hdt$_0-subquery1:src 
   TableScan (TS_0)
@@ -312,50 +191,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN LOGICAL 
   SELECT S1.key, S2.value FROM src S1 JOIN srcpart S2 ON S1.key = S2.key WHERE ds IS NOT NULL
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_TABREF
-            TOK_TABNAME
-               src
-            S1
-         TOK_TABREF
-            TOK_TABNAME
-               srcpart
-            S2
-         =
-            .
-               TOK_TABLE_OR_COL
-                  S1
-               key
-            .
-               TOK_TABLE_OR_COL
-                  S2
-               key
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  S1
-               key
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  S2
-               value
-      TOK_WHERE
-         TOK_FUNCTION
-            TOK_ISNOTNULL
-            TOK_TABLE_OR_COL
-               ds
-
-
 LOGICAL PLAN:
 $hdt$_0:s1 
   TableScan (TS_0)
@@ -424,22 +259,6 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- With views
 EXPLAIN LOGICAL SELECT * FROM V1
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            V1
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-
-
 LOGICAL PLAN:
 src 
   TableScan (TS_0)
@@ -455,22 +274,6 @@ PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V2
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V2
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            V2
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-
-
 LOGICAL PLAN:
 srcpart 
   TableScan (TS_0)
@@ -486,22 +289,6 @@ PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V3
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V3
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            V3
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-
-
 LOGICAL PLAN:
 $hdt$_0:srcpart 
   TableScan (TS_0)
@@ -568,22 +355,6 @@ PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V4
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V4
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            V4
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-
-
 LOGICAL PLAN:
 $hdt$_0:srcpart 
   TableScan (TS_0)
@@ -695,22 +466,6 @@ PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V5
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V5
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_TABREF
-         TOK_TABNAME
-            V5
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            TOK_ALLCOLREF
-
-
 LOGICAL PLAN:
 srcpart 
   TableScan (TS_0)
@@ -729,77 +484,6 @@ PREHOOK: query: EXPLAIN LOGICAL SELECT s1.key, s1.cnt, s2.value FROM (SELECT key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN LOGICAL SELECT s1.key, s1.cnt, s2.value FROM (SELECT key, count(value) as cnt FROM src GROUP BY key) s1 JOIN src s2 ON (s1.key = s2.key) ORDER BY s1.key
 POSTHOOK: type: QUERY
-ABSTRACT SYNTAX TREE:
-  
-TOK_QUERY
-   TOK_FROM
-      TOK_JOIN
-         TOK_SUBQUERY
-            TOK_QUERY
-               TOK_FROM
-                  TOK_TABREF
-                     TOK_TABNAME
-                        src
-               TOK_INSERT
-                  TOK_DESTINATION
-                     TOK_DIR
-                        TOK_TMP_FILE
-                  TOK_SELECT
-                     TOK_SELEXPR
-                        TOK_TABLE_OR_COL
-                           key
-                     TOK_SELEXPR
-                        TOK_FUNCTION
-                           count
-                           TOK_TABLE_OR_COL
-                              value
-                        cnt
-                  TOK_GROUPBY
-                     TOK_TABLE_OR_COL
-                        key
-            s1
-         TOK_TABREF
-            TOK_TABNAME
-               src
-            s2
-         =
-            .
-               TOK_TABLE_OR_COL
-                  s1
-               key
-            .
-               TOK_TABLE_OR_COL
-                  s2
-               key
-   TOK_INSERT
-      TOK_DESTINATION
-         TOK_DIR
-            TOK_TMP_FILE
-      TOK_SELECT
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  s1
-               key
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  s1
-               cnt
-         TOK_SELEXPR
-            .
-               TOK_TABLE_OR_COL
-                  s2
-               value
-      TOK_ORDERBY
-         TOK_TABSORTCOLNAMEASC
-            TOK_NULLS_FIRST
-               .
-                  TOK_TABLE_OR_COL
-                     s1
-                  key
-
-
 LOGICAL PLAN:
 $hdt$_0:src 
   TableScan (TS_0)

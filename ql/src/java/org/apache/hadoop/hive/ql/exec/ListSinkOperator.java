@@ -27,6 +27,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ListSinkDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.DefaultFetchFormatter;
+import org.apache.hadoop.hive.serde2.FetchFormatter;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
@@ -34,10 +37,6 @@ import org.apache.hadoop.util.ReflectionUtils;
  * and finally arrives to this operator.
  */
 public class ListSinkOperator extends Operator<ListSinkDesc> {
-
-  public static final String OUTPUT_FORMATTER = "output.formatter";
-  public static final String OUTPUT_PROTOCOL = "output.protocol";
-
   private transient List res;
   private transient FetchFormatter fetcher;
   private transient int numRows;
@@ -62,7 +61,7 @@ public class ListSinkOperator extends Operator<ListSinkDesc> {
   }
 
   private FetchFormatter initializeFetcher(Configuration conf) throws Exception {
-    String formatterName = conf.get(OUTPUT_FORMATTER);
+    String formatterName = conf.get(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER);
     FetchFormatter fetcher;
     if (formatterName != null && !formatterName.isEmpty()) {
       Class<? extends FetchFormatter> fetcherClass = Class.forName(formatterName, true,
@@ -71,12 +70,10 @@ public class ListSinkOperator extends Operator<ListSinkDesc> {
     } else {
       fetcher = new DefaultFetchFormatter();
     }
-
     // selectively used by fetch formatter
     Properties props = new Properties();
     props.put(serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.tabCode);
     props.put(serdeConstants.SERIALIZATION_NULL_FORMAT, getConf().getSerializationNullFormat());
-
     fetcher.initialize(conf, props);
     return fetcher;
   }

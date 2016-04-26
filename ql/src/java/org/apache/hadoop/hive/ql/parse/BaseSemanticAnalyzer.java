@@ -44,10 +44,13 @@ import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -87,6 +90,7 @@ public abstract class BaseSemanticAnalyzer {
   // Assumes one instance of this + single-threaded compilation for each query.
   protected final Hive db;
   protected final HiveConf conf;
+  protected final QueryState queryState;
   protected List<Task<? extends Serializable>> rootTasks;
   protected FetchTask fetchTask;
   protected final Logger LOG;
@@ -199,13 +203,14 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  public BaseSemanticAnalyzer(HiveConf conf) throws SemanticException {
-    this(conf, createHiveDB(conf));
+  public BaseSemanticAnalyzer(QueryState queryState) throws SemanticException {
+    this(queryState, createHiveDB(queryState.getConf()));
   }
 
-  public BaseSemanticAnalyzer(HiveConf conf, Hive db) throws SemanticException {
+  public BaseSemanticAnalyzer(QueryState queryState, Hive db) throws SemanticException {
     try {
-      this.conf = conf;
+      this.queryState = queryState;
+      this.conf = queryState.getConf();
       this.db = db;
       rootTasks = new ArrayList<Task<? extends Serializable>>();
       LOG = LoggerFactory.getLogger(this.getClass().getName());
@@ -614,29 +619,204 @@ public abstract class BaseSemanticAnalyzer {
    * Get the list of FieldSchema out of the ASTNode.
    */
   public static List<FieldSchema> getColumns(ASTNode ast, boolean lowerCase) throws SemanticException {
+    return getColumns(ast, lowerCase, new ArrayList<SQLPrimaryKey>(), new ArrayList<SQLForeignKey>());
+  }
+
+  static class PKInfo {
+   public String colName;
+   public String constraintName;
+   public boolean rely;
+
+   public PKInfo(String colName, String constraintName, boolean rely) {
+     this.colName = colName;
+     this.constraintName = constraintName;
+     this.rely = rely;
+   }
+  }
+
+  /**
+   * Get the primary keys from the AST and populate the pkInfos with the required
+   * information.
+   * @param child  The node with primary key token
+   * @param pkInfos Primary Key information structure
+   * @throws SemanticException
+   */
+  private static void processPrimaryKeyInfos(
+    ASTNode child, List<PKInfo> pkInfos) throws SemanticException {
+    if (child.getChildCount() < 6) {
+      throw new SemanticException(ErrorMsg.INVALID_PK_SYNTAX.getMsg());
+    }
+    // The ANTLR grammar looks like :
+    // 1. KW_CONSTRAINT idfr=identifier KW_PRIMARY KW_KEY pkCols=columnParenthesesList
+    //  enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
+    // -> ^(TOK_PRIMARY_KEY $pkCols $idfr $relySpec $enableSpec $validateSpec)
+    // when the user specifies the constraint name (i.e. child.getChildCount() == 7)
+    // 2.  KW_PRIMARY KW_KEY columnParenthesesList
+    // enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
+    // -> ^(TOK_PRIMARY_KEY columnParenthesesList $relySpec $enableSpec $validateSpec)
+    // when the user does not specify the constraint name (i.e. child.getChildCount() == 6)
+    boolean userSpecifiedConstraintName = child.getChildCount() == 7;
+    int relyIndex =  child.getChildCount() == 7 ? 4 : 3;
+    for (int j = 0; j < child.getChild(1).getChildCount(); j++) {
+     Tree grandChild = child.getChild(1).getChild(j);
+     boolean rely = child.getChild(relyIndex).getType() == HiveParser.TOK_VALIDATE;
+     boolean enable =  child.getChild(relyIndex+1).getType() == HiveParser.TOK_ENABLE;
+     boolean validate =  child.getChild(relyIndex+2).getType() == HiveParser.TOK_VALIDATE;
+     if (enable) {
+       throw new SemanticException(
+         ErrorMsg.INVALID_PK_SYNTAX.getMsg(" ENABLE feature not supported yet"));
+     }
+     if (validate) {
+       throw new SemanticException(
+         ErrorMsg.INVALID_PK_SYNTAX.getMsg(" VALIDATE feature not supported yet"));
+     }
+     pkInfos.add(
+       new PKInfo(
+         unescapeIdentifier(grandChild.getText().toLowerCase()),
+         (userSpecifiedConstraintName ?
+         unescapeIdentifier(child.getChild(3).getText().toLowerCase()) : null),
+         rely));
+    }
+  }
+
+  /**
+   * Process the primary keys from the pkInfos structure and populate the SQLPrimaryKey list
+   * @param parent Parent of the primary key token node
+   * @param pkInfos primary key information
+   * @param primaryKeys SQLPrimaryKey list
+   * @param nametoFS Mapping from column name to field schema for the current table
+   * @throws SemanticException
+   */
+  private static void processPrimaryKeys(ASTNode parent, List<PKInfo> pkInfos,
+    List<SQLPrimaryKey> primaryKeys, Map<String, FieldSchema> nametoFS) throws SemanticException {
+    int cnt = 1;
+    String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
+
+    for (int i = 0; i < pkInfos.size(); i++) {
+      String pk = pkInfos.get(i).colName;
+      if (nametoFS.containsKey(pk)) {
+        SQLPrimaryKey currPrimaryKey = new SQLPrimaryKey(
+          qualifiedTabName[0], qualifiedTabName[1], pk, cnt++, pkInfos.get(i).constraintName,
+          false, false, pkInfos.get(i).rely);
+        primaryKeys.add(currPrimaryKey);
+      } else {
+        throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(pk));
+      }
+    }
+  }
+
+  /**
+   * Process the foreign keys from the AST and populate the foreign keys in the SQLForeignKey list
+   * @param parent  Parent of the foreign key token node
+   * @param child Foreign Key token node
+   * @param foreignKeys SQLForeignKey list
+   * @throws SemanticException
+   */
+  private static void processForeignKeys(
+    ASTNode parent, ASTNode child, List<SQLForeignKey> foreignKeys) throws SemanticException {
+    String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
+    // The ANTLR grammar looks like :
+    // 1.  KW_CONSTRAINT idfr=identifier KW_FOREIGN KW_KEY fkCols=columnParenthesesList
+    // KW_REFERENCES tabName=tableName parCols=columnParenthesesList 
+    // enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
+    // -> ^(TOK_FOREIGN_KEY $idfr $fkCols $tabName $parCols $relySpec $enableSpec $validateSpec)
+    // when the user specifies the constraint name (i.e. child.getChildCount() == 11)
+    // 2.  KW_FOREIGN KW_KEY fkCols=columnParenthesesList
+    // KW_REFERENCES tabName=tableName parCols=columnParenthesesList
+    // enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
+    // -> ^(TOK_FOREIGN_KEY $fkCols  $tabName $parCols $relySpec $enableSpec $validateSpec)
+    // when the user does not specify the constraint name (i.e. child.getChildCount() == 10)
+    boolean userSpecifiedConstraintName = child.getChildCount() == 11;
+    int fkIndex = userSpecifiedConstraintName ? 2 : 1;
+    int pkIndex = userSpecifiedConstraintName ? 6 : 5;
+    int ptIndex = userSpecifiedConstraintName ? 4 : 3;
+    int relyIndex =  child.getChildCount() == 11 ? 8 : 7;
+
+    if (child.getChildCount() <= fkIndex ||child.getChildCount() <= pkIndex ||
+      child.getChildCount() <= ptIndex) {
+      throw new SemanticException(ErrorMsg.INVALID_FK_SYNTAX.getMsg());
+    }
+
+    String[] parentDBTbl = getQualifiedTableName((ASTNode) child.getChild(ptIndex));
+
+    if (child.getChild(fkIndex).getChildCount() != child.getChild(pkIndex).getChildCount()) {
+      throw new SemanticException(ErrorMsg.INVALID_FK_SYNTAX.getMsg(
+        " The number of foreign key columns should be same as number of parent key columns "));
+    }
+    for (int j = 0; j < child.getChild(fkIndex).getChildCount(); j++) {
+      SQLForeignKey sqlForeignKey = new SQLForeignKey();
+      Tree fkgrandChild = child.getChild(fkIndex).getChild(j);
+      boolean rely = child.getChild(relyIndex).getType() == HiveParser.TOK_VALIDATE;
+      boolean enable =  child.getChild(relyIndex+1).getType() == HiveParser.TOK_ENABLE;
+      boolean validate =  child.getChild(relyIndex+2).getType() == HiveParser.TOK_VALIDATE;
+      if (enable) {
+        throw new SemanticException(
+          ErrorMsg.INVALID_FK_SYNTAX.getMsg(" ENABLE feature not supported yet"));
+      }
+      if (validate) {
+        throw new SemanticException(
+          ErrorMsg.INVALID_FK_SYNTAX.getMsg(" VALIDATE feature not supported yet"));
+      }
+      sqlForeignKey.setRely_cstr(rely);
+      sqlForeignKey.setPktable_db(parentDBTbl[0]);
+      sqlForeignKey.setPktable_name(parentDBTbl[1]);
+      sqlForeignKey.setFktable_db(qualifiedTabName[0]);
+      sqlForeignKey.setFktable_name(qualifiedTabName[1]);
+      sqlForeignKey.setFkcolumn_name(unescapeIdentifier(fkgrandChild.getText().toLowerCase()));
+      Tree pkgrandChild = child.getChild(pkIndex).getChild(j);
+      sqlForeignKey.setPkcolumn_name(unescapeIdentifier(pkgrandChild.getText().toLowerCase()));
+      sqlForeignKey.setKey_seq(j+1);
+      if (userSpecifiedConstraintName) {
+        sqlForeignKey.setFk_name(unescapeIdentifier(child.getChild(0).getText().toLowerCase()));
+      }
+      foreignKeys.add(sqlForeignKey);
+    }
+  }
+
+  /**
+   * Get the list of FieldSchema out of the ASTNode.
+   * Additionally, populate the primaryKeys and foreignKeys if any.
+   */
+  public static List<FieldSchema> getColumns(ASTNode ast, boolean lowerCase,
+    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys) throws SemanticException {
     List<FieldSchema> colList = new ArrayList<FieldSchema>();
     int numCh = ast.getChildCount();
+    List<PKInfo> pkInfos = new ArrayList<PKInfo>();
+    Map<String, FieldSchema> nametoFS = new HashMap<String, FieldSchema>();
+    Tree parent = ast.getParent();
+
     for (int i = 0; i < numCh; i++) {
       FieldSchema col = new FieldSchema();
       ASTNode child = (ASTNode) ast.getChild(i);
-      Tree grandChild = child.getChild(0);
-      if(grandChild != null) {
-        String name = grandChild.getText();
-        if(lowerCase) {
-          name = name.toLowerCase();
-        }
-        // child 0 is the name of the column
-        col.setName(unescapeIdentifier(name));
-        // child 1 is the type of the column
-        ASTNode typeChild = (ASTNode) (child.getChild(1));
-        col.setType(getTypeStringFromAST(typeChild));
-
-        // child 2 is the optional comment of the column
-        if (child.getChildCount() == 3) {
-          col.setComment(unescapeSQLString(child.getChild(2).getText()));
-        }
+      if (child.getToken().getType() == HiveParser.TOK_PRIMARY_KEY) {
+        processPrimaryKeyInfos(child, pkInfos);
+      } else if (child.getToken().getType() == HiveParser.TOK_FOREIGN_KEY) {
+        processForeignKeys((ASTNode)parent, child, foreignKeys);
       }
-      colList.add(col);
+      else {
+        Tree grandChild = child.getChild(0);
+        if(grandChild != null) {
+          String name = grandChild.getText();
+          if(lowerCase) {
+            name = name.toLowerCase();
+          }
+          // child 0 is the name of the column
+          col.setName(unescapeIdentifier(name));
+          // child 1 is the type of the column
+          ASTNode typeChild = (ASTNode) (child.getChild(1));
+          col.setType(getTypeStringFromAST(typeChild));
+
+          // child 2 is the optional comment of the column
+          if (child.getChildCount() == 3) {
+            col.setComment(unescapeSQLString(child.getChild(2).getText()));
+          }
+        }
+        nametoFS.put(col.getName(), col);
+        colList.add(col);
+      }
+    }
+    if (!pkInfos.isEmpty()) {
+      processPrimaryKeys((ASTNode) parent, pkInfos, primaryKeys, nametoFS);
     }
     return colList;
   }
@@ -1501,5 +1681,8 @@ public abstract class BaseSemanticAnalyzer {
 
   public HashSet<WriteEntity> getAllOutputs() {
     return outputs;
+  }
+  public QueryState getQueryState() {
+    return queryState;
   }
 }

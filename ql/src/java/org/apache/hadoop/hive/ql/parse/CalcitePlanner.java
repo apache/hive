@@ -104,6 +104,7 @@ import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -217,8 +218,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
   private boolean disableSemJoinReordering = true;
   private EnumSet<ExtendedCBOProfile> profilesCBO;
 
-  public CalcitePlanner(HiveConf conf) throws SemanticException {
-    super(conf);
+  public CalcitePlanner(QueryState queryState) throws SemanticException {
+    super(queryState);
     if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)) {
       runCBO = false;
       disableSemJoinReordering = false;
@@ -297,8 +298,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
             LOG.info("CBO Succeeded; optimized logical plan.");
             this.ctx.setCboInfo("Plan optimized by CBO.");
             this.ctx.setCboSucceeded(true);
-            if (LOG.isDebugEnabled()) {
-              LOG.debug(newAST.dump());
+            if (LOG.isTraceEnabled()) {
+              LOG.trace(newAST.dump());
             }
           }
         } catch (Exception e) {
@@ -514,18 +515,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
     createTable.addChild(temporary);
     createTable.addChild(cte.cteNode);
 
-    CalcitePlanner analyzer = new CalcitePlanner(conf);
+    CalcitePlanner analyzer = new CalcitePlanner(queryState);
     analyzer.initCtx(ctx);
     analyzer.init(false);
 
     // should share cte contexts
     analyzer.aliasToCTEs.putAll(aliasToCTEs);
 
-    HiveOperation operation = SessionState.get().getHiveOperation();
+    HiveOperation operation = queryState.getHiveOperation();
     try {
       analyzer.analyzeInternal(createTable);
     } finally {
-      SessionState.get().setCommandType(operation);
+      queryState.setCommandType(operation);
     }
 
     Table table = analyzer.tableDesc.toTable(conf);

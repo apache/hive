@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.util.Arrays;
-
 /**
  * The representation of a vectorized column of struct objects.
  *

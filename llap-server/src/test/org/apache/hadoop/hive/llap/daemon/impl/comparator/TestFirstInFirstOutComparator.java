@@ -70,9 +70,9 @@ public class TestFirstInFirstOutComparator {
       try {
         Thread.sleep(workTime);
       } catch (InterruptedException e) {
-        return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, false);
+        return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, null, false);
       }
-      return new TaskRunner2Result(EndReason.SUCCESS, null, false);
+      return new TaskRunner2Result(EndReason.SUCCESS, null, null, false);
     }
 
     @Override

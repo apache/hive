@@ -53,6 +53,9 @@ public abstract class InStream extends InputStream {
     return length;
   }
 
+  @Override
+  public abstract void close();
+
   public static class UncompressedStream extends InStream {
     private List<DiskRange> bytes;
     private long length;
@@ -423,7 +426,6 @@ public abstract class InStream extends InputStream {
 
   /**
    * Create an input stream from a list of buffers.
-   * @param fileName name of the file
    * @param streamName the name of the stream
    * @param buffers the list of ranges of bytes for the stream
    * @param offsets a list of offsets (the same length as input) that must

@@ -22,6 +22,7 @@ import java.util.HashMap;
 import junit.framework.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -33,18 +34,18 @@ import org.mockito.Mockito;
 
 public class TestPrivilegesV1 extends PrivilegesTestBase{
 
-  private HiveConf conf;
+  private QueryState queryState;
   private Hive db;
   private Table table;
   private Partition partition;
 
   @Before
   public void setup() throws Exception {
-    conf = new HiveConf();
+    queryState = new QueryState(null);
     db = Mockito.mock(Hive.class);
     table = new Table(DB, TABLE);
     partition = new Partition(table);
-    SessionState.start(conf);
+    SessionState.start(queryState.getConf());
     Mockito.when(db.getTable(DB, TABLE, false)).thenReturn(table);
     Mockito.when(db.getTable(TABLE_QNAME, false)).thenReturn(table);
     Mockito.when(db.getPartition(table, new HashMap<String, String>(), false))
@@ -81,6 +82,6 @@ public class TestPrivilegesV1 extends PrivilegesTestBase{
   }
 
   private void grantUserTable(String privName, PrivilegeType privType) throws Exception {
-    grantUserTable(privName, privType, conf, db);
+    grantUserTable(privName, privType, queryState, db);
   }
 }

@@ -78,6 +78,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
@@ -91,6 +93,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
@@ -259,9 +262,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   @Override
-  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx,
+  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext ctx,
       CompilationOpContext opContext) {
-    super.initialize(conf, queryPlan, ctx, opContext);
+    super.initialize(queryState, queryPlan, ctx, opContext);
 
     // Pick the formatter to use to display the results.  Either the
     // normal human readable output or a json object.
@@ -663,7 +666,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // initialize the task and execute
-    task.initialize(db.getConf(), getQueryPlan(), driverCxt, opContext);
+    task.initialize(queryState, getQueryPlan(), driverCxt, opContext);
     int ret = task.execute(driverCxt);
     return ret;
   }
@@ -3925,6 +3928,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int createTable(Hive db, CreateTableDesc crtTbl) throws HiveException {
     // create the table
     Table tbl = crtTbl.toTable(conf);
+    List<SQLPrimaryKey> primaryKeys = crtTbl.getPrimaryKeys();
+    List<SQLForeignKey> foreignKeys = crtTbl.getForeignKeys();
     LOG.info("creating table " + tbl.getDbName() + "." + tbl.getTableName() + " on " +
             tbl.getDataLocation());
 
@@ -3937,7 +3942,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         throw new HiveException("Unable to alter table. " + e.getMessage(), e);
       }
     } else {
-      db.createTable(tbl, crtTbl.getIfNotExists());
+      if ((foreignKeys != null && foreignKeys.size() > 0 ) ||
+          (primaryKeys != null && primaryKeys.size() > 0)) {
+        db.createTable(tbl, crtTbl.getIfNotExists(), primaryKeys, foreignKeys);
+      } else {
+        db.createTable(tbl, crtTbl.getIfNotExists());
+      }
       if ( crtTbl.isCTAS()) {
         Table createdTable = db.getTable(tbl.getDbName(), tbl.getTableName());
         DataContainer dc = new DataContainer(createdTable.getTTable());
@@ -4160,7 +4170,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       truncateWork.setMapperCannotSpanPartns(true);
       DriverContext driverCxt = new DriverContext();
       ColumnTruncateTask taskExec = new ColumnTruncateTask();
-      taskExec.initialize(db.getConf(), null, driverCxt, null);
+      taskExec.initialize(queryState, null, driverCxt, null);
       taskExec.setWork(truncateWork);
       taskExec.setQueryPlan(this.getQueryPlan());
       return taskExec.execute(driverCxt);

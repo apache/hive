@@ -268,7 +268,7 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
           + rewriteQueryCtx.getIndexKey() + " ";
       // retrieve the operator tree for the query, and the required GroupByOperator from it
       Operator<?> newOperatorTree = RewriteParseContextGenerator.generateOperatorTree(
-              rewriteQueryCtx.getParseContext().getConf(),
+              rewriteQueryCtx.getParseContext().getQueryState(),
               selReplacementCommand);
 
       // we get our new GroupByOperator here

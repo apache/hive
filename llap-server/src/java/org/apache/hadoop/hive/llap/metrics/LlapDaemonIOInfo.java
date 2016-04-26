@@ -22,17 +22,20 @@ import org.apache.hadoop.metrics2.MetricsInfo;
 import com.google.common.base.Objects;
 
 /**
- * Llap daemon producer / consumer queue related metrics.
+ * Llap daemon I/O elevator metrics
  */
-public enum LlapDaemonQueueInfo implements MetricsInfo {
-  QueueMetrics("Llap daemon producer/consumer queue related metrics"),
-  QueueSize("Size of the queue used by producer and consumer"),
-  PercentileProcessingTime("Percentiles processing time for an element from queue"),
-  MaxProcessingTime("Max processing time for an element from queue so far");
+public enum LlapDaemonIOInfo implements MetricsInfo {
+  IOMetrics("Llap daemon I/O elevator metrics"),
+  IoThreadPoolSize("Size of the thread pool used by IO elevator"),
+  EncodedColumnBatchPoolSize("Size of the object pool that stores encoded column batches"),
+  ColumnStreamDataPoolSize("Size of the object pool that stores column stream data"),
+  ColumnVectorBatchPoolSize("Size of the object pool that stores column vector batches"),
+  PercentileDecodingTime("Percentile decoding time for encoded column batch"),
+  MaxDecodingTime("Max time for decoding an encoded column batch");
 
   private final String desc;
 
-  LlapDaemonQueueInfo(String desc) {
+  LlapDaemonIOInfo(String desc) {
     this.desc = desc;
   }
 

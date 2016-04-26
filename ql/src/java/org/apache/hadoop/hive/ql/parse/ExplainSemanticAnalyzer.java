@@ -24,8 +24,9 @@ import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
@@ -37,8 +38,8 @@ import org.apache.hadoop.hive.ql.plan.ExplainWork;
 public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
   List<FieldSchema> fieldList;
 
-  public ExplainSemanticAnalyzer(HiveConf conf) throws SemanticException {
-    super(conf);
+  public ExplainSemanticAnalyzer(QueryState queryState) throws SemanticException {
+    super(queryState);
   }
 
   @SuppressWarnings("unchecked")
@@ -70,7 +71,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Create a semantic analyzer for the query
     ASTNode input = (ASTNode) ast.getChild(0);
-    BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, input);
+    BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, input);
     sem.analyze(input, ctx);
     sem.validate();
 
@@ -102,7 +103,6 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         pCtx,
         tasks,
         fetchTask,
-        input,
         sem,
         extended,
         formatted,
