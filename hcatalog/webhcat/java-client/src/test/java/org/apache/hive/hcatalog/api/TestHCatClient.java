@@ -1226,7 +1226,6 @@ public class TestHCatClient {
    * @throws Exception
    */
   @Test
-  @Ignore 
   public void testPartitionSpecRegistrationWithCustomSchema() throws Exception {
     try {
       startReplicationTargetMetaStoreIfRequired();

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.events;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -63,9 +64,27 @@ public class AddPartitionEvent extends ListenerEvent {
 
   /**
    * @return List of partitions.
+   * CDH-ONLY FIX
+   * The method was removed upstream in Hive 1.2 in HIVE-9609.
+   * And replaced by getPartitionIterator() for memory efficiency.
+   * Additionally, the new method fixes a bug for the case where
+   * we can end up returning null when AddPartitionEvent was
+   * initialized on a PartitionSpec rather than a List<Partition>.
+   * Because we cannot change this public API in CDH5, we are
+   * adding the bug fix in the old API.
+   * When we move to CDH6, we no longer needed this CDH-ONLY fix
+   * since at that point, it is ok to break API compatibility.
+   * Sentry and possibly customer code extending MetaStoreEventListener
+   * is vulnerable to this change.
    */
   public List<Partition> getPartitions() {
-    return partitions;
+    if (partitions != null) {
+      return partitions;
+    } else  if (partitionSpecProxy != null){
+      return ImmutableList.copyOf(partitionSpecProxy.getPartitionIterator());
+    } else {
+      return null;
+    }
   }
 
   /**
