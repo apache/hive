@@ -548,15 +548,12 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     builder.setContainerIdString(containerId.toString());
     builder.setAmHost(getAddress().getHostName());
     builder.setAmPort(getAddress().getPort());
-    Credentials taskCredentials = new Credentials();
-    // Credentials can change across DAGs. Ideally construct only once per DAG.
-    taskCredentials.addAll(getContext().getCredentials());
 
     Preconditions.checkState(currentQueryIdentifierProto.getDagIdentifier() ==
         taskSpec.getTaskAttemptID().getTaskID().getVertexID().getDAGId().getId());
     ByteBuffer credentialsBinary = credentialMap.get(currentQueryIdentifierProto);
     if (credentialsBinary == null) {
-      credentialsBinary = serializeCredentials(getContext().getCredentials());
+      credentialsBinary = serializeCredentials(getContext().getCurrentDagInfo().getCredentials());
       credentialMap.putIfAbsent(currentQueryIdentifierProto, credentialsBinary.duplicate());
     } else {
       credentialsBinary = credentialsBinary.duplicate();
