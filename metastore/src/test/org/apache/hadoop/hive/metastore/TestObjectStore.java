@@ -21,6 +21,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
+import org.apache.hadoop.hive.common.metrics.metrics2.MetricsReporting;
+import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -219,6 +224,51 @@ public class TestObjectStore {
     objectStore.grantRole(role1, USER1, PrincipalType.USER, OWNER, PrincipalType.ROLE, true);
     objectStore.revokeRole(role1, USER1, PrincipalType.USER, false);
     objectStore.removeRole(ROLE1);
+  }
+
+  @Test
+  public void testDirectSqlErrorMetrics() throws Exception {
+    HiveConf conf = new HiveConf();
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
+    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER, MetricsReporting.JSON_FILE.name()
+        + "," + MetricsReporting.JMX.name());
+
+    MetricsFactory.init(conf);
+    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
+
+    objectStore.new GetDbHelper("foo", null, true, true) {
+      @Override
+      protected Database getSqlResult(ObjectStore.GetHelper<Database> ctx) throws MetaException {
+        return null;
+      }
+
+      @Override
+      protected Database getJdoResult(ObjectStore.GetHelper<Database> ctx) throws MetaException,
+          NoSuchObjectException {
+        return null;
+      }
+    }.run(false);
+
+    String json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER,
+        MetricsConstant.DIRECTSQL_ERRORS, "");
+
+    objectStore.new GetDbHelper("foo", null, true, true) {
+      @Override
+      protected Database getSqlResult(ObjectStore.GetHelper<Database> ctx) throws MetaException {
+        throw new RuntimeException();
+      }
+
+      @Override
+      protected Database getJdoResult(ObjectStore.GetHelper<Database> ctx) throws MetaException,
+          NoSuchObjectException {
+        return null;
+      }
+    }.run(false);
+
+    json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER,
+        MetricsConstant.DIRECTSQL_ERRORS, 1);
   }
 
   public static void dropAllStoreObjects(RawStore store) throws MetaException, InvalidObjectException, InvalidInputException {

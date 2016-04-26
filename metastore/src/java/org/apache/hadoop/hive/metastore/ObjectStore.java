@@ -2539,7 +2539,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   /** Helper class for getting stuff w/transaction, direct SQL, perf logging, etc. */
-  private abstract class GetHelper<T> {
+  @VisibleForTesting
+  public abstract class GetHelper<T> {
     private final boolean isInTxn, doTrace, allowJdo;
     private boolean doUseDirectSql;
     private long start;
@@ -2637,6 +2638,16 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         start = doTrace ? System.nanoTime() : 0;
       }
+
+      Metrics metrics = MetricsFactory.getInstance();
+      if (metrics != null) {
+        try {
+          metrics.incrementCounter(MetricsConstant.DIRECTSQL_ERRORS);
+        } catch (Exception e) {
+          LOG.warn("Error reporting Direct SQL errors to metrics system", e);
+        }
+      }
+
       doUseDirectSql = false;
     }
 
@@ -2676,7 +2687,8 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private abstract class GetDbHelper extends GetHelper<Database> {
+  @VisibleForTesting
+  public abstract class GetDbHelper extends GetHelper<Database> {
     /**
      * GetHelper for returning db info using directSql/JDO.
      * Since this is a db-level call, tblName is ignored, and null is passed irrespective of what is passed in.
