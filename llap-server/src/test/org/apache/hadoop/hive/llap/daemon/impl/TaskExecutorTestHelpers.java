@@ -170,14 +170,14 @@ public class TaskExecutorTestHelpers {
           }
         } catch (InterruptedException e) {
           wasInterrupted.set(true);
-          return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, false);
+          return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, null, false);
         } finally {
           lock.unlock();
         }
         if (wasKilled.get()) {
-          return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, false);
+          return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, null, false);
         } else {
-          return new TaskRunner2Result(EndReason.SUCCESS, null, false);
+          return new TaskRunner2Result(EndReason.SUCCESS, null, null, false);
         }
       } finally {
         lock.lock();

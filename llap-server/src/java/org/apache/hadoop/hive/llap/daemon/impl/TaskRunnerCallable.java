@@ -170,7 +170,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     synchronized (this) {
       if (!shouldRunTask) {
         LOG.info("Not starting task {} since it was killed earlier", taskSpec.getTaskAttemptID());
-        return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, false);
+        return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, null, false);
       }
     }
 
@@ -237,7 +237,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
       }
       if (taskRunner == null) {
         LOG.info("Not starting task {} since it was killed earlier", taskSpec.getTaskAttemptID());
-        return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, false);
+        return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, null, false);
       }
 
       try {
