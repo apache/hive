@@ -338,6 +338,17 @@ public class BytesColumnVector extends ColumnVector {
     initBuffer(0);
   }
 
+  public String toString(int row) {
+    if (isRepeating) {
+      row = 0;
+    }
+    if (noNulls || !isNull[row]) {
+      return new String(vector[row], start[row], length[row]);
+    } else {
+      return null;
+    }
+  }
+
   @Override
   public void stringifyValue(StringBuilder buffer, int row) {
     if (isRepeating) {
@@ -354,8 +365,8 @@ public class BytesColumnVector extends ColumnVector {
 
   @Override
   public void ensureSize(int size, boolean preserveData) {
+    super.ensureSize(size, preserveData);
     if (size > vector.length) {
-      super.ensureSize(size, preserveData);
       int[] oldStart = start;
       start = new int[size];
       int[] oldLength = length;

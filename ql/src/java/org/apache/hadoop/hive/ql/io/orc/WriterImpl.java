@@ -101,8 +101,6 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
     }
   }
 
-  private static final long NANOS_PER_MILLI = 1000000;
-
   /**
    * Set the value for a given column value within a batch.
    * @param rowId the row to set

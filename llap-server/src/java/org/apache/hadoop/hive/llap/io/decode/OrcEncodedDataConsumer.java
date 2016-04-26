@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.llap.io.decode;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
@@ -27,7 +28,12 @@ import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.orc.CompressionCodec;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
@@ -71,6 +77,35 @@ public class OrcEncodedDataConsumer
     stripes[m.getStripeIx()] = m;
   }
 
+  private static ColumnVector createColumn(OrcProto.Type type,
+                                           int batchSize) {
+    switch (type.getKind()) {
+      case BOOLEAN:
+      case BYTE:
+      case SHORT:
+      case INT:
+      case LONG:
+      case DATE:
+        return new LongColumnVector(batchSize);
+      case FLOAT:
+      case DOUBLE:
+        return new DoubleColumnVector(batchSize);
+      case BINARY:
+      case STRING:
+      case CHAR:
+      case VARCHAR:
+        return new BytesColumnVector(batchSize);
+      case TIMESTAMP:
+        return new TimestampColumnVector(batchSize);
+      case DECIMAL:
+        return new DecimalColumnVector(batchSize, type.getPrecision(),
+            type.getScale());
+      default:
+        throw new IllegalArgumentException("LLAP does not support " +
+            type.getKind());
+    }
+  }
+
   @Override
   protected void decodeBatch(OrcEncodedColumnBatch batch,
       Consumer<ColumnVectorBatch> downstreamConsumer) {
@@ -112,9 +147,16 @@ public class OrcEncodedDataConsumer
         ColumnVectorBatch cvb = cvbPool.take();
         assert cvb.cols.length == batch.getColumnIxs().length; // Must be constant per split.
         cvb.size = batchSize;
-
+        List<OrcProto.Type> types = fileMetadata.getTypes();
+        int[] columnMapping = batch.getColumnIxs();
         for (int idx = 0; idx < batch.getColumnIxs().length; idx++) {
-          cvb.cols[idx] = (ColumnVector)columnReaders[idx].nextVector(cvb.cols[idx], batchSize);
+          if (cvb.cols[idx] == null) {
+            // skip over the top level struct, but otherwise assume no complex
+            // types
+            cvb.cols[idx] = createColumn(types.get(columnMapping[idx]), batchSize);
+          }
+          cvb.cols[idx].ensureSize(batchSize, false);
+          columnReaders[idx].nextVector(cvb.cols[idx], null, batchSize);
         }
 
         // we are done reading a batch, send it to consumer for processing

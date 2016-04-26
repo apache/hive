@@ -162,8 +162,8 @@ public class DoubleColumnVector extends ColumnVector {
 
   @Override
   public void ensureSize(int size, boolean preserveData) {
+    super.ensureSize(size, preserveData);
     if (size > vector.length) {
-      super.ensureSize(size, preserveData);
       double[] oldArray = vector;
       vector = new double[size];
       if (preserveData) {

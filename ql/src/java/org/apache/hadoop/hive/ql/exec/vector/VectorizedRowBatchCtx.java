@@ -215,12 +215,9 @@ public class VectorizedRowBatchCtx {
     LOG.info("createVectorizedRowBatch columnsToIncludeTruncated " + Arrays.toString(columnsToIncludeTruncated));
     int totalColumnCount = rowColumnTypeInfos.length + scratchColumnTypeNames.length;
     VectorizedRowBatch result = new VectorizedRowBatch(totalColumnCount);
-
-    for (int i = 0; i < columnsToIncludeTruncated.length; i++) {
-      if (columnsToIncludeTruncated[i]) {
-        TypeInfo typeInfo = rowColumnTypeInfos[i];
-        result.cols[i] = VectorizedBatchUtil.createColumnVector(typeInfo);
-      }
+    for (int i = 0; i < dataColumnCount; i++) {
+      TypeInfo typeInfo = rowColumnTypeInfos[i];
+      result.cols[i] = VectorizedBatchUtil.createColumnVector(typeInfo);
     }
 
     for (int i = dataColumnCount; i < dataColumnCount + partitionColumnCount; i++) {
@@ -476,8 +473,8 @@ public class VectorizedRowBatchCtx {
             bcv.isNull[0] = true;
             bcv.isRepeating = true;
           } else {
-            bcv.fill(sVal.getBytes());
-            bcv.isNull[0] = false;
+            bcv.setVal(0, sVal.getBytes());
+            bcv.isRepeating = true;
           }
         }
         break;

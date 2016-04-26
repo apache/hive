@@ -208,8 +208,8 @@ public class LongColumnVector extends ColumnVector {
 
   @Override
   public void ensureSize(int size, boolean preserveData) {
+    super.ensureSize(size, preserveData);
     if (size > vector.length) {
-      super.ensureSize(size, preserveData);
       long[] oldArray = vector;
       vector = new long[size];
       if (preserveData) {

@@ -32,51 +32,26 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
-import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.HiveTestUtils;
 import org.apache.orc.BinaryColumnStatistics;
 import org.apache.orc.BooleanColumnStatistics;
 import org.apache.orc.ColumnStatistics;
 import org.apache.orc.CompressionKind;
+import org.apache.orc.DataReader;
 import org.apache.orc.DecimalColumnStatistics;
 import org.apache.orc.DoubleColumnStatistics;
 import org.apache.orc.IntegerColumnStatistics;
+import org.apache.orc.impl.DataReaderProperties;
 import org.apache.orc.impl.MemoryManager;
-import org.apache.orc.impl.MetadataReader;
 import org.apache.orc.impl.OrcIndex;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcUtils;
@@ -117,6 +92,10 @@ public class TestVectorOrcFile {
   public static class InnerStruct {
     int int1;
     Text string1 = new Text();
+    InnerStruct(int int1, Text string1) {
+      this.int1 = int1;
+      this.string1.set(string1);
+    }
     InnerStruct(int int1, String string1) {
       this.int1 = int1;
       this.string1.set(string1);
@@ -133,50 +112,6 @@ public class TestVectorOrcFile {
     MiddleStruct(InnerStruct... items) {
       list.clear();
       list.addAll(Arrays.asList(items));
-    }
-  }
-
-  public static class BigRow {
-    Boolean boolean1;
-    Byte byte1;
-    Short short1;
-    Integer int1;
-    Long long1;
-    Float float1;
-    Double double1;
-    BytesWritable bytes1;
-    Text string1;
-    MiddleStruct middle;
-    List<InnerStruct> list = new ArrayList<InnerStruct>();
-    Map<Text, InnerStruct> map = new HashMap<Text, InnerStruct>();
-
-    BigRow(Boolean b1, Byte b2, Short s1, Integer i1, Long l1, Float f1,
-           Double d1,
-           BytesWritable b3, String s2, MiddleStruct m1,
-           List<InnerStruct> l2, Map<String, InnerStruct> m2) {
-      this.boolean1 = b1;
-      this.byte1 = b2;
-      this.short1 = s1;
-      this.int1 = i1;
-      this.long1 = l1;
-      this.float1 = f1;
-      this.double1 = d1;
-      this.bytes1 = b3;
-      if (s2 == null) {
-        this.string1 = null;
-      } else {
-        this.string1 = new Text(s2);
-      }
-      this.middle = m1;
-      this.list = l2;
-      if (m2 != null) {
-        this.map = new HashMap<Text, InnerStruct>();
-        for (Map.Entry<String, InnerStruct> item : m2.entrySet()) {
-          this.map.put(new Text(item.getKey()), item.getValue());
-        }
-      } else {
-        this.map = null;
-      }
     }
   }
 
@@ -301,206 +236,115 @@ public class TestVectorOrcFile {
     assertEquals("count: 7500 hasNull: true min: bye max: hi sum: 0", stats[9].toString());
 
     // check the inspectors
-    StructObjectInspector readerInspector = (StructObjectInspector) reader
-        .getObjectInspector();
-    assertEquals(ObjectInspector.Category.STRUCT, readerInspector.getCategory());
+    TypeDescription schema = reader.getSchema();
+    assertEquals(TypeDescription.Category.STRUCT, schema.getCategory());
     assertEquals("struct<boolean1:boolean,byte1:tinyint,short1:smallint,"
         + "int1:int,long1:bigint,float1:float,double1:double,bytes1:"
         + "binary,string1:string,middle:struct<list:array<struct<int1:int,"
         + "string1:string>>>,list:array<struct<int1:int,string1:string>>,"
         + "map:map<string,struct<int1:int,string1:string>>,ts:timestamp,"
-        + "decimal1:decimal(38,18)>", readerInspector.getTypeName());
-    List<? extends StructField> fields = readerInspector
-        .getAllStructFieldRefs();
-    BooleanObjectInspector bo = (BooleanObjectInspector) readerInspector
-        .getStructFieldRef("boolean1").getFieldObjectInspector();
-    ByteObjectInspector by = (ByteObjectInspector) readerInspector
-        .getStructFieldRef("byte1").getFieldObjectInspector();
-    ShortObjectInspector sh = (ShortObjectInspector) readerInspector
-        .getStructFieldRef("short1").getFieldObjectInspector();
-    IntObjectInspector in = (IntObjectInspector) readerInspector
-        .getStructFieldRef("int1").getFieldObjectInspector();
-    LongObjectInspector lo = (LongObjectInspector) readerInspector
-        .getStructFieldRef("long1").getFieldObjectInspector();
-    FloatObjectInspector fl = (FloatObjectInspector) readerInspector
-        .getStructFieldRef("float1").getFieldObjectInspector();
-    DoubleObjectInspector dbl = (DoubleObjectInspector) readerInspector
-        .getStructFieldRef("double1").getFieldObjectInspector();
-    BinaryObjectInspector bi = (BinaryObjectInspector) readerInspector
-        .getStructFieldRef("bytes1").getFieldObjectInspector();
-    StringObjectInspector st = (StringObjectInspector) readerInspector
-        .getStructFieldRef("string1").getFieldObjectInspector();
-    StructObjectInspector mid = (StructObjectInspector) readerInspector
-        .getStructFieldRef("middle").getFieldObjectInspector();
-    List<? extends StructField> midFields = mid.getAllStructFieldRefs();
-    ListObjectInspector midli = (ListObjectInspector) midFields.get(0)
-        .getFieldObjectInspector();
-    StructObjectInspector inner = (StructObjectInspector) midli
-        .getListElementObjectInspector();
-    List<? extends StructField> inFields = inner.getAllStructFieldRefs();
-    ListObjectInspector li = (ListObjectInspector) readerInspector
-        .getStructFieldRef("list").getFieldObjectInspector();
-    MapObjectInspector ma = (MapObjectInspector) readerInspector
-        .getStructFieldRef("map").getFieldObjectInspector();
-    TimestampObjectInspector tso = (TimestampObjectInspector) readerInspector
-        .getStructFieldRef("ts").getFieldObjectInspector();
-    HiveDecimalObjectInspector dco = (HiveDecimalObjectInspector) readerInspector
-        .getStructFieldRef("decimal1").getFieldObjectInspector();
-    StringObjectInspector mk = (StringObjectInspector) ma
-        .getMapKeyObjectInspector();
-    RecordReader rows = reader.rows();
-    Object row = rows.next(null);
-    assertNotNull(row);
-    // check the contents of the first row
-    assertEquals(false,
-        bo.get(readerInspector.getStructFieldData(row, fields.get(0))));
-    assertEquals(1,
-        by.get(readerInspector.getStructFieldData(row, fields.get(1))));
-    assertEquals(1024,
-        sh.get(readerInspector.getStructFieldData(row, fields.get(2))));
-    assertEquals(65536,
-        in.get(readerInspector.getStructFieldData(row, fields.get(3))));
-    assertEquals(Long.MAX_VALUE,
-        lo.get(readerInspector.getStructFieldData(row, fields.get(4))));
-    assertEquals(1.0,
-        fl.get(readerInspector.getStructFieldData(row, fields.get(5))), 0.00001);
-    assertEquals(-15.0,
-        dbl.get(readerInspector.getStructFieldData(row, fields.get(6))),
-        0.00001);
-    assertEquals(bytes(0, 1, 2, 3, 4),
-        bi.getPrimitiveWritableObject(readerInspector.getStructFieldData(row,
-            fields.get(7))));
-    assertEquals("hi", st.getPrimitiveJavaObject(readerInspector
-        .getStructFieldData(row, fields.get(8))));
-    List<?> midRow = midli.getList(mid.getStructFieldData(
-        readerInspector.getStructFieldData(row, fields.get(9)),
-        midFields.get(0)));
-    assertNotNull(midRow);
-    assertEquals(2, midRow.size());
-    assertEquals(1,
-        in.get(inner.getStructFieldData(midRow.get(0), inFields.get(0))));
-    assertEquals("bye", st.getPrimitiveJavaObject(inner.getStructFieldData(
-        midRow.get(0), inFields.get(1))));
-    assertEquals(2,
-        in.get(inner.getStructFieldData(midRow.get(1), inFields.get(0))));
-    assertEquals("sigh", st.getPrimitiveJavaObject(inner.getStructFieldData(
-        midRow.get(1), inFields.get(1))));
-    List<?> list = li.getList(readerInspector.getStructFieldData(row,
-        fields.get(10)));
-    assertEquals(2, list.size());
-    assertEquals(3,
-        in.get(inner.getStructFieldData(list.get(0), inFields.get(0))));
-    assertEquals("good", st.getPrimitiveJavaObject(inner.getStructFieldData(
-        list.get(0), inFields.get(1))));
-    assertEquals(4,
-        in.get(inner.getStructFieldData(list.get(1), inFields.get(0))));
-    assertEquals("bad", st.getPrimitiveJavaObject(inner.getStructFieldData(
-        list.get(1), inFields.get(1))));
-    Map<?, ?> map = ma.getMap(readerInspector.getStructFieldData(row,
-        fields.get(11)));
-    assertEquals(0, map.size());
-    assertEquals(Timestamp.valueOf("2000-03-12 15:00:00"),
-        tso.getPrimitiveJavaObject(readerInspector.getStructFieldData(row,
-            fields.get(12))));
-    assertEquals(HiveDecimal.create("12345678.6547456"),
-        dco.getPrimitiveJavaObject(readerInspector.getStructFieldData(row,
-            fields.get(13))));
+        + "decimal1:decimal(38,10)>", schema.toString());
+    VectorizedRowBatch batch = schema.createRowBatch();
 
-    // check the contents of second row
-    assertEquals(true, rows.hasNext());
+    RecordReader rows = reader.rows();
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(1024, batch.size);
+
+    // check the contents of the first row
+    assertEquals(false, getBoolean(batch, 0));
+    assertEquals(1, getByte(batch, 0));
+    assertEquals(1024, getShort(batch, 0));
+    assertEquals(65536, getInt(batch, 0));
+    assertEquals(Long.MAX_VALUE, getLong(batch, 0));
+    assertEquals(1.0, getFloat(batch, 0), 0.00001);
+    assertEquals(-15.0, getDouble(batch, 0), 0.00001);
+    assertEquals(bytes(0, 1, 2, 3, 4), getBinary(batch, 0));
+    assertEquals("hi", getText(batch, 0).toString());
+
+    StructColumnVector middle = (StructColumnVector) batch.cols[9];
+    ListColumnVector midList = (ListColumnVector) middle.fields[0];
+    StructColumnVector midListStruct = (StructColumnVector) midList.child;
+    LongColumnVector midListInt = (LongColumnVector) midListStruct.fields[0];
+    BytesColumnVector midListStr = (BytesColumnVector) midListStruct.fields[1];
+    ListColumnVector list = (ListColumnVector) batch.cols[10];
+    StructColumnVector listStruct = (StructColumnVector) list.child;
+    LongColumnVector listInts = (LongColumnVector) listStruct.fields[0];
+    BytesColumnVector listStrs = (BytesColumnVector) listStruct.fields[1];
+    MapColumnVector map = (MapColumnVector) batch.cols[11];
+    BytesColumnVector mapKey = (BytesColumnVector) map.keys;
+    StructColumnVector mapValue = (StructColumnVector) map.values;
+    LongColumnVector mapValueInts = (LongColumnVector) mapValue.fields[0];
+    BytesColumnVector mapValueStrs = (BytesColumnVector) mapValue.fields[1];
+    TimestampColumnVector timestamp = (TimestampColumnVector) batch.cols[12];
+    DecimalColumnVector decs = (DecimalColumnVector) batch.cols[13];
+
+    assertEquals(false, middle.isNull[0]);
+    assertEquals(2, midList.lengths[0]);
+    int start = (int) midList.offsets[0];
+    assertEquals(1, midListInt.vector[start]);
+    assertEquals("bye", midListStr.toString(start));
+    assertEquals(2, midListInt.vector[start + 1]);
+    assertEquals("sigh", midListStr.toString(start + 1));
+
+    assertEquals(2, list.lengths[0]);
+    start = (int) list.offsets[0];
+    assertEquals(3, listInts.vector[start]);
+    assertEquals("good", listStrs.toString(start));
+    assertEquals(4, listInts.vector[start + 1]);
+    assertEquals("bad", listStrs.toString(start + 1));
+    assertEquals(0, map.lengths[0]);
+    assertEquals(Timestamp.valueOf("2000-03-12 15:00:00"),
+        timestamp.asScratchTimestamp(0));
+    assertEquals(new HiveDecimalWritable(HiveDecimal.create("12345678.6547456")),
+        decs.vector[0]);
+
+    // check the contents of row 7499
     rows.seekToRow(7499);
-    row = rows.next(null);
-    assertEquals(true,
-        bo.get(readerInspector.getStructFieldData(row, fields.get(0))));
-    assertEquals(100,
-        by.get(readerInspector.getStructFieldData(row, fields.get(1))));
-    assertEquals(2048,
-        sh.get(readerInspector.getStructFieldData(row, fields.get(2))));
-    assertEquals(65536,
-        in.get(readerInspector.getStructFieldData(row, fields.get(3))));
-    assertEquals(Long.MAX_VALUE,
-        lo.get(readerInspector.getStructFieldData(row, fields.get(4))));
-    assertEquals(2.0,
-        fl.get(readerInspector.getStructFieldData(row, fields.get(5))), 0.00001);
-    assertEquals(-5.0,
-        dbl.get(readerInspector.getStructFieldData(row, fields.get(6))),
-        0.00001);
-    assertEquals(bytes(), bi.getPrimitiveWritableObject(readerInspector
-        .getStructFieldData(row, fields.get(7))));
-    assertEquals("bye", st.getPrimitiveJavaObject(readerInspector
-        .getStructFieldData(row, fields.get(8))));
-    midRow = midli.getList(mid.getStructFieldData(
-        readerInspector.getStructFieldData(row, fields.get(9)),
-        midFields.get(0)));
-    assertNotNull(midRow);
-    assertEquals(2, midRow.size());
-    assertEquals(1,
-        in.get(inner.getStructFieldData(midRow.get(0), inFields.get(0))));
-    assertEquals("bye", st.getPrimitiveJavaObject(inner.getStructFieldData(
-        midRow.get(0), inFields.get(1))));
-    assertEquals(2,
-        in.get(inner.getStructFieldData(midRow.get(1), inFields.get(0))));
-    assertEquals("sigh", st.getPrimitiveJavaObject(inner.getStructFieldData(
-        midRow.get(1), inFields.get(1))));
-    list = li.getList(readerInspector.getStructFieldData(row, fields.get(10)));
-    assertEquals(3, list.size());
-    assertEquals(100000000,
-        in.get(inner.getStructFieldData(list.get(0), inFields.get(0))));
-    assertEquals("cat", st.getPrimitiveJavaObject(inner.getStructFieldData(
-        list.get(0), inFields.get(1))));
-    assertEquals(-100000,
-        in.get(inner.getStructFieldData(list.get(1), inFields.get(0))));
-    assertEquals("in", st.getPrimitiveJavaObject(inner.getStructFieldData(
-        list.get(1), inFields.get(1))));
-    assertEquals(1234,
-        in.get(inner.getStructFieldData(list.get(2), inFields.get(0))));
-    assertEquals("hat", st.getPrimitiveJavaObject(inner.getStructFieldData(
-        list.get(2), inFields.get(1))));
-    map = ma.getMap(readerInspector.getStructFieldData(row, fields.get(11)));
-    assertEquals(2, map.size());
-    boolean[] found = new boolean[2];
-    for(Object key : map.keySet()) {
-      String str = mk.getPrimitiveJavaObject(key);
-      if (str.equals("chani")) {
-        assertEquals(false, found[0]);
-        assertEquals(5,
-            in.get(inner.getStructFieldData(map.get(key), inFields.get(0))));
-        assertEquals(str, st.getPrimitiveJavaObject(inner.getStructFieldData(
-            map.get(key), inFields.get(1))));
-        found[0] = true;
-      } else if (str.equals("mauddib")) {
-        assertEquals(false, found[1]);
-        assertEquals(1,
-            in.get(inner.getStructFieldData(map.get(key), inFields.get(0))));
-        assertEquals(str, st.getPrimitiveJavaObject(inner.getStructFieldData(
-            map.get(key), inFields.get(1))));
-        found[1] = true;
-      } else {
-        throw new IllegalArgumentException("Unknown key " + str);
-      }
-    }
-    assertEquals(true, found[0]);
-    assertEquals(true, found[1]);
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(true, getBoolean(batch, 0));
+    assertEquals(100, getByte(batch, 0));
+    assertEquals(2048, getShort(batch, 0));
+    assertEquals(65536, getInt(batch, 0));
+    assertEquals(Long.MAX_VALUE, getLong(batch, 0));
+    assertEquals(2.0, getFloat(batch, 0), 0.00001);
+    assertEquals(-5.0, getDouble(batch, 0), 0.00001);
+    assertEquals(bytes(), getBinary(batch, 0));
+    assertEquals("bye", getText(batch, 0).toString());
+    assertEquals(false, middle.isNull[0]);
+    assertEquals(2, midList.lengths[0]);
+    start = (int) midList.offsets[0];
+    assertEquals(1, midListInt.vector[start]);
+    assertEquals("bye", midListStr.toString(start));
+    assertEquals(2, midListInt.vector[start + 1]);
+    assertEquals("sigh", midListStr.toString(start + 1));
+    assertEquals(3, list.lengths[0]);
+    start = (int) list.offsets[0];
+    assertEquals(100000000, listInts.vector[start]);
+    assertEquals("cat", listStrs.toString(start));
+    assertEquals(-100000, listInts.vector[start + 1]);
+    assertEquals("in", listStrs.toString(start + 1));
+    assertEquals(1234, listInts.vector[start + 2]);
+    assertEquals("hat", listStrs.toString(start + 2));
+    assertEquals(2, map.lengths[0]);
+    start = (int) map.offsets[0];
+    assertEquals("chani", mapKey.toString(start));
+    assertEquals(5, mapValueInts.vector[start]);
+    assertEquals("chani", mapValueStrs.toString(start));
+    assertEquals("mauddib", mapKey.toString(start + 1));
+    assertEquals(1, mapValueInts.vector[start + 1]);
+    assertEquals("mauddib", mapValueStrs.toString(start + 1));
     assertEquals(Timestamp.valueOf("2000-03-12 15:00:01"),
-        tso.getPrimitiveJavaObject(readerInspector.getStructFieldData(row,
-            fields.get(12))));
-    assertEquals(HiveDecimal.create("12345678.6547457"),
-        dco.getPrimitiveJavaObject(readerInspector.getStructFieldData(row,
-            fields.get(13))));
+        timestamp.asScratchTimestamp(0));
+    assertEquals(new HiveDecimalWritable(HiveDecimal.create("12345678.6547457")),
+        decs.vector[0]);
 
     // handle the close up
-    assertEquals(false, rows.hasNext());
+    assertEquals(false, rows.nextBatch(batch));
     rows.close();
   }
 
   @Test
   public void testTimestamp() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestVectorOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Timestamp.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
-
     TypeDescription schema = TypeDescription.createTimestamp();
     Writer writer = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf).setSchema(schema).stripeSize(100000)
@@ -533,11 +377,15 @@ public class TestVectorOrcFile {
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
+    TimestampColumnVector timestamps = (TimestampColumnVector) batch.cols[0];
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(tslist.get(idx++).getNanos(), ((TimestampWritable) row).getNanos());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(tslist.get(idx++).getNanos(),
+            timestamps.asScratchTimestamp(r).getNanos());
+      }
     }
     assertEquals(tslist.size(), rows.getRowNumber());
     assertEquals(0, writer.getSchema().getMaximumId());
@@ -608,50 +456,28 @@ public class TestVectorOrcFile {
         stats[2].toString());
 
     // check the inspectors
-    StructObjectInspector readerInspector =
-        (StructObjectInspector) reader.getObjectInspector();
-    assertEquals(ObjectInspector.Category.STRUCT,
-        readerInspector.getCategory());
-    assertEquals("struct<bytes1:binary,string1:string>",
-        readerInspector.getTypeName());
-    List<? extends StructField> fields =
-        readerInspector.getAllStructFieldRefs();
-    BinaryObjectInspector bi = (BinaryObjectInspector) readerInspector.
-        getStructFieldRef("bytes1").getFieldObjectInspector();
-    StringObjectInspector st = (StringObjectInspector) readerInspector.
-        getStructFieldRef("string1").getFieldObjectInspector();
+    batch = reader.getSchema().createRowBatch();
+    BytesColumnVector bytes = (BytesColumnVector) batch.cols[0];
+    BytesColumnVector strs = (BytesColumnVector) batch.cols[1];
     RecordReader rows = reader.rows();
-    Object row = rows.next(null);
-    assertNotNull(row);
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(4, batch.size);
+
     // check the contents of the first row
-    assertEquals(bytes(0,1,2,3,4), bi.getPrimitiveWritableObject(
-        readerInspector.getStructFieldData(row, fields.get(0))));
-    assertEquals("foo", st.getPrimitiveJavaObject(readerInspector.
-        getStructFieldData(row, fields.get(1))));
+    assertEquals(bytes(0,1,2,3,4), getBinary(bytes, 0));
+    assertEquals("foo", strs.toString(0));
 
     // check the contents of second row
-    assertEquals(true, rows.hasNext());
-    row = rows.next(row);
-    assertEquals(bytes(0,1,2,3), bi.getPrimitiveWritableObject(
-        readerInspector.getStructFieldData(row, fields.get(0))));
-    assertEquals("bar", st.getPrimitiveJavaObject(readerInspector.
-        getStructFieldData(row, fields.get(1))));
+    assertEquals(bytes(0,1,2,3), getBinary(bytes, 1));
+    assertEquals("bar", strs.toString(1));
 
     // check the contents of third row
-    assertEquals(true, rows.hasNext());
-    row = rows.next(row);
-    assertEquals(bytes(0,1,2,3,4,5), bi.getPrimitiveWritableObject(
-        readerInspector.getStructFieldData(row, fields.get(0))));
-    assertNull(st.getPrimitiveJavaObject(readerInspector.
-        getStructFieldData(row, fields.get(1))));
+    assertEquals(bytes(0,1,2,3,4,5), getBinary(bytes, 2));
+    assertNull(strs.toString(2));
 
     // check the contents of fourth row
-    assertEquals(true, rows.hasNext());
-    row = rows.next(row);
-    assertNull(bi.getPrimitiveWritableObject(
-        readerInspector.getStructFieldData(row, fields.get(0))));
-    assertEquals("hi", st.getPrimitiveJavaObject(readerInspector.
-        getStructFieldData(row, fields.get(1))));
+    assertNull(getBinary(bytes, 3));
+    assertEquals("hi", strs.toString(3));
 
     // handle the close up
     assertEquals(false, rows.hasNext());
@@ -767,6 +593,19 @@ public class TestVectorOrcFile {
     }
   }
 
+  private static void checkInner(StructColumnVector inner, int rowId,
+                                 int rowInBatch, int i, String value) {
+    assertEquals("row " + rowId, i,
+        ((LongColumnVector) inner.fields[0]).vector[rowInBatch]);
+    if (value != null) {
+      assertEquals("row " + rowId, value,
+          ((BytesColumnVector) inner.fields[1]).toString(rowInBatch));
+    } else {
+      assertEquals("row " + rowId, true, inner.fields[1].isNull[rowInBatch]);
+      assertEquals("row " + rowId, false, inner.fields[1].noNulls);
+    }
+  }
+
   private static void setInnerList(ListColumnVector list, int rowId,
                                    List<InnerStruct> value) {
     if (value != null) {
@@ -784,6 +623,23 @@ public class TestVectorOrcFile {
     } else {
       list.isNull[rowId] = true;
       list.noNulls = false;
+    }
+  }
+
+  private static void checkInnerList(ListColumnVector list, int rowId,
+                                     int rowInBatch, List<InnerStruct> value) {
+    if (value != null) {
+      assertEquals("row " + rowId, value.size(), list.lengths[rowInBatch]);
+      int start = (int) list.offsets[rowInBatch];
+      for (int i = 0; i < list.lengths[rowInBatch]; ++i) {
+        InnerStruct inner = value.get(i);
+        checkInner((StructColumnVector) list.child, rowId, i + start,
+            inner.int1, inner.string1.toString());
+      }
+      list.childCount += value.size();
+    } else {
+      assertEquals("row " + rowId, true, list.isNull[rowInBatch]);
+      assertEquals("row " + rowId, false, list.noNulls);
     }
   }
 
@@ -812,6 +668,24 @@ public class TestVectorOrcFile {
     }
   }
 
+  private static void checkInnerMap(MapColumnVector map, int rowId,
+                                    int rowInBatch,
+                                    Map<String, InnerStruct> value) {
+    if (value != null) {
+      assertEquals("row " + rowId, value.size(), map.lengths[rowInBatch]);
+      int offset = (int) map.offsets[rowInBatch];
+      for(int i=0; i < value.size(); ++i) {
+        String key = ((BytesColumnVector) map.keys).toString(offset + i);
+        InnerStruct expected = value.get(key);
+        checkInner((StructColumnVector) map.values, rowId, offset + i,
+            expected.int1, expected.string1.toString());
+      }
+    } else {
+      assertEquals("row " + rowId, true, map.isNull[rowId]);
+      assertEquals("row " + rowId, false, map.noNulls);
+    }
+  }
+
   private static void setMiddleStruct(StructColumnVector middle, int rowId,
                                       MiddleStruct value) {
     if (value != null) {
@@ -819,6 +693,17 @@ public class TestVectorOrcFile {
     } else {
       middle.isNull[rowId] = true;
       middle.noNulls = false;
+    }
+  }
+
+  private static void checkMiddleStruct(StructColumnVector middle, int rowId,
+                                        int rowInBatch, MiddleStruct value) {
+    if (value != null) {
+      checkInnerList((ListColumnVector) middle.fields[0], rowId, rowInBatch,
+          value.list);
+    } else {
+      assertEquals("row " + rowId, true, middle.isNull[rowInBatch]);
+      assertEquals("row " + rowId, false, middle.noNulls);
     }
   }
 
@@ -851,6 +736,160 @@ public class TestVectorOrcFile {
     setMiddleStruct((StructColumnVector) batch.cols[9], rowId, m1);
     setInnerList((ListColumnVector) batch.cols[10], rowId, l2);
     setInnerMap((MapColumnVector) batch.cols[11], rowId, m2);
+  }
+
+  private static void checkBigRow(VectorizedRowBatch batch,
+                                  int rowInBatch,
+                                  int rowId,
+                                  boolean b1, byte b2, short s1,
+                                  int i1, long l1, float f1,
+                                  double d1, BytesWritable b3, String s2,
+                                  MiddleStruct m1, List<InnerStruct> l2,
+                                  Map<String, InnerStruct> m2) {
+    assertEquals("row " + rowId, b1, getBoolean(batch, rowInBatch));
+    assertEquals("row " + rowId, b2, getByte(batch, rowInBatch));
+    assertEquals("row " + rowId, s1, getShort(batch, rowInBatch));
+    assertEquals("row " + rowId, i1, getInt(batch, rowInBatch));
+    assertEquals("row " + rowId, l1, getLong(batch, rowInBatch));
+    assertEquals("row " + rowId, f1, getFloat(batch, rowInBatch), 0.0001);
+    assertEquals("row " + rowId, d1, getDouble(batch, rowInBatch), 0.0001);
+    if (b3 != null) {
+      BytesColumnVector bytes = (BytesColumnVector) batch.cols[7];
+      assertEquals("row " + rowId, b3.getLength(), bytes.length[rowInBatch]);
+      for(int i=0; i < b3.getLength(); ++i) {
+        assertEquals("row " + rowId + " byte " + i, b3.getBytes()[i],
+            bytes.vector[rowInBatch][bytes.start[rowInBatch] + i]);
+      }
+    } else {
+      assertEquals("row " + rowId, true, batch.cols[7].isNull[rowInBatch]);
+      assertEquals("row " + rowId, false, batch.cols[7].noNulls);
+    }
+    if (s2 != null) {
+      assertEquals("row " + rowId, s2, getText(batch, rowInBatch).toString());
+    } else {
+      assertEquals("row " + rowId, true, batch.cols[8].isNull[rowInBatch]);
+      assertEquals("row " + rowId, false, batch.cols[8].noNulls);
+    }
+    checkMiddleStruct((StructColumnVector) batch.cols[9], rowId, rowInBatch,
+        m1);
+    checkInnerList((ListColumnVector) batch.cols[10], rowId, rowInBatch, l2);
+    checkInnerMap((MapColumnVector) batch.cols[11], rowId, rowInBatch, m2);
+  }
+
+  private static boolean getBoolean(VectorizedRowBatch batch, int rowId) {
+    return ((LongColumnVector) batch.cols[0]).vector[rowId] != 0;
+  }
+
+  private static byte getByte(VectorizedRowBatch batch, int rowId) {
+    return (byte) ((LongColumnVector) batch.cols[1]).vector[rowId];
+  }
+
+  private static short getShort(VectorizedRowBatch batch, int rowId) {
+    return (short) ((LongColumnVector) batch.cols[2]).vector[rowId];
+  }
+
+  private static int getInt(VectorizedRowBatch batch, int rowId) {
+    return (int) ((LongColumnVector) batch.cols[3]).vector[rowId];
+  }
+
+  private static long getLong(VectorizedRowBatch batch, int rowId) {
+    return ((LongColumnVector) batch.cols[4]).vector[rowId];
+  }
+
+  private static float getFloat(VectorizedRowBatch batch, int rowId) {
+    return (float) ((DoubleColumnVector) batch.cols[5]).vector[rowId];
+  }
+
+  private static double getDouble(VectorizedRowBatch batch, int rowId) {
+    return ((DoubleColumnVector) batch.cols[6]).vector[rowId];
+  }
+
+  private static BytesWritable getBinary(BytesColumnVector column, int rowId) {
+    if (column.isRepeating) {
+      rowId = 0;
+    }
+    if (column.noNulls || !column.isNull[rowId]) {
+      return new BytesWritable(Arrays.copyOfRange(column.vector[rowId],
+          column.start[rowId], column.start[rowId] + column.length[rowId]));
+    } else {
+      return null;
+    }
+  }
+
+  private static BytesWritable getBinary(VectorizedRowBatch batch, int rowId) {
+    return getBinary((BytesColumnVector) batch.cols[7], rowId);
+  }
+
+  private static Text getText(BytesColumnVector vector, int rowId) {
+    if (vector.isRepeating) {
+      rowId = 0;
+    }
+    if (vector.noNulls || !vector.isNull[rowId]) {
+      return new Text(Arrays.copyOfRange(vector.vector[rowId],
+          vector.start[rowId], vector.start[rowId] + vector.length[rowId]));
+    } else {
+      return null;
+    }
+  }
+
+  private static Text getText(VectorizedRowBatch batch, int rowId) {
+    return getText((BytesColumnVector) batch.cols[8], rowId);
+  }
+
+  private static InnerStruct getInner(StructColumnVector vector,
+                                      int rowId) {
+    return new InnerStruct(
+        (int) ((LongColumnVector) vector.fields[0]).vector[rowId],
+        getText((BytesColumnVector) vector.fields[1], rowId));
+  }
+
+  private static List<InnerStruct> getList(ListColumnVector cv,
+                                           int rowId) {
+    if (cv.isRepeating) {
+      rowId = 0;
+    }
+    if (cv.noNulls || !cv.isNull[rowId]) {
+      List<InnerStruct> result =
+          new ArrayList<InnerStruct>((int) cv.lengths[rowId]);
+      for(long i=cv.offsets[rowId];
+          i < cv.offsets[rowId] + cv.lengths[rowId]; ++i) {
+        result.add(getInner((StructColumnVector) cv.child, (int) i));
+      }
+      return result;
+    } else {
+      return null;
+    }
+  }
+
+  private static List<InnerStruct> getMidList(VectorizedRowBatch batch,
+                                              int rowId) {
+    return getList((ListColumnVector) ((StructColumnVector) batch.cols[9])
+        .fields[0], rowId);
+  }
+
+  private static List<InnerStruct> getList(VectorizedRowBatch batch,
+                                           int rowId) {
+    return getList((ListColumnVector) batch.cols[10], rowId);
+  }
+
+  private static Map<Text, InnerStruct> getMap(VectorizedRowBatch batch,
+                                               int rowId) {
+    MapColumnVector cv = (MapColumnVector) batch.cols[11];
+    if (cv.isRepeating) {
+      rowId = 0;
+    }
+    if (cv.noNulls || !cv.isNull[rowId]) {
+      Map<Text, InnerStruct> result =
+          new HashMap<Text, InnerStruct>((int) cv.lengths[rowId]);
+      for(long i=cv.offsets[rowId];
+          i < cv.offsets[rowId] + cv.lengths[rowId]; ++i) {
+        result.put(getText((BytesColumnVector) cv.keys, (int) i),
+            getInner((StructColumnVector) cv.values, (int) i));
+      }
+      return result;
+    } else {
+      return null;
+    }
   }
 
   private static TypeDescription createInnerSchema() {
@@ -981,178 +1020,114 @@ public class TestVectorOrcFile {
 
     assertEquals("count: 2 hasNull: false min: bye max: hi sum: 5", stats[9].toString());
 
-    // check the inspectors
-    StructObjectInspector readerInspector =
-        (StructObjectInspector) reader.getObjectInspector();
-    assertEquals(ObjectInspector.Category.STRUCT,
-        readerInspector.getCategory());
+    // check the schema
+    TypeDescription readerSchema = reader.getSchema();
+    assertEquals(TypeDescription.Category.STRUCT, readerSchema.getCategory());
     assertEquals("struct<boolean1:boolean,byte1:tinyint,short1:smallint,"
         + "int1:int,long1:bigint,float1:float,double1:double,bytes1:"
         + "binary,string1:string,middle:struct<list:array<struct<int1:int,"
         + "string1:string>>>,list:array<struct<int1:int,string1:string>>,"
         + "map:map<string,struct<int1:int,string1:string>>>",
-        readerInspector.getTypeName());
-    List<? extends StructField> fields =
-        readerInspector.getAllStructFieldRefs();
-    BooleanObjectInspector bo = (BooleanObjectInspector) readerInspector.
-        getStructFieldRef("boolean1").getFieldObjectInspector();
-    ByteObjectInspector by = (ByteObjectInspector) readerInspector.
-        getStructFieldRef("byte1").getFieldObjectInspector();
-    ShortObjectInspector sh = (ShortObjectInspector) readerInspector.
-        getStructFieldRef("short1").getFieldObjectInspector();
-    IntObjectInspector in = (IntObjectInspector) readerInspector.
-        getStructFieldRef("int1").getFieldObjectInspector();
-    LongObjectInspector lo = (LongObjectInspector) readerInspector.
-        getStructFieldRef("long1").getFieldObjectInspector();
-    FloatObjectInspector fl = (FloatObjectInspector) readerInspector.
-        getStructFieldRef("float1").getFieldObjectInspector();
-    DoubleObjectInspector dbl = (DoubleObjectInspector) readerInspector.
-        getStructFieldRef("double1").getFieldObjectInspector();
-    BinaryObjectInspector bi = (BinaryObjectInspector) readerInspector.
-        getStructFieldRef("bytes1").getFieldObjectInspector();
-    StringObjectInspector st = (StringObjectInspector) readerInspector.
-        getStructFieldRef("string1").getFieldObjectInspector();
-    StructObjectInspector mid = (StructObjectInspector) readerInspector.
-        getStructFieldRef("middle").getFieldObjectInspector();
-    List<? extends StructField> midFields =
-        mid.getAllStructFieldRefs();
-    ListObjectInspector midli =
-        (ListObjectInspector) midFields.get(0).getFieldObjectInspector();
-    StructObjectInspector inner = (StructObjectInspector)
-        midli.getListElementObjectInspector();
-    List<? extends StructField> inFields = inner.getAllStructFieldRefs();
-    ListObjectInspector li = (ListObjectInspector) readerInspector.
-        getStructFieldRef("list").getFieldObjectInspector();
-    MapObjectInspector ma = (MapObjectInspector) readerInspector.
-        getStructFieldRef("map").getFieldObjectInspector();
-    StringObjectInspector mk = (StringObjectInspector)
-        ma.getMapKeyObjectInspector();
+        readerSchema.toString());
+    List<String> fieldNames = readerSchema.getFieldNames();
+    List<TypeDescription> fieldTypes = readerSchema.getChildren();
+    assertEquals("boolean1", fieldNames.get(0));
+    assertEquals(TypeDescription.Category.BOOLEAN, fieldTypes.get(0).getCategory());
+    assertEquals("byte1", fieldNames.get(1));
+    assertEquals(TypeDescription.Category.BYTE, fieldTypes.get(1).getCategory());
+    assertEquals("short1", fieldNames.get(2));
+    assertEquals(TypeDescription.Category.SHORT, fieldTypes.get(2).getCategory());
+    assertEquals("int1", fieldNames.get(3));
+    assertEquals(TypeDescription.Category.INT, fieldTypes.get(3).getCategory());
+    assertEquals("long1", fieldNames.get(4));
+    assertEquals(TypeDescription.Category.LONG, fieldTypes.get(4).getCategory());
+    assertEquals("float1", fieldNames.get(5));
+    assertEquals(TypeDescription.Category.FLOAT, fieldTypes.get(5).getCategory());
+    assertEquals("double1", fieldNames.get(6));
+    assertEquals(TypeDescription.Category.DOUBLE, fieldTypes.get(6).getCategory());
+    assertEquals("bytes1", fieldNames.get(7));
+    assertEquals(TypeDescription.Category.BINARY, fieldTypes.get(7).getCategory());
+    assertEquals("string1", fieldNames.get(8));
+    assertEquals(TypeDescription.Category.STRING, fieldTypes.get(8).getCategory());
+    assertEquals("middle", fieldNames.get(9));
+    TypeDescription middle = fieldTypes.get(9);
+    assertEquals(TypeDescription.Category.STRUCT, middle.getCategory());
+    TypeDescription midList = middle.getChildren().get(0);
+    assertEquals(TypeDescription.Category.LIST, midList.getCategory());
+    TypeDescription inner = midList.getChildren().get(0);
+    assertEquals(TypeDescription.Category.STRUCT, inner.getCategory());
+    assertEquals("int1", inner.getFieldNames().get(0));
+    assertEquals("string1", inner.getFieldNames().get(1));
+
     RecordReader rows = reader.rows();
-    Object row = rows.next(null);
-    assertNotNull(row);
+    // create a new batch
+    batch = readerSchema.createRowBatch();
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(2, batch.size);
+    assertEquals(false, rows.hasNext());
+
     // check the contents of the first row
-    assertEquals(false,
-        bo.get(readerInspector.getStructFieldData(row, fields.get(0))));
-    assertEquals(1, by.get(readerInspector.getStructFieldData(row,
-        fields.get(1))));
-    assertEquals(1024, sh.get(readerInspector.getStructFieldData(row,
-        fields.get(2))));
-    assertEquals(65536, in.get(readerInspector.getStructFieldData(row,
-        fields.get(3))));
-    assertEquals(Long.MAX_VALUE, lo.get(readerInspector.
-        getStructFieldData(row, fields.get(4))));
-    assertEquals(1.0, fl.get(readerInspector.getStructFieldData(row,
-        fields.get(5))), 0.00001);
-    assertEquals(-15.0, dbl.get(readerInspector.getStructFieldData(row,
-        fields.get(6))), 0.00001);
-    assertEquals(bytes(0,1,2,3,4), bi.getPrimitiveWritableObject(
-        readerInspector.getStructFieldData(row, fields.get(7))));
-    assertEquals("hi", st.getPrimitiveJavaObject(readerInspector.
-        getStructFieldData(row, fields.get(8))));
-    List<?> midRow = midli.getList(mid.getStructFieldData(readerInspector.
-        getStructFieldData(row, fields.get(9)), midFields.get(0)));
+    assertEquals(false, getBoolean(batch, 0));
+    assertEquals(1, getByte(batch, 0));
+    assertEquals(1024, getShort(batch, 0));
+    assertEquals(65536, getInt(batch, 0));
+    assertEquals(Long.MAX_VALUE, getLong(batch, 0));
+    assertEquals(1.0, getFloat(batch, 0), 0.00001);
+    assertEquals(-15.0, getDouble(batch, 0), 0.00001);
+    assertEquals(bytes(0,1,2,3,4), getBinary(batch, 0));
+    assertEquals("hi", getText(batch, 0).toString());
+    List<InnerStruct> midRow = getMidList(batch, 0);
     assertNotNull(midRow);
     assertEquals(2, midRow.size());
-    assertEquals(1, in.get(inner.getStructFieldData(midRow.get(0),
-        inFields.get(0))));
-    assertEquals("bye", st.getPrimitiveJavaObject(inner.getStructFieldData
-        (midRow.get(0), inFields.get(1))));
-    assertEquals(2, in.get(inner.getStructFieldData(midRow.get(1),
-        inFields.get(0))));
-    assertEquals("sigh", st.getPrimitiveJavaObject(inner.getStructFieldData
-        (midRow.get(1), inFields.get(1))));
-    List<?> list = li.getList(readerInspector.getStructFieldData(row,
-        fields.get(10)));
+    assertEquals(1, midRow.get(0).int1);
+    assertEquals("bye", midRow.get(0).string1.toString());
+    assertEquals(2, midRow.get(1).int1);
+    assertEquals("sigh", midRow.get(1).string1.toString());
+    List<InnerStruct> list = getList(batch, 0);
     assertEquals(2, list.size());
-    assertEquals(3, in.get(inner.getStructFieldData(list.get(0),
-        inFields.get(0))));
-    assertEquals("good", st.getPrimitiveJavaObject(inner.getStructFieldData
-        (list.get(0), inFields.get(1))));
-    assertEquals(4, in.get(inner.getStructFieldData(list.get(1),
-        inFields.get(0))));
-    assertEquals("bad", st.getPrimitiveJavaObject(inner.getStructFieldData
-        (list.get(1), inFields.get(1))));
-    Map<?,?> map = ma.getMap(readerInspector.getStructFieldData(row,
-        fields.get(11)));
+    assertEquals(3, list.get(0).int1);
+    assertEquals("good", list.get(0).string1.toString());
+    assertEquals(4, list.get(1).int1);
+    assertEquals("bad", list.get(1).string1.toString());
+    Map<Text, InnerStruct> map = getMap(batch, 0);
     assertEquals(0, map.size());
 
     // check the contents of second row
-    assertEquals(true, rows.hasNext());
-    row = rows.next(row);
-    assertEquals(true,
-        bo.get(readerInspector.getStructFieldData(row, fields.get(0))));
-    assertEquals(100, by.get(readerInspector.getStructFieldData(row,
-        fields.get(1))));
-    assertEquals(2048, sh.get(readerInspector.getStructFieldData(row,
-        fields.get(2))));
-    assertEquals(65536, in.get(readerInspector.getStructFieldData(row,
-        fields.get(3))));
-    assertEquals(Long.MAX_VALUE, lo.get(readerInspector.
-        getStructFieldData(row, fields.get(4))));
-    assertEquals(2.0, fl.get(readerInspector.getStructFieldData(row,
-        fields.get(5))), 0.00001);
-    assertEquals(-5.0, dbl.get(readerInspector.getStructFieldData(row,
-        fields.get(6))), 0.00001);
-    assertEquals(bytes(), bi.getPrimitiveWritableObject(
-        readerInspector.getStructFieldData(row, fields.get(7))));
-    assertEquals("bye", st.getPrimitiveJavaObject(readerInspector.
-        getStructFieldData(row, fields.get(8))));
-    midRow = midli.getList(mid.getStructFieldData(readerInspector.
-        getStructFieldData(row, fields.get(9)), midFields.get(0)));
+    assertEquals(true, getBoolean(batch, 1));
+    assertEquals(100, getByte(batch, 1));
+    assertEquals(2048, getShort(batch, 1));
+    assertEquals(65536, getInt(batch, 1));
+    assertEquals(Long.MAX_VALUE, getLong(batch, 1));
+    assertEquals(2.0, getFloat(batch, 1), 0.00001);
+    assertEquals(-5.0, getDouble(batch, 1), 0.00001);
+    assertEquals(bytes(), getBinary(batch, 1));
+    assertEquals("bye", getText(batch, 1).toString());
+    midRow = getMidList(batch, 1);
     assertNotNull(midRow);
     assertEquals(2, midRow.size());
-    assertEquals(1, in.get(inner.getStructFieldData(midRow.get(0),
-        inFields.get(0))));
-    assertEquals("bye", st.getPrimitiveJavaObject(inner.getStructFieldData
-        (midRow.get(0), inFields.get(1))));
-    assertEquals(2, in.get(inner.getStructFieldData(midRow.get(1),
-        inFields.get(0))));
-    assertEquals("sigh", st.getPrimitiveJavaObject(inner.getStructFieldData
-        (midRow.get(1), inFields.get(1))));
-    list = li.getList(readerInspector.getStructFieldData(row,
-        fields.get(10)));
+    assertEquals(1, midRow.get(0).int1);
+    assertEquals("bye", midRow.get(0).string1.toString());
+    assertEquals(2, midRow.get(1).int1);
+    assertEquals("sigh", midRow.get(1).string1.toString());
+    list = getList(batch, 1);
     assertEquals(3, list.size());
-    assertEquals(100000000, in.get(inner.getStructFieldData(list.get(0),
-        inFields.get(0))));
-    assertEquals("cat", st.getPrimitiveJavaObject(inner.getStructFieldData
-        (list.get(0), inFields.get(1))));
-    assertEquals(-100000, in.get(inner.getStructFieldData(list.get(1),
-        inFields.get(0))));
-    assertEquals("in", st.getPrimitiveJavaObject(inner.getStructFieldData
-        (list.get(1), inFields.get(1))));
-    assertEquals(1234, in.get(inner.getStructFieldData(list.get(2),
-        inFields.get(0))));
-    assertEquals("hat", st.getPrimitiveJavaObject(inner.getStructFieldData
-        (list.get(2), inFields.get(1))));
-    map = ma.getMap(readerInspector.getStructFieldData(row,
-        fields.get(11)));
+    assertEquals(100000000, list.get(0).int1);
+    assertEquals("cat", list.get(0).string1.toString());
+    assertEquals(-100000, list.get(1).int1);
+    assertEquals("in", list.get(1).string1.toString());
+    assertEquals(1234, list.get(2).int1);
+    assertEquals("hat", list.get(2).string1.toString());
+    map = getMap(batch, 1);
     assertEquals(2, map.size());
-    boolean[] found = new boolean[2];
-    for(Object key: map.keySet()) {
-      String str = mk.getPrimitiveJavaObject(key);
-      if (str.equals("chani")) {
-        assertEquals(false, found[0]);
-        assertEquals(5, in.get(inner.getStructFieldData(map.get(key),
-            inFields.get(0))));
-        assertEquals(str, st.getPrimitiveJavaObject(
-            inner.getStructFieldData(map.get(key), inFields.get(1))));
-        found[0] = true;
-      } else if (str.equals("mauddib")) {
-        assertEquals(false, found[1]);
-        assertEquals(1, in.get(inner.getStructFieldData(map.get(key),
-            inFields.get(0))));
-        assertEquals(str, st.getPrimitiveJavaObject(
-            inner.getStructFieldData(map.get(key), inFields.get(1))));
-        found[1] = true;
-      } else {
-        throw new IllegalArgumentException("Unknown key " + str);
-      }
-    }
-    assertEquals(true, found[0]);
-    assertEquals(true, found[1]);
+    InnerStruct value = map.get(new Text("chani"));
+    assertEquals(5, value.int1);
+    assertEquals("chani", value.string1.toString());
+    value = map.get(new Text("mauddib"));
+    assertEquals(1, value.int1);
+    assertEquals("mauddib", value.string1.toString());
 
     // handle the close up
-    assertEquals(false, rows.hasNext());
+    assertEquals(false, rows.nextBatch(batch));
     rows.close();
   }
 
@@ -1216,35 +1191,36 @@ public class TestVectorOrcFile {
     }
 
     // check out the types
-    List<OrcProto.Type> types = reader.getTypes();
-    assertEquals(3, types.size());
-    assertEquals(OrcProto.Type.Kind.STRUCT, types.get(0).getKind());
-    assertEquals(2, types.get(0).getSubtypesCount());
-    assertEquals(1, types.get(0).getSubtypes(0));
-    assertEquals(2, types.get(0).getSubtypes(1));
-    assertEquals(OrcProto.Type.Kind.INT, types.get(1).getKind());
-    assertEquals(0, types.get(1).getSubtypesCount());
-    assertEquals(OrcProto.Type.Kind.STRING, types.get(2).getKind());
-    assertEquals(0, types.get(2).getSubtypesCount());
+    TypeDescription type = reader.getSchema();
+    assertEquals(TypeDescription.Category.STRUCT, type.getCategory());
+    assertEquals(2, type.getChildren().size());
+    TypeDescription type1 = type.getChildren().get(0);
+    TypeDescription type2 = type.getChildren().get(1);
+    assertEquals(TypeDescription.Category.INT, type1.getCategory());
+    assertEquals(TypeDescription.Category.STRING, type2.getCategory());
+    assertEquals("struct<int1:int,string1:string>", type.toString());
 
     // read the contents and make sure they match
     RecordReader rows1 = reader.rows(new boolean[]{true, true, false});
     RecordReader rows2 = reader.rows(new boolean[]{true, false, true});
     r1 = new Random(1);
     r2 = new Random(2);
-    OrcStruct row1 = null;
-    OrcStruct row2 = null;
-    for(int i = 0; i < 21000; ++i) {
-      assertEquals(true, rows1.hasNext());
-      assertEquals(true, rows2.hasNext());
-      row1 = (OrcStruct) rows1.next(row1);
-      row2 = (OrcStruct) rows2.next(row2);
-      assertEquals(r1.nextInt(), ((IntWritable) row1.getFieldValue(0)).get());
-      assertEquals(Long.toHexString(r2.nextLong()),
-          row2.getFieldValue(1).toString());
+    VectorizedRowBatch batch1 = reader.getSchema().createRowBatch(1000);
+    VectorizedRowBatch batch2 = reader.getSchema().createRowBatch(1000);
+    for(int i = 0; i < 21000; i += 1000) {
+      assertEquals(true, rows1.nextBatch(batch1));
+      assertEquals(true, rows2.nextBatch(batch2));
+      assertEquals(1000, batch1.size);
+      assertEquals(1000, batch2.size);
+      for(int j=0; j < 1000; ++j) {
+        assertEquals(r1.nextInt(),
+            ((LongColumnVector) batch1.cols[0]).vector[j]);
+        assertEquals(Long.toHexString(r2.nextLong()),
+            ((BytesColumnVector) batch2.cols[1]).toString(j));
+      }
     }
-    assertEquals(false, rows1.hasNext());
-    assertEquals(false, rows2.hasNext());
+    assertEquals(false, rows1.nextBatch(batch1));
+    assertEquals(false, rows2.nextBatch(batch2));
     rows1.close();
     rows2.close();
   }
@@ -1355,17 +1331,33 @@ public class TestVectorOrcFile {
     Reader reader = OrcFile.createReader(file,
         OrcFile.readerOptions(conf));
     RecordReader rows = reader.rows();
-    OrcStruct row = null;
+    batch = reader.getSchema().createRowBatch(1000);
+    TimestampColumnVector times = (TimestampColumnVector) batch.cols[0];
+    LongColumnVector dates = (LongColumnVector) batch.cols[1];
     for (int year = minYear; year < maxYear; ++year) {
+      rows.nextBatch(batch);
+      assertEquals(1000, batch.size);
       for(int ms = 1000; ms < 2000; ++ms) {
-        row = (OrcStruct) rows.next(row);
-        assertEquals(new TimestampWritable
-                (Timestamp.valueOf(year + "-05-05 12:34:56." + ms)),
-            row.getFieldValue(0));
-        assertEquals(new DateWritable(new Date(year - 1900, 11, 25)),
-            row.getFieldValue(1));
+        StringBuilder buffer = new StringBuilder();
+        times.stringifyValue(buffer, ms - 1000);
+        String expected = Integer.toString(year) + "-05-05 12:34:56.";
+        // suppress the final zeros on the string by dividing by the largest
+        // power of 10 that divides evenly.
+        int roundedMs = ms;
+        for(int round = 1000; round > 0; round /= 10) {
+          if (ms % round == 0) {
+            roundedMs = ms / round;
+            break;
+          }
+        }
+        expected += roundedMs;
+        assertEquals(expected, buffer.toString());
+        assertEquals(Integer.toString(year) + "-12-25",
+            new DateWritable((int) dates.vector[ms - 1000]).toString());
       }
     }
+    rows.nextBatch(batch);
+    assertEquals(0, batch.size);
   }
 
   @Test
@@ -1483,6 +1475,7 @@ public class TestVectorOrcFile {
     for(int c=0; c < batch.cols.length; ++c) {
       batch.cols[c].setRepeating(true);
     }
+    ((UnionColumnVector) batch.cols[1]).fields[0].isRepeating = true;
     setUnion(batch, 0, null, 0, 1732050807, null, null);
     for(int i=0; i < 5; ++i) {
       writer.addRowBatch(batch);
@@ -1540,83 +1533,115 @@ public class TestVectorOrcFile {
     RecordReader rows = reader.rows();
     assertEquals(0, rows.getRowNumber());
     assertEquals(0.0, rows.getProgress(), 0.000001);
-    assertEquals(true, rows.hasNext());
-    OrcStruct row = (OrcStruct) rows.next(null);
-    assertEquals(1, rows.getRowNumber());
-    ObjectInspector inspector = reader.getObjectInspector();
+
+    schema = reader.getSchema();
+    batch = schema.createRowBatch(74);
+    assertEquals(0, rows.getRowNumber());
+    rows.nextBatch(batch);
+    assertEquals(74, batch.size);
+    assertEquals(74, rows.getRowNumber());
+    TimestampColumnVector ts = (TimestampColumnVector) batch.cols[0];
+    UnionColumnVector union = (UnionColumnVector) batch.cols[1];
+    LongColumnVector longs = (LongColumnVector) union.fields[0];
+    BytesColumnVector strs = (BytesColumnVector) union.fields[1];
+    DecimalColumnVector decs = (DecimalColumnVector) batch.cols[2];
+
     assertEquals("struct<time:timestamp,union:uniontype<int,string>,decimal:decimal(38,18)>",
-        inspector.getTypeName());
-    assertEquals(new TimestampWritable(Timestamp.valueOf("2000-03-12 15:00:00")),
-        row.getFieldValue(0));
-    OrcUnion union = (OrcUnion) row.getFieldValue(1);
-    assertEquals(0, union.getTag());
-    assertEquals(new IntWritable(42), union.getObject());
-    assertEquals(new HiveDecimalWritable(HiveDecimal.create("12345678.6547456")),
-        row.getFieldValue(2));
-    row = (OrcStruct) rows.next(row);
-    assertEquals(2, rows.getRowNumber());
-    assertEquals(new TimestampWritable(Timestamp.valueOf("2000-03-20 12:00:00.123456789")),
-        row.getFieldValue(0));
-    assertEquals(1, union.getTag());
-    assertEquals(new Text("hello"), union.getObject());
-    assertEquals(new HiveDecimalWritable(HiveDecimal.create("-5643.234")),
-        row.getFieldValue(2));
-    row = (OrcStruct) rows.next(row);
-    assertEquals(null, row.getFieldValue(0));
-    assertEquals(null, row.getFieldValue(1));
-    assertEquals(null, row.getFieldValue(2));
-    row = (OrcStruct) rows.next(row);
-    assertEquals(null, row.getFieldValue(0));
-    union = (OrcUnion) row.getFieldValue(1);
-    assertEquals(0, union.getTag());
-    assertEquals(null, union.getObject());
-    assertEquals(null, row.getFieldValue(2));
-    row = (OrcStruct) rows.next(row);
-    assertEquals(null, row.getFieldValue(0));
-    assertEquals(1, union.getTag());
-    assertEquals(null, union.getObject());
-    assertEquals(null, row.getFieldValue(2));
-    row = (OrcStruct) rows.next(row);
-    assertEquals(new TimestampWritable(Timestamp.valueOf("1970-01-01 00:00:00")),
-        row.getFieldValue(0));
-    assertEquals(new IntWritable(200000), union.getObject());
-    assertEquals(new HiveDecimalWritable(HiveDecimal.create("10000000000000000000")),
-                 row.getFieldValue(2));
+        schema.toString());
+    assertEquals("2000-03-12 15:00:00.0", ts.asScratchTimestamp(0).toString());
+    assertEquals(0, union.tags[0]);
+    assertEquals(42, longs.vector[0]);
+    assertEquals("12345678.6547456", decs.vector[0].toString());
+
+    assertEquals("2000-03-20 12:00:00.123456789", ts.asScratchTimestamp(1).toString());
+    assertEquals(1, union.tags[1]);
+    assertEquals("hello", strs.toString(1));
+    assertEquals("-5643.234", decs.vector[1].toString());
+
+    assertEquals(false, ts.noNulls);
+    assertEquals(false, union.noNulls);
+    assertEquals(false, decs.noNulls);
+    assertEquals(true, ts.isNull[2]);
+    assertEquals(true, union.isNull[2]);
+    assertEquals(true, decs.isNull[2]);
+
+    assertEquals(true, ts.isNull[3]);
+    assertEquals(false, union.isNull[3]);
+    assertEquals(0, union.tags[3]);
+    assertEquals(true, longs.isNull[3]);
+    assertEquals(true, decs.isNull[3]);
+
+    assertEquals(true, ts.isNull[4]);
+    assertEquals(false, union.isNull[4]);
+    assertEquals(1, union.tags[4]);
+    assertEquals(true, strs.isNull[4]);
+    assertEquals(true, decs.isNull[4]);
+
+    assertEquals(false, ts.isNull[5]);
+    assertEquals("1970-01-01 00:00:00.0", ts.asScratchTimestamp(5).toString());
+    assertEquals(false, union.isNull[5]);
+    assertEquals(0, union.tags[5]);
+    assertEquals(false, longs.isNull[5]);
+    assertEquals(200000, longs.vector[5]);
+    assertEquals(false, decs.isNull[5]);
+    assertEquals("10000000000000000000", decs.vector[5].toString());
+
     rand = new Random(42);
     for(int i=1970; i < 2038; ++i) {
-      row = (OrcStruct) rows.next(row);
-      assertEquals(new TimestampWritable(Timestamp.valueOf(i + "-05-05 12:34:56." + i)),
-          row.getFieldValue(0));
+      int row = 6 + i - 1970;
+      assertEquals(Timestamp.valueOf(i + "-05-05 12:34:56." + i),
+          ts.asScratchTimestamp(row));
       if ((i & 1) == 0) {
-        assertEquals(0, union.getTag());
-        assertEquals(new IntWritable(i*i), union.getObject());
+        assertEquals(0, union.tags[row]);
+        assertEquals(i*i, longs.vector[row]);
       } else {
-        assertEquals(1, union.getTag());
-        assertEquals(new Text(Integer.toString(i * i)), union.getObject());
+        assertEquals(1, union.tags[row]);
+        assertEquals(Integer.toString(i * i), strs.toString(row));
       }
       assertEquals(new HiveDecimalWritable(HiveDecimal.create(new BigInteger(64, rand),
-                                   rand.nextInt(18))), row.getFieldValue(2));
+                                   rand.nextInt(18))), decs.vector[row]);
     }
-    for(int i=0; i < 5000; ++i) {
-      row = (OrcStruct) rows.next(row);
-      assertEquals(new IntWritable(1732050807), union.getObject());
+
+    // rebuild the row batch, so that we can read by 1000 rows
+    batch = schema.createRowBatch(1000);
+    ts = (TimestampColumnVector) batch.cols[0];
+    union = (UnionColumnVector) batch.cols[1];
+    longs = (LongColumnVector) union.fields[0];
+    strs = (BytesColumnVector) union.fields[1];
+    decs = (DecimalColumnVector) batch.cols[2];
+
+    for(int i=0; i < 5; ++i) {
+      rows.nextBatch(batch);
+      assertEquals("batch " + i, 1000, batch.size);
+      assertEquals("batch " + i, false, union.isRepeating);
+      assertEquals("batch " + i, true, union.noNulls);
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals("bad tag at " + i + "." +r, 0, union.tags[r]);
+      }
+      assertEquals("batch " + i, true, longs.isRepeating);
+      assertEquals("batch " + i, 1732050807, longs.vector[0]);
     }
-    row = (OrcStruct) rows.next(row);
-    assertEquals(new IntWritable(0), union.getObject());
-    row = (OrcStruct) rows.next(row);
-    assertEquals(new IntWritable(10), union.getObject());
-    row = (OrcStruct) rows.next(row);
-    assertEquals(new IntWritable(138), union.getObject());
-    assertEquals(false, rows.hasNext());
+
+    rows.nextBatch(batch);
+    assertEquals(3, batch.size);
+    assertEquals(0, union.tags[0]);
+    assertEquals(0, longs.vector[0]);
+    assertEquals(0, union.tags[1]);
+    assertEquals(10, longs.vector[1]);
+    assertEquals(0, union.tags[2]);
+    assertEquals(138, longs.vector[2]);
+
+    rows.nextBatch(batch);
+    assertEquals(0, batch.size);
     assertEquals(1.0, rows.getProgress(), 0.00001);
     assertEquals(reader.getNumberOfRows(), rows.getRowNumber());
     rows.seekToRow(1);
-    row = (OrcStruct) rows.next(row);
-    assertEquals(new TimestampWritable(Timestamp.valueOf("2000-03-20 12:00:00.123456789")),
-        row.getFieldValue(0));
-    assertEquals(1, union.getTag());
-    assertEquals(new Text("hello"), union.getObject());
-    assertEquals(new HiveDecimalWritable(HiveDecimal.create("-5643.234")), row.getFieldValue(2));
+    rows.nextBatch(batch);
+    assertEquals(1000, batch.size);
+    assertEquals(Timestamp.valueOf("2000-03-20 12:00:00.123456789"), ts.asScratchTimestamp(0));
+    assertEquals(1, union.tags[0]);
+    assertEquals("hello", strs.toString(0));
+    assertEquals(new HiveDecimalWritable(HiveDecimal.create("-5643.234")), decs.vector[0]);
     rows.close();
   }
 
@@ -1647,17 +1672,22 @@ public class TestVectorOrcFile {
     writer.close();
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
+    assertEquals(CompressionKind.SNAPPY, reader.getCompressionKind());
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch(1000);
     rand = new Random(12);
-    OrcStruct row = null;
-    for(int i=0; i < 10000; ++i) {
-      assertEquals(true, rows.hasNext());
-      row = (OrcStruct) rows.next(row);
-      assertEquals(rand.nextInt(), ((IntWritable) row.getFieldValue(0)).get());
-      assertEquals(Integer.toHexString(rand.nextInt()),
-          row.getFieldValue(1).toString());
+    LongColumnVector longs = (LongColumnVector) batch.cols[0];
+    BytesColumnVector strs = (BytesColumnVector) batch.cols[1];
+    for(int b=0; b < 10; ++b) {
+      rows.nextBatch(batch);
+      assertEquals(1000, batch.size);
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(rand.nextInt(), longs.vector[r]);
+        assertEquals(Integer.toHexString(rand.nextInt()), strs.toString(r));
+      }
     }
-    assertEquals(false, rows.hasNext());
+    rows.nextBatch(batch);
+    assertEquals(0, batch.size);
     rows.close();
   }
 
@@ -1697,18 +1727,23 @@ public class TestVectorOrcFile {
     assertEquals(0, stripe.getIndexLength());
     RecordReader rows = reader.rows();
     rand = new Random(24);
-    OrcStruct row = null;
-    for(int i=0; i < 10000; ++i) {
-      int intVal = rand.nextInt();
-      String strVal = Integer.toBinaryString(rand.nextInt());
-      for(int j=0; j < 5; ++j) {
-        assertEquals(true, rows.hasNext());
-        row = (OrcStruct) rows.next(row);
-        assertEquals(intVal, ((IntWritable) row.getFieldValue(0)).get());
-        assertEquals(strVal, row.getFieldValue(1).toString());
+    batch = reader.getSchema().createRowBatch(1000);
+    LongColumnVector longs = (LongColumnVector) batch.cols[0];
+    BytesColumnVector strs = (BytesColumnVector) batch.cols[1];
+    for(int i=0; i < 50; ++i) {
+      rows.nextBatch(batch);
+      assertEquals("batch " + i, 1000, batch.size);
+      for(int j=0; j < 200; ++j) {
+        int intVal = rand.nextInt();
+        String strVal = Integer.toBinaryString(rand.nextInt());
+        for (int k = 0; k < 5; ++k) {
+          assertEquals(intVal, longs.vector[j * 5 + k]);
+          assertEquals(strVal, strs.toString(j * 5 + k));
+        }
       }
     }
-    assertEquals(false, rows.hasNext());
+    rows.nextBatch(batch);
+    assertEquals(0, batch.size);
     rows.close();
   }
 
@@ -1761,7 +1796,15 @@ public class TestVectorOrcFile {
     assertEquals(COUNT, reader.getNumberOfRows());
     RecordReader rows = reader.rows();
     // get the row index
-    MetadataReader meta = ((RecordReaderImpl) rows).getMetadataReader();
+    DataReader meta = RecordReaderUtils.createDefaultDataReader(
+        DataReaderProperties.builder()
+            .withBufferSize(reader.getCompressionSize())
+            .withFileSystem(fs)
+            .withPath(testFilePath)
+            .withCompression(reader.getCompressionKind())
+            .withTypeCount(reader.getSchema().getMaximumId() + 1)
+            .withZeroCopy(false)
+            .build());
     OrcIndex index =
         meta.readRowIndex(reader.getStripes().get(0), null, null, null, null,
             null);
@@ -1772,34 +1815,18 @@ public class TestVectorOrcFile {
       assertEquals(1000,
           colIndex.getEntry(0).getStatistics().getNumberOfValues());
     }
-    OrcStruct row = null;
-    for(int i=COUNT-1; i >= 0; --i) {
-      rows.seekToRow(i);
-      row = (OrcStruct) rows.next(row);
-      BigRow expected = createRandomRow(intValues, doubleValues,
-          stringValues, byteValues, words, i);
-      assertEquals(expected.boolean1.booleanValue(),
-          ((BooleanWritable) row.getFieldValue(0)).get());
-      assertEquals(expected.byte1.byteValue(),
-          ((ByteWritable) row.getFieldValue(1)).get());
-      assertEquals(expected.short1.shortValue(),
-          ((ShortWritable) row.getFieldValue(2)).get());
-      assertEquals(expected.int1.intValue(),
-          ((IntWritable) row.getFieldValue(3)).get());
-      assertEquals(expected.long1.longValue(),
-          ((LongWritable) row.getFieldValue(4)).get());
-      assertEquals(expected.float1,
-          ((FloatWritable) row.getFieldValue(5)).get(), 0.0001);
-      assertEquals(expected.double1,
-          ((DoubleWritable) row.getFieldValue(6)).get(), 0.0001);
-      assertEquals(expected.bytes1, row.getFieldValue(7));
-      assertEquals(expected.string1, row.getFieldValue(8));
-      List<InnerStruct> expectedList = expected.middle.list;
-      List<OrcStruct> actualList =
-          (List<OrcStruct>) ((OrcStruct) row.getFieldValue(9)).getFieldValue(0);
-      compareList(expectedList, actualList, "middle list " + i);
-      compareList(expected.list, (List<OrcStruct>) row.getFieldValue(10),
-          "list " + i);
+    batch = reader.getSchema().createRowBatch();
+    int nextRowInBatch = -1;
+    for(int i=COUNT-1; i >= 0; --i, --nextRowInBatch) {
+      // if we have consumed the previous batch read a new one
+      if (nextRowInBatch < 0) {
+        long base = Math.max(i - 1023, 0);
+        rows.seekToRow(base);
+        assertEquals("row " + i, true, rows.nextBatch(batch));
+        nextRowInBatch = batch.size - 1;
+      }
+      checkRandomRow(batch, intValues, doubleValues,
+          stringValues, byteValues, words, i, nextRowInBatch);
     }
     rows.close();
     Iterator<StripeInformation> stripeIterator =
@@ -1825,39 +1852,18 @@ public class TestVectorOrcFile {
         .range(offsetOfStripe2, offsetOfStripe4 - offsetOfStripe2)
         .include(columns));
     rows.seekToRow(lastRowOfStripe2);
-    for(int i = 0; i < 2; ++i) {
-      row = (OrcStruct) rows.next(row);
-      BigRow expected = createRandomRow(intValues, doubleValues,
-                                        stringValues, byteValues, words,
-                                        (int) (lastRowOfStripe2 + i));
-
-      assertEquals(expected.long1.longValue(),
-          ((LongWritable) row.getFieldValue(4)).get());
-      assertEquals(expected.string1, row.getFieldValue(8));
-    }
+    // we only want two rows
+    batch = reader.getSchema().createRowBatch(2);
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(1, batch.size);
+    assertEquals(intValues[(int) lastRowOfStripe2], getLong(batch, 0));
+    assertEquals(stringValues[(int) lastRowOfStripe2],
+        getText(batch, 0).toString());
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(intValues[(int) lastRowOfStripe2 + 1], getLong(batch, 0));
+    assertEquals(stringValues[(int) lastRowOfStripe2 + 1],
+        getText(batch, 0).toString());
     rows.close();
-  }
-
-  private void compareInner(InnerStruct expect,
-                            OrcStruct actual,
-                            String context) throws Exception {
-    if (expect == null || actual == null) {
-      assertEquals(context, null, expect);
-      assertEquals(context, null, actual);
-    } else {
-      assertEquals(context, expect.int1,
-          ((IntWritable) actual.getFieldValue(0)).get());
-      assertEquals(context, expect.string1, actual.getFieldValue(1));
-    }
-  }
-
-  private void compareList(List<InnerStruct> expect,
-                           List<OrcStruct> actual,
-                           String context) throws Exception {
-    assertEquals(context, expect.size(), actual.size());
-    for(int j=0; j < expect.size(); ++j) {
-      compareInner(expect.get(j), actual.get(j), context + " at " + j);
-    }
   }
 
   private void appendRandomRow(VectorizedRowBatch batch,
@@ -1874,17 +1880,18 @@ public class TestVectorOrcFile {
         new MiddleStruct(inner, inner2), list(), map(inner, inner2));
   }
 
-  private BigRow createRandomRow(long[] intValues, double[] doubleValues,
-                                 String[] stringValues,
-                                 BytesWritable[] byteValues,
-                                 String[] words, int i) {
+  private void checkRandomRow(VectorizedRowBatch batch,
+                              long[] intValues, double[] doubleValues,
+                              String[] stringValues,
+                              BytesWritable[] byteValues,
+                              String[] words, int i, int rowInBatch) {
     InnerStruct inner = new InnerStruct((int) intValues[i], stringValues[i]);
     InnerStruct inner2 = new InnerStruct((int) (intValues[i] >> 32),
         words[i % words.length] + "-x");
-    return new BigRow((intValues[i] & 1) == 0, (byte) intValues[i],
+    checkBigRow(batch, rowInBatch, i, (intValues[i] & 1) == 0, (byte) intValues[i],
         (short) intValues[i], (int) intValues[i], intValues[i],
-        (float) doubleValues[i], doubleValues[i], byteValues[i],stringValues[i],
-        new MiddleStruct(inner, inner2), list(), map(inner,inner2));
+        (float) doubleValues[i], doubleValues[i], byteValues[i], stringValues[i],
+        new MiddleStruct(inner, inner2), list(), map(inner, inner2));
   }
 
   private static class MyMemoryManager extends MemoryManager {
@@ -2045,15 +2052,19 @@ public class TestVectorOrcFile {
         .range(0L, Long.MAX_VALUE)
         .include(new boolean[]{true, true, true})
         .searchArgument(sarg, new String[]{null, "int1", "string1"}));
+    batch = reader.getSchema().createRowBatch(2000);
+    LongColumnVector ints = (LongColumnVector) batch.cols[0];
+    BytesColumnVector strs = (BytesColumnVector) batch.cols[1];
+
     assertEquals(1000L, rows.getRowNumber());
-    OrcStruct row = null;
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(1000, batch.size);
+
     for(int i=1000; i < 2000; ++i) {
-      assertTrue(rows.hasNext());
-      row = (OrcStruct) rows.next(row);
-      assertEquals(300 * i, ((IntWritable) row.getFieldValue(0)).get());
-      assertEquals(Integer.toHexString(10*i), row.getFieldValue(1).toString());
+      assertEquals(300 * i, ints.vector[i - 1000]);
+      assertEquals(Integer.toHexString(10*i), strs.toString(i - 1000));
     }
-    assertTrue(!rows.hasNext());
+    assertEquals(false, rows.nextBatch(batch));
     assertEquals(3500, rows.getRowNumber());
 
     // look through the file with no rows selected
@@ -2082,38 +2093,24 @@ public class TestVectorOrcFile {
         .range(0L, Long.MAX_VALUE)
         .include(new boolean[]{true, true, true})
         .searchArgument(sarg, new String[]{null, "int1", "string1"}));
-    row = null;
+    assertEquals(0, rows.getRowNumber());
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(1000, batch.size);
+    assertEquals(3000, rows.getRowNumber());
     for(int i=0; i < 1000; ++i) {
-      assertTrue(rows.hasNext());
-      assertEquals(i, rows.getRowNumber());
-      row = (OrcStruct) rows.next(row);
-      assertEquals(300 * i, ((IntWritable) row.getFieldValue(0)).get());
-      assertEquals(Integer.toHexString(10*i), row.getFieldValue(1).toString());
+      assertEquals(300 * i, ints.vector[i]);
+      assertEquals(Integer.toHexString(10*i), strs.toString(i));
     }
-    for(int i=3000; i < 3500; ++i) {
-      assertTrue(rows.hasNext());
-      assertEquals(i, rows.getRowNumber());
-      row = (OrcStruct) rows.next(row);
-      assertEquals(300 * i, ((IntWritable) row.getFieldValue(0)).get());
-      assertEquals(Integer.toHexString(10*i), row.getFieldValue(1).toString());
-    }
-    assertTrue(!rows.hasNext());
-    assertEquals(3500, rows.getRowNumber());
-  }
 
-  private static String pad(String value, int length) {
-    if (value.length() == length) {
-      return value;
-    } else if (value.length() > length) {
-      return value.substring(0, length);
-    } else {
-      StringBuilder buf = new StringBuilder();
-      buf.append(value);
-      for(int i=0; i < length - value.length(); ++i) {
-        buf.append(' ');
-      }
-      return buf.toString();
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(500, batch.size);
+    assertEquals(3500, rows.getRowNumber());
+    for(int i=3000; i < 3500; ++i) {
+      assertEquals(300 * i, ints.vector[i - 3000]);
+      assertEquals(Integer.toHexString(10*i), strs.toString(i - 3000));
     }
+    assertEquals(false, rows.nextBatch(batch));
+    assertEquals(3500, rows.getRowNumber());
   }
 
   /**
@@ -2232,8 +2229,7 @@ public class TestVectorOrcFile {
       ((LongColumnVector) batch.cols[6]).vector[r] =
           new DateWritable(new Date(111, 6, 1)).getDays() + r;
 
-      Timestamp ts = new Timestamp(115, 9, 23, 10, 11, 59, 999999999);
-      ts.setTime(ts.getTime() + r * 1000);
+      Timestamp ts = new Timestamp(115, 9, 25, 10, 11, 59 + r, 999999999);
       ((TimestampColumnVector) batch.cols[7]).set(r, ts);
       ((DecimalColumnVector) batch.cols[8]).vector[r] =
           new HiveDecimalWritable("1.234567");
@@ -2302,118 +2298,125 @@ public class TestVectorOrcFile {
     assertEquals(14813, ((StringColumnStatistics) stats[12]).getSum());
 
     RecordReader rows = reader.rows();
-    OrcStruct row = null;
+    batch = reader.getSchema().createRowBatch(1024);
+    BytesColumnVector bins = (BytesColumnVector) batch.cols[0];
+    LongColumnVector bools = (LongColumnVector) batch.cols[1];
+    LongColumnVector bytes = (LongColumnVector) batch.cols[2];
+    LongColumnVector longs = (LongColumnVector) batch.cols[3];
+    DoubleColumnVector floats = (DoubleColumnVector) batch.cols[4];
+    DoubleColumnVector doubles = (DoubleColumnVector) batch.cols[5];
+    LongColumnVector dates = (LongColumnVector) batch.cols[6];
+    TimestampColumnVector times = (TimestampColumnVector) batch.cols[7];
+    DecimalColumnVector decs = (DecimalColumnVector) batch.cols[8];
+    BytesColumnVector strs = (BytesColumnVector) batch.cols[9];
+    BytesColumnVector chars = (BytesColumnVector) batch.cols[10];
+    BytesColumnVector vcs = (BytesColumnVector) batch.cols[11];
+    StructColumnVector structs = (StructColumnVector) batch.cols[12];
+    UnionColumnVector unions = (UnionColumnVector) batch.cols[13];
+    ListColumnVector lists = (ListColumnVector) batch.cols[14];
+    MapColumnVector maps = (MapColumnVector) batch.cols[15];
+    LongColumnVector structInts = (LongColumnVector) structs.fields[0];
+    LongColumnVector unionInts = (LongColumnVector) unions.fields[1];
+    LongColumnVector listInts = (LongColumnVector) lists.child;
+    BytesColumnVector mapKeys = (BytesColumnVector) maps.keys;
+    BytesColumnVector mapValues = (BytesColumnVector) maps.values;
+
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(1024, batch.size);
 
     // read the 1024 nulls
-    for(int r=0; r < 1024; ++r) {
-      assertEquals(true, rows.hasNext());
-      row = (OrcStruct) rows.next(row);
-      for(int f=0; f < row.getNumFields(); ++f) {
-        assertEquals("non-null on row " + r + " field " + f,
-            null, row.getFieldValue(f));
-      }
+    for(int f=0; f < batch.cols.length; ++f) {
+      assertEquals("field " + f,
+          true, batch.cols[f].isRepeating);
+      assertEquals("field " + f,
+          false, batch.cols[f].noNulls);
+      assertEquals("field " + f,
+          true, batch.cols[f].isNull[0]);
     }
 
     // read the 1024 repeat values
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(1024, batch.size);
     for(int r=0; r < 1024; ++r) {
-      assertEquals(true, rows.hasNext());
-      row = (OrcStruct) rows.next(row);
-      assertEquals("row " + r, "48 6f 72 74 6f 6e",
-          row.getFieldValue(0).toString());
-      assertEquals("row " + r, "true", row.getFieldValue(1).toString());
-      assertEquals("row " + r, "-126", row.getFieldValue(2).toString());
-      assertEquals("row " + r, "1311768467463790320",
-          row.getFieldValue(3).toString());
-      assertEquals("row " + r, "1.125", row.getFieldValue(4).toString());
-      assertEquals("row " + r, "9.765625E-4", row.getFieldValue(5).toString());
-      assertEquals("row " + r, "2011-07-01", row.getFieldValue(6).toString());
+      assertEquals("row " + r, "Horton", bins.toString(r));
+      assertEquals("row " + r, 1, bools.vector[r]);
+      assertEquals("row " + r, -126, bytes.vector[r]);
+      assertEquals("row " + r, 1311768467463790320L, longs.vector[r]);
+      assertEquals("row " + r, 1.125, floats.vector[r], 0.00001);
+      assertEquals("row " + r, 9.765625E-4, doubles.vector[r], 0.000001);
+      assertEquals("row " + r, "2011-07-01",
+          new DateWritable((int) dates.vector[r]).toString());
       assertEquals("row " + r, "2015-10-23 10:11:59.999999999",
-          row.getFieldValue(7).toString());
-      assertEquals("row " + r, "1.234567", row.getFieldValue(8).toString());
-      assertEquals("row " + r, "Echelon", row.getFieldValue(9).toString());
-      assertEquals("row " + r, "Juggernaut", row.getFieldValue(10).toString());
-      assertEquals("row " + r, "Dreadnaugh", row.getFieldValue(11).toString());
-      assertEquals("row " + r, "{123}", row.getFieldValue(12).toString());
-      assertEquals("row " + r, "union(1, 1234)",
-          row.getFieldValue(13).toString());
-      assertEquals("row " + r, "[31415, 31415, 31415]",
-          row.getFieldValue(14).toString());
-      assertEquals("row " + r, "{ORC=fast, Hive=fast, LLAP=fast}",
-          row.getFieldValue(15).toString());
+          times.asScratchTimestamp(r).toString());
+      assertEquals("row " + r, "1.234567", decs.vector[r].toString());
+      assertEquals("row " + r, "Echelon", strs.toString(r));
+      assertEquals("row " + r, "Juggernaut", chars.toString(r));
+      assertEquals("row " + r, "Dreadnaugh", vcs.toString(r));
+      assertEquals("row " + r, 123, structInts.vector[r]);
+      assertEquals("row " + r, 1, unions.tags[r]);
+      assertEquals("row " + r, 1234, unionInts.vector[r]);
+      assertEquals("row " + r, 3, lists.lengths[r]);
+      assertEquals("row " + r, true, listInts.isRepeating);
+      assertEquals("row " + r, 31415, listInts.vector[0]);
+      assertEquals("row " + r, 3, maps.lengths[r]);
+      assertEquals("row " + r, "ORC", mapKeys.toString((int) maps.offsets[r]));
+      assertEquals("row " + r, "Hive", mapKeys.toString((int) maps.offsets[r] + 1));
+      assertEquals("row " + r, "LLAP", mapKeys.toString((int) maps.offsets[r] + 2));
+      assertEquals("row " + r, "fast", mapValues.toString((int) maps.offsets[r]));
+      assertEquals("row " + r, "fast", mapValues.toString((int) maps.offsets[r] + 1));
+      assertEquals("row " + r, "fast", mapValues.toString((int) maps.offsets[r] + 2));
     }
 
     // read the second set of 1024 nulls
-    for(int r=0; r < 1024; ++r) {
-      assertEquals(true, rows.hasNext());
-      row = (OrcStruct) rows.next(row);
-      for(int f=0; f < row.getNumFields(); ++f) {
-        assertEquals("non-null on row " + r + " field " + f,
-            null, row.getFieldValue(f));
-      }
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(1024, batch.size);
+    for(int f=0; f < batch.cols.length; ++f) {
+      assertEquals("field " + f,
+          true, batch.cols[f].isRepeating);
+      assertEquals("field " + f,
+          false, batch.cols[f].noNulls);
+      assertEquals("field " + f,
+          true, batch.cols[f].isNull[0]);
     }
+
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(1024, batch.size);
     for(int r=0; r < 1024; ++r) {
-      assertEquals(true, rows.hasNext());
-      row = (OrcStruct) rows.next(row);
-      byte[] hex = Integer.toHexString(r).getBytes();
-      StringBuilder expected = new StringBuilder();
-      for(int i=0; i < hex.length; ++i) {
-        if (i != 0) {
-          expected.append(' ');
-        }
-        expected.append(Integer.toHexString(hex[i]));
-      }
-      assertEquals("row " + r, expected.toString(),
-          row.getFieldValue(0).toString());
-      assertEquals("row " + r, r % 2 == 1 ? "true" : "false",
-          row.getFieldValue(1).toString());
-      assertEquals("row " + r, Integer.toString((byte) (r % 255)),
-          row.getFieldValue(2).toString());
-      assertEquals("row " + r, Long.toString(31415L * r),
-          row.getFieldValue(3).toString());
-      assertEquals("row " + r, Float.toString(1.125F * r),
-          row.getFieldValue(4).toString());
-      assertEquals("row " + r, Double.toString(0.0009765625 * r),
-          row.getFieldValue(5).toString());
-      assertEquals("row " + r, new Date(111, 6, 1 + r).toString(),
-          row.getFieldValue(6).toString());
-      Timestamp ts = new Timestamp(115, 9, 23, 10, 11, 59, 999999999);
-      ts.setTime(ts.getTime() + r * 1000);
+      String hex = Integer.toHexString(r);
+
+      assertEquals("row " + r, hex, bins.toString(r));
+      assertEquals("row " + r, r % 2 == 1 ? 1 : 0, bools.vector[r]);
+      assertEquals("row " + r, (byte) (r % 255), bytes.vector[r]);
+      assertEquals("row " + r, 31415L * r, longs.vector[r]);
+      assertEquals("row " + r, 1.125F * r, floats.vector[r], 0.0001);
+      assertEquals("row " + r, 0.0009765625 * r, doubles.vector[r], 0.000001);
+      assertEquals("row " + r, new DateWritable(new Date(111, 6, 1 + r)),
+          new DateWritable((int) dates.vector[r]));
       assertEquals("row " + r,
-          ts.toString(),
-          row.getFieldValue(7).toString());
-      assertEquals("row " + r, "1.234567", row.getFieldValue(8).toString());
-      assertEquals("row " + r, Integer.toString(r),
-          row.getFieldValue(9).toString());
-      assertEquals("row " + r, pad(Integer.toHexString(r), 10),
-          row.getFieldValue(10).toString());
-      assertEquals("row " + r, Integer.toHexString(r * 128),
-          row.getFieldValue(11).toString());
-      assertEquals("row " + r, "{" + Integer.toString(r + 13) + "}",
-          row.getFieldValue(12).toString());
-      assertEquals("row " + r, "union(1, " + Integer.toString(r + 42) + ")",
-          row.getFieldValue(13).toString());
-      assertEquals("row " + r, "[31415, 31416, 31417]",
-          row.getFieldValue(14).toString());
-      expected = new StringBuilder();
-      expected.append('{');
-      expected.append(Integer.toHexString(3 * r));
-      expected.append('=');
-      expected.append(3 * r);
-      expected.append(", ");
-      expected.append(Integer.toHexString(3 * r + 1));
-      expected.append('=');
-      expected.append(3 * r + 1);
-      expected.append(", ");
-      expected.append(Integer.toHexString(3 * r + 2));
-      expected.append('=');
-      expected.append(3 * r + 2);
-      expected.append('}');
-      assertEquals("row " + r, expected.toString(),
-          row.getFieldValue(15).toString());
+          new Timestamp(115, 9, 25, 10, 11, 59 + r, 999999999),
+          times.asScratchTimestamp(r));
+      assertEquals("row " + r, "1.234567", decs.vector[r].toString());
+      assertEquals("row " + r, Integer.toString(r), strs.toString(r));
+      assertEquals("row " + r, Integer.toHexString(r), chars.toString(r));
+      assertEquals("row " + r, Integer.toHexString(r * 128), vcs.toString(r));
+      assertEquals("row " + r, r + 13, structInts.vector[r]);
+      assertEquals("row " + r, 1, unions.tags[r]);
+      assertEquals("row " + r, r + 42, unionInts.vector[r]);
+      assertEquals("row " + r, 3, lists.lengths[r]);
+      assertEquals("row " + r, 31415, listInts.vector[(int) lists.offsets[r]]);
+      assertEquals("row " + r, 31416, listInts.vector[(int) lists.offsets[r] + 1]);
+      assertEquals("row " + r, 31417, listInts.vector[(int) lists.offsets[r] + 2]);
+      assertEquals("row " + r, 3, maps.lengths[3]);
+      assertEquals("row " + r, Integer.toHexString(3 * r), mapKeys.toString((int) maps.offsets[r]));
+      assertEquals("row " + r, Integer.toString(3 * r), mapValues.toString((int) maps.offsets[r]));
+      assertEquals("row " + r, Integer.toHexString(3 * r + 1), mapKeys.toString((int) maps.offsets[r] + 1));
+      assertEquals("row " + r, Integer.toString(3 * r + 1), mapValues.toString((int) maps.offsets[r] + 1));
+      assertEquals("row " + r, Integer.toHexString(3 * r + 2), mapKeys.toString((int) maps.offsets[r] + 2));
+      assertEquals("row " + r, Integer.toString(3 * r + 2), mapValues.toString((int) maps.offsets[r] + 2));
     }
 
     // should have no more rows
-    assertEquals(false, rows.hasNext());
+    assertEquals(false, rows.nextBatch(batch));
   }
 
   private static String makeString(BytesColumnVector vector, int row) {
@@ -2455,7 +2458,8 @@ public class TestVectorOrcFile {
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf));
     RecordReader rows = reader.rows();
-    batch = rows.nextBatch(null);
+    batch = reader.getSchema().createRowBatch();
+    assertEquals(true, rows.nextBatch(batch));
     assertEquals(4, batch.size);
     // ORC currently trims the output strings. See HIVE-12286
     assertEquals("",
@@ -2504,19 +2508,20 @@ public class TestVectorOrcFile {
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf));
     RecordReader rows = reader.rows();
-    batch = rows.nextBatch(null);
+    batch = reader.getSchema().createRowBatch();
+    assertEquals(true, rows.nextBatch(batch));
     assertEquals(1024, batch.size);
     for(int r=0; r < 1024; ++r) {
       assertEquals(Integer.toString(r * 10001),
           makeString((BytesColumnVector) batch.cols[0], r));
     }
-    batch = rows.nextBatch(batch);
+    assertEquals(true, rows.nextBatch(batch));
     assertEquals(1024, batch.size);
     for(int r=0; r < 1024; ++r) {
       assertEquals("Halloween",
           makeString((BytesColumnVector) batch.cols[0], r));
     }
-    assertEquals(false, rows.hasNext());
+    assertEquals(false, rows.nextBatch(batch));
   }
 
   @Test
@@ -2541,18 +2546,21 @@ public class TestVectorOrcFile {
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf));
     RecordReader rows = reader.rows();
-    OrcStruct row = null;
+    batch = reader.getSchema().createRowBatch();
+    rows.nextBatch(batch);
+    assertEquals(1024, batch.size);
+    StructColumnVector inner = (StructColumnVector) batch.cols[0];
+    LongColumnVector vec = (LongColumnVector) inner.fields[0];
     for(int r=0; r < 1024; ++r) {
-      assertEquals(true, rows.hasNext());
-      row = (OrcStruct) rows.next(row);
-      OrcStruct inner = (OrcStruct) row.getFieldValue(0);
       if (r < 200 || (r >= 400 && r < 600) || r >= 800) {
-        assertEquals("row " + r, null, inner);
+        assertEquals("row " + r, true, inner.isNull[r]);
       } else {
-        assertEquals("row " + r, "{" + r + "}", inner.toString());
+        assertEquals("row " + r, false, inner.isNull[r]);
+        assertEquals("row " + r, r, vec.vector[r]);
       }
     }
-    assertEquals(false, rows.hasNext());
+    rows.nextBatch(batch);
+    assertEquals(0, batch.size);
   }
 
   /**
@@ -2595,28 +2603,38 @@ public class TestVectorOrcFile {
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf));
     RecordReader rows = reader.rows();
-    OrcStruct row = null;
+    batch = reader.getSchema().createRowBatch(1024);
+    UnionColumnVector union = (UnionColumnVector) batch.cols[0];
+    LongColumnVector ints = (LongColumnVector) union.fields[0];
+    LongColumnVector longs = (LongColumnVector) union.fields[1];
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(1024, batch.size);
     for(int r=0; r < 1024; ++r) {
-      assertEquals(true, rows.hasNext());
-      row = (OrcStruct) rows.next(row);
-      OrcUnion inner = (OrcUnion) row.getFieldValue(0);
       if (r < 200) {
-        assertEquals("row " + r, null, inner);
+        assertEquals("row " + r, true, union.isNull[r]);
       } else if (r < 300) {
-        assertEquals("row " + r, "union(0, " + r +")", inner.toString());
+        assertEquals("row " + r, false, union.isNull[r]);
+        assertEquals("row " + r, 0, union.tags[r]);
+        assertEquals("row " + r, r, ints.vector[r]);
       } else if (r < 400) {
-        assertEquals("row " + r, "union(1, " + -r +")", inner.toString());
+        assertEquals("row " + r, false, union.isNull[r]);
+        assertEquals("row " + r, 1, union.tags[r]);
+        assertEquals("row " + r, -r, longs.vector[r]);
       } else if (r < 600) {
-        assertEquals("row " + r, null, inner);
+        assertEquals("row " + r, true, union.isNull[r]);
       } else if (r < 800) {
-        assertEquals("row " + r, "union(1, " + -r +")", inner.toString());
+        assertEquals("row " + r, false, union.isNull[r]);
+        assertEquals("row " + r, 1, union.tags[r]);
+        assertEquals("row " + r, -r, longs.vector[r]);
       } else if (r < 1000) {
-        assertEquals("row " + r, null, inner);
+        assertEquals("row " + r, true, union.isNull[r]);
       } else {
-        assertEquals("row " + r, "union(1, " + -r +")", inner.toString());
+        assertEquals("row " + r, false, union.isNull[r]);
+        assertEquals("row " + r, 1, union.tags[r]);
+        assertEquals("row " + r, -r, longs.vector[r]);
       }
     }
-    assertEquals(false, rows.hasNext());
+    assertEquals(false, rows.nextBatch(batch));
   }
 
   /**
@@ -2663,31 +2681,33 @@ public class TestVectorOrcFile {
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf));
     RecordReader rows = reader.rows();
-    OrcStruct row = null;
+    batch = reader.getSchema().createRowBatch(1024);
+    list = (ListColumnVector) batch.cols[0];
+    rows.nextBatch(batch);
+    assertEquals(1024, batch.size);
     for(int r=0; r < 1024; ++r) {
-      assertEquals(true, rows.hasNext());
-      row = (OrcStruct) rows.next(row);
-      List inner = (List) row.getFieldValue(0);
+      StringBuilder actual = new StringBuilder();
+      list.stringifyValue(actual, r);
       if (r < 200) {
-        assertEquals("row " + r, null, inner);
+        assertEquals("row " + r, "null", actual.toString());
       } else if (r < 300) {
         assertEquals("row " + r, "[" + ((r - 200) * 10) + "]",
-            inner.toString());
+            actual.toString());
       } else if (r < 400) {
-        assertEquals("row " + r, null, inner);
+        assertEquals("row " + r, "null", actual.toString());
       } else if (r < 500) {
         assertEquals("row " + r, "[" + ((r - 300) * 10) + "]",
-            inner.toString());
+            actual.toString());
       } else if (r < 600) {
-        assertEquals("row " + r, null, inner);
+        assertEquals("row " + r, "null", actual.toString());
       } else if (r < 700) {
         assertEquals("row " + r, "[" + (10 * r) + ", " + (10 * (r + 1)) + "]",
-            inner.toString());
+            actual.toString());
       } else {
-        assertEquals("row " + r, null, inner);
+        assertEquals("row " + r, "null", actual.toString());
       }
     }
-    assertEquals(false, rows.hasNext());
+    assertEquals(false, rows.nextBatch(batch));
   }
 
   /**
@@ -2736,31 +2756,36 @@ public class TestVectorOrcFile {
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf));
     RecordReader rows = reader.rows();
-    OrcStruct row = null;
+    batch = reader.getSchema().createRowBatch();
+    map = (MapColumnVector) batch.cols[0];
+    rows.nextBatch(batch);
+    assertEquals(1024, batch.size);
     for(int r=0; r < 1024; ++r) {
-      assertEquals(true, rows.hasNext());
-      row = (OrcStruct) rows.next(row);
-      Map inner = (Map) row.getFieldValue(0);
+      StringBuilder buffer = new StringBuilder();
+      map.stringifyValue(buffer, r);
+      String actual = buffer.toString();
       if (r < 200) {
-        assertEquals("row " + r, null, inner);
+        assertEquals("row " + r, "null", actual);
       } else if (r < 300) {
-        assertEquals("row " + r, "{" + (r - 200) + "=" + ((r - 200) * 10) + "}",
-            inner.toString());
+        assertEquals("row " + r, "[{\"key\": " + (r - 200) +
+                ", \"value\": " + ((r - 200) * 10) + "}]",
+            actual);
       } else if (r < 400) {
-        assertEquals("row " + r, null, inner);
+        assertEquals("row " + r, "null", actual);
       } else if (r < 500) {
-        assertEquals("row " + r, "{" + (r - 300) + "=" + ((r - 300) * 10) + "}",
-            inner.toString());
+        assertEquals("row " + r, "[{\"key\": " + (r - 300) +
+                ", \"value\": " + ((r - 300) * 10) + "}]", actual);
       } else if (r < 600) {
-        assertEquals("row " + r, null, inner);
+        assertEquals("row " + r, "null", actual);
       } else if (r < 700) {
-        assertEquals("row " + r, "{" + r + "=" + (r * 10) + ", " +
-                (r + 1) + "=" + (10 * (r + 1)) + "}",
-            inner.toString());
+        assertEquals("row " + r, "[{\"key\": " + r + ", \"value\": " + (r * 10)
+                + "}, {\"key\": " + (r + 1) + ", \"value\": " + (10 * (r + 1))
+                + "}]", actual);
       } else {
-        assertEquals("row " + r, null, inner);
+        assertEquals("row " + r, "null", actual);
       }
     }
-    assertEquals(false, rows.hasNext());
+    rows.nextBatch(batch);
+    assertEquals(0, batch.size);
   }
 }
