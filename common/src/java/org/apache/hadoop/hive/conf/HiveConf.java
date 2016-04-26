@@ -2603,6 +2603,10 @@ public class HiveConf extends Configuration {
         "modification time, which is almost certain to identify file uniquely. However, if you\n" +
         "use a FS without file IDs and rewrite files a lot (or are paranoid), you might want\n" +
         "to avoid this setting."),
+    LLAP_CACHE_ENABLE_ORC_GAP_CACHE("hive.llap.orc.gap.cache", true,
+        "Whether LLAP cache for ORC should remember gaps in ORC RG read estimates, to avoid\n" +
+        "re-reading the data that was read once and discarded because it is unneeded. This is\n" +
+        "only necessary for ORC files written before HIVE-9660 (Hive 2.1?)."),
     LLAP_IO_USE_FILEID_PATH("hive.llap.io.use.fileid.path", true,
         "Whether LLAP should use fileId (inode)-based path to ensure better consistency for the\n" +
         "cases of file overwrites. This is supported on HDFS."),

@@ -817,15 +817,23 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     @Override
     public DiskRangeList getFileData(Object fileKey, DiskRangeList range,
         long baseOffset, DiskRangeListFactory factory, BooleanRef gotAllData) {
-      return (lowLevelCache == null) ? range : lowLevelCache.getFileData(
-          fileKey, range, baseOffset, factory, counters, gotAllData);
+      DiskRangeList result = (lowLevelCache == null) ? range
+          : lowLevelCache.getFileData(fileKey, range, baseOffset, factory, counters, gotAllData);
+      if (gotAllData.value) return result;
+      return (metadataCache == null) ? range
+          : metadataCache.getIncompleteCbs(fileKey, range, baseOffset, factory, gotAllData);
     }
 
     @Override
     public long[] putFileData(Object fileKey, DiskRange[] ranges,
         MemoryBuffer[] data, long baseOffset) {
-      return (lowLevelCache == null) ? null : lowLevelCache.putFileData(
-          fileKey, ranges, data, baseOffset, Priority.NORMAL, counters);
+      if (data != null) {
+        return (lowLevelCache == null) ? null : lowLevelCache.putFileData(
+            fileKey, ranges, data, baseOffset, Priority.NORMAL, counters);
+      } else if (metadataCache != null) {
+        metadataCache.putIncompleteCbs(fileKey, ranges, baseOffset);
+      }
+      return null;
     }
 
     @Override

@@ -101,18 +101,18 @@ class EncodedReaderImpl implements EncodedReader {
   private final int bufferSize;
   private final List<OrcProto.Type> types;
   private final long rowIndexStride;
-  private final DataCache cache;
+  private final DataCache cacheWrapper;
   private boolean isTracingEnabled;
 
   public EncodedReaderImpl(Object fileKey, List<OrcProto.Type> types, CompressionCodec codec,
-      int bufferSize, long strideRate, DataCache cache, DataReader dataReader, PoolFactory pf)
-          throws IOException {
+      int bufferSize, long strideRate, DataCache cacheWrapper, DataReader dataReader,
+      PoolFactory pf) throws IOException {
     this.fileKey = fileKey;
     this.codec = codec;
     this.types = types;
     this.bufferSize = bufferSize;
     this.rowIndexStride = strideRate;
-    this.cache = cache;
+    this.cacheWrapper = cacheWrapper;
     this.dataReader = dataReader;
     if (POOLS != null) return;
     if (pf == null) {
@@ -291,7 +291,7 @@ class EncodedReaderImpl implements EncodedReader {
     }
     BooleanRef isAllInCache = new BooleanRef();
     if (hasFileId) {
-      cache.getFileData(fileKey, toRead.next, stripeOffset, CC_FACTORY, isAllInCache);
+      cacheWrapper.getFileData(fileKey, toRead.next, stripeOffset, CC_FACTORY, isAllInCache);
       if (isTracingEnabled && LOG.isInfoEnabled()) {
         LOG.trace("Disk ranges after cache (file " + fileKey + ", base offset " + stripeOffset
             + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
@@ -303,7 +303,7 @@ class EncodedReaderImpl implements EncodedReader {
         this.dataReader.open();
         isDataReaderOpen = true;
       }
-      dataReader.readFileData(toRead.next, stripeOffset, cache.getAllocator().isDirectAlloc());
+      dataReader.readFileData(toRead.next, stripeOffset, cacheWrapper.getAllocator().isDirectAlloc());
     }
 
     // 3. For uncompressed case, we need some special processing before read.
@@ -452,7 +452,7 @@ class EncodedReaderImpl implements EncodedReader {
       CacheChunk cc = (CacheChunk)toFree;
       if (cc.getBuffer() == null) continue;
       MemoryBuffer buffer = cc.getBuffer();
-      cache.releaseBuffer(buffer);
+      cacheWrapper.releaseBuffer(buffer);
       cc.setBuffer(null);
     }
   }
@@ -501,11 +501,11 @@ class EncodedReaderImpl implements EncodedReader {
     }
 
     @Override
-    public void handleCacheCollision(DataCache cache,
+    public void handleCacheCollision(DataCache cacheWrapper,
         MemoryBuffer replacementBuffer, List<MemoryBuffer> cacheBuffers) {
       assert cacheBuffers == null;
       // This is done at pre-read stage where there's nothing special w/refcounts. Just release.
-      cache.getAllocator().deallocate(getBuffer());
+      cacheWrapper.getAllocator().deallocate(getBuffer());
       // Replace the buffer in our big range list, as well as in current results.
       this.setBuffer(replacementBuffer);
     }
@@ -544,14 +544,14 @@ class EncodedReaderImpl implements EncodedReader {
     }
 
     @Override
-    public void handleCacheCollision(DataCache cache, MemoryBuffer replacementBuffer,
+    public void handleCacheCollision(DataCache cacheWrapper, MemoryBuffer replacementBuffer,
         List<MemoryBuffer> cacheBuffers) {
       assert originalCbIndex >= 0;
       // Had the put succeeded for our new buffer, it would have refcount of 2 - 1 from put,
       // and 1 from notifyReused call above. "Old" buffer now has the 1 from put; new buffer
       // is not in cache.
-      cache.getAllocator().deallocate(getBuffer());
-      cache.reuseBuffer(replacementBuffer);
+      cacheWrapper.getAllocator().deallocate(getBuffer());
+      cacheWrapper.reuseBuffer(replacementBuffer);
       // Replace the buffer in our big range list, as well as in current results.
       this.buffer = replacementBuffer;
       cacheBuffers.set(originalCbIndex, replacementBuffer);
@@ -594,9 +594,11 @@ class EncodedReaderImpl implements EncodedReader {
     boolean isCompressed = codec != null;
     List<ProcCacheChunk> toDecompress = null;
     List<ByteBuffer> toRelease = null;
+    List<IncompleteCb> badEstimates = null;
     if (isCompressed) {
       toRelease = !dataReader.isTrackingDiskRanges() ? null : new ArrayList<ByteBuffer>();
-      toDecompress = new ArrayList<ProcCacheChunk>();
+      toDecompress = new ArrayList<>();
+      badEstimates = new ArrayList<>();
     }
 
     // 1. Find our bearings in the stream. Normally, iter will already point either to where we
@@ -612,17 +614,25 @@ class EncodedReaderImpl implements EncodedReader {
     // 2. Go thru the blocks; add stuff to results and prepare the decompression work (see below).
     lastUncompressed = isCompressed ?
         prepareRangesForCompressedRead(cOffset, endCOffset, streamOffset,
-            unlockUntilCOffset, current, csd, toRelease, toDecompress)
+            unlockUntilCOffset, current, csd, toRelease, toDecompress, badEstimates)
       : prepareRangesForUncompressedRead(
           cOffset, endCOffset, streamOffset, unlockUntilCOffset, current, csd);
+
+    // 2.5. Remember the bad estimates for future reference.
+    if (badEstimates != null && !badEstimates.isEmpty()) {
+      // Relies on the fact that cache does not actually store these.
+      DiskRange[] cacheKeys = badEstimates.toArray(new DiskRange[badEstimates.size()]);
+      long[] result = cacheWrapper.putFileData(fileKey, cacheKeys, null, baseOffset);
+      assert result == null; // We don't expect conflicts from bad estimates.
+    }
+
+    if (toDecompress == null || toDecompress.isEmpty()) return lastUncompressed; // Nothing to do.
 
     // 3. Allocate the buffers, prepare cache keys.
     // At this point, we have read all the CBs we need to read. cacheBuffers contains some cache
     // data and some unallocated membufs for decompression. toDecompress contains all the work we
     // need to do, and each item points to one of the membufs in cacheBuffers as target. The iter
     // has also been adjusted to point to these buffers instead of compressed data for the ranges.
-    if (toDecompress == null) return lastUncompressed; // Nothing to decompress.
-
     MemoryBuffer[] targetBuffers = new MemoryBuffer[toDecompress.size()];
     DiskRange[] cacheKeys = new DiskRange[toDecompress.size()];
     int ix = 0;
@@ -631,7 +641,7 @@ class EncodedReaderImpl implements EncodedReader {
       targetBuffers[ix] = chunk.getBuffer();
       ++ix;
     }
-    cache.getAllocator().allocateMultiple(targetBuffers, bufferSize);
+    cacheWrapper.getAllocator().allocateMultiple(targetBuffers, bufferSize);
 
     // 4. Now decompress (or copy) the data into cache buffers.
     for (ProcCacheChunk chunk : toDecompress) {
@@ -646,7 +656,7 @@ class EncodedReaderImpl implements EncodedReader {
       if (isTracingEnabled) {
         LOG.trace("Locking " + chunk.getBuffer() + " due to reuse (after decompression)");
       }
-      cache.reuseBuffer(chunk.getBuffer());
+      cacheWrapper.reuseBuffer(chunk.getBuffer());
     }
 
     // 5. Release original compressed buffers to zero-copy reader if needed.
@@ -658,8 +668,9 @@ class EncodedReaderImpl implements EncodedReader {
     }
 
     // 6. Finally, put uncompressed data to cache.
+
     if (fileKey != null) {
-      long[] collisionMask = cache.putFileData(fileKey, cacheKeys, targetBuffers, baseOffset);
+      long[] collisionMask = cacheWrapper.putFileData(fileKey, cacheKeys, targetBuffers, baseOffset);
       processCacheCollisions(collisionMask, toDecompress, targetBuffers, csd.getCacheBuffers());
     }
 
@@ -674,7 +685,8 @@ class EncodedReaderImpl implements EncodedReader {
 
   private CacheChunk prepareRangesForCompressedRead(long cOffset, long endCOffset,
       long streamOffset, long unlockUntilCOffset, DiskRangeList current, ColumnStreamData columnStreamData,
-      List<ByteBuffer> toRelease, List<ProcCacheChunk> toDecompress) throws IOException {
+      List<ByteBuffer> toRelease, List<ProcCacheChunk> toDecompress,
+      List<IncompleteCb> badEstimates) throws IOException {
     if (cOffset > current.getOffset()) {
       // Target compression block is in the middle of the range; slice the range in two.
       current = current.split(cOffset).next;
@@ -689,7 +701,7 @@ class EncodedReaderImpl implements EncodedReader {
         if (isTracingEnabled) {
           LOG.trace("Locking " + cc.getBuffer() + " due to reuse");
         }
-        cache.reuseBuffer(cc.getBuffer());
+        cacheWrapper.reuseBuffer(cc.getBuffer());
         columnStreamData.getCacheBuffers().add(cc.getBuffer());
         currentOffset = cc.getEnd();
         if (isTracingEnabled) {
@@ -710,7 +722,7 @@ class EncodedReaderImpl implements EncodedReader {
         // several disk ranges, so we might need to combine them.
         BufferChunk bc = (BufferChunk)current;
         ProcCacheChunk newCached = addOneCompressionBuffer(
-            bc, columnStreamData.getCacheBuffers(), toDecompress, toRelease);
+            bc, columnStreamData.getCacheBuffers(), toDecompress, toRelease, badEstimates);
         lastUncompressed = (newCached == null) ? lastUncompressed : newCached;
         next = (newCached != null) ? newCached.next : null;
         currentOffset = (next != null) ? next.getOffset() : -1;
@@ -737,7 +749,7 @@ class EncodedReaderImpl implements EncodedReader {
       if (isTracingEnabled) {
         LOG.trace("Locking " + lastUncompressed.getBuffer() + " due to reuse");
       }
-      cache.reuseBuffer(lastUncompressed.getBuffer());
+      cacheWrapper.reuseBuffer(lastUncompressed.getBuffer());
       if (isFirst) {
         columnStreamData.setIndexBaseOffset((int)(lastUncompressed.getOffset() - streamOffset));
         isFirst = false;
@@ -818,7 +830,7 @@ class EncodedReaderImpl implements EncodedReader {
         if (noMoreDataForPart && hasEntirePartTo < partEnd && candidateCached != null) {
           // We are missing a section at the end of the part... copy the start to non-cached.
           lastUncompressed = copyAndReplaceCandidateToNonCached(
-              candidateCached, partOffset, hasEntirePartTo, cache, singleAlloc);
+              candidateCached, partOffset, hasEntirePartTo, cacheWrapper, singleAlloc);
           candidateCached = null;
         }
         current = next;
@@ -850,10 +862,10 @@ class EncodedReaderImpl implements EncodedReader {
           if (candidateCached != null) {
             assert hadEntirePartTo != -1;
             copyAndReplaceCandidateToNonCached(
-                candidateCached, partOffset, hadEntirePartTo, cache, singleAlloc);
+                candidateCached, partOffset, hadEntirePartTo, cacheWrapper, singleAlloc);
             candidateCached = null;
           }
-          lastUncompressed = copyAndReplaceUncompressedToNonCached(curBc, cache, singleAlloc);
+          lastUncompressed = copyAndReplaceUncompressedToNonCached(curBc, cacheWrapper, singleAlloc);
           next = lastUncompressed.next; // There may be more data after the gap.
         } else {
           // So far we have all the data from the beginning of the part.
@@ -885,7 +897,7 @@ class EncodedReaderImpl implements EncodedReader {
       cacheKeys[ix] = chunk; // Relies on the fact that cache does not actually store these.
       ++ix;
     }
-    cache.getAllocator().allocateMultiple(
+    cacheWrapper.getAllocator().allocateMultiple(
         targetBuffers, (int)(partCount == 1 ? streamLen : partSize));
 
     // 4. Now copy the data into cache buffers.
@@ -909,7 +921,7 @@ class EncodedReaderImpl implements EncodedReader {
 
     // 6. Finally, put uncompressed data to cache.
     if (fileKey != null) {
-      long[] collisionMask = cache.putFileData(fileKey, cacheKeys, targetBuffers, baseOffset);
+      long[] collisionMask = cacheWrapper.putFileData(fileKey, cacheKeys, targetBuffers, baseOffset);
       processCacheCollisions(collisionMask, toCache, targetBuffers, null);
     }
 
@@ -922,7 +934,7 @@ class EncodedReaderImpl implements EncodedReader {
     // of the prevalent ORC compression buffer (the default), or maximum allocation (since we
     // cannot allocate bigger chunks), whichever is less.
     long orcCbSizeDefault = ((Number)OrcConf.BUFFER_SIZE.getDefaultValue()).longValue();
-    int maxAllocSize = cache.getAllocator().getMaxAllocation();
+    int maxAllocSize = cacheWrapper.getAllocator().getMaxAllocation();
     return (int)Math.min(maxAllocSize, orcCbSizeDefault);
   }
 
@@ -942,14 +954,14 @@ class EncodedReaderImpl implements EncodedReader {
 
   private static CacheChunk copyAndReplaceCandidateToNonCached(
       UncompressedCacheChunk candidateCached, long partOffset,
-      long candidateEnd, DataCache cache, MemoryBuffer[] singleAlloc) {
+      long candidateEnd, DataCache cacheWrapper, MemoryBuffer[] singleAlloc) {
     // We thought we had the entire part to cache, but we don't; convert start to
     // non-cached. Since we are at the first gap, the previous stuff must be contiguous.
     singleAlloc[0] = null;
-    cache.getAllocator().allocateMultiple(singleAlloc, (int)(candidateEnd - partOffset));
+    cacheWrapper.getAllocator().allocateMultiple(singleAlloc, (int)(candidateEnd - partOffset));
 
     MemoryBuffer buffer = singleAlloc[0];
-    cache.reuseBuffer(buffer);
+    cacheWrapper.reuseBuffer(buffer);
     ByteBuffer dest = buffer.getByteBufferRaw();
     CacheChunk tcc = POOLS.tccPool.take();
     tcc.init(buffer, partOffset, candidateEnd);
@@ -958,11 +970,11 @@ class EncodedReaderImpl implements EncodedReader {
   }
 
   private static CacheChunk copyAndReplaceUncompressedToNonCached(
-      BufferChunk bc, DataCache cache, MemoryBuffer[] singleAlloc) {
+      BufferChunk bc, DataCache cacheWrapper, MemoryBuffer[] singleAlloc) {
     singleAlloc[0] = null;
-    cache.getAllocator().allocateMultiple(singleAlloc, bc.getLength());
+    cacheWrapper.getAllocator().allocateMultiple(singleAlloc, bc.getLength());
     MemoryBuffer buffer = singleAlloc[0];
-    cache.reuseBuffer(buffer);
+    cacheWrapper.reuseBuffer(buffer);
     ByteBuffer dest = buffer.getByteBufferRaw();
     CacheChunk tcc = POOLS.tccPool.take();
     tcc.init(buffer, bc.getOffset(), bc.getEnd());
@@ -1056,7 +1068,7 @@ class EncodedReaderImpl implements EncodedReader {
       LOG.trace("Unlocking " + cc.getBuffer() + " for the fetching thread"
           + (isBacktracking ? "; backtracking" : ""));
     }
-    cache.releaseBuffer(cc.getBuffer());
+    cacheWrapper.releaseBuffer(cc.getBuffer());
     cc.setBuffer(null);
   }
 
@@ -1081,7 +1093,7 @@ class EncodedReaderImpl implements EncodedReader {
         }
         assert replacedChunk.getBuffer() != replacementBuffer : i + " was not replaced in the results "
             + "even though mask is [" + Long.toBinaryString(maskVal) + "]";
-        replacedChunk.handleCacheCollision(cache, replacementBuffer, cacheBuffers);
+        replacedChunk.handleCacheCollision(cacheWrapper, replacementBuffer, cacheBuffers);
       }
       maskVal >>= 1;
     }
@@ -1131,11 +1143,12 @@ class EncodedReaderImpl implements EncodedReader {
    * @param toDecompress The list of work to decompress - pairs of compressed buffers and the
    *                     target buffers (same as the ones added to cacheBuffers).
    * @param toRelease The list of buffers to release to zcr because they are no longer in use.
+   * @param badEstimates The list of bad estimates that cannot be decompressed.
    * @return The resulting cache chunk.
    */
   private ProcCacheChunk addOneCompressionBuffer(BufferChunk current,
       List<MemoryBuffer> cacheBuffers, List<ProcCacheChunk> toDecompress,
-      List<ByteBuffer> toRelease) throws IOException {
+      List<ByteBuffer> toRelease, List<IncompleteCb> badEstimates) throws IOException {
     ByteBuffer slice = null;
     ByteBuffer compressed = current.getChunk();
     long cbStartOffset = current.getOffset();
@@ -1166,7 +1179,7 @@ class EncodedReaderImpl implements EncodedReader {
       return cc;
     }
     if (current.getEnd() < cbEndOffset && !current.hasContiguousNext()) {
-      addIncompleteCompressionBuffer(cbStartOffset, current, 0);
+      badEstimates.add(addIncompleteCompressionBuffer(cbStartOffset, current, 0));
       return null; // This is impossible to read from this chunk.
     }
 
@@ -1221,13 +1234,13 @@ class EncodedReaderImpl implements EncodedReader {
         }
         tmp.removeSelf();
       } else {
-        addIncompleteCompressionBuffer(cbStartOffset, tmp, extraChunkCount);
+        badEstimates.add(addIncompleteCompressionBuffer(cbStartOffset, tmp, extraChunkCount));
         return null; // This is impossible to read from this chunk.
       }
     }
   }
 
-  private void addIncompleteCompressionBuffer(
+  private IncompleteCb addIncompleteCompressionBuffer(
       long cbStartOffset, DiskRangeList target, int extraChunkCount) {
     IncompleteCb icb = new IncompleteCb(cbStartOffset, target.getEnd());
     if (isTracingEnabled) {
@@ -1235,6 +1248,7 @@ class EncodedReaderImpl implements EncodedReader {
           + icb + " in the buffers");
     }
     target.replaceSelfWith(icb);
+    return icb;
   }
 
   /**
@@ -1253,7 +1267,7 @@ class EncodedReaderImpl implements EncodedReader {
       boolean isUncompressed, long cbStartOffset, long cbEndOffset, int lastChunkLength,
       BufferChunk lastChunk, List<ProcCacheChunk> toDecompress, List<MemoryBuffer> cacheBuffers) {
     // Prepare future cache buffer.
-    MemoryBuffer futureAlloc = cache.getAllocator().createUnallocated();
+    MemoryBuffer futureAlloc = cacheWrapper.getAllocator().createUnallocated();
     // Add it to result in order we are processing.
     cacheBuffers.add(futureAlloc);
     // Add it to the list of work to decompress.
