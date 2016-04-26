@@ -264,8 +264,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
 
   public void setBigDecimal(int parameterIndex, BigDecimal x) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    this.parameters.put(parameterIndex, x.toString());
   }
 
   /*
