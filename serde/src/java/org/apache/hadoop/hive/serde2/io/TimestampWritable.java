@@ -357,13 +357,9 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
     this.offset = 0;
   }
 
-  public void write(OutputStream out) throws IOException {
+  public void write(DataOutput out) throws IOException {
     checkBytes();
     out.write(currentBytes, offset, getTotalLength());
-  }
-
-  public void write(DataOutput out) throws IOException {
-    write((OutputStream) out);
   }
 
   public int compareTo(TimestampWritable t) {

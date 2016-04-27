@@ -245,7 +245,7 @@ public class TestHiveAccumuloTypes {
     Timestamp timestampValue = new Timestamp(now.getTime());
     ByteStream.Output output = new ByteStream.Output();
     TimestampWritable timestampWritable = new TimestampWritable(new Timestamp(now.getTime()));
-    timestampWritable.write(output);
+    timestampWritable.write(new DataOutputStream(output));
     output.close();
     m.put(cfBytes, "timestamp".getBytes(), output.toByteArray());
 
