@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.llap.io.metadata;
 
+import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
+
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -51,15 +53,7 @@ public class OrcMetadataCache {
     memoryManager.reserveMemory(memUsage, false);
     OrcFileMetadata val = metadata.putIfAbsent(metaData.getFileKey(), metaData);
     // See OrcFileMetadata; it is always unlocked, so we just "touch" it here to simulate use.
-    if (val == null) {
-      val = metaData;
-      policy.cache(val, Priority.HIGH);
-    } else {
-      memoryManager.releaseMemory(memUsage);
-      policy.notifyLock(val);
-    }
-    policy.notifyUnlock(val);
-    return val;
+    return touchOnPut(metaData, val, memUsage);
   }
 
   public OrcStripeMetadata putStripeMetadata(OrcStripeMetadata metaData) {
@@ -67,16 +61,21 @@ public class OrcMetadataCache {
     memoryManager.reserveMemory(memUsage, false);
     OrcStripeMetadata val = stripeMetadata.putIfAbsent(metaData.getKey(), metaData);
     // See OrcStripeMetadata; it is always unlocked, so we just "touch" it here to simulate use.
-    if (val == null) {
-      val = metaData;
-      policy.cache(val, Priority.HIGH);
+    return touchOnPut(metaData, val, memUsage);
+  }
+
+  private <T extends LlapCacheableBuffer> T touchOnPut(T newVal, T oldVal, long memUsage) {
+    if (oldVal == null) {
+      oldVal = newVal;
+      policy.cache(oldVal, Priority.HIGH);
     } else {
       memoryManager.releaseMemory(memUsage);
-      policy.notifyLock(val);
+      policy.notifyLock(oldVal);
     }
-    policy.notifyUnlock(val);
-    return val;
+    policy.notifyUnlock(oldVal);
+    return oldVal;
   }
+
 
   public void putIncompleteCbs(Object fileKey, DiskRange[] ranges, long baseOffset) {
     if (estimateErrors == null) return;
@@ -110,11 +109,20 @@ public class OrcMetadataCache {
   }
 
   public OrcStripeMetadata getStripeMetadata(OrcBatchKey stripeKey) throws IOException {
-    return stripeMetadata.get(stripeKey);
+    return touchOnGet(stripeMetadata.get(stripeKey));
   }
 
   public OrcFileMetadata getFileMetadata(Object fileKey) throws IOException {
-    return metadata.get(fileKey);
+    return touchOnGet(metadata.get(fileKey));
+  }
+
+
+  private <T extends LlapCacheableBuffer> T touchOnGet(T result) {
+    if (result != null) {
+      policy.notifyLock(result);
+      policy.notifyUnlock(result); // Never locked for eviction; Java object.
+    }
+    return result;
   }
 
   public DiskRangeList getIncompleteCbs(Object fileKey, DiskRangeList ranges, long baseOffset,
