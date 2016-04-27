@@ -2700,6 +2700,11 @@ public class HiveConf extends Configuration {
       "Sleep duration while waiting to retry connection failures to the AM from the daemon for\n" +
       "the general keep-alive thread (milliseconds).",
       "llap.am.liveness.connection.sleep-between-retries-millis"),
+    LLAP_DAEMON_TASK_SCHEDULER_TIMEOUT_SECONDS(
+        "hive.llap.task.scheduler.timeout.seconds", "60s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Amount of time to wait before failing the query when there are no llap daemons running\n" +
+            "(alive) in the cluster.", "llap.daemon.scheduler.timeout.seconds"),
     LLAP_DAEMON_NUM_EXECUTORS("hive.llap.daemon.num.executors", 4,
       "Number of executors to use in LLAP daemon; essentially, the number of tasks that can be\n" +
       "executed in parallel.", "llap.daemon.num.executors"),
