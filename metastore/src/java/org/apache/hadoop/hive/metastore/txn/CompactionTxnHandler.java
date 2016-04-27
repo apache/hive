@@ -30,6 +30,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -451,7 +452,7 @@ class CompactionTxnHandler extends TxnHandler {
         if(txnids.size() <= 0) {
           return;
         }
-
+        Collections.sort(txnids);//easier to read logs
         List<String> queries = new ArrayList<String>();
         StringBuilder prefix = new StringBuilder();
         StringBuilder suffix = new StringBuilder();

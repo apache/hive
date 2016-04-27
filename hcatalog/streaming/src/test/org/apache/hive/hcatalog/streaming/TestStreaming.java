@@ -1714,6 +1714,8 @@ public class TestStreaming {
     }
     catch(StreamingIOFailure ex) {
       expectedEx = ex;
+      txnBatch.getCurrentTransactionState();
+      txnBatch.getCurrentTxnId();//test it doesn't throw ArrayIndexOutOfBounds...
     }
     Assert.assertTrue("Wrong exception: " + (expectedEx != null ? expectedEx.getMessage() : "?"),
       expectedEx != null && expectedEx.getMessage().contains("Simulated fault occurred"));
