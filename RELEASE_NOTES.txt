@@ -1,4 +1,93 @@
 
+
+Release Notes - Hive - Version 2.0.1
+
+** Sub-task
+    * [HIVE-13362] - Commit binary file required for HIVE-13361
+
+
+
+
+
+
+
+** Bug
+    * [HIVE-9499] - hive.limit.query.max.table.partition makes queries fail on non-partitioned tables
+    * [HIVE-9862] - Vectorized execution corrupts timestamp values
+    * [HIVE-10729] - Query failed when select complex columns from joinned table (tez map join only)
+    * [HIVE-12064] - prevent transactional=false
+    * [HIVE-12165] - wrong result when hive.optimize.sampling.orderby=true with some aggregate functions
+    * [HIVE-12552] - Wrong number of reducer estimation causing job to fail
+    * [HIVE-12749] - Constant propagate returns string values in incorrect format
+    * [HIVE-12799] - Always use Schema Evolution for ACID
+    * [HIVE-12887] - Handle ORC schema on read with fewer columns than file schema (after Schema Evolution changes)
+    * [HIVE-12894] - Detect whether ORC is reading from ACID table correctly for Schema Evolution
+    * [HIVE-12937] - DbNotificationListener unable to clean up old notification events
+    * [HIVE-12990] - LLAP: ORC cache NPE without FileID support
+    * [HIVE-12992] - Hive on tez: Bucket map join plan is incorrect
+    * [HIVE-13036] - Split hive.root.logger separately to make it compatible with log4j1.x (for remaining services)
+    * [HIVE-13051] - Deadline class has numerous issues
+    * [HIVE-13056] - delegation tokens do not work with HS2 when used with http transport and kerberos
+    * [HIVE-13079] - LLAP: Allow reading log4j properties from default JAR resources
+    * [HIVE-13083] - Writing HiveDecimal to ORC can wrongly suppress present stream
+    * [HIVE-13086] - LLAP: Programmatically initialize log4j2 to print out the properties location
+    * [HIVE-13090] - Hive metastore crashes on NPE with ZooKeeperTokenStore
+    * [HIVE-13093] - hive metastore does not exit on start failure
+    * [HIVE-13105] - LLAP token hashCode and equals methods are incorrect
+    * [HIVE-13108] - Operators: SORT BY randomness is not safe with network partitions
+    * [HIVE-13110] - LLAP: Package log4j2 jars into Slider pkg
+    * [HIVE-13111] - Fix timestamp / interval_day_time wrong results with HIVE-9862 
+    * [HIVE-13115] - MetaStore Direct SQL getPartitions call fail when the columns schemas for a partition are null
+    * [HIVE-13126] - Clean up MapJoinOperator properly to avoid object cache reuse with unintentional states
+    * [HIVE-13134] - JDBC: JDBC Standalone should not be in the lib dir by default
+    * [HIVE-13144] - HS2 can leak ZK ACL objects when curator retries to create the persistent ephemeral node
+    * [HIVE-13151] - Clean up UGI objects in FileSystem cache for transactions
+    * [HIVE-13153] - SessionID is appended to thread name twice
+    * [HIVE-13199] - NDC stopped working in LLAP logging
+    * [HIVE-13200] - Aggregation functions returning empty rows on partitioned columns
+    * [HIVE-13232] - Aggressively drop compression buffers in ORC OutStreams
+    * [HIVE-13236] - LLAP: token renewal interval needs to be set
+    * [HIVE-13240] - GroupByOperator: Drop the hash aggregates when closing operator
+    * [HIVE-13242] - DISTINCT keyword is dropped by the parser for windowing
+    * [HIVE-13243] - Hive drop table on encyption zone fails for external tables
+    * [HIVE-13255] - FloatTreeReader.nextVector is expensive 
+    * [HIVE-13263] - Vectorization: Unable to vectorize regexp_extract/regexp_replace " Udf: GenericUDFBridge, is not supported"
+    * [HIVE-13279] - SHOW TABLE EXTENDED doesn't show the correct lastUpdateTime of partition's file system
+    * [HIVE-13285] - Orc concatenation may drop old files from moving to final path
+    * [HIVE-13286] - Query ID is being reused across queries
+    * [HIVE-13294] - AvroSerde leaks the connection in a case when reading schema from a url
+    * [HIVE-13296] - Add vectorized Q test with complex types showing count(*) etc work correctly
+    * [HIVE-13299] - Column Names trimmed of leading and trailing spaces
+    * [HIVE-13310] - Vectorized Projection Comparison Number Column to Scalar broken for !noNulls and selectedInUse
+    * [HIVE-13313] - TABLESAMPLE ROWS feature broken for Vectorization
+    * [HIVE-13324] - LLAP: history log for FRAGMENT_START doesn't log DagId correctly
+    * [HIVE-13327] - SessionID added to HS2 threadname does not trim spaces
+    * [HIVE-13330] - ORC vectorized string dictionary reader does not differentiate null vs empty string dictionary
+    * [HIVE-13361] - Orc concatenation should enforce the compression buffer size
+    * [HIVE-13379] - HIVE-12851 args do not work (slider-keytab-dir, etc.)
+    * [HIVE-13394] - Analyze table fails in tez on empty partitions/files/tables
+    * [HIVE-13396] - LLAP: Include hadoop-metrics2.properties file LlapServiceDriver
+    * [HIVE-13405] - Fix Connection Leak in OrcRawRecordMerger
+    * [HIVE-13428] - ZK SM in LLAP should have unique paths per cluster
+    * [HIVE-13463] - Fix ImportSemanticAnalyzer to allow for different src/dst filesystems
+    * [HIVE-13464] - Backport changes to storage-api into branch 2 for release into 2.0.1
+    * [HIVE-13468] - branch-2 build is broken
+    * [HIVE-13523] - Fix connection leak in ORC RecordReader and refactor for unit testing
+    * [HIVE-13630] - missing license headers
+
+
+
+
+
+
+** Improvement
+    * [HIVE-10115] - HS2 running on a Kerberized cluster should offer Kerberos(GSSAPI) and Delegation token(DIGEST) when alternate authentication is enabled
+    * [HIVE-13120] - propagate doAs when generating ORC splits
+
+
+
+
+
 Release Notes - Hive - Version 2.0.0
 
 ** Sub-task
