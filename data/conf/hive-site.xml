@@ -288,7 +288,7 @@
 
 <property>
   <name>hive.llap.io.use.lrfu</name>
-  <value>false</value>
+  <value>true</value>
 </property>
 
 

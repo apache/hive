@@ -102,7 +102,11 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
     buffer.priority = F0;
     buffer.lastUpdate = time;
     if (priority == Priority.HIGH) {
-      buffer.priority *= 8; // this is arbitrary
+      // This is arbitrary. Note that metadata may come from a big scan and nuke all the data
+      // from some small frequently accessed tables, because it gets such a large priority boost
+      // to start with. Think of the multiplier as the number of accesses after which the data
+      // becomes more important than some random read-once metadata, in a pure-LFU scheme.
+      buffer.priority *= 3;
     } else {
       assert priority == Priority.NORMAL;
     }
@@ -258,7 +262,7 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
     heap[ix] = buffer;
   }
 
-  // Note: almost never called (unless buffers are very large or we evict a lot).
+  // Note: almost never called (unless buffers are very large or we evict a lot, or LFU).
   private LlapCacheableBuffer evictFromHeapUnderLock(long time) {
     while (true) {
       if (heapSize == 0) return null;
@@ -289,7 +293,6 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
     // down; therefore, we can update priorities of other blocks as we go for part of the heap -
     // we correct any discrepancy w/the parent after expiring priority, and any block we expire
     // the priority for already has lower priority than that of its children.
-    // TODO: avoid expiring priorities if times are close? might be needlessly expensive.
     int ix = buffer.indexInHeap;
     double priority = buffer.priority;
     while (true) {
