@@ -622,7 +622,7 @@ public class HiveEndPoint {
 
     private void beginNextTransactionImpl() throws TransactionError {
       state = TxnState.INACTIVE;//clear state from previous txn
-      if ( currentTxnIndex >= txnIds.size() )
+      if ( currentTxnIndex + 1 >= txnIds.size() )
         throw new InvalidTrasactionState("No more transactions available in" +
                 " current batch for end point : " + endPt);
       ++currentTxnIndex;
@@ -874,6 +874,7 @@ public class HiveEndPoint {
               currentTxnIndex < txnIds.size(); currentTxnIndex++) {
             msClient.rollbackTxn(txnIds.get(currentTxnIndex));
           }
+          currentTxnIndex--;//since the loop left it == txnId.size()
         }
         else {
           if (getCurrentTxnId() > 0) {
