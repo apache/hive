@@ -62,8 +62,8 @@ public class TestAbstractParquetMapInspector extends TestCase {
   @Test
   public void testEmptyContainer() {
     final ArrayWritable map = new ArrayWritable(ArrayWritable.class, new ArrayWritable[0]);
-    assertEquals("Wrong size", -1, inspector.getMapSize(map));
-    assertNull("Should be null", inspector.getMap(map));
+    assertEquals("Wrong size", 0, inspector.getMapSize(map));
+    assertNotNull("Should not be null", inspector.getMap(map));
   }
 
   @Test

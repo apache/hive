@@ -163,28 +163,28 @@ public class DataWritableWriter {
   private void writeArray(final Object value, final ListObjectInspector inspector, final GroupType type) {
     // Get the internal array structure
     GroupType repeatedType = type.getType(0).asGroupType();
-
     recordConsumer.startGroup();
-    recordConsumer.startField(repeatedType.getName(), 0);
 
     List<?> arrayValues = inspector.getList(value);
-    ObjectInspector elementInspector = inspector.getListElementObjectInspector();
+    if (arrayValues != null && arrayValues.size() > 0 ) {
+      recordConsumer.startField(repeatedType.getName(), 0);
+      ObjectInspector elementInspector = inspector.getListElementObjectInspector();
+      Type elementType = repeatedType.getType(0);
+      String elementName = elementType.getName();
 
-    Type elementType = repeatedType.getType(0);
-    String elementName = elementType.getName();
-
-    for (Object element : arrayValues) {
-      recordConsumer.startGroup();
-      if (element != null) {
-        recordConsumer.startField(elementName, 0);
-        writeValue(element, elementInspector, elementType);
-        recordConsumer.endField(elementName, 0);
+      for (Object element : arrayValues) {
+        recordConsumer.startGroup();
+        if (element != null) {
+          recordConsumer.startField(elementName, 0);
+          writeValue(element, elementInspector, elementType);
+          recordConsumer.endField(elementName, 0);
+        }
+        recordConsumer.endGroup();
       }
-      recordConsumer.endGroup();
-    }
 
-    recordConsumer.endField(repeatedType.getName(), 0);
-    recordConsumer.endGroup();
+      recordConsumer.endField(repeatedType.getName(), 0);
+   }
+   recordConsumer.endGroup();
   }
 
   /**
@@ -206,39 +206,39 @@ public class DataWritableWriter {
     GroupType repeatedType = type.getType(0).asGroupType();
 
     recordConsumer.startGroup();
-    recordConsumer.startField(repeatedType.getName(), 0);
 
     Map<?, ?> mapValues = inspector.getMap(value);
+    if (mapValues != null && mapValues.size() > 0) {
+      recordConsumer.startField(repeatedType.getName(), 0);
+      Type keyType = repeatedType.getType(0);
+      String keyName = keyType.getName();
+      ObjectInspector keyInspector = inspector.getMapKeyObjectInspector();
+      Type valuetype = repeatedType.getType(1);
+      String valueName = valuetype.getName();
+      ObjectInspector valueInspector = inspector.getMapValueObjectInspector();
 
-    Type keyType = repeatedType.getType(0);
-    String keyName = keyType.getName();
-    ObjectInspector keyInspector = inspector.getMapKeyObjectInspector();
+      for (Map.Entry<?, ?> keyValue : mapValues.entrySet()) {
+        recordConsumer.startGroup();
+        if (keyValue != null) {
+          // write key element
+          Object keyElement = keyValue.getKey();
+          recordConsumer.startField(keyName, 0);
+          writeValue(keyElement, keyInspector, keyType);
+          recordConsumer.endField(keyName, 0);
 
-    Type valuetype = repeatedType.getType(1);
-    String valueName = valuetype.getName();
-    ObjectInspector valueInspector = inspector.getMapValueObjectInspector();
-
-    for (Map.Entry<?, ?> keyValue : mapValues.entrySet()) {
-      recordConsumer.startGroup();
-      if (keyValue != null) {
-        // write key element
-        Object keyElement = keyValue.getKey();
-        recordConsumer.startField(keyName, 0);
-        writeValue(keyElement, keyInspector, keyType);
-        recordConsumer.endField(keyName, 0);
-
-        // write value element
-        Object valueElement = keyValue.getValue();
-        if (valueElement != null) {
-          recordConsumer.startField(valueName, 1);
-          writeValue(valueElement, valueInspector, valuetype);
-          recordConsumer.endField(valueName, 1);
+          // write value element
+          Object valueElement = keyValue.getValue();
+          if (valueElement != null) {
+            recordConsumer.startField(valueName, 1);
+            writeValue(valueElement, valueInspector, valuetype);
+            recordConsumer.endField(valueName, 1);
+          }
         }
+        recordConsumer.endGroup();
       }
-      recordConsumer.endGroup();
-    }
 
-    recordConsumer.endField(repeatedType.getName(), 0);
+      recordConsumer.endField(repeatedType.getName(), 0);
+    }
     recordConsumer.endGroup();
   }
 
