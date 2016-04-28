@@ -411,6 +411,35 @@ public class TestDataWritableWriter {
   }
 
   @Test
+  public void testEmptyArrays() throws Exception {
+    String columnNames = "arrayCol";
+    String columnTypes = "array<int>";
+
+    String fileSchema = "message hive_schema {\n"
+        + "  optional group arrayCol (LIST) {\n"
+        + "    repeated group array {\n"
+        + "      optional int32 array_element;\n"
+        + "    }\n"
+        + "  }\n"
+        + "}\n";
+
+    ArrayWritable hiveRecord = createGroup(
+       new ArrayWritable(Writable.class) // Empty array
+    );
+
+   // Write record to Parquet format
+    writeParquetRecord(fileSchema, getParquetWritable(columnNames, columnTypes, hiveRecord));
+
+    // Verify record was written correctly to Parquet
+    startMessage();
+      startField("arrayCol", 0);
+        startGroup();
+        endGroup();
+      endField("arrayCol", 0);
+    endMessage();
+  }
+
+  @Test
   public void testArrayOfArrays() throws Exception {
     String columnNames = "array_of_arrays";
     String columnTypes = "array<array<int>>";
