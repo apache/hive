@@ -55,4 +55,10 @@ public interface ServiceInstanceSet {
    */
   public Set<ServiceInstance> getByHost(String host);
 
+  /**
+   * Get number of instances in the currently availabe.
+   *
+   * @return - number of instances
+   */
+  public int size();
 }

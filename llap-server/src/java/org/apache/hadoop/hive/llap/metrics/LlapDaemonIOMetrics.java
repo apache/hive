@@ -17,12 +17,8 @@
  */
 package org.apache.hadoop.hive.llap.metrics;
 
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonIOInfo.ColumnStreamDataPoolSize;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonIOInfo.ColumnVectorBatchPoolSize;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonIOInfo.EncodedColumnBatchPoolSize;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonIOInfo.IoThreadPoolSize;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonIOInfo.MaxDecodingTime;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonIOInfo.IOMetrics;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonIOInfo.MaxDecodingTime;
 import static org.apache.hadoop.metrics2.impl.MsInfo.ProcessName;
 import static org.apache.hadoop.metrics2.impl.MsInfo.SessionId;
 
@@ -33,7 +29,6 @@ import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hadoop.metrics2.annotation.Metric;
 import org.apache.hadoop.metrics2.annotation.Metrics;
 import org.apache.hadoop.metrics2.lib.MetricsRegistry;
-import org.apache.hadoop.metrics2.lib.MutableGaugeInt;
 import org.apache.hadoop.metrics2.lib.MutableGaugeLong;
 import org.apache.hadoop.metrics2.lib.MutableQuantiles;
 import org.apache.hadoop.metrics2.lib.MutableRate;
@@ -51,14 +46,6 @@ public class LlapDaemonIOMetrics implements MetricsSource {
   private final MetricsRegistry registry;
   private long maxTime = Long.MIN_VALUE;
 
-  @Metric
-  MutableGaugeInt encodedColumnBatchPoolSize;
-  @Metric
-  MutableGaugeInt columnStreamDataPoolSize;
-  @Metric
-  MutableGaugeInt columnVectorBatchPool;
-  @Metric
-  MutableGaugeInt ioThreadPoolSize;
   @Metric
   MutableRate rateOfDecoding;
   final MutableQuantiles[] decodingTimes;
@@ -101,22 +88,6 @@ public class LlapDaemonIOMetrics implements MetricsSource {
     return name;
   }
 
-  public void setEncodedColumnBatchPoolSize(int size) {
-    encodedColumnBatchPoolSize.set(size);
-  }
-
-  public void setColumnStreamDataPoolSize(int size) {
-    columnStreamDataPoolSize.set(size);
-  }
-
-  public void setColumnVectorBatchPoolSize(int size) {
-    columnVectorBatchPool.set(size);
-  }
-
-  public void setIoThreadPoolSize(int size) {
-    ioThreadPoolSize.set(size);
-  }
-
   public void addDecodeBatchTime(long latency) {
     rateOfDecoding.add(latency);
     if (latency > maxTime) {
@@ -129,11 +100,7 @@ public class LlapDaemonIOMetrics implements MetricsSource {
   }
 
   private void getIoStats(MetricsRecordBuilder rb) {
-    rb.addGauge(EncodedColumnBatchPoolSize, encodedColumnBatchPoolSize.value())
-        .addGauge(ColumnStreamDataPoolSize, columnStreamDataPoolSize.value())
-        .addGauge(ColumnVectorBatchPoolSize, columnVectorBatchPool.value())
-        .addGauge(IoThreadPoolSize, ioThreadPoolSize.value())
-        .addGauge(MaxDecodingTime, maxDecodingTime.value());
+    rb.addGauge(MaxDecodingTime, maxDecodingTime.value());
     rateOfDecoding.snapshot(rb, true);
 
     for (MutableQuantiles q : decodingTimes) {

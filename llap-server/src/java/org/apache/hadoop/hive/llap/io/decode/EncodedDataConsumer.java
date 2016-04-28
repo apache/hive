@@ -53,17 +53,12 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
             // Don't reset anything, we are reusing column vectors.
           }
         });
-    this.ioMetrics.setColumnVectorBatchPoolSize(cvbPool.size());
   }
 
   public void init(ConsumerFeedback<BatchType> upstreamFeedback,
       Callable<Void> readCallable) {
     this.upstreamFeedback = upstreamFeedback;
     this.readCallable = readCallable;
-  }
-
-  public LlapDaemonIOMetrics getIOMetrics() {
-    return ioMetrics;
   }
 
   @Override

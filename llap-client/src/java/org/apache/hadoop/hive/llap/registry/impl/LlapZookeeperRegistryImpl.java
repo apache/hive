@@ -517,6 +517,11 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
       }
       return byHost;
     }
+
+    @Override
+    public int size() {
+      return instancesCache.getCurrentData().size();
+    }
   }
 
   private class InstanceStateChangeListener implements PathChildrenCacheListener {

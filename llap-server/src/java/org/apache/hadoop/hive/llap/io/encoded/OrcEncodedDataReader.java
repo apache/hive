@@ -182,9 +182,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    LlapDaemonIOMetrics ioMetrics = consumer.getIOMetrics();
-    ioMetrics.setColumnStreamDataPoolSize(CSD_POOL.size());
-    ioMetrics.setEncodedColumnBatchPoolSize(ECB_POOL.size());
   }
 
   @Override

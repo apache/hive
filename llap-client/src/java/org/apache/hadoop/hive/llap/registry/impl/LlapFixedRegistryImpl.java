@@ -253,6 +253,11 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
       }
       return byHost;
     }
+
+    @Override
+    public int size() {
+      return instances.size();
+    }
   }
 
   @Override

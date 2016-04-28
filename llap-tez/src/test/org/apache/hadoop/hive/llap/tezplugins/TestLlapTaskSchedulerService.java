@@ -627,7 +627,7 @@ public class TestLlapTaskSchedulerService {
 
     public LlapTaskSchedulerServiceForTest(
         TaskSchedulerContext appClient, Clock clock) {
-      super(appClient, clock);
+      super(appClient, clock, false);
     }
 
     @Override

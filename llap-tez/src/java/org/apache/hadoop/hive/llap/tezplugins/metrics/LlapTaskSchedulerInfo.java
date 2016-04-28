@@ -15,31 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.llap.metrics;
+package org.apache.hadoop.hive.llap.tezplugins.metrics;
 
 import org.apache.hadoop.metrics2.MetricsInfo;
 
 import com.google.common.base.Objects;
 
 /**
- * Metrics information for llap cache.
+ * Metrics information for llap task scheduler.
  */
-public enum LlapDaemonCacheInfo implements MetricsInfo {
-  CacheMetrics("Llap daemon cache related metrics"),
-  CacheCapacityRemainingPercentage("Percentage of memory available in cache"),
-  CacheCapacityRemaining("Amount of memory available in cache in bytes"),
-  CacheCapacityTotal("Total amount of memory allocated for cache in bytes"),
-  CacheCapacityUsed("Amount of memory used in cache in bytes"),
-  CacheRequestedBytes("Disk ranges that are requested in bytes"),
-  CacheHitBytes("Disk ranges that are cached in bytes"),
-  CacheHitRatio("Ratio of disk ranges cached vs requested"),
-  CacheReadRequests("Number of disk range requests to cache"),
-  CacheAllocatedArena("Number of arenas allocated"),
-  CacheNumLockedBuffers("Number of locked buffers in cache");
+public enum LlapTaskSchedulerInfo implements MetricsInfo {
+  SchedulerMetrics("Llap task scheduler related metrics"),
+  SchedulerClusterNodeCount("Number of nodes in the cluster"),
+  SchedulerExecutorsPerInstance("Total number of executor threads per node"),
+  SchedulerMemoryPerInstance("Total memory for executors per node in bytes"),
+  SchedulerCpuCoresPerInstance("Total CPU vCores per node"),
+  SchedulerDisabledNodeCount("Number of nodes disabled temporarily"),
+  SchedulerPendingTaskCount("Number of pending tasks"),
+  SchedulerSchedulableTaskCount("Current slots available for scheduling tasks"),
+  SchedulerSuccessfulTaskCount("Total number of successful tasks"),
+  SchedulerRunningTaskCount("Total number of running tasks"),
+  SchedulerPendingPreemptionTaskCount("Total number of tasks pending for pre-emption"),
+  SchedulerPreemptedTaskCount("Total number of tasks pre-empted"),
+  SchedulerCompletedDagCount("Number of DAGs completed");
 
   private final String desc;
 
-  LlapDaemonCacheInfo(String desc) {
+  LlapTaskSchedulerInfo(String desc) {
     this.desc = desc;
   }
 

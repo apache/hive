@@ -17,22 +17,30 @@
  */
 package org.apache.hadoop.hive.llap.metrics;
 
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorAvailableFreeSlots;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorAvailableFreeSlotsPercent;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorCacheMemoryPerInstance;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorJvmMaxMemory;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMaxFreeSlots;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMaxPreemptionTimeLost;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMaxPreemptionTimeToKill;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMemoryPerInstance;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumExecutorsAvailable;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumPreemptableRequests;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumQueuedRequests;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorRpcNumHandlers;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorThreadCPUTime;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorThreadCountPerInstance;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorNumExecutorsPerInstance;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorThreadUserTime;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalAskedToDie;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalExecutionFailure;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalInterrupted;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalEvictedFromWaitQueue;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalFailed;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalKilled;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalRejectedRequests;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalRequestsHandled;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalSuccess;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMetrics;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalPreemptionTimeLost;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalPreemptionTimeToKill;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorWaitQueueSize;
-import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.PreemptionTimeLost;
 import static org.apache.hadoop.metrics2.impl.MsInfo.ProcessName;
 import static org.apache.hadoop.metrics2.impl.MsInfo.SessionId;
 
@@ -54,6 +62,7 @@ import org.apache.hadoop.metrics2.lib.MetricsRegistry;
 import org.apache.hadoop.metrics2.lib.MutableCounterLong;
 import org.apache.hadoop.metrics2.lib.MutableGaugeInt;
 import org.apache.hadoop.metrics2.lib.MutableGaugeLong;
+import org.apache.hadoop.metrics2.lib.MutableQuantiles;
 import org.apache.hadoop.metrics2.source.JvmMetrics;
 
 /**
@@ -70,21 +79,29 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
   private final ThreadMXBean threadMXBean;
   private final Map<Integer, MetricsInfo> cpuMetricsInfoMap;
   private final Map<Integer, MetricsInfo> userMetricsInfoMap;
+  private long maxTimeLost = Long.MIN_VALUE;
+  private long maxTimeToKill = Long.MIN_VALUE;
 
   final MutableGaugeLong[] executorThreadCpuTime;
   final MutableGaugeLong[] executorThreadUserTime;
   @Metric
   MutableCounterLong executorTotalRequestHandled;
   @Metric
-  MutableCounterLong executorNumQueuedRequests;
+  MutableGaugeInt executorNumQueuedRequests;
+  @Metric
+  MutableGaugeInt executorNumPreemptableRequests;
+  @Metric
+  MutableGaugeInt numExecutorsAvailable;
+  @Metric
+  MutableCounterLong totalRejectedRequests;
+  @Metric
+  MutableCounterLong totalEvictedFromWaitQueue;
   @Metric
   MutableCounterLong executorTotalSuccess;
   @Metric
   MutableCounterLong executorTotalIKilled;
   @Metric
   MutableCounterLong executorTotalExecutionFailed;
-  @Metric
-  MutableCounterLong preemptionTimeLost;
   @Metric
   MutableGaugeLong cacheMemoryPerInstance;
   @Metric
@@ -94,10 +111,20 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
   @Metric
   MutableGaugeInt waitQueueSize;
   @Metric
-  MutableGaugeInt rpcNumHandlers;
+  MutableCounterLong totalPreemptionTimeToKill;
+  @Metric
+  MutableCounterLong totalPreemptionTimeLost;
+  @Metric
+  MutableGaugeLong maxPreemptionTimeToKill;
+  @Metric
+  MutableGaugeLong maxPreemptionTimeLost;
+  @Metric
+  final MutableQuantiles[] percentileTimeToKill;
+  @Metric
+  final MutableQuantiles[] percentileTimeLost;
 
   private LlapDaemonExecutorMetrics(String displayName, JvmMetrics jm, String sessionId,
-      int numExecutors) {
+      int numExecutors, final int[] intervals) {
     this.name = displayName;
     this.jvmMetrics = jm;
     this.sessionId = sessionId;
@@ -109,6 +136,21 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
     this.executorThreadUserTime = new MutableGaugeLong[numExecutors];
     this.cpuMetricsInfoMap = new ConcurrentHashMap<>();
     this.userMetricsInfoMap = new ConcurrentHashMap<>();
+
+    final int len = intervals == null ? 0 : intervals.length;
+    this.percentileTimeToKill = new MutableQuantiles[len];
+    this.percentileTimeLost = new MutableQuantiles[len];
+    for (int i=0; i<len; i++) {
+      int interval = intervals[i];
+      percentileTimeToKill[i] = registry.newQuantiles(
+          LlapDaemonExecutorInfo.ExecutorMaxPreemptionTimeToKill.name() + "_" + interval + "s",
+          LlapDaemonExecutorInfo.ExecutorMaxPreemptionTimeToKill.description(),
+          "ops", "latency", interval);
+      percentileTimeLost[i] = registry.newQuantiles(
+          LlapDaemonExecutorInfo.ExecutorMaxPreemptionTimeLost.name() + "_" + interval + "s",
+          LlapDaemonExecutorInfo.ExecutorMaxPreemptionTimeLost.description(),
+          "ops", "latency", interval);
+    }
 
     for (int i = 0; i < numExecutors; i++) {
       MetricsInfo mic = new LlapDaemonCustomMetricsInfo(ExecutorThreadCPUTime.name() + "_" + i,
@@ -123,11 +165,11 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
   }
 
   public static LlapDaemonExecutorMetrics create(String displayName, String sessionId,
-      int numExecutors) {
+      int numExecutors, final int[] intervals) {
     MetricsSystem ms = LlapMetricsSystem.instance();
     JvmMetrics jm = JvmMetrics.create(MetricsUtils.METRICS_PROCESS_NAME, sessionId, ms);
     return ms.register(displayName, "LlapDaemon Executor Metrics",
-        new LlapDaemonExecutorMetrics(displayName, jm, sessionId, numExecutors));
+        new LlapDaemonExecutorMetrics(displayName, jm, sessionId, numExecutors, intervals));
   }
 
   @Override
@@ -143,12 +185,24 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
     executorTotalRequestHandled.incr();
   }
 
-  public void incrExecutorNumQueuedRequests() {
-    executorNumQueuedRequests.incr();
+  public void setExecutorNumQueuedRequests(int value) {
+    executorNumQueuedRequests.set(value);
   }
 
-  public void decrExecutorNumQueuedRequests() {
-    executorNumQueuedRequests.incr(-1);
+  public void setExecutorNumPreemptableRequests(int value) {
+    executorNumPreemptableRequests.set(value);
+  }
+
+  public void setNumExecutorsAvailable(int value) {
+    numExecutorsAvailable.set(value);
+  }
+
+  public void incrTotalEvictedFromWaitQueue() {
+    totalEvictedFromWaitQueue.incr();
+  }
+
+  public void incrTotalRejectedRequests() {
+    totalRejectedRequests.incr();
   }
 
   public void incrExecutorTotalSuccess() {
@@ -159,8 +213,30 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
     executorTotalExecutionFailed.incr();
   }
 
-  public void incrPreemptionTimeLost(long value) {
-    preemptionTimeLost.incr(value);
+  public void addMetricsPreemptionTimeLost(long value) {
+    totalPreemptionTimeLost.incr(value);
+
+    if (value > maxTimeLost) {
+      maxTimeLost = value;
+      maxPreemptionTimeLost.set(maxTimeLost);
+    }
+
+    for (MutableQuantiles q : percentileTimeLost) {
+      q.add(value);
+    }
+  }
+
+  public void addMetricsPreemptionTimeToKill(long value) {
+    totalPreemptionTimeToKill.incr(value);
+
+    if (value > maxTimeToKill) {
+      maxTimeToKill = value;
+      maxPreemptionTimeToKill.set(maxTimeToKill);
+    }
+
+    for (MutableQuantiles q : percentileTimeToKill) {
+      q.add(value);
+    }
   }
 
   public void incrExecutorTotalKilled() {
@@ -183,25 +259,43 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
     waitQueueSize.set(size);
   }
 
-  public void setRpcNumHandlers(int numHandlers) {
-    rpcNumHandlers.set(numHandlers);
-  }
-
   private void getExecutorStats(MetricsRecordBuilder rb) {
     updateThreadMetrics(rb);
+    final int totalSlots = waitQueueSize.value() + numExecutors;
+    final int slotsAvailableInQueue = waitQueueSize.value() - executorNumQueuedRequests.value();
+    final int slotsAvailableTotal = slotsAvailableInQueue + numExecutorsAvailable.value();
+    final float slotsAvailablePercent = totalSlots <= 0 ? 0.0f :
+        (float) slotsAvailableTotal / (float) totalSlots;
 
     rb.addCounter(ExecutorTotalRequestsHandled, executorTotalRequestHandled.value())
-        .addCounter(ExecutorNumQueuedRequests, executorNumQueuedRequests.value())
         .addCounter(ExecutorTotalSuccess, executorTotalSuccess.value())
-        .addCounter(ExecutorTotalExecutionFailure, executorTotalExecutionFailed.value())
-        .addCounter(ExecutorTotalInterrupted, executorTotalIKilled.value())
-        .addCounter(PreemptionTimeLost, preemptionTimeLost.value())
-        .addGauge(ExecutorThreadCountPerInstance, numExecutors)
+        .addCounter(ExecutorTotalFailed, executorTotalExecutionFailed.value())
+        .addCounter(ExecutorTotalKilled, executorTotalIKilled.value())
+        .addCounter(ExecutorTotalEvictedFromWaitQueue, totalEvictedFromWaitQueue.value())
+        .addCounter(ExecutorTotalRejectedRequests, totalRejectedRequests.value())
+        .addGauge(ExecutorNumQueuedRequests, executorNumQueuedRequests.value())
+        .addGauge(ExecutorNumPreemptableRequests, executorNumPreemptableRequests.value())
         .addGauge(ExecutorMemoryPerInstance, memoryPerInstance.value())
         .addGauge(ExecutorCacheMemoryPerInstance, cacheMemoryPerInstance.value())
         .addGauge(ExecutorJvmMaxMemory, jvmMaxMemory.value())
+        .addGauge(ExecutorMaxFreeSlots, totalSlots)
+        .addGauge(ExecutorNumExecutorsPerInstance, numExecutors)
         .addGauge(ExecutorWaitQueueSize, waitQueueSize.value())
-        .addGauge(ExecutorRpcNumHandlers, rpcNumHandlers.value());
+        .addGauge(ExecutorNumExecutorsAvailable, numExecutorsAvailable.value())
+        .addGauge(ExecutorAvailableFreeSlots, slotsAvailableTotal)
+        .addGauge(ExecutorAvailableFreeSlotsPercent, slotsAvailablePercent)
+        .addCounter(ExecutorTotalPreemptionTimeToKill, totalPreemptionTimeToKill.value())
+        .addCounter(ExecutorTotalPreemptionTimeLost, totalPreemptionTimeLost.value())
+        .addGauge(ExecutorMaxPreemptionTimeToKill, maxPreemptionTimeToKill.value())
+        .addGauge(ExecutorMaxPreemptionTimeLost, maxPreemptionTimeLost.value());
+
+    for (MutableQuantiles q : percentileTimeToKill) {
+      q.snapshot(rb, true);
+    }
+
+    for (MutableQuantiles q : percentileTimeLost) {
+      q.snapshot(rb, true);
+    }
   }
 
   private void updateThreadMetrics(MetricsRecordBuilder rb) {

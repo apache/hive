@@ -289,7 +289,7 @@ public class SimpleFetchOptimizer extends Transform {
 
   private boolean isConvertible(FetchData fetch, Operator<?> operator, Set<Operator<?>> traversed) {
     if (operator instanceof ReduceSinkOperator || operator instanceof CommonJoinOperator
-        || operator instanceof ScriptOperator || operator instanceof UDTFOperator) {
+        || operator instanceof ScriptOperator) {
       return false;
     }
 

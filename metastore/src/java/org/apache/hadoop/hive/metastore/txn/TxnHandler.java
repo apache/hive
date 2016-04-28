@@ -2345,6 +2345,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         deletedLocks += stmt.executeUpdate(query);
       }
       if(deletedLocks > 0) {
+        Collections.sort(extLockIDs);////easier to read logs
         LOG.info("Deleted " + deletedLocks + " ext locks from HIVE_LOCKS due to timeout (vs. " +
             extLockIDs.size() + " found. List: " + extLockIDs + ") maxHeartbeatTime=" + maxHeartbeatTime);
       }
@@ -2444,6 +2445,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             dbConn.commit();
             numTxnsAborted += batchToAbort.size();
             //todo: add TXNS.COMMENT filed and set it to 'aborted by system due to timeout'
+            Collections.sort(batchToAbort);//easier to read logs
             LOG.info("Aborted the following transactions due to timeout: " + batchToAbort.toString());
           }
           else {

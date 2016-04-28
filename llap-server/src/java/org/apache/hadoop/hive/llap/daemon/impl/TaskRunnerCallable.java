@@ -414,10 +414,15 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
         // Only the KILLED case requires a message to be sent out to the AM.
         case SUCCESS:
           LOG.debug("Successfully finished {}", requestId);
-          metrics.incrExecutorTotalSuccess();
+          if (metrics != null) {
+            metrics.incrExecutorTotalSuccess();
+          }
           break;
         case CONTAINER_STOP_REQUESTED:
           LOG.info("Received container stop request (AM preemption) for {}", requestId);
+          if (metrics != null) {
+            metrics.incrExecutorTotalKilled();
+          }
           break;
         case KILL_REQUESTED:
           LOG.info("Killed task {}", requestId);
@@ -425,17 +430,26 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
             killtimerWatch.stop();
             long elapsed = killtimerWatch.elapsedMillis();
             LOG.info("Time to die for task {}", elapsed);
+            if (metrics != null) {
+              metrics.addMetricsPreemptionTimeToKill(elapsed);
+            }
           }
-          metrics.incrPreemptionTimeLost(runtimeWatch.elapsedMillis());
-          metrics.incrExecutorTotalKilled();
+          if (metrics != null) {
+            metrics.addMetricsPreemptionTimeLost(runtimeWatch.elapsedMillis());
+            metrics.incrExecutorTotalKilled();
+          }
           break;
         case COMMUNICATION_FAILURE:
           LOG.info("Failed to run {} due to communication failure", requestId);
-          metrics.incrExecutorTotalExecutionFailed();
+          if (metrics != null) {
+            metrics.incrExecutorTotalExecutionFailed();
+          }
           break;
         case TASK_ERROR:
           LOG.info("Failed to run {} due to task error", requestId);
-          metrics.incrExecutorTotalExecutionFailed();
+          if (metrics != null) {
+            metrics.incrExecutorTotalExecutionFailed();
+          }
           break;
       }
       fragmentCompletionHanler.fragmentComplete(fragmentInfo);
@@ -449,7 +463,6 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
               request.getFragmentSpec().getFragmentNumber(),
               request.getFragmentSpec().getAttemptNumber(), taskRunnerCallable.threadName,
               taskRunnerCallable.startTime, true);
-      metrics.decrExecutorNumQueuedRequests();
     }
 
     @Override
@@ -467,9 +480,6 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
               request.getFragmentSpec().getFragmentNumber(),
               request.getFragmentSpec().getAttemptNumber(), taskRunnerCallable.threadName,
               taskRunnerCallable.startTime, false);
-      if (metrics != null) {
-        metrics.decrExecutorNumQueuedRequests();
-      }
     }
   }
 

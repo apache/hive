@@ -26,21 +26,32 @@ import com.google.common.base.Objects;
  */
 public enum LlapDaemonExecutorInfo implements MetricsInfo {
   ExecutorMetrics("Llap daemon cache related metrics"),
-  ExecutorThreadCountPerInstance("Total number of executor threads per node"),
+  ExecutorMaxFreeSlots("Sum of wait queue size and number of executors"),
+  ExecutorNumExecutorsPerInstance("Total number of executor threads per node"),
+  ExecutorNumExecutorsAvailable("Total number of executor threads per node that are free"),
+  ExecutorAvailableFreeSlots("Number of free slots available"),
+  ExecutorAvailableFreeSlotsPercent("Percent of free slots available"),
+  ExecutorThreadCPUTime("Cpu time in nanoseconds"),
   ExecutorMemoryPerInstance("Total memory for executors per node in bytes"),
   ExecutorCacheMemoryPerInstance("Total Cache memory per node in bytes"),
   ExecutorJvmMaxMemory("Max memory available for JVM in bytes"),
   ExecutorWaitQueueSize("Size of wait queue per node"),
-  ExecutorRpcNumHandlers("Number of RPC handlers per node"),
-  ExecutorThreadCPUTime("Cpu time in nanoseconds"),
   ExecutorThreadUserTime("User time in nanoseconds"),
   ExecutorTotalRequestsHandled("Total number of requests handled by the container"),
   ExecutorNumQueuedRequests("Number of requests queued by the container for processing"),
+  ExecutorNumPreemptableRequests("Number of queued requests that are pre-emptable"),
+  ExecutorTotalRejectedRequests("Total number of requests rejected as wait queue being full"),
   ExecutorTotalSuccess("Total number of requests handled by the container that succeeded"),
-  ExecutorTotalExecutionFailure("Total number of requests handled by the container that failed execution"),
-  ExecutorTotalInterrupted("Total number of requests handled by the container that got interrupted"),
+  ExecutorTotalFailed("Total number of requests handled by the container that failed execution"),
+  ExecutorTotalKilled("Total number of requests handled by the container that got interrupted"),
   ExecutorTotalAskedToDie("Total number of requests handled by the container that were asked to die"),
-  PreemptionTimeLost("Total time lost due to task preemptions");
+  ExecutorTotalPreemptionTimeToKill("Total amount of time taken for killing tasks due to pre-emption"),
+  ExecutorTotalPreemptionTimeLost("Total useful cluster time lost because of pre-emption"),
+  ExecutorPercentileTimeToKill("Percentile time to kill for pre-empted tasks"),
+  ExecutorPercentileTimeLost("Percentile cluster time wasted due to pre-emption"),
+  ExecutorMaxPreemptionTimeToKill("Max time for killing pre-empted task"),
+  ExecutorMaxPreemptionTimeLost("Max cluster time lost due to pre-emption"),
+  ExecutorTotalEvictedFromWaitQueue("Total number of tasks evicted from wait queue because of low priority");
 
   private final String desc;
 

@@ -60,6 +60,8 @@ public class TestHiveAuthorizerCheckInvocation {
   protected static Driver driver;
   private static final String tableName = TestHiveAuthorizerCheckInvocation.class.getSimpleName()
       + "Table";
+  private static final String viewName = TestHiveAuthorizerCheckInvocation.class.getSimpleName()
+      + "View";
   private static final String inDbTableName = tableName + "_in_db";
   private static final String acidTableName = tableName + "_acid";
   private static final String dbName = TestHiveAuthorizerCheckInvocation.class.getSimpleName()
@@ -97,6 +99,7 @@ public class TestHiveAuthorizerCheckInvocation {
     driver = new Driver(conf);
     runCmd("create table " + tableName
         + " (i int, j int, k string) partitioned by (city string, `date` string) ");
+    runCmd("create view " + viewName + " as select * from " + tableName);
     runCmd("create database " + dbName);
     runCmd("create table " + dbName + "." + inDbTableName + "(i int)");
     // Need a separate table for ACID testing since it has to be bucketed and it has to be Acid
@@ -114,6 +117,7 @@ public class TestHiveAuthorizerCheckInvocation {
     // Drop the tables when we're done.  This makes the test work inside an IDE
     runCmd("drop table if exists " + acidTableName);
     runCmd("drop table if exists " + tableName);
+    runCmd("drop table if exists " + viewName);
     runCmd("drop table if exists " + dbName + "." + inDbTableName);
     runCmd("drop database if exists " + dbName );
     driver.close();
@@ -134,6 +138,46 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals("no of columns used", 3, tableObj.getColumns().size());
     assertEquals("Columns used", Arrays.asList("city", "i", "k"),
         getSortedList(tableObj.getColumns()));
+  }
+
+  @Test
+  public void testInputSomeColumnsUsedView() throws HiveAuthzPluginException, HiveAccessControlException,
+  CommandNeedRetryException {
+
+    reset(mockedAuthorizer);
+    int status = driver.compile("select i from " + viewName
+        + " where k = 'X' and city = 'Scottsdale-AZ' ");
+    assertEquals(0, status);
+
+    List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+    checkSingleViewInput(inputs);
+    HivePrivilegeObject tableObj = inputs.get(0);
+    assertEquals("no of columns used", 3, tableObj.getColumns().size());
+    assertEquals("Columns used", Arrays.asList("city", "i", "k"),
+        getSortedList(tableObj.getColumns()));
+  }
+
+  @Test
+  public void testInputSomeColumnsUsedJoin() throws HiveAuthzPluginException, HiveAccessControlException,
+  CommandNeedRetryException {
+    
+    reset(mockedAuthorizer);
+    int status = driver.compile("select " + viewName + ".i, " + tableName + ".city from "
+        + viewName + " join " + tableName + " on " + viewName + ".city = " + tableName
+        + ".city where " + tableName + ".k = 'X'");
+    assertEquals(0, status);
+    
+    List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+    Collections.sort(inputs);
+    assertEquals(inputs.size(), 2);
+    HivePrivilegeObject tableObj = inputs.get(0);
+    assertEquals(tableObj.getObjectName().toLowerCase(), tableName.toLowerCase());
+    assertEquals("no of columns used", 2, tableObj.getColumns().size());
+    assertEquals("Columns used", Arrays.asList("city", "k"), getSortedList(tableObj.getColumns()));
+    tableObj = inputs.get(1);
+    assertEquals(tableObj.getObjectName().toLowerCase(), viewName.toLowerCase());
+    assertEquals("no of columns used", 2, tableObj.getColumns().size());
+    assertEquals("Columns used", Arrays.asList("city", "i"), getSortedList(tableObj.getColumns()));
   }
 
   private List<String> getSortedList(List<String> columns) {
@@ -353,6 +397,14 @@ public class TestHiveAuthorizerCheckInvocation {
     HivePrivilegeObject tableObj = inputs.get(0);
     assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, tableObj.getType());
     assertTrue("table name", tableName.equalsIgnoreCase(tableObj.getObjectName()));
+  }
+
+  private void checkSingleViewInput(List<HivePrivilegeObject> inputs) {
+    assertEquals("number of inputs", 1, inputs.size());
+
+    HivePrivilegeObject tableObj = inputs.get(0);
+    assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, tableObj.getType());
+    assertTrue("table name", viewName.equalsIgnoreCase(tableObj.getObjectName()));
   }
 
   /**

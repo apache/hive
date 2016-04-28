@@ -51,28 +51,24 @@ Plan not optimized by CBO.
 Stage-0
   Fetch Operator
     limit:-1
-    Stage-1
-      Map 1
-      File Output Operator [FS_7]
-        Select Operator [SEL_6] (rows=4000 width=10)
-          Output:["_col0","_col1"]
-          Lateral View Join Operator [LVJ_5] (rows=4000 width=10)
-            Output:["_col0","_col1","_col7"]
-            Select Operator [SEL_2] (rows=2000 width=10)
+    Select Operator [SEL_6]
+      Output:["_col0","_col1"]
+      Lateral View Join Operator [LVJ_5]
+        Output:["_col0","_col1","_col7"]
+        Select Operator [SEL_2]
+          Output:["key","value"]
+          Lateral View Forward [LVF_1]
+            TableScan [TS_0]
               Output:["key","value"]
-              Lateral View Forward [LVF_1] (rows=2000 width=10)
-                TableScan [TS_0] (rows=2000 width=10)
-                  default@srcpart,srcpart,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
-      File Output Operator [FS_7]
-        Select Operator [SEL_6] (rows=4000 width=10)
-          Output:["_col0","_col1"]
-          Lateral View Join Operator [LVJ_5] (rows=4000 width=10)
-            Output:["_col0","_col1","_col7"]
-            UDTF Operator [UDTF_4] (rows=2000 width=10)
-              function name:explode
-              Select Operator [SEL_3] (rows=2000 width=10)
-                Output:["_col0"]
-                 Please refer to the previous Lateral View Forward [LVF_1]
+    Select Operator [SEL_6]
+      Output:["_col0","_col1"]
+      Lateral View Join Operator [LVJ_5]
+        Output:["_col0","_col1","_col7"]
+        UDTF Operator [UDTF_4]
+          function name:explode
+          Select Operator [SEL_3]
+            Output:["_col0"]
+             Please refer to the previous Lateral View Forward [LVF_1]
 
 PREHOOK: query: explain show tables
 PREHOOK: type: SHOWTABLES

@@ -126,9 +126,11 @@ public class TestColumnAccess {
     QueryPlan plan = driver.getPlan();
     // check access columns from ColumnAccessInfo
     ColumnAccessInfo columnAccessInfo = plan.getColumnAccessInfo();
-    List<String> cols = columnAccessInfo.getTableToColumnAccessMap().get("default@v1");
+    // t1 is inside v1, we should not care about its access info.
+    List<String> cols = columnAccessInfo.getTableToColumnAccessMap().get("default@t1");
     Assert.assertNull(cols);
-    cols = columnAccessInfo.getTableToColumnAccessMap().get("default@t1");
+    // v1 is top level view, we should care about its access info.
+    cols = columnAccessInfo.getTableToColumnAccessMap().get("default@v1");
     Assert.assertNotNull(cols);
     Assert.assertEquals(2, cols.size());
     Assert.assertNotNull(cols.contains("id1"));
@@ -143,9 +145,9 @@ public class TestColumnAccess {
 
     // check access columns from readEntity
     Map<String, List<String>> tableColsMap = getColsFromReadEntity(plan.getInputs());
-    cols = tableColsMap.get("default@v1");
-    Assert.assertNull(cols);
     cols = tableColsMap.get("default@t1");
+    Assert.assertNull(cols);
+    cols = tableColsMap.get("default@v1");
     Assert.assertNotNull(cols);
     Assert.assertEquals(2, cols.size());
     Assert.assertNotNull(cols.contains("id1"));

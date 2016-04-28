@@ -55,4 +55,6 @@ public class MetricsConstant {
   public static final String DELETE_TOTAL_DATABASES = "delete_total_count_dbs";
   public static final String DELETE_TOTAL_TABLES = "delete_total_count_tables";
   public static final String DELETE_TOTAL_PARTITIONS = "delete_total_count_partitions";
+
+  public static final String DIRECTSQL_ERRORS = "directsql_errors";
 }

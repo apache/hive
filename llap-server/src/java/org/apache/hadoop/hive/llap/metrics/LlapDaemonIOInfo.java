@@ -26,10 +26,6 @@ import com.google.common.base.Objects;
  */
 public enum LlapDaemonIOInfo implements MetricsInfo {
   IOMetrics("Llap daemon I/O elevator metrics"),
-  IoThreadPoolSize("Size of the thread pool used by IO elevator"),
-  EncodedColumnBatchPoolSize("Size of the object pool that stores encoded column batches"),
-  ColumnStreamDataPoolSize("Size of the object pool that stores column stream data"),
-  ColumnVectorBatchPoolSize("Size of the object pool that stores column vector batches"),
   PercentileDecodingTime("Percentile decoding time for encoded column batch"),
   MaxDecodingTime("Max time for decoding an encoded column batch");
 
