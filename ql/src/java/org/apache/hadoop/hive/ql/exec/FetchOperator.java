@@ -410,6 +410,10 @@ public class FetchOperator implements Serializable {
    * Currently only used by FetchTask.
    **/
   public boolean pushRow() throws IOException, HiveException {
+    if (operator == null) {
+      return false;
+    }
+
     if (work.getRowsComputedUsingStats() != null) {
       for (List<Object> row : work.getRowsComputedUsingStats()) {
         operator.process(row, 0);
@@ -524,10 +528,7 @@ public class FetchOperator implements Serializable {
         currRecReader.close();
         currRecReader = null;
       }
-      if (operator != null) {
-        operator.close(false);
-        operator = null;
-      }
+      closeOperator();
       if (context != null) {
         context.clear();
         context = null;
@@ -539,6 +540,13 @@ public class FetchOperator implements Serializable {
     } catch (Exception e) {
       throw new HiveException("Failed with exception " + e.getMessage()
           + StringUtils.stringifyException(e));
+    }
+  }
+
+  public void closeOperator() throws HiveException {
+    if (operator != null) {
+      operator.close(false);
+      operator = null;
     }
   }
 

@@ -5371,15 +5371,11 @@ Plan not optimized by CBO due to missing feature [Others].
 Stage-0
   Fetch Operator
     limit:-1
-    Stage-1
-      Map 1
-      File Output Operator [FS_3]
-        UDTF Operator [UDTF_2] (rows=1 width=0)
-          function name:explode
-          Select Operator [SEL_1] (rows=1 width=0)
-            Output:["_col0"]
-            TableScan [TS_0] (rows=1 width=1)
-              _dummy_database@_dummy_table,_dummy_table,Tbl:COMPLETE,Col:COMPLETE
+    UDTF Operator [UDTF_2]
+      function name:explode
+      Select Operator [SEL_1]
+        Output:["_col0"]
+        TableScan [TS_0]
 
 PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE

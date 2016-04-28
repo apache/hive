@@ -145,6 +145,10 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
           if (work.getLeastNumRows() > 0) {
             throw new CommandNeedRetryException();
           }
+
+          // Closing the operator can sometimes yield more rows (HIVE-11892)
+          fetch.closeOperator();
+
           return fetched;
         }
         fetched = true;
