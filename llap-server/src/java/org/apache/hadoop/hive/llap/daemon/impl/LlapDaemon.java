@@ -20,7 +20,9 @@ import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -68,6 +70,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.primitives.Ints;
 
 public class LlapDaemon extends CompositeService implements ContainerRunner, LlapDaemonMXBean {
 
@@ -193,12 +196,25 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     String displayName = "LlapDaemonExecutorMetrics-" + MetricsUtils.getHostName();
     String sessionId = MetricsUtils.getUUID();
     daemonConf.set("llap.daemon.metrics.sessionid", sessionId);
-    this.metrics = LlapDaemonExecutorMetrics.create(displayName, sessionId, numExecutors);
+    String[] strIntervals = HiveConf.getTrimmedStringsVar(daemonConf,
+        HiveConf.ConfVars.LLAP_DAEMON_TASK_PREEMPTION_METRICS_INTERVALS);
+    List<Integer> intervalList = new ArrayList<>();
+    if (strIntervals != null) {
+      for (String strInterval : strIntervals) {
+        try {
+          intervalList.add(Integer.valueOf(strInterval));
+        } catch (NumberFormatException e) {
+          LOG.warn("Ignoring task pre-emption metrics interval {} from {} as it is invalid",
+              strInterval, Arrays.toString(strIntervals));
+        }
+      }
+    }
+    this.metrics = LlapDaemonExecutorMetrics.create(displayName, sessionId, numExecutors,
+        Ints.toArray(intervalList));
     this.metrics.setMemoryPerInstance(executorMemoryBytes);
     this.metrics.setCacheMemoryPerInstance(ioMemoryBytes);
     this.metrics.setJvmMaxMemory(maxJvmMemory);
     this.metrics.setWaitQueueSize(waitQueueSize);
-    this.metrics.setRpcNumHandlers(numHandlers);
     metrics.getJvmMetrics().setPauseMonitor(pauseMonitor);
     this.llapDaemonInfoBean = MBeans.register("LlapDaemon", "LlapDaemonInfo", this);
     LOG.info("Started LlapMetricsSystem with displayName: " + displayName +

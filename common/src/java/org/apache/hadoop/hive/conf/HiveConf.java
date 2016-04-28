@@ -330,6 +330,7 @@ public class HiveConf extends Configuration {
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_WAIT_QUEUE_COMPARATOR_CLASS_NAME.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_TASK_PREEMPTION_METRICS_INTERVALS.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_WEB_PORT.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_WEB_SSL.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
@@ -2762,6 +2763,13 @@ public class HiveConf extends Configuration {
         "Amount of time to wait before allocating a request which contains location information," +
             " to a location other than the ones requested. Set to -1 for an infinite delay, 0" +
             "for a no delay. Currently these are the only two supported values"
+    ),
+    LLAP_DAEMON_TASK_PREEMPTION_METRICS_INTERVALS(
+        "hive.llap.daemon.task.preemption.metrics.intervals", "30,60,300",
+        "Comma-delimited set of integers denoting the desired rollover intervals (in seconds)\n" +
+        " for percentile latency metrics. Used by LLAP daemon task scheduler metrics for\n" +
+        " time taken to kill task (due to pre-emption) and useful time wasted by the task that\n" +
+        " is about to be preempted."
     ),
     LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE("hive.llap.daemon.task.scheduler.wait.queue.size",
       10, "LLAP scheduler maximum queue size.", "llap.daemon.task.scheduler.wait.queue.size"),

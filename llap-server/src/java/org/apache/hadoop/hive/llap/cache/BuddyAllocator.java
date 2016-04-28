@@ -40,7 +40,7 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
   private final long maxSize;
   private final boolean isDirect;
   private final LlapDaemonCacheMetrics metrics;
-  
+
   // We don't know the acceptable size for Java array, so we'll use 1Gb boundary.
   // That is guaranteed to fit any maximum allocation.
   private static final int MAX_ARENA_SIZE = 1024*1024*1024;
@@ -113,9 +113,6 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
 
     this.metrics = metrics;
     metrics.incrAllocatedArena();
-    metrics.setArenaSize(arenaSize);
-    metrics.setMinAllocationSize(minAllocation);
-    metrics.setMaxAllocationSize(maxAllocation);
   }
 
   // TODO: would it make sense to return buffers asynchronously?

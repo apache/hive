@@ -139,7 +139,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE);
     executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numThreads,
         new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true).build()));
-    ioMetrics.setIoThreadPoolSize(numThreads);
     // TODO: this should depends on input format and be in a map, or something.
     this.cvp = new OrcColumnVectorProducer(
         metadataCache, orcCache, bufferManager, conf, cacheMetrics, ioMetrics);

@@ -56,10 +56,14 @@ import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
+import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
+import org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerMetrics;
+import org.apache.hadoop.util.JvmPauseMonitor;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.NodeId;
@@ -173,12 +177,16 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   @VisibleForTesting
   StatsPerDag dagStats = new StatsPerDag();
 
+  private final LlapTaskSchedulerMetrics metrics;
+  private final JvmPauseMonitor pauseMonitor;
+
   public LlapTaskSchedulerService(TaskSchedulerContext taskSchedulerContext) {
-    this(taskSchedulerContext, new SystemClock());
+    this(taskSchedulerContext, new SystemClock(), true);
   }
 
   @VisibleForTesting
-  public LlapTaskSchedulerService(TaskSchedulerContext taskSchedulerContext, Clock clock) {
+  public LlapTaskSchedulerService(TaskSchedulerContext taskSchedulerContext, Clock clock,
+      boolean initMetrics) {
     super(taskSchedulerContext);
     this.clock = clock;
     try {
@@ -236,6 +244,24 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("LlapScheduler").build());
     schedulerExecutor = MoreExecutors.listeningDecorator(schedulerExecutorServiceRaw);
 
+    if (initMetrics) {
+      // Initialize the metrics system
+      LlapMetricsSystem.initialize("LlapDaemon");
+      this.pauseMonitor = new JvmPauseMonitor(conf);
+      pauseMonitor.start();
+      String displayName = "LlapTaskSchedulerMetrics-" + MetricsUtils.getHostName();
+      String sessionId = conf.get("llap.daemon.metrics.sessionid");
+      // TODO: Not sure about the use of this. Should we instead use workerIdentity as sessionId?
+      this.metrics = LlapTaskSchedulerMetrics.create(displayName, sessionId);
+      this.metrics.setNumExecutors(executorsPerInstance);
+      this.metrics.setMemoryPerInstance(memoryPerInstance * 1024L * 1024L);
+      this.metrics.setCpuCoresPerInstance(coresPerExecutor);
+      this.metrics.getJvmMetrics().setPauseMonitor(pauseMonitor);
+    } else {
+      this.metrics = null;
+      this.pauseMonitor = null;
+    }
+
     LOG.info("Running with configuration: " + "memoryPerInstance=" + memoryPerInstance
         + ", vCoresPerInstance=" + coresPerInstance + ", executorsPerInstance="
         + executorsPerInstance + ", resourcePerInstanceInferred=" + resourcePerExecutor
@@ -280,7 +306,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       registry.registerStateChangeListener(new NodeStateChangeListener());
       activeInstances = registry.getInstances();
       for (ServiceInstance inst : activeInstances.getAll().values()) {
-        addNode(inst, new NodeInfo(inst, nodeBlacklistConf, clock, numSchedulableTasksPerNode));
+        addNode(inst, new NodeInfo(inst, nodeBlacklistConf, clock, numSchedulableTasksPerNode,
+            metrics));
       }
     } finally {
       writeLock.unlock();
@@ -293,14 +320,14 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     @Override
     public void onCreate(final ServiceInstance serviceInstance) {
       addNode(serviceInstance, new NodeInfo(serviceInstance, nodeBlacklistConf, clock,
-          numSchedulableTasksPerNode));
+          numSchedulableTasksPerNode, metrics));
       LOG.info("Added node with identity: {}", serviceInstance.getWorkerIdentity());
     }
 
     @Override
     public void onUpdate(final ServiceInstance serviceInstance) {
       instanceToNodeMap.put(serviceInstance.getWorkerIdentity(), new NodeInfo(serviceInstance,
-          nodeBlacklistConf, clock, numSchedulableTasksPerNode));
+          nodeBlacklistConf, clock, numSchedulableTasksPerNode, metrics));
       LOG.info("Updated node with identity: {}", serviceInstance.getWorkerIdentity());
     }
 
@@ -309,6 +336,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       // FIXME: disabling this for now
       // instanceToNodeMap.remove(serviceInstance.getWorkerIdentity());
       LOG.info("Removed node with identity: {}", serviceInstance.getWorkerIdentity());
+      if (metrics != null) {
+        metrics.setClusterNodeCount(activeInstances.size());
+      }
       // if there are no more nodes. Signal timeout monitor to start timer
       if (activeInstances.size() == 0) {
         LOG.info("No node found. Signalling scheduler timeout monitor thread to start timer.");
@@ -378,6 +408,15 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         if (registry != null) {
           registry.stop();
         }
+
+        if (pauseMonitor != null) {
+          pauseMonitor.stop();
+        }
+
+        if (metrics != null) {
+          LlapMetricsSystem.shutdown();
+        }
+
       }
     } finally {
       writeLock.unlock();
@@ -454,6 +493,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     // This is effectively DAG completed, and can be used to reset statistics being tracked.
     LOG.info("DAG: " + dagCounter.get() + " completed. Scheduling stats: " + dagStats);
     dagCounter.incrementAndGet();
+    if (metrics != null) {
+      metrics.incrCompletedDagCount();
+    }
     dagStats = new StatsPerDag();
   }
 
@@ -544,9 +586,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           // Also reset commFailures since a task was able to communicate back and indicate success.
           nodeInfo.enableNode();
           // Re-insert into the queue to force the poll thread to remove the element.
-          if ( disabledNodesQueue.remove(nodeInfo)) {
-            disabledNodesQueue.add(nodeInfo);
-          }
+          reinsertNodeInfo(nodeInfo);
         }
         // In case of success, trigger a scheduling run for pending tasks.
         trySchedulingPendingTasks();
@@ -562,9 +602,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
             // Also reset commFailures since a task was able to communicate back and indicate success.
             nodeInfo.enableNode();
             // Re-insert into the queue to force the poll thread to remove the element.
-            if (disabledNodesQueue.remove(nodeInfo)) {
-              disabledNodesQueue.add(nodeInfo);
-            }
+            reinsertNodeInfo(nodeInfo);
           }
           // In case of success, trigger a scheduling run for pending tasks.
           trySchedulingPendingTasks();
@@ -597,6 +635,15 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
     getContext().containerBeingReleased(taskInfo.containerId);
     return true;
+  }
+
+  private void reinsertNodeInfo(final NodeInfo nodeInfo) {
+    if ( disabledNodesQueue.remove(nodeInfo)) {
+      disabledNodesQueue.add(nodeInfo);
+    }
+    if (metrics != null) {
+      metrics.setDisabledNodeCount(disabledNodesQueue.size());
+    }
   }
 
   @Override
@@ -704,7 +751,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         if (inst.isAlive() && instanceToNodeMap.containsKey(inst.getWorkerIdentity()) == false) {
           /* that's a good node, not added to the allocations yet */
           LOG.info("Found a new node: " + inst + ".");
-          addNode(inst, new NodeInfo(inst, nodeBlacklistConf, clock, numSchedulableTasksPerNode));
+          addNode(inst, new NodeInfo(inst, nodeBlacklistConf, clock, numSchedulableTasksPerNode,
+              metrics));
         }
       }
     } finally {
@@ -720,6 +768,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       stopTimeoutMonitor();
     }
     instanceToNodeMap.put(inst.getWorkerIdentity(), node);
+    if (metrics != null) {
+      metrics.setClusterNodeCount(activeInstances.size());
+    }
     // Trigger scheduling since a new node became available.
     trySchedulingPendingTasks();
   }
@@ -752,6 +803,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         nodeInfo.disableNode(isCommFailure);
         // TODO: handle task to container map events in case of hard failures
         disabledNodesQueue.add(nodeInfo);
+        if (metrics != null) {
+          metrics.setDisabledNodeCount(disabledNodesQueue.size());
+        }
       }
     } finally {
       writeLock.unlock();
@@ -768,6 +822,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }
       tasksAtPriority.add(taskInfo);
       knownTasks.putIfAbsent(taskInfo.task, taskInfo);
+      if (metrics != null) {
+        metrics.incrPendingTasksCount();
+      }
     } finally {
       writeLock.unlock();
     }
@@ -799,6 +856,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         runningTasks.put(priority, tasksAtpriority);
       }
       tasksAtpriority.add(taskInfo);
+      if (metrics != null) {
+        metrics.decrPendingTasksCount();
+      }
     } finally {
       writeLock.unlock();
     }
@@ -1034,6 +1094,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     writeLock.lock();
     try {
       pendingPreemptions.incrementAndGet();
+      if (metrics != null) {
+        metrics.incrPendingPreemptionTasksCount();
+      }
       MutableInt val = pendingPreemptionsPerHost.get(host);
       if (val == null) {
         val = new MutableInt(1);
@@ -1049,6 +1112,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     writeLock.lock();
     try {
       pendingPreemptions.decrementAndGet();
+      if (metrics != null) {
+        metrics.decrPendingPreemptionTasksCount();
+      }
       MutableInt val = pendingPreemptionsPerHost.get(host);
       Preconditions.checkNotNull(val);
       val.decrement();
@@ -1199,23 +1265,24 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     private int numPreemptedTasks = 0;
     private int numScheduledTasks = 0;
     private final int numSchedulableTasks;
-
+    private final LlapTaskSchedulerMetrics metrics;
 
     /**
      * Create a NodeInfo bound to a service instance
-     *
-     * @param serviceInstance         the associated serviceInstance
+     *  @param serviceInstance         the associated serviceInstance
      * @param blacklistConf           blacklist configuration
      * @param clock                   clock to use to obtain timing information
      * @param numSchedulableTasksConf number of schedulable tasks on the node. 0 represents auto
-     *                                detect based on the serviceInstance, -1 indicates indicates
-     *                                unlimited capacity
+*                                detect based on the serviceInstance, -1 indicates indicates
+     * @param metrics
      */
-    NodeInfo(ServiceInstance serviceInstance, NodeBlacklistConf blacklistConf, Clock clock, int numSchedulableTasksConf) {
+    NodeInfo(ServiceInstance serviceInstance, NodeBlacklistConf blacklistConf, Clock clock,
+        int numSchedulableTasksConf, final LlapTaskSchedulerMetrics metrics) {
       Preconditions.checkArgument(numSchedulableTasksConf >= -1, "NumSchedulableTasks must be >=-1");
       this.serviceInstance = serviceInstance;
       this.blacklistConf = blacklistConf;
       this.clock = clock;
+      this.metrics = metrics;
 
       if (numSchedulableTasksConf == 0) {
         int pendingQueueuCapacity = 0;
@@ -1233,6 +1300,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         this.numSchedulableTasks = serviceInstance.getResource().getVirtualCores() + pendingQueueuCapacity;
       } else {
         this.numSchedulableTasks = numSchedulableTasksConf;
+      }
+      if (metrics != null) {
+        metrics.incrSchedulableTasksCount(numSchedulableTasks);
       }
       LOG.info("Setting up node: " + serviceInstance + " with schedulableCapacity=" + this.numSchedulableTasks);
     }
@@ -1275,17 +1345,33 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
     void registerTaskScheduled() {
       numScheduledTasks++;
+      if (metrics != null) {
+        metrics.incrRunningTasksCount();
+        metrics.decrSchedulableTasksCount();
+      }
     }
 
     void registerTaskSuccess() {
       numSuccessfulTasks++;
       numScheduledTasks--;
+      if (metrics != null) {
+        metrics.incrSuccessfulTasksCount();
+        metrics.decrRunningTasksCount();
+        metrics.incrSchedulableTasksCount();
+      }
     }
 
     void registerUnsuccessfulTaskEnd(boolean wasPreempted) {
       numScheduledTasks--;
+      if (metrics != null) {
+        metrics.decrRunningTasksCount();
+        metrics.incrSchedulableTasksCount();
+      }
       if (wasPreempted) {
         numPreemptedTasks++;
+        if (metrics != null) {
+          metrics.incrPreemptedTasksCount();
+        }
       }
     }
 
