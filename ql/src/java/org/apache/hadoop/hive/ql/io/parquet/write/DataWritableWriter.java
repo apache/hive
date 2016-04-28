@@ -259,21 +259,24 @@ public class DataWritableWriter {
     @Override
     public void write(Object value) {
       recordConsumer.startGroup();
-      recordConsumer.startField(repeatedGroupName, 0);
-
       int listLength = inspector.getListLength(value);
-      for (int i = 0; i < listLength; i++) {
-        Object element = inspector.getListElement(value, i);
-        recordConsumer.startGroup();
-        if (element != null) {
-          recordConsumer.startField(elementName, 0);
-          elementWriter.write(element);
-          recordConsumer.endField(elementName, 0);
-        }
-        recordConsumer.endGroup();
-      }
 
-      recordConsumer.endField(repeatedGroupName, 0);
+      if (listLength > 0) {
+        recordConsumer.startField(repeatedGroupName, 0);
+
+        for (int i = 0; i < listLength; i++) {
+          Object element = inspector.getListElement(value, i);
+          recordConsumer.startGroup();
+          if (element != null) {
+            recordConsumer.startField(elementName, 0);
+            elementWriter.write(element);
+            recordConsumer.endField(elementName, 0);
+          }
+          recordConsumer.endGroup();
+        }
+
+        recordConsumer.endField(repeatedGroupName, 0);
+      }
       recordConsumer.endGroup();
     }
   }
@@ -307,30 +310,32 @@ public class DataWritableWriter {
     @Override
     public void write(Object value) {
       recordConsumer.startGroup();
-      recordConsumer.startField(repeatedGroupName, 0);
 
       Map<?, ?> mapValues = inspector.getMap(value);
-      for (Map.Entry<?, ?> keyValue : mapValues.entrySet()) {
-        recordConsumer.startGroup();
-        if (keyValue != null) {
-          // write key element
-          Object keyElement = keyValue.getKey();
-          recordConsumer.startField(keyName, 0);
-          keyWriter.write(keyElement);
-          recordConsumer.endField(keyName, 0);
+      if (mapValues != null && mapValues.size() > 0) {
+        recordConsumer.startField(repeatedGroupName, 0);
+        for (Map.Entry<?, ?> keyValue : mapValues.entrySet()) {
+          recordConsumer.startGroup();
+          if (keyValue != null) {
+            // write key element
+            Object keyElement = keyValue.getKey();
+            recordConsumer.startField(keyName, 0);
+            keyWriter.write(keyElement);
+            recordConsumer.endField(keyName, 0);
 
-          // write value element
-          Object valueElement = keyValue.getValue();
-          if (valueElement != null) {
-            recordConsumer.startField(valueName, 1);
-            valueWriter.write(valueElement);
-            recordConsumer.endField(valueName, 1);
+            // write value element
+            Object valueElement = keyValue.getValue();
+            if (valueElement != null) {
+              recordConsumer.startField(valueName, 1);
+              valueWriter.write(valueElement);
+              recordConsumer.endField(valueName, 1);
+            }
           }
+          recordConsumer.endGroup();
         }
-        recordConsumer.endGroup();
-      }
 
-      recordConsumer.endField(repeatedGroupName, 0);
+        recordConsumer.endField(repeatedGroupName, 0);
+      }
       recordConsumer.endGroup();
     }
   }
