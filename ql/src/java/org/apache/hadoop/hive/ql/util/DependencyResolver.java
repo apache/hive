@@ -173,7 +173,6 @@ public class DependencyResolver {
 
     args.put("classLoader", new GroovyClassLoader());
     System.setProperty("grape.config", ivysettingsPath);
-    System.setProperty("groovy.grape.report.downloads", "true");
     localUrls = Grape.resolve(args, dependencies);
     if (localUrls == null) {
       throw new IOException("Not able to download all the dependencies..");
