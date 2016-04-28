@@ -85,10 +85,8 @@ cd /some/working/dir/
   then
     rm -rf /some/working/dir/maven/org/apache/hive
         mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven -X -Phadoop-2
-    mvn -B test -Dmaven.repo.local=/some/working/dir/maven -Dtest=TestDummy -X -Phadoop-1
     cd itests
     mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven -X -Phadoop-2
-    mvn -B test -Dmaven.repo.local=/some/working/dir/maven -Dtest=TestDummy -X -Phadoop-1
   elif [[ "${buildTool}" == "ant" ]]
   then
     ant -Dant=arg1 -Divy.default.ivy.user.dir=/some/working/dir/ivy \
