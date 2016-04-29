@@ -138,6 +138,7 @@ public abstract class VectorAssignRow {
       } else {
         BooleanWritable bw = (BooleanWritable) object;
         vector[batchIndex] = (bw.get() ? 1 : 0);
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -155,6 +156,7 @@ public abstract class VectorAssignRow {
       } else {
         ByteWritable bw = (ByteWritable) object;
         vector[batchIndex] = bw.get();
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -172,6 +174,7 @@ public abstract class VectorAssignRow {
       } else {
         ShortWritable sw = (ShortWritable) object;
         vector[batchIndex] = sw.get();
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -189,6 +192,7 @@ public abstract class VectorAssignRow {
       } else {
         IntWritable iw = (IntWritable) object;
         vector[batchIndex] = iw.get();
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -206,6 +210,7 @@ public abstract class VectorAssignRow {
       } else {
         LongWritable lw = (LongWritable) object;
         vector[batchIndex] = lw.get();
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -223,6 +228,7 @@ public abstract class VectorAssignRow {
       } else {
         DateWritable bw = (DateWritable) object;
         vector[batchIndex] = bw.getDays();
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -373,6 +379,7 @@ public abstract class VectorAssignRow {
       } else {
         DoubleWritable dw = (DoubleWritable) object;
         vector[batchIndex] = dw.get();
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -409,6 +416,7 @@ public abstract class VectorAssignRow {
       } else {
         BytesWritable bw = (BytesWritable) object;
         colVector.setVal(batchIndex, bw.getBytes(), 0, bw.getLength());
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -426,6 +434,7 @@ public abstract class VectorAssignRow {
       } else {
         Text tw = (Text) object;
         colVector.setVal(batchIndex, tw.getBytes(), 0, tw.getLength());
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -450,6 +459,7 @@ public abstract class VectorAssignRow {
         }
         byte[] bytes = hiveVarchar.getValue().getBytes();
         colVector.setVal(batchIndex, bytes, 0, bytes.length);
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -476,6 +486,7 @@ public abstract class VectorAssignRow {
         // We store CHAR in vector row batch with padding stripped.
         byte[] bytes = hiveChar.getStrippedValue().getBytes();
         colVector.setVal(batchIndex, bytes, 0, bytes.length);
+        colVector.isNull[batchIndex] = false;
       }
     }
   }
@@ -508,6 +519,7 @@ public abstract class VectorAssignRow {
         } else {
           colVector.set(batchIndex, (HiveDecimalWritable) object);
         }
+        colVector.isNull[batchIndex] = false;
       }
     }
   }

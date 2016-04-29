@@ -57,12 +57,14 @@ public class VectorCopyRow {
       if (inColVector.isRepeating) {
         if (inColVector.noNulls || !inColVector.isNull[0]) {
           outColVector.vector[outBatchIndex] = inColVector.vector[0];
+          outColVector.isNull[outBatchIndex] = false;
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
         }
       } else {
         if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
           outColVector.vector[outBatchIndex] = inColVector.vector[inBatchIndex];
+          outColVector.isNull[outBatchIndex] = false;
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
         }
@@ -84,12 +86,14 @@ public class VectorCopyRow {
       if (inColVector.isRepeating) {
         if (inColVector.noNulls || !inColVector.isNull[0]) {
           outColVector.vector[outBatchIndex] = inColVector.vector[0];
+          outColVector.isNull[outBatchIndex] = false;
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
         }
       } else {
         if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
           outColVector.vector[outBatchIndex] = inColVector.vector[inBatchIndex];
+          outColVector.isNull[outBatchIndex] = false;
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
         }
@@ -119,12 +123,14 @@ public class VectorCopyRow {
       if (inColVector.isRepeating) {
         if (inColVector.noNulls || !inColVector.isNull[0]) {
           outColVector.setVal(outBatchIndex, inColVector.vector[0], inColVector.start[0], inColVector.length[0]);
+          outColVector.isNull[outBatchIndex] = false;
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
         }
       } else {
         if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
           outColVector.setVal(outBatchIndex, inColVector.vector[inBatchIndex], inColVector.start[inBatchIndex], inColVector.length[inBatchIndex]);
+          outColVector.isNull[outBatchIndex] = false;
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
         }
@@ -146,12 +152,14 @@ public class VectorCopyRow {
       if (inColVector.isRepeating) {
         if (inColVector.noNulls || !inColVector.isNull[0]) {
           outColVector.setRef(outBatchIndex, inColVector.vector[0], inColVector.start[0], inColVector.length[0]);
+          outColVector.isNull[outBatchIndex] = false;
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
         }
       } else {
         if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
           outColVector.setRef(outBatchIndex, inColVector.vector[inBatchIndex], inColVector.start[inBatchIndex], inColVector.length[inBatchIndex]);
+          outColVector.isNull[outBatchIndex] = false;
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
         }
@@ -172,12 +180,14 @@ public class VectorCopyRow {
 
       if (inColVector.isRepeating) {
         if (inColVector.noNulls || !inColVector.isNull[0]) {
+          outColVector.isNull[outBatchIndex] = false;
           outColVector.set(outBatchIndex, inColVector.vector[0]);
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
         }
       } else {
         if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
+          outColVector.isNull[outBatchIndex] = false;
           outColVector.set(outBatchIndex, inColVector.vector[inBatchIndex]);
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);

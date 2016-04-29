@@ -573,6 +573,10 @@ public class TestVectorSerDeRow extends TestCase {
     batchContext.init(source.rowStructObjectInspector(), emptyScratchTypeNames);
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
 
+    for (ColumnVector cv : batch.cols) {
+      Arrays.fill(cv.isNull, true);
+    }
+
     int fieldCount = source.typeNames().size();
     DeserializeRead deserializeRead;
     SerializeWrite serializeWrite;
@@ -601,6 +605,12 @@ public class TestVectorSerDeRow extends TestCase {
     }
     VectorDeserializeRow vectorDeserializeRow = new VectorDeserializeRow(deserializeRead);
     vectorDeserializeRow.init();
+
+    // junk the destination for the 1st pass
+    for (ColumnVector cv : batch.cols) {
+      Arrays.fill(cv.isNull, true);
+      cv.noNulls = false;
+    }
 
     VectorExtractRowSameBatch vectorExtractRow = new VectorExtractRowSameBatch();
     vectorExtractRow.init(source.typeNames());
