@@ -193,9 +193,9 @@ tableSource
     : tabname=tableName 
     ((tableProperties) => props=tableProperties)?
     ((tableSample) => ts=tableSample)? 
-    ((KW_AS) => (KW_AS alias=Identifier) 
+    ((KW_AS) => (KW_AS alias=identifier) 
     |
-    (Identifier) => (alias=Identifier))?
+    (identifier) => (alias=identifier))?
     -> ^(TOK_TABREF $tabname $props? $ts? $alias?)
     ;
 
