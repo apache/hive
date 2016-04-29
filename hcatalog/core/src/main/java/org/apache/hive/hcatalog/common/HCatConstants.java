@@ -208,4 +208,7 @@ public final class HCatConstants {
    */
   public static final String HCAT_INPUT_BAD_RECORD_MIN_KEY = "hcat.input.bad.record.min";
   public static final int HCAT_INPUT_BAD_RECORD_MIN_DEFAULT = 2;
+
+  public static final String HCAT_INPUT_IGNORE_INVALID_PATH_KEY = "hcat.input.ignore.invalid.path";
+  public static final boolean HCAT_INPUT_IGNORE_INVALID_PATH_DEFAULT = false;
 }
