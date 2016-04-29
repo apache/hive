@@ -101,3 +101,17 @@ process_jira() {
 patch_contains_hms_upgrade() {
 	curl -s "$1" | grep "^diff.*metastore/scripts/upgrade/" >/dev/null
 }
+
+string_to_upper_case() {
+  local str="$1"
+
+  echo "$str" | tr '[:lower:]' '[:upper:]'
+}
+
+get_jenkins_job_url() {
+  local branch="$1"
+  local varname=`string_to_upper_case $branch`_URL
+  local joburl=`eval echo \\$${varname}`
+
+  echo $joburl
+}
