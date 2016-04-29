@@ -2803,6 +2803,9 @@ public class HiveConf extends Configuration {
         false,
         "Whether to setup split locations to match nodes on which llap daemons are running," +
             " instead of using the locations provided by the split itself"),
+    LLAP_VALIDATE_ACLS("hive.llap.validate.acls", true,
+        "Whether LLAP should reject permissive ACLs in some cases (e.g. its own management\n" +
+        "protocol or ZK paths), similar to how ssh refuses a key with bad access permissions."),
 
     SPARK_CLIENT_FUTURE_TIMEOUT("hive.spark.client.future.timeout",
       "60s", new TimeValidator(TimeUnit.SECONDS),

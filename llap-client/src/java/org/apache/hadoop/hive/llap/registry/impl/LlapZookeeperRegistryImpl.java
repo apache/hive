@@ -70,10 +70,12 @@ import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.client.ZooKeeperSaslClient;
 import org.apache.zookeeper.data.ACL;
+import org.apache.zookeeper.data.Id;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class LlapZookeeperRegistryImpl implements ServiceRegistry {
@@ -88,10 +90,13 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
   private static final String IPC_SHUFFLE = "shuffle";
   private static final String IPC_LLAP = "llap";
   private final static String ROOT_NAMESPACE = "llap";
+  private final static String USER_SCOPE_PATH_PREFIX = "user-";
 
   private final Configuration conf;
   private final CuratorFramework zooKeeperClient;
-  private final String pathPrefix;
+  private final String pathPrefix, userPathPrefix;
+  private String userNameFromPrincipal; // Only set when setting up the secure config for ZK.
+
   private PersistentEphemeralNode znode;
   private String znodePath; // unique identity for this instance
   private final ServiceRecordMarshal encoder; // to marshal/unmarshal znode data
@@ -125,23 +130,23 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
 
     @Override
     public List<ACL> getDefaultAcl() {
-      List<ACL> nodeAcls = new ArrayList<ACL>();
-      if (UserGroupInformation.isSecurityEnabled()) {
-        // Read all to the world
-        nodeAcls.addAll(ZooDefs.Ids.READ_ACL_UNSAFE);
-        // Create/Delete/Write/Admin to the authenticated user
-        nodeAcls.add(new ACL(ZooDefs.Perms.ALL, ZooDefs.Ids.AUTH_IDS));
-      } else {
-        // ACLs for znodes on a non-kerberized cluster
-        // Create/Read/Delete/Write/Admin to the world
-        nodeAcls.addAll(ZooDefs.Ids.OPEN_ACL_UNSAFE);
-      }
-      return nodeAcls;
+      // We always return something from getAclForPath so this should not happen.
+      LOG.warn("getDefaultAcl was called");
+      return Lists.newArrayList(ZooDefs.Ids.OPEN_ACL_UNSAFE);
     }
 
     @Override
     public List<ACL> getAclForPath(String path) {
-      return getDefaultAcl();
+      if (!UserGroupInformation.isSecurityEnabled() || path == null
+          || !path.contains(userPathPrefix)) {
+        // No security or the path is below the user path - full access.
+        return Lists.newArrayList(ZooDefs.Ids.OPEN_ACL_UNSAFE);
+      }
+      // Read all to the world
+      List<ACL> nodeAcls = new ArrayList<ACL>(ZooDefs.Ids.READ_ACL_UNSAFE);
+      // Create/Delete/Write/Admin to creator
+      nodeAcls.addAll(ZooDefs.Ids.CREATOR_ALL_ACL);
+      return nodeAcls;
     }
   };
 
@@ -172,7 +177,8 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     // worker does not respond due to communication interruptions it will retain the same sequence
     // number when it returns back. If session timeout expires, the node will be deleted and new
     // addition of the same node (restart) will get next sequence number
-    this.pathPrefix = "/" + RegistryUtils.currentUser() + "/" + instanceName + "/workers/worker-";
+    this.userPathPrefix = USER_SCOPE_PATH_PREFIX + RegistryUtils.currentUser();
+    this.pathPrefix = "/" + userPathPrefix + "/" + instanceName + "/workers/worker-";
     this.instancesCache = null;
     this.instances = null;
     this.stateChangeListeners = new HashSet<>();
@@ -276,9 +282,11 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
       }
 
       znodePath = znode.getActualPath();
+      if (HiveConf.getBoolVar(conf, ConfVars.LLAP_VALIDATE_ACLS)) {
+        checkAcls();
+      }
       // Set a watch on the znode
-      if (zooKeeperClient.checkExists()
-          .forPath(znodePath) == null) {
+      if (zooKeeperClient.checkExists().forPath(znodePath) == null) {
         // No node exists, throw exception
         throw new Exception("Unable to create znode for this LLAP instance on ZooKeeper.");
       }
@@ -295,6 +303,31 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
       LOG.debug("Created zknode with path: {} service record: {}", znodePath, srv);
     }
     return uniq.toString();
+  }
+
+  private void checkAcls() throws Exception {
+    if (!UserGroupInformation.isSecurityEnabled()) return;
+    String pathToCheck = znodePath;
+    // We are trying to check ACLs on the "workers" directory, which noone except us should be
+    // able to write to. Higher-level directories shouldn't matter - we don't read them.
+    int ix = pathToCheck.lastIndexOf('/');
+    if (ix > 0) {
+      pathToCheck = pathToCheck.substring(0, ix);
+    }
+    List<ACL> acls = zooKeeperClient.usingNamespace(null).getACL().forPath(pathToCheck);
+    if (acls == null || acls.isEmpty()) {
+      // Can there be no ACLs? There's some access (to get ACLs), so assume it means free for all.
+      throw new SecurityException("No ACLs on "  + pathToCheck);
+    }
+    // This could be brittle.
+    assert userNameFromPrincipal != null;
+    Id currentUser = new Id("sasl", userNameFromPrincipal);
+    for (ACL acl : acls) {
+      if ((acl.getPerms() & ~ZooDefs.Perms.READ) == 0 || currentUser.equals(acl.getId())) {
+        continue; // Read permission/no permissions, or the expected user.
+      }
+      throw new SecurityException("The ACL " + acl + " is unnacceptable for " + pathToCheck);
+    }
   }
 
   @Override
@@ -643,11 +676,18 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     System.setProperty(ZooKeeperSaslClient.LOGIN_CONTEXT_NAME_KEY, SASL_LOGIN_CONTEXT_NAME);
 
     principal = SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
+    userNameFromPrincipal = getUserNameFromPrincipal(principal);
     JaasConfiguration jaasConf = new JaasConfiguration(SASL_LOGIN_CONTEXT_NAME, principal,
         keyTabFile);
 
     // Install the Configuration in the runtime.
     javax.security.auth.login.Configuration.setConfiguration(jaasConf);
+  }
+
+  private String getUserNameFromPrincipal(String principal) {
+    // Based on SecurityUtil.
+    String[] components = principal.split("[/@]");
+    return (components == null || components.length != 3) ? principal : components[0];
   }
 
   /**
