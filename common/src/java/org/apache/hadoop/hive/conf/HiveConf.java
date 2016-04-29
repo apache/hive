@@ -2762,7 +2762,7 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.MILLISECONDS, -1l, true, Long.MAX_VALUE, true),
         "Amount of time to wait before allocating a request which contains location information," +
             " to a location other than the ones requested. Set to -1 for an infinite delay, 0" +
-            "for a no delay. Currently these are the only two supported values"
+            "for no delay."
     ),
     LLAP_DAEMON_TASK_PREEMPTION_METRICS_INTERVALS(
         "hive.llap.daemon.task.preemption.metrics.intervals", "30,60,300",

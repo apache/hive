@@ -37,11 +37,10 @@ class ContainerFactory {
   }
 
   public Container createContainer(Resource capability, Priority priority, String hostname,
-      int port) {
+      int port, String nodeHttpAddress) {
     ContainerId containerId =
         ContainerId.newContainerId(customAppAttemptId, nextId.getAndIncrement());
     NodeId nodeId = NodeId.newInstance(hostname, port);
-    String nodeHttpAddress = "hostname:0"; // TODO: include UI ports
 
     Container container =
         Container.newInstance(containerId, nodeId, nodeHttpAddress, capability, priority, null);
