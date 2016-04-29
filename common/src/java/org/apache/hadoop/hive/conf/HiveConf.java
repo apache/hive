@@ -2322,6 +2322,9 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_BUILTIN_UDF_BLACKLIST("hive.server2.builtin.udf.blacklist", "",
          "Comma separated list of udfs names. These udfs will not be allowed in queries." +
          " The udf black list takes precedence over udf white list"),
+     HIVE_ALLOW_UDF_LOAD_ON_DEMAND("hive.allow.udf.load.on.demand", false,
+         "Whether enable loading UDFs from metastore on demand; this is mostly relevant for\n" +
+         "HS2 and was the default behavior before Hive 1.2. Off by default."),
 
     HIVE_SERVER2_SESSION_CHECK_INTERVAL("hive.server2.session.check.interval", "6h",
         new TimeValidator(TimeUnit.MILLISECONDS, 3000l, true, null, false),
