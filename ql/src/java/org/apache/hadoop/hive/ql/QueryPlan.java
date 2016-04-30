@@ -113,26 +113,12 @@ public class QueryPlan implements Serializable {
   }
 
   public QueryPlan(String queryString, BaseSemanticAnalyzer sem, Long startTime, String queryId,
-                   HiveOperation operation, Schema resultSchema) {
-    this(queryString, sem, startTime, queryId, operation, resultSchema, null);
-  }
-  public QueryPlan(String queryString, BaseSemanticAnalyzer sem, Long startTime, String queryId,
-                  HiveOperation operation, Schema resultSchema, QueryDisplay queryDisplay) {
+                  HiveOperation operation, Schema resultSchema) {
     this.queryString = queryString;
 
     rootTasks = new ArrayList<Task<? extends Serializable>>(sem.getAllRootTasks());
     reducerTimeStatsPerJobList = new ArrayList<ReducerTimeStatsPerJob>();
     fetchTask = sem.getFetchTask();
-    if (queryDisplay != null) {
-      if (fetchTask != null) {
-        fetchTask.setQueryDisplay(queryDisplay);
-      }
-      if (rootTasks!= null) {
-        for (Task t : rootTasks) {
-          t.setQueryDisplay(queryDisplay);
-        }
-      }
-    }
     // Note that inputs and outputs can be changed when the query gets executed
     inputs = sem.getAllInputs();
     outputs = sem.getAllOutputs();

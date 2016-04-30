@@ -83,7 +83,17 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected String id;
   protected T work;
   private TaskState taskState = TaskState.CREATED;
+  private String statusMessage;
   private transient boolean fetchSource;
+
+  public void setStatusMessage(String statusMessage) {
+    this.statusMessage = statusMessage;
+    updateStatusInQueryDisplay();
+  }
+
+  public String getStatusMessage() {
+    return statusMessage;
+  }
 
   public enum FeedType {
     DYNAMIC_PARTITIONS, // list of dynamic partitions
@@ -138,13 +148,13 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     this.queryDisplay = queryDisplay;
   }
 
-  private void updateStatusInQueryDisplay() {
+  protected void updateStatusInQueryDisplay() {
     if (queryDisplay != null) {
       queryDisplay.updateTaskStatus(this);
     }
   }
 
-  private void setState(TaskState state) {
+  protected void setState(TaskState state) {
     this.taskState = state;
     updateStatusInQueryDisplay();
   }
