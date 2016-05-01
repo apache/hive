@@ -179,18 +179,6 @@ public interface HadoopShims {
   public String getJobLauncherHttpAddress(Configuration conf);
 
   /**
-   * Move the directory/file to trash. In case of the symlinks or mount points, the file is
-   * moved to the trashbin in the actual volume of the path p being deleted
-   * @param fs
-   * @param path
-   * @param conf
-   * @return false if the item is already in the trash or trash is disabled
-   * @throws IOException
-   */
-  public boolean moveToAppropriateTrash(FileSystem fs, Path path, Configuration conf)
-      throws IOException;
-
-  /**
    * Get the default block size for the path. FileSystem alone is not sufficient to
    * determine the same, as in case of CSMT the underlying file system determines that.
    * @param fs
@@ -291,35 +279,6 @@ public interface HadoopShims {
    * @throws IOException
    */
   public void hflush(FSDataOutputStream stream) throws IOException;
-
-  /**
-   * For a given file, return a file status
-   * @param conf
-   * @param fs
-   * @param file
-   * @return
-   * @throws IOException
-   */
-  public HdfsFileStatus getFullFileStatus(Configuration conf, FileSystem fs, Path file) throws IOException;
-
-  /**
-   * For a given file, set a given file status.
-   * @param conf
-   * @param sourceStatus
-   * @param fs
-   * @param target
-   * @throws IOException
-   */
-  public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus,
-    FileSystem fs, Path target) throws IOException;
-
-  /**
-   * Includes the vanilla FileStatus, and AclStatus if it applies to this version of hadoop.
-   */
-  public interface HdfsFileStatus {
-    public FileStatus getFileStatus();
-    public void debugLog();
-  }
 
   public interface HdfsFileStatusWithId {
     public FileStatus getFileStatus();

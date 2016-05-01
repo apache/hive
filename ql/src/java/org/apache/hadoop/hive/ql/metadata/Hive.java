@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPri
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
@@ -2611,9 +2612,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       FileStatus[] srcs, final FileSystem srcFs, final Path destf, final boolean isSrcLocal, final List<Path> newFiles)
           throws HiveException {
 
-    final HadoopShims.HdfsFileStatus fullDestStatus;
+    final HdfsUtils.HadoopFileStatus fullDestStatus;
     try {
-      fullDestStatus = ShimLoader.getHadoopShims().getFullFileStatus(conf, destFs, destf);
+      fullDestStatus = new HdfsUtils.HadoopFileStatus(conf, destFs, destf);
     } catch (IOException e1) {
       throw new HiveException(e1);
     }
@@ -2674,7 +2675,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             }
 
             if (inheritPerms) {
-              ShimLoader.getHadoopShims().setFullFileStatus(conf, fullDestStatus, destFs, destPath);
+              HdfsUtils.setFullFileStatus(conf, fullDestStatus, destFs, destPath);
             }
             if (null != newFiles) {
               newFiles.add(destPath);
@@ -2695,17 +2696,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
         throw new HiveException(e.getCause());
       }
     }
-  }
-
-  private static boolean destExists(List<List<Path[]>> result, Path proposed) {
-    for (List<Path[]> sdpairs : result) {
-      for (Path[] sdpair : sdpairs) {
-        if (sdpair[1].equals(proposed)) {
-          return true;
-        }
-      }
-    }
-    return false;
   }
 
   private static boolean isSubDir(Path srcf, Path destf, FileSystem srcFs, FileSystem destFs, boolean isSrcLocal) {
@@ -2795,8 +2785,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     //needed for perm inheritance.
     boolean inheritPerms = HiveConf.getBoolVar(conf,
         HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
-    HadoopShims shims = ShimLoader.getHadoopShims();
-    HadoopShims.HdfsFileStatus destStatus = null;
+    HdfsUtils.HadoopFileStatus destStatus = null;
 
     // If source path is a subdirectory of the destination path:
     //   ex: INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300;
@@ -2808,7 +2797,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       if (inheritPerms || replace) {
         try{
-          destStatus = shims.getFullFileStatus(conf, destFs, destf);
+          destStatus = new HdfsUtils.HadoopFileStatus(conf, destFs, destf);
           //if destf is an existing directory:
           //if replace is true, delete followed by rename(mv) is equivalent to replace
           //if replace is false, rename (mv) actually move the src under dest dir
@@ -2821,7 +2810,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         } catch (FileNotFoundException ignore) {
           //if dest dir does not exist, any re
           if (inheritPerms) {
-            destStatus = shims.getFullFileStatus(conf, destFs, destf.getParent());
+            destStatus = new HdfsUtils.HadoopFileStatus(conf, destFs, destf.getParent());
           }
         }
       }
@@ -2888,7 +2877,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     if (success && inheritPerms) {
       try {
-        ShimLoader.getHadoopShims().setFullFileStatus(conf, destStatus, destFs, destf);
+        HdfsUtils.setFullFileStatus(conf, destStatus, destFs, destf);
       } catch (IOException e) {
         LOG.warn("Error setting permission of file " + destf + ": "+ e.getMessage(), e);
       }

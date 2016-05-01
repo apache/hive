@@ -36,10 +36,11 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatus;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -526,11 +527,9 @@ public final class FileUtils {
       if (!success) {
         return false;
       } else {
-        HadoopShims shim = ShimLoader.getHadoopShims();
-        HdfsFileStatus fullFileStatus = shim.getFullFileStatus(conf, fs, lastExistingParent);
         try {
           //set on the entire subtree
-          shim.setFullFileStatus(conf, fullFileStatus, fs, firstNonExistentParent);
+          HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, fs, lastExistingParent), fs, firstNonExistentParent);
         } catch (Exception e) {
           LOG.warn("Error setting permissions of " + firstNonExistentParent, e);
         }
@@ -566,9 +565,8 @@ public final class FileUtils {
 
     boolean inheritPerms = conf.getBoolVar(HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
     if (copied && inheritPerms) {
-      HdfsFileStatus fullFileStatus = shims.getFullFileStatus(conf, dstFS, dst);
       try {
-        shims.setFullFileStatus(conf, fullFileStatus, dstFS, dst);
+        HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, dstFS, dst.getParent()), dstFS, dst);
       } catch (Exception e) {
         LOG.warn("Error setting permissions or group of " + dst, e);
       }
@@ -620,12 +618,11 @@ public final class FileUtils {
    */
   public static boolean moveToTrash(FileSystem fs, Path f, Configuration conf, boolean forceDelete)
       throws IOException {
-    LOG.info("deleting  " + f);
-    HadoopShims hadoopShim = ShimLoader.getHadoopShims();
+    LOG.debug("deleting  " + f);
 
     boolean result = false;
     try {
-      result = hadoopShim.moveToAppropriateTrash(fs, f, conf);
+      result = Trash.moveToAppropriateTrash(fs, f, conf);
       if (result) {
         LOG.info("Moved to trash: " + f);
         return true;
@@ -687,10 +684,8 @@ public final class FileUtils {
     } else {
       //rename the directory
       if (fs.rename(sourcePath, destPath)) {
-        HadoopShims shims = ShimLoader.getHadoopShims();
-        HdfsFileStatus fullFileStatus = shims.getFullFileStatus(conf, fs, destPath.getParent());
         try {
-          shims.setFullFileStatus(conf, fullFileStatus, fs, destPath);
+          HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, fs, destPath.getParent()), fs, destPath);
         } catch (Exception e) {
           LOG.warn("Error setting permissions or group of " + destPath, e);
         }
