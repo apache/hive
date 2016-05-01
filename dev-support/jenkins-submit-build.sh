@@ -48,6 +48,10 @@ case "$BUILD_PROFILE" in
    test -n "$BEELINE_CLI_URL" || fail "BEELINE_CLI_URL must be specified"
    url="$BEELINE_CLI_URL&ISSUE_NUM=$ISSUE_NUM"
   ;;
+  java8-mr2)
+   test -n "$JAVA8_URL" || fail "JAVA8_URL must be specified"
+   url="$JAVA8_URL&ISSUE_NUM=$ISSUE_NUM"
+  ;;
   *)
   echo "Unknown profile '$BUILD_PROFILE'"
   exit 1

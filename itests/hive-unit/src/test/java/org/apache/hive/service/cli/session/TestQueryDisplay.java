@@ -154,8 +154,8 @@ public class TestQueryDisplay {
     Assert.assertTrue(qDisplay1.getPerfLogStarts(QueryDisplay.Phase.COMPILATION).size() > 0);
     Assert.assertTrue(qDisplay1.getPerfLogEnds(QueryDisplay.Phase.COMPILATION).size() > 0);
 
-    Assert.assertEquals(qDisplay1.getTaskDisplays().size(), 2);
-    QueryDisplay.TaskDisplay tInfo1 = qDisplay1.getTaskDisplays().get(1);
+    Assert.assertEquals(qDisplay1.getTaskDisplays().size(), 1);
+    QueryDisplay.TaskDisplay tInfo1 = qDisplay1.getTaskDisplays().get(0);
     Assert.assertEquals(tInfo1.getTaskId(), "Stage-0");
     Assert.assertEquals(tInfo1.getTaskType(), StageType.DDL);
     Assert.assertTrue(tInfo1.getBeginTime() > 0 && tInfo1.getBeginTime() <= System.currentTimeMillis());

@@ -641,7 +641,8 @@ public abstract class CLIServiceTest {
     SessionHandle sessionHandle = setupTestData(tableName, columnDefinitions, confOverlay);
     assertNotNull(sessionHandle);
     // nonblocking execute
-    String select = "SELECT ID + ' ' FROM TEST_EXEC_ASYNC";
+    String select = "select a.id, b.id from (SELECT ID + ' ' `ID` FROM TEST_EXEC_ASYNC) a full outer join "
+      + "(SELECT ID + ' ' `ID` FROM TEST_EXEC_ASYNC) b on a.ID=b.ID";
     OperationHandle ophandle =
       client.executeStatementAsync(sessionHandle, select, confOverlay);
 
@@ -697,6 +698,7 @@ public abstract class CLIServiceTest {
         case FINISHED:
           if (taskDisplay.getTaskType() == StageType.MAPRED || taskDisplay.getTaskType() == StageType.MAPREDLOCAL) {
             assertNotNull(taskDisplay.getExternalHandle());
+            assertNotNull(taskDisplay.getStatusMessage());
           }
           assertNotNull(taskDisplay.getBeginTime());
           assertNotNull(taskDisplay.getEndTime());

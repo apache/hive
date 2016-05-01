@@ -577,7 +577,6 @@ public class DagUtils {
       }
     }
 
-    // TODO# HERE?
     if (mapWork instanceof MergeFileWork) {
       Path outputPath = ((MergeFileWork) mapWork).getOutputDir();
       // prepare the tmp output directory. The output tmp directory should

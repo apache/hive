@@ -66,6 +66,7 @@ import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
+import org.apache.pig.impl.util.PropertiesUtil;
 import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
@@ -102,6 +103,7 @@ public class TestHCatLoader {
           add("testReadPartitionedBasic");
           add("testProjectionsBasic");
           add("testColumnarStorePushdown2");
+          add("testReadMissingPartitionBasicNeg");
         }});
       }};
 
@@ -435,6 +437,59 @@ public class TestHCatLoader {
       count2++;
     }
     assertEquals(6, count2);
+  }
+
+  @Test
+  public void testReadMissingPartitionBasicNeg() throws IOException, CommandNeedRetryException {
+    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
+    PigServer server = new PigServer(ExecType.LOCAL);
+
+    File removedPartitionDir = new File(TEST_WAREHOUSE_DIR + "/" + PARTITIONED_TABLE + "/bkt=0");
+    if (!removeDirectory(removedPartitionDir)) {
+      System.out.println("Test did not run because its environment could not be set.");
+      return;
+    }
+    driver.run("select * from " + PARTITIONED_TABLE);
+    ArrayList<String> valuesReadFromHiveDriver = new ArrayList<String>();
+    driver.getResults(valuesReadFromHiveDriver);
+    assertTrue(valuesReadFromHiveDriver.size() == 6);
+
+    server.registerQuery("W = load '" + PARTITIONED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
+    Schema dumpedWSchema = server.dumpSchema("W");
+    List<FieldSchema> Wfields = dumpedWSchema.getFields();
+    assertEquals(3, Wfields.size());
+    assertTrue(Wfields.get(0).alias.equalsIgnoreCase("a"));
+    assertTrue(Wfields.get(0).type == DataType.INTEGER);
+    assertTrue(Wfields.get(1).alias.equalsIgnoreCase("b"));
+    assertTrue(Wfields.get(1).type == DataType.CHARARRAY);
+    assertTrue(Wfields.get(2).alias.equalsIgnoreCase("bkt"));
+    assertTrue(Wfields.get(2).type == DataType.CHARARRAY);
+
+    try {
+      Iterator<Tuple> WIter = server.openIterator("W");
+      fail("Should failed in retriving an invalid partition");
+    } catch (IOException ioe) {
+      // expected
+    }
+  }
+
+  private static boolean removeDirectory(File dir) {
+    boolean success = false;
+    if (dir.isDirectory()) {
+      File[] files = dir.listFiles();
+      if (files != null && files.length > 0) {
+        for (File file : files) {
+          success = removeDirectory(file);
+          if (!success) {
+            return false;
+          }
+        }
+      }
+      success = dir.delete();
+    } else {
+        success = dir.delete();
+    }
+    return success;
   }
 
   @Test

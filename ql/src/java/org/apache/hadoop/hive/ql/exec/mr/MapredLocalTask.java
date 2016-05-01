@@ -319,10 +319,18 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
       CachingPrintStream errPrintStream = new CachingPrintStream(System.err);
 
-      StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out,
-        OperationLog.getCurrentOperationLog().getPrintStream());
-      StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(), null, errPrintStream,
-        OperationLog.getCurrentOperationLog().getPrintStream());
+      StreamPrinter outPrinter;
+      StreamPrinter errPrinter;
+      OperationLog operationLog = OperationLog.getCurrentOperationLog();
+      if (operationLog != null) {
+        outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out,
+            operationLog.getPrintStream());
+        errPrinter = new StreamPrinter(executor.getErrorStream(), null, errPrintStream,
+            operationLog.getPrintStream());
+      } else {
+        outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out);
+        errPrinter = new StreamPrinter(executor.getErrorStream(), null, errPrintStream);
+      }
 
       outPrinter.start();
       errPrinter.start();

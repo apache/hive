@@ -50,7 +50,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.hadoop.conf.Configuration;
@@ -62,6 +61,8 @@ import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
+import org.apache.hadoop.hive.llap.tezplugins.helpers.MonotonicClock;
+import org.apache.hadoop.hive.llap.tezplugins.scheduler.LoggingFutureCallback;
 import org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerMetrics;
 import org.apache.hadoop.util.JvmPauseMonitor;
 import org.apache.hadoop.yarn.api.records.Container;
@@ -77,7 +78,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.hadoop.yarn.util.SystemClock;
 import org.apache.tez.common.TezUtils;
 import org.apache.tez.dag.api.TezUncheckedException;
 import org.apache.tez.serviceplugins.api.ServicePluginErrorDefaults;
@@ -90,6 +90,8 @@ import org.slf4j.LoggerFactory;
 public class LlapTaskSchedulerService extends TaskScheduler {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapTaskSchedulerService.class);
+
+  private static final TaskStartComparator TASK_INFO_COMPARATOR = new TaskStartComparator();
 
   private final Configuration conf;
 
@@ -104,6 +106,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   // Tracks tasks which could not be allocated immediately.
   @VisibleForTesting
+  // Tasks are tracked in the order requests come in, at different priority levels.
+  // TODO HIVE-13538 For tasks at the same priority level, it may be worth attempting to schedule tasks with
+  // locality information before those without locality information
   final TreeMap<Priority, List<TaskInfo>> pendingTasks = new TreeMap<>(new Comparator<Priority>() {
     @Override
     public int compare(Priority o1, Priority o2) {
@@ -113,22 +118,29 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   // Tracks running and queued tasks. Cleared after a task completes.
   private final ConcurrentMap<Object, TaskInfo> knownTasks = new ConcurrentHashMap<>();
+  // Tracks tasks which are running. Useful for selecting a task to preempt based on when it started.
   private final TreeMap<Integer, TreeSet<TaskInfo>> runningTasks = new TreeMap<>();
-  private static final TaskStartComparator TASK_INFO_COMPARATOR = new TaskStartComparator();
+
 
   // Queue for disabled nodes. Nodes make it out of this queue when their expiration timeout is hit.
   @VisibleForTesting
   final DelayQueue<NodeInfo> disabledNodesQueue = new DelayQueue<>();
+  @VisibleForTesting
+  final DelayQueue<TaskInfo> delayedTaskQueue = new DelayQueue<>();
 
-  private final boolean forceLocation;
 
   private final ContainerFactory containerFactory;
   private final Random random = new Random();
-  private final Clock clock;
+  @VisibleForTesting
+  final Clock clock;
 
   private final ListeningExecutorService nodeEnabledExecutor;
   private final NodeEnablerCallable nodeEnablerCallable =
       new NodeEnablerCallable();
+
+  private final ListeningExecutorService delayedTaskSchedulerExecutor;
+  @VisibleForTesting
+  final DelayedTaskSchedulerCallable delayedTaskSchedulerCallable;
 
   private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
   private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
@@ -147,6 +159,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private final Map<String, MutableInt> pendingPreemptionsPerHost = new HashMap<>();
 
   private final NodeBlacklistConf nodeBlacklistConf;
+  private final LocalityDelayConf localityDelayConf;
 
   // Per daemon
   private final int memoryPerInstance;
@@ -168,6 +181,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private final LlapRegistryService registry = new LlapRegistryService(false);
 
   private volatile ListenableFuture<Void> nodeEnablerFuture;
+  private volatile ListenableFuture<Void> delayedTaskSchedulerFuture;
   private volatile ListenableFuture<Void> schedulerFuture;
 
   @VisibleForTesting
@@ -181,7 +195,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private final JvmPauseMonitor pauseMonitor;
 
   public LlapTaskSchedulerService(TaskSchedulerContext taskSchedulerContext) {
-    this(taskSchedulerContext, new SystemClock(), true);
+    this(taskSchedulerContext, new MonotonicClock(), true);
   }
 
   @VisibleForTesting
@@ -189,6 +203,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       boolean initMetrics) {
     super(taskSchedulerContext);
     this.clock = clock;
+    this.delayedTaskSchedulerCallable = createDelayedTaskSchedulerCallable();
     try {
       this.conf = TezUtils.createConfFromUserPayload(taskSchedulerContext.getInitialUserPayload());
     } catch (IOException e) {
@@ -197,6 +212,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
     this.containerFactory = new ContainerFactory(taskSchedulerContext.getApplicationAttemptId(),
         taskSchedulerContext.getCustomClusterIdentifier());
+    // TODO HIVE-13483 Get all of these properties from the registry. This will need to take care of different instances
+    // publishing potentially different values when we support changing configurations dynamically.
+    // For now, this can simply be fetched from a single registry instance.
     this.memoryPerInstance = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB);
     this.coresPerInstance = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_VCPUS_PER_INSTANCE);
     this.executorsPerInstance = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
@@ -212,11 +230,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
     long localityDelayMs = HiveConf
         .getTimeVar(conf, ConfVars.LLAP_TASK_SCHEDULER_LOCALITY_DELAY, TimeUnit.MILLISECONDS);
-    if (localityDelayMs == -1) {
-      this.forceLocation = true;
-    } else {
-      this.forceLocation = false;
-    }
+
+    this.localityDelayConf = new LocalityDelayConf(localityDelayMs);
 
     this.timeoutMonitor = new SchedulerTimeoutMonitor();
     this.timeout = HiveConf.getTimeVar(conf,
@@ -239,6 +254,12 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         Executors.newSingleThreadExecutor(
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat("LlapSchedulerNodeEnabler").build());
     nodeEnabledExecutor = MoreExecutors.listeningDecorator(executorServiceRaw);
+
+    ExecutorService delayedTaskSchedulerExecutorRaw = Executors.newFixedThreadPool(1,
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("LlapSchedulerDelayedTaskHandler")
+            .build());
+    delayedTaskSchedulerExecutor =
+        MoreExecutors.listeningDecorator(delayedTaskSchedulerExecutorRaw);
 
     ExecutorService schedulerExecutorServiceRaw = Executors.newSingleThreadExecutor(
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("LlapScheduler").build());
@@ -266,7 +287,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         + ", vCoresPerInstance=" + coresPerInstance + ", executorsPerInstance="
         + executorsPerInstance + ", resourcePerInstanceInferred=" + resourcePerExecutor
         + ", nodeBlacklistConf=" + nodeBlacklistConf
-        + ", forceLocation=" + forceLocation);
+        + ", localityDelayMs=" + localityDelayMs);
   }
 
   @Override
@@ -279,29 +300,16 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     writeLock.lock();
     try {
       nodeEnablerFuture = nodeEnabledExecutor.submit(nodeEnablerCallable);
-      Futures.addCallback(nodeEnablerFuture, new FutureCallback<Void>() {
-        @Override
-        public void onSuccess(Void result) {
-          LOG.info("NodeEnabledThread exited");
-        }
+      Futures.addCallback(nodeEnablerFuture, new LoggingFutureCallback("NodeEnablerThread", LOG));
 
-        @Override
-        public void onFailure(Throwable t) {
-          LOG.warn("NodeEnabledThread exited with error", t);
-        }
-      });
+      delayedTaskSchedulerFuture =
+          delayedTaskSchedulerExecutor.submit(delayedTaskSchedulerCallable);
+      Futures.addCallback(delayedTaskSchedulerFuture,
+          new LoggingFutureCallback("DelayedTaskSchedulerThread", LOG));
+
       schedulerFuture = schedulerExecutor.submit(schedulerCallable);
-      Futures.addCallback(schedulerFuture, new FutureCallback<Void>() {
-        @Override
-        public void onSuccess(Void result) {
-          LOG.info("SchedulerThread exited");
-        }
+      Futures.addCallback(schedulerFuture, new LoggingFutureCallback("SchedulerThread", LOG));
 
-        @Override
-        public void onFailure(Throwable t) {
-          LOG.warn("SchedulerThread exited with error", t);
-        }
-      });
       registry.start();
       registry.registerStateChangeListener(new NodeStateChangeListener());
       activeInstances = registry.getInstances();
@@ -398,6 +406,12 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           timeoutFuture = null;
         }
         timeoutExecutor.shutdownNow();
+
+        delayedTaskSchedulerCallable.shutdown();
+        if (delayedTaskSchedulerFuture != null) {
+          delayedTaskSchedulerFuture.cancel(true);
+        }
+        delayedTaskSchedulerExecutor.shutdownNow();
 
         schedulerCallable.shutdown();
         if (schedulerFuture != null) {
@@ -502,6 +516,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   @Override
   public void blacklistNode(NodeId nodeId) {
     LOG.info("BlacklistNode not supported");
+    // TODO HIVE-13484 What happens when we try scheduling a task on a node that Tez at this point thinks is blacklisted.
   }
 
   @Override
@@ -513,7 +528,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   public void allocateTask(Object task, Resource capability, String[] hosts, String[] racks,
       Priority priority, Object containerSignature, Object clientCookie) {
     TaskInfo taskInfo =
-        new TaskInfo(task, clientCookie, priority, capability, hosts, racks, clock.getTime());
+        new TaskInfo(localityDelayConf, clock, task, clientCookie, priority, capability, hosts, racks, clock.getTime());
     writeLock.lock();
     try {
       dagStats.registerTaskRequest(hosts, racks);
@@ -530,7 +545,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     // Container affinity can be implemented as Host affinity for LLAP. Not required until
     // 1:1 edges are used in Hive.
     TaskInfo taskInfo =
-        new TaskInfo(task, clientCookie, priority, capability, null, null, clock.getTime());
+        new TaskInfo(localityDelayConf, clock, task, clientCookie, priority, capability, null, null, clock.getTime());
     writeLock.lock();
     try {
       dagStats.registerTaskRequest(null, null);
@@ -558,7 +573,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         return false;
       }
       if (taskInfo.containerId == null) {
-        if (taskInfo.assigned) {
+        if (taskInfo.getState() == TaskInfo.State.ASSIGNED) {
           LOG.error("Task: "
               + task
               + " assigned, but could not find the corresponding containerId."
@@ -577,7 +592,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       assert nodeInfo != null;
 
       // Re-enable the node if preempted
-      if (taskInfo.preempted) {
+      if (taskInfo.getState() == TaskInfo.State.PREEMPTED) {
         LOG.info("Processing deallocateTask for {} which was preempted, EndReason={}", task, endReason);
         unregisterPendingPreemption(taskInfo.assignedInstance.getHost());
         nodeInfo.registerUnsuccessfulTaskEnd(true);
@@ -607,7 +622,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           // In case of success, trigger a scheduling run for pending tasks.
           trySchedulingPendingTasks();
 
-        } else if (!taskSucceeded) {
+        } else { // Task Failed
           nodeInfo.registerUnsuccessfulTaskEnd(false);
           if (endReason != null && EnumSet
               .of(TaskAttemptEndReason.EXECUTOR_BUSY, TaskAttemptEndReason.COMMUNICATION_ERROR)
@@ -665,17 +680,13 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     return true;
   }
 
-  private ExecutorService createAppCallbackExecutorService() {
-    return Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
-        .setNameFormat("TaskSchedulerAppCaller #%d").setDaemon(true).build());
-  }
-
   /**
    * @param request the list of preferred hosts. null implies any host
    * @return
    */
   private SelectHostResult selectHost(TaskInfo request) {
     String[] requestedHosts = request.requestedHosts;
+    long schedulerAttemptTime = clock.getTime();
     readLock.lock(); // Read-lock. Not updating any stats at the moment.
     try {
       // If there's no memory available, fail
@@ -683,32 +694,61 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         return SELECT_HOST_RESULT_INADEQUATE_TOTAL_CAPACITY;
       }
 
+      boolean shouldDelayForLocality = request.shouldDelayForLocality(schedulerAttemptTime);
       if (requestedHosts != null && requestedHosts.length > 0) {
         int prefHostCount = -1;
-        boolean requestedHostExists = false;
+        boolean requestedHostsWillBecomeAvailable = false;
         for (String host : requestedHosts) {
           prefHostCount++;
           // Pick the first host always. Weak attempt at cache affinity.
           Set<ServiceInstance> instances = activeInstances.getByHost(host);
           if (!instances.isEmpty()) {
-            requestedHostExists = true;
             for (ServiceInstance inst : instances) {
               NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
-              if (nodeInfo != null && nodeInfo.canAcceptTask()) {
-                LOG.info("Assigning " + inst + " when looking for " + host + "." +
-                    " FirstRequestedHost=" + (prefHostCount == 0) +
-                    (requestedHosts.length > 1 ? "#prefLocations=" + requestedHosts.length : ""));
-                return new SelectHostResult(inst, nodeInfo);
+              if (nodeInfo != null) {
+                if  (nodeInfo.canAcceptTask()) {
+                  // Successfully scheduled.
+                  LOG.info(
+                      "Assigning " + nodeToString(inst, nodeInfo) + " when looking for " + host +
+                          ". local=true" + " FirstRequestedHost=" + (prefHostCount == 0) +
+                          (requestedHosts.length > 1 ? ", #prefLocations=" + requestedHosts.length :
+                              ""));
+                  return new SelectHostResult(inst, nodeInfo);
+                } else {
+                  // The node cannot accept a task at the moment.
+                  if (shouldDelayForLocality) {
+                    // Perform some checks on whether the node will become available or not.
+                    if (request.shouldForceLocality()) {
+                      requestedHostsWillBecomeAvailable = true;
+                    } else {
+                      if (nodeInfo.getEnableTime() > request.getLocalityDelayTimeout() &&
+                          nodeInfo.isDisabled() && nodeInfo.hadCommFailure()) {
+                        // This node will likely be activated after the task timeout expires.
+                      } else {
+                        // Worth waiting for the timeout.
+                        requestedHostsWillBecomeAvailable = true;
+                      }
+                    }
+                  }
+                }
+              } else {
+                LOG.warn(
+                    "Null NodeInfo when attempting to get host with worker identity {}, and host {}",
+                    inst.getWorkerIdentity(), host);
+                // Leave requestedHostWillBecomeAvailable as is. If some other host is found - delay,
+                // else ends up allocating to a random host immediately.
               }
             }
           }
         }
         // Check if forcing the location is required.
-        if (forceLocation) {
-          if (requestedHostExists) {
+        if (shouldDelayForLocality) {
+          if (requestedHostsWillBecomeAvailable) {
             if (LOG.isDebugEnabled()) {
               LOG.debug("Skipping non-local location allocation for [" + request.task +
-                  "] when trying to allocate on [" + Arrays.toString(requestedHosts) + "]");
+                  "] when trying to allocate on [" + Arrays.toString(requestedHosts) + "]" +
+                  ". ScheduleAttemptTime=" + schedulerAttemptTime + ", taskDelayTimeout=" +
+                  request.getLocalityDelayTimeout());
             }
             return SELECT_HOST_RESULT_DELAYED_LOCALITY;
           } else {
@@ -729,10 +769,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         for (int i = 0; i < all.length; i++) {
           Entry<String, NodeInfo> inst = all[(i + n) % all.length];
           if (inst.getValue().canAcceptTask()) {
-            LOG.info("Assigning " + inst + " when looking for any host, from #hosts=" + all.length +
-                ", requestedHosts=" +
-                ((requestedHosts == null || requestedHosts.length == 0) ? "null" :
-                    Arrays.toString(requestedHosts)));
+            LOG.info(
+                "Assigning " + nodeToString(inst.getValue().getServiceInstance(), inst.getValue()) +
+                    " when looking for any host, from #hosts=" + all.length + ", requestedHosts=" +
+                    ((requestedHosts == null || requestedHosts.length == 0) ? "null" :
+                        Arrays.toString(requestedHosts)));
             return new SelectHostResult(inst.getValue().getServiceInstance(), inst.getValue());
           }
         }
@@ -820,6 +861,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         tasksAtPriority = new LinkedList<>();
         pendingTasks.put(taskInfo.priority, tasksAtPriority);
       }
+      // Delayed tasks will not kick in right now. That will happen in the scheduling loop.
       tasksAtPriority.add(taskInfo);
       knownTasks.putIfAbsent(taskInfo.task, taskInfo);
       if (metrics != null) {
@@ -870,7 +912,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     try {
       TaskInfo taskInfo = knownTasks.remove(task);
       if (taskInfo != null) {
-        if (taskInfo.assigned) {
+        if (taskInfo.getState() == TaskInfo.State.ASSIGNED) {
           // Remove from the running list.
           int priority = taskInfo.priority.getPriority();
           Set<TaskInfo> tasksAtPriority = runningTasks.get(priority);
@@ -925,6 +967,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           }
           taskInfo.triedAssigningTask();
           ScheduleResult scheduleResult = scheduleTask(taskInfo);
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("ScheduleResult for Task: {} = {}", taskInfo, scheduleResult);
+          }
           if (scheduleResult == ScheduleResult.SCHEDULED) {
             taskIter.remove();
           } else {
@@ -938,6 +983,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
             // Preempt only if there's no pending preemptions to avoid preempting twice for a task.
             String[] potentialHosts;
             if (scheduleResult == ScheduleResult.DELAYED_LOCALITY) {
+
+              // Add the task to the delayed task queue if it does not already exist.
+              maybeAddToDelayedTaskQueue(taskInfo);
+
+              // Try preempting a lower priority task in any case.
               // preempt only on specific hosts, if no preemptions already exist on those.
               potentialHosts = taskInfo.requestedHosts;
               //Protect against a bad location being requested.
@@ -1008,7 +1058,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       Container container =
           containerFactory.createContainer(resourcePerExecutor, taskInfo.priority,
               nsPair.getServiceInstance().getHost(),
-              nsPair.getServiceInstance().getRpcPort());
+              nsPair.getServiceInstance().getRpcPort(),
+              nsPair.getServiceInstance().getServicesAddress());
       writeLock.lock(); // While updating local structures
       try {
         LOG.info("Assigned task {} to container {}", taskInfo, container.getId());
@@ -1125,9 +1176,81 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
   }
 
+  private void maybeAddToDelayedTaskQueue(TaskInfo taskInfo) {
+    // There's no point adding a task with forceLocality set - since that will never exit the queue.
+    // Add other tasks if they are not already in the queue.
+    if (!taskInfo.shouldForceLocality() && !taskInfo.isInDelayedQueue()) {
+      taskInfo.setInDelayedQueue(true);
+      delayedTaskQueue.add(taskInfo);
+    }
+  }
+
+  private String nodeToString(ServiceInstance serviceInstance, NodeInfo nodeInfo) {
+    return serviceInstance.getHost() + ":" + serviceInstance.getRpcPort() + ", workerIdentity=" +
+        serviceInstance.getWorkerIdentity() + ", webAddress=" +
+        serviceInstance.getServicesAddress() + ", currentlyScheduledTasksOnNode=" + nodeInfo.numScheduledTasks;
+  }
+
+
+
+  // ------ Inner classes defined after this point ------
+
+  @VisibleForTesting
+  class DelayedTaskSchedulerCallable implements Callable<Void> {
+
+    private final AtomicBoolean isShutdown = new AtomicBoolean(false);
+
+    @Override
+    public Void call() {
+      while (!isShutdown.get() && !Thread.currentThread().isInterrupted()) {
+        try {
+          TaskInfo taskInfo = getNextTask();
+          taskInfo.setInDelayedQueue(false);
+          // Tasks can exist in the delayed queue even after they have been scheduled.
+          // Trigger scheduling only if the task is still in PENDING state.
+          processEvictedTask(taskInfo);
+
+        } catch (InterruptedException e) {
+          if (isShutdown.get()) {
+            LOG.info("DelayedTaskScheduler thread interrupted after shutdown");
+            break;
+          } else {
+            LOG.warn("DelayedTaskScheduler thread interrupted before being shutdown");
+            throw new RuntimeException(
+                "DelayedTaskScheduler thread interrupted without being shutdown", e);
+          }
+        }
+      }
+      return null;
+    }
+
+    public void shutdown() {
+      isShutdown.set(true);
+    }
+
+    public TaskInfo getNextTask() throws InterruptedException {
+      return delayedTaskQueue.take();
+    }
+
+    public void processEvictedTask(TaskInfo taskInfo) {
+      if (shouldScheduleTask(taskInfo)) {
+        trySchedulingPendingTasks();
+      }
+    }
+
+    public boolean shouldScheduleTask(TaskInfo taskInfo) {
+      return taskInfo.getState() == TaskInfo.State.PENDING;
+    }
+  }
+
+  @VisibleForTesting
+  DelayedTaskSchedulerCallable createDelayedTaskSchedulerCallable() {
+    return new DelayedTaskSchedulerCallable();
+  }
+
   private class NodeEnablerCallable implements Callable<Void> {
 
-    private AtomicBoolean isShutdown = new AtomicBoolean(false);
+    private final AtomicBoolean isShutdown = new AtomicBoolean(false);
     private static final long REFRESH_INTERVAL = 10000l;
     long nextPollInterval = REFRESH_INTERVAL;
     long lastRefreshTime;
@@ -1135,13 +1258,13 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     @Override
     public Void call() {
 
-      lastRefreshTime = System.currentTimeMillis();
+      lastRefreshTime = LlapTaskSchedulerService.this.clock.getTime();
       while (!isShutdown.get() && !Thread.currentThread().isInterrupted()) {
         try {
           while (true) {
             NodeInfo nodeInfo = disabledNodesQueue.poll(nextPollInterval, TimeUnit.MILLISECONDS);
             if (nodeInfo != null) {
-              long currentTime = System.currentTimeMillis();
+              long currentTime =  LlapTaskSchedulerService.this.clock.getTime();
               // A node became available. Enable the node and try scheduling.
               reenableDisabledNode(nodeInfo);
               trySchedulingPendingTasks();
@@ -1152,7 +1275,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
             if (nextPollInterval < 0 || nodeInfo == null) {
               // timeout expired. Reset the poll interval and refresh nodes.
               nextPollInterval = REFRESH_INTERVAL;
-              lastRefreshTime = System.currentTimeMillis();
+              lastRefreshTime = LlapTaskSchedulerService.this.clock.getTime();
               // TODO Get rid of this polling once we have notificaitons from the registry sub-system
               if (LOG.isDebugEnabled()) {
                 LOG.debug("Refreshing instances based on poll interval");
@@ -1232,6 +1355,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         // will be handled in the next run.
         // A new request may come in right after this is set to false, but before the actual scheduling.
         // This will be handled in this run, but will cause an immediate run after, which is harmless.
+        // This is mainly to handle a trySchedue request while in the middle of a run - since the event
+        // which triggered it may not be processed for all tasks in the run.
         pendingScheduleInvocations.set(false);
         // Schedule outside of the scheduleLock - which should only be used to wait on the condition.
         schedulePendingTasks();
@@ -1245,6 +1370,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
   }
 
+  // ------ Additional static classes defined after this point ------
+
   @VisibleForTesting
   static class NodeInfo implements Delayed {
     private final NodeBlacklistConf blacklistConf;
@@ -1257,6 +1384,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     float cumulativeBackoffFactor = 1.0f;
 
     // Indicates whether a node had a recent communication failure.
+    // This is primarily for tracking and logging purposes for the moment.
+    // TODO At some point, treat task rejection and communication failures differently.
     private boolean hadCommFailure = false;
 
     // Indicates whether a node is disabled - for whatever reason - commFailure, busy, etc.
@@ -1375,6 +1504,13 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }
     }
 
+    /**
+     * @return the time at which this node will be re-enabled
+     */
+    public long getEnableTime() {
+      return expireTimeMillis;
+    }
+
     public boolean isDisabled() {
       return disabled;
     }
@@ -1382,13 +1518,20 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     public boolean hadCommFailure() {
       return hadCommFailure;
     }
+
     /* Returning true does not guarantee that the task will run, considering other queries
     may be running in the system. Also depends upon the capacity usage configuration
      */
     public boolean canAcceptTask() {
       boolean result = !hadCommFailure && !disabled && serviceInstance.isAlive()
           &&(numSchedulableTasks == -1 || ((numSchedulableTasks - numScheduledTasks) > 0));
-      LOG.info("canAcceptTask={}, numScheduledTasks={}, numSchedulableTasks={}, hadCommFailure={}, disabled={}, serviceInstance.isAlive={}", result, numScheduledTasks, numSchedulableTasks, hadCommFailure, disabled, serviceInstance.isAlive());
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Node[" + serviceInstance.getHost() + ":" + serviceInstance.getRpcPort() + ", " +
+                serviceInstance.getWorkerIdentity() + "]: " +
+                "canAcceptTask={}, numScheduledTasks={}, numSchedulableTasks={}, hadCommFailure={}, disabled={}, serviceInstance.isAlive={}",
+            result, numScheduledTasks, numSchedulableTasks, hadCommFailure, disabled,
+            serviceInstance.isAlive());
+      }
       return result;
     }
 
@@ -1512,11 +1655,23 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
   }
 
-  private static class TaskInfo {
+
+  // TODO There needs to be a mechanism to figure out different attempts for the same task. Delays
+  // could potentially be changed based on this.
+
+  @VisibleForTesting
+  static class TaskInfo implements Delayed {
+
+    enum State {
+      PENDING, ASSIGNED, PREEMPTED
+    }
+
     // IDs used to ensure two TaskInfos are different without using the underlying task instance.
     // Required for insertion into a TreeMap
     static final AtomicLong ID_GEN = new AtomicLong(0);
     final long uniqueId;
+    final LocalityDelayConf localityDelayConf;
+    final Clock clock;
     final Object task;
     final Object clientCookie;
     final Priority priority;
@@ -1524,19 +1679,22 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     final String[] requestedHosts;
     final String[] requestedRacks;
     final long requestTime;
+    final long localityDelayTimeout;
     long startTime;
     long preemptTime;
     ContainerId containerId;
     ServiceInstance assignedInstance;
-    private boolean assigned = false;
-    private boolean preempted = false;
+    private State state = State.PENDING;
+    boolean inDelayedQueue = false;
 
     private int numAssignAttempts = 0;
 
     // TaskInfo instances for two different tasks will not be the same. Only a single instance should
     // ever be created for a taskAttempt
-    public TaskInfo(Object task, Object clientCookie, Priority priority, Resource capability,
+    public TaskInfo(LocalityDelayConf localityDelayConf, Clock clock, Object task, Object clientCookie, Priority priority, Resource capability,
         String[] hosts, String[] racks, long requestTime) {
+      this.localityDelayConf = localityDelayConf;
+      this.clock = clock;
       this.task = task;
       this.clientCookie = clientCookie;
       this.priority = priority;
@@ -1544,28 +1702,59 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       this.requestedHosts = hosts;
       this.requestedRacks = racks;
       this.requestTime = requestTime;
+      if (localityDelayConf.getNodeLocalityDelay() == -1) {
+        localityDelayTimeout = Long.MAX_VALUE;
+      } else if (localityDelayConf.getNodeLocalityDelay() == 0) {
+        localityDelayTimeout = 0L;
+      } else {
+        localityDelayTimeout = requestTime + localityDelayConf.getNodeLocalityDelay();
+      }
       this.uniqueId = ID_GEN.getAndIncrement();
     }
 
-    void setAssignmentInfo(ServiceInstance instance, ContainerId containerId, long startTime) {
+    synchronized void setAssignmentInfo(ServiceInstance instance, ContainerId containerId, long startTime) {
       this.assignedInstance = instance;
-        this.containerId = containerId;
+      this.containerId = containerId;
       this.startTime = startTime;
-      assigned = true;
+      this.state = State.ASSIGNED;
     }
 
-    void setPreemptedInfo(long preemptTime) {
-      this.preempted = true;
-      this.assigned = false;
+    synchronized void setPreemptedInfo(long preemptTime) {
+      this.state = State.PREEMPTED;
       this.preemptTime = preemptTime;
     }
 
-    void triedAssigningTask() {
+    synchronized void setInDelayedQueue(boolean val) {
+      this.inDelayedQueue = val;
+    }
+
+    synchronized void triedAssigningTask() {
       numAssignAttempts++;
     }
 
-    int getNumPreviousAssignAttempts() {
+    synchronized int getNumPreviousAssignAttempts() {
       return numAssignAttempts;
+    }
+
+    synchronized State getState() {
+      return state;
+    }
+
+    synchronized boolean isInDelayedQueue() {
+      return inDelayedQueue;
+    }
+
+    boolean shouldDelayForLocality(long schedulerAttemptTime) {
+      // getDelay <=0 means the task will be evicted from the queue.
+      return localityDelayTimeout > schedulerAttemptTime;
+    }
+
+    boolean shouldForceLocality() {
+      return localityDelayTimeout == Long.MAX_VALUE;
+    }
+
+    long getLocalityDelayTimeout() {
+      return localityDelayTimeout;
     }
 
     @Override
@@ -1602,7 +1791,25 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           ", containerId=" + containerId +
           ", assignedInstance=" + assignedInstance +
           ", uniqueId=" + uniqueId +
+          ", localityDelayTimeout=" + localityDelayTimeout +
           '}';
+    }
+
+    @Override
+    public long getDelay(TimeUnit unit) {
+      return unit.convert(localityDelayTimeout - clock.getTime(), TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public int compareTo(Delayed o) {
+      TaskInfo other = (TaskInfo) o;
+      if (other.localityDelayTimeout > this.localityDelayTimeout) {
+        return -1;
+      } else if (other.localityDelayTimeout < this.localityDelayTimeout) {
+        return 1;
+      } else {
+        return 0;
+      }
     }
   }
 
@@ -1686,6 +1893,26 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           "minDelay=" + minDelay +
           ", maxDelay=" + maxDelay +
           ", backoffFactor=" + backoffFactor +
+          '}';
+    }
+  }
+
+  @VisibleForTesting
+  static final class LocalityDelayConf {
+    private final long nodeLocalityDelay;
+
+    public LocalityDelayConf(long nodeLocalityDelay) {
+      this.nodeLocalityDelay = nodeLocalityDelay;
+    }
+
+    public long getNodeLocalityDelay() {
+      return nodeLocalityDelay;
+    }
+
+    @Override
+    public String toString() {
+      return "LocalityDelayConf{" +
+          "nodeLocalityDelay=" + nodeLocalityDelay +
           '}';
     }
   }
