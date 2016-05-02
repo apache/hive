@@ -128,13 +128,17 @@ class DatabaseConnection {
     }
 
     Map<String, String> hiveVars = beeLine.getOpts().getHiveVariables();
-    for (Map.Entry<String, String> var : hiveVars.entrySet()) {
-      info.put(HIVE_VAR_PREFIX + var.getKey(), var.getValue());
+    if (hiveVars != null){
+      for (Map.Entry<String, String> var : hiveVars.entrySet()) {
+        info.put(HIVE_VAR_PREFIX + var.getKey(), var.getValue());
+      }
     }
 
     Map<String, String> hiveConfVars = beeLine.getOpts().getHiveConfVariables();
-    for (Map.Entry<String, String> var : hiveConfVars.entrySet()) {
-      info.put(HIVE_CONF_PREFIX + var.getKey(), var.getValue());
+    if (hiveConfVars != null){
+      for (Map.Entry<String, String> var : hiveConfVars.entrySet()) {
+        info.put(HIVE_CONF_PREFIX + var.getKey(), var.getValue());
+      }
     }
 
     if (isDriverRegistered) {
