@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
@@ -129,6 +130,8 @@ public class MapWork extends BaseWork {
       new LinkedHashMap<String, List<ExprNodeDesc>>();
 
   private boolean doSplitsGrouping = true;
+
+  private VectorizedRowBatch vectorizedRowBatch;
 
   // bitsets can't be correctly serialized by Kryo's default serializer
   // BitSet::wordsInUse is transient, so force dumping into a lower form
@@ -634,5 +637,13 @@ public class MapWork extends BaseWork {
   public void setIncludedBuckets(BitSet includedBuckets) {
     // see comment next to the field
     this.includedBuckets = includedBuckets.toByteArray();
+  }
+
+  public void setVectorizedRowBatch(VectorizedRowBatch vectorizedRowBatch) {
+    this.vectorizedRowBatch = vectorizedRowBatch;
+  }
+
+  public VectorizedRowBatch getVectorizedRowBatch() {
+    return vectorizedRowBatch;
   }
 }

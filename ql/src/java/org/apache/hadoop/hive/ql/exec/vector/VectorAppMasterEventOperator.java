@@ -45,7 +45,7 @@ public class VectorAppMasterEventOperator extends AppMasterEventOperator {
 
   private transient boolean firstBatch;
 
-  private transient VectorExtractRowDynBatch vectorExtractRowDynBatch;
+  private transient VectorExtractRow vectorExtractRow;
 
   protected transient Object[] singleRow;
 
@@ -88,15 +88,13 @@ public class VectorAppMasterEventOperator extends AppMasterEventOperator {
 
     VectorizedRowBatch batch = (VectorizedRowBatch) data;
     if (firstBatch) {
-      vectorExtractRowDynBatch = new VectorExtractRowDynBatch();
-      vectorExtractRowDynBatch.init((StructObjectInspector) inputObjInspectors[0], vContext.getProjectedColumns());
+      vectorExtractRow = new VectorExtractRow();
+      vectorExtractRow.init((StructObjectInspector) inputObjInspectors[0], vContext.getProjectedColumns());
 
-      singleRow = new Object[vectorExtractRowDynBatch.getCount()];
+      singleRow = new Object[vectorExtractRow.getCount()];
 
       firstBatch = false;
     }
-
-    vectorExtractRowDynBatch.setBatchOnEntry(batch);
 
     ObjectInspector rowInspector = inputObjInspectors[0];
     try {
@@ -105,7 +103,7 @@ public class VectorAppMasterEventOperator extends AppMasterEventOperator {
         int selected[] = batch.selected;
         for (int logical = 0 ; logical < batch.size; logical++) {
           int batchIndex = selected[logical];
-          vectorExtractRowDynBatch.extractRow(batchIndex, singleRow);
+          vectorExtractRow.extractRow(batch, batchIndex, singleRow);
           writableRow = serializer.serialize(singleRow, rowInspector);
           writableRow.write(buffer);
           if (buffer.getLength() > MAX_SIZE) {
@@ -117,7 +115,7 @@ public class VectorAppMasterEventOperator extends AppMasterEventOperator {
         }
       } else {
         for (int batchIndex = 0 ; batchIndex < batch.size; batchIndex++) {
-          vectorExtractRowDynBatch.extractRow(batchIndex, singleRow);
+          vectorExtractRow.extractRow(batch, batchIndex, singleRow);
           writableRow = serializer.serialize(singleRow, rowInspector);
           writableRow.write(buffer);
           if (buffer.getLength() > MAX_SIZE) {
@@ -133,7 +131,5 @@ public class VectorAppMasterEventOperator extends AppMasterEventOperator {
     }
 
     forward(data, rowInspector);
-
-    vectorExtractRowDynBatch.forgetBatchOnExit();
   }
 }

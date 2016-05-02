@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.serde2.binarysortable.fast;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -29,21 +28,10 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.InputByteBuffer;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
-import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
-import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveDecimalObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.Text;
 
 /*
@@ -60,10 +48,8 @@ import org.apache.hadoop.io.Text;
  * other type specific buffers.  So, those references are only valid until the next time set is
  * called.
  */
-public final class BinarySortableDeserializeRead implements DeserializeRead {
+public final class BinarySortableDeserializeRead extends DeserializeRead {
   public static final Logger LOG = LoggerFactory.getLogger(BinarySortableDeserializeRead.class.getName());
-
-  private TypeInfo[] typeInfos;
 
   // The sort order (ascending/descending) for each field. Set to true when descending (invert).
   private boolean[] columnSortOrderIsDesc;
@@ -76,11 +62,10 @@ public final class BinarySortableDeserializeRead implements DeserializeRead {
 
   private int start;
 
-  private DecimalTypeInfo saveDecimalTypeInfo;
-  private HiveDecimal saveDecimal;
+  private byte[] tempTimestampBytes;
+  private Text tempText;
 
   private byte[] tempDecimalBuffer;
-  private HiveDecimalWritable tempHiveDecimalWritable;
 
   private boolean readBeyondConfiguredFieldsWarned;
   private boolean readBeyondBufferRangeWarned;
@@ -97,7 +82,7 @@ public final class BinarySortableDeserializeRead implements DeserializeRead {
 
   public BinarySortableDeserializeRead(TypeInfo[] typeInfos,
           boolean[] columnSortOrderIsDesc) {
-    this.typeInfos = typeInfos;
+    super(typeInfos);
     fieldCount = typeInfos.length;
     if (columnSortOrderIsDesc != null) {
       this.columnSortOrderIsDesc = columnSortOrderIsDesc;
@@ -113,13 +98,7 @@ public final class BinarySortableDeserializeRead implements DeserializeRead {
 
   // Not public since we must have column information.
   private BinarySortableDeserializeRead() {
-  }
-
-  /*
-   * The primitive type information for all fields.
-   */
-  public TypeInfo[] typeInfos() {
-    return typeInfos;
+    super();
   }
 
   /*
@@ -148,42 +127,242 @@ public final class BinarySortableDeserializeRead implements DeserializeRead {
     if (fieldIndex >= fieldCount) {
       // Reading beyond the specified field count produces NULL.
       if (!readBeyondConfiguredFieldsWarned) {
-        // Warn only once.
-        LOG.info("Reading beyond configured fields! Configured " + fieldCount + " fields but "
-            + " reading more (NULLs returned).  Ignoring similar problems.");
-        readBeyondConfiguredFieldsWarned = true;
+        doReadBeyondConfiguredFieldsWarned();
       }
       return true;
     }
     if (inputByteBuffer.isEof()) {
       // Also, reading beyond our byte range produces NULL.
       if (!readBeyondBufferRangeWarned) {
-        // Warn only once.
-        int length = inputByteBuffer.tell() - start;
-        LOG.info("Reading beyond buffer range! Buffer range " +  start 
-            + " for length " + length + " but reading more... "
-            + "(total buffer length " + inputByteBuffer.getData().length + ")"
-            + "  Ignoring similar problems.");
-        readBeyondBufferRangeWarned = true;
+        doReadBeyondBufferRangeWarned();
       }
       // We cannot read beyond so we must return NULL here.
       return true;
     }
-    byte isNull = inputByteBuffer.read(columnSortOrderIsDesc[fieldIndex]);
+    byte isNullByte = inputByteBuffer.read(columnSortOrderIsDesc[fieldIndex]);
 
-    if (isNull == 0) {
+    if (isNullByte == 0) {
       return true;
     }
 
-    // We have a field and are positioned to it.
+    /*
+     * We have a field and are positioned to it.  Read it.
+     */
+    boolean isNull = false;    // Assume.
+    switch (primitiveCategories[fieldIndex]) {
+    case BOOLEAN:
+      currentBoolean = (inputByteBuffer.read(columnSortOrderIsDesc[fieldIndex]) == 2);
+      break;
+    case BYTE:
+      currentByte = (byte) (inputByteBuffer.read(columnSortOrderIsDesc[fieldIndex]) ^ 0x80);
+      break;
+    case SHORT:
+      {
+        final boolean invert = columnSortOrderIsDesc[fieldIndex];
+        int v = inputByteBuffer.read(invert) ^ 0x80;
+        v = (v << 8) + (inputByteBuffer.read(invert) & 0xff);
+        currentShort = (short) v;
+      }
+      break;
+    case INT:
+      {
+        final boolean invert = columnSortOrderIsDesc[fieldIndex];
+        int v = inputByteBuffer.read(invert) ^ 0x80;
+        for (int i = 0; i < 3; i++) {
+          v = (v << 8) + (inputByteBuffer.read(invert) & 0xff);
+        }
+        currentInt = v;
+      }
+      break;
+    case LONG:
+      {
+        final boolean invert = columnSortOrderIsDesc[fieldIndex];
+        long v = inputByteBuffer.read(invert) ^ 0x80;
+        for (int i = 0; i < 7; i++) {
+          v = (v << 8) + (inputByteBuffer.read(invert) & 0xff);
+        }
+        currentLong = v;
+      }
+      break;
+    case DATE:
+      {
+        final boolean invert = columnSortOrderIsDesc[fieldIndex];
+        int v = inputByteBuffer.read(invert) ^ 0x80;
+        for (int i = 0; i < 3; i++) {
+          v = (v << 8) + (inputByteBuffer.read(invert) & 0xff);
+        }
+        currentDateWritable.set(v);
+      }
+      break;
+    case TIMESTAMP:
+      {
+        if (tempTimestampBytes == null) {
+          tempTimestampBytes = new byte[TimestampWritable.BINARY_SORTABLE_LENGTH];
+        }
+        final boolean invert = columnSortOrderIsDesc[fieldIndex];
+        for (int i = 0; i < tempTimestampBytes.length; i++) {
+          tempTimestampBytes[i] = inputByteBuffer.read(invert);
+        }
+        currentTimestampWritable.setBinarySortable(tempTimestampBytes, 0);
+      }
+      break;
+    case FLOAT:
+      {
+        final boolean invert = columnSortOrderIsDesc[fieldIndex];
+        int v = 0;
+        for (int i = 0; i < 4; i++) {
+          v = (v << 8) + (inputByteBuffer.read(invert) & 0xff);
+        }
+        if ((v & (1 << 31)) == 0) {
+          // negative number, flip all bits
+          v = ~v;
+        } else {
+          // positive number, flip the first bit
+          v = v ^ (1 << 31);
+        }
+        currentFloat = Float.intBitsToFloat(v);
+      }
+      break;
+    case DOUBLE:
+      {
+        final boolean invert = columnSortOrderIsDesc[fieldIndex];
+        long v = 0;
+        for (int i = 0; i < 8; i++) {
+          v = (v << 8) + (inputByteBuffer.read(invert) & 0xff);
+        }
+        if ((v & (1L << 63)) == 0) {
+          // negative number, flip all bits
+          v = ~v;
+        } else {
+          // positive number, flip the first bit
+          v = v ^ (1L << 63);
+        }
+        currentDouble = Double.longBitsToDouble(v);
+      }
+      break;
+    case BINARY:
+    case STRING:
+    case CHAR:
+    case VARCHAR:
+      {
+        if (tempText == null) {
+          tempText = new Text();
+        }
+        BinarySortableSerDe.deserializeText(
+            inputByteBuffer, columnSortOrderIsDesc[fieldIndex], tempText);
+        currentBytes = tempText.getBytes();
+        currentBytesStart = 0;
+        currentBytesLength = tempText.getLength();
+      }
+      break;
+    case INTERVAL_YEAR_MONTH:
+      {
+        final boolean invert = columnSortOrderIsDesc[fieldIndex];
+        int v = inputByteBuffer.read(invert) ^ 0x80;
+        for (int i = 0; i < 3; i++) {
+          v = (v << 8) + (inputByteBuffer.read(invert) & 0xff);
+        }
+        currentHiveIntervalYearMonthWritable.set(v);
+      }
+      break;
+    case INTERVAL_DAY_TIME:
+      {
+        final boolean invert = columnSortOrderIsDesc[fieldIndex];
+        long totalSecs = inputByteBuffer.read(invert) ^ 0x80;
+        for (int i = 0; i < 7; i++) {
+          totalSecs = (totalSecs << 8) + (inputByteBuffer.read(invert) & 0xff);
+        }
+        int nanos = inputByteBuffer.read(invert) ^ 0x80;
+        for (int i = 0; i < 3; i++) {
+          nanos = (nanos << 8) + (inputByteBuffer.read(invert) & 0xff);
+        }
+        currentHiveIntervalDayTimeWritable.set(totalSecs, nanos);
+      }
+      break;
+    case DECIMAL:
+      {
+        // Since enforcing precision and scale can cause a HiveDecimal to become NULL,
+        // we must read it, enforce it here, and either return NULL or buffer the result.
 
-    if (((PrimitiveTypeInfo) typeInfos[fieldIndex]).getPrimitiveCategory() != PrimitiveCategory.DECIMAL) {
-      return false;
+        final boolean invert = columnSortOrderIsDesc[fieldIndex];
+        int b = inputByteBuffer.read(invert) - 1;
+        assert (b == 1 || b == -1 || b == 0);
+        boolean positive = b != -1;
+
+        int factor = inputByteBuffer.read(invert) ^ 0x80;
+        for (int i = 0; i < 3; i++) {
+          factor = (factor << 8) + (inputByteBuffer.read(invert) & 0xff);
+        }
+
+        if (!positive) {
+          factor = -factor;
+        }
+
+        int start = inputByteBuffer.tell();
+        int length = 0;
+
+        do {
+          b = inputByteBuffer.read(positive ? invert : !invert);
+          assert(b != 1);
+
+          if (b == 0) {
+            // end of digits
+            break;
+          }
+
+          length++;
+        } while (true);
+
+        if(tempDecimalBuffer == null || tempDecimalBuffer.length < length) {
+          tempDecimalBuffer = new byte[length];
+        }
+
+        inputByteBuffer.seek(start);
+        for (int i = 0; i < length; ++i) {
+          tempDecimalBuffer[i] = inputByteBuffer.read(positive ? invert : !invert);
+        }
+
+        // read the null byte again
+        inputByteBuffer.read(positive ? invert : !invert);
+
+        String digits = new String(tempDecimalBuffer, 0, length, BinarySortableSerDe.decimalCharSet);
+        BigInteger bi = new BigInteger(digits);
+        HiveDecimal bd = HiveDecimal.create(bi).scaleByPowerOfTen(factor-length);
+
+        if (!positive) {
+          bd = bd.negate();
+        }
+
+        // We have a decimal.  After we enforce precision and scale, will it become a NULL?
+
+        currentHiveDecimalWritable.set(bd);
+
+        DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
+
+        int precision = decimalTypeInfo.getPrecision();
+        int scale = decimalTypeInfo.getScale();
+
+        HiveDecimal decimal = currentHiveDecimalWritable.getHiveDecimal(precision, scale);
+        if (decimal == null) {
+          isNull = true;
+        } else {
+          // Put value back into writable.
+          currentHiveDecimalWritable.set(decimal);
+        }
+      }
+      break;
+    default:
+      throw new RuntimeException("Unexpected primitive type category " + primitiveCategories[fieldIndex]);
     }
 
-    // Since enforcing precision and scale may turn a HiveDecimal into a NULL, we must read
-    // it here.
-    return earlyReadHiveDecimal();
+    /*
+     * Now that we have read through the field -- did we really want it?
+     */
+    if (columnsToInclude != null && !columnsToInclude[fieldIndex]) {
+      isNull = true;
+    }
+
+    return isNull;
   }
 
   /*
@@ -196,7 +375,7 @@ public final class BinarySortableDeserializeRead implements DeserializeRead {
         // Warn only once.
        int length = inputByteBuffer.getEnd() - start;
        int remaining = inputByteBuffer.getEnd() - inputByteBuffer.tell();
-        LOG.info("Not all fields were read in the buffer range! Buffer range " +  start 
+        LOG.info("Not all fields were read in the buffer range! Buffer range " +  start
             + " for length " + length + " but " + remaining + " bytes remain. "
             + "(total buffer length " + inputByteBuffer.getData().length + ")"
             + "  Ignoring similar problems.");
@@ -222,526 +401,23 @@ public final class BinarySortableDeserializeRead implements DeserializeRead {
   }
 
   /*
-   * BOOLEAN.
-   */
-  @Override
-  public boolean readBoolean() throws IOException {
-    byte b = inputByteBuffer.read(columnSortOrderIsDesc[fieldIndex]);
-    return (b == 2);
-  }
-
-  /*
-   * BYTE.
-   */
-  @Override
-  public byte readByte() throws IOException {
-    return (byte) (inputByteBuffer.read(columnSortOrderIsDesc[fieldIndex]) ^ 0x80);
-  }
-
-  /*
-   * SHORT.
-   */
-  @Override
-  public short readShort() throws IOException {
-    final boolean invert = columnSortOrderIsDesc[fieldIndex];
-    int v = inputByteBuffer.read(invert) ^ 0x80;
-    v = (v << 8) + (inputByteBuffer.read(invert) & 0xff);
-    return (short) v;
-  }
-
-  /*
-   * INT.
-   */
-  @Override
-  public int readInt() throws IOException {
-    final boolean invert = columnSortOrderIsDesc[fieldIndex];
-    int v = inputByteBuffer.read(invert) ^ 0x80;
-    for (int i = 0; i < 3; i++) {
-      v = (v << 8) + (inputByteBuffer.read(invert) & 0xff);
-    }
-    return v;
-  }
-
-  /*
-   * LONG.
-   */
-  @Override
-  public long readLong() throws IOException {
-    final boolean invert = columnSortOrderIsDesc[fieldIndex];
-    long v = inputByteBuffer.read(invert) ^ 0x80;
-    for (int i = 0; i < 7; i++) {
-      v = (v << 8) + (inputByteBuffer.read(invert) & 0xff);
-    }
-    return v;
-  }
-
-  /*
-   * FLOAT.
-   */
-  @Override
-  public float readFloat() throws IOException {
-    final boolean invert = columnSortOrderIsDesc[fieldIndex];
-    int v = 0;
-    for (int i = 0; i < 4; i++) {
-      v = (v << 8) + (inputByteBuffer.read(invert) & 0xff);
-    }
-    if ((v & (1 << 31)) == 0) {
-      // negative number, flip all bits
-      v = ~v;
-    } else {
-      // positive number, flip the first bit
-      v = v ^ (1 << 31);
-    }
-    return Float.intBitsToFloat(v);
-  }
-
-  /*
-   * DOUBLE.
-   */
-  @Override
-  public double readDouble() throws IOException {
-    final boolean invert = columnSortOrderIsDesc[fieldIndex];
-    long v = 0;
-    for (int i = 0; i < 8; i++) {
-      v = (v << 8) + (inputByteBuffer.read(invert) & 0xff);
-    }
-    if ((v & (1L << 63)) == 0) {
-      // negative number, flip all bits
-      v = ~v;
-    } else {
-      // positive number, flip the first bit
-      v = v ^ (1L << 63);
-    }
-    return Double.longBitsToDouble(v);
-  }
-
-  // This class is for internal use.
-  private static class BinarySortableReadStringResults extends ReadStringResults {
-
-    // Use an org.apache.hadoop.io.Text object as a buffer to decode the BinarySortable
-    // format string into.
-    private Text text;
-
-    public BinarySortableReadStringResults() {
-      super();
-      text = new Text();
-    }
-  }
-
-  // Reading a STRING field require a results object to receive value information.  A separate
-  // results object is created by the caller at initialization per different bytes field. 
-  @Override
-  public ReadStringResults createReadStringResults() {
-    return new BinarySortableReadStringResults();
-  }
-  
-
-  @Override
-  public void readString(ReadStringResults readStringResults) throws IOException {
-    BinarySortableReadStringResults binarySortableReadStringResults = 
-            (BinarySortableReadStringResults) readStringResults;
-
-    BinarySortableSerDe.deserializeText(inputByteBuffer, columnSortOrderIsDesc[fieldIndex], binarySortableReadStringResults.text);
-    readStringResults.bytes = binarySortableReadStringResults.text.getBytes();
-    readStringResults.start = 0;
-    readStringResults.length = binarySortableReadStringResults.text.getLength();
-  }
-
-
-  /*
-   * CHAR.
+   * Pull these out of the regular execution path.
    */
 
-  // This class is for internal use.
-  private static class BinarySortableReadHiveCharResults extends ReadHiveCharResults {
-
-    public BinarySortableReadHiveCharResults() {
-      super();
-    }
-
-    public HiveCharWritable getHiveCharWritable() {
-      return hiveCharWritable;
-    }
+  private void doReadBeyondConfiguredFieldsWarned() {
+    // Warn only once.
+    LOG.info("Reading beyond configured fields! Configured " + fieldCount + " fields but "
+        + " reading more (NULLs returned).  Ignoring similar problems.");
+    readBeyondConfiguredFieldsWarned = true;
   }
 
-  // Reading a CHAR field require a results object to receive value information.  A separate
-  // results object is created by the caller at initialization per different CHAR field. 
-  @Override
-  public ReadHiveCharResults createReadHiveCharResults() {
-    return new BinarySortableReadHiveCharResults();
-  }
-
-  public void readHiveChar(ReadHiveCharResults readHiveCharResults) throws IOException {
-    BinarySortableReadHiveCharResults binarySortableReadHiveCharResults = 
-            (BinarySortableReadHiveCharResults) readHiveCharResults;
-
-    if (!binarySortableReadHiveCharResults.isInit()) {
-      binarySortableReadHiveCharResults.init((CharTypeInfo) typeInfos[fieldIndex]);
-    }
-
-    HiveCharWritable hiveCharWritable = binarySortableReadHiveCharResults.getHiveCharWritable();
-
-    // Decode the bytes into our Text buffer, then truncate.
-    BinarySortableSerDe.deserializeText(inputByteBuffer, columnSortOrderIsDesc[fieldIndex], hiveCharWritable.getTextValue());
-    hiveCharWritable.enforceMaxLength(binarySortableReadHiveCharResults.getMaxLength());
-
-    readHiveCharResults.bytes = hiveCharWritable.getTextValue().getBytes();
-    readHiveCharResults.start = 0;
-    readHiveCharResults.length = hiveCharWritable.getTextValue().getLength();
-  }
-
-  /*
-   * VARCHAR.
-   */
-
-  // This class is for internal use.
-  private static class BinarySortableReadHiveVarcharResults extends ReadHiveVarcharResults {
-
-    public BinarySortableReadHiveVarcharResults() {
-      super();
-    }
-
-    public HiveVarcharWritable getHiveVarcharWritable() {
-      return hiveVarcharWritable;
-    }
-  }
-
-  // Reading a VARCHAR field require a results object to receive value information.  A separate
-  // results object is created by the caller at initialization per different VARCHAR field. 
-  @Override
-  public ReadHiveVarcharResults createReadHiveVarcharResults() {
-    return new BinarySortableReadHiveVarcharResults();
-  }
-
-  public void readHiveVarchar(ReadHiveVarcharResults readHiveVarcharResults) throws IOException {
-    BinarySortableReadHiveVarcharResults binarySortableReadHiveVarcharResults = (BinarySortableReadHiveVarcharResults) readHiveVarcharResults;
-
-    if (!binarySortableReadHiveVarcharResults.isInit()) {
-      binarySortableReadHiveVarcharResults.init((VarcharTypeInfo) typeInfos[fieldIndex]);
-    }
-
-    HiveVarcharWritable hiveVarcharWritable = binarySortableReadHiveVarcharResults.getHiveVarcharWritable();
-
-    // Decode the bytes into our Text buffer, then truncate.
-    BinarySortableSerDe.deserializeText(inputByteBuffer, columnSortOrderIsDesc[fieldIndex], hiveVarcharWritable.getTextValue());
-    hiveVarcharWritable.enforceMaxLength(binarySortableReadHiveVarcharResults.getMaxLength());
-
-    readHiveVarcharResults.bytes = hiveVarcharWritable.getTextValue().getBytes();
-    readHiveVarcharResults.start = 0;
-    readHiveVarcharResults.length = hiveVarcharWritable.getTextValue().getLength();
-  }
-
-  /*
-   * BINARY.
-   */
-
-  // This class is for internal use.
-  private static class BinarySortableReadBinaryResults extends ReadBinaryResults {
-
-    // Use an org.apache.hadoop.io.Text object as a buffer to decode the BinarySortable
-    // format string into.
-    private Text text;
-
-    public BinarySortableReadBinaryResults() {
-      super();
-      text = new Text();
-    }
-  }
-
-  // Reading a BINARY field require a results object to receive value information.  A separate
-  // results object is created by the caller at initialization per different bytes field. 
-  @Override
-  public ReadBinaryResults createReadBinaryResults() {
-    return new BinarySortableReadBinaryResults();
-  }
-
-  @Override
-  public void readBinary(ReadBinaryResults readBinaryResults) throws IOException {
-    BinarySortableReadBinaryResults binarySortableReadBinaryResults = 
-            (BinarySortableReadBinaryResults) readBinaryResults;
-
-    BinarySortableSerDe.deserializeText(inputByteBuffer, columnSortOrderIsDesc[fieldIndex], binarySortableReadBinaryResults.text);
-    readBinaryResults.bytes = binarySortableReadBinaryResults.text.getBytes();
-    readBinaryResults.start = 0;
-    readBinaryResults.length = binarySortableReadBinaryResults.text.getLength();
-  }
-
-  /*
-   * DATE.
-   */
-
-  // This class is for internal use.
-  private static class BinarySortableReadDateResults extends ReadDateResults {
-
-    public BinarySortableReadDateResults() {
-      super();
-    }
-
-    public DateWritable getDateWritable() {
-      return dateWritable;
-    }
-  }
-
-  // Reading a DATE field require a results object to receive value information.  A separate
-  // results object is created by the caller at initialization per different DATE field. 
-  @Override
-  public ReadDateResults createReadDateResults() {
-    return new BinarySortableReadDateResults();
-  }
-
-  @Override
-  public void readDate(ReadDateResults readDateResults) throws IOException {
-    BinarySortableReadDateResults binarySortableReadDateResults = (BinarySortableReadDateResults) readDateResults;
-    final boolean invert = columnSortOrderIsDesc[fieldIndex];
-    int v = inputByteBuffer.read(invert) ^ 0x80;
-    for (int i = 0; i < 3; i++) {
-      v = (v << 8) + (inputByteBuffer.read(invert) & 0xff);
-    }
-    DateWritable dateWritable = binarySortableReadDateResults.getDateWritable();
-    dateWritable.set(v);
-  }
-
-  /*
-   * TIMESTAMP.
-   */
-
-  // This class is for internal use.
-  private static class BinarySortableReadTimestampResults extends ReadTimestampResults {
-
-    private byte[] timestampBytes;
-
-    public BinarySortableReadTimestampResults() {
-      super();
-      timestampBytes = new byte[TimestampWritable.BINARY_SORTABLE_LENGTH];
-    }
-
-    public TimestampWritable getTimestampWritable() {
-      return timestampWritable;
-    }
-  }
-
-  // Reading a TIMESTAMP field require a results object to receive value information.  A separate
-  // results object is created by the caller at initialization per different TIMESTAMP field. 
-  @Override
-  public ReadTimestampResults createReadTimestampResults() {
-    return new BinarySortableReadTimestampResults();
-  }
-
-  @Override
-  public void readTimestamp(ReadTimestampResults readTimestampResults) throws IOException {
-    BinarySortableReadTimestampResults binarySortableReadTimestampResults = (BinarySortableReadTimestampResults) readTimestampResults;
-    final boolean invert = columnSortOrderIsDesc[fieldIndex];
-    byte[] timestampBytes = binarySortableReadTimestampResults.timestampBytes;
-    for (int i = 0; i < timestampBytes.length; i++) {
-      timestampBytes[i] = inputByteBuffer.read(invert);
-    }
-    TimestampWritable timestampWritable = binarySortableReadTimestampResults.getTimestampWritable();
-    timestampWritable.setBinarySortable(timestampBytes, 0);
-  }
-
-  /*
-   * INTERVAL_YEAR_MONTH.
-   */
-
-  // This class is for internal use.
-  private static class BinarySortableReadIntervalYearMonthResults extends ReadIntervalYearMonthResults {
-
-    public BinarySortableReadIntervalYearMonthResults() {
-      super();
-    }
-
-    public HiveIntervalYearMonthWritable getHiveIntervalYearMonthWritable() {
-      return hiveIntervalYearMonthWritable;
-    }
-  }
-
-  // Reading a INTERVAL_YEAR_MONTH field require a results object to receive value information.
-  // A separate results object is created by the caller at initialization per different
-  // INTERVAL_YEAR_MONTH field. 
-  @Override
-  public ReadIntervalYearMonthResults createReadIntervalYearMonthResults() {
-    return new BinarySortableReadIntervalYearMonthResults();
-  }
-
-  @Override
-  public void readIntervalYearMonth(ReadIntervalYearMonthResults readIntervalYearMonthResults)
-          throws IOException {
-    BinarySortableReadIntervalYearMonthResults binarySortableReadIntervalYearMonthResults =
-                (BinarySortableReadIntervalYearMonthResults) readIntervalYearMonthResults;
-    final boolean invert = columnSortOrderIsDesc[fieldIndex];
-    int v = inputByteBuffer.read(invert) ^ 0x80;
-    for (int i = 0; i < 3; i++) {
-      v = (v << 8) + (inputByteBuffer.read(invert) & 0xff);
-    }
-    HiveIntervalYearMonthWritable hiveIntervalYearMonthWritable = 
-                binarySortableReadIntervalYearMonthResults.getHiveIntervalYearMonthWritable();
-    hiveIntervalYearMonthWritable.set(v);
-  }
-
-  /*
-   * INTERVAL_DAY_TIME.
-   */
-
-  // This class is for internal use.
-  private static class BinarySortableReadIntervalDayTimeResults extends ReadIntervalDayTimeResults {
-
-    public BinarySortableReadIntervalDayTimeResults() {
-      super();
-    }
-
-    public HiveIntervalDayTimeWritable getHiveIntervalDayTimeWritable() {
-      return hiveIntervalDayTimeWritable;
-    }
-  }
-
-  // Reading a INTERVAL_DAY_TIME field require a results object to receive value information.
-  // A separate results object is created by the caller at initialization per different
-  // INTERVAL_DAY_TIME field. 
-  @Override
-  public ReadIntervalDayTimeResults createReadIntervalDayTimeResults() {
-    return new BinarySortableReadIntervalDayTimeResults();
-  }
-
-  @Override
-  public void readIntervalDayTime(ReadIntervalDayTimeResults readIntervalDayTimeResults)
-          throws IOException {
-    BinarySortableReadIntervalDayTimeResults binarySortableReadIntervalDayTimeResults =
-                (BinarySortableReadIntervalDayTimeResults) readIntervalDayTimeResults;
-    final boolean invert = columnSortOrderIsDesc[fieldIndex];
-    long totalSecs = inputByteBuffer.read(invert) ^ 0x80;
-    for (int i = 0; i < 7; i++) {
-      totalSecs = (totalSecs << 8) + (inputByteBuffer.read(invert) & 0xff);
-    }
-    int nanos = inputByteBuffer.read(invert) ^ 0x80;
-    for (int i = 0; i < 3; i++) {
-      nanos = (nanos << 8) + (inputByteBuffer.read(invert) & 0xff);
-    }
-    HiveIntervalDayTimeWritable hiveIntervalDayTimeWritable = 
-                binarySortableReadIntervalDayTimeResults.getHiveIntervalDayTimeWritable();
-    hiveIntervalDayTimeWritable.set(totalSecs, nanos);
-  }
-
-  /*
-   * DECIMAL.
-   */
-
-  // This class is for internal use.
-  private static class BinarySortableReadDecimalResults extends ReadDecimalResults {
-
-    public HiveDecimal hiveDecimal;
-
-    public BinarySortableReadDecimalResults() {
-      super();
-    }
-
-    @Override
-    public void init(DecimalTypeInfo decimalTypeInfo) {
-      super.init(decimalTypeInfo);
-    }
-
-    @Override
-    public HiveDecimal getHiveDecimal() {
-      return hiveDecimal;
-    }
-  }
-
-  // Reading a DECIMAL field require a results object to receive value information.  A separate
-  // results object is created by the caller at initialization per different DECIMAL field. 
-  @Override
-  public ReadDecimalResults createReadDecimalResults() {
-    return new BinarySortableReadDecimalResults();
-  }
-
-  @Override
-  public void readHiveDecimal(ReadDecimalResults readDecimalResults) throws IOException {
-    BinarySortableReadDecimalResults binarySortableReadDecimalResults = 
-            (BinarySortableReadDecimalResults) readDecimalResults;
-
-    if (!binarySortableReadDecimalResults.isInit()) {
-      binarySortableReadDecimalResults.init(saveDecimalTypeInfo);
-    }
-
-    binarySortableReadDecimalResults.hiveDecimal = saveDecimal;
-
-    saveDecimal = null;
-    saveDecimalTypeInfo = null;
-  }
-
-  /**
-   * We read the whole HiveDecimal value and then enforce precision and scale, which may
-   * make it a NULL.
-   * @return     Returns true if this HiveDecimal enforced to a NULL.
-   * @throws IOException 
-   */
-  private boolean earlyReadHiveDecimal() throws IOException {
-
-    // Since enforcing precision and scale can cause a HiveDecimal to become NULL,
-    // we must read it, enforce it here, and either return NULL or buffer the result.
-
-    final boolean invert = columnSortOrderIsDesc[fieldIndex];
-    int b = inputByteBuffer.read(invert) - 1;
-    assert (b == 1 || b == -1 || b == 0);
-    boolean positive = b != -1;
-
-    int factor = inputByteBuffer.read(invert) ^ 0x80;
-    for (int i = 0; i < 3; i++) {
-      factor = (factor << 8) + (inputByteBuffer.read(invert) & 0xff);
-    }
-
-    if (!positive) {
-      factor = -factor;
-    }
-
-    int start = inputByteBuffer.tell();
-    int length = 0;
-
-    do {
-      b = inputByteBuffer.read(positive ? invert : !invert);
-      assert(b != 1);
-
-      if (b == 0) {
-        // end of digits
-        break;
-      }
-
-      length++;
-    } while (true);
-
-    if(tempDecimalBuffer == null || tempDecimalBuffer.length < length) {
-      tempDecimalBuffer = new byte[length];
-    }
-
-    inputByteBuffer.seek(start);
-    for (int i = 0; i < length; ++i) {
-      tempDecimalBuffer[i] = inputByteBuffer.read(positive ? invert : !invert);
-    }
-
-    // read the null byte again
-    inputByteBuffer.read(positive ? invert : !invert);
-
-    String digits = new String(tempDecimalBuffer, 0, length, BinarySortableSerDe.decimalCharSet);
-    BigInteger bi = new BigInteger(digits);
-    HiveDecimal bd = HiveDecimal.create(bi).scaleByPowerOfTen(factor-length);
-
-    if (!positive) {
-      bd = bd.negate();
-    }
-
-    // We have a decimal.  After we enforce precision and scale, will it become a NULL?
-
-    if (tempHiveDecimalWritable == null) {
-      tempHiveDecimalWritable = new HiveDecimalWritable();
-    }
-    tempHiveDecimalWritable.set(bd);
-
-    saveDecimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
-
-    int precision = saveDecimalTypeInfo.getPrecision();
-    int scale = saveDecimalTypeInfo.getScale();
-
-    saveDecimal = tempHiveDecimalWritable.getHiveDecimal(precision, scale);
-
-    // Now return whether it is NULL or NOT NULL.
-    return (saveDecimal == null);
+  private void doReadBeyondBufferRangeWarned() {
+    // Warn only once.
+    int length = inputByteBuffer.tell() - start;
+    LOG.info("Reading beyond buffer range! Buffer range " +  start 
+        + " for length " + length + " but reading more... "
+        + "(total buffer length " + inputByteBuffer.getData().length + ")"
+        + "  Ignoring similar problems.");
+    readBeyondBufferRangeWarned = true;
   }
 }

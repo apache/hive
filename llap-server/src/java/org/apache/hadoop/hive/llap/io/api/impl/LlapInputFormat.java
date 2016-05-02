@@ -102,7 +102,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
           sourceInputFormat.getRecordReader(split, job, reporter);
       return rr;
     }
-    boolean isVectorMode = Utilities.isVectorMode(job);
+    boolean isVectorMode = Utilities.getUseVectorizedInputFileFormat(job);
     if (!isVectorMode) {
       LlapIoImpl.LOG.error("No LLAP IO in non-vectorized mode");
       throw new UnsupportedOperationException("No LLAP IO in non-vectorized mode");

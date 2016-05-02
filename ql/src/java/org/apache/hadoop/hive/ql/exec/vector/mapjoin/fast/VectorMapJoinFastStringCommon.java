@@ -22,7 +22,6 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeserializeRead;
-import org.apache.hadoop.hive.serde2.fast.DeserializeRead.ReadStringResults;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BytesWritable;
@@ -40,8 +39,6 @@ public class VectorMapJoinFastStringCommon {
 
   private BinarySortableDeserializeRead keyBinarySortableDeserializeRead;
 
-  private ReadStringResults readStringResults;
-
   public void adaptPutRow(VectorMapJoinFastBytesHashTable hashTable,
           BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException {
 
@@ -51,9 +48,11 @@ public class VectorMapJoinFastStringCommon {
     if (keyBinarySortableDeserializeRead.readCheckNull()) {
       return;
     }
-    keyBinarySortableDeserializeRead.readString(readStringResults);
 
-    hashTable.add(readStringResults.bytes, readStringResults.start, readStringResults.length,
+    hashTable.add(
+        keyBinarySortableDeserializeRead.currentBytes,
+        keyBinarySortableDeserializeRead.currentBytesStart,
+        keyBinarySortableDeserializeRead.currentBytesLength,
         currentValue);
   }
 
@@ -61,6 +60,5 @@ public class VectorMapJoinFastStringCommon {
     this.isOuterJoin = isOuterJoin;
     PrimitiveTypeInfo[] primitiveTypeInfos = { TypeInfoFactory.stringTypeInfo };
     keyBinarySortableDeserializeRead = new BinarySortableDeserializeRead(primitiveTypeInfos);
-    readStringResults = keyBinarySortableDeserializeRead.createReadStringResults();
   }
 }

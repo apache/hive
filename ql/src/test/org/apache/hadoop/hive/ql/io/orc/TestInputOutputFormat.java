@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDe;
@@ -1700,7 +1701,10 @@ public class TestInputOutputFormat {
     Utilities.clearWorkMap(conf);
     conf.set("hive.exec.plan", workDir.toString());
     conf.set("mapred.job.tracker", "local");
-    conf.set("hive.vectorized.execution.enabled", Boolean.toString(isVectorized));
+    String isVectorizedString = Boolean.toString(isVectorized);
+    conf.set("hive.vectorized.execution.enabled", isVectorizedString);
+    conf.set(Utilities.VECTOR_MODE, isVectorizedString);
+    conf.set(Utilities.USE_VECTORIZED_INPUT_FILE_FORMAT, isVectorizedString);
     conf.set("fs.mock.impl", MockFileSystem.class.getName());
     conf.set("mapred.mapper.class", ExecMapper.class.getName());
     Path root = new Path(warehouseDir, tableName);
@@ -1767,6 +1771,10 @@ public class TestInputOutputFormat {
       LinkedHashMap<String, String> partSpec =
           new LinkedHashMap<String, String>();
       PartitionDesc part = new PartitionDesc(tbl, partSpec);
+      if (isVectorized) {
+        part.setVectorPartitionDesc(
+            VectorPartitionDesc.createVectorizedInputFileFormat("MockInputFileFormatClassName", false));
+      }
       partMap.put(partPath[p], part);
     }
     mapWork.setPathToAliases(aliasMap);

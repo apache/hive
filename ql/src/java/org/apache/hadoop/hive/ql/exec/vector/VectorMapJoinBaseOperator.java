@@ -59,7 +59,7 @@ public class VectorMapJoinBaseOperator extends MapJoinOperator implements Vector
   protected transient VectorizedRowBatch outputBatch;
   protected transient VectorizedRowBatch scratchBatch;  // holds restored (from disk) big table rows
 
-  protected transient Map<ObjectInspector, VectorAssignRowSameBatch> outputVectorAssignRowMap;
+  protected transient Map<ObjectInspector, VectorAssignRow> outputVectorAssignRowMap;
 
   protected transient VectorizedRowBatchCtx vrbCtx = null;
 
@@ -100,7 +100,7 @@ public class VectorMapJoinBaseOperator extends MapJoinOperator implements Vector
 
     outputBatch = vrbCtx.createVectorizedRowBatch();
 
-    outputVectorAssignRowMap = new HashMap<ObjectInspector, VectorAssignRowSameBatch>();
+    outputVectorAssignRowMap = new HashMap<ObjectInspector, VectorAssignRow>();
   }
 
   /**
@@ -109,15 +109,14 @@ public class VectorMapJoinBaseOperator extends MapJoinOperator implements Vector
   @Override
   protected void internalForward(Object row, ObjectInspector outputOI) throws HiveException {
     Object[] values = (Object[]) row;
-    VectorAssignRowSameBatch va = outputVectorAssignRowMap.get(outputOI);
+    VectorAssignRow va = outputVectorAssignRowMap.get(outputOI);
     if (va == null) {
-      va = new VectorAssignRowSameBatch();
+      va = new VectorAssignRow();
       va.init((StructObjectInspector) outputOI, vOutContext.getProjectedColumns());
-      va.setOneBatch(outputBatch);
       outputVectorAssignRowMap.put(outputOI, va);
     }
 
-    va.assignRow(outputBatch.size, values);
+    va.assignRow(outputBatch, outputBatch.size, values);
 
     ++outputBatch.size;
     if (outputBatch.size == VectorizedRowBatch.DEFAULT_SIZE) {

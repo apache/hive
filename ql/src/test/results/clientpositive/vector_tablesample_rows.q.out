@@ -195,7 +195,6 @@ STAGE PLANS:
                 key expressions: 1 (type: int)
                 sort order: +
                 Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
-      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
@@ -287,7 +286,6 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.dual
-      Execution mode: vectorized
 
   Stage: Stage-7
     Conditional Operator

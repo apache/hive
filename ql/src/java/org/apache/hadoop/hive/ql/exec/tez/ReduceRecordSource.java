@@ -413,7 +413,7 @@ public class ReduceRecordSource implements RecordSource {
     //     VectorizedBatchUtil.displayBytes(keyBytes, 0, keyLength));
 
     keyBinarySortableDeserializeToRow.setBytes(keyBytes, 0, keyLength);
-    keyBinarySortableDeserializeToRow.deserializeByValue(batch, 0);
+    keyBinarySortableDeserializeToRow.deserialize(batch, 0);
     for(int i = 0; i < firstValueColumnOffset; i++) {
       VectorizedBatchUtil.setRepeatingColumn(batch, i);
     }
@@ -431,7 +431,7 @@ public class ReduceRecordSource implements RecordSource {
           //     VectorizedBatchUtil.displayBytes(valueBytes, 0, valueLength));
 
           valueLazyBinaryDeserializeToRow.setBytes(valueBytes, 0, valueLength);
-          valueLazyBinaryDeserializeToRow.deserializeByValue(batch, rowIdx);
+          valueLazyBinaryDeserializeToRow.deserialize(batch, rowIdx);
         }
         rowIdx++;
         if (rowIdx >= BATCH_SIZE) {

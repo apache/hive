@@ -19,31 +19,22 @@
 package org.apache.hadoop.hive.serde2.fast;
 
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.Timestamp;
-
-import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
-import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
-import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
-import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 
 /*
  * Directly deserialize with the caller reading field-by-field a serialization format.
- * 
+ *
  * The caller is responsible for calling the read method for the right type of each field
  * (after calling readCheckNull).
- * 
+ *
  * Reading some fields require a results object to receive value information.  A separate
  * results object is created by the caller at initialization per different field even for the same
  * type.
@@ -52,17 +43,88 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
  * other type specific buffers.  So, those references are only valid until the next time set is
  * called.
  */
-public interface DeserializeRead {
+public abstract class DeserializeRead {
+
+  protected TypeInfo[] typeInfos;
+
+  protected boolean[] columnsToInclude;
+
+  protected Category[] categories;
+  protected PrimitiveCategory[] primitiveCategories;
+
+  public DeserializeRead(TypeInfo[] typeInfos) {
+    this.typeInfos = typeInfos;
+    final int count = typeInfos.length;
+    categories = new Category[count];
+    primitiveCategories = new PrimitiveCategory[count];
+    for (int i = 0; i < count; i++) {
+      TypeInfo typeInfo = typeInfos[i];
+      Category category = typeInfo.getCategory();
+      categories[i] = category;
+      if (category == Category.PRIMITIVE) {
+        PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
+        PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
+        primitiveCategories[i] = primitiveCategory;
+
+        switch (primitiveCategory) {
+        case DATE:
+          if (currentDateWritable == null) {
+            currentDateWritable = new DateWritable();
+          }
+          break;
+        case TIMESTAMP:
+          if (currentTimestampWritable == null) {
+            currentTimestampWritable = new TimestampWritable();
+          }
+          break;
+        case INTERVAL_YEAR_MONTH:
+          if (currentHiveIntervalYearMonthWritable == null) {
+            currentHiveIntervalYearMonthWritable = new HiveIntervalYearMonthWritable();
+          }
+          break;
+        case INTERVAL_DAY_TIME:
+          if (currentHiveIntervalDayTimeWritable == null) {
+            currentHiveIntervalDayTimeWritable = new HiveIntervalDayTimeWritable();
+          }
+          break;
+        case DECIMAL:
+          if (currentHiveDecimalWritable == null) {
+            currentHiveDecimalWritable = new HiveDecimalWritable();
+          }
+          break;
+        default:
+          // No writable needed for this data type.
+        }
+      }
+    }
+
+    columnsToInclude = null;
+  }
+
+  // Don't allow for public.
+  protected DeserializeRead() {
+  }
 
   /*
    * The type information for all fields.
    */
-  TypeInfo[] typeInfos();
+  public TypeInfo[] typeInfos() {
+    return typeInfos;
+  }
+
+  /*
+   * If some fields are are not going to be used by the query, use this routine to specify
+   * the columns to return.  The readCheckNull method will automatically return NULL for the
+   * other columns.
+   */
+  public void setColumnsToInclude(boolean[] columnsToInclude) {
+    this.columnsToInclude = columnsToInclude;
+  }
 
   /*
    * Set the range of bytes to be deserialized.
    */
-  void set(byte[] bytes, int offset, int length);
+  public abstract void set(byte[] bytes, int offset, int length);
 
   /*
    * Reads the NULL information for a field.
@@ -70,318 +132,91 @@ public interface DeserializeRead {
    * @return Return true when the field is NULL; reading is positioned to the next field.
    *         Otherwise, false when the field is NOT NULL; reading is positioned to the field data.
    */
-  boolean readCheckNull() throws IOException;
+  public abstract boolean readCheckNull() throws IOException;
 
   /*
    * Call this method after all fields have been read to check for extra fields.
    */
-  void extraFieldsCheck();
- 
+  public abstract void extraFieldsCheck();
+
   /*
    * Read integrity warning flags.
    */
-  boolean readBeyondConfiguredFieldsWarned();
-  boolean readBeyondBufferRangeWarned();
-  boolean bufferRangeHasExtraDataWarned();
+  public abstract boolean readBeyondConfiguredFieldsWarned();
+  public abstract boolean readBeyondBufferRangeWarned();
+  public abstract boolean bufferRangeHasExtraDataWarned();
+
+  /*
+   * These members hold the current value that was read when readCheckNull return false.
+   */
 
   /*
    * BOOLEAN.
    */
-  boolean readBoolean() throws IOException;
+  public boolean currentBoolean;
 
   /*
    * BYTE.
    */
-  byte readByte() throws IOException;
+  public byte currentByte;
 
   /*
    * SHORT.
    */
-  short readShort() throws IOException;
+  public short currentShort;
 
   /*
    * INT.
    */
-  int readInt() throws IOException;
+  public int currentInt;
 
   /*
    * LONG.
    */
-  long readLong() throws IOException;
+  public long currentLong;
 
   /*
    * FLOAT.
    */
-  float readFloat() throws IOException;
+  public float currentFloat;
 
   /*
    * DOUBLE.
    */
-  double readDouble() throws IOException;
+  public double currentDouble;
 
   /*
-   * This class is the base abstract read bytes results for STRING, CHAR, VARCHAR, and BINARY.
-   */
-  public abstract class ReadBytesResults {
-
-    public byte[] bytes;
-    public int start;
-    public int length;
-
-    public ReadBytesResults() {
-      bytes = null;
-      start = 0;
-      length = 0;
-    }
-  }
-
-  /*
-   * STRING.
+   * STRING, CHAR, VARCHAR, and BINARY.
    *
-   * Can be used to read CHAR and VARCHAR when the caller takes responsibility for
+   * For CHAR and VARCHAR when the caller takes responsibility for
    * truncation/padding issues.
    */
-
-  // This class is for abstract since each format may need its own specialization.
-  public abstract class ReadStringResults extends ReadBytesResults {
-
-    public ReadStringResults() {
-      super();
-    }
-  }
-
-  // Reading a STRING field require a results object to receive value information.  A separate
-  // results object is created at initialization per different bytes field. 
-  ReadStringResults createReadStringResults();
-
-  void readString(ReadStringResults readStringResults) throws IOException;
-
-  /*
-   * CHAR.
-   */
-
-  // This class is for abstract since each format may need its own specialization.
-  public abstract class ReadHiveCharResults extends ReadBytesResults {
-
-    private CharTypeInfo charTypeInfo;
-    private int maxLength;
-
-    protected HiveCharWritable hiveCharWritable;
-
-    public ReadHiveCharResults() {
-      super();
-    }
-
-    public void init(CharTypeInfo charTypeInfo) {
-      this.charTypeInfo = charTypeInfo;
-      this.maxLength = charTypeInfo.getLength();
-      hiveCharWritable = new HiveCharWritable();
-    }
-
-    public boolean isInit() {
-      return (charTypeInfo != null);
-    }
-
-    public int getMaxLength() {
-      return maxLength;
-    }
-
-    public HiveChar getHiveChar() {
-      return hiveCharWritable.getHiveChar();
-    }
-  }
-
-  // Reading a CHAR field require a results object to receive value information.  A separate
-  // results object is created at initialization per different CHAR field. 
-  ReadHiveCharResults createReadHiveCharResults();
-
-  void readHiveChar(ReadHiveCharResults readHiveCharResults) throws IOException;
-
-  /*
-   * VARCHAR.
-   */
-
-  // This class is for abstract since each format may need its own specialization.
-  public abstract class ReadHiveVarcharResults extends ReadBytesResults {
-
-    private VarcharTypeInfo varcharTypeInfo;
-    private int maxLength;
-
-    protected HiveVarcharWritable hiveVarcharWritable;
-
-    public ReadHiveVarcharResults() {
-      super();
-    }
-
-    public void init(VarcharTypeInfo varcharTypeInfo) {
-      this.varcharTypeInfo = varcharTypeInfo;
-      this.maxLength = varcharTypeInfo.getLength();
-      hiveVarcharWritable = new HiveVarcharWritable();
-    }
-
-    public boolean isInit() {
-      return (varcharTypeInfo != null);
-    }
-
-    public int getMaxLength() {
-      return maxLength;
-    }
-
-    public HiveVarchar getHiveVarchar() {
-      return hiveVarcharWritable.getHiveVarchar();
-    }
-  }
-
-  // Reading a VARCHAR field require a results object to receive value information.  A separate
-  // results object is created at initialization per different VARCHAR field. 
-  ReadHiveVarcharResults createReadHiveVarcharResults();
-
-  void readHiveVarchar(ReadHiveVarcharResults readHiveVarcharResults) throws IOException;
-
-  /*
-   * BINARY.
-   */
-
-  // This class is for abstract since each format may need its own specialization.
-  public abstract class ReadBinaryResults extends ReadBytesResults {
-
-    public ReadBinaryResults() {
-      super();
-    }
-  }
-
-  // Reading a BINARY field require a results object to receive value information.  A separate
-  // results object is created at initialization per different bytes field. 
-  ReadBinaryResults createReadBinaryResults();
-
-  void readBinary(ReadBinaryResults readBinaryResults) throws IOException;
+  public byte[] currentBytes;
+  public int currentBytesStart;
+  public int currentBytesLength;
 
   /*
    * DATE.
    */
-
-  // This class is for abstract since each format may need its own specialization.
-  public abstract class ReadDateResults {
-
-    protected DateWritable dateWritable;
-
-    public ReadDateResults() {
-      dateWritable = new DateWritable();
-    }
-
-    public Date getDate() {
-      return dateWritable.get();
-    }
-
-    public int getDays() {
-      return dateWritable.getDays();
-    }
-  }
-
-  // Reading a DATE field require a results object to receive value information.  A separate
-  // results object is created at initialization per different DATE field. 
-  ReadDateResults createReadDateResults();
-
-  void readDate(ReadDateResults readDateResults) throws IOException;
+  public DateWritable currentDateWritable;
 
   /*
    * TIMESTAMP.
    */
-
-  // This class is for abstract since each format may need its own specialization.
-  public abstract class ReadTimestampResults {
-
-    protected TimestampWritable timestampWritable;
-
-    public ReadTimestampResults() {
-      timestampWritable = new TimestampWritable();
-    }
-
-    public Timestamp getTimestamp() {
-      return timestampWritable.getTimestamp();
-    }
-  }
-
-  // Reading a TIMESTAMP field require a results object to receive value information.  A separate
-  // results object is created at initialization per different TIMESTAMP field. 
-  ReadTimestampResults createReadTimestampResults();
-
-  void readTimestamp(ReadTimestampResults readTimestampResult) throws IOException;
+  public TimestampWritable currentTimestampWritable;
 
   /*
    * INTERVAL_YEAR_MONTH.
    */
-
-  // This class is for abstract since each format may need its own specialization.
-  public abstract class ReadIntervalYearMonthResults {
-
-    protected HiveIntervalYearMonthWritable hiveIntervalYearMonthWritable;
-
-    public ReadIntervalYearMonthResults() {
-      hiveIntervalYearMonthWritable = new HiveIntervalYearMonthWritable();
-    }
-
-    public HiveIntervalYearMonth getHiveIntervalYearMonth() {
-      return hiveIntervalYearMonthWritable.getHiveIntervalYearMonth();
-    }
-  }
-
-  // Reading a INTERVAL_YEAR_MONTH field require a results object to receive value information.
-  // A separate results object is created at initialization per different INTERVAL_YEAR_MONTH field. 
-  ReadIntervalYearMonthResults createReadIntervalYearMonthResults();
-
-  void readIntervalYearMonth(ReadIntervalYearMonthResults readIntervalYearMonthResult) throws IOException;
+  public HiveIntervalYearMonthWritable currentHiveIntervalYearMonthWritable;
 
   /*
    * INTERVAL_DAY_TIME.
    */
-
-  // This class is for abstract since each format may need its own specialization.
-  public abstract class ReadIntervalDayTimeResults {
-
-    protected HiveIntervalDayTimeWritable hiveIntervalDayTimeWritable;
-
-    public ReadIntervalDayTimeResults() {
-      hiveIntervalDayTimeWritable = new HiveIntervalDayTimeWritable();
-    }
-
-    public HiveIntervalDayTime getHiveIntervalDayTime() {
-      return hiveIntervalDayTimeWritable.getHiveIntervalDayTime();
-    }
-  }
-
-  // Reading a INTERVAL_DAY_TIME field require a results object to receive value information.
-  // A separate results object is created at initialization per different INTERVAL_DAY_TIME field. 
-  ReadIntervalDayTimeResults createReadIntervalDayTimeResults();
-
-  void readIntervalDayTime(ReadIntervalDayTimeResults readIntervalDayTimeResult) throws IOException;
+  public HiveIntervalDayTimeWritable currentHiveIntervalDayTimeWritable;
 
   /*
    * DECIMAL.
    */
-
-  // This class is for abstract since each format may need its own specialization.
-  public abstract class ReadDecimalResults {
-
-    protected DecimalTypeInfo decimalTypeInfo;
-
-    public ReadDecimalResults() {
-    }
-
-    public void init(DecimalTypeInfo decimalTypeInfo) {
-      this.decimalTypeInfo = decimalTypeInfo;
-    }
-
-    public boolean isInit() {
-      return (decimalTypeInfo != null);
-    }
-
-    public abstract HiveDecimal getHiveDecimal();
-  }
-
-  // Reading a DECIMAL field require a results object to receive value information.  A separate
-  // results object is created at initialization per different DECIMAL field. 
-  ReadDecimalResults createReadDecimalResults();
-
-  void readHiveDecimal(ReadDecimalResults readDecimalResults) throws IOException;
+  public HiveDecimalWritable currentHiveDecimalWritable;
 }

@@ -18,24 +18,15 @@
 
 package org.apache.hadoop.hive.serde2.lazy.fast;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.CharacterCodingException;
 import java.sql.Date;
-import java.sql.Timestamp;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
-import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
-import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
-import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyBinary;
 import org.apache.hadoop.hive.serde2.lazy.LazyByte;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
@@ -43,11 +34,8 @@ import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazyShort;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.TimestampParser;
 
@@ -66,17 +54,17 @@ import org.apache.hive.common.util.TimestampParser;
  * other type specific buffers.  So, those references are only valid until the next time set is
  * called.
  */
-public final class LazySimpleDeserializeRead implements DeserializeRead {
+public final class LazySimpleDeserializeRead extends DeserializeRead {
   public static final Logger LOG = LoggerFactory.getLogger(LazySimpleDeserializeRead.class.getName());
 
-  private TypeInfo[] typeInfos;
-
+  private int[] startPosition;
 
   private byte separator;
   private boolean isEscaped;
   private byte escapeChar;
   private byte[] nullSequenceBytes;
   private boolean isExtendedBooleanLiteral;
+  private boolean lastColumnTakesRest;
 
   private byte[] bytes;
   private int start;
@@ -87,34 +75,18 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
   private int fieldStart;
   private int fieldLength;
 
-  private boolean saveBool;
-  private byte saveByte;
-  private short saveShort;
-  private int saveInt;
-  private long saveLong;
-  private float saveFloat;
-  private double saveDouble;
-  private byte[] saveBytes;
-  private int saveBytesStart;
-  private int saveBytesLength;
-  private Date saveDate;
-  private Timestamp saveTimestamp;
-  private HiveIntervalYearMonth saveIntervalYearMonth;
-  private HiveIntervalDayTime saveIntervalDayTime;
-  private HiveDecimal saveDecimal;
-  private DecimalTypeInfo saveDecimalTypeInfo;
-
   private Text tempText;
   private TimestampParser timestampParser;
 
-  private boolean readBeyondConfiguredFieldsWarned;
-  private boolean readBeyondBufferRangeWarned;
-  private boolean bufferRangeHasExtraDataWarned;
+  private boolean extraFieldWarned;
+  private boolean missingFieldWarned;
 
   public LazySimpleDeserializeRead(TypeInfo[] typeInfos,
       byte separator, LazySerDeParameters lazyParams) {
+    super(typeInfos);
 
-    this.typeInfos = typeInfos;
+    // Field length is difference between positions hence one extra.
+    startPosition = new int[typeInfos.length + 1];
 
     this.separator = separator;
 
@@ -122,24 +94,21 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
     escapeChar = lazyParams.getEscapeChar();
     nullSequenceBytes = lazyParams.getNullSequence().getBytes();
     isExtendedBooleanLiteral = lazyParams.isExtendedBooleanLiteral();
+    lastColumnTakesRest = lazyParams.isLastColumnTakesRest();
 
     fieldCount = typeInfos.length;
     tempText = new Text();
-    readBeyondConfiguredFieldsWarned = false;
-    readBeyondBufferRangeWarned = false;
-    bufferRangeHasExtraDataWarned = false;
+    extraFieldWarned = false;
+    missingFieldWarned = false;
+  }
+
+  public LazySimpleDeserializeRead(TypeInfo[] typeInfos, LazySerDeParameters lazyParams) {
+    this(typeInfos, lazyParams.getSeparators()[0], lazyParams);
   }
 
   // Not public since we must have the field count so every 8 fields NULL bytes can be navigated.
   private LazySimpleDeserializeRead() {
-  }
-
-  /*
-   * The type information for all fields.
-   */
-  @Override
-  public TypeInfo[] typeInfos() {
-    return typeInfos;
+    super();
   }
 
   /*
@@ -154,6 +123,64 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
     fieldIndex = -1;
   }
 
+  /**
+   * Parse the byte[] and fill each field.
+   *
+   * This is an adapted version of the parse method in the LazyStruct class.
+   * They should parse things the same way.
+   */
+  private void parse() {
+
+    int structByteEnd = end;
+    int fieldId = 0;
+    int fieldByteBegin = start;
+    int fieldByteEnd = start;
+
+    // Go through all bytes in the byte[]
+    while (fieldByteEnd <= structByteEnd) {
+      if (fieldByteEnd == structByteEnd || bytes[fieldByteEnd] == separator) {
+        // Reached the end of a field?
+        if (lastColumnTakesRest && fieldId == fieldCount - 1) {
+          fieldByteEnd = structByteEnd;
+        }
+        startPosition[fieldId] = fieldByteBegin;
+        fieldId++;
+        if (fieldId == fieldCount || fieldByteEnd == structByteEnd) {
+          // All fields have been parsed, or bytes have been parsed.
+          // We need to set the startPosition of fields.length to ensure we
+          // can use the same formula to calculate the length of each field.
+          // For missing fields, their starting positions will all be the same,
+          // which will make their lengths to be -1 and uncheckedGetField will
+          // return these fields as NULLs.
+          for (int i = fieldId; i <= fieldCount; i++) {
+            startPosition[i] = fieldByteEnd + 1;
+          }
+          break;
+        }
+        fieldByteBegin = fieldByteEnd + 1;
+        fieldByteEnd++;
+      } else {
+        if (isEscaped && bytes[fieldByteEnd] == escapeChar
+            && fieldByteEnd + 1 < structByteEnd) {
+          // ignore the char after escape_char
+          fieldByteEnd += 2;
+        } else {
+          fieldByteEnd++;
+        }
+      }
+    }
+
+    // Extra bytes at the end?
+    if (!extraFieldWarned && fieldByteEnd < structByteEnd) {
+      doExtraFieldWarned();
+    }
+
+    // Missing fields?
+    if (!missingFieldWarned && fieldId < fieldCount) {
+      doMissingFieldWarned(fieldId);
+    }
+  }
+
   /*
    * Reads the NULL information for a field.
    *
@@ -162,57 +189,24 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
    */
   @Override
   public boolean readCheckNull() {
-    if (++fieldIndex >= fieldCount) {
-      // Reading beyond the specified field count produces NULL.
-      if (!readBeyondConfiguredFieldsWarned) {
-        // Warn only once.
-        LOG.info("Reading beyond configured fields! Configured " + fieldCount + " fields but "
-            + " reading more (NULLs returned).  Ignoring similar problems.");
-        readBeyondConfiguredFieldsWarned = true;
-      }
+    if (fieldIndex == -1) {
+      parse();
+      fieldIndex = 0;
+    } else if (fieldIndex + 1 >= fieldCount) {
       return true;
+    } else {
+      fieldIndex++;
     }
-    if (offset > end) {
-      // We must allow for an empty field at the end, so no strict >= checking.
-      if (!readBeyondBufferRangeWarned) {
-        // Warn only once.
-        int length = end - start;
-        LOG.info("Reading beyond buffer range! Buffer range " +  start
-            + " for length " + length + " but reading more (NULLs returned)."
-            + "  Ignoring similar problems.");
-        readBeyondBufferRangeWarned = true;
-      }
 
-      // char[] charsBuffer = new char[end - start];
-      // for (int c = 0; c < charsBuffer.length; c++) {
-      //  charsBuffer[c] = (char) (bytes[start + c] & 0xFF);
-      // }
-
+    // Do we want this field?
+    if (columnsToInclude != null && !columnsToInclude[fieldIndex]) {
       return true;
     }
 
-    fieldStart = offset;
-    while (true) {
-      if (offset >= end) {
-        fieldLength = offset - fieldStart;
-        break;
-      }
-      if (bytes[offset] == separator) {
-        fieldLength = (offset++ - fieldStart);
-        break;
-      }
-      if (isEscaped && bytes[offset] == escapeChar
-          && offset + 1 < end) {
-        // Ignore the char after escape char.
-        offset += 2;
-      } else {
-        offset++;
-      }
-    }
-
-    char[] charField = new char[fieldLength];
-    for (int c = 0; c < charField.length; c++) {
-      charField[c] = (char) (bytes[fieldStart + c] & 0xFF);
+    fieldStart = startPosition[fieldIndex];
+    fieldLength = startPosition[fieldIndex + 1] - startPosition[fieldIndex] - 1;
+    if (fieldLength < 0) {
+      return true;
     }
 
     // Is the field the configured string representing NULL?
@@ -231,7 +225,10 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
       }
     }
 
-    switch (((PrimitiveTypeInfo) typeInfos[fieldIndex]).getPrimitiveCategory()) {
+    /*
+     * We have a field and are positioned to it.  Read it.
+     */
+    switch (primitiveCategories[fieldIndex]) {
     case BOOLEAN:
       {
         int i = fieldStart;
@@ -240,7 +237,7 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
               (bytes[i + 1] == 'R' || bytes[i + 1] == 'r') &&
               (bytes[i + 2] == 'U' || bytes[i + 1] == 'u') &&
               (bytes[i + 3] == 'E' || bytes[i + 3] == 'e')) {
-            saveBool = true;
+            currentBoolean = true;
           } else {
             // No boolean value match for 5 char field.
             return true;
@@ -251,7 +248,7 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
               (bytes[i + 2] == 'L' || bytes[i + 2] == 'l') &&
               (bytes[i + 3] == 'S' || bytes[i + 3] == 's') &&
               (bytes[i + 4] == 'E' || bytes[i + 4] == 'e')) {
-            saveBool = false;
+            currentBoolean = false;
           } else {
             // No boolean value match for 4 char field.
             return true;
@@ -259,9 +256,9 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
         } else if (isExtendedBooleanLiteral && fieldLength == 1) {
           byte b = bytes[fieldStart];
           if (b == '1' || b == 't' || b == 'T') {
-            saveBool = true;
+            currentBoolean = true;
           } else if (b == '0' || b == 'f' || b == 'F') {
-            saveBool = false;
+            currentBoolean = false;
           } else {
             // No boolean value match for extended 1 char field.
             return true;
@@ -274,66 +271,42 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
       break;
     case BYTE:
       try {
-        saveByte = LazyByte.parseByte(bytes, fieldStart, fieldLength, 10);
+        currentByte = LazyByte.parseByte(bytes, fieldStart, fieldLength, 10);
       } catch (NumberFormatException e) {
         logExceptionMessage(bytes, fieldStart, fieldLength, "TINYINT");
         return true;
       }
-//    if (!parseLongFast()) {
-//      return true;
-//    }
-//    saveShort = (short) saveLong;
-//    if (saveShort != saveLong) {
-//      return true;
-//    }
       break;
     case SHORT:
       try {
-        saveShort = LazyShort.parseShort(bytes, fieldStart, fieldLength, 10);
+        currentShort = LazyShort.parseShort(bytes, fieldStart, fieldLength, 10);
       } catch (NumberFormatException e) {
         logExceptionMessage(bytes, fieldStart, fieldLength, "SMALLINT");
         return true;
       }
-//    if (!parseLongFast()) {
-//      return true;
-//    }
-//    saveShort = (short) saveLong;
-//    if (saveShort != saveLong) {
-//      return true;
-//    }
       break;
     case INT:
       try {
-        saveInt = LazyInteger.parseInt(bytes, fieldStart, fieldLength, 10);
+        currentInt = LazyInteger.parseInt(bytes, fieldStart, fieldLength, 10);
       } catch (NumberFormatException e) {
         logExceptionMessage(bytes, fieldStart, fieldLength, "INT");
         return true;
       }
-//    if (!parseLongFast()) {
-//      return true;
-//    }
-//    saveInt = (int) saveLong;
-//    if (saveInt != saveLong) {
-//      return true;
-//    }
       break;
     case LONG:
       try {
-        saveLong = LazyLong.parseLong(bytes, fieldStart, fieldLength, 10);
+        currentLong = LazyLong.parseLong(bytes, fieldStart, fieldLength, 10);
       } catch (NumberFormatException e) {
         logExceptionMessage(bytes, fieldStart, fieldLength, "BIGINT");
         return true;
       }
-//    if (!parseLongFast()) {
-//      return true;
-//    }
       break;
     case FLOAT:
       {
         String byteData = null;
         try {
           byteData = Text.decode(bytes, fieldStart, fieldLength);
-          saveFloat = Float.parseFloat(byteData);
+          currentFloat = Float.parseFloat(byteData);
         } catch (NumberFormatException e) {
           LOG.debug("Data not in the Float data type range so converted to null. Given data is :"
               + byteData, e);
@@ -343,16 +316,13 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
           return true;
         }
       }
-//    if (!parseFloat()) {
-//      return true;
-//    }
       break;
     case DOUBLE:
       {
         String byteData = null;
         try {
           byteData = Text.decode(bytes, fieldStart, fieldLength);
-          saveDouble = Double.parseDouble(byteData);
+          currentDouble = Double.parseDouble(byteData);
         } catch (NumberFormatException e) {
           LOG.debug("Data not in the Double data type range so converted to null. Given data is :"
               + byteData, e);
@@ -362,9 +332,6 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
           return true;
         }
       }
-//    if (!parseDouble()) {
-//      return true;
-//    }
       break;
 
     case STRING:
@@ -372,14 +339,14 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
     case VARCHAR:
       if (isEscaped) {
         LazyUtils.copyAndEscapeStringDataToText(bytes, fieldStart, fieldLength, escapeChar, tempText);
-        saveBytes = tempText.getBytes();
-        saveBytesStart = 0;
-        saveBytesLength = tempText.getLength();
+        currentBytes = tempText.getBytes();
+        currentBytesStart = 0;
+        currentBytesLength = tempText.getLength();
       } else {
         // if the data is not escaped, simply copy the data.
-        saveBytes = bytes;
-        saveBytesStart = fieldStart;
-        saveBytesLength = fieldLength;
+        currentBytes = bytes;
+        currentBytesStart = fieldStart;
+        currentBytesLength = fieldLength;
       }
       break;
     case BINARY:
@@ -389,9 +356,9 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
         byte[] decoded = LazyBinary.decodeIfNeeded(recv);
         // use the original bytes in case decoding should fail
         decoded = decoded.length > 0 ? decoded : recv;
-        saveBytes = decoded;
-        saveBytesStart = 0;
-        saveBytesLength = decoded.length;
+        currentBytes = decoded;
+        currentBytesStart = 0;
+        currentBytesLength = decoded.length;
       }
       break;
     case DATE:
@@ -399,15 +366,12 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
         String s = null;
         try {
           s = Text.decode(bytes, fieldStart, fieldLength);
-          saveDate = Date.valueOf(s);
+          currentDateWritable.set(Date.valueOf(s));
         } catch (Exception e) {
           logExceptionMessage(bytes, fieldStart, fieldLength, "DATE");
           return true;
         }
       }
-//    if (!parseDate()) {
-//      return true;
-//    }
       break;
     case TIMESTAMP:
       {
@@ -427,46 +391,37 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
             if (timestampParser == null) {
               timestampParser = new TimestampParser();
             }
-            saveTimestamp = timestampParser.parseTimestamp(s);
+            currentTimestampWritable.set(timestampParser.parseTimestamp(s));
           } catch (IllegalArgumentException e) {
             logExceptionMessage(bytes, fieldStart, fieldLength, "TIMESTAMP");
             return true;
           }
         }
       }
-//    if (!parseTimestamp()) {
-//      return true;
-//    }
       break;
     case INTERVAL_YEAR_MONTH:
       {
         String s = null;
         try {
           s = Text.decode(bytes, fieldStart, fieldLength);
-          saveIntervalYearMonth = HiveIntervalYearMonth.valueOf(s);
+          currentHiveIntervalYearMonthWritable.set(HiveIntervalYearMonth.valueOf(s));
         } catch (Exception e) {
           logExceptionMessage(bytes, fieldStart, fieldLength, "INTERVAL_YEAR_MONTH");
           return true;
         }
       }
-//    if (!parseIntervalYearMonth()) {
-//      return true;
-//    }
       break;
     case INTERVAL_DAY_TIME:
       {
         String s = null;
         try {
           s = Text.decode(bytes, fieldStart, fieldLength);
-          saveIntervalDayTime = HiveIntervalDayTime.valueOf(s);
+          currentHiveIntervalDayTimeWritable.set(HiveIntervalDayTime.valueOf(s));
         } catch (Exception e) {
           logExceptionMessage(bytes, fieldStart, fieldLength, "INTERVAL_DAY_TIME");
           return true;
         }
       }
-//    if (!parseIntervalDayTime()) {
-//      return true;
-//    }
       break;
     case DECIMAL:
       {
@@ -478,25 +433,23 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
           return true;
         }
 
-        saveDecimal = HiveDecimal.create(byteData);
-        saveDecimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
-        int precision = saveDecimalTypeInfo.getPrecision();
-        int scale = saveDecimalTypeInfo.getScale();
-        saveDecimal = HiveDecimal.enforcePrecisionScale(saveDecimal, precision,
-            scale);
-        if (saveDecimal == null) {
+        HiveDecimal decimal = HiveDecimal.create(byteData);
+        DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
+        int precision = decimalTypeInfo.getPrecision();
+        int scale = decimalTypeInfo.getScale();
+        decimal = HiveDecimal.enforcePrecisionScale(
+            decimal, precision, scale);
+        if (decimal == null) {
           LOG.debug("Data not in the HiveDecimal data type range so converted to null. Given data is :"
               + byteData);
           return true;
         }
+        currentHiveDecimalWritable.set(decimal);
       }
-//    if (!parseDecimal()) {
-//      return true;
-//    }
       break;
 
     default:
-      throw new Error("Unexpected primitive category " + ((PrimitiveTypeInfo) typeInfos[fieldIndex]).getPrimitiveCategory());
+      throw new Error("Unexpected primitive category " + primitiveCategories[fieldIndex].name());
     }
 
     return false;
@@ -520,17 +473,7 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
    */
   @Override
   public void extraFieldsCheck() {
-    if (offset < end) {
-      // We did not consume all of the byte range.
-      if (!bufferRangeHasExtraDataWarned) {
-        // Warn only once.
-        int length = end - start;
-        LOG.info("Not all fields were read in the buffer range! Buffer range " +  start
-            + " for length " + length + " but reading more (NULLs returned)."
-            + "  Ignoring similar problems.");
-        bufferRangeHasExtraDataWarned = true;
-      }
-    }
+    // UNDONE: Get rid of...
   }
 
   /*
@@ -538,407 +481,30 @@ public final class LazySimpleDeserializeRead implements DeserializeRead {
    */
   @Override
   public boolean readBeyondConfiguredFieldsWarned() {
-    return readBeyondConfiguredFieldsWarned;
+    return missingFieldWarned;
   }
   @Override
   public boolean readBeyondBufferRangeWarned() {
-    return readBeyondBufferRangeWarned;
+    return extraFieldWarned;
   }
   @Override
   public boolean bufferRangeHasExtraDataWarned() {
-    return bufferRangeHasExtraDataWarned;
+    return false;  // UNDONE: Get rid of...
   }
 
-  /*
-   * BOOLEAN.
-   */
-  @Override
-  public boolean readBoolean() {
-    return saveBool;
+  private void doExtraFieldWarned() {
+    extraFieldWarned = true;
+    LOG.warn("Extra bytes detected at the end of the row! Ignoring similar "
+        + "problems.");
   }
 
-  /*
-   * BYTE.
-   */
-  @Override
-  public byte readByte() {
-    return saveByte;
+  private void doMissingFieldWarned(int fieldId) {
+    missingFieldWarned = true;
+    LOG.info("Missing fields! Expected " + fieldCount + " fields but "
+        + "only got " + fieldId + "! Ignoring similar problems.");
   }
 
-  /*
-   * SHORT.
-   */
-  @Override
-  public short readShort() {
-    return saveShort;
-  }
-
-  /*
-   * INT.
-   */
-  @Override
-  public int readInt() {
-    return saveInt;
- }
-
-  /*
-   * LONG.
-   */
-  @Override
-  public long readLong() {
-    return saveLong;
-  }
-
-  /*
-   * FLOAT.
-   */
-  @Override
-  public float readFloat() {
-    return saveFloat;
-  }
-
-  /*
-   * DOUBLE.
-   */
-  @Override
-  public double readDouble() {
-    return saveDouble;
-  }
-
-  /*
-   * STRING.
-   *
-   * Can be used to read CHAR and VARCHAR when the caller takes responsibility for
-   * truncation/padding issues.
-   */
-
-  // This class is for internal use.
-  private class LazySimpleReadStringResults extends ReadStringResults {
-    public LazySimpleReadStringResults() {
-      super();
-    }
-  }
-
-  // Reading a STRING field require a results object to receive value information.  A separate
-  // results object is created by the caller at initialization per different bytes field.
-  @Override
-  public ReadStringResults createReadStringResults() {
-    return new LazySimpleReadStringResults();
-  }
-
-  @Override
-  public void readString(ReadStringResults readStringResults) {
-    readStringResults.bytes = saveBytes;
-    readStringResults.start = saveBytesStart;
-    readStringResults.length = saveBytesLength;
-  }
-
-  /*
-   * CHAR.
-   */
-
-  // This class is for internal use.
-  private static class LazySimpleReadHiveCharResults extends ReadHiveCharResults {
-
-    // Use our STRING reader.
-    public LazySimpleReadStringResults readStringResults;
-
-    public LazySimpleReadHiveCharResults() {
-      super();
-    }
-
-    public HiveCharWritable getHiveCharWritable() {
-      return hiveCharWritable;
-    }
-  }
-
-  // Reading a CHAR field require a results object to receive value information.  A separate
-  // results object is created by the caller at initialization per different CHAR field.
-  @Override
-  public ReadHiveCharResults createReadHiveCharResults() {
-    return new LazySimpleReadHiveCharResults();
-  }
-
-  @Override
-  public void readHiveChar(ReadHiveCharResults readHiveCharResults) throws IOException {
-    LazySimpleReadHiveCharResults LazySimpleReadHiveCharResults = (LazySimpleReadHiveCharResults) readHiveCharResults;
-
-    if (!LazySimpleReadHiveCharResults.isInit()) {
-      LazySimpleReadHiveCharResults.init((CharTypeInfo) typeInfos[fieldIndex]);
-    }
-
-    if (LazySimpleReadHiveCharResults.readStringResults == null) {
-      LazySimpleReadHiveCharResults.readStringResults = new LazySimpleReadStringResults();
-    }
-    LazySimpleReadStringResults readStringResults = LazySimpleReadHiveCharResults.readStringResults;
-
-    // Read the bytes using our basic method.
-    readString(readStringResults);
-
-    // Copy the bytes into our Text object, then truncate.
-    HiveCharWritable hiveCharWritable = LazySimpleReadHiveCharResults.getHiveCharWritable();
-    hiveCharWritable.getTextValue().set(readStringResults.bytes, readStringResults.start, readStringResults.length);
-    hiveCharWritable.enforceMaxLength(LazySimpleReadHiveCharResults.getMaxLength());
-
-    readHiveCharResults.bytes = hiveCharWritable.getTextValue().getBytes();
-    readHiveCharResults.start = 0;
-    readHiveCharResults.length = hiveCharWritable.getTextValue().getLength();
-  }
-
-  /*
-   * VARCHAR.
-   */
-
-  // This class is for internal use.
-  private static class LazySimpleReadHiveVarcharResults extends ReadHiveVarcharResults {
-
-    // Use our bytes reader.
-    public LazySimpleReadStringResults readStringResults;
-
-    public LazySimpleReadHiveVarcharResults() {
-      super();
-    }
-
-    public HiveVarcharWritable getHiveVarcharWritable() {
-      return hiveVarcharWritable;
-    }
-  }
-
-  // Reading a VARCHAR field require a results object to receive value information.  A separate
-  // results object is created by the caller at initialization per different VARCHAR field.
-  @Override
-  public ReadHiveVarcharResults createReadHiveVarcharResults() {
-    return new LazySimpleReadHiveVarcharResults();
-  }
-
-  @Override
-  public void readHiveVarchar(ReadHiveVarcharResults readHiveVarcharResults) throws IOException {
-    LazySimpleReadHiveVarcharResults lazySimpleReadHiveVarvarcharResults = (LazySimpleReadHiveVarcharResults) readHiveVarcharResults;
-
-    if (!lazySimpleReadHiveVarvarcharResults.isInit()) {
-      lazySimpleReadHiveVarvarcharResults.init((VarcharTypeInfo) typeInfos[fieldIndex]);
-    }
-
-    if (lazySimpleReadHiveVarvarcharResults.readStringResults == null) {
-      lazySimpleReadHiveVarvarcharResults.readStringResults = new LazySimpleReadStringResults();
-    }
-    LazySimpleReadStringResults readStringResults = lazySimpleReadHiveVarvarcharResults.readStringResults;
-
-    // Read the bytes using our basic method.
-    readString(readStringResults);
-
-    // Copy the bytes into our Text object, then truncate.
-    HiveVarcharWritable hiveVarcharWritable = lazySimpleReadHiveVarvarcharResults.getHiveVarcharWritable();
-    hiveVarcharWritable.getTextValue().set(readStringResults.bytes, readStringResults.start, readStringResults.length);
-    hiveVarcharWritable.enforceMaxLength(lazySimpleReadHiveVarvarcharResults.getMaxLength());
-
-    readHiveVarcharResults.bytes = hiveVarcharWritable.getTextValue().getBytes();
-    readHiveVarcharResults.start = 0;
-    readHiveVarcharResults.length = hiveVarcharWritable.getTextValue().getLength();
-  }
-
-  /*
-   * BINARY.
-   */
-
-  // This class is for internal use.
-  private class LazySimpleReadBinaryResults extends ReadBinaryResults {
-    public LazySimpleReadBinaryResults() {
-      super();
-    }
-  }
-
-  // Reading a BINARY field require a results object to receive value information.  A separate
-  // results object is created by the caller at initialization per different bytes field.
-  @Override
-  public ReadBinaryResults createReadBinaryResults() {
-    return new LazySimpleReadBinaryResults();
-  }
-
-  @Override
-  public void readBinary(ReadBinaryResults readBinaryResults) {
-    readBinaryResults.bytes = saveBytes;
-    readBinaryResults.start = saveBytesStart;
-    readBinaryResults.length = saveBytesLength;
-  }
-
-  /*
-   * DATE.
-   */
-
-  // This class is for internal use.
-  private static class LazySimpleReadDateResults extends ReadDateResults {
-
-    public LazySimpleReadDateResults() {
-      super();
-    }
-
-    public DateWritable getDateWritable() {
-      return dateWritable;
-    }
-  }
-
-  // Reading a DATE field require a results object to receive value information.  A separate
-  // results object is created by the caller at initialization per different DATE field.
-  @Override
-  public ReadDateResults createReadDateResults() {
-    return new LazySimpleReadDateResults();
-  }
-
-  @Override
-  public void readDate(ReadDateResults readDateResults) {
-    LazySimpleReadDateResults lazySimpleReadDateResults = (LazySimpleReadDateResults) readDateResults;
-
-    DateWritable dateWritable = lazySimpleReadDateResults.getDateWritable();
-    dateWritable.set(saveDate);
-    saveDate = null;
-   }
-
-
-  /*
-   * INTERVAL_YEAR_MONTH.
-   */
-
-  // This class is for internal use.
-  private static class LazySimpleReadIntervalYearMonthResults extends ReadIntervalYearMonthResults {
-
-    public LazySimpleReadIntervalYearMonthResults() {
-      super();
-    }
-
-    public HiveIntervalYearMonthWritable getHiveIntervalYearMonthWritable() {
-      return hiveIntervalYearMonthWritable;
-    }
-  }
-
-  // Reading a INTERVAL_YEAR_MONTH field require a results object to receive value information.
-  // A separate results object is created by the caller at initialization per different
-  // INTERVAL_YEAR_MONTH field.
-  @Override
-  public ReadIntervalYearMonthResults createReadIntervalYearMonthResults() {
-    return new LazySimpleReadIntervalYearMonthResults();
-  }
-
-  @Override
-  public void readIntervalYearMonth(ReadIntervalYearMonthResults readIntervalYearMonthResults)
-          throws IOException {
-    LazySimpleReadIntervalYearMonthResults lazySimpleReadIntervalYearMonthResults =
-            (LazySimpleReadIntervalYearMonthResults) readIntervalYearMonthResults;
-
-    HiveIntervalYearMonthWritable hiveIntervalYearMonthWritable =
-            lazySimpleReadIntervalYearMonthResults.getHiveIntervalYearMonthWritable();
-    hiveIntervalYearMonthWritable.set(saveIntervalYearMonth);
-    saveIntervalYearMonth = null;
-  }
-
-  /*
-   * INTERVAL_DAY_TIME.
-   */
-
-  // This class is for internal use.
-  private static class LazySimpleReadIntervalDayTimeResults extends ReadIntervalDayTimeResults {
-
-    public LazySimpleReadIntervalDayTimeResults() {
-      super();
-    }
-
-    public HiveIntervalDayTimeWritable getHiveIntervalDayTimeWritable() {
-      return hiveIntervalDayTimeWritable;
-    }
-  }
-
-  // Reading a INTERVAL_DAY_TIME field require a results object to receive value information.
-  // A separate results object is created by the caller at initialization per different
-  // INTERVAL_DAY_TIME field.
-  @Override
-  public ReadIntervalDayTimeResults createReadIntervalDayTimeResults() {
-    return new LazySimpleReadIntervalDayTimeResults();
-  }
-
-  @Override
-  public void readIntervalDayTime(ReadIntervalDayTimeResults readIntervalDayTimeResults)
-          throws IOException {
-    LazySimpleReadIntervalDayTimeResults lazySimpleReadIntervalDayTimeResults =
-        (LazySimpleReadIntervalDayTimeResults) readIntervalDayTimeResults;
-
-    HiveIntervalDayTimeWritable hiveIntervalDayTimeWritable =
-            lazySimpleReadIntervalDayTimeResults.getHiveIntervalDayTimeWritable();
-    hiveIntervalDayTimeWritable.set(saveIntervalDayTime);
-    saveIntervalDayTime = null;
-  }
-
-  /*
-   * TIMESTAMP.
-   */
-
-  // This class is for internal use.
-  private static class LazySimpleReadTimestampResults extends ReadTimestampResults {
-
-    public LazySimpleReadTimestampResults() {
-      super();
-    }
-
-    public TimestampWritable getTimestampWritable() {
-      return timestampWritable;
-    }
-  }
-
-  // Reading a TIMESTAMP field require a results object to receive value information.  A separate
-  // results object is created by the caller at initialization per different TIMESTAMP field.
-  @Override
-  public ReadTimestampResults createReadTimestampResults() {
-    return new LazySimpleReadTimestampResults();
-  }
-
-  @Override
-  public void readTimestamp(ReadTimestampResults readTimestampResults) {
-    LazySimpleReadTimestampResults lazySimpleReadTimestampResults =
-            (LazySimpleReadTimestampResults) readTimestampResults;
-
-    TimestampWritable timestampWritable = lazySimpleReadTimestampResults.getTimestampWritable();
-    timestampWritable.set(saveTimestamp);
-    saveTimestamp = null;
-  }
-
-  /*
-   * DECIMAL.
-   */
-
-  // This class is for internal use.
-  private static class LazySimpleReadDecimalResults extends ReadDecimalResults {
-
-    HiveDecimal hiveDecimal;
-
-    public LazySimpleReadDecimalResults() {
-      super();
-    }
-
-    @Override
-    public HiveDecimal getHiveDecimal() {
-      return hiveDecimal;
-    }
-  }
-
-  // Reading a DECIMAL field require a results object to receive value information.  A separate
-  // results object is created by the caller at initialization per different DECIMAL field.
-  @Override
-  public ReadDecimalResults createReadDecimalResults() {
-    return new LazySimpleReadDecimalResults();
-  }
-
-  @Override
-  public void readHiveDecimal(ReadDecimalResults readDecimalResults) {
-    LazySimpleReadDecimalResults lazySimpleReadDecimalResults = (LazySimpleReadDecimalResults) readDecimalResults;
-
-    if (!lazySimpleReadDecimalResults.isInit()) {
-      lazySimpleReadDecimalResults.init(saveDecimalTypeInfo);
-    }
-
-    lazySimpleReadDecimalResults.hiveDecimal = saveDecimal;
-
-    saveDecimal = null;
-    saveDecimalTypeInfo = null;
-  }
+  //------------------------------------------------------------------------------------------------
 
   private static byte[] maxLongBytes = ((Long) Long.MAX_VALUE).toString().getBytes();
   private static int maxLongDigitsCount = maxLongBytes.length;

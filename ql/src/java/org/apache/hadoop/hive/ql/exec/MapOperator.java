@@ -72,25 +72,11 @@ import com.google.common.annotations.VisibleForTesting;
  * Writable data structure from a Table (instead of a Hive Object).
  **/
 @SuppressWarnings("deprecation")
-public class MapOperator extends Operator<MapWork> implements Serializable, Cloneable {
+public class MapOperator extends AbstractMapOperator {
 
   private static final long serialVersionUID = 1L;
 
-  /**
-   * Counter.
-   *
-   */
-  public static enum Counter {
-    DESERIALIZE_ERRORS,
-    RECORDS_IN
-  }
-
-  private final transient LongWritable deserialize_error_count = new LongWritable();
-  private final transient LongWritable recordCounter = new LongWritable();
-  protected transient long numRows = 0;
   protected transient long cntr = 1;
-  private final Map<Integer, DummyStoreOperator> connectedOperators
-    = new TreeMap<Integer, DummyStoreOperator>();
   protected transient long logEveryNRows = 0;
 
   // input path --> {operator --> context}
@@ -102,7 +88,6 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
 
   // context for current input file
   protected transient MapOpCtx[] currentCtxs;
-  private transient final Map<String, Path> normalizedPaths = new HashMap<String, Path>();
 
   protected static class MapOpCtx {
 
@@ -433,31 +418,6 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     }
   }
 
-  private String getNominalPath(Path fpath) {
-    String nominal = null;
-    boolean schemaless = fpath.toUri().getScheme() == null;
-    for (String onefile : conf.getPathToAliases().keySet()) {
-      Path onepath = normalizePath(onefile, schemaless);
-      Path curfpath = fpath;
-      if(!schemaless && onepath.toUri().getScheme() == null) {
-        curfpath = new Path(fpath.toUri().getPath());
-      }
-      // check for the operators who will process rows coming to this Map Operator
-      if (onepath.toUri().relativize(curfpath.toUri()).equals(curfpath.toUri())) {
-        // not from this
-        continue;
-      }
-      if (nominal != null) {
-        throw new IllegalStateException("Ambiguous input path " + fpath);
-      }
-      nominal = onefile;
-    }
-    if (nominal == null) {
-      throw new IllegalStateException("Invalid input path " + fpath);
-    }
-    return nominal;
-  }
-
   /** Kryo ctor. */
   protected MapOperator() {
     super();
@@ -473,30 +433,15 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   }
 
   public void initializeMapOperator(Configuration hconf) throws HiveException {
-    // set that parent initialization is done and call initialize on children
-    state = State.INIT;
-    statsMap.put(Counter.DESERIALIZE_ERRORS.toString(), deserialize_error_count);
+    super.initializeMapOperator(hconf);
 
-    numRows = 0;
     cntr = 1;
     logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
-
-    String context = hconf.get(Operator.CONTEXT_NAME_KEY, "");
-    if (context != null && !context.isEmpty()) {
-      context = "_" + context.replace(" ","_");
-    }
-    statsMap.put(Counter.RECORDS_IN + context, recordCounter);
 
     for (Entry<Operator<?>, StructObjectInspector> entry : childrenOpToOI.entrySet()) {
       Operator<?> child = entry.getKey();
       child.initialize(hconf, new ObjectInspector[] {entry.getValue()});
     }
-  }
-
-  @Override
-  public void closeOp(boolean abort) throws HiveException {
-    recordCounter.set(numRows);
-    super.closeOp(abort);
   }
 
   // Find context for current input file
@@ -526,20 +471,6 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
       operator.setInputContext(context.tableName, context.partName);
     }
     currentCtxs = contexts.values().toArray(new MapOpCtx[contexts.size()]);
-  }
-
-  private Path normalizePath(String onefile, boolean schemaless) {
-    //creating Path is expensive, so cache the corresponding
-    //Path object in normalizedPaths
-    Path path = normalizedPaths.get(onefile);
-    if (path == null) {
-      path = new Path(onefile);
-      if (schemaless && path.toUri().getScheme() != null) {
-        path = new Path(path.toUri().getPath());
-      }
-      normalizedPaths.put(onefile, path);
-    }
-    return path;
   }
 
   public void process(Writable value) throws HiveException {
@@ -698,17 +629,4 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
 
     return currentCtxs[0].deserializer;
   }
-
-  public void clearConnectedOperators() {
-    connectedOperators.clear();
-  }
-
-  public void setConnectedOperators(int tag, DummyStoreOperator dummyOp) {
-    connectedOperators.put(tag, dummyOp);
-  }
-
-  public Map<Integer, DummyStoreOperator> getConnectedOperators() {
-    return connectedOperators;
-  }
-
 }

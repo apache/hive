@@ -72,7 +72,7 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
     private boolean addPartitionCols = true;
 
     public NullRowsRecordReader(Configuration conf, InputSplit split) throws IOException {
-      boolean isVectorMode = Utilities.isVectorMode(conf);
+      boolean isVectorMode = Utilities.getUseVectorizedInputFileFormat(conf);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Null record reader in " + (isVectorMode ? "" : "non-") + "vector mode");
       }

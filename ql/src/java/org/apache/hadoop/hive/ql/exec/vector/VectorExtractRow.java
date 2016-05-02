@@ -18,758 +18,329 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.io.IOException;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.List;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
-import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
-import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveCharObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveDecimalObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.DataOutputBuffer;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hive.common.util.DateUtils;
+import org.apache.hadoop.io.Writable;
+
+import com.google.common.base.Charsets;
 
 /**
- * This class extracts specified VectorizedRowBatch row columns into a Writable row Object[].
+ * This class extracts specified VectorizedRowBatch row columns into writables.
  *
- * The caller provides the hive type names and target column numbers in the order desired to
- * extract from the Writable row Object[].
- *
- * This class is abstract to allow the subclasses to control batch reuse.
+ * The caller provides the data types and projection column numbers of a subset of the columns
+ * to extract.
  */
-public abstract class VectorExtractRow {
+public class VectorExtractRow {
+
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(VectorExtractRow.class);
 
-  private boolean tolerateNullColumns;
+  /*
+   * These members have information for extracting a row column objects from VectorizedRowBatch
+   * columns.
+   */
+  int[] projectionColumnNums;
+              // Extraction can be a subset of columns, so this is the projection --
+              // the batch column numbers.
 
-  public VectorExtractRow() {
-    // UNDONE: For now allow null columns until vector_decimal_mapjoin.q is understood...
-    tolerateNullColumns = true;
+  Category[] categories;
+              // The data type category of each column being extracted.
+
+  PrimitiveCategory[] primitiveCategories;
+              // The data type primitive category of each column being assigned.
+
+  int[] maxLengths;
+              // For the CHAR and VARCHAR data types, the maximum character length of
+              // the columns.  Otherwise, 0.
+
+  Writable[] primitiveWritables;
+            // The extracted values will be placed in these writables.
+
+  /*
+   * Allocate the various arrays.
+   */
+  private void allocateArrays(int count) {
+    projectionColumnNums = new int[count];
+    categories = new Category[count];
+    primitiveCategories = new PrimitiveCategory[count];
+    maxLengths = new int[count];
+    primitiveWritables = new Writable[count];
   }
 
-  protected abstract class Extractor {
-    protected int columnIndex;
-    protected Object object;
+  /*
+   * Initialize one column's array entries.
+   */
+  private void initEntry(int logicalColumnIndex, int projectionColumnNum, TypeInfo typeInfo) {
+    projectionColumnNums[logicalColumnIndex] = projectionColumnNum;
+    Category category = typeInfo.getCategory();
+    categories[logicalColumnIndex] = category;
+    if (category == Category.PRIMITIVE) {
+      PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
+      PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
+      primitiveCategories[logicalColumnIndex] = primitiveCategory;
 
-    public Extractor(int columnIndex) {
-      this.columnIndex = columnIndex;
-    }
-
-    public int getColumnIndex() {
-      return columnIndex;
-    }
-
-    abstract void setColumnVector(VectorizedRowBatch batch);
-
-    abstract void forgetColumnVector();
-
-    abstract Object extract(int batchIndex);
-  }
-
-  private class VoidExtractor extends Extractor {
-
-    VoidExtractor(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    void setColumnVector(VectorizedRowBatch batch) {
-    }
-
-    @Override
-    void forgetColumnVector() {
-    }
-
-    @Override
-    Object extract(int batchIndex) {
-      return null;
-    }
-  }
-
-  private abstract class AbstractLongExtractor extends Extractor {
-
-    protected LongColumnVector colVector;
-    protected long[] vector;
-
-    AbstractLongExtractor(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    void setColumnVector(VectorizedRowBatch batch) {
-      colVector = (LongColumnVector) batch.cols[columnIndex];
-      vector = colVector.vector;
-    }
-
-    @Override
-    void forgetColumnVector() {
-      colVector = null;
-      vector = null;
-    }
-  }
-
-  protected class BooleanExtractor extends AbstractLongExtractor {
-
-    BooleanExtractor(int columnIndex) {
-      super(columnIndex);
-      object = PrimitiveObjectInspectorFactory.writableBooleanObjectInspector.create(false);
-    }
-
-    @Override
-    Object extract(int batchIndex) {
-      int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
-      if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        long value = vector[adjustedIndex];
-        PrimitiveObjectInspectorFactory.writableBooleanObjectInspector.set(object, value == 0 ? false : true);
-        return object;
-      } else {
-        return null;
+      switch (primitiveCategory) {
+      case CHAR:
+        maxLengths[logicalColumnIndex] = ((CharTypeInfo) primitiveTypeInfo).getLength();
+        break;
+      case VARCHAR:
+        maxLengths[logicalColumnIndex] = ((VarcharTypeInfo) primitiveTypeInfo).getLength();
+        break;
+      default:
+        // No additional data type specific setting.
+        break;
       }
+
+      primitiveWritables[logicalColumnIndex] =
+          VectorizedBatchUtil.getPrimitiveWritable(primitiveCategory);
     }
   }
 
-  protected class ByteExtractor extends AbstractLongExtractor {
-
-    ByteExtractor(int columnIndex) {
-      super(columnIndex);
-      object = PrimitiveObjectInspectorFactory.writableByteObjectInspector.create((byte) 0);
-    }
-
-    @Override
-    Object extract(int batchIndex) {
-      int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
-      if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        long value = vector[adjustedIndex];
-        PrimitiveObjectInspectorFactory.writableByteObjectInspector.set(object, (byte) value);
-        return object;
-      } else {
-        return null;
-      }
-    }
-  }
-
-  private class ShortExtractor extends AbstractLongExtractor {
-
-    ShortExtractor(int columnIndex) {
-      super(columnIndex);
-      object = PrimitiveObjectInspectorFactory.writableShortObjectInspector.create((short) 0);
-    }
-
-    @Override
-    Object extract(int batchIndex) {
-      int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
-      if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        long value = vector[adjustedIndex];
-        PrimitiveObjectInspectorFactory.writableShortObjectInspector.set(object, (short) value);
-        return object;
-      } else {
-        return null;
-      }
-    }
-  }
-
-  private class IntExtractor extends AbstractLongExtractor {
-
-    IntExtractor(int columnIndex) {
-      super(columnIndex);
-      object = PrimitiveObjectInspectorFactory.writableIntObjectInspector.create(0);
-    }
-
-    @Override
-    Object extract(int batchIndex) {
-      int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
-      if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        long value = vector[adjustedIndex];
-        PrimitiveObjectInspectorFactory.writableIntObjectInspector.set(object, (int) value);
-        return object;
-      } else {
-        return null;
-      }
-    }
-  }
-
-  private class LongExtractor extends AbstractLongExtractor {
-
-    LongExtractor(int columnIndex) {
-      super(columnIndex);
-      object = PrimitiveObjectInspectorFactory.writableLongObjectInspector.create(0);
-    }
-
-    @Override
-    Object extract(int batchIndex) {
-      int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
-      if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        long value = vector[adjustedIndex];
-        PrimitiveObjectInspectorFactory.writableLongObjectInspector.set(object, value);
-        return object;
-      } else {
-        return null;
-      }
-    }
-  }
-
-  private class DateExtractor extends AbstractLongExtractor {
-
-    private Date date;
-
-    DateExtractor(int columnIndex) {
-      super(columnIndex);
-      object = PrimitiveObjectInspectorFactory.writableDateObjectInspector.create(new Date(0));
-      date = new Date(0);
-    }
-
-    @Override
-    Object extract(int batchIndex) {
-      int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
-      if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        long value = vector[adjustedIndex];
-        date.setTime(DateWritable.daysToMillis((int) value));
-        PrimitiveObjectInspectorFactory.writableDateObjectInspector.set(object, date);
-        return object;
-      } else {
-        return null;
-      }
-    }
-  }
-
-  private abstract class AbstractTimestampExtractor extends Extractor {
-
-    protected TimestampColumnVector colVector;
-
-    AbstractTimestampExtractor(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    void setColumnVector(VectorizedRowBatch batch) {
-      colVector = (TimestampColumnVector) batch.cols[columnIndex];
-    }
-
-    @Override
-    void forgetColumnVector() {
-      colVector = null;
-    }
-  }
-
-  private class TimestampExtractor extends AbstractTimestampExtractor {
-
-    protected Timestamp timestamp;
-
-    TimestampExtractor(int columnIndex) {
-      super(columnIndex);
-      object = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector.create(new Timestamp(0));
-      timestamp = new Timestamp(0);
-    }
-
-    @Override
-    Object extract(int batchIndex) {
-      int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
-      if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        colVector.timestampUpdate(timestamp, adjustedIndex);
-        PrimitiveObjectInspectorFactory.writableTimestampObjectInspector.set(object, timestamp);
-        return object;
-      } else {
-        return null;
-      }
-    }
-  }
-
-  private class IntervalYearMonthExtractor extends AbstractLongExtractor {
-
-    private HiveIntervalYearMonth hiveIntervalYearMonth;
-
-    IntervalYearMonthExtractor(int columnIndex) {
-      super(columnIndex);
-      object = PrimitiveObjectInspectorFactory.writableHiveIntervalYearMonthObjectInspector.create(new HiveIntervalYearMonth(0));
-      hiveIntervalYearMonth = new HiveIntervalYearMonth(0);
-    }
-
-    @Override
-    Object extract(int batchIndex) {
-      int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
-      if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        int totalMonths = (int) vector[adjustedIndex];
-        hiveIntervalYearMonth.set(totalMonths);
-        PrimitiveObjectInspectorFactory.writableHiveIntervalYearMonthObjectInspector.set(object, hiveIntervalYearMonth);
-        return object;
-      } else {
-        return null;
-      }
-    }
-  }
-
-  private abstract class AbstractIntervalDayTimeExtractor extends Extractor {
-
-    protected IntervalDayTimeColumnVector colVector;
-
-    AbstractIntervalDayTimeExtractor(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    void setColumnVector(VectorizedRowBatch batch) {
-      colVector = (IntervalDayTimeColumnVector) batch.cols[columnIndex];
-    }
-
-    @Override
-    void forgetColumnVector() {
-      colVector = null;
-    }
-  }
-
-  private class IntervalDayTimeExtractor extends AbstractIntervalDayTimeExtractor {
-
-    private HiveIntervalDayTime hiveIntervalDayTime;
-
-    IntervalDayTimeExtractor(int columnIndex) {
-      super(columnIndex);
-      object = PrimitiveObjectInspectorFactory.writableHiveIntervalDayTimeObjectInspector.create(new HiveIntervalDayTime(0, 0));
-      hiveIntervalDayTime = new HiveIntervalDayTime(0, 0);
-    }
-
-    @Override
-    Object extract(int batchIndex) {
-      int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
-      if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        hiveIntervalDayTime.set(colVector.asScratchIntervalDayTime(adjustedIndex));
-        PrimitiveObjectInspectorFactory.writableHiveIntervalDayTimeObjectInspector.set(object, hiveIntervalDayTime);
-        return object;
-      } else {
-        return null;
-      }
-    }
-  }
-
-  private abstract class AbstractDoubleExtractor extends Extractor {
-
-    protected DoubleColumnVector colVector;
-    protected double[] vector;
-
-    AbstractDoubleExtractor(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    void setColumnVector(VectorizedRowBatch batch) {
-      colVector = (DoubleColumnVector) batch.cols[columnIndex];
-      vector = colVector.vector;
-    }
-
-    @Override
-    void forgetColumnVector() {
-      colVector = null;
-      vector = null;
-    }
-  }
-
-  private class FloatExtractor extends AbstractDoubleExtractor {
-
-    FloatExtractor(int columnIndex) {
-      super(columnIndex);
-      object = PrimitiveObjectInspectorFactory.writableFloatObjectInspector.create(0f);
-    }
-
-    @Override
-    Object extract(int batchIndex) {
-      int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
-      if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        double value = vector[adjustedIndex];
-        PrimitiveObjectInspectorFactory.writableFloatObjectInspector.set(object, (float) value);
-        return object;
-      } else {
-        return null;
-      }
-    }
-  }
-
-  private class DoubleExtractor extends AbstractDoubleExtractor {
-
-    DoubleExtractor(int columnIndex) {
-      super(columnIndex);
-      object = PrimitiveObjectInspectorFactory.writableDoubleObjectInspector.create(0f);
-    }
-
-    @Override
-    Object extract(int batchIndex) {
-      int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
-      if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        double value = vector[adjustedIndex];
-        PrimitiveObjectInspectorFactory.writableDoubleObjectInspector.set(object, value);
-        return object;
-      } else {
-        return null;
-      }
-    }
-  }
-
-  private abstract class AbstractBytesExtractor extends Extractor {
-
-    protected BytesColumnVector colVector;
-
-    AbstractBytesExtractor(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    void setColumnVector(VectorizedRowBatch batch) {
-      colVector = (BytesColumnVector) batch.cols[columnIndex];
-    }
-
-    @Override
-    void forgetColumnVector() {
-      colVector = null;
-    }
-  }
-
-  private class BinaryExtractorByValue extends AbstractBytesExtractor {
-
-    private DataOutputBuffer buffer;
-
-    // Use the BytesWritable instance here as a reference to data saved in buffer.  We do not
-    // want to pass the binary object inspector a byte[] since we would need to allocate it on the
-    // heap each time to get the length correct.
-    private BytesWritable bytesWritable;
-
-    BinaryExtractorByValue(int columnIndex) {
-      super(columnIndex);
-      object = PrimitiveObjectInspectorFactory.writableBinaryObjectInspector.create(ArrayUtils.EMPTY_BYTE_ARRAY);
-      buffer = new DataOutputBuffer();
-      bytesWritable = new BytesWritable();
-    }
-
-    @Override
-    Object extract(int batchIndex) {
-      int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
-      if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        byte[] bytes = colVector.vector[adjustedIndex];
-        int start = colVector.start[adjustedIndex];
-        int length = colVector.length[adjustedIndex];
-
-        // Save a copy of the binary data.
-        buffer.reset();
-        try {
-          buffer.write(bytes, start, length);
-        } catch (IOException ioe) {
-          throw new IllegalStateException("bad write", ioe);
-        }
-
-        bytesWritable.set(buffer.getData(), 0, buffer.getLength());
-        PrimitiveObjectInspectorFactory.writableBinaryObjectInspector.set(object, bytesWritable);
-        return object;
-      } else {
-        return null;
-      }
-    }
-  }
-
-  private class StringExtractorByValue extends AbstractBytesExtractor {
-
-    // Use org.apache.hadoop.io.Text as our helper to go from byte[] to String.
-    private Text text;
-
-    StringExtractorByValue(int columnIndex) {
-      super(columnIndex);
-      object = PrimitiveObjectInspectorFactory.writableStringObjectInspector.create(StringUtils.EMPTY);
-      text = new Text();
-    }
-
-    @Override
-    Object extract(int batchIndex) {
-      int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
-      if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        byte[] value = colVector.vector[adjustedIndex];
-        int start = colVector.start[adjustedIndex];
-        int length = colVector.length[adjustedIndex];
-
-        if (value == null) {
-          LOG.info("null string entry: batchIndex " + batchIndex + " columnIndex " + columnIndex);
-        }
-        // Use org.apache.hadoop.io.Text as our helper to go from byte[] to String.
-        text.set(value, start, length);
-
-        PrimitiveObjectInspectorFactory.writableStringObjectInspector.set(object, text);
-        return object;
-      } else {
-        return null;
-      }
-    }
-  }
-
-  private class VarCharExtractorByValue extends AbstractBytesExtractor {
-
-    // We need our own instance of the VARCHAR object inspector to hold the maximum length
-    // from the TypeInfo.
-    private WritableHiveVarcharObjectInspector writableVarcharObjectInspector;
-
-    // Use org.apache.hadoop.io.Text as our helper to go from byte[] to String.
-    private Text text;
-
-    /*
-     * @param varcharTypeInfo
-     *                      We need the VARCHAR type information that contains the maximum length.
-     * @param columnIndex
-     *                      The vector row batch column that contains the bytes for the VARCHAR.
-     */
-    VarCharExtractorByValue(VarcharTypeInfo varcharTypeInfo, int columnIndex) {
-      super(columnIndex);
-      writableVarcharObjectInspector = new WritableHiveVarcharObjectInspector(varcharTypeInfo);
-      object = writableVarcharObjectInspector.create(new HiveVarchar(StringUtils.EMPTY, -1));
-      text = new Text();
-    }
-
-    @Override
-    Object extract(int batchIndex) {
-      int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
-      if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        byte[] value = colVector.vector[adjustedIndex];
-        int start = colVector.start[adjustedIndex];
-        int length = colVector.length[adjustedIndex];
-
-        // Use org.apache.hadoop.io.Text as our helper to go from byte[] to String.
-        text.set(value, start, length);
-
-        writableVarcharObjectInspector.set(object, text.toString());
-        return object;
-      } else {
-        return null;
-      }
-    }
-  }
-
-  private class CharExtractorByValue extends AbstractBytesExtractor {
-
-    // We need our own instance of the CHAR object inspector to hold the maximum length
-    // from the TypeInfo.
-    private WritableHiveCharObjectInspector writableCharObjectInspector;
-
-    // Use org.apache.hadoop.io.Text as our helper to go from byte[] to String.
-    private Text text;
-
-    /*
-     * @param varcharTypeInfo
-     *                      We need the CHAR type information that contains the maximum length.
-     * @param columnIndex
-     *                      The vector row batch column that contains the bytes for the CHAR.
-     */
-    CharExtractorByValue(CharTypeInfo charTypeInfo, int columnIndex) {
-      super(columnIndex);
-      writableCharObjectInspector = new WritableHiveCharObjectInspector(charTypeInfo);
-      object = writableCharObjectInspector.create(new HiveChar(StringUtils.EMPTY, -1));
-      text = new Text();
-    }
-
-    @Override
-    Object extract(int batchIndex) {
-      int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
-      if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        byte[] value = colVector.vector[adjustedIndex];
-        int start = colVector.start[adjustedIndex];
-        int length = colVector.length[adjustedIndex];
-
-        // Use org.apache.hadoop.io.Text as our helper to go from byte[] to String.
-        text.set(value, start, length);
-
-        writableCharObjectInspector.set(object, text.toString());
-        return object;
-      } else {
-        return null;
-      }
-    }
-  }
-
-  private class DecimalExtractor extends Extractor {
-
-    private WritableHiveDecimalObjectInspector writableDecimalObjectInspector;
-    protected DecimalColumnVector colVector;
-
-    /*
-     * @param decimalTypeInfo
-     *                      We need the DECIMAL type information that contains scale and precision.
-     * @param columnIndex
-     *                      The vector row batch column that contains the bytes for the VARCHAR.
-     */
-    DecimalExtractor(DecimalTypeInfo decimalTypeInfo, int columnIndex) {
-      super(columnIndex);
-      writableDecimalObjectInspector = new WritableHiveDecimalObjectInspector(decimalTypeInfo);
-      object = writableDecimalObjectInspector.create(HiveDecimal.ZERO);
-    }
-
-    @Override
-    void setColumnVector(VectorizedRowBatch batch) {
-      colVector = (DecimalColumnVector) batch.cols[columnIndex];
-    }
-
-    @Override
-    void forgetColumnVector() {
-      colVector = null;
-    }
-
-    @Override
-    Object extract(int batchIndex) {
-      int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
-      if (colVector.noNulls || !colVector.isNull[adjustedIndex]) {
-        HiveDecimal value = colVector.vector[adjustedIndex].getHiveDecimal();
-        writableDecimalObjectInspector.set(object, value);
-        return object;
-      } else {
-        return null;
-      }
-    }
-  }
-
-  private Extractor createExtractor(PrimitiveTypeInfo primitiveTypeInfo, int columnIndex) throws HiveException {
-    PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
-    Extractor extracter;
-    switch (primitiveCategory) {
-    case VOID:
-      extracter = new VoidExtractor(columnIndex);
-      break;
-    case BOOLEAN:
-      extracter = new BooleanExtractor(columnIndex);
-      break;
-    case BYTE:
-      extracter = new ByteExtractor(columnIndex);
-      break;
-    case SHORT:
-      extracter = new ShortExtractor(columnIndex);
-      break;
-    case INT:
-      extracter = new IntExtractor(columnIndex);
-      break;
-    case LONG:
-      extracter = new LongExtractor(columnIndex);
-      break;
-    case TIMESTAMP:
-      extracter = new TimestampExtractor(columnIndex);
-      break;
-    case DATE:
-      extracter = new DateExtractor(columnIndex);
-      break;
-    case FLOAT:
-      extracter = new FloatExtractor(columnIndex);
-      break;
-    case DOUBLE:
-      extracter = new DoubleExtractor(columnIndex);
-      break;
-    case BINARY:
-      extracter = new BinaryExtractorByValue(columnIndex);
-      break;
-    case STRING:
-      extracter = new StringExtractorByValue(columnIndex);
-      break;
-    case VARCHAR:
-      extracter = new VarCharExtractorByValue((VarcharTypeInfo) primitiveTypeInfo, columnIndex);
-      break;
-    case CHAR:
-      extracter = new CharExtractorByValue((CharTypeInfo) primitiveTypeInfo, columnIndex);
-      break;
-    case DECIMAL:
-      extracter = new DecimalExtractor((DecimalTypeInfo) primitiveTypeInfo, columnIndex);
-      break;
-    case INTERVAL_YEAR_MONTH:
-      extracter = new IntervalYearMonthExtractor(columnIndex);
-      break;
-    case INTERVAL_DAY_TIME:
-      extracter = new IntervalDayTimeExtractor(columnIndex);
-      break;
-    default:
-      throw new HiveException("No vector row extracter for primitive category " +
-          primitiveCategory);
-    }
-    return extracter;
-  }
-
-  Extractor[] extracters;
-
-  public void init(StructObjectInspector structObjectInspector, List<Integer> projectedColumns) throws HiveException {
-
-    extracters = new Extractor[projectedColumns.size()];
+  /*
+   * Initialize using an StructObjectInspector and a column projection list.
+   */
+  public void init(StructObjectInspector structObjectInspector, List<Integer> projectedColumns)
+      throws HiveException {
 
     List<? extends StructField> fields = structObjectInspector.getAllStructFieldRefs();
+    final int count = fields.size();
+    allocateArrays(count);
 
-    int i = 0;
-    for (StructField field : fields) {
-      int columnIndex = projectedColumns.get(i);
+    for (int i = 0; i < count; i++) {
+
+      int projectionColumnNum = projectedColumns.get(i);
+
+      StructField field = fields.get(i);
       ObjectInspector fieldInspector = field.getFieldObjectInspector();
-      PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(
-          fieldInspector.getTypeName());
-      extracters[i] = createExtractor(primitiveTypeInfo, columnIndex);
-      i++;
+      TypeInfo typeInfo =
+          TypeInfoUtils.getTypeInfoFromTypeString(fieldInspector.getTypeName());
+
+      initEntry(i, projectionColumnNum, typeInfo);
     }
   }
 
+  /*
+   * Initialize using data type names.
+   * No projection -- the column range 0 .. types.size()-1
+   */
   public void init(List<String> typeNames) throws HiveException {
 
-    extracters = new Extractor[typeNames.size()];
+    final int count = typeNames.size();
+    allocateArrays(count);
 
-    int i = 0;
-    for (String typeName : typeNames) {
-      PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(typeName);
-      extracters[i] = createExtractor(primitiveTypeInfo, i);
-      i++;
+    for (int i = 0; i < count; i++) {
+
+      TypeInfo typeInfo =
+          TypeInfoUtils.getTypeInfoFromTypeString(typeNames.get(i));
+
+      initEntry(i, i, typeInfo);
     }
   }
 
   public int getCount() {
-    return extracters.length;
+    return projectionColumnNums.length;
   }
 
-  protected void setBatch(VectorizedRowBatch batch) throws HiveException {
+  /**
+   * Extract a row's column object from the ColumnVector at batchIndex in the VectorizedRowBatch.
+   *
+   * @param batch
+   * @param batchIndex
+   * @param logicalColumnIndex
+   * @return
+   */
+  public Object extractRowColumn(VectorizedRowBatch batch, int batchIndex, int logicalColumnIndex) {
+    final int projectionColumnNum = projectionColumnNums[logicalColumnIndex];
+    ColumnVector colVector = batch.cols[projectionColumnNum];
+    if (colVector == null) {
+      // In rare cases, the planner will not include columns for reading but other parts of
+      // execution will ask for but not use them..
+      return null;
+    }
+    int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
+    if (!colVector.noNulls && colVector.isNull[adjustedIndex]) {
+      return null;
+    }
 
-    for (int i = 0; i < extracters.length; i++) {
-      Extractor extracter = extracters[i];
-      int columnIndex = extracter.getColumnIndex();
-      if (batch.cols[columnIndex] == null) {
-        if (tolerateNullColumns) {
-          // Replace with void...
-          extracter = new VoidExtractor(columnIndex);
-          extracters[i] = extracter;
-        } else {
-          throw new HiveException("Unexpected null vector column " + columnIndex);
+    Category category = categories[logicalColumnIndex];
+    switch (category) {
+    case PRIMITIVE:
+      {
+        Writable primitiveWritable =
+            primitiveWritables[logicalColumnIndex];
+        PrimitiveCategory primitiveCategory = primitiveCategories[logicalColumnIndex];
+        switch (primitiveCategory) {
+        case VOID:
+          return null;
+        case BOOLEAN:
+          ((BooleanWritable) primitiveWritable).set(
+              ((LongColumnVector) batch.cols[projectionColumnNum]).vector[adjustedIndex] == 0 ?
+                  false : true);
+          return primitiveWritable;
+        case BYTE:
+          ((ByteWritable) primitiveWritable).set(
+              (byte) ((LongColumnVector) batch.cols[projectionColumnNum]).vector[adjustedIndex]);
+          return primitiveWritable;
+        case SHORT:
+          ((ShortWritable) primitiveWritable).set(
+              (short) ((LongColumnVector) batch.cols[projectionColumnNum]).vector[adjustedIndex]);
+          return primitiveWritable;
+        case INT:
+          ((IntWritable) primitiveWritable).set(
+              (int) ((LongColumnVector) batch.cols[projectionColumnNum]).vector[adjustedIndex]);
+          return primitiveWritable;
+        case LONG:
+          ((LongWritable) primitiveWritable).set(
+              ((LongColumnVector) batch.cols[projectionColumnNum]).vector[adjustedIndex]);
+          return primitiveWritable;
+        case TIMESTAMP:
+          ((TimestampWritable) primitiveWritable).set(
+              ((TimestampColumnVector) batch.cols[projectionColumnNum]).asScratchTimestamp(adjustedIndex));
+          return primitiveWritable;
+        case DATE:
+          ((DateWritable) primitiveWritable).set(
+              (int) ((LongColumnVector) batch.cols[projectionColumnNum]).vector[adjustedIndex]);
+          return primitiveWritable;
+        case FLOAT:
+          ((FloatWritable) primitiveWritable).set(
+              (float) ((DoubleColumnVector) batch.cols[projectionColumnNum]).vector[adjustedIndex]);
+          return primitiveWritable;
+        case DOUBLE:
+          ((DoubleWritable) primitiveWritable).set(
+              ((DoubleColumnVector) batch.cols[projectionColumnNum]).vector[adjustedIndex]);
+          return primitiveWritable;
+        case BINARY:
+          {
+            BytesColumnVector bytesColVector =
+                ((BytesColumnVector) batch.cols[projectionColumnNum]);
+            byte[] bytes = bytesColVector.vector[adjustedIndex];
+            int start = bytesColVector.start[adjustedIndex];
+            int length = bytesColVector.length[adjustedIndex];
+
+            if (bytes == null) {
+              LOG.info("null binary entry: batchIndex " + batchIndex + " projection column num " + projectionColumnNum);
+            }
+
+            BytesWritable bytesWritable = (BytesWritable) primitiveWritable;
+            bytesWritable.set(bytes, start, length);
+            return primitiveWritable;
+          }
+        case STRING:
+          {
+            BytesColumnVector bytesColVector =
+                ((BytesColumnVector) batch.cols[projectionColumnNum]);
+            byte[] bytes = bytesColVector.vector[adjustedIndex];
+            int start = bytesColVector.start[adjustedIndex];
+            int length = bytesColVector.length[adjustedIndex];
+
+            if (bytes == null) {
+              LOG.info("null string entry: batchIndex " + batchIndex + " projection column num " + projectionColumnNum);
+            }
+
+            // Use org.apache.hadoop.io.Text as our helper to go from byte[] to String.
+            ((Text) primitiveWritable).set(bytes, start, length);
+            return primitiveWritable;
+          }
+        case VARCHAR:
+          {
+            BytesColumnVector bytesColVector =
+                ((BytesColumnVector) batch.cols[projectionColumnNum]);
+            byte[] bytes = bytesColVector.vector[adjustedIndex];
+            int start = bytesColVector.start[adjustedIndex];
+            int length = bytesColVector.length[adjustedIndex];
+
+            if (bytes == null) {
+              LOG.info("null varchar entry: batchIndex " + batchIndex + " projection column num " + projectionColumnNum);
+            }
+
+            int adjustedLength = StringExpr.truncate(bytes, start, length,
+                maxLengths[logicalColumnIndex]);
+
+            HiveVarcharWritable hiveVarcharWritable = (HiveVarcharWritable) primitiveWritable;
+            hiveVarcharWritable.set(new String(bytes, start, adjustedLength, Charsets.UTF_8), -1);
+            return primitiveWritable;
+          }
+        case CHAR:
+          {
+            BytesColumnVector bytesColVector =
+                ((BytesColumnVector) batch.cols[projectionColumnNum]);
+            byte[] bytes = bytesColVector.vector[adjustedIndex];
+            int start = bytesColVector.start[adjustedIndex];
+            int length = bytesColVector.length[adjustedIndex];
+
+            if (bytes == null) {
+              LOG.info("null char entry: batchIndex " + batchIndex + " projection column num " + projectionColumnNum);
+            }
+
+            int adjustedLength = StringExpr.rightTrimAndTruncate(bytes, start, length,
+                maxLengths[logicalColumnIndex]);
+
+            HiveCharWritable hiveCharWritable = (HiveCharWritable) primitiveWritable;
+            hiveCharWritable.set(new String(bytes, start, adjustedLength, Charsets.UTF_8), -1);
+            return primitiveWritable;
+          }
+        case DECIMAL:
+          ((HiveDecimalWritable) primitiveWritable).set(
+              ((DecimalColumnVector) batch.cols[projectionColumnNum]).vector[adjustedIndex].getHiveDecimal());
+          return primitiveWritable;
+        case INTERVAL_YEAR_MONTH:
+          ((HiveIntervalYearMonthWritable) primitiveWritable).set(
+              (int) ((LongColumnVector) batch.cols[projectionColumnNum]).vector[adjustedIndex]);
+          return primitiveWritable;
+        case INTERVAL_DAY_TIME:
+          ((HiveIntervalDayTimeWritable) primitiveWritable).set(
+              ((IntervalDayTimeColumnVector) batch.cols[projectionColumnNum]).asScratchIntervalDayTime(adjustedIndex));
+          return primitiveWritable;
+        default:
+          throw new RuntimeException("Primitive category " + primitiveCategory.name() +
+              " not supported");
         }
       }
-      extracter.setColumnVector(batch);
+    default:
+      throw new RuntimeException("Category " + category.name() + " not supported");
     }
   }
 
-  protected void forgetBatch() {
-    for (Extractor extracter : extracters) {
-      extracter.forgetColumnVector();
-    }
-  }
-
-  public Object extractRowColumn(int batchIndex, int logicalColumnIndex) {
-    return extracters[logicalColumnIndex].extract(batchIndex);
-  }
-
-  public void extractRow(int batchIndex, Object[] objects) {
-    for (int i = 0; i < extracters.length; i++) {
-      Extractor extracter = extracters[i];
-      objects[i] = extracter.extract(batchIndex);
+  /**
+   * Extract an row object from a VectorizedRowBatch at batchIndex.
+   *
+   * @param batch
+   * @param batchIndex
+   * @param objects
+   */
+  public void extractRow(VectorizedRowBatch batch, int batchIndex, Object[] objects) {
+    for (int i = 0; i < projectionColumnNums.length; i++) {
+      objects[i] = extractRowColumn(batch, batchIndex, i);
     }
   }
 }

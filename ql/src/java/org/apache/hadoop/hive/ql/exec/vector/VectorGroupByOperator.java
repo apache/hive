@@ -103,7 +103,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
   private transient VectorizedRowBatch outputBatch;
   private transient VectorizedRowBatchCtx vrbCtx;
 
-  private transient VectorAssignRowSameBatch vectorAssignRowSameBatch;
+  private transient VectorAssignRow vectorAssignRow;
 
   private transient int numEntriesHashTable;
 
@@ -823,9 +823,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
         vrbCtx = new VectorizedRowBatchCtx();
         vrbCtx.init((StructObjectInspector) outputObjInspector, vOutContext.getScratchColumnTypeNames());
         outputBatch = vrbCtx.createVectorizedRowBatch();
-        vectorAssignRowSameBatch = new VectorAssignRowSameBatch();
-        vectorAssignRowSameBatch.init((StructObjectInspector) outputObjInspector, vOutContext.getProjectedColumns());
-        vectorAssignRowSameBatch.setOneBatch(outputBatch);
+        vectorAssignRow = new VectorAssignRow();
+        vectorAssignRow.init((StructObjectInspector) outputObjInspector, vOutContext.getProjectedColumns());
       }
 
     } catch (HiveException he) {
@@ -912,11 +911,11 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
     } else {
       // Output keys and aggregates into the output batch.
       for (int i = 0; i < outputKeyLength; ++i) {
-        vectorAssignRowSameBatch.assignRowColumn(outputBatch.size, fi++,
+        vectorAssignRow.assignRowColumn(outputBatch, outputBatch.size, fi++,
                 keyWrappersBatch.getWritableKeyValue (kw, i, keyOutputWriters[i]));
       }
       for (int i = 0; i < aggregators.length; ++i) {
-        vectorAssignRowSameBatch.assignRowColumn(outputBatch.size, fi++,
+        vectorAssignRow.assignRowColumn(outputBatch, outputBatch.size, fi++,
                 aggregators[i].evaluateOutput(agg.getAggregationBuffer(i)));
       }
       ++outputBatch.size;
@@ -937,7 +936,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
       throws HiveException {
     int fi = outputKeyLength;   // Start after group keys.
     for (int i = 0; i < aggregators.length; ++i) {
-      vectorAssignRowSameBatch.assignRowColumn(outputBatch.size, fi++,
+      vectorAssignRow.assignRowColumn(outputBatch, outputBatch.size, fi++,
               aggregators[i].evaluateOutput(agg.getAggregationBuffer(i)));
     }
     ++outputBatch.size;

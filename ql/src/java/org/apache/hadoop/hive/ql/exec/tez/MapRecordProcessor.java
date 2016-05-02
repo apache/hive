@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.AbstractMapOperator;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
@@ -75,8 +76,8 @@ public class MapRecordProcessor extends RecordProcessor {
   public static final Logger l4j = LoggerFactory.getLogger(MapRecordProcessor.class);
   protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
 
-  private MapOperator mapOp;
-  private final List<MapOperator> mergeMapOpList = new ArrayList<MapOperator>();
+  private AbstractMapOperator mapOp;
+  private final List<AbstractMapOperator> mergeMapOpList = new ArrayList<AbstractMapOperator>();
   private MapRecordSource[] sources;
   private final Map<String, MultiMRInput> multiMRInputMap = new HashMap<String, MultiMRInput>();
   private int position;
@@ -183,7 +184,7 @@ public class MapRecordProcessor extends RecordProcessor {
 
       boolean fromCache = false;
       if (mergeWorkList != null) {
-        MapOperator mergeMapOp = null;
+        AbstractMapOperator mergeMapOp = null;
         for (BaseWork mergeWork : mergeWorkList) {
           MapWork mergeMapWork = (MapWork) mergeWork;
           if (mergeMapWork.getVectorMode()) {
@@ -261,7 +262,7 @@ public class MapRecordProcessor extends RecordProcessor {
       initializeMapRecordSources();
       mapOp.initializeMapOperator(jconf);
       if ((mergeMapOpList != null) && mergeMapOpList.isEmpty() == false) {
-        for (MapOperator mergeMapOp : mergeMapOpList) {
+        for (AbstractMapOperator mergeMapOp : mergeMapOpList) {
           jconf.set(Utilities.INPUT_NAME, mergeMapOp.getConf().getName());
           mergeMapOp.initializeMapOperator(jconf);
         }
@@ -309,7 +310,7 @@ public class MapRecordProcessor extends RecordProcessor {
       reader = legacyMRInput.getReader();
     }
     sources[position].init(jconf, mapOp, reader);
-    for (MapOperator mapOp : mergeMapOpList) {
+    for (AbstractMapOperator mapOp : mergeMapOpList) {
       int tag = mapOp.getConf().getTag();
       sources[tag] = new MapRecordSource();
       String inputName = mapOp.getConf().getName();
@@ -326,7 +327,7 @@ public class MapRecordProcessor extends RecordProcessor {
 
   @SuppressWarnings("deprecation")
   private KeyValueReader getKeyValueReader(Collection<KeyValueReader> keyValueReaders,
-      MapOperator mapOp)
+      AbstractMapOperator mapOp)
     throws Exception {
     List<KeyValueReader> kvReaderList = new ArrayList<KeyValueReader>(keyValueReaders);
     // this sets up the map operator contexts correctly
@@ -394,7 +395,7 @@ public class MapRecordProcessor extends RecordProcessor {
       }
       mapOp.close(abort);
       if (mergeMapOpList.isEmpty() == false) {
-        for (MapOperator mergeMapOp : mergeMapOpList) {
+        for (AbstractMapOperator mergeMapOp : mergeMapOpList) {
           mergeMapOp.close(abort);
         }
       }

@@ -29,7 +29,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Pattern;
@@ -38,7 +37,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
@@ -98,7 +96,6 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.VectorPartitionConversion;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
@@ -113,6 +110,7 @@ import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationType;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKind;
+import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc.VectorDeserializeType;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkInfo;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
@@ -160,8 +158,12 @@ import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.NullStructSerDe;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -169,8 +171,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.mapred.SequenceFileInputFormat;
+import org.apache.hadoop.mapred.TextInputFormat;
 
-import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 
 public class Vectorizer implements PhysicalPlanResolver {
 
@@ -184,7 +188,14 @@ public class Vectorizer implements PhysicalPlanResolver {
   Set<String> supportedAggregationUdfs = new HashSet<String>();
 
   private HiveConf hiveConf;
+
   private boolean isSpark;
+
+  boolean useVectorizedInputFileFormat;
+  boolean useVectorDeserialize;
+  boolean useRowDeserialize;
+
+  boolean isSchemaEvolution;
 
   public Vectorizer() {
 
@@ -341,6 +352,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     List<String> columnNames;
     List<TypeInfo> typeInfos;
     int partitionColumnCount;
+    boolean useVectorizedInputFileFormat;
 
     String[] scratchTypeNameArray;
 
@@ -362,7 +374,9 @@ public class Vectorizer implements PhysicalPlanResolver {
     public void setScratchTypeNameArray(String[] scratchTypeNameArray) {
       this.scratchTypeNameArray = scratchTypeNameArray;
     }
-
+    public void setUseVectorizedInputFileFormat(boolean useVectorizedInputFileFormat) {
+      this.useVectorizedInputFileFormat = useVectorizedInputFileFormat;
+    }
     public void setNonVectorizedOps(Set<Operator<? extends OperatorDesc>> nonVectorizedOps) {
       this.nonVectorizedOps = nonVectorizedOps;
     }
@@ -383,6 +397,8 @@ public class Vectorizer implements PhysicalPlanResolver {
             partitionColumnCount,
             scratchTypeNameArray);
       baseWork.setVectorizedRowBatchCtx(vectorizedRowBatchCtx);
+
+      baseWork.setUseVectorizedInputFileFormat(useVectorizedInputFileFormat);
     }
   }
 
@@ -443,6 +459,10 @@ public class Vectorizer implements PhysicalPlanResolver {
           + ReduceSinkOperator.getOperatorName()), np);
     }
 
+    /*
+     * Determine if there is only one TableScanOperator.  Currently in Map vectorization, we do not
+     * try to vectorize multiple input trees.
+     */
     private ImmutablePair<String, TableScanOperator> verifyOnlyOneTableScanOperator(MapWork mapWork) {
 
       // Eliminate MR plans with more than one TableScanOperator.
@@ -476,8 +496,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     private void getTableScanOperatorSchemaInfo(TableScanOperator tableScanOperator,
         List<String> logicalColumnNameList, List<TypeInfo> logicalTypeInfoList) {
 
-      TableScanDesc tableScanDesc = tableScanOperator.getConf();
-
       // Add all non-virtual columns to make a vectorization context for
       // the TableScan operator.
       RowSchema rowSchema = tableScanOperator.getSchema();
@@ -494,35 +512,141 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
     }
 
-     private String getColumns(List<String> columnNames, int start, int length,
-        Character separator) {
-      return Joiner.on(separator).join(columnNames.subList(start, start + length));
+    private String getHiveOptionsString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append(HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT.varname);
+      sb.append("=");
+      sb.append(useVectorizedInputFileFormat);
+      sb.append(", ");
+      sb.append(HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTOR_DESERIALIZE.varname);
+      sb.append("=");
+      sb.append(useVectorDeserialize);
+      sb.append(", and ");
+      sb.append(HiveConf.ConfVars.HIVE_VECTORIZATION_USE_ROW_DESERIALIZE.varname);
+      sb.append("=");
+      sb.append(useRowDeserialize);
+      return sb.toString();
     }
 
-    private String getTypes(List<TypeInfo> typeInfos, int start, int length) {
-      return TypeInfoUtils.getTypesString(typeInfos.subList(start, start + length));
-    }
+    /*
+     * There are 3 modes of reading for vectorization:
+     *
+     *   1) One for the Vectorized Input File Format which returns VectorizedRowBatch as the row.
+     *
+     *   2) One for using VectorDeserializeRow to deserialize each row into the VectorizedRowBatch.
+     *      Currently, these Input File Formats:
+     *        TEXTFILE
+     *        SEQUENCEFILE
+     *
+     *   3) And one using the regular partition deserializer to get the row object and assigning
+     *      the row object into the VectorizedRowBatch with VectorAssignRow.
+     *      This picks up Input File Format not supported by the other two.
+     */
+    private boolean verifyAndSetVectorPartDesc(PartitionDesc pd, boolean isAcidTable) {
 
-    private boolean verifyAndSetVectorPartDesc(PartitionDesc pd) {
+      String inputFileFormatClassName = pd.getInputFileFormatClassName();
 
       // Look for Pass-Thru case where InputFileFormat has VectorizedInputFormatInterface
       // and reads VectorizedRowBatch as a "row".
 
-      if (Utilities.isInputFileFormatVectorized(pd)) {
+      if (isAcidTable || useVectorizedInputFileFormat) {
 
-        pd.setVectorPartitionDesc(VectorPartitionDesc.createVectorizedInputFileFormat());
+        if (Utilities.isInputFileFormatVectorized(pd)) {
 
-        return true;
+          if (!useVectorizedInputFileFormat) {
+            LOG.info("ACID tables con only be vectorized for the input file format -- " +
+                "i.e. when Hive Configuration option " +
+                HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT.varname +
+                "=true");
+            return false;
+          }
+
+          pd.setVectorPartitionDesc(
+              VectorPartitionDesc.createVectorizedInputFileFormat(
+                  inputFileFormatClassName, Utilities.isInputFileFormatSelfDescribing(pd)));
+
+          return true;
+        }
+
+        // Today, ACID tables are only ORC and that format is vectorizable.  Verify this
+        // assumption.
+        Preconditions.checkState(!isAcidTable);
       }
 
-      LOG.info("Input format: " + pd.getInputFileFormatClassName()
-          + ", doesn't provide vectorized input");
+      if (!(isSchemaEvolution || isAcidTable) &&
+        (useVectorDeserialize || useRowDeserialize)) {
+        LOG.info("Input format: " + inputFileFormatClassName + " cannot be vectorized" +
+            " when both " + HiveConf.ConfVars.HIVE_SCHEMA_EVOLUTION.varname + "=false and " +
+            " ACID table is " + isAcidTable + " and " +
+            " given the Hive Configuration options " + getHiveOptionsString());
+        return false;
+      }
+
+      String deserializerClassName = pd.getDeserializerClassName();
+
+      // Look for InputFileFormat / Serde combinations we can deserialize more efficiently
+      // using VectorDeserializeRow and a deserialize class with the DeserializeRead interface.
+      //
+      // Do the "vectorized" row-by-row deserialization into a VectorizedRowBatch in the
+      // VectorMapOperator.
+
+      if (useVectorDeserialize) {
+
+        // Currently, we support LazySimple deserialization:
+        //
+        //    org.apache.hadoop.mapred.TextInputFormat
+        //    org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        //
+        // AND
+        //
+        //    org.apache.hadoop.mapred.SequenceFileInputFormat
+        //    org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+        if (inputFileFormatClassName.equals(TextInputFormat.class.getName()) &&
+            deserializerClassName.equals(LazySimpleSerDe.class.getName())) {
+
+          pd.setVectorPartitionDesc(
+              VectorPartitionDesc.createVectorDeserialize(
+                  inputFileFormatClassName, VectorDeserializeType.LAZY_SIMPLE));
+
+          return true;
+        } else if (inputFileFormatClassName.equals(SequenceFileInputFormat.class.getName()) &&
+            deserializerClassName.equals(LazyBinarySerDe.class.getName())) {
+
+          pd.setVectorPartitionDesc(
+              VectorPartitionDesc.createVectorDeserialize(
+                  inputFileFormatClassName, VectorDeserializeType.LAZY_BINARY));
+
+          return true;
+        }
+      }
+
+      // Otherwise, if enabled, deserialize rows using regular Serde and add the object
+      // inspect-able Object[] row to a VectorizedRowBatch in the VectorMapOperator.
+
+      if (useRowDeserialize) {
+
+        pd.setVectorPartitionDesc(
+            VectorPartitionDesc.createRowDeserialize(
+                inputFileFormatClassName,
+                Utilities.isInputFileFormatSelfDescribing(pd),
+                deserializerClassName));
+
+        return true;
+
+      }
+
+      LOG.info("Input format: " + inputFileFormatClassName + " cannot be vectorized" +
+          " given the Hive Configuration options " + getHiveOptionsString());
 
       return false;
     }
 
     private boolean validateInputFormatAndSchemaEvolution(MapWork mapWork, String alias,
-        TableScanOperator tableScanOperator, VectorTaskColumnInfo vectorTaskColumnInfo) {
+        TableScanOperator tableScanOperator, VectorTaskColumnInfo vectorTaskColumnInfo)
+            throws SemanticException {
+
+      boolean isAcidTable = tableScanOperator.getConf().isAcidTable();
 
       // These names/types are the data columns plus partition columns.
       final List<String> allColumnNameList = new ArrayList<String>();
@@ -531,23 +655,16 @@ public class Vectorizer implements PhysicalPlanResolver {
       getTableScanOperatorSchemaInfo(tableScanOperator, allColumnNameList, allTypeInfoList);
       final int allColumnCount = allColumnNameList.size();
 
-      // Validate input format and schema evolution capability.
-
-      // For the table, enter a null value in the multi-key map indicating no conversion necessary
-      // if the schema matches the table.
-
-      HashMap<ImmutablePair, boolean[]> conversionMap = new HashMap<ImmutablePair, boolean[]>();
-
+      /*
+       * Validate input formats of all the partitions can be vectorized.
+       */
       boolean isFirst = true;
       int dataColumnCount = 0;
       int partitionColumnCount = 0;
 
-      List<String> dataColumnList = null;
-      String dataColumnsString = "";
-      List<TypeInfo> dataTypeInfoList = null;
+      List<String> tableDataColumnList = null;
+      List<TypeInfo> tableDataTypeInfoList = null;
 
-      // Validate the input format
-      VectorPartitionConversion partitionConversion = new VectorPartitionConversion();
       LinkedHashMap<String, ArrayList<String>> pathToAliases = mapWork.getPathToAliases();
       LinkedHashMap<String, PartitionDesc> pathToPartitionInfo = mapWork.getPathToPartitionInfo();
       for (Entry<String, ArrayList<String>> entry: pathToAliases.entrySet()) {
@@ -563,31 +680,18 @@ public class Vectorizer implements PhysicalPlanResolver {
           // We seen this already.
           continue;
         }
-        if (!verifyAndSetVectorPartDesc(partDesc)) {
+        if (!verifyAndSetVectorPartDesc(partDesc, isAcidTable)) {
           return false;
         }
         VectorPartitionDesc vectorPartDesc = partDesc.getVectorPartitionDesc();
-        LOG.info("Vectorizer path: " + path + ", read type " +
-            vectorPartDesc.getVectorMapOperatorReadType().name() + ", aliases " + aliases);
-
-        Properties partProps = partDesc.getProperties();
-
-        String nextDataColumnsString =
-            partProps.getProperty(hive_metastoreConstants.META_TABLE_COLUMNS);
-        String[] nextDataColumns = nextDataColumnsString.split(",");
-
-        String nextDataTypesString =
-            partProps.getProperty(hive_metastoreConstants.META_TABLE_COLUMN_TYPES);
-
-        // We convert to an array of TypeInfo using a library routine since it parses the information
-        // and can handle use of different separators, etc.  We cannot use the raw type string
-        // for comparison in the map because of the different separators used.
-        List<TypeInfo> nextDataTypeInfoList =
-            TypeInfoUtils.getTypeInfosFromTypeString(nextDataTypesString);
+        if (LOG.isInfoEnabled()) {
+          LOG.info("Vectorizer path: " + path + ", " + vectorPartDesc.toString() +
+              ", aliases " + aliases);
+        }
 
         if (isFirst) {
 
-          // We establish with the first one whether the table is partitioned or not.
+          // Determine the data and partition columns using the first partition descriptor.
 
           LinkedHashMap<String, String> partSpec = partDesc.getPartSpec();
           if (partSpec != null && partSpec.size() > 0) {
@@ -598,85 +702,83 @@ public class Vectorizer implements PhysicalPlanResolver {
             dataColumnCount = allColumnCount;
           }
 
-          dataColumnList = allColumnNameList.subList(0, dataColumnCount);
-          dataColumnsString = getColumns(allColumnNameList, 0, dataColumnCount, ',');
-          dataTypeInfoList = allTypeInfoList.subList(0, dataColumnCount);
-
-          // Add the table (non-partitioned) columns and types into the map as not needing
-          // conversion (i.e. null).
-          conversionMap.put(
-              new ImmutablePair(dataColumnsString, dataTypeInfoList), null);
+          tableDataColumnList = allColumnNameList.subList(0, dataColumnCount);
+          tableDataTypeInfoList = allTypeInfoList.subList(0, dataColumnCount);
 
           isFirst = false;
         }
 
-        ImmutablePair columnNamesAndTypesCombination =
-            new ImmutablePair(nextDataColumnsString, nextDataTypeInfoList);
+        // We need to get the partition's column names from the partition serde.
+        // (e.g. Avro provides the table schema and ignores the partition schema..).
+        //
+        Deserializer deserializer;
+        StructObjectInspector partObjectInspector;
+        try {
+          deserializer = partDesc.getDeserializer(hiveConf);
+          partObjectInspector = (StructObjectInspector) deserializer.getObjectInspector();
+        } catch (Exception e) {
+          throw new SemanticException(e);
+        }
+        String nextDataColumnsString = ObjectInspectorUtils.getFieldNames(partObjectInspector);
+        String[] nextDataColumns = nextDataColumnsString.split(",");
+        List<String> nextDataColumnList = Arrays.asList(nextDataColumns);
 
-        boolean[] conversionFlags;
-        if (conversionMap.containsKey(columnNamesAndTypesCombination)) {
+        /*
+         * Validate the column names that are present are the same.  Missing columns will be
+         * implicitly defaulted to null.
+         */
+        if (nextDataColumnList.size() > tableDataColumnList.size()) {
+          LOG.info(
+              String.format(
+                  "Could not vectorize partition %s " +
+                  "(deserializer " + deserializer.getClass().getName() + ")" +
+                  "The partition column names %d is greater than the number of table columns %d",
+                  path, nextDataColumnList.size(), tableDataColumnList.size()));
+          return false;
+        }
+        if (!(deserializer instanceof NullStructSerDe)) {
 
-          conversionFlags = conversionMap.get(columnNamesAndTypesCombination);
-
-        } else {
-
-          List<String> nextDataColumnList = Arrays.asList(nextDataColumns);
-
-          // Validate the column names that are present are the same.  Missing columns will be
-          // implicitly defaulted to null.
-
-          if (nextDataColumnList.size() > dataColumnList.size()) {
-            LOG.info(
-                String.format("Could not vectorize partition %s.  The partition column names %d is greater than the number of table columns %d",
-                    path, nextDataColumnList.size(), dataColumnList.size()));
-            return false;
-          }
+          // (Don't insist NullStructSerDe produce correct column names).
           for (int i = 0; i < nextDataColumnList.size(); i++) {
             String nextColumnName = nextDataColumnList.get(i);
-            String tableColumnName = dataColumnList.get(i);
+            String tableColumnName = tableDataColumnList.get(i);
             if (!nextColumnName.equals(tableColumnName)) {
               LOG.info(
-                  String.format("Could not vectorize partition %s.  The partition column name %s is does not match table column name %s",
+                  String.format(
+                      "Could not vectorize partition %s " +
+                      "(deserializer " + deserializer.getClass().getName() + ")" +
+                      "The partition column name %s is does not match table column name %s",
                       path, nextColumnName, tableColumnName));
               return false;
             }
           }
-
-          // The table column types might have been changed with ALTER.  There are restrictions
-          // here for vectorization.
-
-          // Some readers / deserializers take responsibility for conversion themselves.
-
-          // If we need to check for conversion, the conversion object may come back null
-          // indicating from a vectorization point of view the conversion is implicit.  That is,
-          // all implicit integer upgrades.
-
-          if (vectorPartDesc.getNeedsDataTypeConversionCheck() &&
-             !nextDataTypeInfoList.equals(dataTypeInfoList)) {
-
-             // The results will be in 2 members: validConversion and conversionFlags
-            partitionConversion.validateConversion(nextDataTypeInfoList, dataTypeInfoList);
-             if (!partitionConversion.getValidConversion()) {
-               return false;
-             }
-             conversionFlags = partitionConversion.getResultConversionFlags();
-           } else {
-            conversionFlags = null;
-          }
-
-          // We enter this in our map so we don't have to check again for subsequent partitions.
-
-          conversionMap.put(columnNamesAndTypesCombination, conversionFlags);
         }
 
-        vectorPartDesc.setConversionFlags(conversionFlags);
+        List<TypeInfo> nextDataTypeInfoList;
+        if (vectorPartDesc.getIsInputFileFormatSelfDescribing()) {
 
-        vectorPartDesc.setTypeInfos(nextDataTypeInfoList);
+          /*
+           * Self-Describing Input Format will convert its data to the table schema.
+           */
+          nextDataTypeInfoList = tableDataTypeInfoList;
+
+        } else {
+          String nextDataTypesString = ObjectInspectorUtils.getFieldTypes(partObjectInspector);
+
+          // We convert to an array of TypeInfo using a library routine since it parses the information
+          // and can handle use of different separators, etc.  We cannot use the raw type string
+          // for comparison in the map because of the different separators used.
+          nextDataTypeInfoList =
+              TypeInfoUtils.getTypeInfosFromTypeString(nextDataTypesString);
+        }
+
+        vectorPartDesc.setDataTypeInfos(nextDataTypeInfoList);
       }
 
       vectorTaskColumnInfo.setColumnNames(allColumnNameList);
       vectorTaskColumnInfo.setTypeInfos(allTypeInfoList);
       vectorTaskColumnInfo.setPartitionColumnCount(partitionColumnCount);
+      vectorTaskColumnInfo.setUseVectorizedInputFileFormat(useVectorizedInputFileFormat);
 
       return true;
     }
@@ -1203,7 +1305,23 @@ public class Vectorizer implements PhysicalPlanResolver {
       LOG.info("Vectorization is disabled");
       return physicalContext;
     }
+
     isSpark = (HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark"));
+
+    useVectorizedInputFileFormat =
+        HiveConf.getBoolVar(hiveConf,
+            HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT);
+    useVectorDeserialize =
+        HiveConf.getBoolVar(hiveConf,
+            HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTOR_DESERIALIZE);
+    useRowDeserialize =
+        HiveConf.getBoolVar(hiveConf,
+            HiveConf.ConfVars.HIVE_VECTORIZATION_USE_ROW_DESERIALIZE);
+
+    isSchemaEvolution =
+        HiveConf.getBoolVar(hiveConf,
+            HiveConf.ConfVars.HIVE_SCHEMA_EVOLUTION);
+
     // create dispatcher and graph walker
     Dispatcher disp = new VectorizationDispatcher(physicalContext);
     TaskGraphWalker ogw = new TaskGraphWalker(disp);

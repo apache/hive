@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.exec.MapOperator;
+import org.apache.hadoop.hive.ql.exec.AbstractMapOperator;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.Writable;
@@ -39,11 +39,11 @@ public class MapRecordSource implements RecordSource {
 
   public static final Logger LOG = LoggerFactory.getLogger(MapRecordSource.class);
   private ExecMapperContext execContext = null;
-  private MapOperator mapOp = null;
+  private AbstractMapOperator mapOp = null;
   private KeyValueReader reader = null;
   private final boolean grouped = false;
 
-  void init(JobConf jconf, MapOperator mapOp, KeyValueReader reader) throws IOException {
+  void init(JobConf jconf, AbstractMapOperator mapOp, KeyValueReader reader) throws IOException {
     execContext = mapOp.getExecContext();
     this.mapOp = mapOp;
     this.reader = reader;

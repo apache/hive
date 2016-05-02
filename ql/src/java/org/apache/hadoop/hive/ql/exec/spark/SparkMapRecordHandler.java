@@ -25,6 +25,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.exec.AbstractMapOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -55,7 +56,7 @@ import org.apache.hadoop.mapred.Reporter;
  */
 public class SparkMapRecordHandler extends SparkRecordHandler {
   private static final Logger LOG = LoggerFactory.getLogger(SparkMapRecordHandler.class);
-  private MapOperator mo;
+  private AbstractMapOperator mo;
   private MapredLocalWork localWork = null;
   private boolean isLogInfoEnabled = false;
   private ExecMapperContext execContext;

@@ -39,44 +39,120 @@ public class VectorPartitionDesc  {
   //    No data type conversion check?  Assume ALTER TABLE prevented conversions that
   //    VectorizedInputFileFormat cannot handle...
   //
+  // VECTOR_DESERIALIZE:
+  //    LAZY_SIMPLE:
+  //        Capable of converting on its own.
+  //    LAZY_BINARY
+  //        Partition schema assumed to match file contents.
+  //        Conversion necessary from partition field values to vector columns.
+  // ROW_DESERIALIZE
+  //    Partition schema assumed to match file contents.
+  //    Conversion necessary from partition field values to vector columns.
+  //
 
   public static enum VectorMapOperatorReadType {
     NONE,
-    VECTORIZED_INPUT_FILE_FORMAT
+    VECTORIZED_INPUT_FILE_FORMAT,
+    VECTOR_DESERIALIZE,
+    ROW_DESERIALIZE
   }
 
+  public static enum VectorDeserializeType {
+    NONE,
+    LAZY_SIMPLE,
+    LAZY_BINARY
+  }
 
   private final VectorMapOperatorReadType vectorMapOperatorReadType;
+  private final VectorDeserializeType vectorDeserializeType;
 
-  private final boolean needsDataTypeConversionCheck;
+  private final String rowDeserializerClassName;
+  private final String inputFileFormatClassName;
 
-  private boolean[] conversionFlags;
+  boolean isInputFileFormatSelfDescribing;
 
-  private TypeInfo[] typeInfos;
+  private TypeInfo[] dataTypeInfos;
 
-  private VectorPartitionDesc(VectorMapOperatorReadType vectorMapOperatorReadType,
-      boolean needsDataTypeConversionCheck) {
+  private VectorPartitionDesc(String inputFileFormatClassName,
+      boolean isInputFileFormatSelfDescribing, VectorMapOperatorReadType vectorMapOperatorReadType) {
     this.vectorMapOperatorReadType = vectorMapOperatorReadType;
-    this.needsDataTypeConversionCheck = needsDataTypeConversionCheck;
-
-    conversionFlags = null;
-    typeInfos = null;
+    this.vectorDeserializeType = VectorDeserializeType.NONE;
+    this.inputFileFormatClassName = inputFileFormatClassName;
+    rowDeserializerClassName = null;
+    this.isInputFileFormatSelfDescribing = isInputFileFormatSelfDescribing;
+    dataTypeInfos = null;
   }
 
-  public static VectorPartitionDesc createVectorizedInputFileFormat() {
-    return new VectorPartitionDesc(VectorMapOperatorReadType.VECTORIZED_INPUT_FILE_FORMAT, true);
+  /**
+   * Create a VECTOR_DESERIALIZE flavor object.
+   * @param vectorMapOperatorReadType
+   * @param vectorDeserializeType
+   * @param needsDataTypeConversionCheck
+   */
+  private VectorPartitionDesc(String inputFileFormatClassName,
+      VectorDeserializeType vectorDeserializeType) {
+    this.vectorMapOperatorReadType = VectorMapOperatorReadType.VECTOR_DESERIALIZE;
+    this.vectorDeserializeType = vectorDeserializeType;
+    this.inputFileFormatClassName = inputFileFormatClassName;
+    rowDeserializerClassName = null;
+    isInputFileFormatSelfDescribing = false;
+    dataTypeInfos = null;
   }
 
+  /**
+   * Create a ROW_DESERIALIZE flavor object.
+   * @param rowDeserializerClassName
+   * @param inputFileFormatClassName
+   */
+  private VectorPartitionDesc(String inputFileFormatClassName,
+      boolean isInputFileFormatSelfDescribing, String rowDeserializerClassName) {
+    this.vectorMapOperatorReadType = VectorMapOperatorReadType.ROW_DESERIALIZE;
+    this.vectorDeserializeType = VectorDeserializeType.NONE;
+    this.inputFileFormatClassName = inputFileFormatClassName;
+    this.rowDeserializerClassName = rowDeserializerClassName;
+    this.isInputFileFormatSelfDescribing = isInputFileFormatSelfDescribing;
+    dataTypeInfos = null;
+  }
+
+  public static VectorPartitionDesc createVectorizedInputFileFormat(String inputFileFormatClassName,
+      boolean isInputFileFormatSelfDescribing) {
+    return new VectorPartitionDesc(
+        inputFileFormatClassName,
+        isInputFileFormatSelfDescribing,
+        VectorMapOperatorReadType.VECTORIZED_INPUT_FILE_FORMAT);
+  }
+
+  public static VectorPartitionDesc createVectorDeserialize(String inputFileFormatClassName,
+      VectorDeserializeType vectorDeserializeType) {
+    return new VectorPartitionDesc(inputFileFormatClassName, vectorDeserializeType);
+  }
+
+  public static VectorPartitionDesc createRowDeserialize(String inputFileFormatClassName,
+      boolean isInputFileFormatSelfDescribing, String rowDeserializerClassName) {
+    return new VectorPartitionDesc(rowDeserializerClassName, isInputFileFormatSelfDescribing,
+        inputFileFormatClassName);
+  }
 
   @Override
   public VectorPartitionDesc clone() {
-    VectorPartitionDesc result =
-        new VectorPartitionDesc(vectorMapOperatorReadType,
-            needsDataTypeConversionCheck);
-    result.conversionFlags =
-        (conversionFlags == null ? null :
-          Arrays.copyOf(conversionFlags, conversionFlags.length));
-    result.typeInfos = Arrays.copyOf(typeInfos, typeInfos.length);
+    VectorPartitionDesc result;
+    switch (vectorMapOperatorReadType) {
+    case VECTORIZED_INPUT_FILE_FORMAT:
+      result = new VectorPartitionDesc(inputFileFormatClassName, isInputFileFormatSelfDescribing,
+          vectorMapOperatorReadType);
+      break;
+    case VECTOR_DESERIALIZE:
+      result = new VectorPartitionDesc(inputFileFormatClassName, vectorDeserializeType);
+      break;
+    case ROW_DESERIALIZE:
+      result = new VectorPartitionDesc(inputFileFormatClassName, isInputFileFormatSelfDescribing,
+          rowDeserializerClassName);
+      break;
+    default:
+      throw new RuntimeException("Unexpected vector map operator read type " + vectorMapOperatorReadType.name());
+    }
+    result.dataTypeInfos = Arrays.copyOf(dataTypeInfos, dataTypeInfos.length);
+
     return result;
   }
 
@@ -84,27 +160,55 @@ public class VectorPartitionDesc  {
     return vectorMapOperatorReadType;
   }
 
-  public boolean getNeedsDataTypeConversionCheck() {
-    return needsDataTypeConversionCheck;
+  public String getInputFileFormatClassName() {
+    return inputFileFormatClassName;
   }
 
-  public void setConversionFlags(boolean[] conversionFlags) {
-    this.conversionFlags = conversionFlags;
+  public VectorDeserializeType getVectorDeserializeType() {
+    return vectorDeserializeType;
   }
 
-  public boolean[] getConversionFlags() {
-    return conversionFlags;
+  public String getRowDeserializerClassName() {
+    return rowDeserializerClassName;
   }
 
-  public TypeInfo[] getTypeInfos() {
-    return typeInfos;
+  public boolean getIsInputFileFormatSelfDescribing() {
+    return isInputFileFormatSelfDescribing;
   }
 
-  public void setTypeInfos(List<TypeInfo> typeInfoList) {
-    typeInfos = typeInfoList.toArray(new TypeInfo[0]);
+  public TypeInfo[] getDataTypeInfos() {
+    return dataTypeInfos;
   }
 
-  public int getNonPartColumnCount() {
-    return typeInfos.length;
+  public void setDataTypeInfos(List<TypeInfo> dataTypeInfoList) {
+    dataTypeInfos = dataTypeInfoList.toArray(new TypeInfo[0]);
+  }
+
+  public int getDataColumnCount() {
+    return dataTypeInfos.length;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("vector map operator read type ");
+    sb.append(vectorMapOperatorReadType.name());
+    sb.append(", input file format class name ");
+    sb.append(inputFileFormatClassName);
+    switch (vectorMapOperatorReadType) {
+    case VECTORIZED_INPUT_FILE_FORMAT:
+      break;
+    case VECTOR_DESERIALIZE:
+      sb.append(", deserialize type ");
+      sb.append(vectorDeserializeType.name());
+      break;
+    case ROW_DESERIALIZE:
+      sb.append(", deserializer class name ");
+      sb.append(rowDeserializerClassName);
+      break;
+    default:
+      throw new RuntimeException("Unexpected vector map operator read type " + vectorMapOperatorReadType.name());
+    }
+    return sb.toString();
   }
 }

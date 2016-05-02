@@ -186,7 +186,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
         int length = byteSegmentRef.getLength();
         smallTableVectorDeserializeRow.setBytes(bytes, offset, length);
 
-        smallTableVectorDeserializeRow.deserializeByValue(batch, batchIndex);
+        smallTableVectorDeserializeRow.deserialize(batch, batchIndex);
       }
 
       // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, "generateHashMapResultSingleValue big table");
@@ -253,7 +253,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
           int length = byteSegmentRef.getLength();
           smallTableVectorDeserializeRow.setBytes(bytes, offset, length);
 
-          smallTableVectorDeserializeRow.deserializeByValue(overflowBatch, overflowBatch.size);
+          smallTableVectorDeserializeRow.deserialize(overflowBatch, overflowBatch.size);
         }
 
         // VectorizedBatchUtil.debugDisplayOneRow(overflowBatch, overflowBatch.size, "generateHashMapResultMultiValue overflow");
@@ -304,7 +304,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
           int length = byteSegmentRef.getLength();
           smallTableVectorDeserializeRow.setBytes(bytes, offset, length);
 
-          smallTableVectorDeserializeRow.deserializeByValue(overflowBatch, overflowBatch.DEFAULT_SIZE);
+          smallTableVectorDeserializeRow.deserialize(overflowBatch, overflowBatch.DEFAULT_SIZE);
         }
 
         overflowBatch.size++;
@@ -545,7 +545,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
 //      LOG.debug(CLASS_NAME + " reProcessBigTable serialized row #" + rowCount + ", offset " + offset + ", length " + length);
 
         bigTableVectorDeserializeRow.setBytes(bytes, offset, length);
-        bigTableVectorDeserializeRow.deserializeByValue(spillReplayBatch, spillReplayBatch.size);
+        bigTableVectorDeserializeRow.deserialize(spillReplayBatch, spillReplayBatch.size);
         spillReplayBatch.size++;
 
         if (spillReplayBatch.size == VectorizedRowBatch.DEFAULT_SIZE) {
