@@ -291,12 +291,6 @@
       <version>${hadoop.version}</version>
       <optional>true</optional>
     </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-yarn-registry</artifactId>
-      <version>${hadoop.version}</version>
-      <optional>true</optional>
-    </dependency>
 
     <dependency>
       <groupId>org.apache.ivy</groupId>
