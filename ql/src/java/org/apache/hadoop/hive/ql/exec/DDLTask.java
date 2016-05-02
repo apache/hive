@@ -251,6 +251,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private MetaDataFormatter formatter;
   private final HiveAuthorizationTranslator defaultAuthorizationTranslator = new DefaultHiveAuthorizationTranslator();
+  private Task<? extends Serializable> subtask = null;
+
+  public Task<? extends Serializable> getSubtask() {
+    return subtask;
+  }
 
   @Override
   public boolean requireLock() {
@@ -667,6 +672,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // initialize the task and execute
     task.initialize(queryState, getQueryPlan(), driverCxt, opContext);
+    subtask = task;
     int ret = task.execute(driverCxt);
     return ret;
   }
@@ -4173,6 +4179,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       taskExec.initialize(queryState, null, driverCxt, null);
       taskExec.setWork(truncateWork);
       taskExec.setQueryPlan(this.getQueryPlan());
+      subtask = taskExec;
       return taskExec.execute(driverCxt);
     }
 
