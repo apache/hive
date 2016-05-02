@@ -182,6 +182,8 @@ public class MiniHS2 extends AbstractHiveService {
   private MiniHS2(HiveConf hiveConf, MiniClusterType miniClusterType, boolean useMiniKdc,
       String serverPrincipal, String serverKeytab, boolean isMetastoreRemote,
       boolean usePortsFromConf, String authType, boolean isHA) throws Exception {
+    // Always use localhost for hostname as some tests like SSL CN validation ones
+    // are tied to localhost being present in the certificate name
     super(hiveConf, "localhost",
         (usePortsFromConf ? hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT) : MetaStoreUtils.findFreePort()),
         (usePortsFromConf ? hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT) : MetaStoreUtils.findFreePort()));
@@ -382,29 +384,38 @@ public class MiniHS2 extends AbstractHiveService {
    * @return
    * @throws Exception
    */
-  public String getJdbcURL(String dbName, String sessionConfExt, String hiveConfExt) throws Exception {
+  public String getJdbcURL(String dbName, String sessionConfExt, String hiveConfExt)
+      throws Exception {
     sessionConfExt = (sessionConfExt == null ? "" : sessionConfExt);
     hiveConfExt = (hiveConfExt == null ? "" : hiveConfExt);
-    String krbConfig = "";
+    // Strip the leading ";" if provided
+    // (this is the assumption with which we're going to start configuring sessionConfExt)
+    if (sessionConfExt.startsWith(";")) {
+      sessionConfExt = sessionConfExt.substring(1);
+    }
     if (isUseMiniKdc()) {
-      krbConfig = "principal=" + serverPrincipal;
+      sessionConfExt = "principal=" + serverPrincipal + ";" + sessionConfExt;
     }
     if (isHttpTransportMode()) {
-      sessionConfExt = "transportMode=http;httpPath=cliservice;" + sessionConfExt;
+      sessionConfExt = "transportMode=http;httpPath=cliservice" + ";" + sessionConfExt;
     }
     String baseJdbcURL;
     if (isDynamicServiceDiscovery()) {
-      String serviceDiscoveryConfig =
+      sessionConfExt =
           "serviceDiscoveryMode=zooKeeper;zooKeeperNamespace="
-              + getServerConf().getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE) + ";";
-      baseJdbcURL = getZKBaseJdbcURL() + dbName + ";" + serviceDiscoveryConfig;
+              + getServerConf().getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE) + ";"
+              + sessionConfExt;
+      baseJdbcURL = getZKBaseJdbcURL();
+    } else {
+      baseJdbcURL = getBaseJdbcURL();
     }
-    else {
-      baseJdbcURL = getBaseJdbcURL() + dbName + ";";
+
+    baseJdbcURL = baseJdbcURL + dbName;
+    if (!sessionConfExt.isEmpty()) {
+      baseJdbcURL = baseJdbcURL + ";" + sessionConfExt;
     }
-    baseJdbcURL = baseJdbcURL + krbConfig + ";" + sessionConfExt;
-    if (!hiveConfExt.trim().equals("")) {
-      baseJdbcURL = "?" + hiveConfExt;
+    if ((hiveConfExt != null) && (!hiveConfExt.trim().isEmpty())) {
+      baseJdbcURL = baseJdbcURL + "?" + hiveConfExt;
     }
     return baseJdbcURL;
   }
