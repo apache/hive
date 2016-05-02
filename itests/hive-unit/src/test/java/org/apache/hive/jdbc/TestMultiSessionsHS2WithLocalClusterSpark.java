@@ -101,7 +101,7 @@ public class TestMultiSessionsHS2WithLocalClusterSpark {
   }
 
   // setup DB
-  private static void createDb() throws SQLException {
+  private static void createDb() throws Exception {
     Connection conn = DriverManager.
       getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
     Statement stmt2 = conn.createStatement();
@@ -124,7 +124,7 @@ public class TestMultiSessionsHS2WithLocalClusterSpark {
     closeConnection();
   }
 
-  private void createConnection() throws SQLException {
+  private void createConnection() throws Exception {
     Connection connection = DriverManager.getConnection(miniHS2.getJdbcURL(dbName),
       System.getProperty("user.name"), "bar");
     Statement statement = connection.createStatement();
@@ -215,8 +215,7 @@ public class TestMultiSessionsHS2WithLocalClusterSpark {
     };
   }
 
-  private void testKvQuery(String queryStr, String resultVal)
-    throws SQLException {
+  private void testKvQuery(String queryStr, String resultVal) throws Exception {
     createConnection();
     verifyResult(queryStr, resultVal, 2);
     closeConnection();

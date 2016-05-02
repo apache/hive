@@ -307,8 +307,9 @@ public class MiniHS2 extends AbstractHiveService {
   /**
    * return connection URL for this server instance
    * @return
+   * @throws Exception 
    */
-  public String getJdbcURL() {
+  public String getJdbcURL() throws Exception {
     return getJdbcURL("default");
   }
 
@@ -316,8 +317,9 @@ public class MiniHS2 extends AbstractHiveService {
    * return connection URL for this server instance
    * @param dbName - DB name to be included in the URL
    * @return
+   * @throws Exception 
    */
-  public String getJdbcURL(String dbName) {
+  public String getJdbcURL(String dbName) throws Exception {
     return getJdbcURL(dbName, "");
   }
 
@@ -326,8 +328,9 @@ public class MiniHS2 extends AbstractHiveService {
    * @param dbName - DB name to be included in the URL
    * @param sessionConfExt - Addional string to be appended to sessionConf part of url
    * @return
+   * @throws Exception 
    */
-  public String getJdbcURL(String dbName, String sessionConfExt) {
+  public String getJdbcURL(String dbName, String sessionConfExt) throws Exception {
     return getJdbcURL(dbName, sessionConfExt, "");
   }
 
@@ -337,20 +340,30 @@ public class MiniHS2 extends AbstractHiveService {
    * @param sessionConfExt - Addional string to be appended to sessionConf part of url
    * @param hiveConfExt - Additional string to be appended to HiveConf part of url (excluding the ?)
    * @return
+   * @throws Exception 
    */
-  public String getJdbcURL(String dbName, String sessionConfExt, String hiveConfExt) {
+  public String getJdbcURL(String dbName, String sessionConfExt, String hiveConfExt)
+      throws Exception {
     sessionConfExt = (sessionConfExt == null ? "" : sessionConfExt);
     hiveConfExt = (hiveConfExt == null ? "" : hiveConfExt);
-    String krbConfig = "";
+    // Strip the leading ";" if provided
+    // (this is the assumption with which we're going to start configuring sessionConfExt)
+    if (sessionConfExt.startsWith(";")) {
+      sessionConfExt = sessionConfExt.substring(1);
+    }
     if (isUseMiniKdc()) {
-      krbConfig = "principal=" + serverPrincipal;
+      sessionConfExt = "principal=" + serverPrincipal + ";" + sessionConfExt;
     }
     if (isHttpTransportMode()) {
-      sessionConfExt = "transportMode=http;httpPath=cliservice;" + sessionConfExt;
+      sessionConfExt = "transportMode=http;httpPath=cliservice" + ";" + sessionConfExt;
     }
-    String baseJdbcURL = getBaseJdbcURL() + dbName + ";" + krbConfig + ";" + sessionConfExt;
-    if (!hiveConfExt.trim().equals("")) {
-      baseJdbcURL = "?" + hiveConfExt;
+    String baseJdbcURL = getBaseJdbcURL();
+    baseJdbcURL = baseJdbcURL + dbName;
+    if (!sessionConfExt.isEmpty()) {
+      baseJdbcURL = baseJdbcURL + ";" + sessionConfExt;
+    }
+    if ((hiveConfExt != null) && (!hiveConfExt.trim().isEmpty())) {
+      baseJdbcURL = baseJdbcURL + "?" + hiveConfExt;
     }
     return baseJdbcURL;
   }
