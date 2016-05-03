@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.IOException;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,8 +29,11 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
@@ -49,12 +53,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
@@ -63,6 +69,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -70,6 +77,7 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hive.common.util.DateUtils;
 
 public class VectorizedBatchUtil {
@@ -636,6 +644,47 @@ public class VectorizedBatchUtil {
     newBatch.projectionSize = batch.projectionSize;
     newBatch.reset();
     return newBatch;
+  }
+
+  public static Writable getPrimitiveWritable(PrimitiveCategory primitiveCategory) {
+    switch (primitiveCategory) {
+    case VOID:
+      return null;
+    case BOOLEAN:
+      return new BooleanWritable(false);
+    case BYTE:
+      return new ByteWritable((byte) 0);
+    case SHORT:
+      return new ShortWritable((short) 0);
+    case INT:
+      return new IntWritable(0);
+    case LONG:
+      return new LongWritable(0);
+    case TIMESTAMP:
+      return new TimestampWritable(new Timestamp(0));
+    case DATE:
+      return new DateWritable(new Date(0));
+    case FLOAT:
+      return new FloatWritable(0);
+    case DOUBLE:
+      return new DoubleWritable(0);
+    case BINARY:
+      return new BytesWritable(ArrayUtils.EMPTY_BYTE_ARRAY);
+    case STRING:
+      return new Text(ArrayUtils.EMPTY_BYTE_ARRAY);
+    case VARCHAR:
+      return new HiveVarcharWritable(new HiveVarchar(StringUtils.EMPTY, -1));
+    case CHAR:
+      return new HiveCharWritable(new HiveChar(StringUtils.EMPTY, -1));
+    case DECIMAL:
+      return new HiveDecimalWritable();
+    case INTERVAL_YEAR_MONTH:
+      return new HiveIntervalYearMonthWritable();
+    case INTERVAL_DAY_TIME:
+      return new HiveIntervalDayTimeWritable();
+    default:
+      throw new RuntimeException("Primitive category " + primitiveCategory.name() + " not supported");
+    }
   }
 
   public static String displayBytes(byte[] bytes, int start, int length) {

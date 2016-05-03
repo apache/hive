@@ -43,6 +43,11 @@ class LlapResource(object):
 			self.queueString = "--queue "
 			self.queueString += config["hive.llap.daemon.queue.name"]
 
+		if (not config.get("private.hive.llap.servicedriver.cluster.name")):
+			self.clusterName="llap0"
+		else:
+			self.clusterName = config["private.hive.llap.servicedriver.cluster.name"]
+
 	def __repr__(self):
 		return "<LlapResource heap=%d container=%d>" % (self.heap_size, self.container_size)
 
@@ -108,7 +113,7 @@ def main(args):
 		"container.cores" : resource.container_cores,
 		"hadoop_home" : os.getenv("HADOOP_HOME"),
 		"java_home" : java_home,
-		"name" : args.name,
+		"name" : resource.clusterName,
 		"daemon_args" : args.args,
 		"daemon_loglevel" : args.loglevel,
 		"queue.string" : resource.queueString,

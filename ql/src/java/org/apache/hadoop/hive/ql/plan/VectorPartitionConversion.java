@@ -19,9 +19,6 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.HashMap;
-import java.util.List;
-
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -33,134 +30,75 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  */
 public class VectorPartitionConversion  {
 
-  private static long serialVersionUID = 1L;
-
-  private boolean validConversion;
-  private boolean[] resultConversionFlags;
-
-  private TypeInfo invalidFromTypeInfo;
-  private TypeInfo invalidToTypeInfo;
-
-  public boolean getValidConversion() {
-    return validConversion;
-  }
-
-  public boolean[] getResultConversionFlags() {
-    return resultConversionFlags;
-  }
-
-  public TypeInfo getInvalidFromTypeInfo() {
-    return invalidFromTypeInfo;
-  }
-
-  public TypeInfo getInvalidToTypeInfo() {
-    return invalidToTypeInfo;
-  }
-
   // Currently, we only support these no-precision-loss or promotion data type conversions:
-  //  //
-  //  Short -> Int                  IMPLICIT WITH VECTORIZATION
-  //  Short -> BigInt               IMPLICIT WITH VECTORIZATION
-  //  Int --> BigInt                IMPLICIT WITH VECTORIZATION
   //
-  // CONSIDER ADDING:
-  //  Float -> Double               IMPLICIT WITH VECTORIZATION
-  //  (Char | VarChar) -> String    IMPLICIT WITH VECTORIZATION
+  //  TinyInt --> SmallInt
+  //  TinyInt --> Int
+  //  TinyInt --> BigInt
   //
-  private static HashMap<PrimitiveCategory, PrimitiveCategory[]> validFromPrimitiveMap =
+  //  SmallInt -> Int
+  //  SmallInt -> BigInt
+  //
+  //  Int --> BigInt
+  //
+  //  Float -> Double
+  //
+  //  Since we stare Char without padding, it can become a String implicitly.
+  //  (Char | VarChar) -> String
+  //
+  private static HashMap<PrimitiveCategory, PrimitiveCategory[]> implicitPrimitiveMap =
       new HashMap<PrimitiveCategory, PrimitiveCategory[]>();
   static {
-    validFromPrimitiveMap.put(
+    implicitPrimitiveMap.put(
+        PrimitiveCategory.BOOLEAN,
+        new PrimitiveCategory[] {
+            PrimitiveCategory.BYTE, PrimitiveCategory.SHORT, PrimitiveCategory.INT, PrimitiveCategory.LONG });
+    implicitPrimitiveMap.put(
+        PrimitiveCategory.BYTE,
+        new PrimitiveCategory[] {
+            PrimitiveCategory.SHORT, PrimitiveCategory.INT, PrimitiveCategory.LONG });
+    implicitPrimitiveMap.put(
         PrimitiveCategory.SHORT,
-        new PrimitiveCategory[] { PrimitiveCategory.INT, PrimitiveCategory.LONG });
-    validFromPrimitiveMap.put(
+        new PrimitiveCategory[] {
+            PrimitiveCategory.INT, PrimitiveCategory.LONG });
+    implicitPrimitiveMap.put(
         PrimitiveCategory.INT,
-        new PrimitiveCategory[] { PrimitiveCategory.LONG });
+        new PrimitiveCategory[] {
+            PrimitiveCategory.LONG });
+    implicitPrimitiveMap.put(
+        PrimitiveCategory.FLOAT,
+        new PrimitiveCategory[] {
+            PrimitiveCategory.DOUBLE });
+    implicitPrimitiveMap.put(
+        PrimitiveCategory.CHAR,
+        new PrimitiveCategory[] {
+            PrimitiveCategory.STRING });
+    implicitPrimitiveMap.put(
+        PrimitiveCategory.VARCHAR,
+        new PrimitiveCategory[] {
+            PrimitiveCategory.STRING });
   }
 
-  private boolean validateOne(TypeInfo fromTypeInfo, TypeInfo toTypeInfo) {
-
-    if (fromTypeInfo.equals(toTypeInfo)) {
-      return false;
-    }
+  public static boolean isImplicitVectorColumnConversion(TypeInfo fromTypeInfo,
+      TypeInfo toTypeInfo) {
 
     if (fromTypeInfo.getCategory() == Category.PRIMITIVE &&
         toTypeInfo.getCategory() == Category.PRIMITIVE) {
 
-      PrimitiveCategory fromPrimitiveCategory = ((PrimitiveTypeInfo) fromTypeInfo).getPrimitiveCategory();
-      PrimitiveCategory toPrimitiveCategory = ((PrimitiveTypeInfo) toTypeInfo).getPrimitiveCategory();
-
-      PrimitiveCategory[] toPrimitiveCategories =
-          validFromPrimitiveMap.get(fromPrimitiveCategory);
-      if (toPrimitiveCategories == null ||
-          !ArrayUtils.contains(toPrimitiveCategories, toPrimitiveCategory)) {
-        invalidFromTypeInfo = fromTypeInfo;
-        invalidToTypeInfo = toTypeInfo;
-
-        // Tell caller a bad one was found.
-        validConversion = false;
-        return false;
+      PrimitiveCategory fromPrimitiveCategory =
+          ((PrimitiveTypeInfo) fromTypeInfo).getPrimitiveCategory();
+      PrimitiveCategory toPrimitiveCategory =
+          ((PrimitiveTypeInfo) toTypeInfo).getPrimitiveCategory();
+      PrimitiveCategory[] toPrimitiveCategories = implicitPrimitiveMap.get(fromPrimitiveCategory);
+      if (toPrimitiveCategories != null) {
+        for (PrimitiveCategory candidatePrimitiveCategory : toPrimitiveCategories) {
+          if (candidatePrimitiveCategory == toPrimitiveCategory) {
+            return true;
+          }
+        }
       }
-    } else {
-      // Ignore checking complex types.  Assume they will not be included in the query.
+      return false;
     }
-
-    return true;
-  }
-
-  public void validateConversion(List<TypeInfo> fromTypeInfoList,
-      List<TypeInfo> toTypeInfoList) {
-
-    final int columnCount = fromTypeInfoList.size();
-    resultConversionFlags = new boolean[columnCount];
-
-    // The method validateOne will turn this off when invalid conversion is found.
-    validConversion = true;
-
-    boolean atLeastOneConversion = false;
-    for (int i = 0; i < columnCount; i++) {
-      TypeInfo fromTypeInfo = fromTypeInfoList.get(i);
-      TypeInfo toTypeInfo = toTypeInfoList.get(i);
-
-      resultConversionFlags[i] = validateOne(fromTypeInfo, toTypeInfo);
-      if (!validConversion) {
-        return;
-      }
-    }
-
-    if (atLeastOneConversion) {
-      // Leave resultConversionFlags set.
-    } else {
-      resultConversionFlags = null;
-    }
-  }
-
-  public void validateConversion(TypeInfo[] fromTypeInfos, TypeInfo[] toTypeInfos) {
-
-    final int columnCount = fromTypeInfos.length;
-    resultConversionFlags = new boolean[columnCount];
-
-    // The method validateOne will turn this off when invalid conversion is found.
-    validConversion = true;
-
-    boolean atLeastOneConversion = false;
-    for (int i = 0; i < columnCount; i++) {
-      TypeInfo fromTypeInfo = fromTypeInfos[i];
-      TypeInfo toTypeInfo = toTypeInfos[i];
-
-      resultConversionFlags[i] = validateOne(fromTypeInfo, toTypeInfo);
-      if (!validConversion) {
-        return;
-      }
-      if (resultConversionFlags[i]) {
-        atLeastOneConversion = true;
-      }
-    }
-
-    if (atLeastOneConversion) {
-      // Leave resultConversionFlags set.
-    } else {
-      resultConversionFlags = null;
-    }
+    return false;
   }
 }

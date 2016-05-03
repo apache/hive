@@ -27,6 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cli.LlapStatusOptionsProcessor.LlapStatusOptions;
@@ -53,14 +55,15 @@ public class LlapStatusServiceDriver {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapStatusServiceDriver.class);
 
-  private static final long FIND_YARN_APP_TIMEOUT = 20 * 1000l; // 20seconds to wait for app to be visible
+
 
   private static final String AM_KEY = "slider-appmaster";
   private static final String LLAP_KEY = "LLAP";
 
   private final Configuration conf;
   private final Clock clock = new SystemClock();
-  private final AppStatusBuilder appStatusBuilder = new AppStatusBuilder();
+  @VisibleForTesting
+  final AppStatusBuilder appStatusBuilder = new AppStatusBuilder();
 
   public LlapStatusServiceDriver() {
     SessionState ss = SessionState.get();
@@ -85,7 +88,29 @@ public class LlapStatusServiceDriver {
         conf.addResource(f);
       }
       conf.reloadConfiguration();
+      for (Map.Entry<Object, Object> props : options.getConf().entrySet()) {
+        conf.set((String) props.getKey(), (String) props.getValue());
+      }
 
+      String appName;
+      appName = options.getName();
+      if (StringUtils.isEmpty(appName)) {
+        appName = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
+        if (appName.startsWith("@") && appName.length() > 1) {
+          // This is a valid slider app name. Parse it out.
+          appName = appName.substring(1);
+        } else {
+          // Invalid app name. Checked later.
+          appName = null;
+        }
+      }
+      if (StringUtils.isEmpty(appName)) {
+        String message =
+            "Invalid app name. This must be setup via config or passed in as a parameter." +
+                " This tool works with clusters deployed by Slider/YARN";
+        LOG.info(message);
+        return ExitCode.INCORRECT_USAGE.getInt();
+      }
 
       try {
         sliderClient = createSliderClient();
@@ -97,7 +122,7 @@ public class LlapStatusServiceDriver {
       // Get the App report from YARN
       ApplicationReport appReport = null;
       try {
-        appReport = getAppReport(options, sliderClient, FIND_YARN_APP_TIMEOUT);
+        appReport = getAppReport(appName, sliderClient, options.getFindAppTimeoutMs());
       } catch (LlapStatusCliException e) {
         logError(e);
         return e.getExitCode().getInt();
@@ -120,7 +145,7 @@ public class LlapStatusServiceDriver {
       } else {
         // Get information from slider.
         try {
-          ret = populateAppStatusFromSlider(options, sliderClient, appStatusBuilder);
+          ret = populateAppStatusFromSlider(appName, sliderClient, appStatusBuilder);
         } catch (LlapStatusCliException e) {
           // In case of failure, send back whatever is constructed sop far - which wouldbe from the AppReport
           logError(e);
@@ -140,8 +165,8 @@ public class LlapStatusServiceDriver {
       }
       return ret.getInt();
     }finally {
-      if (LOG.isTraceEnabled()) {
-        LOG.trace("Final AppState: " + appStatusBuilder.toString());
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Final AppState: " + appStatusBuilder.toString());
       }
       if (sliderClient != null) {
         sliderClient.stop();
@@ -157,6 +182,7 @@ public class LlapStatusServiceDriver {
     try {
       writer.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(appStatusBuilder));
     } catch (IOException e) {
+      LOG.warn("Failed to create JSON", e);
       throw new LlapStatusCliException(ExitCode.LLAP_JSON_GENERATION_ERROR, "Failed to create JSON",
           e);
     }
@@ -185,18 +211,26 @@ public class LlapStatusServiceDriver {
   }
 
 
-  private ApplicationReport getAppReport(LlapStatusOptions options, SliderClient sliderClient,
+  private ApplicationReport getAppReport(String appName, SliderClient sliderClient,
                                          long timeoutMs) throws LlapStatusCliException {
 
     long startTime = clock.getTime();
-    long timeoutTime = startTime + timeoutMs;
+    long timeoutTime = timeoutMs < 0 ? Long.MAX_VALUE : (startTime + timeoutMs);
     ApplicationReport appReport = null;
 
     // TODO HIVE-13454 Maybe add an option to wait for a certain amount of time for the app to
     // move to running state. Potentially even wait for the containers to be launched.
-    while (clock.getTime() < timeoutTime && appReport == null) {
+
+//    while (clock.getTime() < timeoutTime && appReport == null) {
+
+    while (appReport == null) {
       try {
-        appReport = sliderClient.getYarnAppListClient().findInstance(options.getName());
+        appReport = sliderClient.getYarnAppListClient().findInstance(appName);
+        if (timeoutMs == 0) {
+          // break immediately if timeout is 0
+          break;
+        }
+        // Otherwise sleep, and try again.
         if (appReport == null) {
           long remainingTime = Math.min(timeoutTime - clock.getTime(), 500l);
           if (remainingTime > 0) {
@@ -263,18 +297,18 @@ public class LlapStatusServiceDriver {
 
   /**
    *
-   * @param options
+   * @param appName
    * @param sliderClient
    * @param appStatusBuilder
    * @return an ExitCode. An ExitCode other than ExitCode.SUCCESS implies future progress not possible
    * @throws LlapStatusCliException
    */
-  private ExitCode populateAppStatusFromSlider(LlapStatusOptions options, SliderClient sliderClient, AppStatusBuilder appStatusBuilder) throws
+  private ExitCode populateAppStatusFromSlider(String appName, SliderClient sliderClient, AppStatusBuilder appStatusBuilder) throws
       LlapStatusCliException {
 
     ClusterDescription clusterDescription;
     try {
-      clusterDescription = sliderClient.getClusterDescription(options.getName());
+      clusterDescription = sliderClient.getClusterDescription(appName);
     } catch (SliderException e) {
       throw new LlapStatusCliException(ExitCode.SLIDER_CLIENT_ERROR_OTHER,
           "Failed to get cluster description from slider. SliderErrorCode=" + (e).getExitCode(), e);
@@ -801,17 +835,27 @@ public class LlapStatusServiceDriver {
 
 
   public static void main(String[] args) {
+    LOG.info("LLAP status invoked with arguments = {}", args);
     int ret;
     try {
       LlapStatusServiceDriver statusServiceDriver = new LlapStatusServiceDriver();
       ret = statusServiceDriver.run(args);
       if (ret == ExitCode.SUCCESS.getInt()) {
-        statusServiceDriver.outputJson(new PrintWriter(System.out));
+        try (PrintWriter pw = new PrintWriter(System.out)) {
+          statusServiceDriver.outputJson(pw);
+        }
       }
 
     } catch (Throwable t) {
       logError(t);
-      ret = ExitCode.INTERNAL_ERROR.getInt();
+      if (t instanceof LlapStatusCliException) {
+        LlapStatusCliException ce = (LlapStatusCliException) t;
+        ret = ce.getExitCode().getInt();
+      } else {
+        ret = ExitCode.INTERNAL_ERROR.getInt();
+      }
+    } finally {
+      LOG.info("LLAP status finished");
     }
     if (LOG.isDebugEnabled()) {
       LOG.debug("Completed processing - exiting with " + ret);

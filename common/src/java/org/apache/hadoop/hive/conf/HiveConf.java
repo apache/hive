@@ -306,6 +306,8 @@ public class HiveConf extends Configuration {
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_ZKSM_ZK_CONNECTION_STRING.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_SECURITY_ACL.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_MANAGEMENT_ACL.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_SECURITY_ACL_DENY.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_MANAGEMENT_ACL_DENY.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DELEGATION_TOKEN_LIFETIME.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_MANAGEMENT_RPC_PORT.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_WEB_AUTO_AUTH.varname);
@@ -334,6 +336,7 @@ public class HiveConf extends Configuration {
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_WEB_PORT.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_WEB_SSL.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_VALIDATE_ACLS.varname);
   }
 
   /**
@@ -2478,6 +2481,15 @@ public class HiveConf extends Configuration {
         "This flag should be set to true to enable the new vectorization\n" +
         "of queries using ReduceSink.\ni" +
         "The default value is true."),
+    HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT("hive.vectorized.use.vectorized.input.format", true,
+        "This flag should be set to true to enable vectorizing with vectorized input file format capable SerDe.\n" +
+        "The default value is true."),
+    HIVE_VECTORIZATION_USE_VECTOR_DESERIALIZE("hive.vectorized.use.vector.serde.deserialize", false,
+        "This flag should be set to true to enable vectorizing rows using vector deserialize.\n" +
+        "The default value is false."),
+    HIVE_VECTORIZATION_USE_ROW_DESERIALIZE("hive.vectorized.use.row.serde.deserialize", false,
+        "This flag should be set to true to enable vectorizing using row deserialize.\n" +
+        "The default value is false."),
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, "This property has been extended to control "
         + "whether to check, convert, and normalize partition value to conform to its column type in "
         + "partition operations including but not limited to insert, such as alter, describe etc."),
@@ -2663,8 +2675,15 @@ public class HiveConf extends Configuration {
         "This should be the hive user or whichever user is running the LLAP daemon."),
     // Note: do not rename to ..service.acl; Hadoop generates .hosts setting name from this,
     // resulting in a collision with existing hive.llap.daemon.service.hosts and bizarre errors.
+    // These are read by Hadoop IPC, so you should check the usage and naming conventions (e.g.
+    // ".blocked" is a string hardcoded by Hadoop, and defaults are enforced elsewhere in Hive)
+    // before making changes or copy-pasting these.
     LLAP_SECURITY_ACL("hive.llap.daemon.acl", "*", "The ACL for LLAP daemon."),
+    LLAP_SECURITY_ACL_DENY("hive.llap.daemon.acl.blocked", "", "The deny ACL for LLAP daemon."),
     LLAP_MANAGEMENT_ACL("hive.llap.management.acl", "*", "The ACL for LLAP daemon management."),
+    LLAP_MANAGEMENT_ACL_DENY("hive.llap.management.acl.blocked", "",
+        "The deny ACL for LLAP daemon management."),
+
     // Hadoop DelegationTokenManager default is 1 week.
     LLAP_DELEGATION_TOKEN_LIFETIME("hive.llap.daemon.delegation.token.lifetime", "14d",
          new TimeValidator(TimeUnit.SECONDS),

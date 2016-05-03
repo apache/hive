@@ -213,10 +213,11 @@ public class ExecServiceImpl implements ExecService {
         res.exitcode = proc.waitFor();
       } catch (InterruptedException e) {
         throw new IOException(e);
+      } finally {
+        //flush
+        errorGobbler.out.flush();
+        outputGobbler.out.flush();
       }
-      //flush
-      errorGobbler.out.flush();
-      outputGobbler.out.flush();
     }
     else {
       res.exitcode = executor.execute(cmd, execEnv(env));

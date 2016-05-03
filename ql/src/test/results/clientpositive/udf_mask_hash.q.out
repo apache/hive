@@ -1,0 +1,59 @@
+PREHOOK: query: DESCRIBE FUNCTION mask_hash
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION mask_hash
+POSTHOOK: type: DESCFUNCTION
+returns hash of the given value
+PREHOOK: query: DESC FUNCTION EXTENDED mask_hash
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION EXTENDED mask_hash
+POSTHOOK: type: DESCFUNCTION
+returns hash of the given value
+Examples:
+   mask_hash(value)
+ Arguments:
+   value - value to mask. Supported types: STRING, VARCHAR, CHAR
+PREHOOK: query: explain select mask_hash('TestString-123')
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select mask_hash('TestString-123')
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: 'dd78d68ad1b23bde126812482dd70ac6' (type: string)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+            ListSink
+
+PREHOOK: query: select mask_hash('TestString-123'),
+       mask_hash(cast('TestString-123' as varchar(24))),
+       mask_hash(cast('TestString-123' as char(24))),
+       mask_hash(cast(123 as tinyint)),
+       mask_hash(cast(12345 as smallint)),
+       mask_hash(cast(12345 as int)),
+       mask_hash(cast(12345 as bigint)),
+       mask_hash(cast('2016-04-20' as date))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select mask_hash('TestString-123'),
+       mask_hash(cast('TestString-123' as varchar(24))),
+       mask_hash(cast('TestString-123' as char(24))),
+       mask_hash(cast(123 as tinyint)),
+       mask_hash(cast(12345 as smallint)),
+       mask_hash(cast(12345 as int)),
+       mask_hash(cast(12345 as bigint)),
+       mask_hash(cast('2016-04-20' as date))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+dd78d68ad1b23bde126812482dd70ac6	dd78d68ad1b23bde126812482dd70ac6	835735ba20f1297683efca69fabd0fba                                                                                                                                                                                                                               	NULL	NULL	NULL	NULL	NULL

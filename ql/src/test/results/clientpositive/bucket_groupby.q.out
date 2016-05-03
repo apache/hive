@@ -41,14 +41,15 @@ POSTHOOK: Output: default@clustergroupby@ds=100
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
-select key, count(1) from clustergroupby where ds='100' group by key limit 10
+select key, count(1) from clustergroupby where ds='100' group by key order by key limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select key, count(1) from clustergroupby where ds='100' group by key limit 10
+select key, count(1) from clustergroupby where ds='100' group by key order by key limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -72,13 +73,34 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: string)
           mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string)
+              sort order: +
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
+              value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           Limit
@@ -98,12 +120,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select key, count(1) from clustergroupby where ds='100' group by key limit 10
+PREHOOK: query: select key, count(1) from clustergroupby where ds='100' group by key order by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=100
 #### A masked pattern was here ####
-POSTHOOK: query: select key, count(1) from clustergroupby where ds='100' group by key limit 10
+POSTHOOK: query: select key, count(1) from clustergroupby where ds='100' group by key order by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=100
@@ -146,15 +168,16 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: --normal--
 explain
-select key, count(1) from clustergroupby  where ds='101'  group by key limit 10
+select key, count(1) from clustergroupby  where ds='101'  group by key order by key limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: --normal--
 explain
-select key, count(1) from clustergroupby  where ds='101'  group by key limit 10
+select key, count(1) from clustergroupby  where ds='101'  group by key order by key limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -178,13 +201,34 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: string)
           mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string)
+              sort order: +
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
+              value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           Limit
@@ -204,12 +248,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key limit 10
+PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key order by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
-POSTHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key limit 10
+POSTHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key order by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=101
@@ -370,15 +414,16 @@ POSTHOOK: Input: default@clustergroupby@ds=101
 3	416
 PREHOOK: query: --constant--
 explain
-select key, count(1) from clustergroupby  where ds='101'  group by key,3 limit 10
+select key, count(1) from clustergroupby  where ds='101'  group by key,3 order by key,3 limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: --constant--
 explain
-select key, count(1) from clustergroupby  where ds='101'  group by key,3 limit 10
+select key, count(1) from clustergroupby  where ds='101'  group by key,3 order by key,3 limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -402,7 +447,6 @@ STAGE PLANS:
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), 3 (type: int)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  TopN Hash Memory Usage: 0.1
                   value expressions: _col2 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
@@ -415,16 +459,38 @@ STAGE PLANS:
             expressions: _col0 (type: string), _col2 (type: bigint)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-            Limit
-              Number of rows: 10
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string), 3 (type: int)
+              sort order: ++
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
+              value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          Limit
+            Number of rows: 10
+            Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
               Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -432,12 +498,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,3 limit 10
+PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,3 order by key,3 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
-POSTHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,3 limit 10
+POSTHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,3 order by key,3 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=101
@@ -454,15 +520,16 @@ POSTHOOK: Input: default@clustergroupby@ds=101
 114	1
 PREHOOK: query: --subquery--
 explain
-select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key limit 10
+select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key order by key limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: --subquery--
 explain
-select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key limit 10
+select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key order by key limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -486,13 +553,34 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: string)
           mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string)
+              sort order: +
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
+              value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           Limit
@@ -512,12 +600,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key limit 10
+PREHOOK: query: select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key order by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
-POSTHOOK: query: select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key limit 10
+POSTHOOK: query: select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key order by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=101
@@ -1020,14 +1108,15 @@ POSTHOOK: Output: default@clustergroupby@ds=102
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
-select key, count(1) from clustergroupby  where ds='102'  group by key limit 10
+select key, count(1) from clustergroupby  where ds='102'  group by key order by key limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select key, count(1) from clustergroupby  where ds='102'  group by key limit 10
+select key, count(1) from clustergroupby  where ds='102'  group by key order by key limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1052,13 +1141,34 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: string)
           mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string)
+              sort order: +
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
+              value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           Limit
@@ -1078,12 +1188,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select key, count(1) from clustergroupby  where ds='102' group by key limit 10
+PREHOOK: query: select key, count(1) from clustergroupby  where ds='102' group by key order by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=102
 #### A masked pattern was here ####
-POSTHOOK: query: select key, count(1) from clustergroupby  where ds='102' group by key limit 10
+POSTHOOK: query: select key, count(1) from clustergroupby  where ds='102' group by key order by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=102
@@ -1099,14 +1209,15 @@ POSTHOOK: Input: default@clustergroupby@ds=102
 113	2
 114	1
 PREHOOK: query: explain
-select value, count(1) from clustergroupby  where ds='102'  group by value limit 10
+select value, count(1) from clustergroupby  where ds='102'  group by value order by value limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select value, count(1) from clustergroupby  where ds='102'  group by value limit 10
+select value, count(1) from clustergroupby  where ds='102'  group by value order by value limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1130,13 +1241,34 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: string)
           mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string)
+              sort order: +
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
+              value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           Limit
@@ -1156,12 +1288,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select value, count(1) from clustergroupby  where ds='102'  group by value limit 10
+PREHOOK: query: select value, count(1) from clustergroupby  where ds='102'  group by value order by value limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=102
 #### A masked pattern was here ####
-POSTHOOK: query: select value, count(1) from clustergroupby  where ds='102'  group by value limit 10
+POSTHOOK: query: select value, count(1) from clustergroupby  where ds='102'  group by value order by value limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=102
@@ -1297,14 +1429,15 @@ POSTHOOK: Output: default@clustergroupby@ds=103
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=103).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=103).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
-select key, count(1) from clustergroupby  where ds='103'  group by key limit 10
+select key, count(1) from clustergroupby  where ds='103'  group by key order by key limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select key, count(1) from clustergroupby  where ds='103'  group by key limit 10
+select key, count(1) from clustergroupby  where ds='103'  group by key order by key limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1329,13 +1462,34 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: string)
           mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string)
+              sort order: +
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
+              value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           Limit
@@ -1355,12 +1509,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by key limit 10
+PREHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by key order by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=103
 #### A masked pattern was here ####
-POSTHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by key limit 10
+POSTHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by key order by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=103
@@ -1376,14 +1530,15 @@ POSTHOOK: Input: default@clustergroupby@ds=103
 113	2
 114	1
 PREHOOK: query: explain
-select key, count(1) from clustergroupby  where ds='103'  group by value, key limit 10
+select key, count(1) from clustergroupby  where ds='103'  group by value, key order by key limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select key, count(1) from clustergroupby  where ds='103'  group by value, key limit 10
+select key, count(1) from clustergroupby  where ds='103'  group by value, key order by key limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1407,7 +1562,6 @@ STAGE PLANS:
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  TopN Hash Memory Usage: 0.1
                   value expressions: _col2 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
@@ -1420,16 +1574,38 @@ STAGE PLANS:
             expressions: _col1 (type: string), _col2 (type: bigint)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-            Limit
-              Number of rows: 10
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string)
+              sort order: +
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
+              value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          Limit
+            Number of rows: 10
+            Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
               Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1437,12 +1613,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by  value, key limit 10
+PREHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by  value, key order by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=103
 #### A masked pattern was here ####
-POSTHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by  value, key limit 10
+POSTHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by  value, key order by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=103

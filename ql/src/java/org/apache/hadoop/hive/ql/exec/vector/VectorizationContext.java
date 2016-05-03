@@ -68,13 +68,11 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUD
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxString;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxTimestamp;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinString;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinTimestamp;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopLong;
@@ -171,10 +169,6 @@ public class VectorizationContext {
   public VectorizationContext(String contextName, List<String> initialColumnNames) {
     this.contextName = contextName;
     level = 0;
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("VectorizationContext consructor contextName " + contextName + " level "
-          + level + " initialColumnNames " + initialColumnNames);
-    }
     this.initialColumnNames = initialColumnNames;
     this.projectionColumnNames = initialColumnNames;
 
@@ -195,9 +189,6 @@ public class VectorizationContext {
   public VectorizationContext(String contextName) {
     this.contextName = contextName;
     level = 0;
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("VectorizationContext consructor contextName " + contextName + " level " + level);
-    }
     initialColumnNames = new ArrayList<String>();
     projectedColumns = new ArrayList<Integer>();
     projectionColumnNames = new ArrayList<String>();
@@ -213,7 +204,6 @@ public class VectorizationContext {
   public VectorizationContext(String contextName, VectorizationContext vContext) {
     this.contextName = contextName;
     level = vContext.level + 1;
-    LOG.info("VectorizationContext consructor reference contextName " + contextName + " level " + level);
     this.initialColumnNames = vContext.initialColumnNames;
     this.projectedColumns = new ArrayList<Integer>();
     this.projectionColumnNames = new ArrayList<String>();
@@ -485,7 +475,7 @@ public class VectorizationContext {
       throw new HiveException("Could not vectorize expression: "+exprDesc.getName());
     }
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Input Expression = " + exprDesc.getTypeInfo()
+      LOG.debug("Input Expression = " + exprDesc.toString()
           + ", Vectorized Expression = " + ve.toString());
     }
     return ve;

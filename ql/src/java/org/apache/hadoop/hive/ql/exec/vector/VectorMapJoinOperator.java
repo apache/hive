@@ -181,7 +181,9 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
     joinValues[posBigTable] = vectorNodeEvaluators;
 
     // Filtering is handled in the input batch processing
-    filterMaps[posBigTable] = null;
+    if (filterMaps != null) {
+      filterMaps[posBigTable] = null;
+    }
   }
 
   @Override

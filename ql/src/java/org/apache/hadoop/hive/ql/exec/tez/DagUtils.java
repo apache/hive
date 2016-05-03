@@ -625,9 +625,10 @@ public class DagUtils {
       // generation we end up not finding the map work. This is
       // because of thread local madness (tez split generation is
       // multi-threaded - HS2 plan cache uses thread locals). Setting
-      // VECTOR_MODE causes the split gen code to use the conf instead
+      // VECTOR_MODE/USE_VECTORIZED_INPUT_FILE_FORMAT causes the split gen code to use the conf instead
       // of the map work.
       conf.setBoolean(Utilities.VECTOR_MODE, mapWork.getVectorMode());
+      conf.setBoolean(Utilities.USE_VECTORIZED_INPUT_FILE_FORMAT, mapWork.getUseVectorizedInputFileFormat());
 
       dataSource = MRInputHelpers.configureMRInputWithLegacySplitGeneration(conf, new Path(tezDir,
           "split_" + mapWork.getName().replaceAll(" ", "_")), true);

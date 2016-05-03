@@ -42,7 +42,7 @@ public class VectorSparkPartitionPruningSinkOperator extends SparkPartitionPruni
 
   protected transient boolean firstBatch;
 
-  protected transient VectorExtractRowDynBatch vectorExtractRowDynBatch;
+  protected transient VectorExtractRow vectorExtractRow;
 
   protected transient Object[] singleRow;
 
@@ -77,27 +77,24 @@ public class VectorSparkPartitionPruningSinkOperator extends SparkPartitionPruni
   public void process(Object data, int tag) throws HiveException {
     VectorizedRowBatch batch = (VectorizedRowBatch) data;
     if (firstBatch) {
-      vectorExtractRowDynBatch = new VectorExtractRowDynBatch();
-      vectorExtractRowDynBatch.init((StructObjectInspector) inputObjInspectors[0],
+      vectorExtractRow = new VectorExtractRow();
+      vectorExtractRow.init((StructObjectInspector) inputObjInspectors[0],
           vContext.getProjectedColumns());
-      singleRow = new Object[vectorExtractRowDynBatch.getCount()];
+      singleRow = new Object[vectorExtractRow.getCount()];
       firstBatch = false;
     }
 
-    vectorExtractRowDynBatch.setBatchOnEntry(batch);
     ObjectInspector rowInspector = inputObjInspectors[0];
     try {
       Writable writableRow;
       for (int logical = 0; logical < batch.size; logical++) {
         int batchIndex = batch.selectedInUse ? batch.selected[logical] : logical;
-        vectorExtractRowDynBatch.extractRow(batchIndex, singleRow);
+        vectorExtractRow.extractRow(batch, batchIndex, singleRow);
         writableRow = serializer.serialize(singleRow, rowInspector);
         writableRow.write(buffer);
       }
     } catch (Exception e) {
       throw new HiveException(e);
     }
-
-    vectorExtractRowDynBatch.forgetBatchOnExit();
   }
 }

@@ -48,6 +48,7 @@ import org.apache.hadoop.ipc.ProtobufRpcEngine;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.hive.llap.security.LlapSecurityHelper;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
@@ -69,6 +70,7 @@ public class LlapProtocolServerImpl extends AbstractService
   private RPC.Server server, mngServer;
   private final AtomicReference<InetSocketAddress> srvAddress, mngAddress;
   private SecretManager zkSecretManager;
+  private String restrictedToUser = null;
 
   public LlapProtocolServerImpl(int numHandlers,
                                 ContainerRunner containerRunner,
@@ -128,6 +130,14 @@ public class LlapProtocolServerImpl extends AbstractService
       startProtocolServers(conf, daemonImpl, managementImpl);
       return;
     }
+    if (isPermissiveManagementAcl(conf)) {
+      LOG.warn("Management protocol has a '*' ACL.");
+      try {
+        this.restrictedToUser = UserGroupInformation.getCurrentUser().getShortUserName();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
     String llapPrincipal = HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_PRINCIPAL),
         llapKeytab = HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_KEYTAB_FILE);
     zkSecretManager = SecretManager.createSecretManager(conf, llapPrincipal, llapKeytab);
@@ -148,21 +158,29 @@ public class LlapProtocolServerImpl extends AbstractService
     });
   }
 
+  private static boolean isPermissiveManagementAcl(Configuration conf) {
+    return HiveConf.getBoolVar(conf, ConfVars.LLAP_VALIDATE_ACLS)
+        && AccessControlList.WILDCARD_ACL_VALUE.equals(
+            HiveConf.getVar(conf, ConfVars.LLAP_MANAGEMENT_ACL))
+        && "".equals(HiveConf.getVar(conf, ConfVars.LLAP_MANAGEMENT_ACL_DENY));
+  }
+
   private void startProtocolServers(
       Configuration conf, BlockingService daemonImpl, BlockingService managementImpl) {
     server = startProtocolServer(srvPort, numHandlers, srvAddress, conf, daemonImpl,
-        LlapProtocolBlockingPB.class);
+        LlapProtocolBlockingPB.class, ConfVars.LLAP_SECURITY_ACL, ConfVars.LLAP_SECURITY_ACL_DENY);
     mngServer = startProtocolServer(mngPort, 2, mngAddress, conf, managementImpl,
-        LlapManagementProtocolPB.class);
+        LlapManagementProtocolPB.class, ConfVars.LLAP_MANAGEMENT_ACL,
+        ConfVars.LLAP_MANAGEMENT_ACL_DENY);
   }
 
   private RPC.Server startProtocolServer(int srvPort, int numHandlers,
       AtomicReference<InetSocketAddress> bindAddress, Configuration conf,
-      BlockingService impl, Class<?> protocolClass) {
+      BlockingService impl, Class<?> protocolClass, ConfVars... aclVars) {
     InetSocketAddress addr = new InetSocketAddress(srvPort);
     RPC.Server server;
     try {
-      server = createServer(protocolClass, addr, conf, numHandlers, impl);
+      server = createServer(protocolClass, addr, conf, numHandlers, impl, aclVars);
       server.start();
     } catch (IOException e) {
       LOG.error("Failed to run RPC Server on port: " + srvPort, e);
@@ -198,10 +216,23 @@ public class LlapProtocolServerImpl extends AbstractService
   }
 
   private RPC.Server createServer(Class<?> pbProtocol, InetSocketAddress addr, Configuration conf,
-                                  int numHandlers, BlockingService blockingService) throws
+    int numHandlers, BlockingService blockingService, ConfVars... aclVars) throws
       IOException {
-    RPC.setProtocolEngine(conf, pbProtocol, ProtobufRpcEngine.class);
-    RPC.Builder builder = new RPC.Builder(conf)
+    Configuration serverConf = conf;
+    boolean isSecurityEnabled = conf.getBoolean(
+        CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHORIZATION, false);
+    if (isSecurityEnabled) {
+      // Enforce Hive defaults.
+      for (ConfVars acl : aclVars) {
+        if (conf.get(acl.varname) != null) continue; // Some value is set.
+        if (serverConf == conf) {
+          serverConf = new Configuration(conf);
+        }
+        serverConf.set(acl.varname, HiveConf.getVar(serverConf, acl)); // Set the default.
+      }
+    }
+    RPC.setProtocolEngine(serverConf, pbProtocol, ProtobufRpcEngine.class);
+    RPC.Builder builder = new RPC.Builder(serverConf)
         .setProtocol(pbProtocol)
         .setInstance(blockingService)
         .setBindAddress(addr.getHostName())
@@ -211,9 +242,8 @@ public class LlapProtocolServerImpl extends AbstractService
       builder = builder.setSecretManager(zkSecretManager);
     }
     RPC.Server server = builder.build();
-
-    if (conf.getBoolean(CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHORIZATION, false)) {
-      server.refreshServiceAcl(conf, new LlapDaemonPolicyProvider());
+    if (isSecurityEnabled) {
+      server.refreshServiceAcl(serverConf, new LlapDaemonPolicyProvider());
     }
     return server;
   }
@@ -230,6 +260,13 @@ public class LlapProtocolServerImpl extends AbstractService
       ugi = UserGroupInformation.getCurrentUser();
     } catch (IOException e) {
       throw new ServiceException(e);
+    }
+    if (restrictedToUser != null && !restrictedToUser.equals(ugi.getShortUserName())) {
+      throw new ServiceException("Management protocol ACL is too permissive. The access has been"
+          + " automatically restricted to " + restrictedToUser + "; " + ugi.getShortUserName()
+          + " is denied acccess. Please set " + ConfVars.LLAP_VALIDATE_ACLS.varname + " to false,"
+          + " or adjust " + ConfVars.LLAP_MANAGEMENT_ACL.varname + " and "
+          + ConfVars.LLAP_MANAGEMENT_ACL_DENY.varname + " to a more restrictive ACL.");
     }
     String user = ugi.getUserName();
     Text owner = new Text(user);

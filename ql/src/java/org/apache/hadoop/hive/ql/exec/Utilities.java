@@ -216,6 +216,7 @@ public final class Utilities {
   public static final String MAPRED_REDUCER_CLASS = "mapred.reducer.class";
   public static final String HIVE_ADDED_JARS = "hive.added.jars";
   public static final String VECTOR_MODE = "VECTOR_MODE";
+  public static final String USE_VECTORIZED_INPUT_FILE_FORMAT = "USE_VECTORIZED_INPUT_FILE_FORMAT";
   public static String MAPNAME = "Map ";
   public static String REDUCENAME = "Reducer ";
 
@@ -3254,22 +3255,37 @@ public final class Utilities {
 
   /**
    * Returns true if a plan is both configured for vectorized execution
-   * and vectorization is allowed. The plan may be configured for vectorization
+   * and the node is vectorized and the Input File Format is marked VectorizedInputFileFormat.
+   *
+   * The plan may be configured for vectorization
    * but vectorization disallowed eg. for FetchOperator execution.
    */
-  public static boolean isVectorMode(Configuration conf) {
+  public static boolean getUseVectorizedInputFileFormat(Configuration conf) {
     if (conf.get(VECTOR_MODE) != null) {
       // this code path is necessary, because with HS2 and client
       // side split generation we end up not finding the map work.
       // This is because of thread local madness (tez split
       // generation is multi-threaded - HS2 plan cache uses thread
       // locals).
-      return conf.getBoolean(VECTOR_MODE, false);
+      return
+          conf.getBoolean(VECTOR_MODE, false) &&
+          conf.getBoolean(USE_VECTORIZED_INPUT_FILE_FORMAT, false);
     } else {
-      return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)
-        && Utilities.getPlanPath(conf) != null
-        && Utilities.getMapWork(conf).getVectorMode();
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED) &&
+        Utilities.getPlanPath(conf) != null) {
+        MapWork mapWork = Utilities.getMapWork(conf);
+        return (mapWork.getVectorMode() && mapWork.getUseVectorizedInputFileFormat());
+      } else {
+        return false;
+      }
     }
+  }
+
+
+  public static boolean getUseVectorizedInputFileFormat(Configuration conf, MapWork mapWork) {
+    return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED) &&
+        mapWork.getVectorMode() &&
+        mapWork.getUseVectorizedInputFileFormat();
   }
 
   /**
@@ -3286,11 +3302,6 @@ public final class Utilities {
       }
     }
     return result;
-  }
-
-  public static boolean isVectorMode(Configuration conf, MapWork mapWork) {
-    return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)
-        && mapWork.getVectorMode();
   }
 
   public static void clearWorkMapForConf(Configuration conf) {

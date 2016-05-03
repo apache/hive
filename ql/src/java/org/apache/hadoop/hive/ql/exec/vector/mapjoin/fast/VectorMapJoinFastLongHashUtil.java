@@ -30,19 +30,19 @@ public class VectorMapJoinFastLongHashUtil {
     long key = 0;
     switch (hashTableKeyType) {
     case BOOLEAN:
-      key = (keyBinarySortableDeserializeRead.readBoolean() ? 1 : 0);
+      key = (keyBinarySortableDeserializeRead.currentBoolean ? 1 : 0);
       break;
     case BYTE:
-      key = (long) keyBinarySortableDeserializeRead.readByte();
+      key = (long) keyBinarySortableDeserializeRead.currentByte;
       break;
     case SHORT:
-      key = (long) keyBinarySortableDeserializeRead.readShort();
+      key = (long) keyBinarySortableDeserializeRead.currentShort;
       break;
     case INT:
-      key = (long) keyBinarySortableDeserializeRead.readInt();
+      key = (long) keyBinarySortableDeserializeRead.currentInt;
       break;
     case LONG:
-      key = keyBinarySortableDeserializeRead.readLong();
+      key = keyBinarySortableDeserializeRead.currentLong;
       break;
     default:
       throw new RuntimeException("Unexpected hash table key type " + hashTableKeyType.name());

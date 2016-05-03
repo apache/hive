@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.exec.AbstractMapOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -59,7 +60,7 @@ import org.apache.hadoop.util.StringUtils;
  */
 public class ExecMapper extends MapReduceBase implements Mapper {
 
-  private MapOperator mo;
+  private AbstractMapOperator mo;
   private OutputCollector oc;
   private JobConf jc;
   private boolean abort = false;

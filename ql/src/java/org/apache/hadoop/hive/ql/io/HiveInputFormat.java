@@ -205,8 +205,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     if (!HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon())) {
       return inputFormat; // LLAP not enabled, no-op.
     }
-    boolean isSupported = inputFormat instanceof LlapWrappableInputFormatInterface,
-        isVectorized = Utilities.isVectorMode(conf);
+    boolean isSupported = inputFormat instanceof LlapWrappableInputFormatInterface;
+    boolean isVectorized = Utilities.getUseVectorizedInputFileFormat(conf);
     if (!isSupported || !isVectorized) {
       LOG.info("Not using llap for " + inputFormat + ": supported = " + isSupported
           + ", vectorized = " + isVectorized);
@@ -225,7 +225,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   public static boolean canWrapAnyForLlap(Configuration conf, MapWork mapWork) {
-    return Utilities.isVectorMode(conf, mapWork);
+    return Utilities.getUseVectorizedInputFileFormat(conf, mapWork);
   }
 
   public static boolean canWrapForLlap(Class<? extends InputFormat> inputFormatClass) {

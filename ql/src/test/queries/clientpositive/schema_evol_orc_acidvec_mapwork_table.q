@@ -3,6 +3,9 @@ set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 SET hive.exec.schema.evolution=false;
 SET hive.vectorized.execution.enabled=true;
+SET hive.vectorized.use.vectorized.input.format=true;
+SET hive.vectorized.use.vector.serde.deserialize=false;
+SET hive.vectorized.use.row.serde.deserialize=false;
 set hive.fetch.task.conversion=none;
 set hive.exec.dynamic.partition.mode=nonstrict;
 

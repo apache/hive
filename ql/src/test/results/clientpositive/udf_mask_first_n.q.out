@@ -1,0 +1,68 @@
+PREHOOK: query: DESCRIBE FUNCTION mask_first_n
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION mask_first_n
+POSTHOOK: type: DESCFUNCTION
+masks the first n characters of the value
+PREHOOK: query: DESC FUNCTION EXTENDED mask_first_n
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION EXTENDED mask_first_n
+POSTHOOK: type: DESCFUNCTION
+masks the first n characters of the value
+Examples:
+   mask_first_n(ccn, 8)
+   mask_first_n(ccn, 8, 'x', 'x', 'x')
+ Arguments:
+   mask(value, charCount, upperChar, lowerChar, digitChar, otherChar, numberChar)
+     value      - value to mask. Supported types: TINYINT, SMALLINT, INT, BIGINT, STRING, VARCHAR, CHAR
+     charCount  - number of characters. Default value: 4
+     upperChar  - character to replace upper-case characters with. Specify -1 to retain original character. Default value: 'X'
+     lowerChar  - character to replace lower-case characters with. Specify -1 to retain original character. Default value: 'x'
+     digitChar  - character to replace digit characters with. Specify -1 to retain original character. Default value: 'n'
+     otherChar  - character to replace all other characters with. Specify -1 to retain original character. Default value: -1
+     numberChar - character to replace digits in a number with. Valid values: 0-9. Default value: '1'
+ 
+PREHOOK: query: explain select mask_first_n('TestString-123', 4, 'X', 'x', '0', '1')
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select mask_first_n('TestString-123', 4, 'X', 'x', '0', '1')
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: 'XxxxString-123' (type: string)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 98 Basic stats: COMPLETE Column stats: COMPLETE
+            ListSink
+
+PREHOOK: query: select mask_first_n('TestString-123', 4, 'X', 'x', '0', ':'),
+       mask_first_n(cast('TestString-123' as varchar(24)), 4, 'X', 'x', '0', ':'),
+       mask_first_n(cast('TestString-123' as char(24)), 4, 'X', 'x', '0', ':'),
+       mask_first_n(cast(123 as tinyint), 4, -1, -1, -1, -1, '5'),
+       mask_first_n(cast(12345 as smallint), 4, -1, -1, -1, -1, '5'),
+       mask_first_n(cast(12345 as int), 4, -1, -1, -1, -1, '5'),
+       mask_first_n(cast(12345 as bigint), 4, -1, -1, -1, -1, '5'),
+       mask_first_n(cast('2016-04-20' as date), 4, -1, -1, -1, -1, -1, 0, 0, 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select mask_first_n('TestString-123', 4, 'X', 'x', '0', ':'),
+       mask_first_n(cast('TestString-123' as varchar(24)), 4, 'X', 'x', '0', ':'),
+       mask_first_n(cast('TestString-123' as char(24)), 4, 'X', 'x', '0', ':'),
+       mask_first_n(cast(123 as tinyint), 4, -1, -1, -1, -1, '5'),
+       mask_first_n(cast(12345 as smallint), 4, -1, -1, -1, -1, '5'),
+       mask_first_n(cast(12345 as int), 4, -1, -1, -1, -1, '5'),
+       mask_first_n(cast(12345 as bigint), 4, -1, -1, -1, -1, '5'),
+       mask_first_n(cast('2016-04-20' as date), 4, -1, -1, -1, -1, -1, 0, 0, 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+XxxxString-123	XxxxString-123	XxxxString-123                                                                                                                                                                                                                                                 	43	-9981	55555	55555	1900-01-01

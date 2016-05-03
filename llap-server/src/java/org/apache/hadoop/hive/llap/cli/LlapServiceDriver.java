@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.llap.cli;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URI;
@@ -36,6 +35,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.hive.llap.daemon.impl.StaticPermanentFunctionChecker;
@@ -55,16 +55,12 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.cli.LlapOptionsProcessor.LlapOptions;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapInputFormat;
 import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
-import org.apache.hadoop.hive.ql.exec.FunctionTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.util.ResourceDownloader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.JobConf;
@@ -85,6 +81,9 @@ public class LlapServiceDriver {
   private static final String[] NEEDED_CONFIGS = LlapDaemonConfiguration.DAEMON_CONFIGS;
   private static final String[] OPTIONAL_CONFIGS = LlapDaemonConfiguration.SSL_DAEMON_CONFIGS;
 
+  // This is not a config that users set in hive-site. It's only use is to share information
+  // between the java component of the service driver and the python component.
+  private static final String CONFIG_CLUSTER_NAME = "private.hive.llap.servicedriver.cluster.name";
 
   /**
    * This is a working configuration for the instance to merge various variables.
@@ -98,6 +97,7 @@ public class LlapServiceDriver {
   }
 
   public static void main(String[] args) throws Exception {
+    LOG.info("LLAP service driver invoked with arguments={}", args);
     int ret = 0;
     try {
       new LlapServiceDriver().run(args);
@@ -105,6 +105,8 @@ public class LlapServiceDriver {
       System.err.println("Failed: " + t.getMessage());
       t.printStackTrace();
       ret = 3;
+    } finally {
+      LOG.info("LLAP service driver finished");
     }
     if (LOG.isDebugEnabled()) {
       LOG.debug("Completed processing - exiting with " + ret);
@@ -134,7 +136,7 @@ public class LlapServiceDriver {
     }
   }
 
-  private static void populateConfWithLlapProperties(Configuration conf, Properties properties) {
+  static void populateConfWithLlapProperties(Configuration conf, Properties properties) {
     for(Entry<Object, Object> props : properties.entrySet()) {
       String key = (String) props.getKey();
       if (HiveConf.getLlapDaemonConfVars().contains(key)) {
@@ -443,6 +445,13 @@ public class LlapServiceDriver {
     if (HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_QUEUE_NAME) != null) {
       configs.put(ConfVars.LLAP_DAEMON_QUEUE_NAME.varname,
           HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_QUEUE_NAME));
+    }
+
+    // Propagate the cluster name to the script.
+    String clusterHosts = HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
+    if (!StringUtils.isEmpty(clusterHosts) && clusterHosts.startsWith("@") &&
+        clusterHosts.length() > 1) {
+      configs.put(CONFIG_CLUSTER_NAME, clusterHosts.substring(1));
     }
 
     configs.put(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB,

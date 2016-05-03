@@ -28,6 +28,7 @@ import java.util.Stack;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
@@ -67,6 +68,8 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   // Vectorization.
 
   protected VectorizedRowBatchCtx vectorizedRowBatchCtx;
+
+  protected boolean useVectorizedInputFileFormat;
 
   protected boolean llapMode = false;
   protected boolean uberMode = false;
@@ -158,12 +161,32 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   // -----------------------------------------------------------------------------------------------
 
+  /*
+   * The vectorization context for creating the VectorizedRowBatch for the node.
+   */
   public VectorizedRowBatchCtx getVectorizedRowBatchCtx() {
     return vectorizedRowBatchCtx;
   }
 
   public void setVectorizedRowBatchCtx(VectorizedRowBatchCtx vectorizedRowBatchCtx) {
     this.vectorizedRowBatchCtx = vectorizedRowBatchCtx;
+  }
+
+  /*
+   * Whether the HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT variable
+   * (hive.vectorized.use.vectorized.input.format) was true when the Vectorizer class evaluated
+   * vectorizing this node.
+   *
+   * When Vectorized Input File Format looks at this flag, it can determine whether it should
+   * operate vectorized or not.  In some modes, the node can be vectorized but use row
+   * serialization.
+   */
+  public void setUseVectorizedInputFileFormat(boolean useVectorizedInputFileFormat) {
+    this.useVectorizedInputFileFormat = useVectorizedInputFileFormat;
+  }
+
+  public boolean getUseVectorizedInputFileFormat() {
+    return useVectorizedInputFileFormat;
   }
 
   // -----------------------------------------------------------------------------------------------
