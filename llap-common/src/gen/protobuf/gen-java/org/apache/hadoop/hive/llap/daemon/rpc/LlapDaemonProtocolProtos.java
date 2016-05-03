@@ -12821,6 +12821,21 @@ public final class LlapDaemonProtocolProtos {
 
   public interface GetTokenRequestProtoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
+
+    // optional string app_id = 1;
+    /**
+     * <code>optional string app_id = 1;</code>
+     */
+    boolean hasAppId();
+    /**
+     * <code>optional string app_id = 1;</code>
+     */
+    java.lang.String getAppId();
+    /**
+     * <code>optional string app_id = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getAppIdBytes();
   }
   /**
    * Protobuf type {@code GetTokenRequestProto}
@@ -12855,6 +12870,7 @@ public final class LlapDaemonProtocolProtos {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       initFields();
+      int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
@@ -12870,6 +12886,11 @@ public final class LlapDaemonProtocolProtos {
                                      extensionRegistry, tag)) {
                 done = true;
               }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              appId_ = input.readBytes();
               break;
             }
           }
@@ -12911,7 +12932,52 @@ public final class LlapDaemonProtocolProtos {
       return PARSER;
     }
 
+    private int bitField0_;
+    // optional string app_id = 1;
+    public static final int APP_ID_FIELD_NUMBER = 1;
+    private java.lang.Object appId_;
+    /**
+     * <code>optional string app_id = 1;</code>
+     */
+    public boolean hasAppId() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string app_id = 1;</code>
+     */
+    public java.lang.String getAppId() {
+      java.lang.Object ref = appId_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          appId_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string app_id = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getAppIdBytes() {
+      java.lang.Object ref = appId_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        appId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
+      appId_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -12925,6 +12991,9 @@ public final class LlapDaemonProtocolProtos {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getAppIdBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -12934,6 +13003,10 @@ public final class LlapDaemonProtocolProtos {
       if (size != -1) return size;
 
       size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getAppIdBytes());
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
       return size;
@@ -12957,6 +13030,11 @@ public final class LlapDaemonProtocolProtos {
       org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenRequestProto other = (org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenRequestProto) obj;
 
       boolean result = true;
+      result = result && (hasAppId() == other.hasAppId());
+      if (hasAppId()) {
+        result = result && getAppId()
+            .equals(other.getAppId());
+      }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
       return result;
@@ -12970,6 +13048,10 @@ public final class LlapDaemonProtocolProtos {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasAppId()) {
+        hash = (37 * hash) + APP_ID_FIELD_NUMBER;
+        hash = (53 * hash) + getAppId().hashCode();
+      }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -13079,6 +13161,8 @@ public final class LlapDaemonProtocolProtos {
 
       public Builder clear() {
         super.clear();
+        appId_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
 
@@ -13105,6 +13189,13 @@ public final class LlapDaemonProtocolProtos {
 
       public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenRequestProto buildPartial() {
         org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenRequestProto result = new org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenRequestProto(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.appId_ = appId_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -13120,6 +13211,11 @@ public final class LlapDaemonProtocolProtos {
 
       public Builder mergeFrom(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenRequestProto other) {
         if (other == org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenRequestProto.getDefaultInstance()) return this;
+        if (other.hasAppId()) {
+          bitField0_ |= 0x00000001;
+          appId_ = other.appId_;
+          onChanged();
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -13143,6 +13239,81 @@ public final class LlapDaemonProtocolProtos {
             mergeFrom(parsedMessage);
           }
         }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional string app_id = 1;
+      private java.lang.Object appId_ = "";
+      /**
+       * <code>optional string app_id = 1;</code>
+       */
+      public boolean hasAppId() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string app_id = 1;</code>
+       */
+      public java.lang.String getAppId() {
+        java.lang.Object ref = appId_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          appId_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string app_id = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getAppIdBytes() {
+        java.lang.Object ref = appId_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          appId_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string app_id = 1;</code>
+       */
+      public Builder setAppId(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        appId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string app_id = 1;</code>
+       */
+      public Builder clearAppId() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        appId_ = getDefaultInstance().getAppId();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string app_id = 1;</code>
+       */
+      public Builder setAppIdBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        appId_ = value;
+        onChanged();
         return this;
       }
 
@@ -14414,24 +14585,24 @@ public final class LlapDaemonProtocolProtos {
       "RequestProto\022/\n\020query_identifier\030\001 \001(\0132\025" +
       ".QueryIdentifierProto\022\"\n\032fragment_identi" +
       "fier_string\030\002 \001(\t\" \n\036TerminateFragmentRe" +
-      "sponseProto\"\026\n\024GetTokenRequestProto\"&\n\025G",
-      "etTokenResponseProto\022\r\n\005token\030\001 \001(\014*2\n\020S" +
-      "ourceStateProto\022\017\n\013S_SUCCEEDED\020\001\022\r\n\tS_RU" +
-      "NNING\020\002*E\n\024SubmissionStateProto\022\014\n\010ACCEP" +
-      "TED\020\001\022\014\n\010REJECTED\020\002\022\021\n\rEVICTED_OTHER\020\0032\316" +
-      "\002\n\022LlapDaemonProtocol\022?\n\nsubmitWork\022\027.Su" +
-      "bmitWorkRequestProto\032\030.SubmitWorkRespons" +
-      "eProto\022W\n\022sourceStateUpdated\022\037.SourceSta" +
-      "teUpdatedRequestProto\032 .SourceStateUpdat" +
-      "edResponseProto\022H\n\rqueryComplete\022\032.Query" +
-      "CompleteRequestProto\032\033.QueryCompleteResp",
-      "onseProto\022T\n\021terminateFragment\022\036.Termina" +
-      "teFragmentRequestProto\032\037.TerminateFragme" +
-      "ntResponseProto2]\n\026LlapManagementProtoco" +
-      "l\022C\n\022getDelegationToken\022\025.GetTokenReques" +
-      "tProto\032\026.GetTokenResponseProtoBH\n&org.ap" +
-      "ache.hadoop.hive.llap.daemon.rpcB\030LlapDa" +
-      "emonProtocolProtos\210\001\001\240\001\001"
+      "sponseProto\"&\n\024GetTokenRequestProto\022\016\n\006a",
+      "pp_id\030\001 \001(\t\"&\n\025GetTokenResponseProto\022\r\n\005" +
+      "token\030\001 \001(\014*2\n\020SourceStateProto\022\017\n\013S_SUC" +
+      "CEEDED\020\001\022\r\n\tS_RUNNING\020\002*E\n\024SubmissionSta" +
+      "teProto\022\014\n\010ACCEPTED\020\001\022\014\n\010REJECTED\020\002\022\021\n\rE" +
+      "VICTED_OTHER\020\0032\316\002\n\022LlapDaemonProtocol\022?\n" +
+      "\nsubmitWork\022\027.SubmitWorkRequestProto\032\030.S" +
+      "ubmitWorkResponseProto\022W\n\022sourceStateUpd" +
+      "ated\022\037.SourceStateUpdatedRequestProto\032 ." +
+      "SourceStateUpdatedResponseProto\022H\n\rquery" +
+      "Complete\022\032.QueryCompleteRequestProto\032\033.Q",
+      "ueryCompleteResponseProto\022T\n\021terminateFr" +
+      "agment\022\036.TerminateFragmentRequestProto\032\037" +
+      ".TerminateFragmentResponseProto2]\n\026LlapM" +
+      "anagementProtocol\022C\n\022getDelegationToken\022" +
+      "\025.GetTokenRequestProto\032\026.GetTokenRespons" +
+      "eProtoBH\n&org.apache.hadoop.hive.llap.da" +
+      "emon.rpcB\030LlapDaemonProtocolProtos\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -14533,7 +14704,7 @@ public final class LlapDaemonProtocolProtos {
           internal_static_GetTokenRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_GetTokenRequestProto_descriptor,
-              new java.lang.String[] { });
+              new java.lang.String[] { "AppId", });
           internal_static_GetTokenResponseProto_descriptor =
             getDescriptor().getMessageTypes().get(16);
           internal_static_GetTokenResponseProto_fieldAccessorTable = new

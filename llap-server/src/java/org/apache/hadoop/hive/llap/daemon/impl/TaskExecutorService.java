@@ -420,6 +420,15 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
   }
 
   @Override
+  public QueryIdentifier findQueryByFragment(String fragmentId) {
+    synchronized (lock) {
+      TaskWrapper taskWrapper = knownTasks.get(fragmentId);
+      return taskWrapper == null ? null : taskWrapper.getTaskRunnerCallable()
+          .getFragmentInfo().getQueryInfo().getQueryIdentifier();
+    }
+  }
+
+  @Override
   public void killFragment(String fragmentId) {
     synchronized (lock) {
       TaskWrapper taskWrapper = knownTasks.remove(fragmentId);

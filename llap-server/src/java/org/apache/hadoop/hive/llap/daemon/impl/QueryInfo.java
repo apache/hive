@@ -55,10 +55,11 @@ public class QueryInfo {
   private final ConcurrentMap<String, SourceStateProto> sourceStateMap;
 
   private final FinishableStateTracker finishableStateTracker = new FinishableStateTracker();
+  private final String tokenUserName, appId;
 
-  public QueryInfo(QueryIdentifier queryIdentifier, String appIdString, String dagName, int dagIdentifier,
-                   String user, ConcurrentMap<String, SourceStateProto> sourceStateMap,
-                   String[] localDirsBase, FileSystem localFs) {
+  public QueryInfo(QueryIdentifier queryIdentifier, String appIdString, String dagName,
+      int dagIdentifier, String user, ConcurrentMap<String, SourceStateProto> sourceStateMap,
+      String[] localDirsBase, FileSystem localFs, String tokenUserName, String tokenAppId) {
     this.queryIdentifier = queryIdentifier;
     this.appIdString = appIdString;
     this.dagName = dagName;
@@ -67,6 +68,8 @@ public class QueryInfo {
     this.user = user;
     this.localDirsBase = localDirsBase;
     this.localFs = localFs;
+    this.tokenUserName = tokenUserName;
+    this.appId = tokenAppId;
   }
 
   public QueryIdentifier getQueryIdentifier() {
@@ -269,5 +272,13 @@ public class QueryInfo {
     public void setLastFinishableState(boolean lastFinishableState) {
       this.lastFinishableState = lastFinishableState;
     }
+  }
+
+  public String getTokenUserName() {
+    return tokenUserName;
+  }
+
+  public String getTokenAppId() {
+    return appId;
   }
 }

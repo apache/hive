@@ -130,6 +130,7 @@ message TerminateFragmentResponseProto {
 }
 
 message GetTokenRequestProto {
+  optional string app_id = 1;
 }
 
 message GetTokenResponseProto {

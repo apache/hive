@@ -23,5 +23,5 @@ import java.io.IOException;
 import org.apache.hadoop.security.token.Token;
 
 public interface LlapTokenProvider {
-  Token<LlapTokenIdentifier> getDelegationToken() throws IOException;
+  Token<LlapTokenIdentifier> getDelegationToken(String appId) throws IOException;
 }

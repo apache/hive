@@ -92,7 +92,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       boolean enablePreemption, String[] localDirsBase, AtomicReference<Integer> localShufflePort,
       AtomicReference<InetSocketAddress> localAddress,
       long totalMemoryAvailableBytes, LlapDaemonExecutorMetrics metrics,
-      AMReporter amReporter, ClassLoader classLoader) {
+      AMReporter amReporter, ClassLoader classLoader, String clusterId) {
     super("ContainerRunnerImpl");
     this.conf = conf;
     Preconditions.checkState(numExecutors > 0,
@@ -101,7 +101,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     this.localShufflePort = localShufflePort;
     this.amReporter = amReporter;
 
-    this.queryTracker = new QueryTracker(conf, localDirsBase);
+    this.queryTracker = new QueryTracker(conf, localDirsBase, clusterId);
     addIfService(queryTracker);
     String waitQueueSchedulerClassName = HiveConf.getVar(
         conf, ConfVars.LLAP_DAEMON_WAIT_QUEUE_COMPARATOR_CLASS_NAME);
@@ -175,7 +175,8 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
           fragmentSpec.getFragmentIdentifierString());
       int dagIdentifier = taskAttemptId.getTaskID().getVertexID().getDAGId().getId();
 
-      QueryIdentifier queryIdentifier = new QueryIdentifier(request.getApplicationIdString(), dagIdentifier);
+      QueryIdentifier queryIdentifier = new QueryIdentifier(
+          request.getApplicationIdString(), dagIdentifier);
 
       Credentials credentials = new Credentials();
       DataInputBuffer dib = new DataInputBuffer();
@@ -193,6 +194,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
               fragmentSpec.getAttemptNumber(), request.getUser(), request.getFragmentSpec(),
               jobToken);
 
+
       String[] localDirs = fragmentInfo.getLocalDirs();
       Preconditions.checkNotNull(localDirs);
       if (LOG.isDebugEnabled()) {
@@ -200,7 +202,6 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       }
       // May need to setup localDir for re-localization, which is usually setup as Environment.PWD.
       // Used for re-localization, to add the user specified configuration (conf_pb_binary_stream)
-
       TaskRunnerCallable callable = new TaskRunnerCallable(request, fragmentInfo, new Configuration(getConfig()),
           new LlapExecutionContext(localAddress.get().getHostName(), queryTracker), env,
           credentials, memoryPerExecutor, amReporter, confParams, metrics, killedTaskHandler,
@@ -248,24 +249,23 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
   @Override
   public SourceStateUpdatedResponseProto sourceStateUpdated(
-      SourceStateUpdatedRequestProto request) {
+      SourceStateUpdatedRequestProto request) throws IOException {
     LOG.info("Processing state update: " + stringifySourceStateUpdateRequest(request));
-    queryTracker.registerSourceStateChange(
-        new QueryIdentifier(request.getQueryIdentifier().getAppIdentifier(),
-            request.getQueryIdentifier().getDagIdentifier()), request.getSrcName(),
-        request.getState());
+    QueryIdentifier queryId = new QueryIdentifier(request.getQueryIdentifier().getAppIdentifier(),
+        request.getQueryIdentifier().getDagIdentifier());
+    queryTracker.registerSourceStateChange(queryId, request.getSrcName(), request.getState());
     return SourceStateUpdatedResponseProto.getDefaultInstance();
   }
 
   @Override
-  public QueryCompleteResponseProto queryComplete(QueryCompleteRequestProto request) {
+  public QueryCompleteResponseProto queryComplete(
+      QueryCompleteRequestProto request) throws IOException {
     QueryIdentifier queryIdentifier =
         new QueryIdentifier(request.getQueryIdentifier().getAppIdentifier(),
             request.getQueryIdentifier().getDagIdentifier());
     LOG.info("Processing queryComplete notification for {}", queryIdentifier);
-    List<QueryFragmentInfo> knownFragments =
-        queryTracker
-            .queryComplete(queryIdentifier, request.getDeleteDelay());
+    List<QueryFragmentInfo> knownFragments = queryTracker.queryComplete(
+        queryIdentifier, request.getDeleteDelay(), false);
     LOG.info("DBG: Pending fragment count for completed query {} = {}", queryIdentifier,
         knownFragments.size());
     for (QueryFragmentInfo fragmentInfo : knownFragments) {
@@ -277,9 +277,16 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   }
 
   @Override
-  public TerminateFragmentResponseProto terminateFragment(TerminateFragmentRequestProto request) {
-    LOG.info("DBG: Received terminateFragment request for {}", request.getFragmentIdentifierString());
-    executorService.killFragment(request.getFragmentIdentifierString());
+  public TerminateFragmentResponseProto terminateFragment(
+      TerminateFragmentRequestProto request) throws IOException {
+    String fragmentId = request.getFragmentIdentifierString();
+    LOG.info("DBG: Received terminateFragment request for {}", fragmentId);
+    // TODO: ideally, QueryTracker should have fragment-to-query mapping.
+    QueryIdentifier queryId = executorService.findQueryByFragment(fragmentId);
+    // checkPermissions returns false if query is not found, throws on failure.
+    if (queryId != null && queryTracker.checkPermissionsForQuery(queryId)) {
+      executorService.killFragment(fragmentId);
+    }
     return TerminateFragmentResponseProto.getDefaultInstance();
   }
 
@@ -355,8 +362,12 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   @Override
   public void queryFailed(QueryIdentifier queryIdentifier) {
     LOG.info("Processing query failed notification for {}", queryIdentifier);
-    List<QueryFragmentInfo> knownFragments =
-        queryTracker.queryComplete(queryIdentifier, -1);
+    List<QueryFragmentInfo> knownFragments;
+    try {
+      knownFragments = queryTracker.queryComplete(queryIdentifier, -1, true);
+    } catch (IOException e) {
+      throw new RuntimeException(e); // Should never happen here, no permission check.
+    }
     LOG.info("DBG: Pending fragment count for failed query {} = {}", queryIdentifier,
         knownFragments.size());
     for (QueryFragmentInfo fragmentInfo : knownFragments) {

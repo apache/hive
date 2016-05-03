@@ -18,6 +18,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.token.Token;
 import org.apache.tez.common.CallableWithNdc;
@@ -60,6 +62,7 @@ public class QueryTracker extends AbstractService {
 
   private final String[] localDirsBase;
   private final FileSystem localFs;
+  private final String clusterId;
   private final long defaultDeleteDelaySeconds;
 
   // TODO At the moment there's no way of knowing whether a query is running or not.
@@ -89,9 +92,10 @@ public class QueryTracker extends AbstractService {
   private final ConcurrentHashMap<QueryIdentifier, String> queryIdentifierToHiveQueryId =
       new ConcurrentHashMap<>();
 
-  public QueryTracker(Configuration conf, String[] localDirsBase) {
+  public QueryTracker(Configuration conf, String[] localDirsBase, String clusterId) {
     super("QueryTracker");
     this.localDirsBase = localDirsBase;
+    this.clusterId = clusterId;
     try {
       localFs = FileSystem.getLocal(conf);
     } catch (IOException e) {
@@ -119,35 +123,50 @@ public class QueryTracker extends AbstractService {
    * @param user
    * @throws IOException
    */
-  QueryFragmentInfo registerFragment(QueryIdentifier queryIdentifier, String appIdString, String dagName,
-                                     int dagIdentifier, String vertexName, int fragmentNumber, int attemptNumber, String user,
-                                     FragmentSpecProto fragmentSpec, Token<JobTokenIdentifier> appToken) throws IOException {
+  QueryFragmentInfo registerFragment(QueryIdentifier queryIdentifier, String appIdString,
+      String dagName, int dagIdentifier, String vertexName, int fragmentNumber, int attemptNumber,
+      String user, FragmentSpecProto fragmentSpec, Token<JobTokenIdentifier> appToken)
+          throws IOException {
     ReadWriteLock dagLock = getDagLock(queryIdentifier);
     dagLock.readLock().lock();
     try {
-      if (!completedDagMap.contains(queryIdentifier)) {
-        QueryInfo queryInfo = queryInfoMap.get(queryIdentifier);
-        if (queryInfo == null) {
-          queryInfo = new QueryInfo(queryIdentifier, appIdString, dagName, dagIdentifier, user,
-              getSourceCompletionMap(queryIdentifier), localDirsBase, localFs);
-          queryInfoMap.putIfAbsent(queryIdentifier, queryInfo);
-        }
-
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Registering request for {} with the ShuffleHandler", queryIdentifier);
-        }
-        ShuffleHandler.get()
-            .registerDag(appIdString, dagIdentifier, appToken,
-                user, queryInfo.getLocalDirs());
-
-        return queryInfo.registerFragment(vertexName, fragmentNumber, attemptNumber, fragmentSpec);
-      } else {
+      if (completedDagMap.contains(queryIdentifier)) {
         // Cleanup the dag lock here, since it may have been created after the query completed
         dagSpecificLocks.remove(queryIdentifier);
         throw new RuntimeException(
             "Dag " + dagName + " already complete. Rejecting fragment ["
                 + vertexName + ", " + fragmentNumber + ", " + attemptNumber + "]");
       }
+      // TODO: for now, we get the secure username out of UGI... after signing, we can take it
+      //       out of the request provided that it's signed.
+      Pair<String, String> tokenInfo = LlapTokenChecker.getTokenInfo(clusterId);
+      boolean isExistingQueryInfo = true;
+      QueryInfo queryInfo = queryInfoMap.get(queryIdentifier);
+      if (queryInfo == null) {
+        queryInfo = new QueryInfo(queryIdentifier, appIdString, dagName, dagIdentifier, user,
+            getSourceCompletionMap(queryIdentifier), localDirsBase, localFs,
+            tokenInfo.getLeft(), tokenInfo.getRight());
+        QueryInfo old = queryInfoMap.putIfAbsent(queryIdentifier, queryInfo);
+        if (old != null) {
+          queryInfo = old;
+        } else {
+          isExistingQueryInfo = false;
+        }
+      }
+      if (isExistingQueryInfo) {
+        // We already retrieved the incoming info, check without UGI.
+        LlapTokenChecker.checkPermissions(tokenInfo, queryInfo.getTokenUserName(),
+            queryInfo.getTokenAppId(), queryInfo.getQueryIdentifier());
+      }
+
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Registering request for {} with the ShuffleHandler", queryIdentifier);
+      }
+      ShuffleHandler.get()
+          .registerDag(appIdString, dagIdentifier, appToken,
+              user, queryInfo.getLocalDirs());
+
+      return queryInfo.registerFragment(vertexName, fragmentNumber, attemptNumber, fragmentSpec);
     } finally {
       dagLock.readLock().unlock();
     }
@@ -174,17 +193,20 @@ public class QueryTracker extends AbstractService {
    * @param queryIdentifier
    * @param deleteDelay
    */
-  List<QueryFragmentInfo> queryComplete(QueryIdentifier queryIdentifier, long deleteDelay) {
+  List<QueryFragmentInfo> queryComplete(QueryIdentifier queryIdentifier, long deleteDelay,
+      boolean isInternal) throws IOException {
     if (deleteDelay == -1) {
       deleteDelay = defaultDeleteDelaySeconds;
     }
     ReadWriteLock dagLock = getDagLock(queryIdentifier);
     dagLock.writeLock().lock();
     try {
+      QueryInfo queryInfo = isInternal
+          ? queryInfoMap.get(queryIdentifier) : checkPermissionsAndGetQuery(queryIdentifier);
       rememberCompletedDag(queryIdentifier);
       LOG.info("Processing queryComplete for queryIdentifier={} with deleteDelay={} seconds", queryIdentifier,
           deleteDelay);
-      QueryInfo queryInfo = queryInfoMap.remove(queryIdentifier);
+      queryInfoMap.remove(queryIdentifier);
       if (queryInfo == null) {
         LOG.warn("Ignoring query complete for unknown dag: {}", queryIdentifier);
         return Collections.emptyList();
@@ -229,9 +251,10 @@ public class QueryTracker extends AbstractService {
    * @param sourceName
    * @param sourceState
    */
-  void registerSourceStateChange(QueryIdentifier queryIdentifier, String sourceName, SourceStateProto sourceState) {
+  void registerSourceStateChange(QueryIdentifier queryIdentifier, String sourceName,
+      SourceStateProto sourceState) throws IOException {
     getSourceCompletionMap(queryIdentifier).put(sourceName, sourceState);
-    QueryInfo queryInfo = queryInfoMap.get(queryIdentifier);
+    QueryInfo queryInfo = checkPermissionsAndGetQuery(queryIdentifier);
     if (queryInfo != null) {
       queryInfo.sourceStateUpdated(sourceName);
     } else {
@@ -321,5 +344,17 @@ public class QueryTracker extends AbstractService {
       completedDagMap.remove(queryIdentifier);
       return null;
     }
+  }
+
+  private QueryInfo checkPermissionsAndGetQuery(QueryIdentifier queryId) throws IOException {
+    QueryInfo queryInfo = queryInfoMap.get(queryId);
+    if (queryInfo == null) return null;
+    LlapTokenChecker.checkPermissions(clusterId, queryInfo.getTokenAppId(),
+        queryInfo.getTokenUserName(), queryInfo.getQueryIdentifier());
+    return queryInfo;
+  }
+
+  public boolean checkPermissionsForQuery(QueryIdentifier queryId) throws IOException {
+    return checkPermissionsAndGetQuery(queryId) != null;
   }
 }
