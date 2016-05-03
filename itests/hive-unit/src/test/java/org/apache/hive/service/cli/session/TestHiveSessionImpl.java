@@ -70,7 +70,7 @@ public class TestHiveSessionImpl {
     Map<String, String> confOverlay = new HashMap<String, String>();
     String hql = "drop table if exists table_not_exists";
     Mockito.when(operationManager.newExecuteStatementOperation(same(session), eq(hql),
-        (Map<String, String>)Mockito.any(), eq(true))).thenReturn(operation);
+        (Map<String, String>)Mockito.any(), eq(true), eq(0))).thenReturn(operation);
 
     try {
 

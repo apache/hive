@@ -200,8 +200,7 @@ public class ThriftCliServiceTestWithCookie {
 
     // Execute another query
     queryString = "SELECT ID+1 FROM TEST_EXEC_THRIFT";
-    OperationHandle opHandle = client.executeStatement(sessHandle,
-        queryString, opConf);
+    OperationHandle opHandle = client.executeStatement(sessHandle, queryString, opConf);
     assertNotNull(opHandle);
 
     OperationStatus opStatus = client.getOperationStatus(opHandle);

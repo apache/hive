@@ -493,15 +493,17 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       String statement = req.getStatement();
       Map<String, String> confOverlay = req.getConfOverlay();
       Boolean runAsync = req.isRunAsync();
-      OperationHandle operationHandle = runAsync ?
-          cliService.executeStatementAsync(sessionHandle, statement, confOverlay)
-          : cliService.executeStatement(sessionHandle, statement, confOverlay);
-          resp.setOperationHandle(operationHandle.toTOperationHandle());
-          resp.setStatus(OK_STATUS);
+      long queryTimeout = req.getQueryTimeout();
+      OperationHandle operationHandle =
+          runAsync ? cliService.executeStatementAsync(sessionHandle, statement, confOverlay,
+              queryTimeout) : cliService.executeStatement(sessionHandle, statement, confOverlay,
+              queryTimeout);
+      resp.setOperationHandle(operationHandle.toTOperationHandle());
+      resp.setStatus(OK_STATUS);
     } catch (Exception e) {
       // Note: it's rather important that this (and other methods) catch Exception, not Throwable;
-      //       in combination with HiveSessionProxy.invoke code, perhaps unintentionally, it used
-      //       to also catch all errors; and now it allows OOMs only to propagate.
+      // in combination with HiveSessionProxy.invoke code, perhaps unintentionally, it used
+      // to also catch all errors; and now it allows OOMs only to propagate.
       LOG.warn("Error executing statement: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
