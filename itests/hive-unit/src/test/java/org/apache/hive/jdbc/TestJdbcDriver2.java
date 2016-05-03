@@ -48,6 +48,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
+import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -2285,7 +2287,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
         try {
           System.out.println("Executing query: ");
           stmt.executeQuery("select sleepUDF(t1.under_col) as u0, t1.under_col as u1, " +
-              "t2.under_col as u2 from " + tableName +  "t1 join " + tableName +
+              "t2.under_col as u2 from " + tableName +  " t1 join " + tableName +
               " t2 on t1.under_col = t2.under_col");
           fail("Expecting SQLException");
         } catch (SQLException e) {
@@ -2300,7 +2302,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
       @Override
       public void run() {
         try {
-          Thread.sleep(1000);
+          Thread.sleep(10000);
           System.out.println("Cancelling query: ");
           stmt.cancel();
         } catch (Exception e) {
@@ -2312,6 +2314,44 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     tCancel.start();
     tExecute.join();
     tCancel.join();
+    stmt.close();
+  }
+
+  @Test
+  public void testQueryTimeout() throws Exception {
+    String udfName = SleepUDF.class.getName();
+    Statement stmt1 = con.createStatement();
+    stmt1.execute("create temporary function sleepUDF as '" + udfName + "'");
+    stmt1.close();
+    Statement stmt = con.createStatement();
+    // Test a query where timeout kicks in
+    // Set query timeout to 15 seconds
+    stmt.setQueryTimeout(15);
+    System.err.println("Executing query: ");
+    try {
+      // Sleep UDF sleeps for 100ms for each select call
+      // The test table has 500 rows, so that should be sufficient time
+      stmt.executeQuery("select sleepUDF(t1.under_col) as u0, t1.under_col as u1, "
+          + "t2.under_col as u2 from " + tableName + " t1 join " + tableName
+          + " t2 on t1.under_col = t2.under_col");
+      fail("Expecting SQLTimeoutException");
+    } catch (SQLTimeoutException e) {
+      assertNotNull(e);
+      System.err.println(e.toString());
+    } catch (SQLException e) {
+      fail("Expecting SQLTimeoutException, but got SQLException: " + e);
+      e.printStackTrace();
+    }
+
+    // Test a query where timeout does not kick in. Set it to 25s
+    stmt.setQueryTimeout(25);
+    try {
+      stmt.executeQuery("show tables");
+    } catch (SQLException e) {
+      fail("Unexpected SQLException: " + e);
+      e.printStackTrace();
+    }
+
     stmt.close();
   }
 

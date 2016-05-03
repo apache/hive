@@ -145,6 +145,7 @@ class TOperationState:
   ERROR_STATE = 5
   UKNOWN_STATE = 6
   PENDING_STATE = 7
+  TIMEDOUT_STATE = 8
 
   _VALUES_TO_NAMES = {
     0: "INITIALIZED_STATE",
@@ -155,6 +156,7 @@ class TOperationState:
     5: "ERROR_STATE",
     6: "UKNOWN_STATE",
     7: "PENDING_STATE",
+    8: "TIMEDOUT_STATE",
   }
 
   _NAMES_TO_VALUES = {
@@ -166,6 +168,7 @@ class TOperationState:
     "ERROR_STATE": 5,
     "UKNOWN_STATE": 6,
     "PENDING_STATE": 7,
+    "TIMEDOUT_STATE": 8,
   }
 
 class TOperationType:
@@ -3862,6 +3865,7 @@ class TExecuteStatementReq:
    - statement
    - confOverlay
    - runAsync
+   - queryTimeout
   """
 
   thrift_spec = (
@@ -3870,13 +3874,15 @@ class TExecuteStatementReq:
     (2, TType.STRING, 'statement', None, None, ), # 2
     (3, TType.MAP, 'confOverlay', (TType.STRING,None,TType.STRING,None), None, ), # 3
     (4, TType.BOOL, 'runAsync', None, False, ), # 4
+    (5, TType.I64, 'queryTimeout', None, 0, ), # 5
   )
 
-  def __init__(self, sessionHandle=None, statement=None, confOverlay=None, runAsync=thrift_spec[4][4],):
+  def __init__(self, sessionHandle=None, statement=None, confOverlay=None, runAsync=thrift_spec[4][4], queryTimeout=thrift_spec[5][4],):
     self.sessionHandle = sessionHandle
     self.statement = statement
     self.confOverlay = confOverlay
     self.runAsync = runAsync
+    self.queryTimeout = queryTimeout
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3914,6 +3920,11 @@ class TExecuteStatementReq:
           self.runAsync = iprot.readBool();
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I64:
+          self.queryTimeout = iprot.readI64();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3943,6 +3954,10 @@ class TExecuteStatementReq:
     if self.runAsync is not None:
       oprot.writeFieldBegin('runAsync', TType.BOOL, 4)
       oprot.writeBool(self.runAsync)
+      oprot.writeFieldEnd()
+    if self.queryTimeout is not None:
+      oprot.writeFieldBegin('queryTimeout', TType.I64, 5)
+      oprot.writeI64(self.queryTimeout)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

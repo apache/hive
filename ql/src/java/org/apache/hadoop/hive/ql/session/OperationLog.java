@@ -152,7 +152,7 @@ public class OperationLog {
       return readResults(maxRows);
     }
 
-    void remove() {
+    synchronized void remove() {
       try {
         if (in != null) {
           in.close();
@@ -160,8 +160,10 @@ public class OperationLog {
         if (out != null) {
           out.close();
         }
-        FileUtils.forceDelete(file);
-        isRemoved = true;
+        if (!isRemoved) {
+          FileUtils.forceDelete(file);
+          isRemoved = true;
+        }
       } catch (Exception e) {
         LOG.error("Failed to remove corresponding log file of operation: " + operationName, e);
       }

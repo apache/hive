@@ -100,7 +100,7 @@ public abstract class MetadataOperation extends Operation {
     pattern = replaceAll(pattern, "^_", ".");
     return pattern;
   }
-  
+
   private String replaceAll(String input, final String pattern, final String replace) {
     while (true) {
       String replaced = input.replaceAll(pattern, replace);
@@ -109,6 +109,11 @@ public abstract class MetadataOperation extends Operation {
       }
       input = replaced;
     }
+  }
+
+  @Override
+  public void cancel(OperationState stateAfterCancel) throws HiveSQLException {
+    throw new UnsupportedOperationException("MetadataOperation.cancel()");
   }
 
 }

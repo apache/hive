@@ -39,9 +39,9 @@ public abstract class ExecuteStatementOperation extends Operation {
     return statement;
   }
 
-  public static ExecuteStatementOperation newExecuteStatementOperation(
-      HiveSession parentSession, String statement, Map<String, String> confOverlay, boolean runAsync)
-          throws HiveSQLException {
+  public static ExecuteStatementOperation newExecuteStatementOperation(HiveSession parentSession,
+      String statement, Map<String, String> confOverlay, boolean runAsync, long queryTimeout)
+      throws HiveSQLException {
     String[] tokens = statement.trim().split("\\s+");
     CommandProcessor processor = null;
     try {
@@ -50,7 +50,8 @@ public abstract class ExecuteStatementOperation extends Operation {
       throw new HiveSQLException(e.getMessage(), e.getSQLState(), e);
     }
     if (processor == null) {
-      return new SQLOperation(parentSession, statement, confOverlay, runAsync);
+      // runAsync, queryTimeout makes sense only for a SQLOperation
+      return new SQLOperation(parentSession, statement, confOverlay, runAsync, queryTimeout);
     }
     return new HiveCommandOperation(parentSession, statement, processor, confOverlay);
   }

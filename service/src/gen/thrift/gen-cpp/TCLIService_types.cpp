@@ -100,7 +100,8 @@ int _kTOperationStateValues[] = {
   TOperationState::CLOSED_STATE,
   TOperationState::ERROR_STATE,
   TOperationState::UKNOWN_STATE,
-  TOperationState::PENDING_STATE
+  TOperationState::PENDING_STATE,
+  TOperationState::TIMEDOUT_STATE
 };
 const char* _kTOperationStateNames[] = {
   "INITIALIZED_STATE",
@@ -110,9 +111,10 @@ const char* _kTOperationStateNames[] = {
   "CLOSED_STATE",
   "ERROR_STATE",
   "UKNOWN_STATE",
-  "PENDING_STATE"
+  "PENDING_STATE",
+  "TIMEDOUT_STATE"
 };
-const std::map<int, const char*> _TOperationState_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(8, _kTOperationStateValues, _kTOperationStateNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _TOperationState_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(9, _kTOperationStateValues, _kTOperationStateNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 int _kTOperationTypeValues[] = {
   TOperationType::EXECUTE_STATEMENT,
@@ -4130,8 +4132,8 @@ void swap(TGetInfoResp &a, TGetInfoResp &b) {
   swap(a.infoValue, b.infoValue);
 }
 
-const char* TExecuteStatementReq::ascii_fingerprint = "FED75DB77E66D76EC1939A51FB0D96FA";
-const uint8_t TExecuteStatementReq::binary_fingerprint[16] = {0xFE,0xD7,0x5D,0xB7,0x7E,0x66,0xD7,0x6E,0xC1,0x93,0x9A,0x51,0xFB,0x0D,0x96,0xFA};
+const char* TExecuteStatementReq::ascii_fingerprint = "8DD1140DED7CA1679BA7618F0303C3E1";
+const uint8_t TExecuteStatementReq::binary_fingerprint[16] = {0x8D,0xD1,0x14,0x0D,0xED,0x7C,0xA1,0x67,0x9B,0xA7,0x61,0x8F,0x03,0x03,0xC3,0xE1};
 
 uint32_t TExecuteStatementReq::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -4202,6 +4204,14 @@ uint32_t TExecuteStatementReq::read(::apache::thrift::protocol::TProtocol* iprot
           xfer += iprot->skip(ftype);
         }
         break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->queryTimeout);
+          this->__isset.queryTimeout = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -4249,6 +4259,11 @@ uint32_t TExecuteStatementReq::write(::apache::thrift::protocol::TProtocol* opro
     xfer += oprot->writeBool(this->runAsync);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.queryTimeout) {
+    xfer += oprot->writeFieldBegin("queryTimeout", ::apache::thrift::protocol::T_I64, 5);
+    xfer += oprot->writeI64(this->queryTimeout);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -4260,6 +4275,7 @@ void swap(TExecuteStatementReq &a, TExecuteStatementReq &b) {
   swap(a.statement, b.statement);
   swap(a.confOverlay, b.confOverlay);
   swap(a.runAsync, b.runAsync);
+  swap(a.queryTimeout, b.queryTimeout);
   swap(a.__isset, b.__isset);
 }
 

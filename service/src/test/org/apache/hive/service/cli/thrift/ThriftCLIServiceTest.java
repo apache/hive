@@ -178,8 +178,7 @@ public abstract class ThriftCLIServiceTest {
 
     // Execute another query
     queryString = "SELECT ID+1 FROM TEST_EXEC_THRIFT";
-    OperationHandle opHandle = client.executeStatement(sessHandle,
-        queryString, opConf);
+    OperationHandle opHandle = client.executeStatement(sessHandle, queryString, opConf);
     assertNotNull(opHandle);
 
     OperationStatus opStatus = client.getOperationStatus(opHandle);
@@ -229,8 +228,7 @@ public abstract class ThriftCLIServiceTest {
     // Execute another query
     queryString = "SELECT ID+1 FROM TEST_EXEC_ASYNC_THRIFT";
     System.out.println("Will attempt to execute: " + queryString);
-    opHandle = client.executeStatementAsync(sessHandle,
-        queryString, opConf);
+    opHandle = client.executeStatementAsync(sessHandle, queryString, opConf);
     assertNotNull(opHandle);
 
     // Poll on the operation status till the query is completed

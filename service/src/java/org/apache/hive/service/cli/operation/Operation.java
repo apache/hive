@@ -329,22 +329,23 @@ public abstract class Operation {
     }
   }
 
-  protected void cleanupOperationLog() {
+  protected synchronized void cleanupOperationLog() {
     if (isOperationLogEnabled) {
+      if (opHandle == null) {
+        LOG.warn("Operation seems to be in invalid state, opHandle is null");
+        return;
+      }
       if (operationLog == null) {
-        LOG.error("Operation [ " + opHandle.getHandleIdentifier() + " ] "
-          + "logging is enabled, but its OperationLog object cannot be found.");
+        LOG.warn("Operation [ " + opHandle.getHandleIdentifier() + " ] " + "logging is enabled, "
+            + "but its OperationLog object cannot be found. "
+            + "Perhaps the operation has already terminated.");
       } else {
         operationLog.close();
       }
     }
   }
 
-  // TODO: make this abstract and implement in subclasses.
-  public void cancel() throws HiveSQLException {
-    setState(OperationState.CANCELED);
-    throw new UnsupportedOperationException("SQLOperation.cancel()");
-  }
+  public abstract void cancel(OperationState stateAfterCancel) throws HiveSQLException;
 
   public abstract void close() throws HiveSQLException;
 

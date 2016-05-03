@@ -319,9 +319,11 @@ public class HiveHistoryImpl implements HiveHistory{
 
   @Override
   public void logPlanProgress(QueryPlan plan) throws IOException {
-    Map<String,String> ctrmap = ctrMapFactory.get();
-    ctrmap.put("plan", plan.toString());
-    log(RecordTypes.Counters, ctrmap);
+    if (plan != null) {
+      Map<String,String> ctrmap = ctrMapFactory.get();
+      ctrmap.put("plan", plan.toString());
+      log(RecordTypes.Counters, ctrmap);
+    }
   }
 
   @Override

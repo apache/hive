@@ -447,6 +447,9 @@ enum TOperationState {
 
   // The operation is in an pending state
   PENDING_STATE,
+
+  // The operation is in an timedout state
+  TIMEDOUT_STATE,
 }
 
 // A string identifier. This is interpreted literally.
@@ -686,6 +689,9 @@ struct TExecuteStatementReq {
   
   // Execute asynchronously when runAsync is true
   4: optional bool runAsync = false
+
+  // The number of seconds after which the query will timeout on the server
+  5: optional i64 queryTimeout = 0
 }
 
 struct TExecuteStatementResp {

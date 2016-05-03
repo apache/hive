@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.sql.SQLTimeoutException;
 import java.sql.SQLWarning;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -104,6 +105,8 @@ public class HiveStatement implements java.sql.Statement {
    * successfully.
    */
   private boolean isExecuteStatementFailed = false;
+
+  private int queryTimeout = 0;
 
   public HiveStatement(HiveConnection connection, TCLIService.Iface client,
       TSessionHandle sessHandle) {
@@ -238,7 +241,7 @@ public class HiveStatement implements java.sql.Statement {
      */
     execReq.setRunAsync(true);
     execReq.setConfOverlay(sessConf);
-
+    execReq.setQueryTimeout(queryTimeout);
     try {
       TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
       Utils.verifySuccessWithInfo(execResp.getStatus());
@@ -260,8 +263,8 @@ public class HiveStatement implements java.sql.Statement {
     while (!operationComplete) {
       try {
         /**
-         * For an async SQLOperation, GetOperationStatus will use the long polling approach
-         * It will essentially return after the HIVE_SERVER2_LONG_POLLING_TIMEOUT (a server config) expires
+         * For an async SQLOperation, GetOperationStatus will use the long polling approach It will
+         * essentially return after the HIVE_SERVER2_LONG_POLLING_TIMEOUT (a server config) expires
          */
         statusResp = client.GetOperationStatus(statusReq);
         Utils.verifySuccessWithInfo(statusResp.getStatus());
@@ -274,10 +277,12 @@ public class HiveStatement implements java.sql.Statement {
           case CANCELED_STATE:
             // 01000 -> warning
             throw new SQLException("Query was cancelled", "01000");
+          case TIMEDOUT_STATE:
+            throw new SQLTimeoutException("Query timed out after " + queryTimeout + " seconds");
           case ERROR_STATE:
             // Get the error details from the underlying exception
-            throw new SQLException(statusResp.getErrorMessage(),
-                statusResp.getSqlState(), statusResp.getErrorCode());
+            throw new SQLException(statusResp.getErrorMessage(), statusResp.getSqlState(),
+                statusResp.getErrorCode());
           case UKNOWN_STATE:
             throw new SQLException("Unknown query", "HY000");
           case INITIALIZED_STATE:
@@ -719,7 +724,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public void setQueryTimeout(int seconds) throws SQLException {
-    throw new SQLException("Method not supported");
+    this.queryTimeout = seconds;
   }
 
   /*

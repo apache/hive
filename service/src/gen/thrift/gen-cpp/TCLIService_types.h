@@ -78,7 +78,8 @@ struct TOperationState {
     CLOSED_STATE = 4,
     ERROR_STATE = 5,
     UKNOWN_STATE = 6,
-    PENDING_STATE = 7
+    PENDING_STATE = 7,
+    TIMEDOUT_STATE = 8
   };
 };
 
@@ -2329,18 +2330,19 @@ class TGetInfoResp {
 void swap(TGetInfoResp &a, TGetInfoResp &b);
 
 typedef struct _TExecuteStatementReq__isset {
-  _TExecuteStatementReq__isset() : confOverlay(false), runAsync(true) {}
+  _TExecuteStatementReq__isset() : confOverlay(false), runAsync(true), queryTimeout(true) {}
   bool confOverlay;
   bool runAsync;
+  bool queryTimeout;
 } _TExecuteStatementReq__isset;
 
 class TExecuteStatementReq {
  public:
 
-  static const char* ascii_fingerprint; // = "FED75DB77E66D76EC1939A51FB0D96FA";
-  static const uint8_t binary_fingerprint[16]; // = {0xFE,0xD7,0x5D,0xB7,0x7E,0x66,0xD7,0x6E,0xC1,0x93,0x9A,0x51,0xFB,0x0D,0x96,0xFA};
+  static const char* ascii_fingerprint; // = "8DD1140DED7CA1679BA7618F0303C3E1";
+  static const uint8_t binary_fingerprint[16]; // = {0x8D,0xD1,0x14,0x0D,0xED,0x7C,0xA1,0x67,0x9B,0xA7,0x61,0x8F,0x03,0x03,0xC3,0xE1};
 
-  TExecuteStatementReq() : statement(), runAsync(false) {
+  TExecuteStatementReq() : statement(), runAsync(false), queryTimeout(0LL) {
   }
 
   virtual ~TExecuteStatementReq() throw() {}
@@ -2349,6 +2351,7 @@ class TExecuteStatementReq {
   std::string statement;
   std::map<std::string, std::string>  confOverlay;
   bool runAsync;
+  int64_t queryTimeout;
 
   _TExecuteStatementReq__isset __isset;
 
@@ -2370,6 +2373,11 @@ class TExecuteStatementReq {
     __isset.runAsync = true;
   }
 
+  void __set_queryTimeout(const int64_t val) {
+    queryTimeout = val;
+    __isset.queryTimeout = true;
+  }
+
   bool operator == (const TExecuteStatementReq & rhs) const
   {
     if (!(sessionHandle == rhs.sessionHandle))
@@ -2383,6 +2391,10 @@ class TExecuteStatementReq {
     if (__isset.runAsync != rhs.__isset.runAsync)
       return false;
     else if (__isset.runAsync && !(runAsync == rhs.runAsync))
+      return false;
+    if (__isset.queryTimeout != rhs.__isset.queryTimeout)
+      return false;
+    else if (__isset.queryTimeout && !(queryTimeout == rhs.queryTimeout))
       return false;
     return true;
   }
