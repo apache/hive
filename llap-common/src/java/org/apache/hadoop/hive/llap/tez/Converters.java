@@ -22,9 +22,11 @@ import com.google.protobuf.ByteString;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EntityDescriptorProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GroupInputSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UserPayloadProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexIdentifier;
+import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.tez.common.TezCommonUtils;
 import org.apache.tez.dag.api.EntityDescriptor;
 import org.apache.tez.dag.api.InputDescriptor;
@@ -33,7 +35,10 @@ import org.apache.tez.dag.api.ProcessorDescriptor;
 import org.apache.tez.dag.api.TezUncheckedException;
 import org.apache.tez.dag.api.UserPayload;
 import org.apache.tez.dag.api.event.VertexState;
+import org.apache.tez.dag.records.TezDAGID;
 import org.apache.tez.dag.records.TezTaskAttemptID;
+import org.apache.tez.dag.records.TezTaskID;
+import org.apache.tez.dag.records.TezVertexID;
 import org.apache.tez.runtime.api.impl.GroupInputSpec;
 import org.apache.tez.runtime.api.impl.InputSpec;
 import org.apache.tez.runtime.api.impl.OutputSpec;
@@ -41,55 +46,88 @@ import org.apache.tez.runtime.api.impl.TaskSpec;
 
 public class Converters {
 
-  public static TaskSpec getTaskSpecfromProto(FragmentSpecProto FragmentSpecProto) {
-    TezTaskAttemptID taskAttemptID =
-        TezTaskAttemptID.fromString(FragmentSpecProto.getFragmentIdentifierString());
+  public static TaskSpec getTaskSpecfromProto(SignableVertexSpec vectorProto,
+      int fragmentNum, int attemptNum, TezTaskAttemptID attemptId) {
+    VertexIdentifier vertexId = vectorProto.getVertexIdentifier();
+    TezTaskAttemptID taskAttemptID = attemptId != null ? attemptId
+        : createTaskAttemptId(vertexId, fragmentNum, attemptNum);
 
     ProcessorDescriptor processorDescriptor = null;
-    if (FragmentSpecProto.hasProcessorDescriptor()) {
+    if (vectorProto.hasProcessorDescriptor()) {
       processorDescriptor = convertProcessorDescriptorFromProto(
-          FragmentSpecProto.getProcessorDescriptor());
+          vectorProto.getProcessorDescriptor());
     }
 
-    List<InputSpec> inputSpecList = new ArrayList<InputSpec>(FragmentSpecProto.getInputSpecsCount());
-    if (FragmentSpecProto.getInputSpecsCount() > 0) {
-      for (IOSpecProto inputSpecProto : FragmentSpecProto.getInputSpecsList()) {
+    List<InputSpec> inputSpecList = new ArrayList<InputSpec>(vectorProto.getInputSpecsCount());
+    if (vectorProto.getInputSpecsCount() > 0) {
+      for (IOSpecProto inputSpecProto : vectorProto.getInputSpecsList()) {
         inputSpecList.add(getInputSpecFromProto(inputSpecProto));
       }
     }
 
     List<OutputSpec> outputSpecList =
-        new ArrayList<OutputSpec>(FragmentSpecProto.getOutputSpecsCount());
-    if (FragmentSpecProto.getOutputSpecsCount() > 0) {
-      for (IOSpecProto outputSpecProto : FragmentSpecProto.getOutputSpecsList()) {
+        new ArrayList<OutputSpec>(vectorProto.getOutputSpecsCount());
+    if (vectorProto.getOutputSpecsCount() > 0) {
+      for (IOSpecProto outputSpecProto : vectorProto.getOutputSpecsList()) {
         outputSpecList.add(getOutputSpecFromProto(outputSpecProto));
       }
     }
 
     List<GroupInputSpec> groupInputSpecs =
-        new ArrayList<GroupInputSpec>(FragmentSpecProto.getGroupedInputSpecsCount());
-    if (FragmentSpecProto.getGroupedInputSpecsCount() > 0) {
-      for (GroupInputSpecProto groupInputSpecProto : FragmentSpecProto.getGroupedInputSpecsList()) {
+        new ArrayList<GroupInputSpec>(vectorProto.getGroupedInputSpecsCount());
+    if (vectorProto.getGroupedInputSpecsCount() > 0) {
+      for (GroupInputSpecProto groupInputSpecProto : vectorProto.getGroupedInputSpecsList()) {
         groupInputSpecs.add(getGroupInputSpecFromProto(groupInputSpecProto));
       }
     }
 
     TaskSpec taskSpec =
-        new TaskSpec(taskAttemptID, FragmentSpecProto.getDagName(), FragmentSpecProto.getVertexName(),
-            FragmentSpecProto.getVertexParallelism(), processorDescriptor, inputSpecList,
+        new TaskSpec(taskAttemptID, vectorProto.getDagName(), vectorProto.getVertexName(),
+            vectorProto.getVertexParallelism(), processorDescriptor, inputSpecList,
             outputSpecList, groupInputSpecs);
     return taskSpec;
   }
 
-  public static FragmentSpecProto convertTaskSpecToProto(TaskSpec taskSpec) {
-    FragmentSpecProto.Builder builder = FragmentSpecProto.newBuilder();
-    builder.setFragmentIdentifierString(taskSpec.getTaskAttemptID().toString());
+  public static TezTaskAttemptID createTaskAttemptId(
+      VertexIdentifier vertexId, int fragmentNum, int attemptNum) {
+    // Come ride the API roller-coaster!
+    return TezTaskAttemptID.getInstance(
+            TezTaskID.getInstance(
+                TezVertexID.getInstance(
+                    TezDAGID.getInstance(
+                        ConverterUtils.toApplicationId(
+                            vertexId.getApplicationIdString()),
+                        vertexId.getDagId()),
+                    vertexId.getVertexId()),
+                fragmentNum),
+            attemptNum);
+  }
+
+  public static VertexIdentifier createVertexIdentifier(
+      TezTaskAttemptID taId, int appAttemptId) {
+    VertexIdentifier.Builder idBuilder = VertexIdentifier.newBuilder();
+    idBuilder.setApplicationIdString(
+        taId.getTaskID().getVertexID().getDAGId().getApplicationId().toString());
+    idBuilder.setAppAttemptNumber(appAttemptId);
+    idBuilder.setDagId(taId.getTaskID().getVertexID().getDAGId().getId());
+    idBuilder.setVertexId(taId.getTaskID().getVertexID().getId());
+    return idBuilder.build();
+  }
+
+  public static SignableVertexSpec convertTaskSpecToProto(TaskSpec taskSpec,
+      int appAttemptId, String tokenIdentifier, Integer signatureKeyId, String user) {
+    TezTaskAttemptID tId = taskSpec.getTaskAttemptID();
+
+    SignableVertexSpec.Builder builder = SignableVertexSpec.newBuilder();
+    builder.setVertexIdentifier(createVertexIdentifier(tId, appAttemptId));
     builder.setDagName(taskSpec.getDAGName());
-    builder.setDagId(taskSpec.getDagIdentifier());
     builder.setVertexName(taskSpec.getVertexName());
     builder.setVertexParallelism(taskSpec.getVertexParallelism());
-    builder.setFragmentNumber(taskSpec.getTaskAttemptID().getTaskID().getId());
-    builder.setAttemptNumber(taskSpec.getTaskAttemptID().getId());
+    builder.setTokenIdentifier(tokenIdentifier);
+    builder.setUser(user);
+    if (signatureKeyId != null) {
+      builder.setSignatureKeyId(signatureKeyId);
+    }
 
     if (taskSpec.getProcessorDescriptor() != null) {
       builder.setProcessorDescriptor(

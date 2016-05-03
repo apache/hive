@@ -21,8 +21,8 @@ import java.util.List;
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,19 +35,20 @@ public class QueryFragmentInfo {
   private final String vertexName;
   private final int fragmentNumber;
   private final int attemptNumber;
-  private final FragmentSpecProto fragmentSpec;
+  private final SignableVertexSpec vertexSpec;
+  private final String fragmentIdString;
 
   public QueryFragmentInfo(QueryInfo queryInfo, String vertexName, int fragmentNumber,
-                           int attemptNumber,
-                           FragmentSpecProto fragmentSpec) {
+      int attemptNumber, SignableVertexSpec vertexSpec, String fragmentIdString) {
     Preconditions.checkNotNull(queryInfo);
     Preconditions.checkNotNull(vertexName);
-    Preconditions.checkNotNull(fragmentSpec);
+    Preconditions.checkNotNull(vertexSpec);
     this.queryInfo = queryInfo;
     this.vertexName = vertexName;
     this.fragmentNumber = fragmentNumber;
     this.attemptNumber = attemptNumber;
-    this.fragmentSpec = fragmentSpec;
+    this.vertexSpec = vertexSpec;
+    this.fragmentIdString = fragmentIdString;
   }
 
   // Only meant for use by the QueryTracker
@@ -55,8 +56,8 @@ public class QueryFragmentInfo {
     return this.queryInfo;
   }
 
-  public FragmentSpecProto getFragmentSpec() {
-    return fragmentSpec;
+  public SignableVertexSpec getVertexSpec() {
+    return vertexSpec;
   }
 
   public String getVertexName() {
@@ -72,7 +73,7 @@ public class QueryFragmentInfo {
   }
 
   public String getFragmentIdentifierString() {
-    return fragmentSpec.getFragmentIdentifierString();
+    return fragmentIdString;
   }
 
   /**
@@ -85,7 +86,7 @@ public class QueryFragmentInfo {
    * @return true if the task can finish, false otherwise
    */
   public boolean canFinish() {
-    List<IOSpecProto> inputSpecList = fragmentSpec.getInputSpecsList();
+    List<IOSpecProto> inputSpecList = vertexSpec.getInputSpecsList();
     boolean canFinish = true;
     if (inputSpecList != null && !inputSpecList.isEmpty()) {
       for (IOSpecProto inputSpec : inputSpecList) {
@@ -126,7 +127,7 @@ public class QueryFragmentInfo {
   public boolean registerForFinishableStateUpdates(FinishableStateUpdateHandler handler,
                                                 boolean lastFinishableState) {
     List<String> sourcesOfInterest = new LinkedList<>();
-    List<IOSpecProto> inputSpecList = fragmentSpec.getInputSpecsList();
+    List<IOSpecProto> inputSpecList = vertexSpec.getInputSpecsList();
     if (inputSpecList != null && !inputSpecList.isEmpty()) {
       for (IOSpecProto inputSpec : inputSpecList) {
         if (LlapTezUtils.isSourceOfInterest(inputSpec.getIoDescriptor().getClassName())) {

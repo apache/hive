@@ -29,7 +29,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateProto;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
@@ -113,20 +113,11 @@ public class QueryTracker extends AbstractService {
 
   /**
    * Register a new fragment for a specific query
-   * @param queryIdentifier
-   * @param appIdString
-   * @param dagName
-   * @param dagIdentifier
-   * @param vertexName
-   * @param fragmentNumber
-   * @param attemptNumber
-   * @param user
-   * @throws IOException
    */
   QueryFragmentInfo registerFragment(QueryIdentifier queryIdentifier, String appIdString,
       String dagName, int dagIdentifier, String vertexName, int fragmentNumber, int attemptNumber,
-      String user, FragmentSpecProto fragmentSpec, Token<JobTokenIdentifier> appToken)
-          throws IOException {
+      String user, SignableVertexSpec vertex, Token<JobTokenIdentifier> appToken,
+      String fragmentIdString) throws IOException {
     ReadWriteLock dagLock = getDagLock(queryIdentifier);
     dagLock.readLock().lock();
     try {
@@ -166,7 +157,8 @@ public class QueryTracker extends AbstractService {
           .registerDag(appIdString, dagIdentifier, appToken,
               user, queryInfo.getLocalDirs());
 
-      return queryInfo.registerFragment(vertexName, fragmentNumber, attemptNumber, fragmentSpec);
+      return queryInfo.registerFragment(
+          vertexName, fragmentNumber, attemptNumber, vertex, fragmentIdString);
     } finally {
       dagLock.readLock().unlock();
     }

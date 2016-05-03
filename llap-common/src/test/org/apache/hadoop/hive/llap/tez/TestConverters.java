@@ -23,8 +23,8 @@ import java.util.List;
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EntityDescriptorProto;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UserPayloadProto;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.tez.dag.api.InputDescriptor;
@@ -77,28 +77,24 @@ public class TestConverters {
         new TaskSpec(tezTaskAttemptId, "dagName", "vertexName", 10, processorDescriptor,
             inputSpecList, outputSpecList, null);
 
+    SignableVertexSpec vertexProto = Converters.convertTaskSpecToProto(taskSpec, 0, "", null, "");
 
-    FragmentSpecProto fragmentSpecProto = Converters.convertTaskSpecToProto(taskSpec);
-
-
-    assertEquals("dagName", fragmentSpecProto.getDagName());
-    assertEquals("vertexName", fragmentSpecProto.getVertexName());
-    assertEquals(tezTaskAttemptId.toString(), fragmentSpecProto.getFragmentIdentifierString());
-    assertEquals(tezDagId.getId(), fragmentSpecProto.getDagId());
-    assertEquals(tezTaskAttemptId.getId(), fragmentSpecProto.getAttemptNumber());
-    assertEquals(tezTaskId.getId(), fragmentSpecProto.getFragmentNumber());
+    assertEquals("dagName", vertexProto.getDagName());
+    assertEquals("vertexName", vertexProto.getVertexName());
+    assertEquals(appId.toString(), vertexProto.getVertexIdentifier().getApplicationIdString());
+    assertEquals(tezDagId.getId(), vertexProto.getVertexIdentifier().getDagId());
     assertEquals(processorDescriptor.getClassName(),
-        fragmentSpecProto.getProcessorDescriptor().getClassName());
+        vertexProto.getProcessorDescriptor().getClassName());
     assertEquals(processorDescriptor.getUserPayload().getPayload(),
-        fragmentSpecProto.getProcessorDescriptor().getUserPayload().getUserPayload()
+        vertexProto.getProcessorDescriptor().getUserPayload().getUserPayload()
             .asReadOnlyByteBuffer());
-    assertEquals(2, fragmentSpecProto.getInputSpecsCount());
-    assertEquals(2, fragmentSpecProto.getOutputSpecsCount());
+    assertEquals(2, vertexProto.getInputSpecsCount());
+    assertEquals(2, vertexProto.getOutputSpecsCount());
 
-    verifyInputSpecAndProto(inputSpec1, fragmentSpecProto.getInputSpecs(0));
-    verifyInputSpecAndProto(inputSpec2, fragmentSpecProto.getInputSpecs(1));
-    verifyOutputSpecAndProto(outputSpec1, fragmentSpecProto.getOutputSpecs(0));
-    verifyOutputSpecAndProto(outputSpec2, fragmentSpecProto.getOutputSpecs(1));
+    verifyInputSpecAndProto(inputSpec1, vertexProto.getInputSpecs(0));
+    verifyInputSpecAndProto(inputSpec2, vertexProto.getInputSpecs(1));
+    verifyOutputSpecAndProto(outputSpec1, vertexProto.getOutputSpecs(0));
+    verifyOutputSpecAndProto(outputSpec2, vertexProto.getOutputSpecs(1));
 
   }
 
@@ -120,11 +116,10 @@ public class TestConverters {
     TezTaskID tezTaskId = TezTaskID.getInstance(tezVertexId, 500);
     TezTaskAttemptID tezTaskAttemptId = TezTaskAttemptID.getInstance(tezTaskId, 600);
 
-    FragmentSpecProto.Builder builder = FragmentSpecProto.newBuilder();
-    builder.setFragmentIdentifierString(tezTaskAttemptId.toString());
+    SignableVertexSpec.Builder builder = SignableVertexSpec.newBuilder();
+    builder.setVertexIdentifier(Converters.createVertexIdentifier(tezTaskAttemptId, 0));
     builder.setDagName("dagName");
     builder.setVertexName("vertexName");
-    builder.setDagId(tezDagId.getId());
     builder.setProcessorDescriptor(
         EntityDescriptorProto.newBuilder().setClassName("fakeProcessorName").setUserPayload(
             UserPayloadProto.newBuilder().setUserPayload(ByteString.copyFrom(procBb))));
@@ -145,9 +140,9 @@ public class TestConverters {
             EntityDescriptorProto.newBuilder().setClassName("outputClassName").setUserPayload(
                 UserPayloadProto.newBuilder().setUserPayload(ByteString.copyFrom(output1Bb)))));
 
-    FragmentSpecProto fragmentSpecProto = builder.build();
+    SignableVertexSpec vertexProto = builder.build();
 
-    TaskSpec taskSpec = Converters.getTaskSpecfromProto(fragmentSpecProto);
+    TaskSpec taskSpec = Converters.getTaskSpecfromProto(vertexProto, 0, 0, null);
 
     assertEquals("dagName", taskSpec.getDAGName());
     assertEquals("vertexName", taskSpec.getVertexName());
@@ -160,12 +155,10 @@ public class TestConverters {
     assertEquals(2, taskSpec.getInputs().size());
     assertEquals(2, taskSpec.getOutputs().size());
 
-    verifyInputSpecAndProto(taskSpec.getInputs().get(0), fragmentSpecProto.getInputSpecs(0));
-    verifyInputSpecAndProto(taskSpec.getInputs().get(1), fragmentSpecProto.getInputSpecs(1));
-    verifyOutputSpecAndProto(taskSpec.getOutputs().get(0), fragmentSpecProto.getOutputSpecs(0));
-    verifyOutputSpecAndProto(taskSpec.getOutputs().get(1), fragmentSpecProto.getOutputSpecs(1));
-
-
+    verifyInputSpecAndProto(taskSpec.getInputs().get(0), vertexProto.getInputSpecs(0));
+    verifyInputSpecAndProto(taskSpec.getInputs().get(1), vertexProto.getInputSpecs(1));
+    verifyOutputSpecAndProto(taskSpec.getOutputs().get(0), vertexProto.getOutputSpecs(0));
+    verifyOutputSpecAndProto(taskSpec.getOutputs().get(1), vertexProto.getOutputSpecs(1));
   }
 
   private void verifyInputSpecAndProto(InputSpec inputSpec,

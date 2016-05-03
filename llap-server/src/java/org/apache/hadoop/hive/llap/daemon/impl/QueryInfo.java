@@ -35,7 +35,7 @@ import com.google.common.collect.Multimap;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateProto;
 
 public class QueryInfo {
@@ -92,9 +92,10 @@ public class QueryInfo {
     return sourceStateMap;
   }
 
-  public QueryFragmentInfo registerFragment(String vertexName, int fragmentNumber, int attemptNumber, FragmentSpecProto fragmentSpec) {
-    QueryFragmentInfo fragmentInfo = new QueryFragmentInfo(this, vertexName, fragmentNumber, attemptNumber,
-        fragmentSpec);
+  public QueryFragmentInfo registerFragment(String vertexName, int fragmentNumber,
+      int attemptNumber, SignableVertexSpec vertexSpec, String fragmentIdString) {
+    QueryFragmentInfo fragmentInfo = new QueryFragmentInfo(
+        this, vertexName, fragmentNumber, attemptNumber, vertexSpec, fragmentIdString);
     knownFragments.add(fragmentInfo);
     return fragmentInfo;
   }
