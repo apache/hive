@@ -46,6 +46,8 @@ insert overwrite table alltypes_orc select * from alltypes;
 
 select * from alltypes_orc;
 
+SET hive.exec.schema.evolution=true;
+
 alter table alltypes_orc change si si int;
 select * from alltypes_orc;
 
@@ -58,6 +60,8 @@ set hive.fetch.task.conversion=none;
 
 explain select ti, si, i, bi from alltypes_orc;
 select ti, si, i, bi from alltypes_orc;
+
+SET hive.exec.schema.evolution=false;
 
 set hive.exec.dynamic.partition.mode=nonstrict;
 create table src_part_orc (key int, value string) partitioned by (ds string) stored as orc;

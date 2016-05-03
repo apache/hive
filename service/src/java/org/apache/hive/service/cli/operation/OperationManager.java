@@ -90,12 +90,10 @@ public class OperationManager extends AbstractService {
   @Override
   public synchronized void start() {
     super.start();
-    // TODO
   }
 
   @Override
   public synchronized void stop() {
-    // TODO
     super.stop();
   }
 
@@ -111,10 +109,11 @@ public class OperationManager extends AbstractService {
   }
 
   public ExecuteStatementOperation newExecuteStatementOperation(HiveSession parentSession,
-      String statement, Map<String, String> confOverlay, boolean runAsync)
-          throws HiveSQLException {
-    ExecuteStatementOperation executeStatementOperation = ExecuteStatementOperation
-        .newExecuteStatementOperation(parentSession, statement, confOverlay, runAsync);
+      String statement, Map<String, String> confOverlay, boolean runAsync, long queryTimeout)
+      throws HiveSQLException {
+    ExecuteStatementOperation executeStatementOperation =
+        ExecuteStatementOperation.newExecuteStatementOperation(parentSession, statement,
+            confOverlay, runAsync, queryTimeout);
     addOperation(executeStatementOperation);
     return executeStatementOperation;
   }
@@ -250,20 +249,20 @@ public class OperationManager extends AbstractService {
     return getOperation(opHandle).getStatus();
   }
 
+  /**
+   * Cancel the running operation unless it is already in a terminal state
+   * @param opHandle
+   * @throws HiveSQLException
+   */
   public void cancelOperation(OperationHandle opHandle) throws HiveSQLException {
     Operation operation = getOperation(opHandle);
     OperationState opState = operation.getStatus().getState();
-    if (opState == OperationState.CANCELED ||
-        opState == OperationState.CLOSED ||
-        opState == OperationState.FINISHED ||
-        opState == OperationState.ERROR ||
-        opState == OperationState.UNKNOWN) {
+    if (opState.isTerminal()) {
       // Cancel should be a no-op in either cases
       LOG.debug(opHandle + ": Operation is already aborted in state - " + opState);
-    }
-    else {
+    } else {
       LOG.debug(opHandle + ": Attempting to cancel from state - " + opState);
-      operation.cancel();
+      operation.cancel(OperationState.CANCELED);
     }
   }
 

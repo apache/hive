@@ -1,4 +1,6 @@
 set hive.fetch.task.conversion=none;
+SET hive.exec.schema.evolution=true;
+
 create table src_orc (key smallint, val string) stored as orc;
 create table src_orc2 (key smallint, val string) stored as orc;
 

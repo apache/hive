@@ -373,20 +373,10 @@ public abstract class HadoopShimsSecure implements HadoopShims {
   abstract public long getDefaultBlockSize(FileSystem fs, Path path);
 
   @Override
-  abstract public boolean moveToAppropriateTrash(FileSystem fs, Path path, Configuration conf)
-      throws IOException;
-
-  @Override
   abstract public FileSystem createProxyFileSystem(FileSystem fs, URI uri);
 
   @Override
   abstract public FileSystem getNonCachedFileSystem(URI uri, Configuration conf) throws IOException;
-
-  protected void run(FsShell shell, String[] command) throws Exception {
-    LOG.debug(ArrayUtils.toString(command));
-    int retval = shell.run(command);
-    LOG.debug("Return value is :" + retval);
-  }
 
   private static String[] dedup(String[] locations) throws IOException {
     Set<String> dedup = new HashSet<String>();

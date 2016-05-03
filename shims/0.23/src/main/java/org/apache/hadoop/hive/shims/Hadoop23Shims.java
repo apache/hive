@@ -47,7 +47,6 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
@@ -55,10 +54,6 @@ import org.apache.hadoop.fs.ProxyFileSystem;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.TrashPolicy;
-import org.apache.hadoop.fs.permission.AclEntry;
-import org.apache.hadoop.fs.permission.AclEntryScope;
-import org.apache.hadoop.fs.permission.AclEntryType;
-import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSClient;
@@ -100,11 +95,6 @@ import org.apache.hadoop.tools.DistCpOptions.FileAttribute;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.tez.test.MiniTezCluster;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 
 /**
  * Implemention of shims against Hadoop 0.23.0.
@@ -257,10 +247,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return conf.get("yarn.resourcemanager.webapp.address");
   }
 
-  protected boolean isExtendedAclEnabled(Configuration conf) {
-    return Objects.equal(conf.get("dfs.namenode.acls.enabled"), "true");
-  }
-
   @Override
   public long getDefaultBlockSize(FileSystem fs, Path path) {
     return fs.getDefaultBlockSize(path);
@@ -269,12 +255,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public short getDefaultReplication(FileSystem fs, Path path) {
     return fs.getDefaultReplication(path);
-  }
-
-  @Override
-  public boolean moveToAppropriateTrash(FileSystem fs, Path path, Configuration conf)
-          throws IOException {
-    return Trash.moveToAppropriateTrash(fs, path, conf);
   }
 
   @Override
@@ -806,134 +786,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public void hflush(FSDataOutputStream stream) throws IOException {
     stream.hflush();
-  }
-
-  @Override
-  public HdfsFileStatus getFullFileStatus(Configuration conf, FileSystem fs,
-      Path file) throws IOException {
-    FileStatus fileStatus = fs.getFileStatus(file);
-    AclStatus aclStatus = null;
-    if (isExtendedAclEnabled(conf)) {
-      //Attempt extended Acl operations only if its enabled, but don't fail the operation regardless.
-      try {
-        aclStatus = fs.getAclStatus(file);
-      } catch (Exception e) {
-        LOG.info("Skipping ACL inheritance: File system for path " + file + " " +
-                "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
-        LOG.debug("The details are: " + e, e);
-      }
-    }
-    return new Hadoop23FileStatus(fileStatus, aclStatus);
-  }
-
-  @Override
-  public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus,
-    FileSystem fs, Path target) throws IOException {
-    String group = sourceStatus.getFileStatus().getGroup();
-    //use FsShell to change group, permissions, and extended ACL's recursively
-    try {
-      FsShell fsShell = new FsShell();
-      fsShell.setConf(conf);
-      //If there is no group of a file, no need to call chgrp
-      if (group != null && !group.isEmpty()) {
-        run(fsShell, new String[]{"-chgrp", "-R", group, target.toString()});
-      }
-
-      if (isExtendedAclEnabled(conf)) {
-        //Attempt extended Acl operations only if its enabled, 8791but don't fail the operation regardless.
-        try {
-          AclStatus aclStatus = ((Hadoop23FileStatus) sourceStatus).getAclStatus();
-          if (aclStatus != null) {
-            List<AclEntry> aclEntries = aclStatus.getEntries();
-            removeBaseAclEntries(aclEntries);
-
-            //the ACL api's also expect the tradition user/group/other permission in the form of ACL
-            FsPermission sourcePerm = sourceStatus.getFileStatus().getPermission();
-            aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, sourcePerm.getUserAction()));
-            aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, sourcePerm.getGroupAction()));
-            aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, sourcePerm.getOtherAction()));
-
-            //construct the -setfacl command
-            String aclEntry = Joiner.on(",").join(aclStatus.getEntries());
-            run(fsShell, new String[]{"-setfacl", "-R", "--set", aclEntry, target.toString()});
-          }
-        } catch (Exception e) {
-          LOG.info("Skipping ACL inheritance: File system for path " + target + " " +
-                  "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
-          LOG.debug("The details are: " + e, e);
-        }
-      } else {
-        String permission = Integer.toString(sourceStatus.getFileStatus().getPermission().toShort(), 8);
-        run(fsShell, new String[]{"-chmod", "-R", permission, target.toString()});
-      }
-    } catch (Exception e) {
-      throw new IOException("Unable to set permissions of " + target, e);
-    }
-    try {
-      if (LOG.isDebugEnabled()) {  //some trace logging
-        getFullFileStatus(conf, fs, target).debugLog();
-      }
-    } catch (Exception e) {
-      //ignore.
-    }
-  }
-
-  public class Hadoop23FileStatus implements HdfsFileStatus {
-    private final FileStatus fileStatus;
-    private final AclStatus aclStatus;
-    public Hadoop23FileStatus(FileStatus fileStatus, AclStatus aclStatus) {
-      this.fileStatus = fileStatus;
-      this.aclStatus = aclStatus;
-    }
-    @Override
-    public FileStatus getFileStatus() {
-      return fileStatus;
-    }
-    public AclStatus getAclStatus() {
-      return aclStatus;
-    }
-    @Override
-    public void debugLog() {
-      if (fileStatus != null) {
-        LOG.debug(fileStatus.toString());
-      }
-      if (aclStatus != null) {
-        LOG.debug(aclStatus.toString());
-      }
-    }
-  }
-
-  /**
-   * Create a new AclEntry with scope, type and permission (no name).
-   *
-   * @param scope
-   *          AclEntryScope scope of the ACL entry
-   * @param type
-   *          AclEntryType ACL entry type
-   * @param permission
-   *          FsAction set of permissions in the ACL entry
-   * @return AclEntry new AclEntry
-   */
-  private AclEntry newAclEntry(AclEntryScope scope, AclEntryType type,
-      FsAction permission) {
-    return new AclEntry.Builder().setScope(scope).setType(type)
-        .setPermission(permission).build();
-  }
-
-  /**
-   * Removes basic permission acls (unamed acls) from the list of acl entries
-   * @param entries acl entries to remove from.
-   */
-  private void removeBaseAclEntries(List<AclEntry> entries) {
-    Iterables.removeIf(entries, new Predicate<AclEntry>() {
-      @Override
-      public boolean apply(AclEntry input) {
-          if (input.getName() == null) {
-            return true;
-          }
-          return false;
-      }
-  });
   }
 
   class ProxyFileSystem23 extends ProxyFileSystem {

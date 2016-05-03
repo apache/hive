@@ -248,33 +248,55 @@ public class CLIService extends CompositeService implements ICLIService {
     return infoValue;
   }
 
-  /* (non-Javadoc)
-   * @see org.apache.hive.service.cli.ICLIService#executeStatement(org.apache.hive.service.cli.SessionHandle,
-   *  java.lang.String, java.util.Map)
+  /**
+   * Execute statement on the server. This is a blocking call.
    */
   @Override
   public OperationHandle executeStatement(SessionHandle sessionHandle, String statement,
-      Map<String, String> confOverlay)
-          throws HiveSQLException {
-    OperationHandle opHandle = sessionManager.getSession(sessionHandle)
-        .executeStatement(statement, confOverlay);
+      Map<String, String> confOverlay) throws HiveSQLException {
+    OperationHandle opHandle =
+        sessionManager.getSession(sessionHandle).executeStatement(statement, confOverlay);
     LOG.debug(sessionHandle + ": executeStatement()");
     return opHandle;
   }
 
-  /* (non-Javadoc)
-   * @see org.apache.hive.service.cli.ICLIService#executeStatementAsync(org.apache.hive.service.cli.SessionHandle,
-   *  java.lang.String, java.util.Map)
+  /**
+   * Execute statement on the server with a timeout. This is a blocking call.
+   */
+  @Override
+  public OperationHandle executeStatement(SessionHandle sessionHandle, String statement,
+      Map<String, String> confOverlay, long queryTimeout) throws HiveSQLException {
+    OperationHandle opHandle =
+        sessionManager.getSession(sessionHandle).executeStatement(statement, confOverlay,
+            queryTimeout);
+    LOG.debug(sessionHandle + ": executeStatement()");
+    return opHandle;
+  }
+
+  /**
+   * Execute statement asynchronously on the server. This is a non-blocking call
    */
   @Override
   public OperationHandle executeStatementAsync(SessionHandle sessionHandle, String statement,
       Map<String, String> confOverlay) throws HiveSQLException {
-    OperationHandle opHandle = sessionManager.getSession(sessionHandle)
-        .executeStatementAsync(statement, confOverlay);
+    OperationHandle opHandle =
+        sessionManager.getSession(sessionHandle).executeStatementAsync(statement, confOverlay);
     LOG.debug(sessionHandle + ": executeStatementAsync()");
     return opHandle;
   }
 
+  /**
+   * Execute statement asynchronously on the server with a timeout. This is a non-blocking call
+   */
+  @Override
+  public OperationHandle executeStatementAsync(SessionHandle sessionHandle, String statement,
+      Map<String, String> confOverlay, long queryTimeout) throws HiveSQLException {
+    OperationHandle opHandle =
+        sessionManager.getSession(sessionHandle).executeStatementAsync(statement, confOverlay,
+            queryTimeout);
+    LOG.debug(sessionHandle + ": executeStatementAsync()");
+    return opHandle;
+  }
 
   /* (non-Javadoc)
    * @see org.apache.hive.service.cli.ICLIService#getTypeInfo(org.apache.hive.service.cli.SessionHandle)

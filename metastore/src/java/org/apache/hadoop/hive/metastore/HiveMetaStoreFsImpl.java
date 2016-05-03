@@ -25,10 +25,8 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.ShimLoader;
 
 public class HiveMetaStoreFsImpl implements MetaStoreFS {
 
@@ -38,19 +36,18 @@ public class HiveMetaStoreFsImpl implements MetaStoreFS {
   @Override
   public boolean deleteDir(FileSystem fs, Path f, boolean recursive,
       boolean ifPurge, Configuration conf) throws MetaException {
-    LOG.info("deleting  " + f);
-    HadoopShims hadoopShim = ShimLoader.getHadoopShims();
+    LOG.debug("deleting  " + f);
 
     try {
       if (ifPurge) {
         LOG.info("Not moving "+ f +" to trash");
-      } else if (hadoopShim.moveToAppropriateTrash(fs, f, conf)) {
+      } else if (Trash.moveToAppropriateTrash(fs, f, conf)) {
         LOG.info("Moved to trash: " + f);
         return true;
       }
 
       if (fs.delete(f, true)) {
-        LOG.info("Deleted the diretory " + f);
+        LOG.debug("Deleted the diretory " + f);
         return true;
       }
 

@@ -19,43 +19,155 @@
 package org.apache.hadoop.hive.io;
 
 import java.io.IOException;
+import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.AclEntry;
+import org.apache.hadoop.fs.permission.AclEntryScope;
+import org.apache.hadoop.fs.permission.AclEntryType;
+import org.apache.hadoop.fs.permission.AclStatus;
+import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 public class HdfsUtils {
-  private static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
-  private static final Log LOG = LogFactory.getLog(HdfsUtils.class);
-
-  public static long getFileId(FileSystem fileSystem, Path path) throws IOException {
-    String pathStr = path.toUri().getPath();
-    if (fileSystem instanceof DistributedFileSystem) {
-      return SHIMS.getFileId(fileSystem, pathStr);
-    }
-    // If we are not on DFS, we just hash the file name + size and hope for the best.
-    // TODO: we assume it only happens in tests. Fix?
-    int nameHash = pathStr.hashCode();
-    long fileSize = fileSystem.getFileStatus(path).getLen();
-    long id = ((fileSize ^ (fileSize >>> 32)) << 32) | ((long)nameHash & 0xffffffffL);
-    LOG.warn("Cannot get unique file ID from "
-        + fileSystem.getClass().getSimpleName() + "; using " + id + "(" + pathStr
-        + "," + nameHash + "," + fileSize + ")");
-    return id;
-  }
 
   // TODO: this relies on HDFS not changing the format; we assume if we could get inode ID, this
   //       is still going to work. Otherwise, file IDs can be turned off. Later, we should use
   //       as public utility method in HDFS to obtain the inode-based path.
   private static String HDFS_ID_PATH_PREFIX = "/.reserved/.inodes/";
+  static Logger LOG = LoggerFactory.getLogger("shims.HdfsUtils");
 
   public static Path getFileIdPath(
       FileSystem fileSystem, Path path, long fileId) {
     return (fileSystem instanceof DistributedFileSystem)
         ? new Path(HDFS_ID_PATH_PREFIX + fileId) : path;
   }
+
+  public static void setFullFileStatus(Configuration conf, HdfsUtils.HadoopFileStatus sourceStatus,
+      FileSystem fs, Path target) throws IOException {
+      FileStatus fStatus= sourceStatus.getFileStatus();
+      String group = fStatus.getGroup();
+      LOG.trace(sourceStatus.getFileStatus().toString());
+      //use FsShell to change group, permissions, and extended ACL's recursively
+      FsShell fsShell = new FsShell();
+      fsShell.setConf(conf);
+
+      try {
+        //If there is no group of a file, no need to call chgrp
+        if (group != null && !group.isEmpty()) {
+          run(fsShell, new String[]{"-chgrp", "-R", group, target.toString()});
+        }
+
+        if (Objects.equal(conf.get("dfs.namenode.acls.enabled"), "true")) {
+          //Attempt extended Acl operations only if its enabled, 8791but don't fail the operation regardless.
+          try {
+            AclStatus aclStatus =  sourceStatus.getAclStatus();
+            if (aclStatus != null) {
+              LOG.trace(aclStatus.toString());
+              List<AclEntry> aclEntries = aclStatus.getEntries();
+              removeBaseAclEntries(aclEntries);
+
+              //the ACL api's also expect the tradition user/group/other permission in the form of ACL
+              FsPermission sourcePerm = fStatus.getPermission();
+              aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, sourcePerm.getUserAction()));
+              aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, sourcePerm.getGroupAction()));
+              aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, sourcePerm.getOtherAction()));
+
+              //construct the -setfacl command
+              String aclEntry = Joiner.on(",").join(aclStatus.getEntries());
+              run(fsShell, new String[]{"-setfacl", "-R", "--set", aclEntry, target.toString()});
+            }
+          } catch (Exception e) {
+            LOG.info("Skipping ACL inheritance: File system for path " + target + " " +
+                    "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
+            LOG.debug("The details are: " + e, e);
+          }
+        } else {
+          String permission = Integer.toString(fStatus.getPermission().toShort(), 8);
+          run(fsShell, new String[]{"-chmod", "-R", permission, target.toString()});
+        }
+      } catch (Exception e) {
+        throw new IOException("Unable to set permissions of " + target, e);
+      }
+    }
+
+  /**
+   * Create a new AclEntry with scope, type and permission (no name).
+   *
+   * @param scope
+   *          AclEntryScope scope of the ACL entry
+   * @param type
+   *          AclEntryType ACL entry type
+   * @param permission
+   *          FsAction set of permissions in the ACL entry
+   * @return AclEntry new AclEntry
+   */
+  private static AclEntry newAclEntry(AclEntryScope scope, AclEntryType type,
+      FsAction permission) {
+    return new AclEntry.Builder().setScope(scope).setType(type)
+        .setPermission(permission).build();
+  }
+  /**
+   * Removes basic permission acls (unamed acls) from the list of acl entries
+   * @param entries acl entries to remove from.
+   */
+  private static void removeBaseAclEntries(List<AclEntry> entries) {
+    Iterables.removeIf(entries, new Predicate<AclEntry>() {
+      @Override
+      public boolean apply(AclEntry input) {
+        if (input.getName() == null) {
+          return true;
+        }
+        return false;
+      }
+    });
+  }
+
+  private static void run(FsShell shell, String[] command) throws Exception {
+    LOG.debug(ArrayUtils.toString(command));
+    int retval = shell.run(command);
+    LOG.debug("Return value is :" + retval);
+  }
+public static class HadoopFileStatus {
+
+  private final FileStatus fileStatus;
+  private final AclStatus aclStatus;
+
+  public HadoopFileStatus(Configuration conf, FileSystem fs, Path file) throws IOException {
+
+    FileStatus fileStatus = fs.getFileStatus(file);
+    AclStatus aclStatus = null;
+    if (Objects.equal(conf.get("dfs.namenode.acls.enabled"), "true")) {
+      //Attempt extended Acl operations only if its enabled, but don't fail the operation regardless.
+      try {
+        aclStatus = fs.getAclStatus(file);
+      } catch (Exception e) {
+        LOG.info("Skipping ACL inheritance: File system for path " + file + " " +
+                "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
+        LOG.debug("The details are: " + e, e);
+      }
+    }this.fileStatus = fileStatus;
+    this.aclStatus = aclStatus;
+  }
+
+  public FileStatus getFileStatus() {
+    return fileStatus;
+  }
+  public AclStatus getAclStatus() {
+    return aclStatus;
+  }
+}
 }

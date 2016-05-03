@@ -84,7 +84,8 @@ struct TOperationState {
     CLOSED_STATE = 4,
     ERROR_STATE = 5,
     UKNOWN_STATE = 6,
-    PENDING_STATE = 7
+    PENDING_STATE = 7,
+    TIMEDOUT_STATE = 8
   };
 };
 
@@ -2501,9 +2502,10 @@ inline std::ostream& operator<<(std::ostream& out, const TGetInfoResp& obj)
 }
 
 typedef struct _TExecuteStatementReq__isset {
-  _TExecuteStatementReq__isset() : confOverlay(false), runAsync(true) {}
+  _TExecuteStatementReq__isset() : confOverlay(false), runAsync(true), queryTimeout(true) {}
   bool confOverlay :1;
   bool runAsync :1;
+  bool queryTimeout :1;
 } _TExecuteStatementReq__isset;
 
 class TExecuteStatementReq {
@@ -2511,7 +2513,7 @@ class TExecuteStatementReq {
 
   TExecuteStatementReq(const TExecuteStatementReq&);
   TExecuteStatementReq& operator=(const TExecuteStatementReq&);
-  TExecuteStatementReq() : statement(), runAsync(false) {
+  TExecuteStatementReq() : statement(), runAsync(false), queryTimeout(0LL) {
   }
 
   virtual ~TExecuteStatementReq() throw();
@@ -2519,6 +2521,7 @@ class TExecuteStatementReq {
   std::string statement;
   std::map<std::string, std::string>  confOverlay;
   bool runAsync;
+  int64_t queryTimeout;
 
   _TExecuteStatementReq__isset __isset;
 
@@ -2529,6 +2532,8 @@ class TExecuteStatementReq {
   void __set_confOverlay(const std::map<std::string, std::string> & val);
 
   void __set_runAsync(const bool val);
+
+  void __set_queryTimeout(const int64_t val);
 
   bool operator == (const TExecuteStatementReq & rhs) const
   {
@@ -2543,6 +2548,10 @@ class TExecuteStatementReq {
     if (__isset.runAsync != rhs.__isset.runAsync)
       return false;
     else if (__isset.runAsync && !(runAsync == rhs.runAsync))
+      return false;
+    if (__isset.queryTimeout != rhs.__isset.queryTimeout)
+      return false;
+    else if (__isset.queryTimeout && !(queryTimeout == rhs.queryTimeout))
       return false;
     return true;
   }

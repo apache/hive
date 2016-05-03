@@ -787,7 +787,7 @@ public class VectorizationContext {
                 || arg0Type(expr).equals("float"))) {
       return true;
     } else if (gudf instanceof GenericUDFBetween && (mode == Mode.PROJECTION)) {
-      // between has 4 args here, but can be vectorized like this 
+      // between has 4 args here, but can be vectorized like this
       return true;
     }
     return false;

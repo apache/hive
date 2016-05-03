@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -216,9 +217,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatus;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.tools.HadoopArchives;
@@ -2394,7 +2392,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Write a list of the user defined functions to a file.
-   * @param db 
+   * @param db
    *
    * @param showFuncs
    *          are the functions we're interested in.
@@ -2447,7 +2445,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Write a list of the current locks to a file.
-   * @param db 
+   * @param db
    *
    * @param showLocks
    *          the locks we're interested in.
@@ -2725,7 +2723,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
    /**
    * Lock the table/partition specified
-   * @param db 
+   * @param db
    *
    * @param lockTbl
    *          the table/partition to be locked along with the mode
@@ -2771,7 +2769,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Unlock the table/partition specified
-   * @param db 
+   * @param db
    *
    * @param unlockTbl
    *          the table/partition to be unlocked
@@ -2787,7 +2785,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Shows a description of a function.
-   * @param db 
+   * @param db
    *
    * @param descFunc
    *          is the function we are describing
@@ -3365,12 +3363,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             && !oldColName.equalsIgnoreCase(oldName)) {
           throw new HiveException(ErrorMsg.DUPLICATE_COLUMN_NAMES, newName);
         } else if (oldColName.equalsIgnoreCase(oldName)) {
-          // if orc table, restrict changing column types. Only integer type promotion is supported.
-          // smallint -> int -> bigint
-          if (isOrcSchemaEvolution && !isSupportedTypeChange(col.getType(), type)) {
-            throw new HiveException(ErrorMsg.CANNOT_CHANGE_COLUMN_TYPE, col.getType(), type,
-                newName);
-          }
           col.setName(newName);
           if (type != null && !type.trim().equals("")) {
             col.setType(type);
@@ -3436,15 +3428,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
         if (replaceCols.size() < existingCols.size()) {
           throw new HiveException(ErrorMsg.REPLACE_CANNOT_DROP_COLUMNS, alterTbl.getOldName());
-        }
-
-        for (int i = 0; i < existingCols.size(); i++) {
-          final String currentColType = existingCols.get(i).getType().toLowerCase().trim();
-          final String newColType = replaceCols.get(i).getType().toLowerCase().trim();
-          if (!isSupportedTypeChange(currentColType, newColType)) {
-            throw new HiveException(ErrorMsg.REPLACE_UNSUPPORTED_TYPE_CONVERSION, currentColType,
-                newColType, replaceCols.get(i).getName());
-          }
         }
       }
       sd.setCols(alterTbl.getNewCols());
@@ -3611,44 +3594,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     return 0;
-  }
-
-  // don't change the order of enums as ordinal values are used to check for valid type promotions
-  enum PromotableTypes {
-    SMALLINT,
-    INT,
-    BIGINT;
-
-    static List<String> types() {
-      return ImmutableList.of(SMALLINT.toString().toLowerCase(),
-          INT.toString().toLowerCase(), BIGINT.toString().toLowerCase());
-    }
-  }
-
-  // for ORC, only supported type promotions are smallint -> int -> bigint. No other
-  // type promotions are supported at this point
-  private boolean isSupportedTypeChange(String currentType, String newType) {
-    if (currentType != null && newType != null) {
-      currentType = currentType.toLowerCase().trim();
-      newType = newType.toLowerCase().trim();
-      // no type change
-      if (currentType.equals(newType)) {
-        return true;
-      }
-      if (PromotableTypes.types().contains(currentType)
-          && PromotableTypes.types().contains(newType)) {
-        PromotableTypes pCurrentType = PromotableTypes.valueOf(currentType.toUpperCase());
-        PromotableTypes pNewType = PromotableTypes.valueOf(newType.toUpperCase());
-        if (pNewType.ordinal() >= pCurrentType.ordinal()) {
-          return true;
-        } else {
-          return false;
-        }
-      } else {
-        return false;
-      }
-    }
-    return true;
   }
 
   /**
@@ -4190,15 +4135,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     try {
       // this is not transactional
-      HadoopShims shim = ShimLoader.getHadoopShims();
       for (Path location : getLocations(db, table, partSpec)) {
         FileSystem fs = location.getFileSystem(conf);
-        
-        HdfsFileStatus fullFileStatus = shim.getFullFileStatus(conf, fs, location);
+        HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(conf, fs, location);
         fs.delete(location, true);
         fs.mkdirs(location);
         try {
-          shim.setFullFileStatus(conf, fullFileStatus, fs, location);
+          HdfsUtils.setFullFileStatus(conf, status, fs, location);
         } catch (Exception e) {
           LOG.warn("Error setting permissions of " + location, e);
         }

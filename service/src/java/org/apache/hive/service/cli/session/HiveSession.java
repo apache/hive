@@ -56,8 +56,18 @@ public interface HiveSession extends HiveSessionBase {
    * @return
    * @throws HiveSQLException
    */
-  OperationHandle executeStatement(String statement,
-      Map<String, String> confOverlay) throws HiveSQLException;
+  OperationHandle executeStatement(String statement, Map<String, String> confOverlay) throws HiveSQLException;
+
+  /**
+   * execute operation handler
+   * @param statement
+   * @param confOverlay
+   * @param queryTimeout
+   * @return
+   * @throws HiveSQLException
+   */
+  OperationHandle executeStatement(String statement, Map<String, String> confOverlay,
+      long queryTimeout) throws HiveSQLException;
 
   /**
    * execute operation handler
@@ -66,8 +76,18 @@ public interface HiveSession extends HiveSessionBase {
    * @return
    * @throws HiveSQLException
    */
-  OperationHandle executeStatementAsync(String statement,
-      Map<String, String> confOverlay) throws HiveSQLException;
+  OperationHandle executeStatementAsync(String statement, Map<String, String> confOverlay) throws HiveSQLException;
+
+  /**
+   * execute operation handler
+   * @param statement
+   * @param confOverlay
+   * @param queryTimeout
+   * @return
+   * @throws HiveSQLException
+   */
+  OperationHandle executeStatementAsync(String statement, Map<String, String> confOverlay,
+      long queryTimeout) throws HiveSQLException;
 
   /**
    * getTypeInfo operation handler

@@ -42,6 +42,7 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
   private static final org.apache.thrift.protocol.TField STATEMENT_FIELD_DESC = new org.apache.thrift.protocol.TField("statement", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField CONF_OVERLAY_FIELD_DESC = new org.apache.thrift.protocol.TField("confOverlay", org.apache.thrift.protocol.TType.MAP, (short)3);
   private static final org.apache.thrift.protocol.TField RUN_ASYNC_FIELD_DESC = new org.apache.thrift.protocol.TField("runAsync", org.apache.thrift.protocol.TType.BOOL, (short)4);
+  private static final org.apache.thrift.protocol.TField QUERY_TIMEOUT_FIELD_DESC = new org.apache.thrift.protocol.TField("queryTimeout", org.apache.thrift.protocol.TType.I64, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -53,13 +54,15 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
   private String statement; // required
   private Map<String,String> confOverlay; // optional
   private boolean runAsync; // optional
+  private long queryTimeout; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     SESSION_HANDLE((short)1, "sessionHandle"),
     STATEMENT((short)2, "statement"),
     CONF_OVERLAY((short)3, "confOverlay"),
-    RUN_ASYNC((short)4, "runAsync");
+    RUN_ASYNC((short)4, "runAsync"),
+    QUERY_TIMEOUT((short)5, "queryTimeout");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -82,6 +85,8 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
           return CONF_OVERLAY;
         case 4: // RUN_ASYNC
           return RUN_ASYNC;
+        case 5: // QUERY_TIMEOUT
+          return QUERY_TIMEOUT;
         default:
           return null;
       }
@@ -123,8 +128,9 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
 
   // isset id assignments
   private static final int __RUNASYNC_ISSET_ID = 0;
+  private static final int __QUERYTIMEOUT_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.CONF_OVERLAY,_Fields.RUN_ASYNC};
+  private static final _Fields optionals[] = {_Fields.CONF_OVERLAY,_Fields.RUN_ASYNC,_Fields.QUERY_TIMEOUT};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -138,12 +144,16 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.RUN_ASYNC, new org.apache.thrift.meta_data.FieldMetaData("runAsync", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.QUERY_TIMEOUT, new org.apache.thrift.meta_data.FieldMetaData("queryTimeout", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TExecuteStatementReq.class, metaDataMap);
   }
 
   public TExecuteStatementReq() {
     this.runAsync = false;
+
+    this.queryTimeout = 0L;
 
   }
 
@@ -172,6 +182,7 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
       this.confOverlay = __this__confOverlay;
     }
     this.runAsync = other.runAsync;
+    this.queryTimeout = other.queryTimeout;
   }
 
   public TExecuteStatementReq deepCopy() {
@@ -184,6 +195,8 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
     this.statement = null;
     this.confOverlay = null;
     this.runAsync = false;
+
+    this.queryTimeout = 0L;
 
   }
 
@@ -289,6 +302,28 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __RUNASYNC_ISSET_ID, value);
   }
 
+  public long getQueryTimeout() {
+    return this.queryTimeout;
+  }
+
+  public void setQueryTimeout(long queryTimeout) {
+    this.queryTimeout = queryTimeout;
+    setQueryTimeoutIsSet(true);
+  }
+
+  public void unsetQueryTimeout() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __QUERYTIMEOUT_ISSET_ID);
+  }
+
+  /** Returns true if field queryTimeout is set (has been assigned a value) and false otherwise */
+  public boolean isSetQueryTimeout() {
+    return EncodingUtils.testBit(__isset_bitfield, __QUERYTIMEOUT_ISSET_ID);
+  }
+
+  public void setQueryTimeoutIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __QUERYTIMEOUT_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case SESSION_HANDLE:
@@ -323,6 +358,14 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
       }
       break;
 
+    case QUERY_TIMEOUT:
+      if (value == null) {
+        unsetQueryTimeout();
+      } else {
+        setQueryTimeout((Long)value);
+      }
+      break;
+
     }
   }
 
@@ -339,6 +382,9 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
 
     case RUN_ASYNC:
       return isRunAsync();
+
+    case QUERY_TIMEOUT:
+      return getQueryTimeout();
 
     }
     throw new IllegalStateException();
@@ -359,6 +405,8 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
       return isSetConfOverlay();
     case RUN_ASYNC:
       return isSetRunAsync();
+    case QUERY_TIMEOUT:
+      return isSetQueryTimeout();
     }
     throw new IllegalStateException();
   }
@@ -412,6 +460,15 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
         return false;
     }
 
+    boolean this_present_queryTimeout = true && this.isSetQueryTimeout();
+    boolean that_present_queryTimeout = true && that.isSetQueryTimeout();
+    if (this_present_queryTimeout || that_present_queryTimeout) {
+      if (!(this_present_queryTimeout && that_present_queryTimeout))
+        return false;
+      if (this.queryTimeout != that.queryTimeout)
+        return false;
+    }
+
     return true;
   }
 
@@ -438,6 +495,11 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
     list.add(present_runAsync);
     if (present_runAsync)
       list.add(runAsync);
+
+    boolean present_queryTimeout = true && (isSetQueryTimeout());
+    list.add(present_queryTimeout);
+    if (present_queryTimeout)
+      list.add(queryTimeout);
 
     return list.hashCode();
   }
@@ -486,6 +548,16 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
     }
     if (isSetRunAsync()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.runAsync, other.runAsync);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetQueryTimeout()).compareTo(other.isSetQueryTimeout());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetQueryTimeout()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.queryTimeout, other.queryTimeout);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -539,6 +611,12 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
       if (!first) sb.append(", ");
       sb.append("runAsync:");
       sb.append(this.runAsync);
+      first = false;
+    }
+    if (isSetQueryTimeout()) {
+      if (!first) sb.append(", ");
+      sb.append("queryTimeout:");
+      sb.append(this.queryTimeout);
       first = false;
     }
     sb.append(")");
@@ -642,6 +720,14 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // QUERY_TIMEOUT
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.queryTimeout = iprot.readI64();
+              struct.setQueryTimeoutIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -685,6 +771,11 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
         oprot.writeBool(struct.runAsync);
         oprot.writeFieldEnd();
       }
+      if (struct.isSetQueryTimeout()) {
+        oprot.writeFieldBegin(QUERY_TIMEOUT_FIELD_DESC);
+        oprot.writeI64(struct.queryTimeout);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -711,7 +802,10 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
       if (struct.isSetRunAsync()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetQueryTimeout()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetConfOverlay()) {
         {
           oprot.writeI32(struct.confOverlay.size());
@@ -725,6 +819,9 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
       if (struct.isSetRunAsync()) {
         oprot.writeBool(struct.runAsync);
       }
+      if (struct.isSetQueryTimeout()) {
+        oprot.writeI64(struct.queryTimeout);
+      }
     }
 
     @Override
@@ -735,7 +832,7 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
       struct.setSessionHandleIsSet(true);
       struct.statement = iprot.readString();
       struct.setStatementIsSet(true);
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
           org.apache.thrift.protocol.TMap _map168 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
@@ -754,6 +851,10 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
       if (incoming.get(1)) {
         struct.runAsync = iprot.readBool();
         struct.setRunAsyncIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.queryTimeout = iprot.readI64();
+        struct.setQueryTimeoutIsSet(true);
       }
     }
   }
