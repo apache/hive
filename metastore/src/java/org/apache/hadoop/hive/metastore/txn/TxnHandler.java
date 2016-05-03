@@ -89,6 +89,11 @@ import java.util.regex.Pattern;
  * If we ever decide to run remote Derby server, according to
  * https://db.apache.org/derby/docs/10.0/manuals/develop/develop78.html all transactions will be
  * seriazlied, so that would also work though has not been tested.
+ *
+ * General design note:
+ * It's imperative that any operation on a txn (e.g. commit), ensure (atomically) that this txn is
+ * still valid and active.  In the code this is usually achieved at the same time the txn record
+ * is locked for some operation.
  */
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
