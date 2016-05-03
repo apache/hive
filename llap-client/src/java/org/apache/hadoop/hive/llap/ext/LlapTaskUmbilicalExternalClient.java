@@ -123,12 +123,10 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
 
 
   /**
-   * Submit the work for actual execution. This should always have the usingTezAm flag disabled
+   * Submit the work for actual execution.
    * @param submitWorkRequestProto
    */
   public void submitWork(final SubmitWorkRequestProto submitWorkRequestProto, String llapHost, int llapPort, List<TezEvent> tezEvents) {
-    Preconditions.checkArgument(submitWorkRequestProto.getUsingTezAm() == false);
-
     // Register the pending events to be sent for this spec.
     String fragmentId = submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString();
     PendingEventData pendingEventData = new PendingEventData(
