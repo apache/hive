@@ -26,7 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLSocket;
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.Sasl;
 
@@ -217,7 +219,9 @@ public class HiveAuthFactory {
 
   public static TTransport getSSLSocket(String host, int port, int loginTimeout)
     throws TTransportException {
-    return TSSLTransportFactory.getClientSocket(host, port, loginTimeout);
+    // The underlying SSLSocket object is bound to host:port with the given SO_TIMEOUT
+    TSocket tSSLSocket = TSSLTransportFactory.getClientSocket(host, port, loginTimeout);
+    return getSSLSocketWithHttps(tSSLSocket);
   }
 
   public static TTransport getSSLSocket(String host, int port, int loginTimeout,
@@ -226,7 +230,20 @@ public class HiveAuthFactory {
       new TSSLTransportFactory.TSSLTransportParameters();
     params.setTrustStore(trustStorePath, trustStorePassWord);
     params.requireClientAuth(true);
-    return TSSLTransportFactory.getClientSocket(host, port, loginTimeout, params);
+    // The underlying SSLSocket object is bound to host:port with the given SO_TIMEOUT and
+    // SSLContext created with the given params
+    TSocket tSSLSocket = TSSLTransportFactory.getClientSocket(host, port, loginTimeout, params);
+    return getSSLSocketWithHttps(tSSLSocket);
+  }
+
+  // Using endpoint identification algorithm as HTTPS enables us to do
+  // CNAMEs/subjectAltName verification
+  private static TSocket getSSLSocketWithHttps(TSocket tSSLSocket) throws TTransportException {
+    SSLSocket sslSocket = (SSLSocket) tSSLSocket.getSocket();
+    SSLParameters sslParams = sslSocket.getSSLParameters();
+    sslParams.setEndpointIdentificationAlgorithm("HTTPS");
+    sslSocket.setSSLParameters(sslParams);
+    return new TSocket(sslSocket);
   }
 
   public static TServerSocket getServerSocket(String hiveHost, int portNum)

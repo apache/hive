@@ -126,7 +126,7 @@ public class TestJdbcWithSQLAuthorization {
     }
   }
 
-  private Connection getConnection(String userName) throws SQLException {
+  private Connection getConnection(String userName) throws Exception {
     return DriverManager.getConnection(miniHS2.getJdbcURL(), userName, "bar");
   }
 

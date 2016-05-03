@@ -84,11 +84,13 @@ import org.apache.http.client.ServiceUnavailableRetryStrategy;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.ssl.SSLContexts;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.THttpClient;
@@ -326,30 +328,29 @@ public class HiveConnection implements java.sql.Connection {
     if (isCookieEnabled) {
       // Create a http client with a retry mechanism when the server returns a status code of 401.
       httpClientBuilder =
-      HttpClients.custom().setServiceUnavailableRetryStrategy(
-        new  ServiceUnavailableRetryStrategy() {
+          HttpClients.custom().setServiceUnavailableRetryStrategy(
+              new ServiceUnavailableRetryStrategy() {
+                @Override
+                public boolean retryRequest(final HttpResponse response, final int executionCount,
+                    final HttpContext context) {
+                  int statusCode = response.getStatusLine().getStatusCode();
+                  boolean ret = statusCode == 401 && executionCount <= 1;
 
-      @Override
-      public boolean retryRequest(
-        final HttpResponse response,
-        final int executionCount,
-        final HttpContext context) {
-        int statusCode = response.getStatusLine().getStatusCode();
-        boolean ret = statusCode == 401 && executionCount <= 1;
+                  // Set the context attribute to true which will be interpreted by the request
+                  // interceptor
+                  if (ret) {
+                    context.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY,
+                        Utils.HIVE_SERVER2_RETRY_TRUE);
+                  }
+                  return ret;
+                }
 
-        // Set the context attribute to true which will be interpreted by the request interceptor
-        if (ret) {
-          context.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY, Utils.HIVE_SERVER2_RETRY_TRUE);
-        }
-        return ret;
-      }
-
-      @Override
-      public long getRetryInterval() {
-        // Immediate retry
-        return 0;
-      }
-    });
+                @Override
+                public long getRetryInterval() {
+                  // Immediate retry
+                  return 0;
+                }
+              });
     } else {
       httpClientBuilder = HttpClientBuilder.create();
     }
@@ -362,46 +363,36 @@ public class HiveConnection implements java.sql.Connection {
       String sslTrustStorePassword = sessConfMap.get(
         JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
       KeyStore sslTrustStore;
-      SSLSocketFactory socketFactory;
-
+      SSLConnectionSocketFactory socketFactory;
+      SSLContext sslContext;
       /**
-       * The code within the try block throws:
-       * 1. SSLInitializationException
-       * 2. KeyStoreException
-       * 3. IOException
-       * 4. NoSuchAlgorithmException
-       * 5. CertificateException
-       * 6. KeyManagementException
-       * 7. UnrecoverableKeyException
-       * We don't want the client to retry on any of these, hence we catch all
-       * and throw a SQLException.
+       * The code within the try block throws: SSLInitializationException, KeyStoreException,
+       * IOException, NoSuchAlgorithmException, CertificateException, KeyManagementException &
+       * UnrecoverableKeyException. We don't want the client to retry on any of these,
+       * hence we catch all and throw a SQLException.
        */
       try {
-        if (useTwoWaySSL != null &&
-            useTwoWaySSL.equalsIgnoreCase(JdbcConnectionParams.TRUE)) {
+        if (useTwoWaySSL != null && useTwoWaySSL.equalsIgnoreCase(JdbcConnectionParams.TRUE)) {
           socketFactory = getTwoWaySSLSocketFactory();
         } else if (sslTrustStorePath == null || sslTrustStorePath.isEmpty()) {
           // Create a default socket factory based on standard JSSE trust material
-          socketFactory = SSLSocketFactory.getSocketFactory();
+          socketFactory = SSLConnectionSocketFactory.getSocketFactory();
         } else {
           // Pick trust store config from the given path
           sslTrustStore = KeyStore.getInstance(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
           sslTrustStore.load(new FileInputStream(sslTrustStorePath),
-            sslTrustStorePassword.toCharArray());
-          socketFactory = new SSLSocketFactory(sslTrustStore);
+              sslTrustStorePassword.toCharArray());
+          sslContext = SSLContexts.custom().loadTrustMaterial(sslTrustStore, null).build();
+          socketFactory =
+              new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier(null));
         }
-        socketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-
         final Registry<ConnectionSocketFactory> registry =
-          RegistryBuilder.<ConnectionSocketFactory>create()
-          .register("https", socketFactory)
-          .build();
-
+            RegistryBuilder.<ConnectionSocketFactory> create().register("https", socketFactory)
+                .build();
         httpClientBuilder.setConnectionManager(new BasicHttpClientConnectionManager(registry));
-      }
-      catch (Exception e) {
-        String msg =  "Could not create an https connection to " +
-          jdbcUriString + ". " + e.getMessage();
+      } catch (Exception e) {
+        String msg =
+            "Could not create an https connection to " + jdbcUriString + ". " + e.getMessage();
         throw new SQLException(msg, " 08S01", e);
       }
     }
@@ -492,8 +483,8 @@ public class HiveConnection implements java.sql.Connection {
     return transport;
   }
 
-  SSLSocketFactory getTwoWaySSLSocketFactory() throws SQLException {
-    SSLSocketFactory socketFactory = null;
+  SSLConnectionSocketFactory getTwoWaySSLSocketFactory() throws SQLException {
+    SSLConnectionSocketFactory socketFactory = null;
 
     try {
       KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(
@@ -528,7 +519,7 @@ public class HiveConnection implements java.sql.Connection {
       SSLContext context = SSLContext.getInstance("TLS");
       context.init(keyManagerFactory.getKeyManagers(),
         trustManagerFactory.getTrustManagers(), new SecureRandom());
-      socketFactory = new SSLSocketFactory(context);
+      socketFactory = new SSLConnectionSocketFactory(context);
     } catch (Exception e) {
       throw new SQLException("Error while initializing 2 way ssl socket factory ", e);
     }

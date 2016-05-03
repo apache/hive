@@ -253,7 +253,7 @@ public class TestJdbcMetadataApiAuth {
     }
   }
 
-  private static Connection getConnection(String userName) throws SQLException {
+  private static Connection getConnection(String userName) throws Exception {
     return DriverManager.getConnection(miniHS2.getJdbcURL(), userName, "bar");
   }
 
