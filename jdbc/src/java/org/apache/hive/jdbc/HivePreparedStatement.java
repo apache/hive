@@ -39,8 +39,10 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 
 import org.apache.hive.service.rpc.thrift.TCLIService;
@@ -126,59 +128,66 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    * @param sql
    * @param parameters
    * @return updated SQL string
+   * @throws SQLException 
    */
-  private String updateSql(final String sql, HashMap<Integer, String> parameters) {
-    if (!sql.contains("?")) {
-      return sql;
-    }
-
-    StringBuilder newSql = new StringBuilder(sql);
-
-    int paramLoc = 1;
-    while (getCharIndexFromSqlByParamLocation(sql, '?', paramLoc) > 0) {
-      // check the user has set the needs parameters
-      if (parameters.containsKey(paramLoc)) {
-        int tt = getCharIndexFromSqlByParamLocation(newSql.toString(), '?', 1);
-        newSql.deleteCharAt(tt);
-        newSql.insert(tt, parameters.get(paramLoc));
+  private String updateSql(final String sql, HashMap<Integer, String> parameters) throws SQLException {
+    List<String>  parts=splitSqlStatement(sql);
+    
+    StringBuilder newSql = new StringBuilder(parts.get(0));
+    for(int i=1;i<parts.size();i++){
+      if(!parameters.containsKey(i)){
+        throw new SQLException("Parameter #"+i+" is unset");
       }
-      paramLoc++;
+      newSql.append(parameters.get(i));
+      newSql.append(parts.get(i));
     }
-
     return newSql.toString();
 
   }
-
+  
   /**
-   * Get the index of given char from the SQL string by parameter location
-   * </br> The -1 will be return, if nothing found
-   *
+   * Splits the parametered sql statement at parameter boundaries.
+   * 
+   * taking into account ' and \ escaping.
+   * 
+   * output for: 'select 1 from ? where a = ?'
+   *  ['select 1 from ',' where a = ','']
+   * 
    * @param sql
-   * @param cchar
-   * @param paramLoc
    * @return
    */
-  private int getCharIndexFromSqlByParamLocation(final String sql, final char cchar, final int paramLoc) {
-    int signalCount = 0;
-    int charIndex = -1;
-    int num = 0;
+  private List<String> splitSqlStatement(String sql) {
+    List<String> parts=new ArrayList<>();
+    int apCount=0;
+    int off=0;
+    boolean skip=false;
+
     for (int i = 0; i < sql.length(); i++) {
       char c = sql.charAt(i);
-      if (c == '\'' || c == '\\')// record the count of char "'" and char "\"
-      {
-        signalCount++;
-      } else if (c == cchar && signalCount % 2 == 0) {// check if the ? is really the parameter
-        num++;
-        if (num == paramLoc) {
-          charIndex = i;
-          break;
+      if(skip){
+        skip=false;
+        continue;
+      }
+      switch (c) {
+      case '\'':
+        apCount++;
+        break;
+      case '\\':
+        skip = true;
+        break;
+      case '?':
+        if ((apCount & 1) == 0) {
+          parts.add(sql.substring(off,i));
+          off=i+1;
         }
+        break;
+      default:
+        break;
       }
     }
-    return charIndex;
+    parts.add(sql.substring(off,sql.length()));
+    return parts;
   }
-
-
 
   /*
    * (non-Javadoc)
