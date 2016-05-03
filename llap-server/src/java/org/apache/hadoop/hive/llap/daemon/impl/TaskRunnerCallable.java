@@ -108,6 +108,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private final String queryId;
   private final HadoopShim tezHadoopShim;
   private boolean shouldRunTask = true;
+  private final boolean withTezAm;
   final Stopwatch runtimeWatch = new Stopwatch();
   final Stopwatch killtimerWatch = new Stopwatch();
   private final AtomicBoolean isStarted = new AtomicBoolean(false);
@@ -136,6 +137,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     this.jobToken = TokenCache.getSessionToken(credentials);
     this.taskSpec = Converters.getTaskSpecfromProto(request.getFragmentSpec());
     this.amReporter = amReporter;
+    this.withTezAm = request.getUsingTezAm();
+    LOG.warn("ZZZ: DBG: usingTezAm=" + withTezAm);
     // Register with the AMReporter when the callable is setup. Unregister once it starts running.
     this.amReporter.registerTask(request.getAmHost(), request.getAmPort(),
         request.getUser(), jobToken, fragmentInfo.getQueryInfo().getQueryIdentifier());
