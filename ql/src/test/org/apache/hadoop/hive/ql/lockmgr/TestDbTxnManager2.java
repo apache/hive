@@ -72,6 +72,39 @@ public class TestDbTxnManager2 {
     TxnDbUtil.prepDb();
   }
   @Test
+  public void testLocksInSubquery() throws Exception {
+    checkCmdOnDriver(driver.run("create table if not exists T (a int, b int)"));
+    checkCmdOnDriver(driver.run("create table if not exists S (a int, b int) clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')"));
+    checkCmdOnDriver(driver.run("create table if not exists R (a int, b int) clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')"));
+
+    checkCmdOnDriver(driver.compileAndRespond("delete from S where a in (select a from T where b = 1)"));
+    txnMgr.openTxn("one");
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "one");
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T", null, locks.get(0));
+    checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "S", null, locks.get(1));
+    txnMgr.rollbackTxn();
+
+    checkCmdOnDriver(driver.compileAndRespond("update S set a = 7 where a in (select a from T where b = 1)"));
+    txnMgr.openTxn("one");
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "one");
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T", null, locks.get(0));
+    checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "S", null, locks.get(1));
+    txnMgr.rollbackTxn();
+
+    checkCmdOnDriver(driver.compileAndRespond("insert into R select * from S where a in (select a from T where b = 1)"));
+    txnMgr.openTxn("three");
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "three");
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 3, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T", null, locks.get(0));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "S", null, locks.get(1));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "R", null, locks.get(2));
+  }
+  @Test
   public void createTable() throws Exception {
     CommandProcessorResponse cpr = driver.compileAndRespond("create table if not exists T (a int, b int)");
     checkCmdOnDriver(cpr);

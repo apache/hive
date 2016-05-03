@@ -321,7 +321,9 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     // Walk through all our inputs and set them to note that this read is part of an update or a
     // delete.
     for (ReadEntity input : inputs) {
-      input.setUpdateOrDelete(true);
+      if(isWritten(input)) {
+        input.setUpdateOrDelete(true);
+      }
     }
 
     if (inputIsPartitioned(inputs)) {
@@ -369,6 +371,18 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     }
   }
 
+  /**
+   * Check that {@code readEntity} is also being written
+   */
+  private boolean isWritten(Entity readEntity) {
+    for(Entity writeEntity : outputs) {
+      //make sure to compare them as Entity, i.e. that it's the same table or partition, etc
+      if(writeEntity.toString().equalsIgnoreCase(readEntity.toString())) {
+        return true;
+      }
+    }
+    return false;
+  }
   private String operation() {
     if (updating()) return "update";
     else if (deleting()) return "delete";
