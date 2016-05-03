@@ -101,7 +101,7 @@ public class TestHS2AuthzContext {
     verifyContextContents("dfs -ls /", "-ls /");
   }
 
-  private void verifyContextContents(final String cmd, String ctxCmd) throws SQLException,
+  private void verifyContextContents(final String cmd, String ctxCmd) throws Exception,
       HiveAuthzPluginException, HiveAccessControlException {
     Connection hs2Conn = getConnection("user1");
     Statement stmt = hs2Conn.createStatement();
@@ -126,7 +126,7 @@ public class TestHS2AuthzContext {
 
   }
 
-  private Connection getConnection(String userName) throws SQLException {
+  private Connection getConnection(String userName) throws Exception {
     return DriverManager.getConnection(miniHS2.getJdbcURL(), userName, "bar");
   }
 

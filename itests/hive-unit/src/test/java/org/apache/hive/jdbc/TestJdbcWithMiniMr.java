@@ -83,7 +83,7 @@ public class TestJdbcWithMiniMr {
   }
 
   // setup DB
-  private static void createDb() throws SQLException {
+  private static void createDb() throws Exception {
     Connection conn = DriverManager.
         getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
     Statement stmt2 = conn.createStatement();
