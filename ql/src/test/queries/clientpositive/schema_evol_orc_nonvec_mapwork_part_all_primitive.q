@@ -2,20 +2,18 @@ set hive.explain.user=true;
 set hive.mapred.mode=nonstrict;
 set hive.cli.print.header=true;
 SET hive.exec.schema.evolution=true;
-SET hive.vectorized.use.vectorized.input.format=false;
+SET hive.vectorized.use.vectorized.input.format=true;
 SET hive.vectorized.use.vector.serde.deserialize=false;
-SET hive.vectorized.use.row.serde.deserialize=true;
+SET hive.vectorized.use.row.serde.deserialize=false;
 set hive.fetch.task.conversion=none;
-SET hive.vectorized.execution.enabled=true;
+SET hive.vectorized.execution.enabled=false;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.metastore.disallow.incompatible.col.type.changes=false;
-set hive.default.fileformat=textfile;
+set hive.default.fileformat=orc;
 
 -- SORT_QUERY_RESULTS
 --
--- FILE VARIATION: TEXTFILE, Non-Vectorized, MapWork, Partitioned --> all primitive conversions
--- NOTE: the use of hive.vectorized.use.row.serde.deserialize above which enables doing
---  vectorized reading of TEXTFILE format files using the row SERDE methods.
+-- FILE VARIATION: ORC, Non-Vectorized, MapWork, Partitioned --> all primitive conversions
 --
 ------------------------------------------------------------------------------------------
 -- SECTION: ALTER TABLE CHANGE COLUMNS Various --> Various
@@ -481,34 +479,3 @@ select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date order
 select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date order by insert_num;
 
 drop table part_change_various_various_date;
-
-
-
---
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for Various --> Various: (STRING, CHAR, VARCHAR) --> BINARY
---
-CREATE TABLE part_change_various_various_binary(insert_num int, c1 STRING, c2 CHAR(25), c3 VARCHAR(25), b STRING) PARTITIONED BY(part INT);
-
-insert into table part_change_various_various_binary partition(part=1)
-    values(1, 'binary', 'binary',  'binary', 'original'),
-          (2, 'binary', 'binary',  'binary', 'original'),
-          (3, 'binary', 'binary',  'binary', 'original'),
-          (4, 'binary', 'binary',  'binary', 'original');
-
-select insert_num,part,c1,c2,c3,b from part_change_various_various_binary order by insert_num;
-
--- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_various_various_binary replace columns (insert_num int, c1 BINARY, c2 BINARY, c3 BINARY, b STRING);
-
-insert into table part_change_various_various_binary partition(part=2)
-    values (5, 'binary', 'binary', 'binary', 'new');
-
-insert into table part_change_various_various_binary partition(part=1)
-    values (6,-'binary', 'binary', 'binary', 'new');
-
-explain
-select insert_num,part,c1,c2,c3,b from part_change_various_various_binary order by insert_num;
-
-select insert_num,part,c1,c2,c3,b from part_change_various_various_binary order by insert_num;
-
-drop table part_change_various_various_binary;

@@ -100,9 +100,11 @@ public class SchemaEvolution {
           break;
         case CHAR:
         case VARCHAR:
+          // HIVE-13648: Look at ORC data type conversion edge cases (CHAR, VARCHAR, DECIMAL)
           isOk = fileType.getMaxLength() == readerType.getMaxLength();
           break;
         case DECIMAL:
+          // HIVE-13648: Look at ORC data type conversion edge cases (CHAR, VARCHAR, DECIMAL)
           // TODO we don't enforce scale and precision checks, but probably should
           break;
         case UNION:
@@ -134,27 +136,20 @@ public class SchemaEvolution {
           throw new IllegalArgumentException("Unknown type " + readerType);
       }
     } else {
-      switch (fileType.getCategory()) {
-        case SHORT:
-          if (readerType.getCategory() != TypeDescription.Category.INT &&
-              readerType.getCategory() != TypeDescription.Category.LONG) {
-            isOk = false;
-          }
-          break;
-        case INT:
-          if (readerType.getCategory() != TypeDescription.Category.LONG) {
-            isOk = false;
-          }
-          break;
-        default:
-          isOk = false;
-      }
+      /*
+       * Check for the few cases where will not convert....
+       */
+
+      isOk = ConvertTreeReaderFactory.canConvert(fileType, readerType);
     }
     if (isOk) {
       readerToFile.put(readerType, fileType);
     } else {
-      throw new IOException("ORC does not support type conversion from " +
-          fileType + " to " + readerType);
+      throw new IOException(
+          String.format(
+              "ORC does not support type conversion from file type %s (%d) to reader type %s (%d)",
+              fileType.toString(), fileType.getId(),
+              readerType.toString(), readerType.getId()));
     }
   }
 

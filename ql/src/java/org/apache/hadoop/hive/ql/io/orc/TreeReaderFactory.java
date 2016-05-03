@@ -171,6 +171,12 @@ public class TreeReaderFactory {
 
     abstract void skipRows(long rows) throws IOException;
 
+    void readValuePresent() throws IOException {
+      if (present != null) {
+        valuePresent = present.next() == 1;
+      }
+    }
+
     Object next(Object previous) throws IOException {
       if (present != null) {
         valuePresent = present.next() == 1;
@@ -204,7 +210,7 @@ public class TreeReaderFactory {
      */
     public void nextVector(ColumnVector previous,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       if (present != null || isNull != null) {
         // Set noNulls and isNull vector of the ColumnVector based on
         // present stream
@@ -273,7 +279,7 @@ public class TreeReaderFactory {
     }
 
     @Override
-    public void nextVector(ColumnVector vector, boolean[] isNull, int size) {
+    public void nextVector(ColumnVector vector, boolean[] isNull, final int batchSize) {
       vector.noNulls = false;
       vector.isNull[0] = true;
       vector.isRepeating = true;
@@ -337,7 +343,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       LongColumnVector result = (LongColumnVector) previousVector;
 
       // Read present/isNull stream
@@ -398,7 +404,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       final LongColumnVector result = (LongColumnVector) previousVector;
 
       // Read present/isNull stream
@@ -480,7 +486,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       final LongColumnVector result = (LongColumnVector) previousVector;
 
       // Read present/isNull stream
@@ -562,7 +568,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       final LongColumnVector result = (LongColumnVector) previousVector;
 
       // Read present/isNull stream
@@ -645,7 +651,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       final LongColumnVector result = (LongColumnVector) previousVector;
 
       // Read present/isNull stream
@@ -714,7 +720,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       final DoubleColumnVector result = (DoubleColumnVector) previousVector;
 
       // Read present/isNull stream
@@ -823,7 +829,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       final DoubleColumnVector result = (DoubleColumnVector) previousVector;
 
       // Read present/isNull stream
@@ -960,7 +966,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       final BytesColumnVector result = (BytesColumnVector) previousVector;
 
       // Read present/isNull stream
@@ -1125,7 +1131,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       TimestampColumnVector result = (TimestampColumnVector) previousVector;
       super.nextVector(previousVector, isNull, batchSize);
 
@@ -1248,7 +1254,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       final LongColumnVector result = (LongColumnVector) previousVector;
 
       // Read present/isNull stream
@@ -1343,7 +1349,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       final DecimalColumnVector result = (DecimalColumnVector) previousVector;
 
       // Read present/isNull stream
@@ -1460,7 +1466,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       reader.nextVector(previousVector, isNull, batchSize);
     }
 
@@ -1515,7 +1521,7 @@ public class TreeReaderFactory {
                                          IntegerReader lengths,
                                          LongColumnVector scratchlcv,
                                          BytesColumnVector result,
-                                         int batchSize) throws IOException {
+                                         final int batchSize) throws IOException {
       if (result.noNulls || !(result.isRepeating && result.isNull[0])) {
         byte[] allBytes = commonReadByteArrays(stream, lengths, scratchlcv,
             result, (int) batchSize);
@@ -1626,7 +1632,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       final BytesColumnVector result = (BytesColumnVector) previousVector;
 
       // Read present/isNull stream
@@ -1798,7 +1804,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       final BytesColumnVector result = (BytesColumnVector) previousVector;
       int offset;
       int length;
@@ -1915,7 +1921,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       // Get the vector of strings from StringTreeReader, then make a 2nd pass to
       // adjust down the length (right trim and truncate) if necessary.
       super.nextVector(previousVector, isNull, batchSize);
@@ -1990,7 +1996,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       // Get the vector of strings from StringTreeReader, then make a 2nd pass to
       // adjust down the length (truncate) if necessary.
       super.nextVector(previousVector, isNull, batchSize);
@@ -2034,18 +2040,18 @@ public class TreeReaderFactory {
 
     protected StructTreeReader(int columnId,
                                TypeDescription readerSchema,
-                               SchemaEvolution treeReaderSchema,
+                               SchemaEvolution evolution,
                                boolean[] included,
                                boolean skipCorrupt) throws IOException {
       super(columnId);
 
-      TypeDescription fileSchema = treeReaderSchema.getFileType(readerSchema);
+      TypeDescription fileSchema = evolution.getFileType(readerSchema);
 
       List<TypeDescription> childrenTypes = readerSchema.getChildren();
       this.fields = new TreeReader[childrenTypes.size()];
       for (int i = 0; i < fields.length; ++i) {
         TypeDescription subtype = childrenTypes.get(i);
-        this.fields[i] = createTreeReader(subtype, treeReaderSchema, included, skipCorrupt);
+        this.fields[i] = createTreeReader(subtype, evolution, included, skipCorrupt);
       }
     }
 
@@ -2097,7 +2103,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       super.nextVector(previousVector, isNull, batchSize);
       StructColumnVector result = (StructColumnVector) previousVector;
       if (result.noNulls || !(result.isRepeating && result.isNull[0])) {
@@ -2142,7 +2148,7 @@ public class TreeReaderFactory {
 
     protected UnionTreeReader(int fileColumn,
                               TypeDescription readerSchema,
-                              SchemaEvolution treeReaderSchema,
+                              SchemaEvolution evolution,
                               boolean[] included,
                               boolean skipCorrupt) throws IOException {
       super(fileColumn);
@@ -2151,7 +2157,7 @@ public class TreeReaderFactory {
       this.fields = new TreeReader[fieldCount];
       for (int i = 0; i < fieldCount; ++i) {
         TypeDescription subtype = childrenTypes.get(i);
-        this.fields[i] = createTreeReader(subtype, treeReaderSchema, included, skipCorrupt);
+        this.fields[i] = createTreeReader(subtype, evolution, included, skipCorrupt);
       }
     }
 
@@ -2185,7 +2191,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       UnionColumnVector result = (UnionColumnVector) previousVector;
       super.nextVector(result, isNull, batchSize);
       if (result.noNulls || !(result.isRepeating && result.isNull[0])) {
@@ -2237,12 +2243,12 @@ public class TreeReaderFactory {
 
     protected ListTreeReader(int fileColumn,
                              TypeDescription readerSchema,
-                             SchemaEvolution treeReaderSchema,
+                             SchemaEvolution evolution,
                              boolean[] included,
                              boolean skipCorrupt) throws IOException {
       super(fileColumn);
       TypeDescription elementType = readerSchema.getChildren().get(0);
-      elementReader = createTreeReader(elementType, treeReaderSchema, included,
+      elementReader = createTreeReader(elementType, evolution, included,
           skipCorrupt);
     }
 
@@ -2286,7 +2292,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previous,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       ListColumnVector result = (ListColumnVector) previous;
       super.nextVector(result, isNull, batchSize);
       // if we have some none-null values, then read them
@@ -2347,14 +2353,14 @@ public class TreeReaderFactory {
 
     protected MapTreeReader(int fileColumn,
                             TypeDescription readerSchema,
-                            SchemaEvolution treeReaderSchema,
+                            SchemaEvolution evolution,
                             boolean[] included,
                             boolean skipCorrupt) throws IOException {
       super(fileColumn);
       TypeDescription keyType = readerSchema.getChildren().get(0);
       TypeDescription valueType = readerSchema.getChildren().get(1);
-      keyReader = createTreeReader(keyType, treeReaderSchema, included, skipCorrupt);
-      valueReader = createTreeReader(valueType, treeReaderSchema, included, skipCorrupt);
+      keyReader = createTreeReader(keyType, evolution, included, skipCorrupt);
+      valueReader = createTreeReader(valueType, evolution, included, skipCorrupt);
     }
 
     @Override
@@ -2390,7 +2396,7 @@ public class TreeReaderFactory {
     @Override
     public void nextVector(ColumnVector previous,
                            boolean[] isNull,
-                           int batchSize) throws IOException {
+                           final int batchSize) throws IOException {
       MapColumnVector result = (MapColumnVector) previous;
       super.nextVector(result, isNull, batchSize);
       if (result.noNulls || !(result.isRepeating && result.isNull[0])) {
@@ -2459,7 +2465,17 @@ public class TreeReaderFactory {
         (included != null && !included[readerType.getId()])) {
       return new NullTreeReader(0);
     }
-    switch (readerType.getCategory()) {
+    TypeDescription.Category readerTypeCategory = readerType.getCategory();
+    if (!fileType.getCategory().equals(readerTypeCategory) &&
+        (readerTypeCategory != TypeDescription.Category.STRUCT &&
+         readerTypeCategory != TypeDescription.Category.MAP &&
+         readerTypeCategory != TypeDescription.Category.LIST &&
+         readerTypeCategory != TypeDescription.Category.UNION)) {
+      // We only convert complex children.
+      return ConvertTreeReaderFactory.createConvertTreeReader(readerType, evolution,
+          included, skipCorrupt);
+    }
+    switch (readerTypeCategory) {
       case BOOLEAN:
         return new BooleanTreeReader(fileType.getId());
       case BYTE:
@@ -2503,7 +2519,7 @@ public class TreeReaderFactory {
             evolution, included, skipCorrupt);
       default:
         throw new IllegalArgumentException("Unsupported type " +
-            readerType.getCategory());
+            readerTypeCategory);
     }
   }
 }

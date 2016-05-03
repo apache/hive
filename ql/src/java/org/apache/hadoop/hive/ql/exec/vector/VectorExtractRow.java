@@ -264,7 +264,7 @@ public class VectorExtractRow {
             int length = bytesColVector.length[adjustedIndex];
 
             if (bytes == null) {
-              LOG.info("null string entry: batchIndex " + batchIndex + " projection column num " + projectionColumnNum);
+              nullBytesReadError(primitiveCategory, batchIndex, projectionColumnNum);
             }
 
             // Use org.apache.hadoop.io.Text as our helper to go from byte[] to String.
@@ -280,7 +280,7 @@ public class VectorExtractRow {
             int length = bytesColVector.length[adjustedIndex];
 
             if (bytes == null) {
-              LOG.info("null varchar entry: batchIndex " + batchIndex + " projection column num " + projectionColumnNum);
+              nullBytesReadError(primitiveCategory, batchIndex, projectionColumnNum);
             }
 
             int adjustedLength = StringExpr.truncate(bytes, start, length,
@@ -299,7 +299,7 @@ public class VectorExtractRow {
             int length = bytesColVector.length[adjustedIndex];
 
             if (bytes == null) {
-              LOG.info("null char entry: batchIndex " + batchIndex + " projection column num " + projectionColumnNum);
+              nullBytesReadError(primitiveCategory, batchIndex, projectionColumnNum);
             }
 
             int adjustedLength = StringExpr.rightTrimAndTruncate(bytes, start, length,
@@ -342,5 +342,11 @@ public class VectorExtractRow {
     for (int i = 0; i < projectionColumnNums.length; i++) {
       objects[i] = extractRowColumn(batch, batchIndex, i);
     }
+  }
+
+  private void nullBytesReadError(PrimitiveCategory primitiveCategory, int batchIndex,
+    int projectionColumnNum) {
+    throw new RuntimeException("null " + primitiveCategory.name() +
+        " entry: batchIndex " + batchIndex + " projection column num " + projectionColumnNum);
   }
 }

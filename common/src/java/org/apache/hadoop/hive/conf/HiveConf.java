@@ -1106,7 +1106,7 @@ public class HiveConf extends Configuration {
         "than this threshold, it will try to convert the common join into map join"),
 
 
-    HIVE_SCHEMA_EVOLUTION("hive.exec.schema.evolution", false,
+    HIVE_SCHEMA_EVOLUTION("hive.exec.schema.evolution", true,
         "Use schema evolution to convert self-describing file format's data to the schema desired by the reader."),
 
     HIVE_TRANSACTIONAL_TABLE_SCAN("hive.transactional.table.scan", false,

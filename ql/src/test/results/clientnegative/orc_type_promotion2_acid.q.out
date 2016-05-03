@@ -1,8 +1,12 @@
-PREHOOK: query: create table src_orc (key smallint, val string) clustered by (val) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: -- Currently, bigint to int conversion is not supported because it isn't in the lossless
+-- TypeIntoUtils.implicitConvertible conversions.
+create table src_orc (key smallint, val string) clustered by (val) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src_orc
-POSTHOOK: query: create table src_orc (key smallint, val string) clustered by (val) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: query: -- Currently, bigint to int conversion is not supported because it isn't in the lossless
+-- TypeIntoUtils.implicitConvertible conversions.
+create table src_orc (key smallint, val string) clustered by (val) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_orc
@@ -62,8 +66,9 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_orc
 key                 	bigint              	                    
 val                 	string              	                    
-PREHOOK: query: alter table src_orc change val val char(100)
+PREHOOK: query: alter table src_orc change val val int
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@src_orc
 PREHOOK: Output: default@src_orc
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Changing from type string to char(100) is not supported for column val. SerDe may be incompatible
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. The following columns have types incompatible with the existing columns in their respective positions :
+val

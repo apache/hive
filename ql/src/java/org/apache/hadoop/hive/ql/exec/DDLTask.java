@@ -3363,12 +3363,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             && !oldColName.equalsIgnoreCase(oldName)) {
           throw new HiveException(ErrorMsg.DUPLICATE_COLUMN_NAMES, newName);
         } else if (oldColName.equalsIgnoreCase(oldName)) {
-          // if orc table, restrict changing column types. Only integer type promotion is supported.
-          // smallint -> int -> bigint
-          if (isOrcSchemaEvolution && !isSupportedTypeChange(col.getType(), type)) {
-            throw new HiveException(ErrorMsg.CANNOT_CHANGE_COLUMN_TYPE, col.getType(), type,
-                newName);
-          }
           col.setName(newName);
           if (type != null && !type.trim().equals("")) {
             col.setType(type);
@@ -3434,15 +3428,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
         if (replaceCols.size() < existingCols.size()) {
           throw new HiveException(ErrorMsg.REPLACE_CANNOT_DROP_COLUMNS, alterTbl.getOldName());
-        }
-
-        for (int i = 0; i < existingCols.size(); i++) {
-          final String currentColType = existingCols.get(i).getType().toLowerCase().trim();
-          final String newColType = replaceCols.get(i).getType().toLowerCase().trim();
-          if (!isSupportedTypeChange(currentColType, newColType)) {
-            throw new HiveException(ErrorMsg.REPLACE_UNSUPPORTED_TYPE_CONVERSION, currentColType,
-                newColType, replaceCols.get(i).getName());
-          }
         }
       }
       sd.setCols(alterTbl.getNewCols());
@@ -3609,44 +3594,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     return 0;
-  }
-
-  // don't change the order of enums as ordinal values are used to check for valid type promotions
-  enum PromotableTypes {
-    SMALLINT,
-    INT,
-    BIGINT;
-
-    static List<String> types() {
-      return ImmutableList.of(SMALLINT.toString().toLowerCase(),
-          INT.toString().toLowerCase(), BIGINT.toString().toLowerCase());
-    }
-  }
-
-  // for ORC, only supported type promotions are smallint -> int -> bigint. No other
-  // type promotions are supported at this point
-  private boolean isSupportedTypeChange(String currentType, String newType) {
-    if (currentType != null && newType != null) {
-      currentType = currentType.toLowerCase().trim();
-      newType = newType.toLowerCase().trim();
-      // no type change
-      if (currentType.equals(newType)) {
-        return true;
-      }
-      if (PromotableTypes.types().contains(currentType)
-          && PromotableTypes.types().contains(newType)) {
-        PromotableTypes pCurrentType = PromotableTypes.valueOf(currentType.toUpperCase());
-        PromotableTypes pNewType = PromotableTypes.valueOf(newType.toUpperCase());
-        if (pNewType.ordinal() >= pCurrentType.ordinal()) {
-          return true;
-        } else {
-          return false;
-        }
-      } else {
-        return false;
-      }
-    }
-    return true;
   }
 
   /**

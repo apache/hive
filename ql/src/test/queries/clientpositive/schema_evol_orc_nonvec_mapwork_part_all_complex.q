@@ -2,21 +2,18 @@ set hive.explain.user=true;
 set hive.mapred.mode=nonstrict;
 set hive.cli.print.header=true;
 SET hive.exec.schema.evolution=true;
-SET hive.vectorized.use.vectorized.input.format=false;
+SET hive.vectorized.use.vectorized.input.format=true;
 SET hive.vectorized.use.vector.serde.deserialize=false;
-SET hive.vectorized.use.row.serde.deserialize=true;
+SET hive.vectorized.use.row.serde.deserialize=false;
 set hive.fetch.task.conversion=none;
-SET hive.vectorized.execution.enabled=true;
+SET hive.vectorized.execution.enabled=false;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.metastore.disallow.incompatible.col.type.changes=false;
-set hive.default.fileformat=textfile;
+set hive.default.fileformat=orc;
 
 -- SORT_QUERY_RESULTS
 --
--- FILE VARIATION: TEXTFILE, Non-Vectorized, MapWork, Partitioned --> all complex conversions
--- NOTE: the use of hive.vectorized.use.row.serde.deserialize above which enables doing
---  vectorized reading of TEXTFILE format files using the row SERDE methods.
-
+-- FILE VARIATION: ORC, Non-Vectorized, MapWork, Partitioned --> all complex conversions
 --
 ------------------------------------------------------------------------------------------
 --
