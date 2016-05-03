@@ -118,6 +118,7 @@ import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
@@ -1598,7 +1599,8 @@ public class Driver implements CommandProcessor {
 
           } else {
             setErrorMsgAndDetail(exitVal, result.getTaskError(), tsk);
-            invokeFailureHooks(perfLogger, hookContext, result.getTaskError());
+            invokeFailureHooks(perfLogger, hookContext,
+              errorMessage + Strings.nullToEmpty(tsk.getDiagnosticsMessage()), result.getTaskError());
             SQLState = "08S01";
             console.printError(errorMessage);
             driverCxt.shutdown();
@@ -1634,7 +1636,7 @@ public class Driver implements CommandProcessor {
       if (driverCxt.isShutdown()) {
         SQLState = "HY008";
         errorMessage = "FAILED: Operation cancelled";
-        invokeFailureHooks(perfLogger, hookContext, null);
+        invokeFailureHooks(perfLogger, hookContext, errorMessage, null);
         console.printError(errorMessage);
         return 1000;
       }
@@ -1691,7 +1693,7 @@ public class Driver implements CommandProcessor {
       errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
       if (hookContext != null) {
         try {
-          invokeFailureHooks(perfLogger, hookContext, e);
+          invokeFailureHooks(perfLogger, hookContext, errorMessage, e);
         } catch (Exception t) {
           LOG.warn("Failed to invoke failure hook", t);
         }
@@ -1790,7 +1792,8 @@ public class Driver implements CommandProcessor {
     }
   }
 
-  private void invokeFailureHooks(PerfLogger perfLogger, HookContext hookContext, Throwable exception) throws Exception {
+  private void invokeFailureHooks(PerfLogger perfLogger,
+      HookContext hookContext, String errorMessage, Throwable exception) throws Exception {
     hookContext.setHookType(HookContext.HookType.ON_FAILURE_HOOK);
     hookContext.setErrorMessage(errorMessage);
     hookContext.setException(exception);
