@@ -25,9 +25,8 @@ import java.util.Stack;
 import java.util.UUID;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.apache.hive.hplsql.Var.Type;
-import org.apache.hive.hplsql.HplsqlParser.Create_table_columns_itemContext;
-import org.apache.hive.hplsql.HplsqlParser.Create_table_columnsContext;
 
 /**
  * HPL/SQL statements execution
@@ -130,30 +129,13 @@ public class Stmt {
   public Integer createTable(HplsqlParser.Create_table_stmtContext ctx) { 
     trace(ctx, "CREATE TABLE");
     StringBuilder sql = new StringBuilder();
-    sql.append(exec.getText(ctx, ctx.T_CREATE().getSymbol(), ctx.T_TABLE().getSymbol()));
-    sql.append(" " + evalPop(ctx.table_name()) + " (");
-    int cnt = ctx.create_table_columns().create_table_columns_item().size();
-    int cols = 0;
-    for (int i = 0; i < cnt; i++) {
-      Create_table_columns_itemContext col = ctx.create_table_columns().create_table_columns_item(i);
-      if (col.create_table_column_cons() != null) {
-        continue;
-      }
-      if (cols > 0) {
-        sql.append(",\n");
-      }
-      sql.append(evalPop(col.column_name()));
-      sql.append(" ");
-      sql.append(exec.evalPop(col.dtype(), col.dtype_len()));
-      cols++;
+    exec.append(sql, ctx.T_CREATE(), ctx.T_TABLE());
+    exec.append(sql, evalPop(ctx.table_name()).toString(), ctx.T_TABLE().getSymbol(), ctx.table_name().getStart());
+    Token last = ctx.table_name().getStop();
+    if (ctx.create_table_preoptions() != null) {
+      last = ctx.create_table_preoptions().stop;
     }
-    sql.append("\n)");
-    if (ctx.create_table_options() != null) {
-      String opt = evalPop(ctx.create_table_options()).toString();
-      if (opt != null) {
-        sql.append(" " + opt);
-      }
-    }
+    sql.append(createTableDefinition(ctx.create_table_definition(), last));
     trace(ctx, sql.toString());
     Query query = exec.executeSql(ctx, sql.toString(), exec.conf.defaultConnection);
     if (query.error()) {
@@ -163,6 +145,40 @@ public class Stmt {
     exec.setSqlSuccess();
     exec.closeQuery(query, exec.conf.defaultConnection);
     return 0; 
+  }  
+
+  /**
+   * Get CREATE TABLE definition (columns or query)
+   */
+  String createTableDefinition(HplsqlParser.Create_table_definitionContext ctx, Token last) { 
+    StringBuilder sql = new StringBuilder();
+    HplsqlParser.Create_table_columnsContext colCtx = ctx.create_table_columns();
+    if (colCtx != null) {
+      int cnt = colCtx.create_table_columns_item().size();
+      for (int i = 0; i < cnt; i++) {
+        HplsqlParser.Create_table_columns_itemContext col = colCtx.create_table_columns_item(i);
+        if (col.create_table_column_cons() != null) {
+          last = col.getStop();
+          continue;
+        }
+        exec.append(sql, evalPop(col.column_name()).toString(), last, col.column_name().getStop());
+        exec.append(sql, exec.evalPop(col.dtype(), col.dtype_len()), col.column_name().getStop(), col.dtype().getStart());
+        last = col.getStop();
+      }
+      exec.append(sql, ctx.T_CLOSE_P().getText(), last, ctx.T_CLOSE_P().getSymbol());
+    }
+    else {
+      exec.append(sql, evalPop(ctx.select_stmt()).toString(), last, ctx.select_stmt().getStart());
+      exec.append(sql, ctx.T_CLOSE_P().getText(), ctx.select_stmt().stop, ctx.T_CLOSE_P().getSymbol());
+    }
+    HplsqlParser.Create_table_optionsContext options = ctx.create_table_options();
+    if (options != null) {
+      String opt = evalPop(options).toString();
+      if (opt != null) {
+        sql.append(" " + opt);
+      }
+    }
+    return sql.toString(); 
   }  
 
   /**
@@ -196,7 +212,6 @@ public class Stmt {
    * CREATE TABLE options for MySQL
    */
   public Integer createTableMysqlOptions(HplsqlParser.Create_table_options_mysql_itemContext ctx) {
-    StringBuilder sql = new StringBuilder();
     if (ctx.T_COMMENT() != null) {
       evalString(ctx.T_COMMENT().getText() + " " + evalPop(ctx.expr()).toSqlString());
     }
@@ -207,11 +222,8 @@ public class Stmt {
    * DECLARE TEMPORARY TABLE statement 
    */
   public Integer declareTemporaryTable(HplsqlParser.Declare_temporary_table_itemContext ctx) { 
-    String name = ctx.ident().getText();
-    if (trace) {
-      trace(ctx, "DECLARE TEMPORARY TABLE " + name);
-    }
-    return createTemporaryTable(ctx, ctx.create_table_columns(), name);
+    trace(ctx, "DECLARE TEMPORARY TABLE");
+    return createTemporaryTable(ctx.ident(), ctx.create_table_definition(), ctx.create_table_preoptions());
   }
   
   /**
@@ -256,37 +268,45 @@ public class Stmt {
    * CREATE LOCAL TEMPORARY | VOLATILE TABLE statement 
    */
   public Integer createLocalTemporaryTable(HplsqlParser.Create_local_temp_table_stmtContext ctx) { 
-    String name = ctx.ident().getText();
-    if (trace) {
-      trace(ctx, "CREATE LOCAL TEMPORARY TABLE " + name);
-    }
-    return createTemporaryTable(ctx, ctx.create_table_columns(), name);
+    trace(ctx, "CREATE LOCAL TEMPORARY TABLE");
+    return createTemporaryTable(ctx.ident(), ctx.create_table_definition(), ctx.create_table_preoptions());
    }
   
   /**
    * Create a temporary table statement 
    */
-  public Integer createTemporaryTable(ParserRuleContext ctx, Create_table_columnsContext colCtx, String name) { 
+  public Integer createTemporaryTable(HplsqlParser.IdentContext identCtx, HplsqlParser.Create_table_definitionContext defCtx,
+                                      HplsqlParser.Create_table_preoptionsContext optCtx) { 
+    StringBuilder sql = new StringBuilder();
+    String name = identCtx.getText();
     String managedName = null;
-    String sql = null;
-    String columns = exec.getFormattedText(colCtx);
+    Token last = identCtx.getStop();
+    if (optCtx != null) {
+      last = optCtx.stop;
+    }
     if (conf.tempTables == Conf.TempTables.NATIVE) {
-      sql = "CREATE TEMPORARY TABLE " + name + "\n(" + columns + "\n)";
-    } else if (conf.tempTables == Conf.TempTables.MANAGED) {
+      sql.append("CREATE TEMPORARY TABLE " + name);
+      sql.append(createTableDefinition(defCtx, last));
+    } 
+    else if (conf.tempTables == Conf.TempTables.MANAGED) {
       managedName = name + "_" + UUID.randomUUID().toString().replace("-","");
       if (!conf.tempTablesSchema.isEmpty()) {
         managedName = conf.tempTablesSchema + "." + managedName;
       }      
-      sql = "CREATE TABLE " + managedName + "\n(" + columns + "\n)";
+      sql.append("CREATE TABLE " + managedName);
+      sql.append(createTableDefinition(defCtx, last));
       if (!conf.tempTablesLocation.isEmpty()) {
-        sql += "\nLOCATION '" + conf.tempTablesLocation + "/" + managedName + "'";
+        sql.append("\nLOCATION '" + conf.tempTablesLocation + "/" + managedName + "'");
       }
       if (trace) {
-        trace(ctx, "Managed table name: " + managedName);
+        trace(null, "Managed table name: " + managedName);
       }
     }  
+    if (trace) {
+      trace(null, sql.toString()); 
+    }
     if (sql != null) {
-      Query query = exec.executeSql(ctx, sql, exec.conf.defaultConnection);
+      Query query = exec.executeSql(null, sql.toString(), exec.conf.defaultConnection);
       if (query.error()) {
         exec.signal(query);
         return 1;
@@ -601,6 +621,19 @@ public class Stmt {
     else if(ctx.T_ELSE() != null) {
       trace(ctx, "ELSE executed");
       visit(ctx.single_block_stmt(1));
+    }
+    return 0; 
+  }
+  
+  /**
+   * IF statement (BTEQ syntax)
+   */
+  public Integer ifBteq(HplsqlParser.If_bteq_stmtContext ctx) {
+    trace(ctx, "IF");
+    visit(ctx.bool_expr());
+    if (exec.stackPop().isTrue()) {
+      trace(ctx, "IF TRUE executed");
+      visit(ctx.single_block_stmt());
     }
     return 0; 
   }
@@ -1103,13 +1136,17 @@ public class Stmt {
     trace(ctx, "DELETE");
     String table = evalPop(ctx.table_name()).toString();
     StringBuilder sql = new StringBuilder();
-    sql.append("DELETE FROM ");
-    sql.append(table);
-    if (ctx.where_clause() != null) {
-      boolean oldBuildSql = exec.buildSql; 
-      exec.buildSql = true;
-      sql.append(" " + evalPop(ctx.where_clause()).toString());
-      exec.buildSql = oldBuildSql;
+    if (ctx.T_ALL() == null) {
+      sql.append("DELETE FROM " + table);
+      if (ctx.where_clause() != null) {
+        boolean oldBuildSql = exec.buildSql; 
+        exec.buildSql = true;
+        sql.append(" " + evalPop(ctx.where_clause()).toString());
+        exec.buildSql = oldBuildSql;
+      }
+    }
+    else {
+      sql.append("TRUNCATE TABLE " + table);
     }
     trace(ctx, sql.toString());
     Query query = exec.executeSql(ctx, sql.toString(), exec.conf.defaultConnection);
@@ -1148,6 +1185,19 @@ public class Stmt {
       System.out.println(evalPop(ctx.expr()).toString());
     }
 	  return 0; 
+  }
+  
+  /**
+   * QUIT Statement 
+   */
+  public Integer quit(HplsqlParser.Quit_stmtContext ctx) { 
+    trace(ctx, "QUIT");
+    String rc = null;
+    if (ctx.expr() != null) {
+      rc = evalPop(ctx.expr()).toString();
+    }
+    exec.signal(Signal.Type.LEAVE_PROGRAM, rc); 
+    return 0; 
   }
   
   /** 

@@ -2,7 +2,9 @@ Ln:1 DECLARE v_float float
 Ln:2 DECLARE v_double double
 Ln:3 DECLARE v_double2 double precision
 Ln:5 SELECT
-Ln:5 select cast(1.1 as float), cast(1.1 as double), cast(1.1 as double) from src LIMIT 1
+Ln:5 select
+  cast(1.1 as float), cast(1.1 as double), cast(1.1 as double)
+from src LIMIT 1
 Ln:5 SELECT completed successfully
 Ln:5 SELECT INTO statement executed
 Ln:5 COLUMN: _c0, float

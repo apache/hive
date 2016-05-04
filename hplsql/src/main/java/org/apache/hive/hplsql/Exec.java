@@ -40,6 +40,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.hive.hplsql.Var.Type;
 import org.apache.hive.hplsql.functions.*;
@@ -50,7 +51,8 @@ import org.apache.hive.hplsql.functions.*;
  */
 public class Exec extends HplsqlBaseVisitor<Integer> {
   
-  public static final String VERSION = "HPL/SQL 0.3.17";
+  public static final String VERSION = "HPL/SQL 0.3.31";
+  public static final String ERRORCODE = "ERRORCODE";
   public static final String SQLCODE = "SQLCODE";
   public static final String SQLSTATE = "SQLSTATE";
   public static final String HOSTCODE = "HOSTCODE";
@@ -665,9 +667,14 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    * Set SQLCODE
    */
   public void setSqlCode(int sqlcode) {
+    Long code = new Long(sqlcode);
     Var var = findVariable(SQLCODE);
     if (var != null) {
-      var.setValue(new Long(sqlcode));
+      var.setValue(code);
+    }
+    var = findVariable(ERRORCODE);
+    if (var != null) {
+      var.setValue(code);
     }
   }
   
@@ -783,6 +790,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     new FunctionMisc(this).register(function);
     new FunctionString(this).register(function);
     new FunctionOra(this).register(function);
+    addVariable(new Var(ERRORCODE, Var.Type.BIGINT, 0L));
     addVariable(new Var(SQLCODE, Var.Type.BIGINT, 0L));
     addVariable(new Var(SQLSTATE, Var.Type.STRING, "00000"));
     addVariable(new Var(HOSTCODE, Var.Type.BIGINT, 0L)); 
@@ -942,9 +950,10 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    */
   Integer getProgramReturnCode() {
     Integer rc = 0;
-    if(!signals.empty()) {
+    if (!signals.empty()) {
       Signal sig = signals.pop();
-      if(sig.type == Signal.Type.LEAVE_ROUTINE && sig.value != null) {
+      if ((sig.type == Signal.Type.LEAVE_PROGRAM || sig.type == Signal.Type.LEAVE_ROUTINE) && 
+        sig.value != null) {
         try {
           rc = Integer.parseInt(sig.value);
         }
@@ -1133,7 +1142,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     String scale = null;
     Var default_ = null;
     if (ctx.dtype().T_ROWTYPE() != null) {
-      row = meta.getRowDataType(ctx, exec.conf.defaultConnection, ctx.dtype().L_ID().getText());
+      row = meta.getRowDataType(ctx, exec.conf.defaultConnection, ctx.dtype().ident().getText());
       if (row == null) {
         type = Var.DERIVED_ROWTYPE;
       }
@@ -1184,7 +1193,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   String getDataType(HplsqlParser.Declare_var_itemContext ctx) {
     String type = null;
     if (ctx.dtype().T_TYPE() != null) {
-      type = meta.getDataType(ctx, exec.conf.defaultConnection, ctx.dtype().L_ID().getText());
+      type = meta.getDataType(ctx, exec.conf.defaultConnection, ctx.dtype().ident().getText());
       if (type == null) {
         type = Var.DERIVED_TYPE; 
       }
@@ -1345,6 +1354,11 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   
   @Override 
   public Integer visitCreate_table_options_ora_item(HplsqlParser.Create_table_options_ora_itemContext ctx) { 
+    return 0; 
+  }
+  
+  @Override 
+  public Integer visitCreate_table_options_td_item(HplsqlParser.Create_table_options_td_itemContext ctx) { 
     return 0; 
   }
   
@@ -1678,6 +1692,14 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   }
   
   /**
+   * IF statement (BTEQ syntax)
+   */
+  @Override  
+  public Integer visitIf_bteq_stmt(HplsqlParser.If_bteq_stmtContext ctx) { 
+    return exec.stmt.ifBteq(ctx); 
+  }
+  
+  /**
    * USE statement
    */
   @Override 
@@ -1784,6 +1806,14 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   @Override 
   public Integer visitPrint_stmt(HplsqlParser.Print_stmtContext ctx) { 
 	  return exec.stmt.print(ctx); 
+  }
+  
+  /** 
+   * QUIT statement 
+   */
+  @Override 
+  public Integer visitQuit_stmt(HplsqlParser.Quit_stmtContext ctx) { 
+    return exec.stmt.quit(ctx); 
   }
   
   /**
@@ -2287,6 +2317,31 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   
   String getText(ParserRuleContext ctx, Token start, Token stop) {
     return ctx.start.getInputStream().getText(new org.antlr.v4.runtime.misc.Interval(start.getStartIndex(), stop.getStopIndex()));
+  }
+  
+  /**
+   * Append the text preserving the formatting (space symbols) between tokens
+   */
+  void append(StringBuilder str, String appendStr, Token start, Token stop) {
+    String spaces = start.getInputStream().getText(new org.antlr.v4.runtime.misc.Interval(start.getStartIndex(), stop.getStopIndex()));
+    spaces = spaces.substring(start.getText().length(), spaces.length() - stop.getText().length());
+    str.append(spaces);
+    str.append(appendStr);
+  }
+  
+  void append(StringBuilder str, TerminalNode start, TerminalNode stop) {
+    String text = start.getSymbol().getInputStream().getText(new org.antlr.v4.runtime.misc.Interval(start.getSymbol().getStartIndex(), stop.getSymbol().getStopIndex()));
+    str.append(text);
+  }
+   
+  /**
+   * Get the first non-null node
+   */
+  TerminalNode nvl(TerminalNode t1, TerminalNode t2) {
+    if (t1 != null) {
+      return t1;
+    }
+    return t2;
   }
   
   /**

@@ -1,24 +1,27 @@
 Ln:1 CREATE TABLE
-Ln:1 CREATE TABLE mssql_t1 (d1 TIMESTAMP,
-nc1 STRING,
-n1 DECIMAL(3,0),
-n2 DECIMAL(3),
-n3 DECIMAL,
-v1 STRING,
-nv1 STRING,
-nv2 STRING
+Ln:1 CREATE TABLE mssql_t1 (
+  d1   TIMESTAMP,
+  nc1  STRING,
+  n1   DECIMAL(3,0),
+  n2   DECIMAL(3),
+  n3   DECIMAL,
+  v1   STRING,
+  nv1  STRING,
+  nv2  STRING
 )
 Ln:12 CREATE TABLE
-Ln:12 CREATE TABLE `mssql_t2` (`i1` INT,
-`v1` VARCHAR(350),
-`v2` STRING,
-`b1` TINYINT,
-`d1` TIMESTAMP
+Ln:12 CREATE TABLE `mssql_t2`(
+ `i1` INT,
+ `v1` VARCHAR(350),
+ `v2` STRING,
+ `b1` TINYINT,
+ `d1` TIMESTAMP
 )
 Ln:31 CREATE TABLE
-Ln:31 CREATE TABLE `default`.`mssql_t3` (`v1` VARCHAR(50),
-`s2` SMALLINT,
-`sd1` TIMESTAMP,
-`i1` INT,
-`v2` VARCHAR(100)
+Ln:31 CREATE TABLE `default`.`mssql_t3`(
+ `v1`  VARCHAR(50),
+ `s2`  SMALLINT,
+ `sd1` TIMESTAMP,
+ `i1`  INT,
+ `v2`  VARCHAR(100)
 )
