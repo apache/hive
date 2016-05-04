@@ -7030,7 +7030,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     conf.setBoolVar(ConfVars.HIVEOPTREDUCEDEDUPLICATION, true);
     conf.setIntVar(ConfVars.HIVEOPTREDUCEDEDUPLICATIONMINREDUCER, 1);
     conf.set(AcidUtils.CONF_ACID_KEY, "true");
-    conf.setBoolVar(ConfVars.HIVEOPTSORTDYNAMICPARTITION, false);
 
     if (table.getNumBuckets() < 1) {
       throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TABLE, table.getTableName());
