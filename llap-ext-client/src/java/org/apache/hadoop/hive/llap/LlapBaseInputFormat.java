@@ -346,7 +346,6 @@ public class LlapBaseInputFormat<V extends WritableComparable> implements InputF
     runtimeInfo.setNumSelfAndUpstreamCompletedTasks(0);
 
 
-    builder.setUsingTezAm(false);
     builder.setFragmentRuntimeInfo(runtimeInfo.build());
     return builder.build();
   }
