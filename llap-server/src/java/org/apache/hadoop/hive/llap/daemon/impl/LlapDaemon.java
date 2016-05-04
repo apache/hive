@@ -27,12 +27,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 
 import javax.management.ObjectName;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
@@ -58,11 +60,13 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge.UdfWhitelistChecker;
 import org.apache.hadoop.metrics2.util.MBeans;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.JvmPauseMonitor;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
+import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.slf4j.Logger;
@@ -98,6 +102,13 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   private final int numExecutors;
   private final long maxJvmMemory;
   private final String[] localDirs;
+  private final DaemonId daemonId;
+
+  private final static Pattern hostsRe = Pattern.compile("[^A-Za-z0-9_-]");
+  private static String generateClusterName(Configuration conf) {
+    String hosts = HiveConf.getTrimmedVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
+    return hostsRe.matcher(hosts.startsWith("@") ? hosts.substring(1) : hosts).replaceAll("_");
+  }
 
   // TODO Not the best way to share the address
   private final AtomicReference<InetSocketAddress> srvAddress = new AtomicReference<>(),
@@ -106,11 +117,10 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
   public LlapDaemon(Configuration daemonConf, int numExecutors, long executorMemoryBytes,
       boolean ioEnabled, boolean isDirectCache, long ioMemoryBytes, String[] localDirs, int srvPort,
-      int mngPort, int shufflePort, int webPort) {
+      int mngPort, int shufflePort, int webPort, String appName) {
     super("LlapDaemon");
 
     initializeLogging();
-
     printAsciiArt();
 
     Preconditions.checkArgument(numExecutors > 0);
@@ -130,6 +140,14 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
           "LLAP service hosts startswith '@' but hive.zookeeper.quorum is not set." +
               " hive.zookeeper.quorum must be set.");
     }
+    String hostName = MetricsUtils.getHostName();
+    try {
+      daemonId = new DaemonId(UserGroupInformation.getCurrentUser().getUserName(),
+          generateClusterName(daemonConf), hostName, appName, System.currentTimeMillis());
+    } catch (IOException ex) {
+      throw new RuntimeException(ex);
+    }
+
 
     this.maxJvmMemory = getTotalHeapSize();
     this.llapIoEnabled = ioEnabled;
@@ -194,7 +212,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     LlapMetricsSystem.initialize("LlapDaemon");
     this.pauseMonitor = new JvmPauseMonitor(daemonConf);
     pauseMonitor.start();
-    String displayName = "LlapDaemonExecutorMetrics-" + MetricsUtils.getHostName();
+    String displayName = "LlapDaemonExecutorMetrics-" + hostName;
     String sessionId = MetricsUtils.getUUID();
     daemonConf.set("llap.daemon.metrics.sessionid", sessionId);
     String[] strIntervals = HiveConf.getTrimmedStringsVar(daemonConf,
@@ -224,11 +242,11 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     this.amReporter = new AMReporter(srvAddress, new QueryFailedHandlerProxy(), daemonConf);
 
     this.server = new LlapProtocolServerImpl(
-        numHandlers, this, srvAddress, mngAddress, srvPort, mngPort);
+        numHandlers, this, srvAddress, mngAddress, srvPort, mngPort, daemonId);
 
     this.containerRunner = new ContainerRunnerImpl(daemonConf, numExecutors, waitQueueSize,
         enablePreemption, localDirs, this.shufflePort, srvAddress, executorMemoryBytes, metrics,
-        amReporter, executorClassLoader);
+        amReporter, executorClassLoader, daemonId.getClusterString());
     addIfService(containerRunner);
 
     // Not adding the registry as a service, since we need to control when it is initialized - conf used to pickup properties.
@@ -380,10 +398,18 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
 
       String containerIdStr = System.getenv(ApplicationConstants.Environment.CONTAINER_ID.name());
+      String appName = null;
       if (containerIdStr != null && !containerIdStr.isEmpty()) {
         daemonConf.set(ConfVars.LLAP_DAEMON_CONTAINER_ID.varname, containerIdStr);
+        appName = ConverterUtils.toContainerId(containerIdStr)
+            .getApplicationAttemptId().getApplicationId().toString();
       } else {
         daemonConf.unset(ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
+        // Note, we assume production LLAP always runs under YARN.
+        LOG.error("Cannot find " + ApplicationConstants.Environment.CONTAINER_ID.toString()
+            + "; LLAP tokens may grant access to subsequent instances of the cluster with"
+            + " the same name");
+        appName = null;
       }
 
       int numExecutors = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
@@ -403,7 +429,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       boolean isDirectCache = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_ALLOCATOR_DIRECT);
       boolean isLlapIo = HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_IO_ENABLED, true);
       llapDaemon = new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, isLlapIo,
-              isDirectCache, ioMemoryBytes, localDirs, rpcPort, mngPort, shufflePort, webPort);
+          isDirectCache, ioMemoryBytes, localDirs, rpcPort, mngPort, shufflePort, webPort,
+          appName);
 
       LOG.info("Adding shutdown hook for LlapDaemon");
       ShutdownHookManager.addShutdownHook(new CompositeServiceShutdownHook(llapDaemon), 1);
@@ -423,24 +450,27 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   }
 
   @Override
-  public SubmitWorkResponseProto submitWork(SubmitWorkRequestProto request) throws
-      IOException {
+  public SubmitWorkResponseProto submitWork(
+      SubmitWorkRequestProto request) throws IOException {
     numSubmissions.incrementAndGet();
     return containerRunner.submitWork(request);
   }
 
   @Override
-  public SourceStateUpdatedResponseProto sourceStateUpdated(SourceStateUpdatedRequestProto request) {
+  public SourceStateUpdatedResponseProto sourceStateUpdated(
+      SourceStateUpdatedRequestProto request) throws IOException {
     return containerRunner.sourceStateUpdated(request);
   }
 
   @Override
-  public QueryCompleteResponseProto queryComplete(QueryCompleteRequestProto request) {
+  public QueryCompleteResponseProto queryComplete(
+      QueryCompleteRequestProto request) throws IOException {
     return containerRunner.queryComplete(request);
   }
 
   @Override
-  public TerminateFragmentResponseProto terminateFragment(TerminateFragmentRequestProto request) {
+  public TerminateFragmentResponseProto terminateFragment(
+      TerminateFragmentRequestProto request) throws IOException {
     return containerRunner.terminateFragment(request);
   }
 

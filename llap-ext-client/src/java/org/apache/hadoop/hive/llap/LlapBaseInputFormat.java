@@ -45,7 +45,9 @@ import org.apache.hadoop.hive.llap.LlapBaseRecordReader;
 import org.apache.hadoop.hive.llap.LlapBaseRecordReader.ReaderEvent;
 import org.apache.hadoop.hive.llap.LlapInputSplit;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
 import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient;
 import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient.LlapTaskUmbilicalExternalResponder;
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;
@@ -297,21 +299,17 @@ public class LlapBaseInputFormat<V extends WritableComparable> implements InputF
     TaskSpec taskSpec = submitWorkInfo.getTaskSpec();
     ApplicationId appId = submitWorkInfo.getFakeAppId();
 
-    SubmitWorkRequestProto.Builder builder = SubmitWorkRequestProto.newBuilder();
+    int attemptId = taskSpec.getTaskAttemptID().getId();
     // This works, assuming the executor is running within YARN.
-    LOG.info("Setting user in submitWorkRequest to: " +
-        System.getenv(ApplicationConstants.Environment.USER.name()));
-    builder.setUser(System.getenv(ApplicationConstants.Environment.USER.name()));
-    builder.setApplicationIdString(appId.toString());
-    builder.setAppAttemptNumber(0);
-    builder.setTokenIdentifier(appId.toString());
+    String user = System.getenv(ApplicationConstants.Environment.USER.name());
+    LOG.info("Setting user in submitWorkRequest to: " + user);
+    SignableVertexSpec svs = Converters.convertTaskSpecToProto(
+        taskSpec, attemptId, appId.toString(), null, user); // TODO signatureKeyId
 
     ContainerId containerId =
       ContainerId.newInstance(ApplicationAttemptId.newInstance(appId, 0), taskNum);
-    builder.setContainerIdString(containerId.toString());
 
-    builder.setAmHost(address.getHostName());
-    builder.setAmPort(address.getPort());
+
     Credentials taskCredentials = new Credentials();
     // Credentials can change across DAGs. Ideally construct only once per DAG.
     // TODO Figure out where credentials will come from. Normally Hive sets up
@@ -332,10 +330,6 @@ public class LlapBaseInputFormat<V extends WritableComparable> implements InputF
     Credentials credentials = new Credentials();
     TokenCache.setSessionToken(token, credentials);
     ByteBuffer credentialsBinary = serializeCredentials(credentials);
-    builder.setCredentialsBinary(ByteString.copyFrom(credentialsBinary));
-
-
-    builder.setFragmentSpec(Converters.convertTaskSpecToProto(taskSpec));
 
     FragmentRuntimeInfo.Builder runtimeInfo = FragmentRuntimeInfo.newBuilder();
     runtimeInfo.setCurrentAttemptStartTime(System.currentTimeMillis());
@@ -345,8 +339,18 @@ public class LlapBaseInputFormat<V extends WritableComparable> implements InputF
     runtimeInfo.setNumSelfAndUpstreamTasks(taskSpec.getVertexParallelism());
     runtimeInfo.setNumSelfAndUpstreamCompletedTasks(0);
 
+    SubmitWorkRequestProto.Builder builder = SubmitWorkRequestProto.newBuilder();
 
+    builder.setWorkSpec(VertexOrBinary.newBuilder().setVertex(svs).build());
+    // TODO work spec signature
+    builder.setFragmentNumber(taskSpec.getTaskAttemptID().getTaskID().getId());
+    builder.setAttemptNumber(0);
+    builder.setContainerIdString(containerId.toString());
+    builder.setAmHost(address.getHostName());
+    builder.setAmPort(address.getPort());
+    builder.setCredentialsBinary(ByteString.copyFrom(credentialsBinary));
     builder.setFragmentRuntimeInfo(runtimeInfo.build());
+
     return builder.build();
   }
 

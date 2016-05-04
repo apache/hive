@@ -44,4 +44,6 @@ public interface Scheduler<T> {
   void killFragment(String fragmentId);
 
   Set<String> getExecutorsStatus();
+
+  QueryIdentifier findQueryByFragment(String fragmentId);
 }

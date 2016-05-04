@@ -16,8 +16,11 @@ import org.apache.commons.collections4.ListUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexIdentifier;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
+import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.llap.tez.LlapProtocolClientProxy;
 import org.apache.hadoop.hive.llap.tezplugins.helpers.LlapTaskUmbilicalServer;
 import org.apache.hadoop.io.Text;
@@ -128,7 +131,12 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
    */
   public void submitWork(final SubmitWorkRequestProto submitWorkRequestProto, String llapHost, int llapPort, List<TezEvent> tezEvents) {
     // Register the pending events to be sent for this spec.
-    String fragmentId = submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString();
+    SignableVertexSpec vertex = submitWorkRequestProto.getWorkSpec().getVertex();
+    VertexIdentifier vId = vertex.getVertexIdentifier();
+    TezTaskAttemptID attemptId = Converters.createTaskAttemptId(
+        vId, submitWorkRequestProto.getFragmentNumber(), submitWorkRequestProto.getAttemptNumber());
+    final String fragmentId = attemptId.toString();
+
     PendingEventData pendingEventData = new PendingEventData(
         new TaskHeartbeatInfo(fragmentId, llapHost, llapPort),
         tezEvents);
@@ -146,11 +154,11 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
           public void setResponse(LlapDaemonProtocolProtos.SubmitWorkResponseProto response) {
             if (response.hasSubmissionState()) {
               if (response.getSubmissionState().equals(LlapDaemonProtocolProtos.SubmissionStateProto.REJECTED)) {
-                String msg = "Fragment: " + submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString() + " rejected. Server Busy.";
+                String msg = "Fragment: " + fragmentId + " rejected. Server Busy.";
                 LOG.info(msg);
                 if (responder != null) {
                   Throwable err = new RuntimeException(msg);
-                  responder.submissionFailed(submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString(), err);
+                  responder.submissionFailed(fragmentId, err);
                 }
                 return;
               }
@@ -159,10 +167,10 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
 
           @Override
           public void indicateError(Throwable t) {
-            String msg = "Failed to submit: " + submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString();
+            String msg = "Failed to submit: " + fragmentId;
             LOG.error(msg, t);
             Throwable err = new RuntimeException(msg, t);
-            responder.submissionFailed(submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString(), err);
+            responder.submissionFailed(fragmentId, err);
           }
         });
 

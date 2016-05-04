@@ -29,9 +29,12 @@ public interface ContainerRunner {
 
   SubmitWorkResponseProto submitWork(SubmitWorkRequestProto request) throws IOException;
 
-  SourceStateUpdatedResponseProto sourceStateUpdated(SourceStateUpdatedRequestProto request);
+  SourceStateUpdatedResponseProto sourceStateUpdated(
+      SourceStateUpdatedRequestProto request) throws IOException;
 
-  QueryCompleteResponseProto queryComplete(QueryCompleteRequestProto request);
+  QueryCompleteResponseProto queryComplete(
+      QueryCompleteRequestProto request) throws IOException;
 
-  TerminateFragmentResponseProto terminateFragment(TerminateFragmentRequestProto request);
+  TerminateFragmentResponseProto terminateFragment(
+      TerminateFragmentRequestProto request)  throws IOException;
 }

@@ -275,7 +275,8 @@ public class TezSessionState {
     if (llapMode) {
       if (UserGroupInformation.isSecurityEnabled()) {
         LlapTokenProvider tp = LlapProxy.getOrInitTokenProvider(conf);
-        Token<LlapTokenIdentifier> token = tp.getDelegationToken();
+        // For Tez, we don't use appId to distinguish the tokens; security scope is the user.
+        Token<LlapTokenIdentifier> token = tp.getDelegationToken(null);
         if (LOG.isInfoEnabled()) {
           LOG.info("Obtained a LLAP token: " + token);
         }

@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.SocketFactory;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.impl.LlapManagementProtocolClientImpl;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenRequestProto;
@@ -81,7 +82,7 @@ public class LlapSecurityHelper implements LlapTokenProvider {
   }
 
   @Override
-  public Token<LlapTokenIdentifier> getDelegationToken() throws IOException {
+  public Token<LlapTokenIdentifier> getDelegationToken(String appId) throws IOException {
     if (!UserGroupInformation.isSecurityEnabled()) return null;
     if (llapUgi == null) {
       llapUgi = UserGroupInformation.getCurrentUser();
@@ -98,7 +99,7 @@ public class LlapSecurityHelper implements LlapTokenProvider {
     boolean hasRefreshed = false;
     while (true) {
       try {
-        tokenBytes = getTokenBytes();
+        tokenBytes = getTokenBytes(appId);
         break;
       } catch (InterruptedException ie) {
         throw new RuntimeException(ie);
@@ -128,7 +129,8 @@ public class LlapSecurityHelper implements LlapTokenProvider {
     return token;
   }
 
-  private ByteString getTokenBytes() throws InterruptedException, IOException {
+  private ByteString getTokenBytes(
+      final String appId) throws InterruptedException, IOException {
     return llapUgi.doAs(new PrivilegedExceptionAction<ByteString>() {
       @Override
       public ByteString run() throws Exception {
@@ -138,8 +140,11 @@ public class LlapSecurityHelper implements LlapTokenProvider {
               clientInstance.getManagementPort(), retryPolicy, socketFactory);
         }
         // Client only connects on the first call, so this has to be done in doAs.
-        GetTokenRequestProto req = GetTokenRequestProto.newBuilder().build();
-        return client.getDelegationToken(null, req).getToken();
+        GetTokenRequestProto.Builder req = GetTokenRequestProto.newBuilder();
+        if (!StringUtils.isBlank(appId)) {
+          req.setAppId(appId);
+        }
+        return client.getDelegationToken(null, req.build()).getToken();
       }
     });
   }

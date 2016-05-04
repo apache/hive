@@ -35,7 +35,7 @@ import com.google.common.collect.Multimap;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateProto;
 
 public class QueryInfo {
@@ -55,10 +55,11 @@ public class QueryInfo {
   private final ConcurrentMap<String, SourceStateProto> sourceStateMap;
 
   private final FinishableStateTracker finishableStateTracker = new FinishableStateTracker();
+  private final String tokenUserName, appId;
 
-  public QueryInfo(QueryIdentifier queryIdentifier, String appIdString, String dagName, int dagIdentifier,
-                   String user, ConcurrentMap<String, SourceStateProto> sourceStateMap,
-                   String[] localDirsBase, FileSystem localFs) {
+  public QueryInfo(QueryIdentifier queryIdentifier, String appIdString, String dagName,
+      int dagIdentifier, String user, ConcurrentMap<String, SourceStateProto> sourceStateMap,
+      String[] localDirsBase, FileSystem localFs, String tokenUserName, String tokenAppId) {
     this.queryIdentifier = queryIdentifier;
     this.appIdString = appIdString;
     this.dagName = dagName;
@@ -67,6 +68,8 @@ public class QueryInfo {
     this.user = user;
     this.localDirsBase = localDirsBase;
     this.localFs = localFs;
+    this.tokenUserName = tokenUserName;
+    this.appId = tokenAppId;
   }
 
   public QueryIdentifier getQueryIdentifier() {
@@ -89,9 +92,10 @@ public class QueryInfo {
     return sourceStateMap;
   }
 
-  public QueryFragmentInfo registerFragment(String vertexName, int fragmentNumber, int attemptNumber, FragmentSpecProto fragmentSpec) {
-    QueryFragmentInfo fragmentInfo = new QueryFragmentInfo(this, vertexName, fragmentNumber, attemptNumber,
-        fragmentSpec);
+  public QueryFragmentInfo registerFragment(String vertexName, int fragmentNumber,
+      int attemptNumber, SignableVertexSpec vertexSpec, String fragmentIdString) {
+    QueryFragmentInfo fragmentInfo = new QueryFragmentInfo(
+        this, vertexName, fragmentNumber, attemptNumber, vertexSpec, fragmentIdString);
     knownFragments.add(fragmentInfo);
     return fragmentInfo;
   }
@@ -269,5 +273,13 @@ public class QueryInfo {
     public void setLastFinishableState(boolean lastFinishableState) {
       this.lastFinishableState = lastFinishableState;
     }
+  }
+
+  public String getTokenUserName() {
+    return tokenUserName;
+  }
+
+  public String getTokenAppId() {
+    return appId;
   }
 }

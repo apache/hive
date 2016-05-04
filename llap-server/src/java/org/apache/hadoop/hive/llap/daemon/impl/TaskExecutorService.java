@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentSpecProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.tez.runtime.task.EndReason;
@@ -191,8 +191,8 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       TaskWrapper task = e.getValue();
       boolean isFirst = true;
       TaskRunnerCallable c = task.getTaskRunnerCallable();
-      if (c != null && c.getRequest() != null && c.getRequest().getFragmentSpec() != null) {
-        FragmentSpecProto fs = c.getRequest().getFragmentSpec();
+      if (c != null && c.getVertexSpec() != null) {
+        SignableVertexSpec fs = c.getVertexSpec();
         value.append(isFirst ? " (" : ", ").append(fs.getDagName())
           .append("/").append(fs.getVertexName());
         isFirst = false;
@@ -417,6 +417,15 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       metrics.setExecutorNumQueuedRequests(waitQueue.size());
     }
     return result;
+  }
+
+  @Override
+  public QueryIdentifier findQueryByFragment(String fragmentId) {
+    synchronized (lock) {
+      TaskWrapper taskWrapper = knownTasks.get(fragmentId);
+      return taskWrapper == null ? null : taskWrapper.getTaskRunnerCallable()
+          .getFragmentInfo().getQueryInfo().getQueryIdentifier();
+    }
   }
 
   @Override
@@ -772,7 +781,7 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
           ", firstAttemptStartTime=" + taskRunnerCallable.getFragmentRuntimeInfo().getFirstAttemptStartTime() +
           ", dagStartTime=" + taskRunnerCallable.getFragmentRuntimeInfo().getDagStartTime() +
           ", withinDagPriority=" + taskRunnerCallable.getFragmentRuntimeInfo().getWithinDagPriority() +
-          ", vertexParallelism= " + taskRunnerCallable.getFragmentSpec().getVertexParallelism() +
+          ", vertexParallelism= " + taskRunnerCallable.getVertexSpec().getVertexParallelism() +
           ", selfAndUpstreamParallelism= " + taskRunnerCallable.getFragmentRuntimeInfo().getNumSelfAndUpstreamTasks() +
           ", selfAndUpstreamComplete= " + taskRunnerCallable.getFragmentRuntimeInfo().getNumSelfAndUpstreamCompletedTasks() +
           '}';

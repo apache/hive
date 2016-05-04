@@ -46,7 +46,7 @@ public class TestLlapDaemonProtocolServerImpl {
     LlapProtocolServerImpl server =
         new LlapProtocolServerImpl(numHandlers, containerRunnerMock,
            new AtomicReference<InetSocketAddress>(), new AtomicReference<InetSocketAddress>(),
-           rpcPort, rpcPort + 1);
+           rpcPort, rpcPort + 1, null);
     when(containerRunnerMock.submitWork(any(SubmitWorkRequestProto.class))).thenReturn(
         SubmitWorkResponseProto
             .newBuilder()

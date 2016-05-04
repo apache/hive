@@ -46,19 +46,38 @@ message GroupInputSpecProto {
   optional EntityDescriptorProto merged_input_descriptor = 3;
 }
 
+message VertexIdentifier {
+  optional string application_id_string = 1;
+  optional int32 app_attempt_number = 2;
+  optional int32 dag_id = 3;
+  optional int32 vertex_id = 4;
+}
 
-message FragmentSpecProto {
-  optional string fragment_identifier_string = 1;
-  optional string dag_name = 2;
-  optional int32 dag_id = 11;
-  optional string vertex_name = 3;
-  optional EntityDescriptorProto processor_descriptor = 4;
-  repeated IOSpecProto input_specs = 5;
-  repeated IOSpecProto output_specs = 6;
-  repeated GroupInputSpecProto grouped_input_specs = 7;
-  optional int32 vertex_parallelism = 8;
-  optional int32 fragment_number =9;
-  optional int32 attempt_number = 10;
+// The part of SubmitWork that can be signed 
+message SignableVertexSpec
+{
+  optional string user = 1;
+  optional int64 signatureKeyId = 2;
+
+  optional VertexIdentifier vertexIdentifier = 3;
+  // Display names cannot be modified by the client for now. If needed, they should be sent to HS2 who will put them here.
+  optional string dag_name = 4;
+  optional string vertex_name = 5;
+
+  // The core vertex stuff 
+  optional string token_identifier = 6;
+  optional EntityDescriptorProto processor_descriptor = 7;
+  repeated IOSpecProto input_specs = 8;
+  repeated IOSpecProto output_specs = 9;
+  repeated GroupInputSpecProto grouped_input_specs = 10;
+
+  optional int32 vertex_parallelism = 11; // An internal field required for Tez.
+}
+
+// Union
+message VertexOrBinary {
+  optional SignableVertexSpec vertex = 1;
+  optional bytes vertexBinary = 2; // SignableVertexSpec
 }
 
 message FragmentRuntimeInfo {
@@ -81,17 +100,23 @@ message QueryIdentifierProto {
 }
 
 message SubmitWorkRequestProto {
-  optional string container_id_string = 1;
-  optional string am_host = 2;
-  optional int32 am_port = 3;
-  optional string token_identifier = 4;
-  optional bytes credentials_binary = 5;
-  optional string user = 6;
-  optional string application_id_string = 7;
-  optional int32 app_attempt_number = 8;
-  optional FragmentSpecProto fragment_spec = 9;
-  optional FragmentRuntimeInfo fragment_runtime_info = 10;
+  optional VertexOrBinary work_spec = 1;
+  optional bytes work_spec_signature = 2;
+
+  optional int32 fragment_number = 3;
+  optional int32 attempt_number = 4;
+
+  optional string container_id_string = 5;
+  optional string am_host = 6;
+  optional int32 am_port = 7;
+
+  // Credentials are not signed - the client can add e.g. his own HDFS tokens.
+  optional bytes credentials_binary = 8;
+
+  // Not supported/honored for external clients right now.
+  optional FragmentRuntimeInfo fragment_runtime_info = 9;
 }
+
 
 enum SubmissionStateProto {
   ACCEPTED = 1;
@@ -130,6 +155,7 @@ message TerminateFragmentResponseProto {
 }
 
 message GetTokenRequestProto {
+  optional string app_id = 1;
 }
 
 message GetTokenResponseProto {

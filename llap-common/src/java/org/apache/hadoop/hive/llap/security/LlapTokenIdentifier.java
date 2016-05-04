@@ -22,6 +22,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.token.Token;
@@ -31,25 +32,32 @@ import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenIdenti
 public class LlapTokenIdentifier extends AbstractDelegationTokenIdentifier {
   private static final String KIND = "LLAP_TOKEN";
   public static final Text KIND_NAME = new Text(KIND);
+  private String clusterId;
+  private String appId;
 
   public LlapTokenIdentifier() {
     super();
   }
 
-  public LlapTokenIdentifier(Text owner, Text renewer, Text realUser) {
+  public LlapTokenIdentifier(Text owner, Text renewer, Text realUser,
+      String clusterId, String appId) {
     super(owner, renewer, realUser);
+    this.clusterId = clusterId;
+    this.appId = appId == null ? "" : appId;
   }
 
   @Override
   public void write(DataOutput out) throws IOException {
     super.write(out);
-    // Nothing right now.
+    out.writeUTF(clusterId);
+    out.writeUTF(appId);
   }
 
   @Override
   public void readFields(DataInput in) throws IOException {
     super.readFields(in);
-    // Nothing right now.
+    clusterId = in.readUTF();
+    appId = in.readUTF();
   }
 
   @Override
@@ -57,21 +65,34 @@ public class LlapTokenIdentifier extends AbstractDelegationTokenIdentifier {
     return KIND_NAME;
   }
 
-  @Override
-  public int hashCode() {
-    // Nothing else right now.
-    return super.hashCode();
+  public String getAppId() {
+    return appId;
+  }
+
+  public String getClusterId() {
+    return clusterId;
   }
 
   @Override
-  public boolean equals(Object other) {
-    // Nothing else right now.
-    return super.equals(other);
+  public int hashCode() {
+    final int prime = 31;
+    int result = prime * super.hashCode() + ((appId == null) ? 0 : appId.hashCode());
+    return prime * result + ((clusterId == null) ? 0 : clusterId.hashCode());
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (!(obj instanceof LlapTokenIdentifier) || !super.equals(obj)) return false;
+    LlapTokenIdentifier other = (LlapTokenIdentifier) obj;
+    return (appId == null ? other.appId == null : appId.equals(other.appId))
+        && (clusterId == null ? other.clusterId == null : clusterId.equals(other.clusterId));
   }
 
   @Override
   public String toString() {
-    return KIND + "; " + super.toString();
+    return KIND + "; " + super.toString() + ", cluster " + clusterId + ", app secret hash "
+        + (StringUtils.isBlank(appId) ? 0 : appId.hashCode());
   }
 
   @InterfaceAudience.Private

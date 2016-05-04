@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWor
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
@@ -89,10 +90,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private static final Logger LOG = LoggerFactory.getLogger(LlapTaskCommunicator.class);
 
   private static final boolean isInfoEnabled = LOG.isInfoEnabled();
-  private static final boolean isDebugEnabed = LOG.isDebugEnabled();
-
-  private final SubmitWorkRequestProto BASE_SUBMIT_WORK_REQUEST;
-
+  
   private final ConcurrentMap<QueryIdentifierProto, ByteBuffer> credentialMap;
 
   // Tracks containerIds and taskAttemptIds, so can be kept independent of the running DAG.
@@ -105,6 +103,8 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private long deleteDelayOnDagComplete;
   private final LlapTaskUmbilicalProtocol umbilical;
   private final Token<LlapTokenIdentifier> token;
+  private final int appAttemptId;
+  private final String user;
 
   // These two structures track the list of known nodes, and the list of nodes which are sending in keep-alive heartbeats.
   // Primarily for debugging purposes a.t.m, since there's some unexplained TASK_TIMEOUTS which are currently being observed.
@@ -113,8 +113,6 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
   private final LlapRegistryService serviceRegistry;
 
-
-  private volatile int currentDagId;
   private volatile QueryIdentifierProto currentQueryIdentifierProto;
 
   public LlapTaskCommunicator(
@@ -138,17 +136,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     serviceRegistry = LlapRegistryService.getClient(conf);
 
     umbilical = new LlapTaskUmbilicalProtocolImpl(getUmbilical());
-    SubmitWorkRequestProto.Builder baseBuilder = SubmitWorkRequestProto.newBuilder();
 
     // TODO Avoid reading this from the environment
-    baseBuilder.setUser(System.getenv(ApplicationConstants.Environment.USER.name()));
-    baseBuilder.setApplicationIdString(
-        taskCommunicatorContext.getApplicationAttemptId().getApplicationId().toString());
-    baseBuilder
-        .setAppAttemptNumber(taskCommunicatorContext.getApplicationAttemptId().getAttemptId());
-    baseBuilder.setTokenIdentifier(getTokenIdentifier());
-
-    BASE_SUBMIT_WORK_REQUEST = baseBuilder.build();
+    user = System.getenv(ApplicationConstants.Environment.USER.name());
+    appAttemptId = taskCommunicatorContext.getApplicationAttemptId().getAttemptId();
 
     credentialMap = new ConcurrentHashMap<>();
     sourceStateTracker = new SourceStateTracker(getContext(), this);
@@ -316,7 +307,6 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
               t = se.getCause();
             }
             if (t instanceof RemoteException) {
-              RemoteException re = (RemoteException) t;
               // All others from the remote service cause the task to FAIL.
               LOG.info(
                   "Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
@@ -591,8 +581,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
                                                             TaskSpec taskSpec,
                                                             FragmentRuntimeInfo fragmentRuntimeInfo) throws
       IOException {
-    SubmitWorkRequestProto.Builder builder =
-        SubmitWorkRequestProto.newBuilder(BASE_SUBMIT_WORK_REQUEST);
+    SubmitWorkRequestProto.Builder builder = SubmitWorkRequestProto.newBuilder();
+    builder.setFragmentNumber(taskSpec.getTaskAttemptID().getTaskID().getId());
+    builder.setAttemptNumber(taskSpec.getTaskAttemptID().getId());
     builder.setContainerIdString(containerId.toString());
     builder.setAmHost(getAddress().getHostName());
     builder.setAmPort(getAddress().getPort());
@@ -607,7 +598,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       credentialsBinary = credentialsBinary.duplicate();
     }
     builder.setCredentialsBinary(ByteString.copyFrom(credentialsBinary));
-    builder.setFragmentSpec(Converters.convertTaskSpecToProto(taskSpec));
+    builder.setWorkSpec(VertexOrBinary.newBuilder().setVertex(Converters.convertTaskSpecToProto(
+        taskSpec, appAttemptId, getTokenIdentifier(), null, user)).build());
+    // Don't call builder.setWorkSpecSignature() - Tez doesn't sign fragments
     builder.setFragmentRuntimeInfo(fragmentRuntimeInfo);
     return builder.build();
   }

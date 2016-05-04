@@ -71,6 +71,39 @@ public class TestDbTxnManager2 {
     TxnDbUtil.prepDb();
   }
   @Test
+  public void testLocksInSubquery() throws Exception {
+    checkCmdOnDriver(driver.run("create table if not exists T (a int, b int)"));
+    checkCmdOnDriver(driver.run("create table if not exists S (a int, b int) clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')"));
+    checkCmdOnDriver(driver.run("create table if not exists R (a int, b int) clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')"));
+
+    checkCmdOnDriver(driver.compileAndRespond("delete from S where a in (select a from T where b = 1)"));
+    txnMgr.openTxn("one");
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "one");
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T", null, locks.get(0));
+    checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "S", null, locks.get(1));
+    txnMgr.rollbackTxn();
+
+    checkCmdOnDriver(driver.compileAndRespond("update S set a = 7 where a in (select a from T where b = 1)"));
+    txnMgr.openTxn("one");
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "one");
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T", null, locks.get(0));
+    checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "S", null, locks.get(1));
+    txnMgr.rollbackTxn();
+
+    checkCmdOnDriver(driver.compileAndRespond("insert into R select * from S where a in (select a from T where b = 1)"));
+    txnMgr.openTxn("three");
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "three");
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 3, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T", null, locks.get(0));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "S", null, locks.get(1));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "R", null, locks.get(2));
+  }
+  @Test
   public void createTable() throws Exception {
     CommandProcessorResponse cpr = driver.compileAndRespond("create table if not exists T (a int, b int)");
     checkCmdOnDriver(cpr);
@@ -501,6 +534,87 @@ public class TestDbTxnManager2 {
     Assert.assertEquals(0, count);
     count = TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_COMPACTIONS where CC_DATABASE='temp' and CC_TABLE in ('t10', 't11', 't12p', 't13p')");
     Assert.assertEquals(0, count);
+  }
+
+  /**
+   * collection of queries where we ensure that we get the locks that are expected
+   * @throws Exception
+   */
+  @Test
+  public void checkExpectedLocks() throws Exception {
+    CommandProcessorResponse cpr = null;
+    cpr = driver.run("create table acidPart(a int, b int) partitioned by (p string) clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("create table nonAcidPart(a int, b int) partitioned by (p string) stored as orc");
+    checkCmdOnDriver(cpr);
+
+    cpr = driver.compileAndRespond("insert into nonAcidPart partition(p) values(1,2,3)");
+    checkCmdOnDriver(cpr);
+    LockState lockState = ((DbTxnManager) txnMgr).acquireLocks(driver.getPlan(), ctx, "Practical", false);
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "values__tmp__table__1", null, locks.get(0));
+    checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "nonAcidPart", null, locks.get(1));
+    List<HiveLock> relLocks = new ArrayList<HiveLock>(2);
+    relLocks.add(new DbLockManager.DbHiveLock(locks.get(0).getLockid()));
+    relLocks.add(new DbLockManager.DbHiveLock(locks.get(1).getLockid()));
+    txnMgr.getLockManager().releaseLocks(relLocks);
+
+    cpr = driver.compileAndRespond("insert into nonAcidPart partition(p=1) values(5,6)");
+    checkCmdOnDriver(cpr);
+    lockState = ((DbTxnManager) txnMgr).acquireLocks(driver.getPlan(), ctx, "Practical", false);
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "values__tmp__table__2", null, locks.get(0));
+    checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "nonAcidPart", "p=1", locks.get(1));
+    relLocks = new ArrayList<HiveLock>(2);
+    relLocks.add(new DbLockManager.DbHiveLock(locks.get(0).getLockid()));
+    relLocks.add(new DbLockManager.DbHiveLock(locks.get(1).getLockid()));
+    txnMgr.getLockManager().releaseLocks(relLocks);
+
+    cpr = driver.compileAndRespond("insert into acidPart partition(p) values(1,2,3)");
+    checkCmdOnDriver(cpr);
+    lockState = ((DbTxnManager) txnMgr).acquireLocks(driver.getPlan(), ctx, "Practical", false);
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "values__tmp__table__3", null, locks.get(0));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "acidPart", null, locks.get(1));
+    relLocks = new ArrayList<HiveLock>(2);
+    relLocks.add(new DbLockManager.DbHiveLock(locks.get(0).getLockid()));
+    relLocks.add(new DbLockManager.DbHiveLock(locks.get(1).getLockid()));
+    txnMgr.getLockManager().releaseLocks(relLocks);
+
+    cpr = driver.compileAndRespond("insert into acidPart partition(p=1) values(5,6)");
+    checkCmdOnDriver(cpr);
+    lockState = ((DbTxnManager) txnMgr).acquireLocks(driver.getPlan(), ctx, "Practical", false);
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "values__tmp__table__4", null, locks.get(0));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "acidPart", "p=1", locks.get(1));
+    relLocks = new ArrayList<HiveLock>(2);
+    relLocks.add(new DbLockManager.DbHiveLock(locks.get(0).getLockid()));
+    relLocks.add(new DbLockManager.DbHiveLock(locks.get(1).getLockid()));
+    txnMgr.getLockManager().releaseLocks(relLocks);
+
+    cpr = driver.compileAndRespond("update acidPart set b = 17 where a = 1");
+    checkCmdOnDriver(cpr);
+    lockState = ((DbTxnManager) txnMgr).acquireLocks(driver.getPlan(), ctx, "Practical", false);
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "acidPart", null, locks.get(0));
+    relLocks = new ArrayList<HiveLock>(2);
+    relLocks.add(new DbLockManager.DbHiveLock(locks.get(0).getLockid()));
+    txnMgr.getLockManager().releaseLocks(relLocks);
+
+    cpr = driver.compileAndRespond("update acidPart set b = 17 where p = 1");
+    checkCmdOnDriver(cpr);
+    lockState = ((DbTxnManager) txnMgr).acquireLocks(driver.getPlan(), ctx, "Practical", false);
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "acidPart", null, locks.get(0));//https://issues.apache.org/jira/browse/HIVE-13212
+    relLocks = new ArrayList<HiveLock>(2);
+    relLocks.add(new DbLockManager.DbHiveLock(locks.get(0).getLockid()));
+    txnMgr.getLockManager().releaseLocks(relLocks);
   }
 
   private void checkLock(LockType type, LockState state, String db, String table, String partition, ShowLocksResponseElement l) {

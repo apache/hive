@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
@@ -33,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdentifier> {
   private static final Logger LOG = LoggerFactory.getLogger(SecretManager.class);
+
   public SecretManager(Configuration conf) {
     super(conf);
     checkForZKDTSMBug(conf);
@@ -82,16 +84,8 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     return id;
   }
 
-  private final static Pattern hostsRe = Pattern.compile("[^A-Za-z0-9_-]");
-  private static String deriveZkPath(Configuration conf) throws IOException {
-    String hosts = HiveConf.getTrimmedVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
-    String clusterName = hosts.startsWith("@") ? hosts.substring(1) : hosts;
-    String userName = UserGroupInformation.getCurrentUser().getShortUserName();
-    return hostsRe.matcher(userName + "_" + clusterName).replaceAll("_") ;
-  }
-
   public static SecretManager createSecretManager(
-      final Configuration conf, String llapPrincipal, String llapKeytab) {
+      final Configuration conf, String llapPrincipal, String llapKeytab, DaemonId daemonId) {
     // Create ZK connection under a separate ugi (if specified) - ZK works in mysterious ways.
     UserGroupInformation zkUgi = null;
     String principal = HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_KERBEROS_PRINCIPAL, llapPrincipal);
@@ -110,12 +104,7 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     zkConf.setLong(DelegationTokenManager.RENEW_INTERVAL, tokenLifetime);
     zkConf.set(SecretManager.ZK_DTSM_ZK_KERBEROS_PRINCIPAL, principal);
     zkConf.set(SecretManager.ZK_DTSM_ZK_KERBEROS_KEYTAB, keyTab);
-    String zkPath;
-    try {
-      zkPath = deriveZkPath(conf);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    String zkPath = daemonId.getClusterString();
     LOG.info("Using {} as ZK secret manager path", zkPath);
     zkConf.set(SecretManager.ZK_DTSM_ZNODE_WORKING_PATH, "zkdtsm_" + zkPath);
     setZkConfIfNotSet(zkConf, SecretManager.ZK_DTSM_ZK_AUTH_TYPE, "sasl");

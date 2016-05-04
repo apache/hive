@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -213,6 +214,17 @@ public class DbTxnManager extends HiveTxnManagerImpl {
           break;
 
         case INSERT:
+          t = output.getTable();
+          if(t == null) {
+            throw new IllegalStateException("No table info for " + output);
+          }
+          if(AcidUtils.isAcidTable(t)) {
+            compBuilder.setShared();
+          }
+          else {
+            compBuilder.setExclusive();
+          }
+          break;
         case DDL_SHARED:
           compBuilder.setShared();
           break;
