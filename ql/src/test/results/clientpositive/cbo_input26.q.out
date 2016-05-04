@@ -490,16 +490,12 @@ STAGE PLANS:
           Limit
             Number of rows: 5
             Statistics: Num rows: 5 Data size: 50 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: _col0 (type: string), '2008-04-08' (type: string), _col1 (type: string)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 5 Data size: 50 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
@@ -507,23 +503,31 @@ STAGE PLANS:
           TableScan
             Union
               Statistics: Num rows: 6 Data size: 50 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
+              Select Operator
+                expressions: _col0 (type: string), '2008-04-08' (type: string), _col1 (type: string)
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 6 Data size: 50 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 6 Data size: 50 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             Union
               Statistics: Num rows: 6 Data size: 50 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
+              Select Operator
+                expressions: _col0 (type: string), '2008-04-08' (type: string), _col1 (type: string)
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 6 Data size: 50 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 6 Data size: 50 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-3
     Map Reduce
@@ -554,16 +558,12 @@ STAGE PLANS:
           Limit
             Number of rows: 5
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            Select Operator
-              expressions: _col0 (type: string), '2008-04-08' (type: string), _col1 (type: string)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              File Output Operator
-                compressed: false
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Fetch Operator
