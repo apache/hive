@@ -1521,6 +1521,13 @@ public class VectorizationContext {
 
     VectorExpression expr = null;
 
+    // Validate the IN items are only constants.
+    for (ExprNodeDesc inListChild : childrenForInList) {
+      if (!(inListChild instanceof ExprNodeConstantDesc)) {
+        throw new HiveException("Vectorizing IN expression only supported for constant values");
+      }
+    }
+
     // determine class
     Class<?> cl = null;
     if (isIntFamily(colType)) {
