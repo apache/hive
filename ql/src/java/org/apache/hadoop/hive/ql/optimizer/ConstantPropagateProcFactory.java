@@ -577,7 +577,7 @@ public final class ConstantPropagateProcFactory {
           } else if (op instanceof FilterOperator) {
             // we can still fold, since here null is equivalent to false.
             return Boolean.TRUE.equals(elseVal) ?
-              ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(), newExprs.subList(0, 1)) : Boolean.FALSE.equals(elseVal) ?
+              ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(), Lists.newArrayList(whenExpr)) : Boolean.FALSE.equals(elseVal) ?
               elseExpr : null;
           } else {
             // can't do much, expression is not in context of filter, so we can't treat null as equivalent to false here.
@@ -589,7 +589,7 @@ public final class ConstantPropagateProcFactory {
           return thenExpr;
         } else if (thenVal instanceof Boolean && elseVal instanceof Boolean) {
           return Boolean.TRUE.equals(thenVal) ? whenExpr :
-            ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(), newExprs.subList(0, 1));
+            ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(), Lists.newArrayList(whenExpr));
         } else {
           return null;
         }
@@ -617,19 +617,24 @@ public final class ConstantPropagateProcFactory {
           if (null == elseVal) {
             return thenExpr;
           } else if (op instanceof FilterOperator) {
-            return Boolean.TRUE.equals(elseVal) ? ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNotEqual(), newExprs.subList(0, 2)) :
+            return Boolean.TRUE.equals(elseVal) ?
+                    ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNotEqual(),
+                            Lists.newArrayList(newExprs.subList(0, 2))) :
               Boolean.FALSE.equals(elseVal) ? elseExpr : null;
           } else {
             return null;
           }
         } else if (null == elseVal && op instanceof FilterOperator) {
-            return Boolean.TRUE.equals(thenVal) ? ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(), newExprs.subList(0, 2)) :
-              Boolean.FALSE.equals(thenVal) ? thenExpr : null;
+          return Boolean.TRUE.equals(thenVal) ? ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(),
+                  Lists.newArrayList(newExprs.subList(0, 2))) :
+            Boolean.FALSE.equals(thenVal) ? thenExpr : null;
         } else if(thenVal.equals(elseVal)){
           return thenExpr;
         } else if (thenVal instanceof Boolean && elseVal instanceof Boolean) {
-          return Boolean.TRUE.equals(thenVal) ? ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(), newExprs.subList(0, 2)) :
-            ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNotEqual(), newExprs.subList(0, 2));
+          return Boolean.TRUE.equals(thenVal) ? ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPEqual(),
+                  Lists.newArrayList(newExprs.subList(0, 2))) :
+            ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNotEqual(),
+                    Lists.newArrayList(newExprs.subList(0, 2)));
         } else {
           return null;
         }

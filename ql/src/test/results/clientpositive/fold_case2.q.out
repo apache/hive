@@ -1,0 +1,46 @@
+PREHOOK: query: drop table test1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table test1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table test2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table test2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table test1 (id int, desc string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test1
+POSTHOOK: query: create table test1 (id int, desc string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test1
+PREHOOK: query: create table test2 (id int, desc string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test2
+POSTHOOK: query: create table test2 (id int, desc string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test2
+PREHOOK: query: select 
+case 
+when (case when a.desc='test' then 1 else 0 end)=0 then 'test' 
+else null 
+end as val 
+FROM test1 a 
+JOIN test2 b ON a.id=b.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: select 
+case 
+when (case when a.desc='test' then 1 else 0 end)=0 then 'test' 
+else null 
+end as val 
+FROM test1 a 
+JOIN test2 b ON a.id=b.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
