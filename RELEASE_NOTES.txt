@@ -63,8 +63,10 @@ Release Notes - Hive - Version 2.0.1
     * [HIVE-13324] - LLAP: history log for FRAGMENT_START doesn't log DagId correctly
     * [HIVE-13327] - SessionID added to HS2 threadname does not trim spaces
     * [HIVE-13330] - ORC vectorized string dictionary reader does not differentiate null vs empty string dictionary
+    * [HIVE-13346] - LLAP doesn't update metadata priority when reusing from cache; some tweaks in LRFU policy
     * [HIVE-13361] - Orc concatenation should enforce the compression buffer size
     * [HIVE-13379] - HIVE-12851 args do not work (slider-keytab-dir, etc.)
+    * [HIVE-13390] - HiveServer2: Add more test to ZK service discovery using MiniHS2
     * [HIVE-13394] - Analyze table fails in tez on empty partitions/files/tables
     * [HIVE-13396] - LLAP: Include hadoop-metrics2.properties file LlapServiceDriver
     * [HIVE-13405] - Fix Connection Leak in OrcRawRecordMerger
@@ -74,6 +76,7 @@ Release Notes - Hive - Version 2.0.1
     * [HIVE-13468] - branch-2 build is broken
     * [HIVE-13523] - Fix connection leak in ORC RecordReader and refactor for unit testing
     * [HIVE-13630] - missing license headers
+    * [HIVE-13645] - Beeline needs null-guard around hiveVars and hiveConfVars read
 
 
 
@@ -83,6 +86,13 @@ Release Notes - Hive - Version 2.0.1
 ** Improvement
     * [HIVE-10115] - HS2 running on a Kerberized cluster should offer Kerberos(GSSAPI) and Delegation token(DIGEST) when alternate authentication is enabled
     * [HIVE-13120] - propagate doAs when generating ORC splits
+    * [HIVE-13584] - HBaseStorageHandler should support table pre-split
+
+
+
+** New Feature
+    * [HIVE-11233] - Include Apache Phoenix support in HBaseStorageHandler
+
 
 
 
