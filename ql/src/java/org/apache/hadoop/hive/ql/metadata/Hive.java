@@ -3593,4 +3593,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  public void dropConstraint(String dbName, String tableName, String constraintName)
+    throws HiveException, NoSuchObjectException {
+    try {
+      getMSC().dropConstraint(dbName, tableName, constraintName);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
 };

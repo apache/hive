@@ -43,6 +43,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void create_table(Table tbl)')
   print('  void create_table_with_environment_context(Table tbl, EnvironmentContext environment_context)')
   print('  void create_table_with_constraints(Table tbl,  primaryKeys,  foreignKeys)')
+  print('  void drop_constraint(DropConstraintRequest req)')
   print('  void drop_table(string dbname, string name, bool deleteData)')
   print('  void drop_table_with_environment_context(string dbname, string name, bool deleteData, EnvironmentContext environment_context)')
   print('   get_tables(string db_name, string pattern)')
@@ -352,6 +353,12 @@ elif cmd == 'create_table_with_constraints':
     print('create_table_with_constraints requires 3 args')
     sys.exit(1)
   pp.pprint(client.create_table_with_constraints(eval(args[0]),eval(args[1]),eval(args[2]),))
+
+elif cmd == 'drop_constraint':
+  if len(args) != 1:
+    print('drop_constraint requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.drop_constraint(eval(args[0]),))
 
 elif cmd == 'drop_table':
   if len(args) != 3:

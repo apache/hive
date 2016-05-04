@@ -66,3 +66,71 @@ POSTHOOK: query: CREATE TABLE table8 (a STRING, b STRING, constraint pk8 primary
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table8
+PREHOOK: query: CREATE TABLE table9 (a STRING, b STRING, primary key (a, b) disable novalidate rely)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table9
+POSTHOOK: query: CREATE TABLE table9 (a STRING, b STRING, primary key (a, b) disable novalidate rely)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table9
+PREHOOK: query: CREATE TABLE table10 (a STRING, b STRING, constraint pk10 primary key (a) disable novalidate norely, foreign key (a, b) references table9(a, b) disable novalidate)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table10
+POSTHOOK: query: CREATE TABLE table10 (a STRING, b STRING, constraint pk10 primary key (a) disable novalidate norely, foreign key (a, b) references table9(a, b) disable novalidate)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table10
+PREHOOK: query: CREATE TABLE table11 (a STRING, b STRING, c STRING, constraint pk11 primary key (a) disable novalidate rely, foreign key (a, b) references table9(a, b) disable novalidate,
+foreign key (c) references table4(x) disable novalidate)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table11
+POSTHOOK: query: CREATE TABLE table11 (a STRING, b STRING, c STRING, constraint pk11 primary key (a) disable novalidate rely, foreign key (a, b) references table9(a, b) disable novalidate,
+foreign key (c) references table4(x) disable novalidate)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table11
+PREHOOK: query: ALTER TABLE table2 DROP CONSTRAINT pk1
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: ALTER TABLE table2 DROP CONSTRAINT pk1
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: query: ALTER TABLE table3 DROP CONSTRAINT fk1
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: ALTER TABLE table3 DROP CONSTRAINT fk1
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: query: ALTER TABLE table6 DROP CONSTRAINT fk4
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: ALTER TABLE table6 DROP CONSTRAINT fk4
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: query: CREATE DATABASE dbconstraint
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:dbconstraint
+POSTHOOK: query: CREATE DATABASE dbconstraint
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:dbconstraint
+PREHOOK: query: USE dbconstraint
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:dbconstraint
+POSTHOOK: query: USE dbconstraint
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:dbconstraint
+PREHOOK: query: CREATE TABLE table2 (a STRING, b STRING, constraint pk1 primary key (a) disable novalidate)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:dbconstraint
+PREHOOK: Output: dbconstraint@table2
+POSTHOOK: query: CREATE TABLE table2 (a STRING, b STRING, constraint pk1 primary key (a) disable novalidate)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:dbconstraint
+POSTHOOK: Output: dbconstraint@table2
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: ALTER TABLE dbconstraint.table2 DROP CONSTRAINT pk1
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: ALTER TABLE dbconstraint.table2 DROP CONSTRAINT pk1
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT

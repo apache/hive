@@ -1570,4 +1570,7 @@ public interface IMetaStoreClient {
     List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys)
     throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException;
 
+  void dropConstraint(String dbName, String tableName, String constraintName) throws 
+    MetaException, NoSuchObjectException, TException;
+
 }

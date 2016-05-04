@@ -1390,6 +1390,29 @@ class ForeignKeysResponse
   ::Thrift::Struct.generate_accessors self
 end
 
+class DropConstraintRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  TABLENAME = 2
+  CONSTRAINTNAME = 3
+
+  FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename'},
+    CONSTRAINTNAME => {:type => ::Thrift::Types::STRING, :name => 'constraintname'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbname is unset!') unless @dbname
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tablename is unset!') unless @tablename
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field constraintname is unset!') unless @constraintname
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class PartitionsByExprResult
   include ::Thrift::Struct, ::Thrift::Struct_Union
   PARTITIONS = 1
