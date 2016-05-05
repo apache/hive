@@ -25,6 +25,7 @@ import java.net.InetSocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.BytesWritable;
@@ -39,9 +40,13 @@ import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+
+import com.google.common.base.Preconditions;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -67,9 +72,12 @@ public class LlapOutputFormatService {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapOutputFormat.class);
 
-  private static LlapOutputFormatService service;
+  private static final AtomicBoolean started = new AtomicBoolean(false);
+  private static final AtomicBoolean initing = new AtomicBoolean(false);
+  private static LlapOutputFormatService INSTANCE;
+
   private final Map<String, RecordWriter> writers;
-  private final HiveConf conf;
+  private final Configuration conf;
   private static final int WAIT_TIME = 5;
   private static final int MAX_QUERY_ID_LENGTH = 256;
 
@@ -78,23 +86,29 @@ public class LlapOutputFormatService {
   private ChannelFuture listeningChannelFuture;
   private int port;
 
-  private LlapOutputFormatService() throws IOException {
+  private LlapOutputFormatService(Configuration conf) throws IOException {
     writers = new HashMap<String, RecordWriter>();
-    conf = new HiveConf();
+    this.conf = conf;
+  }
+
+  public static void initializeAndStart(Configuration conf) throws Exception {
+    if (!initing.getAndSet(true)) {
+      INSTANCE = new LlapOutputFormatService(conf);
+      INSTANCE.start();
+      started.set(true);
+    }
   }
 
   public static LlapOutputFormatService get() throws IOException {
-    if (service == null) {
-      service = new LlapOutputFormatService();
-      service.start();
-    }
-    return service;
+    Preconditions.checkState(started.get(),
+        "LlapOutputFormatService must be started before invoking get");
+    return INSTANCE;
   }
 
   public void start() throws IOException {
     LOG.info("Starting LlapOutputFormatService");
 
-    int portFromConf = conf.getIntVar(HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT);
+    int portFromConf = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT);
     eventLoopGroup = new NioEventLoopGroup(1);
     serverBootstrap = new ServerBootstrap();
     serverBootstrap.group(eventLoopGroup);
@@ -125,10 +139,10 @@ public class LlapOutputFormatService {
 
   public <K,V> RecordWriter<K, V> getWriter(String id) throws IOException, InterruptedException {
     RecordWriter writer = null;
-    synchronized(service) {
+    synchronized(INSTANCE) {
       while ((writer = writers.get(id)) == null) {
         LOG.info("Waiting for writer for: "+id);
-        service.wait();
+        INSTANCE.wait();
       }
     }
     LOG.info("Returning writer for: "+id);
@@ -147,7 +161,7 @@ public class LlapOutputFormatService {
     }
 
     private void registerReader(ChannelHandlerContext ctx, String id) {
-      synchronized(service) {
+      synchronized(INSTANCE) {
         LOG.debug("registering socket for: "+id);
         int bufSize = 128 * 1024; // configable?
         OutputStream stream = new ChannelOutputStream(ctx, id, bufSize);
@@ -157,7 +171,7 @@ public class LlapOutputFormatService {
         // Add listener to handle any cleanup for when the connection is closed
         ctx.channel().closeFuture().addListener(new LlapOutputFormatChannelCloseListener(id));
 
-        service.notifyAll();
+        INSTANCE.notifyAll();
       }
     }
   }
@@ -173,7 +187,7 @@ public class LlapOutputFormatService {
     public void operationComplete(ChannelFuture future) throws Exception {
       RecordWriter writer = null;
 
-      synchronized (service) {
+      synchronized (INSTANCE) {
         writer = writers.remove(id);
       }
 

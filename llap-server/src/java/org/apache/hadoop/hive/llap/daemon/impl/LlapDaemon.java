@@ -132,6 +132,10 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         "Work dirs must be specified");
     Preconditions.checkArgument(shufflePort == 0 || (shufflePort > 1024 && shufflePort < 65536),
         "Shuffle Port must be betwee 1024 and 65535, or 0 for automatic selection");
+    int outputFormatServicePort = HiveConf.getIntVar(daemonConf, HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT);
+    Preconditions.checkArgument(outputFormatServicePort == 0
+        || (outputFormatServicePort > 1024 && outputFormatServicePort < 65536),
+        "OutputFormatService Port must be between 1024 and 65535, or 0 for automatic selection");
     String hosts = HiveConf.getTrimmedVar(daemonConf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
     if (hosts.startsWith("@")) {
       String zkHosts = HiveConf.getTrimmedVar(daemonConf, ConfVars.HIVE_ZOOKEEPER_QUORUM);
@@ -165,6 +169,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         ", rpcListenerPort=" + srvPort +
         ", mngListenerPort=" + mngPort +
         ", webPort=" + webPort +
+        ", outputFormatSvcPort=" + outputFormatServicePort +
         ", workDirs=" + Arrays.toString(localDirs) +
         ", shufflePort=" + shufflePort +
         ", executorMemory=" + executorMemoryBytes +
@@ -335,6 +340,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     this.shufflePort.set(ShuffleHandler.get().getPort());
     getConfig()
         .setInt(ConfVars.LLAP_DAEMON_YARN_SHUFFLE_PORT.varname, ShuffleHandler.get().getPort());
+    LlapOutputFormatService.initializeAndStart(getConfig());
     super.serviceStart();
 
     // Setup the actual ports in the configuration.
