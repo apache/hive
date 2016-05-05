@@ -424,7 +424,7 @@ public class HiveConf extends Configuration {
         "org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext interface."),
     QUERYREDACTORHOOKS("hive.exec.query.redactor.hooks", "",
         "Comma-separated list of hooks to be invoked for each query which can \n" +
-        "tranform the query before it's placed in the job.xml file. Must be a Java class which \n" +
+        "transform the query before it's placed in the job.xml file. Must be a Java class which \n" +
         "extends from the org.apache.hadoop.hive.ql.hooks.Redactor abstract class."),
     CLIENTSTATSPUBLISHERS("hive.client.stats.publishers", "",
         "Comma-separated list of statistics publishers to be invoked on counters on each job. \n" +
