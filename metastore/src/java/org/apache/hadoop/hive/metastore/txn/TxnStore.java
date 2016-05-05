@@ -74,7 +74,7 @@ import java.util.Set;
 @InterfaceStability.Evolving
 public interface TxnStore {
 
-  public static enum MUTEX_KEY {Initiator, Cleaner, HouseKeeper, CompactionHistory}
+  public static enum MUTEX_KEY {Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock, WriteSetCleaner}
   // Compactor states (Should really be enum)
   static final public String INITIATED_RESPONSE = "initiated";
   static final public String WORKING_RESPONSE = "working";
@@ -345,6 +345,12 @@ public interface TxnStore {
    * @throws MetaException
    */
   public void purgeCompactionHistory() throws MetaException;
+
+  /**
+   * WriteSet tracking is used to ensure proper transaction isolation.  This method deletes the 
+   * transaction metadata once it becomes unnecessary.  
+   */
+  public void performWriteSetGC();
 
   /**
    * Determine if there are enough consecutive failures compacting a table or partition that no

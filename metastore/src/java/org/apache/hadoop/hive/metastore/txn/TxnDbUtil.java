@@ -21,11 +21,13 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLTransactionRollbackException;
 import java.sql.Statement;
 import java.util.Properties;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -68,7 +70,7 @@ public final class TxnDbUtil {
     Connection conn = null;
     Statement stmt = null;
     try {
-      conn = getConnection(true);
+      conn = getConnection();
       stmt = conn.createStatement();
       stmt.execute("CREATE TABLE TXNS (" +
           "  TXN_ID bigint PRIMARY KEY," +
@@ -82,7 +84,8 @@ public final class TxnDbUtil {
           "  TC_TXNID bigint REFERENCES TXNS (TXN_ID)," +
           "  TC_DATABASE varchar(128) NOT NULL," +
           "  TC_TABLE varchar(128)," +
-          "  TC_PARTITION varchar(767))");
+          "  TC_PARTITION varchar(767)," +
+          "  TC_OPERATION_TYPE char(1) NOT NULL)");
       stmt.execute("CREATE TABLE COMPLETED_TXN_COMPONENTS (" +
           "  CTC_TXNID bigint," +
           "  CTC_DATABASE varchar(128) NOT NULL," +
@@ -146,16 +149,25 @@ public final class TxnDbUtil {
         " CC_HADOOP_JOB_ID varchar(32))");
       
       stmt.execute("CREATE TABLE AUX_TABLE (" +
-        "  MT_KEY1 varchar(128) NOT NULL," +
-        "  MT_KEY2 bigint NOT NULL," +
-        "  MT_COMMENT varchar(255)," +
-        "  PRIMARY KEY(MT_KEY1, MT_KEY2)" +
+        " MT_KEY1 varchar(128) NOT NULL," +
+        " MT_KEY2 bigint NOT NULL," +
+        " MT_COMMENT varchar(255)," +
+        " PRIMARY KEY(MT_KEY1, MT_KEY2)" +
         ")");
+
+      stmt.execute("CREATE TABLE WRITE_SET (" +
+        " WS_DATABASE varchar(128) NOT NULL," +
+        " WS_TABLE varchar(128) NOT NULL," +
+        " WS_PARTITION varchar(767)," +
+        " WS_TXNID bigint NOT NULL," +
+        " WS_COMMIT_ID bigint NOT NULL," +
+        " WS_OPERATION_TYPE char(1) NOT NULL)"
+      );
     } catch (SQLException e) {
       try {
         conn.rollback();
       } catch (SQLException re) {
-        System.err.println("Error rolling back: " + re.getMessage());
+        LOG.error("Error rolling back: " + re.getMessage());
       }
 
       // This might be a deadlock, if so, let's retry
@@ -172,40 +184,60 @@ public final class TxnDbUtil {
   }
 
   public static void cleanDb() throws Exception {
-    Connection conn = null;
-    Statement stmt = null;
-    try {
-      conn = getConnection(true);
-      stmt = conn.createStatement();
-
-      // We want to try these, whether they succeed or fail.
+    int retryCount = 0;
+    while(++retryCount <= 3) {
+      boolean success = true;
+      Connection conn = null;
+      Statement stmt = null;
       try {
-        stmt.execute("DROP INDEX HL_TXNID_INDEX");
-      } catch (Exception e) {
-        System.err.println("Unable to drop index HL_TXNID_INDEX " + e.getMessage());
-      }
+        conn = getConnection();
+        stmt = conn.createStatement();
 
-      dropTable(stmt, "TXN_COMPONENTS");
-      dropTable(stmt, "COMPLETED_TXN_COMPONENTS");
-      dropTable(stmt, "TXNS");
-      dropTable(stmt, "NEXT_TXN_ID");
-      dropTable(stmt, "HIVE_LOCKS");
-      dropTable(stmt, "NEXT_LOCK_ID");
-      dropTable(stmt, "COMPACTION_QUEUE");
-      dropTable(stmt, "NEXT_COMPACTION_QUEUE_ID");
-      dropTable(stmt, "COMPLETED_COMPACTIONS");
-      dropTable(stmt, "AUX_TABLE");
-    } finally {
-      closeResources(conn, stmt, null);
+        // We want to try these, whether they succeed or fail.
+        try {
+          stmt.execute("DROP INDEX HL_TXNID_INDEX");
+        } catch (SQLException e) {
+          if(!("42X65".equals(e.getSQLState()) && 30000 == e.getErrorCode())) {
+            //42X65/3000 means index doesn't exist
+            LOG.error("Unable to drop index HL_TXNID_INDEX " + e.getMessage() +
+              "State=" + e.getSQLState() + " code=" + e.getErrorCode() + " retryCount=" + retryCount);
+            success = false;
+          }
+        }
+
+        success &= dropTable(stmt, "TXN_COMPONENTS", retryCount);
+        success &= dropTable(stmt, "COMPLETED_TXN_COMPONENTS", retryCount);
+        success &= dropTable(stmt, "TXNS", retryCount);
+        success &= dropTable(stmt, "NEXT_TXN_ID", retryCount);
+        success &= dropTable(stmt, "HIVE_LOCKS", retryCount);
+        success &= dropTable(stmt, "NEXT_LOCK_ID", retryCount);
+        success &= dropTable(stmt, "COMPACTION_QUEUE", retryCount);
+        success &= dropTable(stmt, "NEXT_COMPACTION_QUEUE_ID", retryCount);
+        success &= dropTable(stmt, "COMPLETED_COMPACTIONS", retryCount);
+        success &= dropTable(stmt, "AUX_TABLE", retryCount);
+        success &= dropTable(stmt, "WRITE_SET", retryCount);
+      } finally {
+        closeResources(conn, stmt, null);
+      }
+      if(success) {
+        return;
+      }
     }
   }
 
-  private static void dropTable(Statement stmt, String name) {
+  private static boolean dropTable(Statement stmt, String name, int retryCount) throws SQLException {
     try {
       stmt.execute("DROP TABLE " + name);
-    } catch (Exception e) {
-      System.err.println("Unable to drop table " + name + ": " + e.getMessage());
+      return true;
+    } catch (SQLException e) {
+      if("42Y55".equals(e.getSQLState()) && 30000 == e.getErrorCode()) {
+        //failed because object doesn't exist
+        return true;
+      }
+      LOG.error("Unable to drop table " + name + ": " + e.getMessage() +
+        " State=" + e.getSQLState() + " code=" + e.getErrorCode() + " retryCount=" + retryCount);
     }
+    return false;
   }
 
   /**
@@ -256,11 +288,34 @@ public final class TxnDbUtil {
       closeResources(conn, stmt, rs);
     }
   }
+  @VisibleForTesting
+  public static String queryToString(String query) throws Exception {
+    Connection conn = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+    StringBuilder sb = new StringBuilder();
+    try {
+      conn = getConnection();
+      stmt = conn.createStatement();
+      rs = stmt.executeQuery(query);
+      ResultSetMetaData rsmd = rs.getMetaData();
+      for(int colPos = 1; colPos <= rsmd.getColumnCount(); colPos++) {
+        sb.append(rsmd.getColumnName(colPos)).append("   ");
+      }
+      sb.append('\n');
+      while(rs.next()) {
+        for (int colPos = 1; colPos <= rsmd.getColumnCount(); colPos++) {
+          sb.append(rs.getObject(colPos)).append("   ");
+        }
+        sb.append('\n');
+      }
+    } finally {
+      closeResources(conn, stmt, rs);
+    }
+    return sb.toString();
+  }
 
   static Connection getConnection() throws Exception {
-    return getConnection(false);
-  }
-  static Connection getConnection(boolean isAutoCommit) throws Exception {
     HiveConf conf = new HiveConf();
     String jdbcDriver = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER);
     Driver driver = (Driver) Class.forName(jdbcDriver).newInstance();
@@ -272,7 +327,7 @@ public final class TxnDbUtil {
     prop.setProperty("user", user);
     prop.setProperty("password", passwd);
     Connection conn = driver.connect(driverUrl, prop);
-    conn.setAutoCommit(isAutoCommit);
+    conn.setAutoCommit(true);
     return conn;
   }
 
@@ -281,7 +336,7 @@ public final class TxnDbUtil {
       try {
         rs.close();
       } catch (SQLException e) {
-        System.err.println("Error closing ResultSet: " + e.getMessage());
+        LOG.error("Error closing ResultSet: " + e.getMessage());
       }
     }
 

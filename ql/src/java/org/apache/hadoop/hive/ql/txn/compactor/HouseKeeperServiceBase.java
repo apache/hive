@@ -81,7 +81,7 @@ public abstract class HouseKeeperServiceBase implements HouseKeeperService {
    */
   protected abstract long getStartDelayMs();
   /**
-   * Determines how fequently the service is running its task.
+   * Determines how frequently the service is running its task.
    */
   protected abstract long getIntervalMs();
 

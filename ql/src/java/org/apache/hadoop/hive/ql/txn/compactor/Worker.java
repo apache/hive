@@ -184,7 +184,7 @@ public class Worker extends CompactorThread {
           txnHandler.markCompacted(ci);
         } catch (Exception e) {
           LOG.error("Caught exception while trying to compact " + ci +
-              ".  Marking clean to avoid repeated failures, " + StringUtils.stringifyException(e));
+              ".  Marking failed to avoid repeated failures, " + StringUtils.stringifyException(e));
           txnHandler.markFailed(ci);
         }
       } catch (Throwable t) {
