@@ -187,7 +187,7 @@ public class TestHiveMetaStoreTxns {
         .setDbName("mydb")
         .setTableName("mytable")
         .setPartitionName("mypartition")
-        .setExclusive()
+        .setSemiShared()
         .build())
       .addLockComponent(new LockComponentBuilder()
         .setDbName("mydb")

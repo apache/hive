@@ -839,7 +839,7 @@ CREATE INDEX `CONSTRAINTS_PARENT_TABLE_ID_INDEX` ON KEY_CONSTRAINTS (`PARENT_TBL
 -- ----------------------------
 -- Transaction and Lock Tables
 -- ----------------------------
-SOURCE hive-txn-schema-2.0.0.mysql.sql;
+SOURCE hive-txn-schema-2.1.0.mysql.sql;
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script

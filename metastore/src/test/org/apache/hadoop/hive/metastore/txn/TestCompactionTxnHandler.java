@@ -413,7 +413,7 @@ public class TestCompactionTxnHandler {
     lc.setTablename(tableName);
     LockRequest lr = new LockRequest(Arrays.asList(lc), "me", "localhost");
     lr.setTxnid(txnId);
-    LockResponse lock = txnHandler.lock(new LockRequest(Arrays.asList(lc), "me", "localhost"));
+    LockResponse lock = txnHandler.lock(lr);
     assertEquals(LockState.ACQUIRED, lock.getState());
 
     txnHandler.addDynamicPartitions(new AddDynamicPartitions(txnId, dbName, tableName,
@@ -429,8 +429,8 @@ public class TestCompactionTxnHandler {
       assertEquals(dbName, ci.dbname);
       assertEquals(tableName, ci.tableName);
       switch (i++) {
-      case 0: assertEquals("ds=today", ci.partName); break;
-      case 1: assertEquals("ds=yesterday", ci.partName); break;
+        case 0: assertEquals("ds=today", ci.partName); break;
+        case 1: assertEquals("ds=yesterday", ci.partName); break;
       default: throw new RuntimeException("What?");
       }
     }

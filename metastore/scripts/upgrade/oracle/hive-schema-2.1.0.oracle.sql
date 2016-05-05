@@ -808,7 +808,7 @@ CREATE INDEX CONSTRAINTS_PARENT_TBL_ID_INDEX ON KEY_CONSTRAINTS(PARENT_TBL_ID);
 ------------------------------
 -- Transaction and lock tables
 ------------------------------
-@hive-txn-schema-2.0.0.oracle.sql;
+@hive-txn-schema-2.1.0.oracle.sql;
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script

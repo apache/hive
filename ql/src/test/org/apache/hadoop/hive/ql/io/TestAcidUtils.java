@@ -65,6 +65,26 @@ public class TestAcidUtils {
     assertEquals("/tmp/delta_0000100_0000200_0007/bucket_00023",
       AcidUtils.createFilename(p, options).toString());
   }
+  @Test
+  public void testCreateFilenameLargeIds() throws Exception {
+    Path p = new Path("/tmp");
+    Configuration conf = new Configuration();
+    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
+      .setOldStyle(true).bucket(123456789);
+    assertEquals("/tmp/123456789_0",
+      AcidUtils.createFilename(p, options).toString());
+    options.bucket(23)
+      .minimumTransactionId(1234567880)
+      .maximumTransactionId(1234567890)
+      .writingBase(true)
+      .setOldStyle(false);
+    assertEquals("/tmp/base_1234567890/bucket_00023",
+      AcidUtils.createFilename(p, options).toString());
+    options.writingBase(false);
+    assertEquals("/tmp/delta_1234567880_1234567890_0000/bucket_00023",
+      AcidUtils.createFilename(p, options).toString());
+  }
+  
 
   @Test
   public void testParsing() throws Exception {
