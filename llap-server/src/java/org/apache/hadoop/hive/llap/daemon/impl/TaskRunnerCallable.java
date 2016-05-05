@@ -141,8 +141,10 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
         vertex, request.getFragmentNumber(), request.getAttemptNumber(), attemptId);
     this.amReporter = amReporter;
     // Register with the AMReporter when the callable is setup. Unregister once it starts running.
-    this.amReporter.registerTask(request.getAmHost(), request.getAmPort(),
-        vertex.getUser(), jobToken, fragmentInfo.getQueryInfo().getQueryIdentifier());
+    if (amReporter != null && jobToken != null) {
+      this.amReporter.registerTask(request.getAmHost(), request.getAmPort(),
+          vertex.getUser(), jobToken, fragmentInfo.getQueryInfo().getQueryIdentifier());
+    }
     this.metrics = metrics;
     this.requestId = taskSpec.getTaskAttemptID().toString();
     // TODO Change this to the queryId/Name when that's available.

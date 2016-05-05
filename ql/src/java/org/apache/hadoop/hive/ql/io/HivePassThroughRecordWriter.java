@@ -23,14 +23,11 @@ import java.io.IOException;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public class HivePassThroughRecordWriter <K extends WritableComparable<?>, V extends Writable>
 implements RecordWriter {
 
-  public static final Logger LOG = LoggerFactory.getLogger(HivePassThroughRecordWriter.class);
   private final org.apache.hadoop.mapred.RecordWriter<K, V> mWriter;
 
   public HivePassThroughRecordWriter(org.apache.hadoop.mapred.RecordWriter<K, V> writer) {
@@ -45,7 +42,6 @@ implements RecordWriter {
 
   @Override
   public void close(boolean abort) throws IOException {
-    LOG.info("Closing the pass through writer.");
     //close with null reporter
     mWriter.close(null);
   }

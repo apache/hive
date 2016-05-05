@@ -343,7 +343,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     if (webServices != null) {
       getConfig().setInt(ConfVars.LLAP_DAEMON_WEB_PORT.varname, webServices.getPort());
     }
-    LlapOutputFormatService.get();
+    getConfig().setInt(ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT.varname, LlapOutputFormatService.get().getPort());
 
     this.registry.init(getConfig());
     this.registry.start();

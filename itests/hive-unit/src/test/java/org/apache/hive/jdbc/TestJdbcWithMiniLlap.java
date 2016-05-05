@@ -161,39 +161,7 @@ public class TestJdbcWithMiniLlap {
     stmt.close();
   }
 
-  private static boolean timedOut = false;
-
-  private static class TestTimerTask extends TimerTask {
-    private boolean timedOut = false;
-    private Thread threadToInterrupt;
-
-    public TestTimerTask(Thread threadToInterrupt) {
-      this.threadToInterrupt = threadToInterrupt;
-    }
-
-    @Override
-    public void run() {
-      System.out.println("Test timed out!");
-      timedOut = true;
-      threadToInterrupt.interrupt();
-    }
-
-    public boolean isTimedOut() {
-      return timedOut;
-    }
-
-    public void setTimedOut(boolean timedOut) {
-      this.timedOut = timedOut;
-    }
-
-  }
-
   private int getLlapIFRowCount(String query, int numSplits) throws Exception {
-    // Add a timer task to stop this test if it has not finished in a reasonable amount of time.
-    Timer timer = new Timer();
-    long delay = 30000;
-    TestTimerTask timerTask = new TestTimerTask(Thread.currentThread());
-    timer.schedule(timerTask, delay);
 
     // Setup LlapInputFormat
     String url = miniHS2.getJdbcURL();
@@ -245,13 +213,10 @@ public class TestJdbcWithMiniLlap {
       }
     }
 
-    timer.cancel();
-    assertFalse("Test timed out", timerTask.isTimedOut());
-
     return rowCount;
   }
 
-  @Test
+  @Test(timeout = 60000)
   public void testLlapInputFormatEndToEnd() throws Exception {
     createTestTable("testtab1");
 

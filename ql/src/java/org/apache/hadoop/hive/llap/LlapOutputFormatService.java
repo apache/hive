@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,7 @@ import io.netty.util.concurrent.Future;
 
 
 /**
- *
+ * Responsible for sending back result set data to the connections made by external clients via the LLAP input format.
  */
 public class LlapOutputFormatService {
 
@@ -75,6 +76,7 @@ public class LlapOutputFormatService {
   private EventLoopGroup eventLoopGroup;
   private ServerBootstrap serverBootstrap;
   private ChannelFuture listeningChannelFuture;
+  private int port;
 
   private LlapOutputFormatService() throws IOException {
     writers = new HashMap<String, RecordWriter>();
@@ -92,17 +94,18 @@ public class LlapOutputFormatService {
   public void start() throws IOException {
     LOG.info("Starting LlapOutputFormatService");
 
-    int port = conf.getIntVar(HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT);
+    int portFromConf = conf.getIntVar(HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT);
     eventLoopGroup = new NioEventLoopGroup(1);
     serverBootstrap = new ServerBootstrap();
     serverBootstrap.group(eventLoopGroup);
     serverBootstrap.channel(NioServerSocketChannel.class);
     serverBootstrap.childHandler(new LlapOutputFormatServiceChannelHandler());
     try {
-      LOG.info("LlapOutputFormatService: Binding to port " + port);
-      listeningChannelFuture = serverBootstrap.bind(port).sync();
+      listeningChannelFuture = serverBootstrap.bind(portFromConf).sync();
+      this.port = ((InetSocketAddress) listeningChannelFuture.channel().localAddress()).getPort();
+      LOG.info("LlapOutputFormatService: Binding to port " + this.port);
     } catch (InterruptedException err) {
-      throw new IOException("LlapOutputFormatService: Error binding to port " + port, err);
+      throw new IOException("LlapOutputFormatService: Error binding to port " + portFromConf, err);
     }
   }
 
@@ -130,6 +133,10 @@ public class LlapOutputFormatService {
     }
     LOG.info("Returning writer for: "+id);
     return writer;
+  }
+
+  public int getPort() {
+    return port;
   }
 
   protected class LlapOutputFormatServiceHandler extends SimpleChannelInboundHandler<String> {
@@ -179,11 +186,11 @@ public class LlapOutputFormatService {
   protected class LlapOutputFormatServiceChannelHandler extends ChannelInitializer<SocketChannel> {
     @Override
     public void initChannel(SocketChannel ch) throws Exception {
-        ch.pipeline().addLast(
-            new DelimiterBasedFrameDecoder(MAX_QUERY_ID_LENGTH, Delimiters.nulDelimiter()),
-            new StringDecoder(),
-            new StringEncoder(),
-            new LlapOutputFormatServiceHandler());
+      ch.pipeline().addLast(
+          new DelimiterBasedFrameDecoder(MAX_QUERY_ID_LENGTH, Delimiters.nulDelimiter()),
+          new StringDecoder(),
+          new StringEncoder(),
+          new LlapOutputFormatServiceHandler());
     }
   }
 }

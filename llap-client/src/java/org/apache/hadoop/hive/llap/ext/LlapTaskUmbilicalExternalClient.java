@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.llap.ext;
 
 import java.io.IOException;
@@ -83,10 +99,6 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
     }
   }
 
-  // TODO KKK Work out the details of the tokenIdentifier, and the session token.
-  // It may just be possible to create one here - since Shuffle is not involved, and this is only used
-  // for communication from LLAP-Daemons to the server. It will need to be sent in as part
-  // of the job submission request.
   public LlapTaskUmbilicalExternalClient(Configuration conf, String tokenIdentifier,
       Token<JobTokenIdentifier> sessionToken, LlapTaskUmbilicalExternalResponder responder) {
     super(LlapTaskUmbilicalExternalClient.class.getName());
@@ -96,9 +108,9 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
     this.sessionToken = sessionToken;
     this.responder = responder;
     this.timer = new ScheduledThreadPoolExecutor(1);
-    this.connectionTimeout = HiveConf.getTimeVar(conf,
+    this.connectionTimeout = 3 * HiveConf.getTimeVar(conf,
         HiveConf.ConfVars.LLAP_DAEMON_AM_LIVENESS_CONNECTION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-    // TODO. No support for the LLAP token yet. Add support for configurable threads, however 1 should always be enough.
+    // No support for the LLAP token yet. Add support for configurable threads, however 1 should always be enough.
     this.communicator = new LlapProtocolClientProxy(1, conf, null);
     this.communicator.init(conf);
   }
@@ -173,24 +185,6 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
             responder.submissionFailed(fragmentId, err);
           }
         });
-
-
-
-
-
-//    // TODO Also send out information saying that the fragment is finishable - if that is not already included in the main fragment.
-//    // This entire call is only required if we're doing more than scans. MRInput has no dependencies and is always finishable
-//    QueryIdentifierProto queryIdentifier = QueryIdentifierProto
-//        .newBuilder()
-//        .setAppIdentifier(submitWorkRequestProto.getApplicationIdString()).setDagIdentifier(submitWorkRequestProto.getFragmentSpec().getDagId())
-//        .build();
-//    LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto sourceStateUpdatedRequest =
-//        LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto.newBuilder().setQueryIdentifier(queryIdentifier).setState(
-//            LlapDaemonProtocolProtos.SourceStateProto.S_SUCCEEDED).
-//            setSrcName(TODO)
-//    communicator.sendSourceStateUpdate(LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto.newBuilder().setQueryIdentifier(submitWorkRequestProto.getFragmentSpec().getFragmentIdentifierString()).set);
-
-
   }
 
   private void updateHeartbeatInfo(String taskAttemptId) {
@@ -261,7 +255,6 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
         LOG.info("Pending taskAttemptId " + timedOutTask + " timed out");
         responder.heartbeatTimeout(timedOutTask);
         pendingEvents.remove(timedOutTask);
-        // TODO: Do we need to tell the LLAP daemon we are no longer interested in this task?
       }
 
       timedOutTasks.clear();
@@ -277,7 +270,6 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
         LOG.info("Running taskAttemptId " + timedOutTask + " timed out");
         responder.heartbeatTimeout(timedOutTask);
         registeredTasks.remove(timedOutTask);
-        // TODO: Do we need to tell the LLAP daemon we are no longer interested in this task?
       }
     }
   }
@@ -291,7 +283,7 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
 
 
 
-  // TODO Ideally, the server should be shared across all client sessions running on the same node.
+  // Ideally, the server should be shared across all client sessions running on the same node.
   private class LlapTaskUmbilicalExternalImpl implements  LlapTaskUmbilicalProtocol {
 
     @Override

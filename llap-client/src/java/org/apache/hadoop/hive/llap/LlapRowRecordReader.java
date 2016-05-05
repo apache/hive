@@ -1,3 +1,21 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.hive.llap;
 
 import com.google.common.base.Preconditions;
@@ -32,21 +50,29 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+/**
+ * Row-based record reader for LLAP.
+ */
 public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapRowRecordReader.class);
 
-  Configuration conf;
-  RecordReader<NullWritable, Text> reader;
-  Schema schema;
-  SerDe serde;
-  final Text textData = new Text();
+  protected final Configuration conf;
+  protected final RecordReader<NullWritable, Text> reader;
+  protected final Schema schema;
+  protected final SerDe serde;
+  protected final Text textData = new Text();
 
-  public LlapRowRecordReader(Configuration conf, Schema schema, RecordReader<NullWritable, Text> reader) {
+  public LlapRowRecordReader(Configuration conf, Schema schema, RecordReader<NullWritable, Text> reader) throws IOException {
     this.conf = conf;
     this.schema = schema;
     this.reader = reader;
+
+    try {
+      serde = initSerDe(conf);
+    } catch (SerDeException err) {
+      throw new IOException(err);
+    }
   }
 
   @Override
@@ -77,14 +103,6 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
   @Override
   public boolean next(NullWritable key, Row value) throws IOException {
     Preconditions.checkArgument(value != null);
-
-    if (serde == null) {
-      try {
-        serde = initSerDe(conf);
-      } catch (SerDeException err) {
-        throw new IOException(err);
-      }
-    }
 
     boolean hasNext = reader.next(key,  textData);
     if (hasNext) {

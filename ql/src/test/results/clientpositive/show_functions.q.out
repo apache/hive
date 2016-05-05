@@ -91,6 +91,7 @@ format_number
 from_unixtime
 from_utc_timestamp
 get_json_object
+get_splits
 greatest
 hash
 hex

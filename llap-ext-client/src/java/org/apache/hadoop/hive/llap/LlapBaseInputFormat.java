@@ -97,6 +97,9 @@ import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
 
 
+/**
+ * Base LLAP input format to handle requesting of splits and communication with LLAP daemon.
+ */
 public class LlapBaseInputFormat<V extends WritableComparable> implements InputFormat<NullWritable, V> {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapBaseInputFormat.class);
@@ -178,7 +181,7 @@ public class LlapBaseInputFormat<V extends WritableComparable> implements InputF
 
     LOG.info("Registered id: " + id);
 
-    LlapBaseRecordReader recordReader = new LlapBaseRecordReader(socket.getInputStream(), llapSplit.getSchema(), Text.class);
+    LlapBaseRecordReader recordReader = new LlapBaseRecordReader(socket.getInputStream(), llapSplit.getSchema(), Text.class, job);
     umbilicalResponder.setRecordReader(recordReader);
     return recordReader;
   }
@@ -312,21 +315,6 @@ public class LlapBaseInputFormat<V extends WritableComparable> implements InputF
 
     Credentials taskCredentials = new Credentials();
     // Credentials can change across DAGs. Ideally construct only once per DAG.
-    // TODO Figure out where credentials will come from. Normally Hive sets up
-    // URLs on the tez dag, for which Tez acquires credentials.
-
-    //    taskCredentials.addAll(getContext().getCredentials());
-
-    //    Preconditions.checkState(currentQueryIdentifierProto.getDagIdentifier() ==
-    //        taskSpec.getTaskAttemptID().getTaskID().getVertexID().getDAGId().getId());
-    //    ByteBuffer credentialsBinary = credentialMap.get(currentQueryIdentifierProto);
-    //    if (credentialsBinary == null) {
-    //      credentialsBinary = serializeCredentials(getContext().getCredentials());
-    //      credentialMap.putIfAbsent(currentQueryIdentifierProto, credentialsBinary.duplicate());
-    //    } else {
-    //      credentialsBinary = credentialsBinary.duplicate();
-    //    }
-    //    builder.setCredentialsBinary(ByteString.copyFrom(credentialsBinary));
     Credentials credentials = new Credentials();
     TokenCache.setSessionToken(token, credentials);
     ByteBuffer credentialsBinary = serializeCredentials(credentials);

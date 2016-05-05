@@ -277,7 +277,6 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
     DAG dag = DAG.create(work.getName());
     dag.setCredentials(job.getCredentials());
-    // TODO: set access control? TezTask.setAccessControlsForCurrentUser(dag);
 
     DagUtils utils = DagUtils.getInstance();
     Context ctx = new Context(job);

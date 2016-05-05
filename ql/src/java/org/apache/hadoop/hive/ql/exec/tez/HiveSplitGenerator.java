@@ -93,7 +93,7 @@ public class HiveSplitGenerator extends InputInitializer {
     this.work = work;
     this.jobConf = new JobConf(conf);
 
-    // TODO RSHACK - assuming grouping enabled always.
+    // Assuming grouping enabled always.
     userPayloadProto = MRInputUserPayloadProto.newBuilder().setGroupingEnabled(true).build();
 
     this.splitLocationProvider = Utils.getSplitLocationProvider(conf, LOG);
@@ -106,7 +106,7 @@ public class HiveSplitGenerator extends InputInitializer {
     // must be setup and initialized here so that it sets up it's structures to start accepting events.
     // Setting it up in initialize leads to a window where events may come in before the pruner is
     // initialized, which may cause it to drop events.
-    // TODO RSHACK - No dynamic partition pruning
+    // No dynamic partition pruning
     pruner = null;
   }
 

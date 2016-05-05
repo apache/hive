@@ -57,6 +57,11 @@ import org.apache.hadoop.hive.llap.LlapRowRecordReader;
 import org.apache.hadoop.hive.llap.Row;
 import org.apache.hadoop.hive.llap.Schema;
 
+/**
+ * Utility to test query and data retrieval via the LLAP input format.
+ * llapdump --hiveconf hive.zookeeper.quorum=localhost --hiveconf hive.zookeeper.client.port=2181 --hiveconf hive.llap.daemon.service.hosts=@llap_MiniLlapCluster 'select * from employee where employee_id < 10'
+ *
+ */
 public class LlapDump {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapDump.class);
@@ -64,7 +69,7 @@ public class LlapDump {
   private static String url = "jdbc:hive2://localhost:10000/default";
   private static String user = "hive";
   private static String pwd = "";
-  private static String query = "select * from test";
+  private static String query = null;
   private static String numSplits = "1";
 
   public static void main(String[] args) throws Exception {
@@ -97,6 +102,10 @@ public class LlapDump {
 
     if (cli.getArgs().length > 0) {
       query = cli.getArgs()[0];
+    }
+
+    if (query == null) {
+      throw new IllegalArgumentException("No query string specified");
     }
 
     System.out.println("url: "+url);

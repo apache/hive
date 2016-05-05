@@ -23,8 +23,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.DataInputStream;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.Schema;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
@@ -37,22 +39,27 @@ import org.apache.hadoop.mapred.JobConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Base LLAP RecordReader to handle receiving of the data from the LLAP daemon.
+ */
 public class LlapBaseRecordReader<V extends WritableComparable> implements RecordReader<NullWritable, V> {
   private static final Logger LOG = LoggerFactory.getLogger(LlapBaseRecordReader.class);
 
-  DataInputStream din;
-  Schema schema;
-  Class<V> clazz;
-
+  protected final DataInputStream din;
+  protected final Schema schema;
+  protected final Class<V> clazz;
 
   protected Thread readerThread = null;
-  protected LinkedBlockingQueue<ReaderEvent> readerEvents = new LinkedBlockingQueue<ReaderEvent>();
+  protected final LinkedBlockingQueue<ReaderEvent> readerEvents = new LinkedBlockingQueue<ReaderEvent>();
+  protected final long timeout;
 
-  public LlapBaseRecordReader(InputStream in, Schema schema, Class<V> clazz) {
+  public LlapBaseRecordReader(InputStream in, Schema schema, Class<V> clazz, JobConf job) {
     din = new DataInputStream(in);
     this.schema = schema;
     this.clazz = clazz;
     this.readerThread = Thread.currentThread();
+    this.timeout = 3 * HiveConf.getTimeVar(job,
+        HiveConf.ConfVars.LLAP_DAEMON_AM_LIVENESS_CONNECTION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
   }
 
   public Schema getSchema() {
@@ -65,10 +72,16 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
   }
 
   @Override
-  public long getPos() { return 0; }
+  public long getPos() {
+    // dummy impl
+    return 0;
+  }
 
   @Override
-  public float getProgress() { return 0f; }
+  public float getProgress() {
+    // dummy impl
+    return 0f;
+  }
 
   @Override
   public NullWritable createKey() {
@@ -106,7 +119,7 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
     } catch (IOException io) {
       if (Thread.interrupted()) {
         // Either we were interrupted by one of:
-        // 1. handleEvent(), in which case there is a reader event waiting for us in the queue
+        // 1. handleEvent(), in which case there is a reader (error) event waiting for us in the queue
         // 2. Some other unrelated cause which interrupted us, in which case there may not be a reader event coming.
         // Either way we should not try to block trying to read the reader events queue.
         if (readerEvents.isEmpty()) {
@@ -186,9 +199,12 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
     }
   }
 
-  protected ReaderEvent getReaderEvent() {
+  protected ReaderEvent getReaderEvent() throws IOException {
     try {
-      ReaderEvent event = readerEvents.take();
+      ReaderEvent event = readerEvents.poll(timeout, TimeUnit.MILLISECONDS);
+      if (event == null) {
+        throw new IOException("Timed out getting readerEvents");
+      }
       return event;
     } catch (InterruptedException ie) {
       throw new RuntimeException("Interrupted while getting readerEvents, not expected: " + ie.getMessage(), ie);
