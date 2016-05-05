@@ -5,71 +5,71 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
-Reducer 3 <- Map 7 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
-Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+Reducer 7 <- Map 6 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:100
     Stage-1
-      Reducer 5
-      File Output Operator [FS_27]
-        Limit [LIM_26] (rows=100 width=1436)
+      Reducer 4
+      File Output Operator [FS_28]
+        Limit [LIM_27] (rows=100 width=88)
           Number of rows:100
-          Select Operator [SEL_25] (rows=139755 width=1436)
+          Select Operator [SEL_26] (rows=633595212 width=88)
             Output:["_col0","_col1","_col2"]
-          <-Reducer 4 [SIMPLE_EDGE]
-            SHUFFLE [RS_24]
-              Group By Operator [GBY_22] (rows=139755 width=1436)
+          <-Reducer 3 [SIMPLE_EDGE]
+            SHUFFLE [RS_25]
+              Group By Operator [GBY_23] (rows=633595212 width=88)
                 Output:["_col0","_col1","_col2"],keys:KEY._col0, KEY._col1, KEY._col2
-              <-Reducer 3 [SIMPLE_EDGE]
-                SHUFFLE [RS_21]
+              <-Reducer 2 [SIMPLE_EDGE]
+                SHUFFLE [RS_22]
                   PartitionCols:_col0, _col1, _col2
-                  Group By Operator [GBY_20] (rows=279510 width=1436)
-                    Output:["_col0","_col1","_col2"],keys:_col1, _col2, _col3
-                    Merge Join Operator [MERGEJOIN_43] (rows=279510 width=1436)
-                      Conds:RS_16._col5=RS_17._col0(Inner),Output:["_col1","_col2","_col3"]
-                    <-Map 7 [SIMPLE_EDGE]
+                  Group By Operator [GBY_21] (rows=1267190424 width=88)
+                    Output:["_col0","_col1","_col2"],keys:_col2, _col3, _col4
+                    Merge Join Operator [MERGEJOIN_44] (rows=1267190424 width=88)
+                      Conds:RS_16._col0=RS_17._col0(Inner),RS_17._col0=RS_18._col1(Inner),Output:["_col2","_col3","_col4"]
+                    <-Map 1 [SIMPLE_EDGE]
+                      SHUFFLE [RS_16]
+                        PartitionCols:_col0
+                        Select Operator [SEL_2] (rows=575995635 width=88)
+                          Output:["_col0"]
+                          Filter Operator [FIL_39] (rows=575995635 width=88)
+                            predicate:ss_item_sk is not null
+                            TableScan [TS_0] (rows=575995635 width=88)
+                              default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_item_sk"]
+                    <-Map 5 [SIMPLE_EDGE]
                       SHUFFLE [RS_17]
                         PartitionCols:_col0
-                        Select Operator [SEL_8] (rows=36524 width=1119)
-                          Output:["_col0"]
-                          Filter Operator [FIL_40] (rows=36524 width=1119)
-                            predicate:(d_date BETWEEN '2002-05-30' AND '2002-07-30' and d_date_sk is not null)
-                            TableScan [TS_6] (rows=73049 width=1119)
-                              default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
-                    <-Reducer 2 [SIMPLE_EDGE]
-                      SHUFFLE [RS_16]
-                        PartitionCols:_col5
-                        Merge Join Operator [MERGEJOIN_42] (rows=254100 width=1436)
-                          Conds:RS_12._col0=RS_13._col1(Inner),RS_12._col0=RS_14._col0(Inner),Output:["_col1","_col2","_col3","_col5"]
-                        <-Map 1 [SIMPLE_EDGE]
+                        Select Operator [SEL_5] (rows=115500 width=1436)
+                          Output:["_col0","_col1","_col2","_col3"]
+                          Filter Operator [FIL_40] (rows=115500 width=1436)
+                            predicate:((i_manufact_id) IN (437, 129, 727, 663) and i_current_price BETWEEN 30 AND 60 and i_item_sk is not null)
+                            TableScan [TS_3] (rows=462000 width=1436)
+                              default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_item_sk","i_item_id","i_item_desc","i_current_price","i_manufact_id"]
+                    <-Reducer 7 [SIMPLE_EDGE]
+                      SHUFFLE [RS_18]
+                        PartitionCols:_col1
+                        Merge Join Operator [MERGEJOIN_43] (rows=20671200 width=15)
+                          Conds:RS_12._col0=RS_13._col0(Inner),Output:["_col1"]
+                        <-Map 6 [SIMPLE_EDGE]
                           SHUFFLE [RS_12]
                             PartitionCols:_col0
-                            Select Operator [SEL_2] (rows=115500 width=1436)
-                              Output:["_col0","_col1","_col2","_col3"]
-                              Filter Operator [FIL_38] (rows=115500 width=1436)
-                                predicate:((i_manufact_id) IN (437, 129, 727, 663) and i_current_price BETWEEN 30 AND 60 and i_item_sk is not null)
-                                TableScan [TS_0] (rows=462000 width=1436)
-                                  default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_item_sk","i_item_id","i_item_desc","i_current_price","i_manufact_id"]
-                        <-Map 6 [SIMPLE_EDGE]
-                          SHUFFLE [RS_13]
-                            PartitionCols:_col1
-                            Select Operator [SEL_5] (rows=1 width=0)
+                            Select Operator [SEL_8] (rows=18792000 width=15)
                               Output:["_col0","_col1"]
-                              Filter Operator [FIL_39] (rows=1 width=0)
+                              Filter Operator [FIL_41] (rows=18792000 width=15)
                                 predicate:(inv_quantity_on_hand BETWEEN 100 AND 500 and inv_item_sk is not null and inv_date_sk is not null)
-                                TableScan [TS_3] (rows=1 width=0)
-                                  default@inventory,inventory,Tbl:PARTIAL,Col:NONE,Output:["inv_date_sk","inv_item_sk","inv_quantity_on_hand"]
+                                TableScan [TS_6] (rows=37584000 width=15)
+                                  default@inventory,inventory,Tbl:COMPLETE,Col:NONE,Output:["inv_date_sk","inv_item_sk","inv_quantity_on_hand"]
                         <-Map 8 [SIMPLE_EDGE]
-                          SHUFFLE [RS_14]
+                          SHUFFLE [RS_13]
                             PartitionCols:_col0
-                            Select Operator [SEL_11] (rows=1 width=0)
+                            Select Operator [SEL_11] (rows=36524 width=1119)
                               Output:["_col0"]
-                              Filter Operator [FIL_41] (rows=1 width=0)
-                                predicate:ss_item_sk is not null
-                                TableScan [TS_9] (rows=1 width=0)
-                                  default@store_sales,store_sales,Tbl:PARTIAL,Col:NONE,Output:["ss_item_sk"]
+                              Filter Operator [FIL_42] (rows=36524 width=1119)
+                                predicate:(d_date BETWEEN '2002-05-30' AND '2002-07-30' and d_date_sk is not null)
+                                TableScan [TS_9] (rows=73049 width=1119)
+                                  default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
 

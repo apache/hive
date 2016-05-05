@@ -2090,14 +2090,16 @@ public class QTestUtil {
         }
       }
       for (Map.Entry<String, Integer> entry : tableNameToID.entrySet()) {
-        String toReplace = "_" + entry.getKey() + "_" ;
-        String replacementString = ""+entry.getValue();
+        String toReplace1 = ",_" + entry.getKey() + "_" ;
+        String replacementString1 = ","+entry.getValue();
+        String toReplace2 = "_" + entry.getKey() + "_," ;
+        String replacementString2 = ""+entry.getValue()+",";
         try {
           String content1 = FileUtils.readFileToString(tmpFileLoc1, "UTF-8");
-          content1 = content1.replaceAll(toReplace, replacementString);
+          content1 = content1.replaceAll(toReplace1, replacementString1);
           FileUtils.writeStringToFile(tmpFileLoc1, content1, "UTF-8");
           String content2 = FileUtils.readFileToString(tmpFileLoc2, "UTF-8");
-          content2 = content2.replaceAll(toReplace, replacementString);
+          content2 = content2.replaceAll(toReplace2, replacementString2);
           FileUtils.writeStringToFile(tmpFileLoc2, content2, "UTF-8");
         } catch (IOException e) {
           LOG.info("Generating file failed", e);

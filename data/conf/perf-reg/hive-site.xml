@@ -268,11 +268,6 @@
 </property>
 
 <property>
-  <name>hive.metastore.fastpath</name>
-  <value>true</value>
-</property>
-
-<property>
   <name>hive.metastore.rawstore.impl</name>
   <value>org.apache.hadoop.hive.metastore.ObjectStore</value>
 </property>
