@@ -1176,13 +1176,13 @@ public class TypeCheckProcFactory {
         return getXpathOrFuncExprNodeDesc(expr, isFunction, children, ctx);
       } catch (UDFArgumentTypeException e) {
         throw new SemanticException(ErrorMsg.INVALID_ARGUMENT_TYPE.getMsg(expr
-            .getChild(childrenBegin + e.getArgumentId()), e.getMessage()));
+            .getChild(childrenBegin + e.getArgumentId()), e.getMessage()), e);
       } catch (UDFArgumentLengthException e) {
         throw new SemanticException(ErrorMsg.INVALID_ARGUMENT_LENGTH.getMsg(
-            expr, e.getMessage()));
+            expr, e.getMessage()), e);
       } catch (UDFArgumentException e) {
         throw new SemanticException(ErrorMsg.INVALID_ARGUMENT.getMsg(expr, e
-            .getMessage()));
+            .getMessage()), e);
       }
     }
 
