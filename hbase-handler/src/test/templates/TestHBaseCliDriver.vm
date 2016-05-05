@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
 import org.apache.hadoop.hive.hbase.HBaseTestSetup;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,19 +32,34 @@ import static org.junit.Assert.fail;
 public class $className {
 
   private static final String HIVE_ROOT = HBaseQTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
-  private HBaseQTestUtil qt;
+  private static HBaseQTestUtil qt;
   private static HBaseTestSetup setup = new HBaseTestSetup();
+
+  @BeforeClass
+  public static void systemSetUp() {
+        MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
+        String initScript = "$initScript";
+        String cleanupScript = "$cleanupScript";
+
+        try {
+          qt = new HBaseQTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR,
+          setup, initScript, cleanupScript);
+          qt.cleanUp(null);
+          qt.createSources(null);
+
+        } catch (Exception e) {
+          System.err.println("Exception: " + e.getMessage());
+          e.printStackTrace();
+          System.err.flush();
+          fail("Unexpected exception in static initialization: "+e.getMessage());
+        }
+
+  }
 
   @Before
   public void setUp() {
-
-    MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
-    String initScript = "$initScript";
-    String cleanupScript = "$cleanupScript";
-
     try {
-      qt = new HBaseQTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR,
-      setup, initScript, cleanupScript);
+      qt.clearTestSideEffects();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -51,16 +67,27 @@ public class $className {
       fail("Unexpected exception in setup");
     }
   }
-
   @After
   public void tearDown() {
+    try {
+      qt.clearPostTestEffects();
+    } catch (Exception e) {
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.err.flush();
+      fail("Unexpected exception in tearDown");
+    }
+  }
+
+  @AfterClass
+  public static void shutdown() throws Exception {
     try {
       qt.shutdown();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      fail("Unexpected exception in tearDown");
+      fail("Unexpected exception in shutdown");
     }
   }
 
@@ -93,8 +120,8 @@ public class $className {
         return;
       }
 
-      qt.cliInit(fname);
-      qt.clearTestSideEffects();
+      qt.cliInit(fname, false);
+
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {
         qt.failed(ecode, fname, null);
@@ -104,7 +131,6 @@ public class $className {
       if (ecode != 0) {
         qt.failedDiff(ecode, fname, null);
       }
-      qt.clearPostTestEffects();
 
     } catch (Throwable e) {
       qt.failed(e, fname, null);
