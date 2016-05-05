@@ -83,7 +83,7 @@ public class OperatorUtils {
 
   public static <T> T findSingleOperatorUpstreamJoinAccounted(Operator<?> start, Class<T> clazz) {
     Set<T> found = findOperatorsUpstreamJoinAccounted(start, clazz, new HashSet<T>());
-    return found.size() == 1 ? found.iterator().next(): null;
+    return found.size() >= 1 ? found.iterator().next(): null;
   }
 
   public static <T> Set<T> findOperatorsUpstream(Collection<Operator<?>> starts, Class<T> clazz) {
