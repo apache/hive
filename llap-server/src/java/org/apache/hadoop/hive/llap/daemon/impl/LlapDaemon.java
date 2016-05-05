@@ -328,8 +328,9 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       fnLocalizer.init();
       fnLocalizer.startLocalizeAllFunctions();
     }
-    LlapProxy.initializeLlapIo(conf);
-
+    if (isIoEnabled()) {
+      LlapProxy.initializeLlapIo(conf);
+    }
   }
 
   @Override

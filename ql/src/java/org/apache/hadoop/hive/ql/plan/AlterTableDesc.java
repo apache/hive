@@ -56,7 +56,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     DROPPARTITION("drop partition"), RENAMEPARTITION("rename partition"), ADDSKEWEDBY("add skew column"),
     ALTERSKEWEDLOCATION("alter skew location"), ALTERBUCKETNUM("alter bucket number"),
     ALTERPARTITION("alter partition"), COMPACT("compact"),
-    TRUNCATE("truncate"), MERGEFILES("merge files");
+    TRUNCATE("truncate"), MERGEFILES("merge files"), DROPCONSTRAINT("drop constraint");
     ;
 
     private final String name;
@@ -116,6 +116,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   boolean isTurnOffSorting = false;
   boolean isCascade = false;
   EnvironmentContext environmentContext;
+  String dropConstraintName;
 
   public AlterTableDesc() {
   }
@@ -263,6 +264,12 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     this.numberBuckets = numBuckets;
   }
 
+  public AlterTableDesc(String tableName, String dropConstraintName) {
+    this.oldName = tableName;
+    this.dropConstraintName = dropConstraintName;
+    op = AlterTableTypes.DROPCONSTRAINT;
+  }
+
   @Explain(displayName = "new columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<String> getNewColsString() {
     return Utilities.getFieldSchemaString(getNewCols());
@@ -405,6 +412,22 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   @Explain(displayName = "storage handler", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getStorageHandler() {
     return storageHandler;
+  }
+
+  /**
+   * @return the drop constraint name of the table
+   */
+  @Explain(displayName = "drop constraint name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getConstraintName() {
+    return dropConstraintName;
+  }
+
+  /**
+   * @param constraintName
+   *          the dropConstraintName to set
+   */
+  public void setDropConstraintName(String constraintName) {
+    this.dropConstraintName = constraintName;
   }
 
   /**

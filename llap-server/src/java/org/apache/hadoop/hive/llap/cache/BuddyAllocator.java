@@ -44,6 +44,8 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
   // We don't know the acceptable size for Java array, so we'll use 1Gb boundary.
   // That is guaranteed to fit any maximum allocation.
   private static final int MAX_ARENA_SIZE = 1024*1024*1024;
+  // Don't try to operate with less than MIN_SIZE allocator space, it will just give you grief.
+  private static final int MIN_TOTAL_MEMORY_SIZE = 64*1024*1024;
 
 
   public BuddyAllocator(Configuration conf, MemoryManager mm, LlapDaemonCacheMetrics metrics) {
@@ -51,8 +53,19 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
         (int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC),
         (int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MAX_ALLOC),
         HiveConf.getIntVar(conf, ConfVars.LLAP_ALLOCATOR_ARENA_COUNT),
-        HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE),
-        mm, metrics);
+        getMaxTotalMemorySize(conf), mm, metrics);
+  }
+
+  private static long getMaxTotalMemorySize(Configuration conf) {
+    long maxSize = HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
+    if (maxSize > MIN_TOTAL_MEMORY_SIZE || HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)) {
+      return maxSize;
+    }
+    throw new RuntimeException("Allocator space is too small for reasonable operation; "
+        + ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname + "=" + maxSize + ", but at least "
+        + MIN_TOTAL_MEMORY_SIZE + " is required. If you cannot spare any memory, you can "
+        + "disable LLAP IO entirely via " + ConfVars.LLAP_IO_ENABLED.varname + "; or set "
+        + ConfVars.LLAP_IO_MEMORY_MODE.varname + " to 'none'");
   }
 
   @VisibleForTesting
@@ -69,16 +82,19 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
           + ", arena size " + arenaSizeVal + ". total size " + maxSizeVal);
     }
 
+    String minName = ConfVars.LLAP_ALLOCATOR_MIN_ALLOC.varname,
+        maxName = ConfVars.LLAP_ALLOCATOR_MAX_ALLOC.varname;
     if (minAllocation < 8) {
-      throw new AssertionError("Min allocation must be at least 8 bytes: " + minAllocation);
+      throw new RuntimeException(minName + " must be at least 8 bytes: " + minAllocation);
     }
-    if (maxSizeVal < arenaSizeVal || maxAllocation < minAllocation) {
-      throw new AssertionError("Inconsistent sizes of cache, arena and allocations: "
-          + minAllocation + ", " + maxAllocation + ", " + arenaSizeVal + ", " + maxSizeVal);
+    if (maxSizeVal < maxAllocation || maxAllocation < minAllocation) {
+      throw new RuntimeException("Inconsistent sizes; expecting " + minName + " <= " + maxName
+          + " <= " + ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname + "; configured with min="
+          + minAllocation + ", max=" + maxAllocation + " and total=" + maxSizeVal);
     }
     if ((Integer.bitCount(minAllocation) != 1) || (Integer.bitCount(maxAllocation) != 1)) {
-      throw new AssertionError("Allocation sizes must be powers of two: "
-          + minAllocation + ", " + maxAllocation);
+      throw new RuntimeException("Allocation sizes must be powers of two; configured with "
+          + minName + "=" + minAllocation + ", " + maxName + "=" + maxAllocation);
     }
     if ((arenaSizeVal % maxAllocation) > 0) {
       long oldArenaSize = arenaSizeVal;
@@ -94,8 +110,8 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
           + " to be divisible by arena size " + arenaSize);
     }
     if ((maxSizeVal / arenaSize) > Integer.MAX_VALUE) {
-      throw new AssertionError(
-          "Too many arenas needed to allocate the cache: " + arenaSize + "," + maxSizeVal);
+      throw new RuntimeException(
+          "Too many arenas needed to allocate the cache: " + arenaSize + ", " + maxSizeVal);
     }
     maxSize = maxSizeVal;
     memoryManager.updateMaxSize(maxSize);
@@ -280,7 +296,12 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     private FreeList[] freeLists;
 
     void init() {
-      data = isDirect ? ByteBuffer.allocateDirect(arenaSize) : ByteBuffer.allocate(arenaSize);
+      try {
+        data = isDirect ? ByteBuffer.allocateDirect(arenaSize) : ByteBuffer.allocate(arenaSize);
+      } catch (OutOfMemoryError oom) {
+        throw new OutOfMemoryError("Cannot allocate " + arenaSize + " bytes: " + oom.getMessage()
+            + "; make sure your xmx and process size are set correctly.");
+      }
       int maxMinAllocs = 1 << (arenaSizeLog2 - minAllocLog2);
       headers = new byte[maxMinAllocs];
       int allocLog2Diff = maxAllocLog2 - minAllocLog2, freeListCount = allocLog2Diff + 1;

@@ -30,7 +30,7 @@ single_block_stmt :                                      // Single BEGIN END blo
        T_BEGIN block exception_block? block_end
      | stmt T_SEMICOLON?
      ;
-	 
+
 block_end :
        {!_input.LT(2).getText().equalsIgnoreCase("TRANSACTION")}? T_END 
      ;
@@ -48,6 +48,7 @@ stmt :
      | begin_transaction_stmt
      | break_stmt
      | call_stmt
+     | collect_stats_stmt
      | close_stmt
      | cmp_stmt
      | copy_from_ftp_stmt
@@ -83,6 +84,7 @@ stmt :
      | merge_stmt
      | open_stmt
      | print_stmt
+     | quit_stmt
      | raise_stmt
      | resignal_stmt
      | return_stmt
@@ -181,9 +183,9 @@ declare_block_inplace :
      
 declare_stmt_item :
        declare_cursor_item
-     | declare_var_item 
      | declare_condition_item  
      | declare_handler_item
+     | declare_var_item 
      | declare_temporary_table_item
      ;
 
@@ -213,15 +215,19 @@ declare_handler_item :     // Condition handler declaration
      ;
      
 declare_temporary_table_item :     // DECLARE TEMPORARY TABLE statement
-       T_GLOBAL? T_TEMPORARY T_TABLE ident (T_AS? T_OPEN_P select_stmt T_CLOSE_P | T_AS? select_stmt | T_OPEN_P create_table_columns T_CLOSE_P) create_table_options?
+       T_GLOBAL? T_TEMPORARY T_TABLE ident create_table_preoptions? create_table_definition
      ;
      
 create_table_stmt :
-       T_CREATE T_TABLE (T_IF T_NOT T_EXISTS)? table_name T_OPEN_P create_table_columns T_CLOSE_P create_table_options?
+       T_CREATE T_TABLE (T_IF T_NOT T_EXISTS)? table_name create_table_preoptions? create_table_definition
      ;
      
 create_local_temp_table_stmt :
-       T_CREATE (T_LOCAL T_TEMPORARY | (T_SET | T_MULTISET)? T_VOLATILE) T_TABLE ident create_table_preoptions? T_OPEN_P create_table_columns T_CLOSE_P create_table_options?
+       T_CREATE (T_LOCAL T_TEMPORARY | (T_SET | T_MULTISET)? T_VOLATILE) T_TABLE ident create_table_preoptions? create_table_definition
+     ;
+     
+create_table_definition :
+      (T_AS? T_OPEN_P select_stmt T_CLOSE_P | T_AS? select_stmt | T_OPEN_P create_table_columns T_CLOSE_P) create_table_options?
      ;
      
 create_table_columns :         
@@ -262,7 +268,7 @@ create_table_preoptions :
      ;     
      
 create_table_preoptions_item :
-       T_NO? T_LOG
+       T_NO? (T_LOG | T_FALLBACK)
      ;
      
 create_table_options :
@@ -273,6 +279,7 @@ create_table_options_item :
        T_ON T_COMMIT (T_DELETE | T_PRESERVE) T_ROWS 
      | create_table_options_ora_item
      | create_table_options_db2_item  
+     | create_table_options_td_item
      | create_table_options_hive_item  
      | create_table_options_mssql_item
      | create_table_options_mysql_item       
@@ -296,6 +303,11 @@ create_table_options_db2_item :
      | T_DEFINITION T_ONLY
      ;
      
+create_table_options_td_item :
+       T_UNIQUE? T_PRIMARY T_INDEX T_OPEN_P ident (T_COMMA ident)* T_CLOSE_P
+     | T_WITH T_DATA
+     ;
+    
 create_table_options_hive_item :
        create_table_hive_row_format
      ;
@@ -379,7 +391,7 @@ dtype :                  // Data types
      | T_VARCHAR
      | T_VARCHAR2
      | T_XML
-     | L_ID ('%' (T_TYPE | T_ROWTYPE))?             // User-defined or derived data type
+     | ident ('%' (T_TYPE | T_ROWTYPE))?             // User-defined or derived data type
      ;
      
 dtype_len :             // Data type length or size specification
@@ -450,7 +462,9 @@ create_routine_params :
        T_OPEN_P T_CLOSE_P
      | T_OPEN_P create_routine_param_item (T_COMMA create_routine_param_item)* T_CLOSE_P
      | {!_input.LT(1).getText().equalsIgnoreCase("IS") &&
-        !_input.LT(1).getText().equalsIgnoreCase("AS")}? 
+        !_input.LT(1).getText().equalsIgnoreCase("AS") &&
+		!(_input.LT(1).getText().equalsIgnoreCase("DYNAMIC") && _input.LT(2).getText().equalsIgnoreCase("RESULT"))
+		}? 
        create_routine_param_item (T_COMMA create_routine_param_item)* 
      ;
      
@@ -484,6 +498,7 @@ exec_stmt :             // EXEC, EXECUTE IMMEDIATE statement
 if_stmt :               // IF statement 
        if_plsql_stmt
      | if_tsql_stmt 
+     | if_bteq_stmt
      ;
 
 if_plsql_stmt : 
@@ -494,13 +509,17 @@ if_tsql_stmt :
        T_IF bool_expr single_block_stmt (T_ELSE single_block_stmt)?  
      ;
      
+if_bteq_stmt :
+       '.' T_IF bool_expr T_THEN single_block_stmt 
+     ;
+
 elseif_block :
        (T_ELSIF | T_ELSEIF) bool_expr T_THEN block
      ;
 
 else_block :
        T_ELSE block
-     ;
+     ; 
      
 include_stmt :          // INCLUDE statement
        T_INCLUDE (file_name | expr)
@@ -569,6 +588,14 @@ open_stmt :             // OPEN cursor statement
 
 fetch_stmt :            // FETCH cursor statement
        T_FETCH T_FROM? L_ID T_INTO L_ID (T_COMMA L_ID)*
+     ;
+     
+collect_stats_stmt :
+       T_COLLECT (T_STATISTICS | T_STATS) T_ON table_name collect_stats_clause?
+     ;
+     
+collect_stats_clause :
+       T_COLUMN T_OPEN_P ident (T_COMMA ident)* T_CLOSE_P
      ;
      
 close_stmt :            // CLOSE cursor statement
@@ -651,6 +678,10 @@ index_mssql_storage_clause :
 print_stmt :            // PRINT statement 
        T_PRINT expr
      | T_PRINT T_OPEN_P expr T_CLOSE_P
+     ;
+
+quit_stmt :
+       '.'? T_QUIT expr?
      ;
      
 raise_stmt :
@@ -761,7 +792,7 @@ fullselect_set_clause :
      ;
   
 subselect_stmt : 
-       (T_SELECT | T_SEL) select_list into_clause? from_clause? where_clause? group_by_clause? having_clause? order_by_clause? select_options?
+       (T_SELECT | T_SEL) select_list into_clause? from_clause? where_clause? group_by_clause? (having_clause | qualify_clause)? order_by_clause? select_options?
      ;
 
 select_list :           
@@ -834,6 +865,8 @@ from_table_values_row:
 from_alias_clause :
        {!_input.LT(1).getText().equalsIgnoreCase("EXEC") &&
         !_input.LT(1).getText().equalsIgnoreCase("EXECUTE") && 
+        !_input.LT(1).getText().equalsIgnoreCase("INNER") &&
+        !_input.LT(1).getText().equalsIgnoreCase("LEFT") &&
         !_input.LT(1).getText().equalsIgnoreCase("GROUP") &&
         !_input.LT(1).getText().equalsIgnoreCase("ORDER") &&
         !_input.LT(1).getText().equalsIgnoreCase("LIMIT") &&
@@ -856,6 +889,10 @@ group_by_clause :
 having_clause :           
        T_HAVING bool_expr
      ;     
+     
+qualify_clause :           
+       T_QUALIFY bool_expr
+     ;  
 
 order_by_clause :
        T_ORDER T_BY expr (T_ASC | T_DESC)? (T_COMMA expr (T_ASC | T_DESC)?)*
@@ -879,7 +916,7 @@ update_assignment :
      ;
 
 update_table :
-       (table_name | (T_OPEN_P select_stmt T_CLOSE_P)) (T_AS? ident)?
+       (table_name from_clause? | T_OPEN_P select_stmt T_CLOSE_P) (T_AS? ident)?
      ;     
      
 update_upsert :
@@ -905,9 +942,14 @@ merge_action :
      | T_DELETE
      ;
      
-delete_stmt :                             // DELETE statement
-       T_DELETE T_FROM? table_name (T_AS? ident)? where_clause?
+delete_stmt :                             
+       T_DELETE T_FROM? table_name delete_alias? (where_clause | T_ALL)?
      ;
+	
+delete_alias :
+       {!_input.LT(1).getText().equalsIgnoreCase("ALL")}?
+       T_AS? ident
+	 ;
  
 describe_stmt :
        (T_DESCRIBE | T_DESC) T_TABLE? table_name 
@@ -928,6 +970,7 @@ bool_expr_atom :
 bool_expr_unary :
       expr T_IS T_NOT? T_NULL
     | expr T_BETWEEN expr T_AND expr
+    | T_NOT? T_EXISTS T_OPEN_P select_stmt T_CLOSE_P
     | bool_expr_single_in
     | bool_expr_multi_in
     ;
@@ -967,6 +1010,7 @@ expr :
      | expr T_DIV expr  
      | expr T_ADD expr  
      | expr T_SUB expr   
+     | T_OPEN_P select_stmt T_CLOSE_P 
      | T_OPEN_P expr T_CLOSE_P 
      | expr_interval 
      | expr_concat
@@ -997,6 +1041,8 @@ interval_item :
      | T_DAYS
      | T_MICROSECOND 
      | T_MICROSECONDS  
+     | T_SECOND 
+     | T_SECONDS  
      ;
      
 expr_concat :                  // String concatenation operator
@@ -1141,8 +1187,7 @@ timestamp_literal :                       // TIMESTAMP 'YYYY-MM-DD HH:MI:SS.FFF'
      ;
      
 ident :
-       L_ID
-     | non_reserved_words
+       (L_ID | non_reserved_words) ('.' (L_ID | non_reserved_words))* 
      ;
      
 string :                                   // String literal (single or double quoted)
@@ -1207,7 +1252,9 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_CLOSE 
      | T_CLUSTERED
      | T_CMP
+     | T_COLLECT
      | T_COLLECTION  
+     | T_COLUMN
      | T_COMMENT     
      | T_CONSTANT     
      | T_COPY
@@ -1229,6 +1276,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_CURRENT_TIMESTAMP
      | T_CURRENT_USER
      | T_CURSOR  
+     | T_DATA
      | T_DATABASE
      | T_DATE   
      | T_DATETIME     
@@ -1270,12 +1318,13 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_EXCEPTION  
      | T_EXCLUSIVE     
      | T_EXISTS
-     | T_EXIT       
+     | T_EXIT 
+     | T_FALLBACK     
      | T_FALSE     
      | T_FETCH  
      | T_FIELDS
      | T_FILE    
-     | T_FILES	 
+     | T_FILES 
      | T_FIRST_VALUE     
      | T_FLOAT        
      | T_FOR  
@@ -1390,7 +1439,9 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_PROC
      | T_PROCEDURE 
      | T_PWD     
+     | T_QUALIFY
      | T_QUERY_BAND
+     | T_QUIT
      | T_QUOTED_IDENTIFIER
      | T_RAISE
      | T_RANK  
@@ -1416,6 +1467,8 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_ROW_COUNT
      | T_ROW_NUMBER
      | T_SCHEMA
+     | T_SECOND
+     | T_SECONDS
      | T_SECURITY
      | T_SEGMENT
      | T_SEL          
@@ -1434,7 +1487,9 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_SQLEXCEPTION 
      | T_SQLINSERT
      | T_SQLSTATE
-     | T_SQLWARNING   
+     | T_SQLWARNING  
+     | T_STATS
+     | T_STATISTICS     
      | T_STEP    
      | T_STDEV     
      | T_STORAGE
@@ -1523,7 +1578,9 @@ T_CLIENT          : C L I E N T ;
 T_CLOSE           : C L O S E ;
 T_CLUSTERED       : C L U S T E R E D;
 T_CMP             : C M P ; 
+T_COLLECT         : C O L L E C T ; 
 T_COLLECTION      : C O L L E C T I O N ; 
+T_COLUMN          : C O L U M N ;
 T_COMMENT         : C O M M E N T;
 T_CONSTANT        : C O N S T A N T ;
 T_COMMIT          : C O M M I T ; 
@@ -1541,7 +1598,8 @@ T_CS              : C S;
 T_CURRENT         : C U R R E N T ;
 T_CURRENT_SCHEMA  : C U R R E N T '_' S C H E M A ;
 T_CURSOR          : C U R S O R ;
-T_DATABASE        : D A T A B A S E;
+T_DATABASE        : D A T A B A S E ;
+T_DATA            : D A T A ;
 T_DATE            : D A T E ;
 T_DATETIME        : D A T E T I M E ; 
 T_DAY             : D A Y ;
@@ -1582,6 +1640,7 @@ T_EXCEPTION       : E X C E P T I O N ;
 T_EXCLUSIVE       : E X C L U S I V E ; 
 T_EXISTS          : E X I S T S ; 
 T_EXIT            : E X I T ;
+T_FALLBACK        : F A L L B A C K ;
 T_FALSE           : F A L S E ;
 T_FETCH           : F E T C H ;
 T_FIELDS          : F I E L D S ; 
@@ -1694,8 +1753,10 @@ T_PRESERVE        : P R E S E R V E ;
 T_PRIMARY         : P R I M A R Y ;
 T_PRINT           : P R I N T ; 
 T_PROC            : P R O C ;
-T_PROCEDURE       : P R O C E D U R E;
+T_PROCEDURE       : P R O C E D U R E ;
+T_QUALIFY         : Q U A L I F Y ;
 T_QUERY_BAND      : Q U E R Y '_' B A N D ; 
+T_QUIT            : Q U I T ; 
 T_QUOTED_IDENTIFIER : Q U O T E D '_' I D E N T I F I E R ;
 T_RAISE           : R A I S E ;
 T_REAL            : R E A L ; 
@@ -1722,6 +1783,8 @@ T_RS              : R S ;
 T_PWD             : P W D ; 
 T_TRIM            : T R I M ;
 T_SCHEMA          : S C H E M A ;
+T_SECOND          : S E C O N D ;
+T_SECONDS         : S E C O N D S;
 T_SECURITY        : S E C U R I T Y ; 
 T_SEGMENT         : S E G M E N T ; 
 T_SEL             : S E L ;
@@ -1742,6 +1805,8 @@ T_SQLEXCEPTION    : S Q L E X C E P T I O N ;
 T_SQLINSERT       : S Q L I N S E R T ;
 T_SQLSTATE        : S Q L S T A T E ;
 T_SQLWARNING      : S Q L W A R N I N G ;
+T_STATS           : S T A T S ; 
+T_STATISTICS      : S T A T I S T I C S ;
 T_STEP            : S T E P ; 
 T_STORAGE         : S T O R A G E ; 
 T_STRING          : S T R I N G ;
@@ -1836,7 +1901,7 @@ T_CLOSE_SB     : ']' ;
 T_SEMICOLON    : ';' ;
 T_SUB          : '-' ;
 
-L_ID        : L_ID_PART (L_BLANK* '.' L_BLANK* L_ID_PART)*             // Identifier
+L_ID        : L_ID_PART                                                // Identifier
             ;
 L_S_STRING  : '\'' (('\'' '\'') | ('\\' '\'') | ~('\''))* '\''         // Single quoted string literal
             ;
@@ -1859,6 +1924,7 @@ L_LABEL     : ([a-zA-Z] | L_DIGIT | '_')* ':'
 fragment
 L_ID_PART  :
              [a-zA-Z] ([a-zA-Z] | L_DIGIT | '_')*                           // Identifier part
+            | '$' '{' .*? '}'
             | ('_' | '@' | ':' | '#' | '$') ([a-zA-Z] | L_DIGIT | '_' | '@' | ':' | '#' | '$')+     // (at least one char must follow special char)
             | '"' .*? '"'                                                   // Quoted identifiers
             | '[' .*? ']'

@@ -131,6 +131,7 @@ import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
@@ -356,7 +357,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       AlterTableDesc alterTbl = work.getAlterTblDesc();
       if (alterTbl != null) {
-        return alterTable(db, alterTbl);
+        if (alterTbl.getOp() == AlterTableTypes.DROPCONSTRAINT ) {
+          return dropConstraint(db, alterTbl);
+        } else {
+          return alterTable(db, alterTbl);
+        }
       }
 
       CreateViewDesc crtView = work.getCreateViewDesc();
@@ -3596,7 +3601,19 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  /**
+   private int dropConstraint(Hive db, AlterTableDesc alterTbl)
+    throws SemanticException, HiveException {
+     try {
+      db.dropConstraint(Utilities.getDatabaseName(alterTbl.getOldName()),
+        Utilities.getTableName(alterTbl.getOldName()),
+          alterTbl.getConstraintName());
+      } catch (NoSuchObjectException e) {
+        throw new HiveException(e);
+      }
+     return 0;
+   }
+
+   /**
    * Drop a given table or some partitions. DropTableDesc is currently used for both.
    *
    * @param db

@@ -1483,6 +1483,35 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("create_table", success, ex, tbl.getTableName());
       }
     }
+
+    @Override
+    public void drop_constraint(DropConstraintRequest req)
+        throws MetaException, InvalidObjectException {
+      String dbName = req.getDbname();
+      String tableName = req.getTablename();
+      String constraintName = req.getConstraintname();
+      startFunction("drop_constraint", ": " + constraintName.toString());
+      boolean success = false;
+      Exception ex = null;
+      try {
+        getMS().dropConstraint(dbName, tableName, constraintName);
+        success = true;
+      } catch (NoSuchObjectException e) {
+        ex = e;
+        throw new InvalidObjectException(e.getMessage());
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else if (e instanceof InvalidObjectException) {
+          throw (InvalidObjectException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("drop_constraint", success, ex, constraintName);
+      }
+    }
     private boolean is_table_exists(RawStore ms, String dbname, String name)
         throws MetaException {
       return (ms.getTable(dbname, name) != null);

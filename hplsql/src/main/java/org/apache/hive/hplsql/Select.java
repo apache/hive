@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Stack;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 
 public class Select {
@@ -196,26 +197,38 @@ public class Select {
   
   public Integer subselect(HplsqlParser.Subselect_stmtContext ctx) {
     StringBuilder sql = new StringBuilder();
-    if (ctx.T_SELECT() != null) {
-      sql.append(ctx.T_SELECT().getText());
+    sql.append(ctx.start.getText());
+    exec.append(sql, evalPop(ctx.select_list()).toString(), ctx.start, ctx.select_list().getStart());
+    Token last = ctx.select_list().stop;
+    if (ctx.into_clause() != null) {
+      last = ctx.into_clause().stop;
     }
-    sql.append(" " + evalPop(ctx.select_list()));
     if (ctx.from_clause() != null) {
-      sql.append(" " + evalPop(ctx.from_clause()));
-    } else if (conf.dualTable != null) {
+      exec.append(sql, evalPop(ctx.from_clause()).toString(), last, ctx.from_clause().getStart());
+      last = ctx.from_clause().stop;
+    } 
+    else if (conf.dualTable != null) {
       sql.append(" FROM " + conf.dualTable);
     }
     if (ctx.where_clause() != null) {
-      sql.append(" " + evalPop(ctx.where_clause()));
+      exec.append(sql, evalPop(ctx.where_clause()).toString(), last, ctx.where_clause().getStart());
+      last = ctx.where_clause().stop;
     }
     if (ctx.group_by_clause() != null) {
-      sql.append(" " + getText(ctx.group_by_clause()));
+      exec.append(sql, getText(ctx.group_by_clause()), last, ctx.group_by_clause().getStart());
+      last = ctx.group_by_clause().stop;
     }
     if (ctx.having_clause() != null) {
-      sql.append(" " + getText(ctx.having_clause()));
+      exec.append(sql, getText(ctx.having_clause()), last, ctx.having_clause().getStart());
+      last = ctx.having_clause().stop;
+    }
+    if (ctx.qualify_clause() != null) {
+      exec.append(sql, getText(ctx.qualify_clause()), last, ctx.qualify_clause().getStart());
+      last = ctx.qualify_clause().stop;
     }
     if (ctx.order_by_clause() != null) {
-      sql.append(" " + getText(ctx.order_by_clause()));
+      exec.append(sql, getText(ctx.order_by_clause()), last, ctx.order_by_clause().getStart());
+      last = ctx.order_by_clause().stop;
     }
     if (ctx.select_options() != null) {
       Var opt = evalPop(ctx.select_options());

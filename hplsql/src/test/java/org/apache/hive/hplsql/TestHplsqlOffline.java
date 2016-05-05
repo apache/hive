@@ -64,13 +64,33 @@ public class TestHplsqlOffline {
   }
   
   @Test
+  public void testCreateTableTd() throws Exception {
+    run("create_table_td");
+  }
+  
+  @Test
+  public void testDeleteAll() throws Exception {
+    run("delete_all");
+  }
+  
+  @Test
   public void testInsertMysql() throws Exception {
     run("insert_mysql");
   }
 
   @Test
+  public void testSelect() throws Exception {
+    run("select");
+  }
+  
+  @Test
   public void testSelectDb2() throws Exception {
     run("select_db2");
+  }
+  
+  @Test
+  public void testSelectTeradata() throws Exception {
+    run("select_teradata");
   }
   
   @Test

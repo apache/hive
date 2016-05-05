@@ -74,8 +74,14 @@ public class Expression {
     StringBuilder sql = new StringBuilder();
     if (ctx.T_OPEN_P() != null) {
       sql.append("(");
-      sql.append(evalPop(ctx.expr(0)).toString());
-      sql.append(")");      
+      if (ctx.select_stmt() != null) {
+        exec.append(sql, evalPop(ctx.select_stmt()).toString(), ctx.T_OPEN_P().getSymbol(), ctx.select_stmt().getStart());
+        exec.append(sql, ctx.T_CLOSE_P().getText(), ctx.select_stmt().stop, ctx.T_CLOSE_P().getSymbol()); 
+      }
+      else {
+        sql.append(evalPop(ctx.expr(0)).toString());
+        sql.append(")");
+      }
     }
     else if (ctx.T_MUL() != null) {
       sql.append(evalPop(ctx.expr(0)).toString());
@@ -232,6 +238,11 @@ public class Expression {
       sql.append(" " + ctx.T_AND().getText() + " ");
       sql.append(evalPop(ctx.expr(2)).toString());
     }
+    else if (ctx.T_EXISTS() != null) {
+      exec.append(sql, exec.nvl(ctx.T_NOT(), ctx.T_EXISTS()), ctx.T_OPEN_P());
+      exec.append(sql, evalPop(ctx.select_stmt()).toString(), ctx.T_OPEN_P().getSymbol(), ctx.select_stmt().getStart());
+      exec.append(sql, ctx.T_CLOSE_P().getText(), ctx.select_stmt().stop, ctx.T_CLOSE_P().getSymbol());
+    }
     else if (ctx.bool_expr_single_in() != null) {
       singleInClauseSql(ctx.bool_expr_single_in(), sql);
     }
@@ -245,14 +256,12 @@ public class Expression {
   /**
    * Single value IN clause in executable SQL statement
    */
-  public void singleInClauseSql(HplsqlParser.Bool_expr_single_inContext ctx, StringBuilder sql) {
-    sql.append(evalPop(ctx.expr(0)).toString());
-    if (ctx.T_NOT() != null) {
-      sql.append(" " + ctx.T_NOT().getText());
-    }
-    sql.append(" " + ctx.T_IN().getText() + " (");
+  public void singleInClauseSql(HplsqlParser.Bool_expr_single_inContext ctx, StringBuilder sql) {    
+    sql.append(evalPop(ctx.expr(0)).toString() + " ");
+    exec.append(sql, exec.nvl(ctx.T_NOT(), ctx.T_IN()), ctx.T_OPEN_P());
     if (ctx.select_stmt() != null) {
-      sql.append(evalPop(ctx.select_stmt()));
+      exec.append(sql, evalPop(ctx.select_stmt()).toString(), ctx.T_OPEN_P().getSymbol(), ctx.select_stmt().getStart());
+      exec.append(sql, ctx.T_CLOSE_P().getText(), ctx.select_stmt().stop, ctx.T_CLOSE_P().getSymbol());
     }
     else {
       int cnt = ctx.expr().size();
@@ -262,8 +271,8 @@ public class Expression {
           sql.append(", ");
         }
       }
-    }
-    sql.append(")");
+      sql.append(")");
+    }    
   }
   
   /**

@@ -222,6 +222,11 @@ public class TestHplsqlLocal {
   public void testIf2() throws Exception {
     run("if2");
   }
+  
+  @Test
+  public void testIf3Bteq() throws Exception {
+    run("if3_bteq");
+  }
 
   @Test
   public void testInclude() throws Exception {

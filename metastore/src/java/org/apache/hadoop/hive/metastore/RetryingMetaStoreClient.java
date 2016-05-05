@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -55,14 +56,14 @@ public class RetryingMetaStoreClient implements InvocationHandler {
   private final IMetaStoreClient base;
   private final int retryLimit;
   private final long retryDelaySeconds;
-  private final Map<String, Long> metaCallTimeMap;
+  private final ConcurrentHashMap<String, Long> metaCallTimeMap;
   private final long connectionLifeTimeInMillis;
   private long lastConnectionTime;
   private boolean localMetaStore;
 
 
   protected RetryingMetaStoreClient(HiveConf hiveConf, Class<?>[] constructorArgTypes,
-      Object[] constructorArgs, Map<String, Long> metaCallTimeMap,
+      Object[] constructorArgs, ConcurrentHashMap<String, Long> metaCallTimeMap,
       Class<? extends IMetaStoreClient> msClientClass) throws MetaException {
 
     this.retryLimit = hiveConf.getIntVar(HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES);
@@ -94,7 +95,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
   }
 
   public static IMetaStoreClient getProxy(HiveConf hiveConf, HiveMetaHookLoader hookLoader,
-      Map<String, Long> metaCallTimeMap, String mscClassName, boolean allowEmbedded)
+      ConcurrentHashMap<String, Long> metaCallTimeMap, String mscClassName, boolean allowEmbedded)
           throws MetaException {
 
     return getProxy(hiveConf,
@@ -119,7 +120,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
    * Please use getProxy(HiveConf hiveConf, HiveMetaHookLoader hookLoader) for external purpose.
    */
   public static IMetaStoreClient getProxy(HiveConf hiveConf, Class<?>[] constructorArgTypes,
-      Object[] constructorArgs, Map<String, Long> metaCallTimeMap,
+      Object[] constructorArgs, ConcurrentHashMap<String, Long> metaCallTimeMap,
       String mscClassName) throws MetaException {
 
     @SuppressWarnings("unchecked")
@@ -202,11 +203,11 @@ public class RetryingMetaStoreClient implements InvocationHandler {
 
   private void addMethodTime(Method method, long timeTaken) {
     String methodStr = getMethodString(method);
-    Long curTime = metaCallTimeMap.get(methodStr);
-    if (curTime != null) {
-      timeTaken += curTime;
+    while (true) {
+      Long curTime = metaCallTimeMap.get(methodStr), newTime = timeTaken;
+      if (curTime != null && metaCallTimeMap.replace(methodStr, curTime, newTime + curTime)) break;
+      if (curTime == null && (null == metaCallTimeMap.putIfAbsent(methodStr, newTime))) break;
     }
-    metaCallTimeMap.put(methodStr, timeTaken);
   }
 
   /**

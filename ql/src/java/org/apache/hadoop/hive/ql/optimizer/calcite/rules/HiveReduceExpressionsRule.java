@@ -396,6 +396,131 @@ public abstract class HiveReduceExpressionsRule extends RelOptRule {
     assert constExps.size() == addCasts.size();
   }
 
+  /** Creates a map containing each (e, constant) pair that occurs within
+   * a predicate list.
+   *
+   * @param clazz Class of expression that is considered constant
+   * @param rexBuilder Rex builder
+   * @param predicates Predicate list
+   * @param <C> what to consider a constant: {@link RexLiteral} to use a narrow
+   *           definition of constant, or {@link RexNode} to use
+   *           {@link RexUtil#isConstant(RexNode)}
+   * @return Map from values to constants
+   */
+  public static <C extends RexNode> ImmutableMap<RexNode, C> predicateConstants(
+          Class<C> clazz, RexBuilder rexBuilder, RelOptPredicateList predicates) {
+    // We cannot use an ImmutableMap.Builder here. If there are multiple entries
+    // with the same key (e.g. "WHERE deptno = 1 AND deptno = 2"), it doesn't
+    // matter which we take, so the latter will replace the former.
+    // The basic idea is to find all the pairs of RexNode = RexLiteral
+    // (1) If 'predicates' contain a non-EQUALS, we bail out.
+    // (2) It is OK if a RexNode is equal to the same RexLiteral several times,
+    // (e.g. "WHERE deptno = 1 AND deptno = 1")
+    // (3) It will return false if there are inconsistent constraints (e.g.
+    // "WHERE deptno = 1 AND deptno = 2")
+    final Map<RexNode, C> map = new HashMap<>();
+    final Set<RexNode> excludeSet = new HashSet<>();
+    for (RexNode predicate : predicates.pulledUpPredicates) {
+      gatherConstraints(clazz, predicate, map, excludeSet, rexBuilder);
+    }
+    final ImmutableMap.Builder<RexNode, C> builder =
+        ImmutableMap.builder();
+    for (Map.Entry<RexNode, C> entry : map.entrySet()) {
+      RexNode rexNode = entry.getKey();
+      if (!overlap(rexNode, excludeSet)) {
+        builder.put(rexNode, entry.getValue());
+      }
+    }
+    return builder.build();
+  }
+
+  private static <C extends RexNode> void gatherConstraints(Class<C> clazz,
+      RexNode predicate, Map<RexNode, C> map, Set<RexNode> excludeSet,
+      RexBuilder rexBuilder) {
+    if (predicate.getKind() != SqlKind.EQUALS) {
+      decompose(excludeSet, predicate);
+      return;
+    }
+    final List<RexNode> operands = ((RexCall) predicate).getOperands();
+    if (operands.size() != 2) {
+      decompose(excludeSet, predicate);
+      return;
+    }
+    // if it reaches here, we have rexNode equals rexNode
+    final RexNode left = operands.get(0);
+    final RexNode right = operands.get(1);
+    // note that literals are immutable too and they can only be compared through
+    // values.
+    gatherConstraint(clazz, left, right, map, excludeSet, rexBuilder);
+    gatherConstraint(clazz, right, left, map, excludeSet, rexBuilder);
+  }
+
+  /** Returns whether a value of {@code type2} can be assigned to a variable
+   * of {@code type1}.
+   *
+   * <p>For example:
+   * <ul>
+   *   <li>{@code canAssignFrom(BIGINT, TINYINT)} returns {@code true}</li>
+   *   <li>{@code canAssignFrom(TINYINT, BIGINT)} returns {@code false}</li>
+   *   <li>{@code canAssignFrom(BIGINT, VARCHAR)} returns {@code false}</li>
+   * </ul>
+   */
+  private static boolean canAssignFrom(RelDataType type1, RelDataType type2) {
+    final SqlTypeName name1 = type1.getSqlTypeName();
+    final SqlTypeName name2 = type2.getSqlTypeName();
+    if (name1.getFamily() == name2.getFamily()) {
+      switch (name1.getFamily()) {
+      case NUMERIC:
+        return name1.compareTo(name2) >= 0;
+      default:
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static <C extends RexNode> void gatherConstraint(Class<C> clazz,
+      RexNode left, RexNode right, Map<RexNode, C> map, Set<RexNode> excludeSet,
+      RexBuilder rexBuilder) {
+    if (!clazz.isInstance(right)) {
+      return;
+    }
+    if (!RexUtil.isConstant(right)) {
+      return;
+    }
+    C constant = clazz.cast(right);
+    if (excludeSet.contains(left)) {
+      return;
+    }
+    final C existedValue = map.get(left);
+    if (existedValue == null) {
+      switch (left.getKind()) {
+      case CAST:
+        // Convert "CAST(c) = literal" to "c = literal", as long as it is a
+        // widening cast.
+        final RexNode operand = ((RexCall) left).getOperands().get(0);
+        if (canAssignFrom(left.getType(), operand.getType())) {
+          final RexNode castRight =
+              rexBuilder.makeCast(operand.getType(), constant);
+          if (castRight instanceof RexLiteral) {
+            left = operand;
+            constant = clazz.cast(castRight);
+          }
+        }
+      }
+      map.put(left, constant);
+    } else {
+      if (existedValue instanceof RexLiteral
+          && constant instanceof RexLiteral
+          && !((RexLiteral) existedValue).getValue()
+              .equals(((RexLiteral) constant).getValue())) {
+        // we found conflicting values, e.g. left = 10 and left = 20
+        map.remove(left);
+        excludeSet.add(left);
+      }
+    }
+  }
+  
   protected static ImmutableMap<RexNode, RexLiteral> predicateConstants(
       RelOptPredicateList predicates) {
     // We cannot use an ImmutableMap.Builder here. If there are multiple entries

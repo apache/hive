@@ -860,6 +860,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     throws InvalidObjectException, MetaException {
     // TODO Auto-generated method stub
   }
+
+  @Override
+  public void dropConstraint(String dbName, String tableName,
+  String constraintName) throws NoSuchObjectException {
+    // TODO Auto-generated method stub
+  }
 }
 
 

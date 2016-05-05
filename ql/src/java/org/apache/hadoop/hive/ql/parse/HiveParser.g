@@ -179,6 +179,7 @@ TOK_ALTERTABLE_SKEWED_LOCATION;
 TOK_ALTERTABLE_BUCKETS;
 TOK_ALTERTABLE_CLUSTER_SORT;
 TOK_ALTERTABLE_COMPACT;
+TOK_ALTERTABLE_DROPCONSTRAINT;
 TOK_ALTERINDEX_REBUILD;
 TOK_ALTERINDEX_PROPERTIES;
 TOK_MSCK;
@@ -1040,6 +1041,7 @@ alterTableStatementSuffix
     | alterStatementSuffixSkewedby
     | alterStatementSuffixExchangePartition
     | alterStatementPartitionKeyType
+    | alterStatementSuffixDropConstraint
     | partitionSpec? alterTblPartitionStatementSuffix -> alterTblPartitionStatementSuffix partitionSpec?
     ;
 
@@ -1128,6 +1130,13 @@ alterStatementSuffixAddCol
     -> {$add != null}? ^(TOK_ALTERTABLE_ADDCOLS columnNameTypeList restrictOrCascade?)
     ->                 ^(TOK_ALTERTABLE_REPLACECOLS columnNameTypeList restrictOrCascade?)
     ;
+
+alterStatementSuffixDropConstraint
+@init { pushMsg("drop constraint statement", state); }
+@after { popMsg(state); }
+   : KW_DROP KW_CONSTRAINT cName=identifier
+   ->^(TOK_ALTERTABLE_DROPCONSTRAINT $cName)
+   ;
 
 alterStatementSuffixRenameCol
 @init { pushMsg("rename column name", state); }

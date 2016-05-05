@@ -7,19 +7,19 @@
 -1.0
 Ln:19 DECLARE abc int
 Ln:20 DECLARE abc.abc int
-Ln:21 DECLARE abc . abc1 int
+Ln:21 DECLARE abc.abc1 int
 Ln:22 DECLARE "abc" int
 Ln:23 DECLARE "abc".abc int
 Ln:24 DECLARE "abc"."abc" int
-Ln:25 DECLARE "abc" . "abc1" int
+Ln:25 DECLARE "abc"."abc1" int
 Ln:26 DECLARE [abc] int
 Ln:27 DECLARE [abc].abc int
 Ln:28 DECLARE [abc].[abc] int
-Ln:29 DECLARE [abc] . [abc1] int
+Ln:29 DECLARE [abc].[abc1] int
 Ln:30 DECLARE `abc` int
 Ln:31 DECLARE `abc`.abc int
 Ln:32 DECLARE `abc`.`abc` int
-Ln:33 DECLARE `abc` . `abc1` int
+Ln:33 DECLARE `abc`.`abc1` int
 Ln:34 DECLARE :new.abc int
 Ln:35 DECLARE @abc int
 Ln:36 DECLARE _abc int

@@ -675,4 +675,6 @@ public interface RawStore extends Configurable {
 
   void createTableWithConstraints(Table tbl, List<SQLPrimaryKey> primaryKeys,
     List<SQLForeignKey> foreignKeys) throws InvalidObjectException, MetaException;
+
+  void dropConstraint(String dbName, String tableName, String constraintName) throws NoSuchObjectException;
 }

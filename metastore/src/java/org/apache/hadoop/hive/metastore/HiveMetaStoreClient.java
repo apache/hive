@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DropConstraintRequest;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -765,6 +766,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
   }
 
+  @Override
+  public void dropConstraint(String dbName, String tableName, String constraintName) throws
+    NoSuchObjectException, MetaException, TException {
+    client.drop_constraint(new DropConstraintRequest(dbName, tableName, constraintName));
+  }
 
 /**
    * @param type

@@ -1025,7 +1025,8 @@ public class ObjectStore implements RawStore, Configurable {
           " table " + tableName + " record to delete");
         }
 
-        List<MConstraint> tabConstraints = listAllTableConstraints(dbName, tableName);
+        List<MConstraint> tabConstraints = listAllTableConstraintsWithOptionalConstraintName(
+                                           dbName, tableName, null);
         if (tabConstraints != null && tabConstraints.size() > 0) {
           pm.deletePersistentAll(tabConstraints);
         }
@@ -1043,19 +1044,27 @@ public class ObjectStore implements RawStore, Configurable {
     return success;
   }
 
-  private List<MConstraint> listAllTableConstraints(String dbName, String tableName) {
+  private List<MConstraint> listAllTableConstraintsWithOptionalConstraintName
+    (String dbName, String tableName, String constraintname) {
     List<MConstraint> mConstraints = null;
     List<String> constraintNames = new ArrayList<String>();
     Query query = null;
 
     try {
       query = pm.newQuery("select constraintName from org.apache.hadoop.hive.metastore.model.MConstraint  where "
-        + "(parentTable.tableName == ptblname && parentTable.database.name == pdbname) || "
-        + "(childTable != null && childTable.tableName == ctblname && childTable.database.name == cdbname)");
+        + "((parentTable.tableName == ptblname && parentTable.database.name == pdbname) || "
+        + "(childTable != null && childTable.tableName == ctblname && "
+        + "childTable.database.name == cdbname)) " + (constraintname != null ?
+        " && constraintName == constraintname" : ""));
       query.declareParameters("java.lang.String ptblname, java.lang.String pdbname,"
-      + "java.lang.String ctblname, java.lang.String cdbname");
-      Collection<?> constraintNamesColl = (Collection<?>) query.
-        executeWithArray(tableName, dbName, tableName, dbName);
+      + "java.lang.String ctblname, java.lang.String cdbname" +
+        (constraintname != null ? ", java.lang.String constraintname" : ""));
+      Collection<?> constraintNamesColl =
+        constraintname != null ?
+          ((Collection<?>) query.
+            executeWithArray(tableName, dbName, tableName, dbName, constraintname)):
+          ((Collection<?>) query.
+            executeWithArray(tableName, dbName, tableName, dbName));
       for (Iterator<?> i = constraintNamesColl.iterator(); i.hasNext();) {
         String currName = (String) i.next();
         constraintNames.add(currName);
@@ -8387,6 +8396,29 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return foreignKeys;
+  }
+
+  @Override
+  public void dropConstraint(String dbName, String tableName,
+    String constraintName) throws NoSuchObjectException {
+    boolean success = false;
+    try {
+      openTransaction();
+
+      List<MConstraint> tabConstraints = listAllTableConstraintsWithOptionalConstraintName(
+                                         dbName, tableName, constraintName);
+      if (tabConstraints != null && tabConstraints.size() > 0) {
+        pm.deletePersistentAll(tabConstraints);
+      } else {
+        throw new NoSuchObjectException("The constraint: " + constraintName +
+          " does not exist for the associated table: " + dbName + "." + tableName);
+      }
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
   }
 
 }

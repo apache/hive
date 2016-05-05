@@ -251,6 +251,8 @@ class ForeignKeysRequest;
 
 class ForeignKeysResponse;
 
+class DropConstraintRequest;
+
 class PartitionsByExprResult;
 
 class PartitionsByExprRequest;
@@ -3773,6 +3775,56 @@ class ForeignKeysResponse {
 void swap(ForeignKeysResponse &a, ForeignKeysResponse &b);
 
 inline std::ostream& operator<<(std::ostream& out, const ForeignKeysResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class DropConstraintRequest {
+ public:
+
+  DropConstraintRequest(const DropConstraintRequest&);
+  DropConstraintRequest& operator=(const DropConstraintRequest&);
+  DropConstraintRequest() : dbname(), tablename(), constraintname() {
+  }
+
+  virtual ~DropConstraintRequest() throw();
+  std::string dbname;
+  std::string tablename;
+  std::string constraintname;
+
+  void __set_dbname(const std::string& val);
+
+  void __set_tablename(const std::string& val);
+
+  void __set_constraintname(const std::string& val);
+
+  bool operator == (const DropConstraintRequest & rhs) const
+  {
+    if (!(dbname == rhs.dbname))
+      return false;
+    if (!(tablename == rhs.tablename))
+      return false;
+    if (!(constraintname == rhs.constraintname))
+      return false;
+    return true;
+  }
+  bool operator != (const DropConstraintRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DropConstraintRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DropConstraintRequest &a, DropConstraintRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const DropConstraintRequest& obj)
 {
   obj.printTo(out);
   return out;
