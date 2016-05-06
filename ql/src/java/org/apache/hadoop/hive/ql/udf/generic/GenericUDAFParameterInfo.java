@@ -67,6 +67,13 @@ public interface GenericUDAFParameterInfo {
   boolean isDistinct();
 
   /**
+   * The flag to indicate if the UDAF invocation was from the windowing function
+   * call or not.
+   * @return <tt>true</tt> if the UDAF invocation was from the windowing function
+   * call.
+   */
+  boolean isWindowing();
+  /**
    * Returns <tt>true</tt> if the UDAF invocation was done via the wildcard
    * syntax <tt>FUNCTION(*)</tt>. Note that this is provided for informational
    * purposes only and the function implementation is not expected to ensure

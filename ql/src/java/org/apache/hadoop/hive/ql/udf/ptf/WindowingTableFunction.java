@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer;
 import org.apache.hadoop.hive.ql.udf.generic.ISupportStreamingModeForWindowing;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -392,8 +393,6 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     }
 
     streamingState.rollingPart.append(row);
-    row = streamingState.rollingPart
-        .getAt(streamingState.rollingPart.size() - 1);
 
     WindowTableFunctionDef tabDef = (WindowTableFunctionDef) getTableDef();
 
@@ -408,7 +407,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
         }
       }
 
-      if (fnEval instanceof ISupportStreamingModeForWindowing) {
+      if (fnEval != null &&
+          fnEval instanceof ISupportStreamingModeForWindowing) {
         fnEval.aggregate(streamingState.aggBuffers[i], streamingState.funcArgs[i]);
         Object out = ((ISupportStreamingModeForWindowing) fnEval)
             .getNextResult(streamingState.aggBuffers[i]);
@@ -472,7 +472,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       GenericUDAFEvaluator fnEval = wFn.getWFnEval();
 
       int numRowsRemaining = wFn.getWindowFrame().getEnd().getRelativeOffset();
-      if (fnEval instanceof ISupportStreamingModeForWindowing) {
+      if (fnEval != null &&
+          fnEval instanceof ISupportStreamingModeForWindowing) {
         fnEval.terminate(streamingState.aggBuffers[i]);
 
         WindowingFunctionInfoHelper wFnInfo = getWindowingFunctionInfoHelper(wFn.getName());

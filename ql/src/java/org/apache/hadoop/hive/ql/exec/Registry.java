@@ -395,7 +395,7 @@ public class Registry {
    */
   @SuppressWarnings("deprecation")
   public GenericUDAFEvaluator getGenericUDAFEvaluator(String name,
-      List<ObjectInspector> argumentOIs, boolean isDistinct,
+      List<ObjectInspector> argumentOIs, boolean isWindowing, boolean isDistinct,
       boolean isAllColumns) throws SemanticException {
 
     GenericUDAFResolver udafResolver = getGenericUDAFResolver(name);
@@ -413,7 +413,7 @@ public class Registry {
 
     GenericUDAFParameterInfo paramInfo =
         new SimpleGenericUDAFParameterInfo(
-            args, isDistinct, isAllColumns);
+            args, isWindowing, isDistinct, isAllColumns);
     if (udafResolver instanceof GenericUDAFResolver2) {
       udafEvaluator =
           ((GenericUDAFResolver2) udafResolver).getEvaluator(paramInfo);
@@ -433,14 +433,14 @@ public class Registry {
     }
     if (!functionName.equals(FunctionRegistry.LEAD_FUNC_NAME) &&
         !functionName.equals(FunctionRegistry.LAG_FUNC_NAME)) {
-      return getGenericUDAFEvaluator(functionName, argumentOIs, isDistinct, isAllColumns);
+      return getGenericUDAFEvaluator(functionName, argumentOIs, true, isDistinct, isAllColumns);
     }
 
     // this must be lead/lag UDAF
     ObjectInspector args[] = new ObjectInspector[argumentOIs.size()];
     GenericUDAFResolver udafResolver = info.getGenericUDAFResolver();
     GenericUDAFParameterInfo paramInfo = new SimpleGenericUDAFParameterInfo(
-        argumentOIs.toArray(args), isDistinct, isAllColumns);
+        argumentOIs.toArray(args), true, isDistinct, isAllColumns);
     return ((GenericUDAFResolver2) udafResolver).getEvaluator(paramInfo);
   }
 

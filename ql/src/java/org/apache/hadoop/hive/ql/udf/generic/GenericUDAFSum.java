@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.util.HashSet;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -32,6 +34,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorObject;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -39,6 +42,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -93,6 +97,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     TypeInfo[] parameters = info.getParameters();
 
     GenericUDAFSumEvaluator eval = (GenericUDAFSumEvaluator) getEvaluator(parameters);
+    eval.setWindowing(info.isWindowing());
     eval.setSumDistinct(info.isDistinct());
 
     return eval;
@@ -125,44 +130,69 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
    * The base type for sum operator evaluator
    *
    */
-  public static abstract class GenericUDAFSumEvaluator<ResultType> extends GenericUDAFEvaluator {
+  public static abstract class GenericUDAFSumEvaluator<ResultType extends Writable> extends GenericUDAFEvaluator {
     static abstract class SumAgg<T> extends AbstractAggregationBuffer {
       boolean empty;
       T sum;
-      Object previousValue = null;
+      HashSet<ObjectInspectorObject> uniqueObjects; // Unique rows.
     }
 
     protected PrimitiveObjectInspector inputOI;
-    protected ObjectInspector outputOI;
+    protected PrimitiveObjectInspector outputOI;
     protected ResultType result;
+    protected boolean isWindowing;
     protected boolean sumDistinct;
 
-    public boolean sumDistinct() {
-      return sumDistinct;
+    public void setWindowing(boolean isWindowing) {
+      this.isWindowing = isWindowing;
     }
 
     public void setSumDistinct(boolean sumDistinct) {
       this.sumDistinct = sumDistinct;
     }
 
+    protected boolean isWindowingDistinct() {
+      return isWindowing && sumDistinct;
+    }
+
+    @Override
+    public Object terminatePartial(AggregationBuffer agg) throws HiveException {
+      if (isWindowingDistinct()) {
+        throw new HiveException("Distinct windowing UDAF doesn't support merge and terminatePartial");
+      } else {
+        return terminate(agg);
+      }
+    }
+
     /**
-     * Check if the input object is the same as the previous one for the case of
-     * SUM(DISTINCT).
+     * Check if the input object is eligible to contribute to the sum. If it's null
+     * or the same value as the previous one for the case of SUM(DISTINCT). Then
+     * skip it.
      * @param input the input object
-     * @return True if sumDistinct is false or the input is different from the previous object
+     * @return True if sumDistinct is false or the non-null input is different from the previous object
      */
-    protected boolean checkDistinct(SumAgg agg, Object input) {
-      if (this.sumDistinct &&
-          ObjectInspectorUtils.compare(input, inputOI, agg.previousValue, outputOI) == 0) {
+    protected boolean isEligibleValue(SumAgg agg, Object input) {
+      if (input == null) {
         return false;
       }
 
-      agg.previousValue = ObjectInspectorUtils.copyToStandardObject(
-          input, inputOI, ObjectInspectorCopyOption.JAVA);
+      if (isWindowingDistinct()) {
+        HashSet<ObjectInspectorObject> uniqueObjs = agg.uniqueObjects;
+        ObjectInspectorObject obj = input instanceof ObjectInspectorObject ?
+            (ObjectInspectorObject)input :
+            new ObjectInspectorObject(
+            ObjectInspectorUtils.copyToStandardObject(input, inputOI, ObjectInspectorCopyOption.JAVA),
+            outputOI);
+        if (!uniqueObjs.contains(obj)) {
+          uniqueObjs.add(obj);
+          return true;
+        }
+
+        return false;
+      }
+
       return true;
     }
-
-
   }
 
   /**
@@ -177,7 +207,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       super.init(m, parameters);
       result = new HiveDecimalWritable(HiveDecimal.ZERO);
       inputOI = (PrimitiveObjectInspector) parameters[0];
-      outputOI = ObjectInspectorUtils.getStandardObjectInspector(inputOI,
+      outputOI = (PrimitiveObjectInspector) ObjectInspectorUtils.getStandardObjectInspector(inputOI,
           ObjectInspectorCopyOption.JAVA);
       // The output precision is 10 greater than the input which should cover at least
       // 10b rows. The scale is the same as the input.
@@ -208,6 +238,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       SumAgg<HiveDecimal> bdAgg = (SumAgg<HiveDecimal>) agg;
       bdAgg.empty = true;
       bdAgg.sum = HiveDecimal.ZERO;
+      bdAgg.uniqueObjects = new HashSet<ObjectInspectorObject>();
     }
 
     boolean warned = false;
@@ -216,8 +247,10 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
       assert (parameters.length == 1);
       try {
-        if (checkDistinct((SumAgg) agg, parameters[0])) {
-          merge(agg, parameters[0]);
+        if (isEligibleValue((SumHiveDecimalAgg) agg, parameters[0])) {
+          ((SumHiveDecimalAgg)agg).empty = false;
+          ((SumHiveDecimalAgg)agg).sum = ((SumHiveDecimalAgg)agg).sum.add(
+              PrimitiveObjectInspectorUtils.getHiveDecimal(parameters[0], inputOI));
         }
       } catch (NumberFormatException e) {
         if (!warned) {
@@ -232,11 +265,6 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     }
 
     @Override
-    public Object terminatePartial(AggregationBuffer agg) throws HiveException {
-      return terminate(agg);
-    }
-
-    @Override
     public void merge(AggregationBuffer agg, Object partial) throws HiveException {
       if (partial != null) {
         SumHiveDecimalAgg myagg = (SumHiveDecimalAgg) agg;
@@ -245,7 +273,11 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
         }
 
         myagg.empty = false;
-        myagg.sum = myagg.sum.add(PrimitiveObjectInspectorUtils.getHiveDecimal(partial, inputOI));
+        if (isWindowingDistinct()) {
+          throw new HiveException("Distinct windowing UDAF doesn't support merge and terminatePartial");
+        } else {
+          myagg.sum = myagg.sum.add(PrimitiveObjectInspectorUtils.getHiveDecimal(partial, inputOI));
+        }
       }
     }
 
@@ -261,6 +293,11 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
 
     @Override
     public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrameDef) {
+      // Don't use streaming for distinct cases
+      if (sumDistinct) {
+        return null;
+      }
+
       return new GenericUDAFStreamingEvaluator.SumAvgEnhancer<HiveDecimalWritable, HiveDecimal>(
           this, wFrameDef) {
 
@@ -301,7 +338,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       super.init(m, parameters);
       result = new DoubleWritable(0);
       inputOI = (PrimitiveObjectInspector) parameters[0];
-      outputOI = ObjectInspectorUtils.getStandardObjectInspector(inputOI,
+      outputOI = (PrimitiveObjectInspector)ObjectInspectorUtils.getStandardObjectInspector(inputOI,
           ObjectInspectorCopyOption.JAVA);
       return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
     }
@@ -325,6 +362,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       SumDoubleAgg myagg = (SumDoubleAgg) agg;
       myagg.empty = true;
       myagg.sum = 0.0;
+      myagg.uniqueObjects = new HashSet<ObjectInspectorObject>();
     }
 
     boolean warned = false;
@@ -333,8 +371,9 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
       assert (parameters.length == 1);
       try {
-        if (checkDistinct((SumAgg) agg, parameters[0])) {
-          merge(agg, parameters[0]);
+        if (isEligibleValue((SumDoubleAgg) agg, parameters[0])) {
+          ((SumDoubleAgg)agg).empty = false;
+          ((SumDoubleAgg)agg).sum += PrimitiveObjectInspectorUtils.getDouble(parameters[0], inputOI);
         }
       } catch (NumberFormatException e) {
         if (!warned) {
@@ -349,16 +388,15 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     }
 
     @Override
-    public Object terminatePartial(AggregationBuffer agg) throws HiveException {
-      return terminate(agg);
-    }
-
-    @Override
     public void merge(AggregationBuffer agg, Object partial) throws HiveException {
       if (partial != null) {
         SumDoubleAgg myagg = (SumDoubleAgg) agg;
         myagg.empty = false;
-        myagg.sum += PrimitiveObjectInspectorUtils.getDouble(partial, inputOI);
+        if (isWindowingDistinct()) {
+          throw new HiveException("Distinct windowing UDAF doesn't support merge and terminatePartial");
+        } else {
+          myagg.sum += PrimitiveObjectInspectorUtils.getDouble(partial, inputOI);
+        }
       }
     }
 
@@ -374,6 +412,11 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
 
     @Override
     public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrameDef) {
+      // Don't use streaming for distinct cases
+      if (sumDistinct) {
+        return null;
+      }
+
       return new GenericUDAFStreamingEvaluator.SumAvgEnhancer<DoubleWritable, Double>(this,
           wFrameDef) {
 
@@ -415,7 +458,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       super.init(m, parameters);
       result = new LongWritable(0);
       inputOI = (PrimitiveObjectInspector) parameters[0];
-      outputOI = ObjectInspectorUtils.getStandardObjectInspector(inputOI,
+      outputOI = (PrimitiveObjectInspector)ObjectInspectorUtils.getStandardObjectInspector(inputOI,
           ObjectInspectorCopyOption.JAVA);
       return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
     }
@@ -439,6 +482,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       SumLongAgg myagg = (SumLongAgg) agg;
       myagg.empty = true;
       myagg.sum = 0L;
+      myagg.uniqueObjects = new HashSet<ObjectInspectorObject>();
     }
 
     private boolean warned = false;
@@ -447,8 +491,9 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
       assert (parameters.length == 1);
       try {
-        if (checkDistinct((SumAgg) agg, parameters[0])) {
-          merge(agg, parameters[0]);
+        if (isEligibleValue((SumLongAgg) agg, parameters[0])) {
+          ((SumLongAgg)agg).empty = false;
+          ((SumLongAgg)agg).sum += PrimitiveObjectInspectorUtils.getLong(parameters[0], inputOI);
         }
       } catch (NumberFormatException e) {
         if (!warned) {
@@ -460,16 +505,15 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     }
 
     @Override
-    public Object terminatePartial(AggregationBuffer agg) throws HiveException {
-      return terminate(agg);
-    }
-
-    @Override
     public void merge(AggregationBuffer agg, Object partial) throws HiveException {
       if (partial != null) {
         SumLongAgg myagg = (SumLongAgg) agg;
-        myagg.sum += PrimitiveObjectInspectorUtils.getLong(partial, inputOI);
         myagg.empty = false;
+        if (isWindowingDistinct()) {
+          throw new HiveException("Distinct windowing UDAF doesn't support merge and terminatePartial");
+        } else {
+            myagg.sum += PrimitiveObjectInspectorUtils.getLong(partial, inputOI);
+        }
       }
     }
 
@@ -485,6 +529,11 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
 
     @Override
     public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrameDef) {
+      // Don't use streaming for distinct cases
+      if (isWindowingDistinct()) {
+        return null;
+      }
+
       return new GenericUDAFStreamingEvaluator.SumAvgEnhancer<LongWritable, Long>(this,
           wFrameDef) {
 
@@ -509,7 +558,6 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
           SumLongAgg myagg = (SumLongAgg) ss.wrappedBuf;
           return myagg.empty ? null : new Long(myagg.sum);
         }
-
       };
     }
   }

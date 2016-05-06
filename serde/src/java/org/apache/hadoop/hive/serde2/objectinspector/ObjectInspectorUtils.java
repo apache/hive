@@ -117,6 +117,44 @@ public final class ObjectInspectorUtils {
   }
 
   /**
+   * This class can be used to wrap Hive objects and put in HashMap or HashSet.
+   * The objects will be compared using ObjectInspectors.
+   *
+   */
+  public static class ObjectInspectorObject {
+    private final Object[] objects;
+    private final ObjectInspector[] oi;
+
+    public ObjectInspectorObject(Object object, ObjectInspector oi) {
+      this.objects = new Object[] { object };
+      this.oi = new ObjectInspector[] { oi };
+    }
+
+    public ObjectInspectorObject(Object[] objects, ObjectInspector[] oi) {
+      this.objects = objects;
+      this.oi = oi;
+    }
+
+    public Object[] getValues() {
+      return objects;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) return true;
+      if (obj == null || obj.getClass() != this.getClass()) { return false; }
+
+      ObjectInspectorObject comparedObject = (ObjectInspectorObject)obj;
+      return ObjectInspectorUtils.compare(objects, oi, comparedObject.objects, comparedObject.oi) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+      return ObjectInspectorUtils.getBucketHashCode(objects, oi);
+    }
+  }
+
+  /**
    * Calculates the hash code for array of Objects that contains writables. This is used
    * to work around the buggy Hadoop DoubleWritable hashCode implementation. This should
    * only be used for process-local hash codes; don't replace stored hash codes like bucketing.

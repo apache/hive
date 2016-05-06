@@ -44,3 +44,21 @@ SELECT AVG(DISTINCT t) OVER (PARTITION BY index),
        AVG(DISTINCT ts) OVER (PARTITION BY index),
        AVG(DISTINCT dec) OVER (PARTITION BY index)
 FROM windowing_distinct;
+
+-- count
+select index, f, count(distinct f) over (partition by index order by f rows between 2 preceding and 1 preceding),
+                 count(distinct f) over (partition by index order by f rows between unbounded preceding and 1 preceding),
+                 count(distinct f) over (partition by index order by f rows between 1 following and 2 following),
+                 count(distinct f) over (partition by index order by f rows between unbounded preceding and 1 following) from windowing_distinct;
+
+-- sum
+select index, f, sum(distinct f) over (partition by index order by f rows between 2 preceding and 1 preceding),
+                 sum(distinct f) over (partition by index order by f rows between unbounded preceding and 1 preceding),
+                 sum(distinct f) over (partition by index order by f rows between 1 following and 2 following),
+                 sum(distinct f) over (partition by index order by f rows between unbounded preceding and 1 following) from windowing_distinct;
+
+-- avg
+select index, f, avg(distinct f) over (partition by index order by f rows between 2 preceding and 1 preceding),
+                 avg(distinct f) over (partition by index order by f rows between unbounded preceding and 1 preceding),
+                 avg(distinct f) over (partition by index order by f rows between 1 following and 2 following),
+                 avg(distinct f) over (partition by index order by f rows between unbounded preceding and 1 following) from windowing_distinct;

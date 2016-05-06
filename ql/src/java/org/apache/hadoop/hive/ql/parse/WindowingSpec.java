@@ -124,9 +124,6 @@ public class WindowingSpec {
       WindowFunctionSpec wFn = (WindowFunctionSpec) expr;
       WindowSpec wdwSpec = wFn.getWindowSpec();
 
-      // 0. Precheck supported syntax
-      precheckSyntax(wFn, wdwSpec);
-
       // 1. For Wdw Specs that refer to Window Defns, inherit missing components
       if ( wdwSpec != null ) {
         ArrayList<String> sources = new ArrayList<String>();
@@ -150,14 +147,6 @@ public class WindowingSpec {
 
       // 5. Add the Partition expressions as the Order if there is no Order and validate Order spec.
       setAndValidateOrderSpec(wFn, wdwSpec);
-    }
-  }
-
-  private void precheckSyntax(WindowFunctionSpec wFn, WindowSpec wdwSpec) throws SemanticException {
-    if (wdwSpec != null ) {
-      if (wFn.isDistinct && (wdwSpec.windowFrame != null || wdwSpec.getOrder() != null) ) {
-        throw new SemanticException("Function with DISTINCT cannot work with partition ORDER BY or windowing clause.");
-      }
     }
   }
 
@@ -509,9 +498,6 @@ public class WindowingSpec {
       if ( getOrder() == null ) {
         OrderSpec order = new OrderSpec();
         order.prefixBy(getPartition());
-        if (wFn.isDistinct) {
-          order.addExpressions(wFn.getArgs());
-        }
         setOrder(order);
       }
     }
