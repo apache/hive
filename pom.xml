@@ -134,6 +134,8 @@
     <hadoop.version>2.6.0</hadoop.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
     <hbase.version>1.1.1</hbase.version>
+    <!-- required for logging test to avoid including hbase which pulls disruptor transitively -->
+    <disruptor.version>3.3.0</disruptor.version>
     <!-- httpcomponents are not always in version sync -->
     <httpcomponents.client.version>4.4</httpcomponents.client.version>
     <httpcomponents.core.version>4.4</httpcomponents.core.version>
