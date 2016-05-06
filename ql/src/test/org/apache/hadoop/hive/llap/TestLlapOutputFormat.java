@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.llap;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
 
 import java.net.Socket;
 
@@ -60,18 +60,22 @@ public class TestLlapOutputFormat {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestLlapOutputFormat.class);
 
-  private LlapOutputFormatService service;
+  private static LlapOutputFormatService service;
 
-  @Before
-  public void setUp() throws IOException {
+  @BeforeClass
+  public static void setUp() throws Exception {
     LOG.debug("Setting up output service");
+    Configuration conf = new Configuration();
+    // Pick random avail port
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT, 0);
+    LlapOutputFormatService.initializeAndStart(conf);
     service = LlapOutputFormatService.get();
     LlapProxy.setDaemon(true);
     LOG.debug("Output service up");
   }
 
-  @After
-  public void tearDown() throws IOException, InterruptedException {
+  @AfterClass
+  public static void tearDown() throws IOException, InterruptedException {
     LOG.debug("Tearing down service");
     service.stop();
     LOG.debug("Tearing down complete");
@@ -87,8 +91,7 @@ public class TestLlapOutputFormat {
       LlapOutputFormat format = new LlapOutputFormat();
 
       HiveConf conf = new HiveConf();
-      Socket socket = new Socket("localhost",
-          conf.getIntVar(HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT));
+      Socket socket = new Socket("localhost", service.getPort());
 
       LOG.debug("Socket connected");
 
