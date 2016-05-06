@@ -37,6 +37,8 @@ public class TypeCheckCtx implements NodeProcessorCtx {
 
   private final boolean useCaching;
 
+  private final boolean foldExpr;
+
   /**
    * Receives translations which will need to be applied during unparse.
    */
@@ -79,20 +81,21 @@ public class TypeCheckCtx implements NodeProcessorCtx {
    *          The input row resolver of the previous operator.
    */
   public TypeCheckCtx(RowResolver inputRR) {
-    this(inputRR, true);
+    this(inputRR, true, false);
   }
 
-  public TypeCheckCtx(RowResolver inputRR, boolean useCaching) {
-    this(inputRR, useCaching, false, true, true, true, true, true, true, true);
+  public TypeCheckCtx(RowResolver inputRR, boolean useCaching, boolean foldExpr) {
+    this(inputRR, useCaching, foldExpr, false, true, true, true, true, true, true, true);
   }
 
-  public TypeCheckCtx(RowResolver inputRR, boolean useCaching, boolean allowStatefulFunctions,
-      boolean allowDistinctFunctions, boolean allowGBExprElimination, boolean allowAllColRef,
-      boolean allowFunctionStar, boolean allowWindowing,
+  public TypeCheckCtx(RowResolver inputRR, boolean useCaching, boolean foldExpr,
+      boolean allowStatefulFunctions, boolean allowDistinctFunctions, boolean allowGBExprElimination,
+      boolean allowAllColRef, boolean allowFunctionStar, boolean allowWindowing,
       boolean allowIndexExpr, boolean allowSubQueryExpr) {
     setInputRR(inputRR);
     error = null;
     this.useCaching = useCaching;
+    this.foldExpr = foldExpr;
     this.allowStatefulFunctions = allowStatefulFunctions;
     this.allowDistinctFunctions = allowDistinctFunctions;
     this.allowGBExprElimination = allowGBExprElimination;
@@ -208,5 +211,9 @@ public class TypeCheckCtx implements NodeProcessorCtx {
 
   public boolean isUseCaching() {
     return useCaching;
+  }
+
+  public boolean isFoldExpr() {
+    return foldExpr;
   }
 }

@@ -61,9 +61,12 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFNvl;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -1055,6 +1058,14 @@ public class TypeCheckProcFactory {
           }
           desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText,
               childrenList);
+        } else if (ctx.isFoldExpr() && canConvertIntoNvl(genericUDF, children)) {
+          // Rewrite CASE into NVL
+          desc = ExprNodeGenericFuncDesc.newInstance(new GenericUDFNvl(),
+                  Lists.newArrayList(children.get(0), new ExprNodeConstantDesc(false)));
+          if (Boolean.FALSE.equals(((ExprNodeConstantDesc) children.get(1)).getValue())) {
+            desc = ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(),
+                    Lists.newArrayList(desc));
+          }
         } else {
           desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText,
               children);
@@ -1070,6 +1081,21 @@ public class TypeCheckProcFactory {
       }
       assert (desc != null);
       return desc;
+    }
+
+    private boolean canConvertIntoNvl(GenericUDF genericUDF, ArrayList<ExprNodeDesc> children) {
+      if (genericUDF instanceof GenericUDFWhen && children.size() == 3 &&
+              children.get(1) instanceof ExprNodeConstantDesc &&
+              children.get(2) instanceof ExprNodeConstantDesc) {
+        ExprNodeConstantDesc constThen = (ExprNodeConstantDesc) children.get(1);
+        ExprNodeConstantDesc constElse = (ExprNodeConstantDesc) children.get(2);
+        Object thenVal = constThen.getValue();
+        Object elseVal = constElse.getValue();
+        if (thenVal instanceof Boolean && elseVal instanceof Boolean) {
+          return true;
+        }
+      }
+      return false;
     }
 
     /**

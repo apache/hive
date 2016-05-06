@@ -236,20 +236,22 @@ public class LlapServiceDriver {
           String.valueOf(options.getIoThreads()));
     }
 
+    long cache = -1, xmx = -1;
     if (options.getCache() != -1) {
-      conf.set(HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname,
-          Long.toString(options.getCache()));
+      cache = options.getCache();
+      conf.set(HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname, Long.toString(cache));
       propsDirectOptions.setProperty(HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname,
-          Long.toString(options.getCache()));
+          Long.toString(cache));
     }
 
     if (options.getXmx() != -1) {
       // Needs more explanation here
-      // Xmx is not the max heap value in JDK8
-      // You need to subtract 50% of the survivor fraction from this, to get actual usable memory before it goes into GC
-      long xmx = (long) (options.getXmx() / (1024 * 1024));
+      // Xmx is not the max heap value in JDK8. You need to subtract 50% of the survivor fraction
+      // from this, to get actual usable  memory before it goes into GC
+      xmx = (long) (options.getXmx() / (1024 * 1024));
       conf.setLong(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, xmx);
-      propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, String.valueOf(xmx));
+      propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname,
+          String.valueOf(xmx));
     }
 
     if (options.getLlapQueueName() != null && !options.getLlapQueueName().isEmpty()) {
@@ -257,8 +259,6 @@ public class LlapServiceDriver {
       propsDirectOptions
           .setProperty(ConfVars.LLAP_DAEMON_QUEUE_NAME.varname, options.getLlapQueueName());
     }
-
-
 
     URL logger = conf.getResource(LlapDaemon.LOG4j2_PROPERTIES_FILE);
 
@@ -459,6 +459,9 @@ public class LlapServiceDriver {
 
     configs.put(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_VCORES,
         conf.getInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_VCORES, -1));
+
+    long maxDirect = (xmx > 0 && cache > 0 && xmx < cache * 1.25) ? (long)(cache * 1.25) : -1;
+    configs.put("max_direct_memory", Long.toString(maxDirect));
 
     FSDataOutputStream os = lfs.create(new Path(tmpDir, "config.json"));
     OutputStreamWriter w = new OutputStreamWriter(os);

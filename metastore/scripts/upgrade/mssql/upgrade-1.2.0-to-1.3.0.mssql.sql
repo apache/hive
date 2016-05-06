@@ -11,6 +11,7 @@ SELECT 'Upgrading MetaStore schema from 1.2.0 to 1.3.0' AS MESSAGE;
 :r 015-HIVE-12823.mssql.sql;
 :r 016-HIVE-12831.mssql.sql;
 :r 017-HIVE-12832.mssql.sql;
+:r 020-HIVE-13395.mssql.sql;
 
 UPDATE VERSION SET SCHEMA_VERSION='1.3.0', VERSION_COMMENT='Hive release version 1.3.0' where VER_ID=1;
 SELECT 'Finished upgrading MetaStore schema from 1.2.0 to 1.3.0' AS MESSAGE;

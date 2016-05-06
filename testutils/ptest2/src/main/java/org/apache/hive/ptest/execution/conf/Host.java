@@ -47,6 +47,9 @@ public class Host {
   public String[] getLocalDirectories() {
     return localDirectories;
   }
+  public String toShortString() {
+    return name;
+  }
   @Override
   public String toString() {
     return "Host [name=" + name + ", user=" + user + ", threads=" + threads

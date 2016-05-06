@@ -37,9 +37,12 @@ public class TaskResult {
     this.exitVal = exitVal;
     setRunning(false);
   }
-  public void setExitVal(int exitVal, Throwable taskError) {
-    this.setExitVal(exitVal);
+  public void setTaskError(Throwable taskError) {
     this.taskError = taskError;
+  }
+  public void setExitVal(int exitVal, Throwable taskError) {
+    setExitVal(exitVal);
+    setTaskError(taskError);
   }
 
   public int getExitVal() {

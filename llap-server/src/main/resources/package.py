@@ -101,6 +101,10 @@ def main(args):
 		return
 	config = json_parse(open(join(input, "config.json")).read())
 	java_home = config["java.home"]
+	max_direct_memory = config["max_direct_memory"]
+	daemon_args = args.args
+	if max_direct_memory > 0:
+		daemon_args = " -XX:MaxDirectMemorySize=%s %s" % (max_direct_memory, daemon_args)
 	resource = LlapResource(config)
 	# 5% container failure every monkey_interval seconds
 	monkey_percentage = 5 # 5%
@@ -114,7 +118,7 @@ def main(args):
 		"hadoop_home" : os.getenv("HADOOP_HOME"),
 		"java_home" : java_home,
 		"name" : resource.clusterName,
-		"daemon_args" : args.args,
+		"daemon_args" : daemon_args,
 		"daemon_loglevel" : args.loglevel,
 		"queue.string" : resource.queueString,
 		"monkey_interval" : args.chaosmonkey,

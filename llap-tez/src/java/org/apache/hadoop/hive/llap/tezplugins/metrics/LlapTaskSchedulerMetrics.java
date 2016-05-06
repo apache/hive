@@ -46,9 +46,9 @@ import org.apache.hadoop.metrics2.lib.MutableGaugeLong;
 import org.apache.hadoop.metrics2.source.JvmMetrics;
 
 /**
- * Metrics about the llap daemon task scheduler.
+ * Metrics about the llap task scheduler.
  */
-@Metrics(about = "LlapDaemon Task Scheduler Metrics", context = "scheduler")
+@Metrics(about = "Llap Task Scheduler Metrics", context = "scheduler")
 public class LlapTaskSchedulerMetrics implements MetricsSource {
 
   private final String name;
@@ -99,7 +99,7 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
   public void getMetrics(MetricsCollector collector, boolean b) {
     MetricsRecordBuilder rb = collector.addRecord(SchedulerMetrics)
         .setContext("scheduler")
-        .tag(ProcessName, MetricsUtils.METRICS_PROCESS_NAME)
+        .tag(ProcessName, "DAGAppMaster")
         .tag(SessionId, sessionId);
     getTaskSchedulerStats(rb);
   }

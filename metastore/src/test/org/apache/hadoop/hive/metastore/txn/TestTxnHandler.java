@@ -483,6 +483,7 @@ public class TestTxnHandler {
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(openTxn());
     res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.ACQUIRED);
   }
@@ -514,6 +515,7 @@ public class TestTxnHandler {
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(openTxn());
     res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.WAITING);
   }
@@ -580,6 +582,7 @@ public class TestTxnHandler {
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(openTxn());
     LockResponse res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.ACQUIRED);
 
@@ -602,6 +605,7 @@ public class TestTxnHandler {
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(openTxn());
     LockResponse res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.ACQUIRED);
 
@@ -611,6 +615,7 @@ public class TestTxnHandler {
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(openTxn());
     res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.WAITING);
 
@@ -633,6 +638,7 @@ public class TestTxnHandler {
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(openTxn());
     LockResponse res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.ACQUIRED);
 
@@ -642,6 +648,7 @@ public class TestTxnHandler {
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(openTxn());
     res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.WAITING);
 
@@ -651,6 +658,7 @@ public class TestTxnHandler {
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(openTxn());
     res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.WAITING);
   }
@@ -682,6 +690,7 @@ public class TestTxnHandler {
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(openTxn());
     res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.WAITING);
   }
@@ -725,6 +734,8 @@ public class TestTxnHandler {
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
+    long txnId = openTxn();
+    req.setTxnid(txnId);
     LockResponse res = txnHandler.lock(req);
     long lockid1 = res.getLockid();
     assertTrue(res.getState() == LockState.ACQUIRED);
@@ -735,11 +746,12 @@ public class TestTxnHandler {
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(openTxn());
     res = txnHandler.lock(req);
     long lockid2 = res.getLockid();
     assertTrue(res.getState() == LockState.WAITING);
 
-    txnHandler.unlock(new UnlockRequest(lockid1));
+    txnHandler.abortTxn(new AbortTxnRequest(txnId));
     res = txnHandler.checkLock(new CheckLockRequest(lockid2));
     assertTrue(res.getState() == LockState.ACQUIRED);
   }
@@ -1070,16 +1082,14 @@ public class TestTxnHandler {
   @Test
   public void showLocks() throws Exception {
     long begining = System.currentTimeMillis();
-    long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
-    req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
 
     // Open txn
-    txnid = openTxn();
+    long txnid = openTxn();
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.TABLE, "mydb");
     comp.setTablename("mytable");
     components = new ArrayList<LockComponent>(1);
@@ -1090,7 +1100,7 @@ public class TestTxnHandler {
 
     // Locks not associated with a txn
     components = new ArrayList<LockComponent>(1);
-    comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "yourdb");
+    comp = new LockComponent(LockType.SHARED_READ, LockLevel.PARTITION, "yourdb");
     comp.setTablename("yourtable");
     comp.setPartitionname("yourpartition");
     components.add(comp);
@@ -1104,14 +1114,13 @@ public class TestTxnHandler {
     for (int i = 0; i < saw.length; i++) saw[i] = false;
     for (ShowLocksResponseElement lock : locks) {
       if (lock.getLockid() == 1) {
-        assertEquals(1, lock.getTxnid());
+        assertEquals(0, lock.getTxnid());
         assertEquals("mydb", lock.getDbname());
         assertNull(lock.getTablename());
         assertNull(lock.getPartname());
         assertEquals(LockState.ACQUIRED, lock.getState());
         assertEquals(LockType.EXCLUSIVE, lock.getType());
-        assertTrue(lock.toString(), 0 == lock.getLastheartbeat() &&
-            lock.getTxnid() != 0);
+        assertTrue(lock.toString(), 0 != lock.getLastheartbeat());
         assertTrue("Expected acquired at " + lock.getAcquiredat() + " to be between " + begining
             + " and " + System.currentTimeMillis(),
             begining <= lock.getAcquiredat() && System.currentTimeMillis() >= lock.getAcquiredat());
@@ -1119,7 +1128,7 @@ public class TestTxnHandler {
         assertEquals("localhost", lock.getHostname());
         saw[0] = true;
       } else if (lock.getLockid() == 2) {
-        assertEquals(2, lock.getTxnid());
+        assertEquals(1, lock.getTxnid());
         assertEquals("mydb", lock.getDbname());
         assertEquals("mytable", lock.getTablename());
         assertNull(lock.getPartname());
@@ -1137,7 +1146,7 @@ public class TestTxnHandler {
         assertEquals("yourtable", lock.getTablename());
         assertEquals("yourpartition", lock.getPartname());
         assertEquals(LockState.ACQUIRED, lock.getState());
-        assertEquals(LockType.SHARED_WRITE, lock.getType());
+        assertEquals(LockType.SHARED_READ, lock.getType());
         assertTrue(lock.toString(), begining <= lock.getLastheartbeat() &&
             System.currentTimeMillis() >= lock.getLastheartbeat());
         assertTrue(begining <= lock.getAcquiredat() &&

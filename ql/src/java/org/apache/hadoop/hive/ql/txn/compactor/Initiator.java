@@ -147,7 +147,7 @@ public class Initiator extends CompactorThread {
               if (compactionNeeded != null) requestCompaction(ci, runAs, compactionNeeded);
             } catch (Throwable t) {
               LOG.error("Caught exception while trying to determine if we should compact " +
-                  ci + ".  Marking clean to avoid repeated failures, " +
+                  ci + ".  Marking failed to avoid repeated failures, " +
                   "" + StringUtils.stringifyException(t));
               txnHandler.markFailed(ci);
             }

@@ -53,6 +53,7 @@ public class JobDebugger implements Runnable {
   private final Map<String, Integer> failures = new HashMap<String, Integer>();
   private final Set<String> successes = new HashSet<String>(); // Successful task ID's
   private final Map<String, TaskInfo> taskIdToInfo = new HashMap<String, TaskInfo>();
+  private String diagnosticMesg;
   private int maxFailures = 0;
 
   // Used for showJobFailDebugInfo
@@ -115,7 +116,7 @@ public class JobDebugger implements Runnable {
 
   public void run() {
     try {
-      showJobFailDebugInfo();
+      diagnosticMesg = showJobFailDebugInfo();
     } catch (IOException e) {
       console.printError(e.getMessage());
     }
@@ -216,8 +217,7 @@ public class JobDebugger implements Runnable {
     }
   }
 
-  @SuppressWarnings("deprecation")
-  private void showJobFailDebugInfo() throws IOException {
+  private String showJobFailDebugInfo() throws IOException {
     console.printError("Error during job, obtaining debugging information...");
     if (!conf.get("mapred.job.tracker", "local").equals("local")) {
       // Show Tracking URL for remotely running jobs.
@@ -241,7 +241,7 @@ public class JobDebugger implements Runnable {
     }
 
     if (failures.keySet().size() == 0) {
-      return;
+      return null;
     }
     // Find the highest failure count
     computeMaxFailures() ;
@@ -255,6 +255,7 @@ public class JobDebugger implements Runnable {
           + e.getMessage());
     }
 
+    String msg = null;
     for (String task : failures.keySet()) {
       if (failures.get(task).intValue() == maxFailures) {
         TaskInfo ti = taskIdToInfo.get(task);
@@ -303,14 +304,19 @@ public class JobDebugger implements Runnable {
           for (String mesg : diagMesgs) {
             sb.append(mesg + "\n");
           }
-          console.printError(sb.toString());
+          msg = sb.toString();
+          console.printError(msg);
         }
 
         // Only print out one task because that's good enough for debugging.
         break;
       }
     }
-    return;
+    return msg;
+  }
+
+  public String getDiagnosticMesg() {
+    return diagnosticMesg;
   }
 
   public int getErrorCode() {

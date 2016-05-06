@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import javax.management.ObjectName;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
@@ -120,7 +121,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       int mngPort, int shufflePort, int webPort, String appName) {
     super("LlapDaemon");
 
-    initializeLogging();
+    initializeLogging(daemonConf);
+
     printAsciiArt();
 
     Preconditions.checkArgument(numExecutors > 0);
@@ -270,13 +272,15 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     addIfService(amReporter);
   }
 
-  private void initializeLogging() {
+  private void initializeLogging(final Configuration conf) {
     long start = System.currentTimeMillis();
     URL llap_l4j2 = LlapDaemon.class.getClassLoader().getResource(LOG4j2_PROPERTIES_FILE);
     if (llap_l4j2 != null) {
+      final boolean async = LogUtils.checkAndSetAsyncLogging(conf);
       Configurator.initialize("LlapDaemonLog4j2", llap_l4j2.toString());
       long end = System.currentTimeMillis();
-      LOG.warn("LLAP daemon logging initialized from {} in {} ms", llap_l4j2, (end - start));
+      LOG.warn("LLAP daemon logging initialized from {} in {} ms. Async: {}",
+          llap_l4j2, (end - start), async);
     } else {
       throw new RuntimeException("Log initialization failed." +
           " Unable to locate " + LOG4j2_PROPERTIES_FILE + " file in classpath");

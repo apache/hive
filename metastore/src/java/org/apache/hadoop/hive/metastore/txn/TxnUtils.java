@@ -69,6 +69,8 @@ public class TxnUtils {
    * @return a valid txn list.
    */
   public static ValidTxnList createValidCompactTxnList(GetOpenTxnsInfoResponse txns) {
+    //todo: this could be more efficient: using select min(txn_id) from TXNS where txn_state=" +
+    // quoteChar(TXN_OPEN)  to compute compute HWM...
     long highWater = txns.getTxn_high_water_mark();
     long minOpenTxn = Long.MAX_VALUE;
     long[] exceptions = new long[txns.getOpen_txnsSize()];

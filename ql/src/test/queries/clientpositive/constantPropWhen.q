@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+set hive.optimize.constant.propagation=false;
 
 drop table test_1; 
 
@@ -24,6 +25,7 @@ SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test
 
 
 set hive.cbo.enable=false;
+set hive.optimize.constant.propagation=true;
 
 explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1; 
 

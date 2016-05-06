@@ -574,6 +574,7 @@ public class HadoopJobExecHelper {
           Thread t = new Thread(jd);
           t.start();
           t.join(HiveConf.getIntVar(job, HiveConf.ConfVars.JOB_DEBUG_TIMEOUT));
+          task.setDiagnosticMessage(jd.getDiagnosticMesg());
           int ec = jd.getErrorCode();
           if (ec > 0) {
             returnVal = ec;

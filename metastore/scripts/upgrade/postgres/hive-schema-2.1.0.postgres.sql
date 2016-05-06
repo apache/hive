@@ -1480,7 +1480,7 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 ------------------------------
 -- Transaction and lock tables
 ------------------------------
-\i hive-txn-schema-2.0.0.postgres.sql;
+\i hive-txn-schema-2.1.0.postgres.sql;
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
