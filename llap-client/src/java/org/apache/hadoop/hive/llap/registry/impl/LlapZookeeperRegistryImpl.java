@@ -328,7 +328,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     if (ix > 0) {
       pathToCheck = pathToCheck.substring(0, ix);
     }
-    List<ACL> acls = zooKeeperClient.usingNamespace(null).getACL().forPath(pathToCheck);
+    List<ACL> acls = zooKeeperClient.getACL().forPath(pathToCheck);
     if (acls == null || acls.isEmpty()) {
       // Can there be no ACLs? There's some access (to get ACLs), so assume it means free for all.
       throw new SecurityException("No ACLs on "  + pathToCheck);
