@@ -22,17 +22,28 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.base.Stopwatch;
 import org.slf4j.Logger;
 
 public class LocalCommand {
 
+  private static final AtomicInteger localCommandCounter = new AtomicInteger(0);
+
+  private final Logger logger;
   private final Process process;
   private final StreamReader streamReader;
   private Integer exitCode;
+  private final int commandId;
+  private final Stopwatch stopwatch = Stopwatch.createUnstarted();
 
   public LocalCommand(Logger logger, OutputPolicy outputPolicy, String command) throws IOException {
-    logger.info("Starting " + command);
+    this.commandId = localCommandCounter.incrementAndGet();
+    this.logger = logger;
+    logger.info("Starting LocalCommandId={}: {}" + commandId, command);
+    stopwatch.start();
     process = new ProcessBuilder().command(new String[] {"bash", "-c", command}).redirectErrorStream(true).start();
     streamReader = new StreamReader(outputPolicy, process.getInputStream());
     streamReader.setName("StreamReader-[" + command + "]");
@@ -42,13 +53,25 @@ public class LocalCommand {
 
   public int getExitCode() throws InterruptedException {
     synchronized (process) {
-      if(exitCode == null) {
-        exitCode = process.waitFor();
-      }
+      awaitProcessCompletion();
       return exitCode;
     }
   }
-  
+
+  private void awaitProcessCompletion() throws InterruptedException {
+    synchronized (process) {
+      if (exitCode == null) {
+        exitCode = process.waitFor();
+        if (stopwatch.isRunning()) {
+          stopwatch.stop();
+          logger.info("Finished LocalCommandId={}. ElapsedTime(seconds)={}", commandId,
+              stopwatch.elapsed(
+                  TimeUnit.SECONDS));
+        }
+      }
+    }
+  }
+
   public void kill() {
     synchronized (process) {
       process.destroy();

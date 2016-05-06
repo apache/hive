@@ -62,6 +62,7 @@ public class PrepPhase extends Phase {
     // source prep
     start = System.currentTimeMillis();
     File sourcePrepScript = new File(mScratchDir, "source-prep.sh");
+    logger.info("Writing {} from template", sourcePrepScript);
     Templates.writeTemplateResult("source-prep.vm", sourcePrepScript, getTemplateDefaults());
     execLocally("bash " + sourcePrepScript.getPath());
     logger.debug("Deleting " + sourcePrepScript + ": " + sourcePrepScript.delete());
