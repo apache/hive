@@ -86,6 +86,8 @@ public class ExecutionPhase extends Phase {
         isolatedWorkQueue.add(batch);
       }
     }
+    logger.info("ParallelWorkQueueSize={}, IsolatedWorkQueueSize={}", parallelWorkQueue.size(),
+        isolatedWorkQueue.size());
     try {
       int expectedNumHosts = hostExecutors.size();
       initalizeHosts();
