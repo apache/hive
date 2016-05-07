@@ -1,0 +1,23 @@
+sudo: required
+
+dist: trusty
+
+language: java
+
+jdk:
+  - oraclejdk7
+
+before_install:
+  - sudo rm -rf /usr/local/maven*
+  - sudo rm /etc/mavenrc
+  - sudo apt-get update -qq
+  - sudo apt-get install --yes maven
+  - export MAVEN_OPTS="-Dmaven.repo.local=$HOME/.m2/repository -Xmx4g -XX:MaxPermSize=256M"
+
+script:
+  - mvn --version
+  - dev-support/travis.sh
+
+cache:
+  directories:
+    - $HOME/.m2
