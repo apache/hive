@@ -93,6 +93,14 @@ public interface TxnStore {
   public void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException;
 
   /**
+   * Abort (rollback) a list of transactions in one request.
+   * @param rqst info on transactions to abort
+   * @throws NoSuchTxnException
+   * @throws MetaException
+   */
+  public void abortTxns(AbortTxnsRequest rqst) throws NoSuchTxnException, MetaException;
+
+  /**
    * Commit a transaction
    * @param rqst info on transaction to commit
    * @throws NoSuchTxnException

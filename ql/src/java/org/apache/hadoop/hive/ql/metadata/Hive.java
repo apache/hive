@@ -3453,6 +3453,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  public void abortTransactions(List<Long> txnids) throws HiveException {
+    try {
+      getMSC().abortTxns(txnids);
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+  }
+
   public void createFunction(Function func) throws HiveException {
     try {
       getMSC().createFunction(func);

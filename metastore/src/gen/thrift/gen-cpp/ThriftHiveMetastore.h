@@ -149,6 +149,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_open_txns_info(GetOpenTxnsInfoResponse& _return) = 0;
   virtual void open_txns(OpenTxnsResponse& _return, const OpenTxnRequest& rqst) = 0;
   virtual void abort_txn(const AbortTxnRequest& rqst) = 0;
+  virtual void abort_txns(const AbortTxnsRequest& rqst) = 0;
   virtual void commit_txn(const CommitTxnRequest& rqst) = 0;
   virtual void lock(LockResponse& _return, const LockRequest& rqst) = 0;
   virtual void check_lock(LockResponse& _return, const CheckLockRequest& rqst) = 0;
@@ -604,6 +605,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void abort_txn(const AbortTxnRequest& /* rqst */) {
+    return;
+  }
+  void abort_txns(const AbortTxnsRequest& /* rqst */) {
     return;
   }
   void commit_txn(const CommitTxnRequest& /* rqst */) {
@@ -16795,6 +16799,110 @@ class ThriftHiveMetastore_abort_txn_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_abort_txns_args__isset {
+  _ThriftHiveMetastore_abort_txns_args__isset() : rqst(false) {}
+  bool rqst :1;
+} _ThriftHiveMetastore_abort_txns_args__isset;
+
+class ThriftHiveMetastore_abort_txns_args {
+ public:
+
+  ThriftHiveMetastore_abort_txns_args(const ThriftHiveMetastore_abort_txns_args&);
+  ThriftHiveMetastore_abort_txns_args& operator=(const ThriftHiveMetastore_abort_txns_args&);
+  ThriftHiveMetastore_abort_txns_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_abort_txns_args() throw();
+  AbortTxnsRequest rqst;
+
+  _ThriftHiveMetastore_abort_txns_args__isset __isset;
+
+  void __set_rqst(const AbortTxnsRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_abort_txns_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_abort_txns_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_abort_txns_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_abort_txns_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_abort_txns_pargs() throw();
+  const AbortTxnsRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_abort_txns_result__isset {
+  _ThriftHiveMetastore_abort_txns_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_abort_txns_result__isset;
+
+class ThriftHiveMetastore_abort_txns_result {
+ public:
+
+  ThriftHiveMetastore_abort_txns_result(const ThriftHiveMetastore_abort_txns_result&);
+  ThriftHiveMetastore_abort_txns_result& operator=(const ThriftHiveMetastore_abort_txns_result&);
+  ThriftHiveMetastore_abort_txns_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_abort_txns_result() throw();
+  NoSuchTxnException o1;
+
+  _ThriftHiveMetastore_abort_txns_result__isset __isset;
+
+  void __set_o1(const NoSuchTxnException& val);
+
+  bool operator == (const ThriftHiveMetastore_abort_txns_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_abort_txns_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_abort_txns_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_abort_txns_presult__isset {
+  _ThriftHiveMetastore_abort_txns_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_abort_txns_presult__isset;
+
+class ThriftHiveMetastore_abort_txns_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_abort_txns_presult() throw();
+  NoSuchTxnException o1;
+
+  _ThriftHiveMetastore_abort_txns_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_commit_txn_args__isset {
   _ThriftHiveMetastore_commit_txn_args__isset() : rqst(false) {}
   bool rqst :1;
@@ -19183,6 +19291,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void abort_txn(const AbortTxnRequest& rqst);
   void send_abort_txn(const AbortTxnRequest& rqst);
   void recv_abort_txn();
+  void abort_txns(const AbortTxnsRequest& rqst);
+  void send_abort_txns(const AbortTxnsRequest& rqst);
+  void recv_abort_txns();
   void commit_txn(const CommitTxnRequest& rqst);
   void send_commit_txn(const CommitTxnRequest& rqst);
   void recv_commit_txn();
@@ -19377,6 +19488,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_open_txns_info(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_open_txns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_abort_txn(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_abort_txns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_commit_txn(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_lock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_check_lock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -19527,6 +19639,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_open_txns_info"] = &ThriftHiveMetastoreProcessor::process_get_open_txns_info;
     processMap_["open_txns"] = &ThriftHiveMetastoreProcessor::process_open_txns;
     processMap_["abort_txn"] = &ThriftHiveMetastoreProcessor::process_abort_txn;
+    processMap_["abort_txns"] = &ThriftHiveMetastoreProcessor::process_abort_txns;
     processMap_["commit_txn"] = &ThriftHiveMetastoreProcessor::process_commit_txn;
     processMap_["lock"] = &ThriftHiveMetastoreProcessor::process_lock;
     processMap_["check_lock"] = &ThriftHiveMetastoreProcessor::process_check_lock;
@@ -20795,6 +20908,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->abort_txn(rqst);
   }
 
+  void abort_txns(const AbortTxnsRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->abort_txns(rqst);
+    }
+    ifaces_[i]->abort_txns(rqst);
+  }
+
   void commit_txn(const CommitTxnRequest& rqst) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -21376,6 +21498,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void abort_txn(const AbortTxnRequest& rqst);
   int32_t send_abort_txn(const AbortTxnRequest& rqst);
   void recv_abort_txn(const int32_t seqid);
+  void abort_txns(const AbortTxnsRequest& rqst);
+  int32_t send_abort_txns(const AbortTxnsRequest& rqst);
+  void recv_abort_txns(const int32_t seqid);
   void commit_txn(const CommitTxnRequest& rqst);
   int32_t send_commit_txn(const CommitTxnRequest& rqst);
   void recv_commit_txn(const int32_t seqid);

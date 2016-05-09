@@ -151,6 +151,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  GetOpenTxnsInfoResponse get_open_txns_info()')
   print('  OpenTxnsResponse open_txns(OpenTxnRequest rqst)')
   print('  void abort_txn(AbortTxnRequest rqst)')
+  print('  void abort_txns(AbortTxnsRequest rqst)')
   print('  void commit_txn(CommitTxnRequest rqst)')
   print('  LockResponse lock(LockRequest rqst)')
   print('  LockResponse check_lock(CheckLockRequest rqst)')
@@ -1000,6 +1001,12 @@ elif cmd == 'abort_txn':
     print('abort_txn requires 1 args')
     sys.exit(1)
   pp.pprint(client.abort_txn(eval(args[0]),))
+
+elif cmd == 'abort_txns':
+  if len(args) != 1:
+    print('abort_txns requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.abort_txns(eval(args[0]),))
 
 elif cmd == 'commit_txn':
   if len(args) != 1:

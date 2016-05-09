@@ -375,6 +375,7 @@ TOK_COMMIT;
 TOK_ROLLBACK;
 TOK_SET_AUTOCOMMIT;
 TOK_CACHE_METADATA;
+TOK_ABORT_TRANSACTIONS;
 }
 
 
@@ -533,6 +534,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_NOVALIDATE", "NOVALIDATE");
     xlateMap.put("KW_RELY", "RELY");
     xlateMap.put("KW_NORELY", "NORELY");
+    xlateMap.put("KW_ABORT", "ABORT");
+    xlateMap.put("KW_TRANSACTIONS", "TRANSACTIONS");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -804,6 +807,7 @@ ddlStatement
     | revokeRole
     | setRole
     | showCurrentRole
+    | abortTransactionStatement
     ;
 
 ifExists
@@ -2601,3 +2605,10 @@ setAutoCommitStatement
 /*
 END user defined transaction boundaries
 */
+
+abortTransactionStatement
+@init { pushMsg("abort transactions statement", state); }
+@after { popMsg(state); }
+  :
+  KW_ABORT KW_TRANSACTIONS ( Number )+ -> ^(TOK_ABORT_TRANSACTIONS ( Number )+)
+  ;

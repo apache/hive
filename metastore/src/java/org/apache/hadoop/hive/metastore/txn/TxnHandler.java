@@ -466,7 +466,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       try {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        if (abortTxns(dbConn, Collections.singletonList(txnid)) != 1) {
+        if (abortTxns(dbConn, Collections.singletonList(txnid), true) != 1) {
           LOG.debug("Going to rollback");
           dbConn.rollback();
           throw new NoSuchTxnException("No such transaction " + JavaUtils.txnIdToString(txnid));
@@ -486,6 +486,35 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
     } catch (RetryException e) {
       abortTxn(rqst);
+    }
+  }
+
+  public void abortTxns(AbortTxnsRequest rqst) throws NoSuchTxnException, MetaException {
+    List<Long> txnids = rqst.getTxn_ids();
+    try {
+      Connection dbConn = null;
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        int numAborted = abortTxns(dbConn, txnids, false);
+        if (numAborted != txnids.size()) {
+          LOG.warn("Abort Transactions command only abort " + numAborted + " out of " +
+              txnids.size() + " transactions. It's possible that the other " +
+              (txnids.size() - numAborted) +
+              " transactions have been aborted or committed, or the transaction ids are invalid.");
+        }
+        LOG.debug("Going to commit");
+        dbConn.commit();
+      } catch (SQLException e) {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "abortTxns(" + rqst + ")");
+        throw new MetaException("Unable to update transaction database "
+            + StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
+      }
+    } catch (RetryException e) {
+      abortTxns(rqst);
     }
   }
 
@@ -607,7 +636,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             dbConn.rollback(undoWriteSetForCurrentTxn);
             LOG.info(msg);
             //todo: should make abortTxns() write something into TXNS.TXN_META_INFO about this
-            if(abortTxns(dbConn, Collections.singletonList(txnid)) != 1) {
+            if(abortTxns(dbConn, Collections.singletonList(txnid), true) != 1) {
               throw new IllegalStateException(msg + " FAILED!");
             }
             dbConn.commit();
@@ -2040,8 +2069,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private int abortTxns(Connection dbConn, List<Long> txnids) throws SQLException {
-    return abortTxns(dbConn, txnids, -1);
+  private int abortTxns(Connection dbConn, List<Long> txnids, boolean isStrict) throws SQLException {
+    return abortTxns(dbConn, txnids, -1, isStrict);
   }
   /**
    * TODO: expose this as an operation to client.  Useful for streaming API to abort all remaining
@@ -2053,10 +2082,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * @param txnids list of transactions to abort
    * @param max_heartbeat value used by {@link #performTimeOuts()} to ensure this doesn't Abort txn which were
    *                      hearbetated after #performTimeOuts() select and this operation.
+   * @param isStrict true for strict mode, false for best-effort mode.
+   *                 In strict mode, if all txns are not successfully aborted, then the count of
+   *                 updated ones will be returned and the caller will roll back.
+   *                 In best-effort mode, we will ignore that fact and continue deleting the locks.
    * @return Number of aborted transactions
    * @throws SQLException
    */
-  private int abortTxns(Connection dbConn, List<Long> txnids, long max_heartbeat) throws SQLException {
+  private int abortTxns(Connection dbConn, List<Long> txnids, long max_heartbeat, boolean isStrict)
+      throws SQLException {
     Statement stmt = null;
     int updateCnt = 0;
     if (txnids.isEmpty()) {
@@ -2083,16 +2117,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
       for (String query : queries) {
         LOG.debug("Going to execute update <" + query + ">");
-        updateCnt = stmt.executeUpdate(query);
-        if (updateCnt < txnids.size()) {
-          /**
-           * have to bail in this case since we don't know which transactions were not Aborted and
-           * thus don't know which locks to delete
-           * This may happen due to a race between {@link #heartbeat(HeartbeatRequest)}  operation and
-           * {@link #performTimeOuts()}
-           */
-          return updateCnt;
-        }
+        updateCnt += stmt.executeUpdate(query);
+      }
+
+      if (updateCnt < txnids.size() && isStrict) {
+        /**
+         * have to bail in this case since we don't know which transactions were not Aborted and
+         * thus don't know which locks to delete
+         * This may happen due to a race between {@link #heartbeat(HeartbeatRequest)}  operation and
+         * {@link #performTimeOuts()}
+         */
+        return updateCnt;
       }
 
       queries.clear();
@@ -2216,7 +2251,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             " since a concurrent committed transaction [" + JavaUtils.txnIdToString(rs.getLong(4)) + "," + rs.getLong(5) +
             "] has already updated resouce '" + resourceName + "'";
           LOG.info(msg);
-          if(abortTxns(dbConn, Collections.singletonList(writeSet.get(0).txnId)) != 1) {
+          if(abortTxns(dbConn, Collections.singletonList(writeSet.get(0).txnId), true) != 1) {
             throw new IllegalStateException(msg + " FAILED!");
           }
           dbConn.commit();
@@ -2736,7 +2771,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         close(rs, stmt, null);
         int numTxnsAborted = 0;
         for(List<Long> batchToAbort : timedOutTxns) {
-          if(abortTxns(dbConn, batchToAbort, now - timeout) == batchToAbort.size()) {
+          if(abortTxns(dbConn, batchToAbort, now - timeout, true) == batchToAbort.size()) {
             dbConn.commit();
             numTxnsAborted += batchToAbort.size();
             //todo: add TXNS.COMMENT filed and set it to 'aborted by system due to timeout'

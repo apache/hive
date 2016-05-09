@@ -2144,6 +2144,21 @@ module ThriftHiveMetastore
       return
     end
 
+    def abort_txns(rqst)
+      send_abort_txns(rqst)
+      recv_abort_txns()
+    end
+
+    def send_abort_txns(rqst)
+      send_message('abort_txns', Abort_txns_args, :rqst => rqst)
+    end
+
+    def recv_abort_txns()
+      result = receive_message(Abort_txns_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
     def commit_txn(rqst)
       send_commit_txn(rqst)
       recv_commit_txn()
@@ -4071,6 +4086,17 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'abort_txn', seqid)
+    end
+
+    def process_abort_txns(seqid, iprot, oprot)
+      args = read_args(iprot, Abort_txns_args)
+      result = Abort_txns_result.new()
+      begin
+        @handler.abort_txns(args.rqst)
+      rescue ::NoSuchTxnException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'abort_txns', seqid)
     end
 
     def process_commit_txn(seqid, iprot, oprot)
@@ -9107,6 +9133,38 @@ module ThriftHiveMetastore
   end
 
   class Abort_txn_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Abort_txns_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::AbortTxnsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Abort_txns_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
 

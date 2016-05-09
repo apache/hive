@@ -1875,6 +1875,23 @@ class AbortTxnRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class AbortTxnsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TXN_IDS = 1
+
+  FIELDS = {
+    TXN_IDS => {:type => ::Thrift::Types::LIST, :name => 'txn_ids', :element => {:type => ::Thrift::Types::I64}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txn_ids is unset!') unless @txn_ids
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class CommitTxnRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TXNID = 1

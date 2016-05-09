@@ -293,6 +293,8 @@ class OpenTxnsResponse;
 
 class AbortTxnRequest;
 
+class AbortTxnsRequest;
+
 class CommitTxnRequest;
 
 class LockComponent;
@@ -4943,6 +4945,46 @@ class AbortTxnRequest {
 void swap(AbortTxnRequest &a, AbortTxnRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const AbortTxnRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class AbortTxnsRequest {
+ public:
+
+  AbortTxnsRequest(const AbortTxnsRequest&);
+  AbortTxnsRequest& operator=(const AbortTxnsRequest&);
+  AbortTxnsRequest() {
+  }
+
+  virtual ~AbortTxnsRequest() throw();
+  std::vector<int64_t>  txn_ids;
+
+  void __set_txn_ids(const std::vector<int64_t> & val);
+
+  bool operator == (const AbortTxnsRequest & rhs) const
+  {
+    if (!(txn_ids == rhs.txn_ids))
+      return false;
+    return true;
+  }
+  bool operator != (const AbortTxnsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AbortTxnsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AbortTxnsRequest &a, AbortTxnsRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const AbortTxnsRequest& obj)
 {
   obj.printTo(out);
   return out;

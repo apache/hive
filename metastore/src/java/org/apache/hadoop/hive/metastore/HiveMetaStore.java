@@ -5799,6 +5799,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public void abort_txns(AbortTxnsRequest rqst) throws NoSuchTxnException, TException {
+      getTxnHandler().abortTxns(rqst);
+    }
+
+    @Override
     public void commit_txn(CommitTxnRequest rqst)
         throws NoSuchTxnException, TxnAbortedException, TException {
       getTxnHandler().commitTxn(rqst);

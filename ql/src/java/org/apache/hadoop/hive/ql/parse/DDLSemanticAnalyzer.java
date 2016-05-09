@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.authorization.AuthorizationParseUtils;
 import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactory;
 import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactoryImpl;
+import org.apache.hadoop.hive.ql.plan.AbortTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc.OnePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
@@ -380,6 +381,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_SHOW_TRANSACTIONS:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowTxns(ast);
+      break;
+    case HiveParser.TOK_ABORT_TRANSACTIONS:
+      analyzeAbortTxns(ast);
       break;
     case HiveParser.TOK_SHOWCONF:
       ctx.setResFile(ctx.getLocalTmpPath());
@@ -2420,6 +2424,21 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     ShowTxnsDesc desc = new ShowTxnsDesc(ctx.getResFile());
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
     setFetchTask(createFetchTask(desc.getSchema()));
+  }
+
+  /**
+   * Add a task to execute "ABORT TRANSACTIONS"
+   * @param ast The parsed command tree
+   * @throws SemanticException Parsing failed
+   */
+  private void analyzeAbortTxns(ASTNode ast) throws SemanticException {
+    List<Long> txnids = new ArrayList<Long>();
+    int numChildren = ast.getChildCount();
+    for (int i = 0; i < numChildren; i++) {
+      txnids.add(Long.parseLong(ast.getChild(i).getText()));
+    }
+    AbortTxnsDesc desc = new AbortTxnsDesc(txnids);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
   }
 
    /**

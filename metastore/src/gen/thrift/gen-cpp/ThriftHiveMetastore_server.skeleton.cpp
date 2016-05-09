@@ -657,6 +657,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("abort_txn\n");
   }
 
+  void abort_txns(const AbortTxnsRequest& rqst) {
+    // Your implementation goes here
+    printf("abort_txns\n");
+  }
+
   void commit_txn(const CommitTxnRequest& rqst) {
     // Your implementation goes here
     printf("commit_txn\n");

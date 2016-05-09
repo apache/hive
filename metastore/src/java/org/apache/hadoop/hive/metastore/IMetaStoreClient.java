@@ -1285,6 +1285,12 @@ public interface IMetaStoreClient {
       throws NoSuchTxnException, TxnAbortedException, TException;
 
   /**
+   * Abort a list of transactions. This is for use by "ABORT TRANSACTIONS" in the grammar.
+   * @throws TException
+   */
+  void abortTxns(List<Long> txnids) throws TException;
+
+  /**
    * Show the list of currently open transactions.  This is for use by "show transactions" in the
    * grammar, not for applications that want to find a list of current transactions to work with.
    * Those wishing the latter should call {@link #getValidTxns()}.

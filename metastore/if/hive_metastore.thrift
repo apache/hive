@@ -634,6 +634,10 @@ struct AbortTxnRequest {
     1: required i64 txnid,
 }
 
+struct AbortTxnsRequest {
+    1: required list<i64> txn_ids,
+}
+
 struct CommitTxnRequest {
     1: required i64 txnid,
 }
@@ -1382,6 +1386,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   GetOpenTxnsInfoResponse get_open_txns_info()
   OpenTxnsResponse open_txns(1:OpenTxnRequest rqst)
   void abort_txn(1:AbortTxnRequest rqst) throws (1:NoSuchTxnException o1)
+  void abort_txns(1:AbortTxnsRequest rqst) throws (1:NoSuchTxnException o1)
   void commit_txn(1:CommitTxnRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
   LockResponse lock(1:LockRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
   LockResponse check_lock(1:CheckLockRequest rqst)

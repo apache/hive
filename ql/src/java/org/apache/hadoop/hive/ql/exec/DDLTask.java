@@ -132,6 +132,7 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.AbortTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
@@ -452,7 +453,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return showTxns(db, txnsDesc);
       }
 
-       LockTableDesc lockTbl = work.getLockTblDesc();
+      AbortTxnsDesc abortTxnsDesc = work.getAbortTxnsDesc();
+      if (abortTxnsDesc != null) {
+        return abortTxns(db, abortTxnsDesc);
+      }
+
+      LockTableDesc lockTbl = work.getLockTblDesc();
       if (lockTbl != null) {
         return lockTable(db, lockTbl);
       }
@@ -2723,6 +2729,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } finally {
       IOUtils.closeStream(os);
     }
+    return 0;
+  }
+
+  private int abortTxns(Hive db, AbortTxnsDesc desc) throws HiveException {
+    db.abortTransactions(desc.getTxnids());
     return 0;
   }
 
