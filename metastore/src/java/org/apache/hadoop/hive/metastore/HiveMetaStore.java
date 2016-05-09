@@ -6190,13 +6190,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public GetChangeVersionResult get_change_version(GetChangeVersionRequest req)
-        throws TException {
-      return new GetChangeVersionResult(getMS().getChangeVersion(req.getTopic()));
-    }
-
-
-    @Override
     public PrimaryKeysResponse get_primary_keys(PrimaryKeysRequest request)
       throws MetaException, NoSuchObjectException, TException {
       String db_name = request.getDb_name();
@@ -6250,7 +6243,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       return new ForeignKeysResponse(ret);
     }
-
   }
 
 

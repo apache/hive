@@ -794,17 +794,7 @@ struct FireEventRequest {
 struct FireEventResponse {
     // NOP for now, this is just a place holder for future responses
 }
-
-
-struct GetChangeVersionRequest {
-  1: required string topic
-}
-
-struct GetChangeVersionResult {
-  1: required i64 version
-}
-
-
+    
 struct MetadataPpdResult {
   1: optional binary metadata,
   2: optional binary includeBitset
@@ -1416,7 +1406,6 @@ service ThriftHiveMetastore extends fb303.FacebookService
   ClearFileMetadataResult clear_file_metadata(1:ClearFileMetadataRequest req)
   CacheFileMetadataResult cache_file_metadata(1:CacheFileMetadataRequest req)
 
-  GetChangeVersionResult get_change_version(1:GetChangeVersionRequest req)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

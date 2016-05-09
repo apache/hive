@@ -663,9 +663,6 @@ public interface RawStore extends Configurable {
   @InterfaceStability.Evolving
   int getDatabaseCount() throws MetaException;
 
-  @InterfaceStability.Evolving
-  long getChangeVersion(String topic) throws MetaException;
-
   public abstract List<SQLPrimaryKey> getPrimaryKeys(String db_name,
     String tbl_name) throws MetaException;
 

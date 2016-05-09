@@ -132,7 +132,6 @@ public class HBaseReadWrite implements MetadataStore {
   // The change version functionality uses the sequences table, but we don't want to give the
   // caller complete control over the sequence name as they might inadvertently clash with one of
   // our sequence keys, so add a prefix to their topic name.
-  final static String CHANGE_VERSION_SEQUENCE_PREFIX = "cv_";
 
   final static byte[] AGGR_STATS_BLOOM_COL = "b".getBytes(HBaseUtils.ENCODING);
   private final static byte[] AGGR_STATS_STATS_COL = "s".getBytes(HBaseUtils.ENCODING);
@@ -142,6 +141,7 @@ public class HBaseReadWrite implements MetadataStore {
   private final static byte[] DELEGATION_TOKEN_COL = "dt".getBytes(HBaseUtils.ENCODING);
   private final static byte[] MASTER_KEY_COL = "mk".getBytes(HBaseUtils.ENCODING);
   private final static byte[] GLOBAL_PRIVS_KEY = "gp".getBytes(HBaseUtils.ENCODING);
+  private final static byte[] SEQUENCES_KEY = "seq".getBytes(HBaseUtils.ENCODING);
   private final static int TABLES_TO_CACHE = 10;
   // False positives are very bad here because they cause us to invalidate entries we shouldn't.
   // Space used and # of hash functions grows in proportion to ln of num bits so a 10x increase
@@ -2139,23 +2139,6 @@ public class HBaseReadWrite implements MetadataStore {
     }
     colStats.setStatsDesc(csd);
     return colStats;
-  }
-
-  /**********************************************************************************************
-   * Change version related methods
-   *********************************************************************************************/
-
-  public long getChangeVersion(String topic) throws IOException {
-    byte[] key = HBaseUtils.buildKey(CHANGE_VERSION_SEQUENCE_PREFIX + topic);
-    return peekAtSequence(key);
-  }
-
-  // TODO: The way this is called now is not ideal. It's all encapsulated and stuff, but,
-  //       before the txns (consistent HBase writes) are properly implemented, we should at least
-  //       put this in the same RPC with real updates. But there are no guarantees anyway, so...
-  public void incrementChangeVersion(String topic) throws IOException {
-    byte[] key = HBaseUtils.buildKey(CHANGE_VERSION_SEQUENCE_PREFIX + topic);
-    getNextSequence(key);
   }
 
   /**********************************************************************************************

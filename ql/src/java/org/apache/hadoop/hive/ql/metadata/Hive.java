@@ -3602,14 +3602,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public long getPermanenFunctionsChangeVersion() throws HiveException {
-    try {
-      return getMSC().getChangeVersion(IMetaStoreClient.PERMANENT_FUNCTION_CV);
-    } catch (TException e) {
-      throw new HiveException(e);
-    }
-  }
-
   public void dropConstraint(String dbName, String tableName, String constraintName)
     throws HiveException, NoSuchObjectException {
     try {

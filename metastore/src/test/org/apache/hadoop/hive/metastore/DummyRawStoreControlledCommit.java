@@ -819,11 +819,6 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public long getChangeVersion(String topic) throws MetaException {
-    return 0;
-  }
-
-  @Override
   public List<SQLPrimaryKey> getPrimaryKeys(String db_name, String tbl_name)
     throws MetaException {
     // TODO Auto-generated method stub

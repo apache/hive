@@ -54,7 +54,6 @@ import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
-import org.apache.hadoop.hive.metastore.api.GetChangeVersionRequest;
 import org.apache.hadoop.hive.metastore.api.GetFileMetadataByExprRequest;
 import org.apache.hadoop.hive.metastore.api.GetFileMetadataByExprResult;
 import org.apache.hadoop.hive.metastore.api.GetFileMetadataRequest;
@@ -2419,10 +2418,4 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     CacheFileMetadataResult result = client.cache_file_metadata(req);
     return result.isIsSupported();
   }
-
-  @Override
-  public long getChangeVersion(String topic) throws TException {
-    return client.get_change_version(new GetChangeVersionRequest(topic)).getVersion();
-  }
-
 }

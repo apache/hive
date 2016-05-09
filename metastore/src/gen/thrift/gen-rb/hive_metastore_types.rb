@@ -2465,40 +2465,6 @@ class FireEventResponse
   ::Thrift::Struct.generate_accessors self
 end
 
-class GetChangeVersionRequest
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  TOPIC = 1
-
-  FIELDS = {
-    TOPIC => {:type => ::Thrift::Types::STRING, :name => 'topic'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field topic is unset!') unless @topic
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class GetChangeVersionResult
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  VERSION = 1
-
-  FIELDS = {
-    VERSION => {:type => ::Thrift::Types::I64, :name => 'version'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field version is unset!') unless @version
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
 class MetadataPpdResult
   include ::Thrift::Struct, ::Thrift::Struct_Union
   METADATA = 1

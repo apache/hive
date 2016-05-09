@@ -1052,18 +1052,7 @@
       </field>
     </class>
 
-    <class name="MChangeVersion" table="CHANGE_VERSION" identity-type="datastore" detachable="true">
-      <datastore-identity>
-        <column name="CHANGE_VERSION_ID"/>
-      </datastore-identity>
-      <field name="version">
-        <column name="VERSION" jdbc-type="BIGINT" allows-null="false"/>
-      </field>
-      <field name="topic">
-        <column name="TOPIC" length="255" jdbc-type="VARCHAR" allows-null="false"/>
-        <index name="UniqueTopic" unique="true"/>
-      </field>
-    </class>
+
   </package>
 </jdo>
 

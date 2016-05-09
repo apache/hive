@@ -97,7 +97,6 @@ import java.util.Map.Entry;
 @Public
 @Evolving
 public interface IMetaStoreClient {
-  public static final String PERMANENT_FUNCTION_CV = "PERMANENT_FUNCTION";
 
   /**
    * Returns whether current client is compatible with conf argument or not
@@ -1556,8 +1555,6 @@ public interface IMetaStoreClient {
 
   boolean cacheFileMetadata(String dbName, String tableName, String partName,
       boolean allParts) throws TException;
-
-  long getChangeVersion(String topic) throws TException;
 
   List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest request)
     throws MetaException, NoSuchObjectException, TException;
