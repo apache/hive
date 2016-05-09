@@ -1037,6 +1037,8 @@
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
             <test.src.tables>src,src1,srcbucket,srcbucket2,src_json,src_thrift,src_sequencefile,srcpart,alltypesorc,src_hbase,cbo_t1,cbo_t2,cbo_t3,src_cbo,part,lineitem</test.src.tables>
             <java.security.krb5.conf>${test.tmp.dir}/conf/krb5.conf</java.security.krb5.conf>
+            <!-- Required by spark to work around SPARK-14958 -->
+            <antlr.version>${antlr.version}</antlr.version>
           </systemPropertyVariables>
         </configuration>
       </plugin>

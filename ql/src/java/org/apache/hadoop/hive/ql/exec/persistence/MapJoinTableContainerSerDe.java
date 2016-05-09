@@ -108,12 +108,16 @@ public class MapJoinTableContainerSerDe {
   public MapJoinTableContainer load(
       FileSystem fs, Path folder, Configuration hconf) throws HiveException {
     try {
+
+      if (!fs.exists(folder)) {
+        return getDefaultEmptyContainer(keyContext, valueContext);
+      }
       if (!fs.isDirectory(folder)) {
         throw new HiveException("Error, not a directory: " + folder);
       }
       FileStatus[] fileStatuses = fs.listStatus(folder);
       if (fileStatuses == null || fileStatuses.length == 0) {
-        return null;
+        return getDefaultEmptyContainer(keyContext, valueContext);
       }
 
       SerDe keySerDe = keyContext.getSerDe();
@@ -210,50 +214,51 @@ public class MapJoinTableContainerSerDe {
   public MapJoinTableContainer loadFastContainer(MapJoinDesc mapJoinDesc,
       FileSystem fs, Path folder, Configuration hconf) throws HiveException {
     try {
-      if (!fs.isDirectory(folder)) {
-        throw new HiveException("Error, not a directory: " + folder);
-      }
-      FileStatus[] fileStatuses = fs.listStatus(folder);
-      if (fileStatuses == null || fileStatuses.length == 0) {
-        return null;
-      }
-
-      SerDe keySerDe = keyContext.getSerDe();
-      SerDe valueSerDe = valueContext.getSerDe();
-      Writable key = keySerDe.getSerializedClass().newInstance();
-      Writable value = valueSerDe.getSerializedClass().newInstance();
-
       VectorMapJoinFastTableContainer tableContainer =
           new VectorMapJoinFastTableContainer(mapJoinDesc, hconf, -1);
       tableContainer.setSerde(keyContext, valueContext);
 
-      for (FileStatus fileStatus : fileStatuses) {
-        Path filePath = fileStatus.getPath();
-        if (ShimLoader.getHadoopShims().isDirectory(fileStatus)) {
-          throw new HiveException("Error, not a file: " + filePath);
+      if (fs.exists(folder)) {
+        if (!fs.isDirectory(folder)) {
+          throw new HiveException("Error, not a directory: " + folder);
         }
-        InputStream is = null;
-        ObjectInputStream in = null;
-        try {
-          is = fs.open(filePath, 4096);
-          in = new ObjectInputStream(is);
-          // skip the name and metadata
-          in.readUTF();
-          in.readObject();
-          int numKeys = in.readInt();
-          for (int keyIndex = 0; keyIndex < numKeys; keyIndex++) {
-            key.readFields(in);
-            long numRows = in.readLong();
-            for (long rowIndex = 0L; rowIndex < numRows; rowIndex++) {
-              value.readFields(in);
-              tableContainer.putRow(key, value);
+
+        FileStatus[] fileStatuses = fs.listStatus(folder);
+        if (fileStatuses != null && fileStatuses.length > 0) {
+          SerDe keySerDe = keyContext.getSerDe();
+          SerDe valueSerDe = valueContext.getSerDe();
+          Writable key = keySerDe.getSerializedClass().newInstance();
+          Writable value = valueSerDe.getSerializedClass().newInstance();
+
+          for (FileStatus fileStatus : fileStatuses) {
+            Path filePath = fileStatus.getPath();
+            if (ShimLoader.getHadoopShims().isDirectory(fileStatus)) {
+              throw new HiveException("Error, not a file: " + filePath);
             }
-          }
-        } finally {
-          if (in != null) {
-            in.close();
-          } else if (is != null) {
-            is.close();
+            InputStream is = null;
+            ObjectInputStream in = null;
+            try {
+              is = fs.open(filePath, 4096);
+              in = new ObjectInputStream(is);
+              // skip the name and metadata
+              in.readUTF();
+              in.readObject();
+              int numKeys = in.readInt();
+              for (int keyIndex = 0; keyIndex < numKeys; keyIndex++) {
+                key.readFields(in);
+                long numRows = in.readLong();
+                for (long rowIndex = 0L; rowIndex < numRows; rowIndex++) {
+                  value.readFields(in);
+                  tableContainer.putRow(key, value);
+                }
+              }
+            } finally {
+              if (in != null) {
+                in.close();
+              } else if (is != null) {
+                is.close();
+              }
+            }
           }
         }
       }
@@ -311,5 +316,14 @@ public class MapJoinTableContainerSerDe {
           " of type: " + name + ", with metaData: " + metaData;
       throw new HiveException(msg, e);
     }
+  }
+
+  // Get an empty container when the small table is empty.
+  private static MapJoinTableContainer getDefaultEmptyContainer(MapJoinObjectSerDeContext keyCtx,
+      MapJoinObjectSerDeContext valCtx) throws SerDeException {
+    MapJoinTableContainer container = new HashMapWrapper();
+    container.setSerde(keyCtx, valCtx);
+    container.seal();
+    return container;
   }
 }
