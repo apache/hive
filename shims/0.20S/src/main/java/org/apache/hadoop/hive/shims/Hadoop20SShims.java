@@ -482,17 +482,24 @@ public class Hadoop20SShims extends HadoopShimsSecure {
 
   @Override
   public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus,
-    FileSystem fs, Path target) throws IOException {
+    FileSystem fs, Path target, boolean recursive) throws IOException {
     String group = sourceStatus.getFileStatus().getGroup();
     String permission = Integer.toString(sourceStatus.getFileStatus().getPermission().toShort(), 8);
     //use FsShell to change group and permissions recursively
-    try {
-      FsShell fshell = new FsShell();
-      fshell.setConf(conf);
-      run(fshell, new String[]{"-chgrp", "-R", group, target.toString()});
-      run(fshell, new String[]{"-chmod", "-R", permission, target.toString()});
-    } catch (Exception e) {
-      throw new IOException("Unable to set permissions of " + target, e);
+    if (recursive) {
+      try {
+        FsShell fshell = new FsShell();
+        fshell.setConf(conf);
+        run(fshell, new String[]{"-chgrp", "-R", group, target.toString()});
+        run(fshell, new String[]{"-chmod", "-R", permission, target.toString()});
+      } catch (Exception e) {
+        throw new IOException("Unable to set permissions of " + target, e);
+      }
+    } else {
+      if (group != null && !group.isEmpty()) {
+        fs.setOwner(target, null, group);
+      }
+      fs.setPermission(target, sourcePerm);
     }
     try {
       if (LOG.isDebugEnabled()) {  //some trace logging

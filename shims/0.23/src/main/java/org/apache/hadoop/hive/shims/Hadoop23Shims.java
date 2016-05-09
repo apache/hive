@@ -742,44 +742,67 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus,
-    FileSystem fs, Path target) throws IOException {
+    FileSystem fs, Path target, boolean recursive) throws IOException {
     String group = sourceStatus.getFileStatus().getGroup();
     //use FsShell to change group, permissions, and extended ACL's recursively
-    try {
-      FsShell fsShell = new FsShell();
-      fsShell.setConf(conf);
-      //If there is no group of a file, no need to call chgrp
-      if (group != null && !group.isEmpty()) {
-        run(fsShell, new String[]{"-chgrp", "-R", group, target.toString()});
+
+    boolean aclEnabled = isExtendedAclEnabled(conf);
+    AclStatus aclStatus = null;
+    List<AclEntry> aclEntries = null;
+    FsPermission sourcePerm = sourceStatus.getFileStatus().getPermission();
+    if (aclEnabled) {
+      aclStatus = ((Hadoop23FileStatus) sourceStatus).getAclStatus();
+      if (aclStatus != null) {
+        aclEntries = aclStatus.getEntries();
+        removeBaseAclEntries(aclEntries);
+
+        //the ACL api's also expect the tradition user/group/other permission in the form of ACL
+        aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, sourcePerm.getUserAction()));
+        aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, sourcePerm.getGroupAction()));
+        aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, sourcePerm.getOtherAction()));
       }
+    }
 
-      if (isExtendedAclEnabled(conf)) {
-        //Attempt extended Acl operations only if its enabled, 8791but don't fail the operation regardless.
-        try {
-          AclStatus aclStatus = ((Hadoop23FileStatus) sourceStatus).getAclStatus();
-          List<AclEntry> aclEntries = aclStatus.getEntries();
-          removeBaseAclEntries(aclEntries);
+    if (recursive) {
+      try {
+        FsShell fsShell = new FsShell();
+        fsShell.setConf(conf);
+        //If there is no group of a file, no need to call chgrp
+        if (group != null && !group.isEmpty()) {
+          run(fsShell, new String[]{"-chgrp", "-R", group, target.toString()});
+        }
 
-          //the ACL api's also expect the tradition user/group/other permission in the form of ACL
-          FsPermission sourcePerm = sourceStatus.getFileStatus().getPermission();
-          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, sourcePerm.getUserAction()));
-          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, sourcePerm.getGroupAction()));
-          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, sourcePerm.getOtherAction()));
-
-          //construct the -setfacl command
-          String aclEntry = Joiner.on(",").join(aclStatus.getEntries());
-          run(fsShell, new String[]{"-setfacl", "-R", "--set", aclEntry, target.toString()});
-        } catch (Exception e) {
-          LOG.info("Skipping ACL inheritance: File system for path " + target + " " +
-                  "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
-          LOG.debug("The details are: " + e, e);
+        if (aclEnabled) {
+          //Attempt extended Acl operations only if its enabled, 8791but don't fail the operation regardless.
+          if (aclStatus != null) {
+            try {
+              //construct the -setfacl command
+              String aclEntry = Joiner.on(",").join(aclStatus.getEntries());
+              run(fsShell, new String[]{"-setfacl", "-R", "--set", aclEntry, target.toString()});
+            } catch (Exception e) {
+              LOG.info("Skipping ACL inheritance: File system for path " + target + " " +
+                      "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
+              LOG.debug("The details are: " + e, e);
+            }
+          }
+        } else {
+          String permission = Integer.toString(sourceStatus.getFileStatus().getPermission().toShort(), 8);
+          run(fsShell, new String[]{"-chmod", "-R", permission, target.toString()});
+        }
+      } catch (Exception e) {
+        throw new IOException("Unable to set permissions of " + target, e);
+      }
+    } else {
+      if (group != null && !group.isEmpty()) {
+        fs.setOwner(target, null, group);
+      }
+      if (aclEnabled) {
+        if (null != aclEntries) {
+          fs.setAcl(target, aclEntries);
         }
       } else {
-        String permission = Integer.toString(sourceStatus.getFileStatus().getPermission().toShort(), 8);
-        run(fsShell, new String[]{"-chmod", "-R", permission, target.toString()});
+        fs.setPermission(target, sourcePerm);
       }
-    } catch (Exception e) {
-      throw new IOException("Unable to set permissions of " + target, e);
     }
     try {
       if (LOG.isDebugEnabled()) {  //some trace logging

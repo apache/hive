@@ -181,7 +181,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS)) {
         try {
           HadoopShims.HdfsFileStatus status = shims.getFullFileStatus(conf, fs, actualPath);
-          shims.setFullFileStatus(conf, status, fs, actualPath);
+          shims.setFullFileStatus(conf, status, fs, actualPath, true);
         } catch (Exception e) {
           LOG.warn("Error setting permissions or group of " + actualPath, e);
         }
