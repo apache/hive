@@ -126,6 +126,8 @@ Table:              	parquet_mixed_partition_formats
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	2521                
 #### A masked pattern was here ####
 	 	 
@@ -247,6 +249,8 @@ Table:              	parquet_mixed_partition_formats
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	2521                
 #### A masked pattern was here ####
 	 	 

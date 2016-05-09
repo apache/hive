@@ -93,6 +93,11 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'COLUMN_STATS_ACCURATE'='{\"BASIC_STATS\":\"true\"}', 
+  'numFiles'='0', 
+  'numRows'='0', 
+  'rawDataSize'='0', 
+  'totalSize'='0', 
 #### A masked pattern was here ####
 PREHOOK: query: -- load null data from another table and verify that the null is stored in the expected format
 INSERT OVERWRITE TABLE null_tab1 SELECT a,b FROM base_tab

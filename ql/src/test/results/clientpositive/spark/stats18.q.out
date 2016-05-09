@@ -94,6 +94,8 @@ Table:              	stats_part
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	2                   
+	numRows             	500                 
+	rawDataSize         	5312                
 	totalSize           	7170                
 #### A masked pattern was here ####
 	 	 

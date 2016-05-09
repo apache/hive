@@ -48,6 +48,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -184,13 +189,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=99)
+        Select Operator [SEL_3] (rows=4 width=100)
           Output:["_col0","_col1","_col2"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=99)
+            Select Operator [SEL_1] (rows=4 width=100)
               Output:["_col0","_col1","_col2"]
-              TableScan [TS_0] (rows=10 width=99)
+              TableScan [TS_0] (rows=4 width=100)
                 default@table_add_int_permute_select,table_add_int_permute_select,Tbl:COMPLETE,Col:NONE,Output:["insert_num","a","b"]
 
 PREHOOK: query: -- SELECT permutation columns to make sure NULL defaulting works right
@@ -294,6 +299,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -433,13 +443,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=153)
+        Select Operator [SEL_3] (rows=4 width=100)
           Output:["_col0","_col1","_col2"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=153)
+            Select Operator [SEL_1] (rows=4 width=100)
               Output:["_col0","_col1","_col2"]
-              TableScan [TS_0] (rows=10 width=153)
+              TableScan [TS_0] (rows=4 width=100)
                 default@table_add_int_string_permute_select,table_add_int_string_permute_select,Tbl:COMPLETE,Col:NONE,Output:["insert_num","a","b"]
 
 PREHOOK: query: -- SELECT permutation columns to make sure NULL defaulting works right
@@ -697,13 +707,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=234)
+        Select Operator [SEL_3] (rows=4 width=414)
           Output:["_col0","_col1","_col2","_col3","_col4"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=234)
+            Select Operator [SEL_1] (rows=4 width=414)
               Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=10 width=234)
+              TableScan [TS_0] (rows=4 width=414)
                 default@table_change_string_group_double,table_change_string_group_double,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_double order by insert_num
@@ -849,13 +859,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=9 width=530)
+        Select Operator [SEL_3] (rows=3 width=296)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=9 width=530)
+            Select Operator [SEL_1] (rows=3 width=296)
               Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-              TableScan [TS_0] (rows=9 width=530)
+              TableScan [TS_0] (rows=3 width=296)
                 default@table_change_date_group_string_group_timestamp,table_change_date_group_string_group_timestamp,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp order by insert_num
@@ -1017,13 +1027,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=9 width=529)
+        Select Operator [SEL_3] (rows=3 width=376)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=9 width=529)
+            Select Operator [SEL_1] (rows=3 width=376)
               Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-              TableScan [TS_0] (rows=9 width=529)
+              TableScan [TS_0] (rows=3 width=376)
                 default@table_change_date_group_string_group_date,table_change_date_group_string_group_date,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date order by insert_num
@@ -1165,13 +1175,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=313)
+        Select Operator [SEL_3] (rows=4 width=115)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=313)
+            Select Operator [SEL_1] (rows=4 width=115)
               Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-              TableScan [TS_0] (rows=10 width=313)
+              TableScan [TS_0] (rows=4 width=115)
                 default@table_change_numeric_group_string_group_multi_ints_string,table_change_numeric_group_string_group_multi_ints_string,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string order by insert_num
@@ -1306,13 +1316,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=422)
+        Select Operator [SEL_3] (rows=4 width=115)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=422)
+            Select Operator [SEL_1] (rows=4 width=115)
               Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-              TableScan [TS_0] (rows=10 width=422)
+              TableScan [TS_0] (rows=4 width=115)
                 default@table_change_numeric_group_string_group_multi_ints_char,table_change_numeric_group_string_group_multi_ints_char,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char order by insert_num
@@ -1447,13 +1457,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=314)
+        Select Operator [SEL_3] (rows=4 width=115)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=314)
+            Select Operator [SEL_1] (rows=4 width=115)
               Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-              TableScan [TS_0] (rows=10 width=314)
+              TableScan [TS_0] (rows=4 width=115)
                 default@table_change_numeric_group_string_group_multi_ints_char_trunc,table_change_numeric_group_string_group_multi_ints_char_trunc,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc order by insert_num
@@ -1588,13 +1598,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=313)
+        Select Operator [SEL_3] (rows=4 width=115)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=313)
+            Select Operator [SEL_1] (rows=4 width=115)
               Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-              TableScan [TS_0] (rows=10 width=313)
+              TableScan [TS_0] (rows=4 width=115)
                 default@table_change_numeric_group_string_group_multi_ints_varchar,table_change_numeric_group_string_group_multi_ints_varchar,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar order by insert_num
@@ -1729,13 +1739,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=310)
+        Select Operator [SEL_3] (rows=4 width=115)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=310)
+            Select Operator [SEL_1] (rows=4 width=115)
               Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-              TableScan [TS_0] (rows=10 width=310)
+              TableScan [TS_0] (rows=4 width=115)
                 default@table_change_numeric_group_string_group_multi_ints_varchar_trunc,table_change_numeric_group_string_group_multi_ints_varchar_trunc,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc order by insert_num
@@ -1868,13 +1878,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=304)
+        Select Operator [SEL_3] (rows=4 width=220)
           Output:["_col0","_col1","_col2","_col3","_col4"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=304)
+            Select Operator [SEL_1] (rows=4 width=220)
               Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=10 width=304)
+              TableScan [TS_0] (rows=4 width=220)
                 default@table_change_numeric_group_string_group_floating_string,table_change_numeric_group_string_group_floating_string,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string order by insert_num
@@ -2007,13 +2017,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=383)
+        Select Operator [SEL_3] (rows=4 width=220)
           Output:["_col0","_col1","_col2","_col3","_col4"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=383)
+            Select Operator [SEL_1] (rows=4 width=220)
               Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=10 width=383)
+              TableScan [TS_0] (rows=4 width=220)
                 default@table_change_numeric_group_string_group_floating_char,table_change_numeric_group_string_group_floating_char,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char order by insert_num
@@ -2146,13 +2156,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=306)
+        Select Operator [SEL_3] (rows=4 width=220)
           Output:["_col0","_col1","_col2","_col3","_col4"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=306)
+            Select Operator [SEL_1] (rows=4 width=220)
               Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=10 width=306)
+              TableScan [TS_0] (rows=4 width=220)
                 default@table_change_numeric_group_string_group_floating_char_trunc,table_change_numeric_group_string_group_floating_char_trunc,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc order by insert_num
@@ -2285,13 +2295,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=304)
+        Select Operator [SEL_3] (rows=4 width=220)
           Output:["_col0","_col1","_col2","_col3","_col4"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=304)
+            Select Operator [SEL_1] (rows=4 width=220)
               Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=10 width=304)
+              TableScan [TS_0] (rows=4 width=220)
                 default@table_change_numeric_group_string_group_floating_varchar,table_change_numeric_group_string_group_floating_varchar,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar order by insert_num
@@ -2424,13 +2434,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=302)
+        Select Operator [SEL_3] (rows=4 width=220)
           Output:["_col0","_col1","_col2","_col3","_col4"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=302)
+            Select Operator [SEL_1] (rows=4 width=220)
               Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=10 width=302)
+              TableScan [TS_0] (rows=4 width=220)
                 default@table_change_numeric_group_string_group_floating_varchar_trunc,table_change_numeric_group_string_group_floating_varchar_trunc,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc order by insert_num
@@ -2573,13 +2583,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=496)
+        Select Operator [SEL_3] (rows=4 width=476)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=496)
+            Select Operator [SEL_1] (rows=4 width=476)
               Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-              TableScan [TS_0] (rows=10 width=496)
+              TableScan [TS_0] (rows=4 width=476)
                 default@table_change_string_group_string_group_string,table_change_string_group_string_group_string,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string order by insert_num
@@ -2712,13 +2722,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=427)
+        Select Operator [SEL_3] (rows=4 width=498)
           Output:["_col0","_col1","_col2","_col3","_col4"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=427)
+            Select Operator [SEL_1] (rows=4 width=498)
               Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=10 width=427)
+              TableScan [TS_0] (rows=4 width=498)
                 default@table_change_string_group_string_group_char,table_change_string_group_string_group_char,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char order by insert_num
@@ -2851,13 +2861,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=402)
+        Select Operator [SEL_3] (rows=4 width=381)
           Output:["_col0","_col1","_col2","_col3","_col4"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=402)
+            Select Operator [SEL_1] (rows=4 width=381)
               Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=10 width=402)
+              TableScan [TS_0] (rows=4 width=381)
                 default@table_change_string_group_string_group_varchar,table_change_string_group_string_group_varchar,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar order by insert_num
@@ -3004,13 +3014,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=183)
+        Select Operator [SEL_3] (rows=4 width=114)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=183)
+            Select Operator [SEL_1] (rows=4 width=114)
               Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
-              TableScan [TS_0] (rows=10 width=183)
+              TableScan [TS_0] (rows=4 width=114)
                 default@table_change_lower_to_higher_numeric_group_tinyint,table_change_lower_to_higher_numeric_group_tinyint,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint order by insert_num
@@ -3147,13 +3157,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=182)
+        Select Operator [SEL_3] (rows=4 width=116)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=182)
+            Select Operator [SEL_1] (rows=4 width=116)
               Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-              TableScan [TS_0] (rows=10 width=182)
+              TableScan [TS_0] (rows=4 width=116)
                 default@table_change_lower_to_higher_numeric_group_smallint,table_change_lower_to_higher_numeric_group_smallint,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint order by insert_num
@@ -3288,13 +3298,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=178)
+        Select Operator [SEL_3] (rows=4 width=112)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=178)
+            Select Operator [SEL_1] (rows=4 width=112)
               Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-              TableScan [TS_0] (rows=10 width=178)
+              TableScan [TS_0] (rows=4 width=112)
                 default@table_change_lower_to_higher_numeric_group_int,table_change_lower_to_higher_numeric_group_int,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int order by insert_num
@@ -3427,13 +3437,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=177)
+        Select Operator [SEL_3] (rows=4 width=120)
           Output:["_col0","_col1","_col2","_col3","_col4"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=177)
+            Select Operator [SEL_1] (rows=4 width=120)
               Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=10 width=177)
+              TableScan [TS_0] (rows=4 width=120)
                 default@table_change_lower_to_higher_numeric_group_bigint,table_change_lower_to_higher_numeric_group_bigint,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
 PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint order by insert_num
@@ -3564,13 +3574,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=189)
+        Select Operator [SEL_3] (rows=4 width=320)
           Output:["_col0","_col1","_col2","_col3"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=189)
+            Select Operator [SEL_1] (rows=4 width=320)
               Output:["_col0","_col1","_col2","_col3"]
-              TableScan [TS_0] (rows=10 width=189)
+              TableScan [TS_0] (rows=4 width=320)
                 default@table_change_lower_to_higher_numeric_group_decimal,table_change_lower_to_higher_numeric_group_decimal,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","b"]
 
 PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
@@ -3699,13 +3709,13 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=99)
+        Select Operator [SEL_3] (rows=4 width=100)
           Output:["_col0","_col1","_col2"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=99)
+            Select Operator [SEL_1] (rows=4 width=100)
               Output:["_col0","_col1","_col2"]
-              TableScan [TS_0] (rows=10 width=99)
+              TableScan [TS_0] (rows=4 width=100)
                 default@table_change_lower_to_higher_numeric_group_float,table_change_lower_to_higher_numeric_group_float,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","b"]
 
 PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num

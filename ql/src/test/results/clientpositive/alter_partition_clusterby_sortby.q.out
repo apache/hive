@@ -48,8 +48,11 @@ Database:           	default
 Table:              	alter_table_partition_clusterby_sortby	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
 	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
@@ -98,8 +101,11 @@ Database:           	default
 Table:              	alter_table_partition_clusterby_sortby	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
 	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
@@ -148,8 +154,11 @@ Database:           	default
 Table:              	alter_table_partition_clusterby_sortby	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
 	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 

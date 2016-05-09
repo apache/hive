@@ -35,6 +35,11 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'COLUMN_STATS_ACCURATE'='{\"BASIC_STATS\":\"true\"}', 
+  'numFiles'='0', 
+  'numRows'='0', 
+  'rawDataSize'='0', 
+  'totalSize'='0', 
 #### A masked pattern was here ####
 PREHOOK: query: -- Add a comment to the table, change the EXTERNAL property, and test SHOW CREATE TABLE on the change.
 ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('comment'='temporary table', 'EXTERNAL'='FALSE')
@@ -73,6 +78,8 @@ TBLPROPERTIES (
   'EXTERNAL'='FALSE', 
 #### A masked pattern was here ####
   'numFiles'='0', 
+  'numRows'='0', 
+  'rawDataSize'='0', 
   'totalSize'='0', 
 #### A masked pattern was here ####
 PREHOOK: query: -- Alter the table comment, change the EXTERNAL property back and test SHOW CREATE TABLE on the change.
@@ -111,6 +118,8 @@ LOCATION
 TBLPROPERTIES (
 #### A masked pattern was here ####
   'numFiles'='0', 
+  'numRows'='0', 
+  'rawDataSize'='0', 
   'totalSize'='0', 
 #### A masked pattern was here ####
 PREHOOK: query: -- Change the 'SORTBUCKETCOLSPREFIX' property and test SHOW CREATE TABLE. The output should not change.
@@ -149,6 +158,8 @@ LOCATION
 TBLPROPERTIES (
 #### A masked pattern was here ####
   'numFiles'='0', 
+  'numRows'='0', 
+  'rawDataSize'='0', 
   'totalSize'='0', 
 #### A masked pattern was here ####
 PREHOOK: query: -- Alter the storage handler of the table, and test SHOW CREATE TABLE.
@@ -187,6 +198,8 @@ LOCATION
 TBLPROPERTIES (
 #### A masked pattern was here ####
   'numFiles'='0', 
+  'numRows'='0', 
+  'rawDataSize'='0', 
   'totalSize'='0', 
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE tmp_showcrt1

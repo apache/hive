@@ -206,6 +206,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.ct_events_clean
                     numFiles 1
+                    numRows 0
+                    rawDataSize 0
                     serialization.ddl struct ct_events_clean { string contact_event_id, string ce_create_dt, string ce_end_dt, string contact_type, string cnctevs_cd, string contact_mode, string cntvnst_stts_cd, i32 total_transfers, list<string> ce_notes}
                     serialization.format 	
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -227,6 +229,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.ct_events_clean
                       numFiles 1
+                      numRows 0
+                      rawDataSize 0
                       serialization.ddl struct ct_events_clean { string contact_event_id, string ce_create_dt, string ce_end_dt, string contact_type, string cnctevs_cd, string contact_mode, string cntvnst_stts_cd, i32 total_transfers, list<string> ce_notes}
                       serialization.format 	
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -308,6 +312,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.service_request_clean
                     numFiles 1
+                    numRows 0
+                    rawDataSize 0
                     serialization.ddl struct service_request_clean { string cnctevn_id, string svcrqst_id, string svcrqst_crt_dts, i32 subject_seq_no, string plan_component, string cust_segment, string cnctyp_cd, string cnctmd_cd, string cnctevs_cd, string svcrtyp_cd, string svrstyp_cd, string cmpltyp_cd, string catsrsn_cd, string apealvl_cd, string cnstnty_cd, string svcrqst_asrqst_ind, string svcrqst_rtnorig_in, string svcrqst_vwasof_dt, string sum_reason_cd, string sum_reason, string crsr_master_claim_index, list<string> svcrqct_cds, string svcrqst_lupdt, timestamp crsr_lupdt, string cntevsds_lupdt, i32 ignore_me, list<string> notes}
                     serialization.format 	
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -329,6 +335,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.service_request_clean
                       numFiles 1
+                      numRows 0
+                      rawDataSize 0
                       serialization.ddl struct service_request_clean { string cnctevn_id, string svcrqst_id, string svcrqst_crt_dts, i32 subject_seq_no, string plan_component, string cust_segment, string cnctyp_cd, string cnctmd_cd, string cnctevs_cd, string svcrtyp_cd, string svrstyp_cd, string cmpltyp_cd, string catsrsn_cd, string apealvl_cd, string cnstnty_cd, string svcrqst_asrqst_ind, string svcrqst_rtnorig_in, string svcrqst_vwasof_dt, string sum_reason_cd, string sum_reason, string crsr_master_claim_index, list<string> svcrqct_cds, string svcrqst_lupdt, timestamp crsr_lupdt, string cntevsds_lupdt, i32 ignore_me, list<string> notes}
                       serialization.format 	
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1178,6 +1186,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.ct_events_clean
                     numFiles 1
+                    numRows 0
+                    rawDataSize 0
                     serialization.ddl struct ct_events_clean { string contact_event_id, string ce_create_dt, string ce_end_dt, string contact_type, string cnctevs_cd, string contact_mode, string cntvnst_stts_cd, i32 total_transfers, list<string> ce_notes}
                     serialization.format 	
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1199,6 +1209,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.ct_events_clean
                       numFiles 1
+                      numRows 0
+                      rawDataSize 0
                       serialization.ddl struct ct_events_clean { string contact_event_id, string ce_create_dt, string ce_end_dt, string contact_type, string cnctevs_cd, string contact_mode, string cntvnst_stts_cd, i32 total_transfers, list<string> ce_notes}
                       serialization.format 	
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1281,6 +1293,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.service_request_clean
                     numFiles 1
+                    numRows 0
+                    rawDataSize 0
                     serialization.ddl struct service_request_clean { string cnctevn_id, string svcrqst_id, string svcrqst_crt_dts, i32 subject_seq_no, string plan_component, string cust_segment, string cnctyp_cd, string cnctmd_cd, string cnctevs_cd, string svcrtyp_cd, string svrstyp_cd, string cmpltyp_cd, string catsrsn_cd, string apealvl_cd, string cnstnty_cd, string svcrqst_asrqst_ind, string svcrqst_rtnorig_in, string svcrqst_vwasof_dt, string sum_reason_cd, string sum_reason, string crsr_master_claim_index, list<string> svcrqct_cds, string svcrqst_lupdt, timestamp crsr_lupdt, string cntevsds_lupdt, i32 ignore_me, list<string> notes}
                     serialization.format 	
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1302,6 +1316,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       name default.service_request_clean
                       numFiles 1
+                      numRows 0
+                      rawDataSize 0
                       serialization.ddl struct service_request_clean { string cnctevn_id, string svcrqst_id, string svcrqst_crt_dts, i32 subject_seq_no, string plan_component, string cust_segment, string cnctyp_cd, string cnctmd_cd, string cnctevs_cd, string svcrtyp_cd, string svrstyp_cd, string cmpltyp_cd, string catsrsn_cd, string apealvl_cd, string cnstnty_cd, string svcrqst_asrqst_ind, string svcrqst_rtnorig_in, string svcrqst_vwasof_dt, string sum_reason_cd, string sum_reason, string crsr_master_claim_index, list<string> svcrqct_cds, string svcrqst_lupdt, timestamp crsr_lupdt, string cntevsds_lupdt, i32 ignore_me, list<string> notes}
                       serialization.format 	
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

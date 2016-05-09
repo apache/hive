@@ -42,6 +42,8 @@ LOCATION
 TBLPROPERTIES (
 #### A masked pattern was here ####
   'numFiles'='0', 
+  'numRows'='0', 
+  'rawDataSize'='0', 
   'totalSize'='0', 
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE tmp_showcrt1
@@ -90,6 +92,11 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'COLUMN_STATS_ACCURATE'='{\"BASIC_STATS\":\"true\"}', 
+  'numFiles'='0', 
+  'numRows'='0', 
+  'rawDataSize'='0', 
+  'totalSize'='0', 
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE tmp_showcrt1
 PREHOOK: type: DROPTABLE
@@ -139,6 +146,11 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'COLUMN_STATS_ACCURATE'='{\"BASIC_STATS\":\"true\"}', 
+  'numFiles'='0', 
+  'numRows'='0', 
+  'rawDataSize'='0', 
+  'totalSize'='0', 
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE tmp_showcrt1
 PREHOOK: type: DROPTABLE
@@ -183,6 +195,11 @@ WITH SERDEPROPERTIES (
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'COLUMN_STATS_ACCURATE'='{\"BASIC_STATS\":\"true\"}', 
+  'numFiles'='0', 
+  'numRows'='0', 
+  'rawDataSize'='0', 
+  'totalSize'='0', 
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE tmp_showcrt1
 PREHOOK: type: DROPTABLE

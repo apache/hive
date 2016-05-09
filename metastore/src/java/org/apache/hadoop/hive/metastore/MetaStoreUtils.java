@@ -265,6 +265,13 @@ public class MetaStoreUtils {
   public static boolean requireCalStats(Configuration hiveConf, Partition oldPart,
     Partition newPart, Table tbl, EnvironmentContext environmentContext) {
 
+    if (environmentContext != null
+        && environmentContext.isSetProperties()
+        && StatsSetupConst.TRUE.equals(environmentContext.getProperties().get(
+            StatsSetupConst.DO_NOT_UPDATE_STATS))) {
+      return false;
+    }
+
     if (MetaStoreUtils.isView(tbl)) {
       return false;
     }

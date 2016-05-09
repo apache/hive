@@ -134,8 +134,10 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.employee_part
               numFiles 1
+              numRows 0
               partition_columns employeesalary
               partition_columns.types double
+              rawDataSize 0
               serialization.ddl struct employee_part { i32 employeeid, string employeename}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -318,8 +320,10 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.employee_part
               numFiles 1
+              numRows 0
               partition_columns employeesalary
               partition_columns.types double
+              rawDataSize 0
               serialization.ddl struct employee_part { i32 employeeid, string employeename}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

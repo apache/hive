@@ -5354,15 +5354,20 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
                       columns p_mfgr,p_name,p_size,r,dr,s
                       columns.comments 
                       columns.types string:string:int:int:int:double
 #### A masked pattern was here ####
                       name default.part_4
+                      numFiles 0
+                      numRows 0
+                      rawDataSize 0
                       serialization.ddl struct part_4 { string p_mfgr, string p_name, i32 p_size, i32 r, i32 dr, double s}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 0
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.part_4
@@ -5379,15 +5384,20 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
                 columns p_mfgr,p_name,p_size,r,dr,s
                 columns.comments 
                 columns.types string:string:int:int:int:double
 #### A masked pattern was here ####
                 name default.part_4
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct part_4 { string p_mfgr, string p_name, i32 p_size, i32 r, i32 dr, double s}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.part_4
@@ -5584,15 +5594,20 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
                       columns p_mfgr,p_name,p_size,s2,r,dr,cud,fv1
                       columns.comments 
                       columns.types string:string:int:int:int:int:double:int
 #### A masked pattern was here ####
                       name default.part_5
+                      numFiles 0
+                      numRows 0
+                      rawDataSize 0
                       serialization.ddl struct part_5 { string p_mfgr, string p_name, i32 p_size, i32 s2, i32 r, i32 dr, double cud, i32 fv1}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 0
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.part_5
@@ -5609,15 +5624,20 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
                 columns p_mfgr,p_name,p_size,s2,r,dr,cud,fv1
                 columns.comments 
                 columns.types string:string:int:int:int:int:double:int
 #### A masked pattern was here ####
                 name default.part_5
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct part_5 { string p_mfgr, string p_name, i32 p_size, i32 s2, i32 r, i32 dr, double cud, i32 fv1}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.part_5

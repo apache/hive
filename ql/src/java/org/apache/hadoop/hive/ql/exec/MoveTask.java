@@ -223,6 +223,14 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
   }
 
+  // we check if there is only one immediate child task and it is stats task
+  private boolean hasFollowingStatsTask() {
+    if (this.getNumChild() == 1) {
+      return this.getChildTasks().get(0) instanceof StatsTask;
+    }
+    return false;
+  }
+
   @Override
   public int execute(DriverContext driverContext) {
 
@@ -336,10 +344,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         DataContainer dc = null;
         if (tbd.getPartitionSpec().size() == 0) {
           dc = new DataContainer(table.getTTable());
-          db.loadTable(tbd.getSourcePath(), tbd.getTable()
-              .getTableName(), tbd.getReplace(), work.isSrcLocal(),
-              isSkewedStoredAsDirs(tbd),
-              work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID);
+          db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getReplace(),
+              work.isSrcLocal(), isSkewedStoredAsDirs(tbd),
+              work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
+              hasFollowingStatsTask());
           if (work.getOutputs() != null) {
             work.getOutputs().add(new WriteEntity(table,
                 (tbd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE :
@@ -421,7 +429,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 dpCtx.getNumDPCols(),
                 isSkewedStoredAsDirs(tbd),
                 work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
-                SessionState.get().getTxnMgr().getCurrentTxnId());
+                SessionState.get().getTxnMgr().getCurrentTxnId(), hasFollowingStatsTask());
 
             console.printInfo("\t Time taken to load dynamic partitions: "  +
                 (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
@@ -480,7 +488,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             db.loadPartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
                 tbd.getPartitionSpec(), tbd.getReplace(),
                 tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
-                work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID);
+                work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID, hasFollowingStatsTask());
             Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
 
             if (bucketCols != null || sortCols != null) {

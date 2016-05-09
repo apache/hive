@@ -7,10 +7,12 @@ insert overwrite table stats_partitioned partition (ds='1')
 select * from src;
 -- rawDataSize is 5312 after config is turned on
 describe formatted stats_partitioned;
+describe formatted stats_partitioned partition (ds='1');
 
 set hive.stats.collect.rawdatasize=false;
 insert overwrite table stats_partitioned partition (ds='1')
 select * from src;
 -- rawDataSize is 0 after config is turned off
 describe formatted stats_partitioned;
+describe formatted stats_partitioned partition (ds='1');
 

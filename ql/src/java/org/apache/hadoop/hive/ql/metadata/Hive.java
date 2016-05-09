@@ -1453,10 +1453,10 @@ public class Hive {
   public void loadPartition(Path loadPath, String tableName,
       Map<String, String> partSpec, boolean replace,
       boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
-      boolean isSrcLocal, boolean isAcid) throws HiveException {
+      boolean isSrcLocal, boolean isAcid, boolean hasFollowingStatsTask) throws HiveException {
     Table tbl = getTable(tableName);
     loadPartition(loadPath, tbl, partSpec, replace, inheritTableSpecs,
-        isSkewedStoreAsSubdir, isSrcLocal, isAcid);
+        isSkewedStoreAsSubdir, isSrcLocal, isAcid, hasFollowingStatsTask);
   }
 
   /**
@@ -1483,7 +1483,7 @@ public class Hive {
   public Partition loadPartition(Path loadPath, Table tbl,
       Map<String, String> partSpec, boolean replace,
       boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
-      boolean isSrcLocal, boolean isAcid) throws HiveException {
+      boolean isSrcLocal, boolean isAcid, boolean hasFollowingStatsTask) throws HiveException {
     Path tblDataLocationPath =  tbl.getDataLocation();
     try {
       /**
@@ -1562,10 +1562,19 @@ public class Hive {
       }
       if (oldPart == null) {
         newTPart.getTPartition().setParameters(new HashMap<String,String>());
+        if (this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+          StatsSetupConst.setBasicStatsStateForCreateTable(newTPart.getParameters(),
+              StatsSetupConst.TRUE);
+        }
         MetaStoreUtils.populateQuickStats(HiveStatsUtils.getFileStatusRecurse(newPartPath, -1, newPartPath.getFileSystem(conf)), newTPart.getParameters());
         getMSC().add_partition(newTPart.getTPartition());
       } else {
-        alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newTPart.getTPartition()), null);
+        EnvironmentContext environmentContext = null;
+        if (hasFollowingStatsTask) {
+          environmentContext = new EnvironmentContext();
+          environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+        }
+        alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newTPart.getTPartition()), environmentContext);
       }
       return newTPart;
     } catch (IOException e) {
@@ -1683,7 +1692,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   public Map<Map<String, String>, Partition> loadDynamicPartitions(Path loadPath,
       String tableName, Map<String, String> partSpec, boolean replace,
-      int numDP, boolean listBucketingEnabled, boolean isAcid, long txnId)
+      int numDP, boolean listBucketingEnabled, boolean isAcid, long txnId, boolean hasFollowingStatsTask)
       throws HiveException {
 
     Set<Path> validPartitions = new HashSet<Path>();
@@ -1733,7 +1742,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<String, String>(partSpec);
         Warehouse.makeSpecFromName(fullPartSpec, partPath);
         Partition newPartition = loadPartition(partPath, tbl, fullPartSpec, replace,
-            true, listBucketingEnabled, false, isAcid);
+            true, listBucketingEnabled, false, isAcid, hasFollowingStatsTask);
         partitionsMap.put(fullPartSpec, newPartition);
         if (inPlaceEligible) {
           InPlaceUpdates.rePositionCursor(ps);
@@ -1772,10 +1781,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
    *          If the source directory is LOCAL
    * @param isSkewedStoreAsSubdir
    *          if list bucketing enabled
+   * @param hasFollowingStatsTask
+   *          if there is any following stats task
    * @param isAcid true if this is an ACID based write
    */
-  public void loadTable(Path loadPath, String tableName, boolean replace,
-      boolean isSrcLocal, boolean isSkewedStoreAsSubdir, boolean isAcid)
+  public void loadTable(Path loadPath, String tableName, boolean replace, boolean isSrcLocal,
+      boolean isSkewedStoreAsSubdir, boolean isAcid, boolean hasFollowingStatsTask)
       throws HiveException {
 
     List<Path> newFiles = null;
@@ -1817,8 +1828,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(e);
     }
 
+    EnvironmentContext environmentContext = null;
+    if (hasFollowingStatsTask) {
+      environmentContext = new EnvironmentContext();
+      environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+    }
     try {
-      alterTable(tableName, tbl, null);
+      alterTable(tableName, tbl, environmentContext);
     } catch (InvalidOperationException e) {
       throw new HiveException(e);
     }

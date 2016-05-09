@@ -170,15 +170,20 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
                     columns key,c1,c2,c3,c4
                     columns.comments 
                     columns.types string:int:string:int:int
 #### A masked pattern was here ####
                     name default.dest1
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
                     serialization.ddl struct dest1 { string key, i32 c1, string c2, i32 c3, i32 c4}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.dest1
@@ -195,15 +200,20 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
                 columns key,c1,c2,c3,c4
                 columns.comments 
                 columns.types string:int:string:int:int
 #### A masked pattern was here ####
                 name default.dest1
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct dest1 { string key, i32 c1, string c2, i32 c3, i32 c4}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest1

@@ -39,6 +39,8 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 bar	bar value
 #### A masked pattern was here ####
 numFiles	0
+numRows	0
+rawDataSize	0
 tmp	true
 totalSize	0
 #### A masked pattern was here ####
@@ -54,6 +56,8 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 bar	bar value
 #### A masked pattern was here ####
 numFiles	0
+numRows	0
+rawDataSize	0
 tmp	true
 totalSize	0
 #### A masked pattern was here ####
@@ -107,6 +111,8 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 bar	bar value
 #### A masked pattern was here ####
 numFiles	0
+numRows	0
+rawDataSize	0
 tmp	true
 totalSize	0
 #### A masked pattern was here ####
@@ -124,6 +130,8 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 bar	bar value1
 #### A masked pattern was here ####
 numFiles	0
+numRows	0
+rawDataSize	0
 tmp	true1
 totalSize	0
 #### A masked pattern was here ####
@@ -147,6 +155,8 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 bar	bar value1
 #### A masked pattern was here ####
 numFiles	0
+numRows	0
+rawDataSize	0
 tmp	true1
 totalSize	0
 #### A masked pattern was here ####

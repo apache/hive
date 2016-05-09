@@ -48,6 +48,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -183,24 +188,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_add_int_permute_select
-            Statistics: Num rows: 10 Data size: 111 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), a (type: int), b (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 10 Data size: 111 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 111 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: int), _col2 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: string)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 10 Data size: 111 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 111 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -313,6 +318,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -451,24 +461,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_add_int_string_permute_select
-            Statistics: Num rows: 10 Data size: 155 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), a (type: int), b (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 10 Data size: 155 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 155 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: int), _col2 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: string)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 10 Data size: 155 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 155 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -734,24 +744,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_string_group_double
-            Statistics: Num rows: 10 Data size: 550 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 318 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: double), c2 (type: double), c3 (type: double), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
-              Statistics: Num rows: 10 Data size: 550 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 318 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 550 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 318 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: double), _col4 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: double), VALUE._col1 (type: double), VALUE._col2 (type: double), VALUE._col3 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 10 Data size: 550 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 318 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 550 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 318 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -905,24 +915,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_date_group_string_group_timestamp
-            Statistics: Num rows: 9 Data size: 1326 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 450 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: string), c2 (type: char(50)), c3 (type: char(15)), c4 (type: varchar(50)), c5 (type: varchar(15)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-              Statistics: Num rows: 9 Data size: 1326 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 450 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 9 Data size: 1326 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 450 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: string), _col2 (type: char(50)), _col3 (type: char(15)), _col4 (type: varchar(50)), _col5 (type: varchar(15)), _col6 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), VALUE._col1 (type: char(50)), VALUE._col2 (type: char(15)), VALUE._col3 (type: varchar(50)), VALUE._col4 (type: varchar(15)), VALUE._col5 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-          Statistics: Num rows: 9 Data size: 1326 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 450 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 9 Data size: 1326 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 450 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1092,24 +1102,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_date_group_string_group_date
-            Statistics: Num rows: 9 Data size: 825 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 195 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: string), c2 (type: char(50)), c3 (type: char(15)), c4 (type: varchar(50)), c5 (type: varchar(15)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-              Statistics: Num rows: 9 Data size: 825 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 195 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 9 Data size: 825 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 195 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: string), _col2 (type: char(50)), _col3 (type: char(15)), _col4 (type: varchar(50)), _col5 (type: varchar(15)), _col6 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), VALUE._col1 (type: char(50)), VALUE._col2 (type: char(15)), VALUE._col3 (type: varchar(50)), VALUE._col4 (type: varchar(15)), VALUE._col5 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-          Statistics: Num rows: 9 Data size: 825 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 195 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 9 Data size: 825 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 195 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1259,24 +1269,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_numeric_group_string_group_multi_ints_string
-            Statistics: Num rows: 10 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: string), c2 (type: string), c3 (type: string), c4 (type: string), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-              Statistics: Num rows: 10 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: string), VALUE._col4 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 10 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1419,24 +1429,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_numeric_group_string_group_multi_ints_char
-            Statistics: Num rows: 10 Data size: 1405 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: char(50)), c2 (type: char(50)), c3 (type: char(50)), c4 (type: char(50)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-              Statistics: Num rows: 10 Data size: 1405 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 1405 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: char(50)), _col2 (type: char(50)), _col3 (type: char(50)), _col4 (type: char(50)), _col5 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(50)), VALUE._col1 (type: char(50)), VALUE._col2 (type: char(50)), VALUE._col3 (type: char(50)), VALUE._col4 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 10 Data size: 1405 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 1405 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1579,24 +1589,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_numeric_group_string_group_multi_ints_char_trunc
-            Statistics: Num rows: 10 Data size: 325 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: char(5)), c2 (type: char(5)), c3 (type: char(5)), c4 (type: char(5)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-              Statistics: Num rows: 10 Data size: 325 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 325 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: char(5)), _col2 (type: char(5)), _col3 (type: char(5)), _col4 (type: char(5)), _col5 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(5)), VALUE._col1 (type: char(5)), VALUE._col2 (type: char(5)), VALUE._col3 (type: char(5)), VALUE._col4 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 10 Data size: 325 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 325 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1739,24 +1749,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_numeric_group_string_group_multi_ints_varchar
-            Statistics: Num rows: 10 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: varchar(50)), c2 (type: varchar(50)), c3 (type: varchar(50)), c4 (type: varchar(50)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-              Statistics: Num rows: 10 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: varchar(50)), _col2 (type: varchar(50)), _col3 (type: varchar(50)), _col4 (type: varchar(50)), _col5 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(50)), VALUE._col1 (type: varchar(50)), VALUE._col2 (type: varchar(50)), VALUE._col3 (type: varchar(50)), VALUE._col4 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 10 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1899,24 +1909,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_numeric_group_string_group_multi_ints_varchar_trunc
-            Statistics: Num rows: 10 Data size: 304 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: varchar(5)), c2 (type: varchar(5)), c3 (type: varchar(5)), c4 (type: varchar(5)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-              Statistics: Num rows: 10 Data size: 304 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 304 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: varchar(5)), _col2 (type: varchar(5)), _col3 (type: varchar(5)), _col4 (type: varchar(5)), _col5 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(5)), VALUE._col1 (type: varchar(5)), VALUE._col2 (type: varchar(5)), VALUE._col3 (type: varchar(5)), VALUE._col4 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 10 Data size: 304 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 304 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 150 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2057,24 +2067,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_numeric_group_string_group_floating_string
-            Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: string), c2 (type: string), c3 (type: string), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
-              Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2215,24 +2225,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_numeric_group_string_group_floating_char
-            Statistics: Num rows: 10 Data size: 1169 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: char(50)), c2 (type: char(50)), c3 (type: char(50)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
-              Statistics: Num rows: 10 Data size: 1169 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 1169 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: char(50)), _col2 (type: char(50)), _col3 (type: char(50)), _col4 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(50)), VALUE._col1 (type: char(50)), VALUE._col2 (type: char(50)), VALUE._col3 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 10 Data size: 1169 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 1169 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2373,24 +2383,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_numeric_group_string_group_floating_char_trunc
-            Statistics: Num rows: 10 Data size: 390 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: char(7)), c2 (type: char(7)), c3 (type: char(7)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
-              Statistics: Num rows: 10 Data size: 390 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 390 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: char(7)), _col2 (type: char(7)), _col3 (type: char(7)), _col4 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(7)), VALUE._col1 (type: char(7)), VALUE._col2 (type: char(7)), VALUE._col3 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 10 Data size: 390 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 390 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2531,24 +2541,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_numeric_group_string_group_floating_varchar
-            Statistics: Num rows: 10 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 203 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: varchar(50)), c2 (type: varchar(50)), c3 (type: varchar(50)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
-              Statistics: Num rows: 10 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 203 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 203 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: varchar(50)), _col2 (type: varchar(50)), _col3 (type: varchar(50)), _col4 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(50)), VALUE._col1 (type: varchar(50)), VALUE._col2 (type: varchar(50)), VALUE._col3 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 10 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 203 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 203 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2689,24 +2699,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_numeric_group_string_group_floating_varchar_trunc
-            Statistics: Num rows: 10 Data size: 362 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: varchar(7)), c2 (type: varchar(7)), c3 (type: varchar(7)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
-              Statistics: Num rows: 10 Data size: 362 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 362 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: varchar(7)), _col2 (type: varchar(7)), _col3 (type: varchar(7)), _col4 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(7)), VALUE._col1 (type: varchar(7)), VALUE._col2 (type: varchar(7)), VALUE._col3 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 10 Data size: 362 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 362 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2857,24 +2867,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_string_group_string_group_string
-            Statistics: Num rows: 10 Data size: 791 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 236 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: char(50)), c2 (type: char(9)), c3 (type: varchar(50)), c4 (type: char(9)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-              Statistics: Num rows: 10 Data size: 791 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 236 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 791 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 236 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: char(50)), _col2 (type: char(9)), _col3 (type: varchar(50)), _col4 (type: char(9)), _col5 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(50)), VALUE._col1 (type: char(9)), VALUE._col2 (type: varchar(50)), VALUE._col3 (type: char(9)), VALUE._col4 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 10 Data size: 791 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 236 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 791 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 236 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3015,24 +3025,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_string_group_string_group_char
-            Statistics: Num rows: 10 Data size: 937 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 652 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: varchar(50)), c2 (type: varchar(9)), c3 (type: string), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
-              Statistics: Num rows: 10 Data size: 937 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 652 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 937 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 652 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: varchar(50)), _col2 (type: varchar(9)), _col3 (type: string), _col4 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(50)), VALUE._col1 (type: varchar(9)), VALUE._col2 (type: string), VALUE._col3 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 10 Data size: 937 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 652 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 937 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 652 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3173,24 +3183,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_string_group_string_group_varchar
-            Statistics: Num rows: 10 Data size: 682 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 187 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: char(50)), c2 (type: char(9)), c3 (type: string), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
-              Statistics: Num rows: 10 Data size: 682 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 187 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 682 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 187 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: char(50)), _col2 (type: char(9)), _col3 (type: string), _col4 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(50)), VALUE._col1 (type: char(9)), VALUE._col2 (type: string), VALUE._col3 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 10 Data size: 682 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 187 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 682 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 187 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3345,24 +3355,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_lower_to_higher_numeric_group_tinyint
-            Statistics: Num rows: 10 Data size: 446 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 118 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: smallint), c2 (type: int), c3 (type: bigint), c4 (type: decimal(38,18)), c5 (type: float), c6 (type: double), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-              Statistics: Num rows: 10 Data size: 446 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 118 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 446 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 118 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: decimal(38,18)), _col5 (type: float), _col6 (type: double), _col7 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: decimal(38,18)), VALUE._col4 (type: float), VALUE._col5 (type: double), VALUE._col6 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-          Statistics: Num rows: 10 Data size: 446 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 118 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 446 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 118 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3507,24 +3517,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_lower_to_higher_numeric_group_smallint
-            Statistics: Num rows: 10 Data size: 445 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 130 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: int), c2 (type: bigint), c3 (type: decimal(38,18)), c4 (type: float), c5 (type: double), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-              Statistics: Num rows: 10 Data size: 445 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 130 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 445 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 130 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: int), _col2 (type: bigint), _col3 (type: decimal(38,18)), _col4 (type: float), _col5 (type: double), _col6 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: decimal(38,18)), VALUE._col3 (type: float), VALUE._col4 (type: double), VALUE._col5 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-          Statistics: Num rows: 10 Data size: 445 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 130 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 445 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 130 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3667,24 +3677,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_lower_to_higher_numeric_group_int
-            Statistics: Num rows: 10 Data size: 429 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 132 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: bigint), c2 (type: decimal(38,18)), c3 (type: float), c4 (type: double), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-              Statistics: Num rows: 10 Data size: 429 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 132 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 429 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 132 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: bigint), _col2 (type: decimal(38,18)), _col3 (type: float), _col4 (type: double), _col5 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: bigint), VALUE._col1 (type: decimal(38,18)), VALUE._col2 (type: float), VALUE._col3 (type: double), VALUE._col4 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 10 Data size: 429 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 132 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 429 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 132 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3825,24 +3835,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_lower_to_higher_numeric_group_bigint
-            Statistics: Num rows: 10 Data size: 411 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 127 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: decimal(38,18)), c2 (type: float), c3 (type: double), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
-              Statistics: Num rows: 10 Data size: 411 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 127 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 411 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 127 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: decimal(38,18)), _col2 (type: float), _col3 (type: double), _col4 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: decimal(38,18)), VALUE._col1 (type: float), VALUE._col2 (type: double), VALUE._col3 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 10 Data size: 411 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 127 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 411 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 127 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3981,24 +3991,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_lower_to_higher_numeric_group_decimal
-            Statistics: Num rows: 10 Data size: 335 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 238 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: float), c2 (type: double), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 10 Data size: 335 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 238 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 335 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 238 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: float), _col2 (type: double), _col3 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: float), VALUE._col1 (type: double), VALUE._col2 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 10 Data size: 335 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 238 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 335 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 238 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4135,24 +4145,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_lower_to_higher_numeric_group_float
-            Statistics: Num rows: 10 Data size: 148 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 78 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: double), b (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 10 Data size: 148 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 78 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 10 Data size: 148 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 78 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: double), _col2 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: double), VALUE._col1 (type: string)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 10 Data size: 148 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 78 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 148 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 78 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

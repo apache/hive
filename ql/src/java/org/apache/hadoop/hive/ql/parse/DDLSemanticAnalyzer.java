@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.ql.parse.authorization.AuthorizationParseUtils;
 import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactory;
 import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactoryImpl;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
+import org.apache.hadoop.hive.ql.plan.AddPartitionDesc.OnePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc.AlterIndexTypes;
@@ -2801,6 +2802,19 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     // add the last one
     if (currentPart != null) {
       addPartitionDesc.addPartition(currentPart, currentLocation);
+    }
+
+    if (this.conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+      for (int index = 0; index < addPartitionDesc.getPartitionCount(); index++) {
+        OnePartitionDesc desc = addPartitionDesc.getPartition(index);
+        if (desc.getLocation() == null) {
+          if (desc.getPartParams() == null) {
+            desc.setPartParams(new HashMap<String, String>());
+          }
+          StatsSetupConst.setBasicStatsStateForCreateTable(desc.getPartParams(),
+              StatsSetupConst.TRUE);
+        }
+      }
     }
 
     if (addPartitionDesc.getPartitionCount() == 0) {

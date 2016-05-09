@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -810,7 +811,17 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
         }
       }
     }
+    if (getLocation() == null && !this.isCTAS) {
+      if (!tbl.isPartitioned() && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+        StatsSetupConst.setBasicStatsStateForCreateTable(tbl.getTTable().getParameters(),
+            StatsSetupConst.TRUE);
+      }
+    } else {
+      StatsSetupConst.setBasicStatsStateForCreateTable(tbl.getTTable().getParameters(),
+          StatsSetupConst.FALSE);
+    }
     return tbl;
   }
+
 
 }
