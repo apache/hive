@@ -401,12 +401,22 @@ public class LlapServiceDriver {
     IOUtils.copyBytes(loggerContent,
         lfs.create(new Path(confPath, "llap-daemon-log4j2.properties"), true), conf, true);
 
-    URL metrics2 = conf.getResource(LlapDaemon.HADOOP_METRICS2_PROPERTIES_FILE);
+    String metricsFile = LlapDaemon.LLAP_HADOOP_METRICS2_PROPERTIES_FILE;
+    URL metrics2 = conf.getResource(metricsFile);
+    if (metrics2 == null) {
+      LOG.warn(LlapDaemon.LLAP_HADOOP_METRICS2_PROPERTIES_FILE + " cannot be found." +
+          " Looking for " + LlapDaemon.HADOOP_METRICS2_PROPERTIES_FILE);
+      metricsFile = LlapDaemon.HADOOP_METRICS2_PROPERTIES_FILE;
+      metrics2 = conf.getResource(metricsFile);
+    }
     if (metrics2 != null) {
       InputStream metrics2FileStream = metrics2.openStream();
-      IOUtils.copyBytes(metrics2FileStream,
-          lfs.create(new Path(confPath, LlapDaemon.HADOOP_METRICS2_PROPERTIES_FILE), true),
+      IOUtils.copyBytes(metrics2FileStream, lfs.create(new Path(confPath, metricsFile), true),
           conf, true);
+      LOG.info("Copied hadoop metrics2 properties file from " + metrics2);
+    } else {
+      LOG.warn("Cannot find " + LlapDaemon.LLAP_HADOOP_METRICS2_PROPERTIES_FILE + " or " +
+          LlapDaemon.HADOOP_METRICS2_PROPERTIES_FILE + " in classpath.");
     }
 
     PrintWriter udfStream =
