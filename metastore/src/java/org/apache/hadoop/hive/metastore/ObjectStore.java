@@ -1805,7 +1805,8 @@ public class ObjectStore implements RawStore, Configurable {
 
   private MPartition getMPartition(String dbName, String tableName, List<String> part_vals)
       throws MetaException {
-    MPartition mpart = null;
+    List<MPartition> mparts = null;
+    MPartition ret = null;
     boolean commited = false;
     Query query = null;
     try {
@@ -1825,10 +1826,27 @@ public class ObjectStore implements RawStore, Configurable {
           pm.newQuery(MPartition.class,
               "table.tableName == t1 && table.database.name == t2 && partitionName == t3");
       query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
-      query.setUnique(true);
-      mpart = (MPartition) query.execute(tableName, dbName, name);
-      pm.retrieve(mpart);
+      mparts = (List<MPartition>) query.execute(tableName, dbName, name);
+      pm.retrieveAll(mparts);
       commited = commitTransaction();
+      // We need to compare partition name with requested name since some DBs
+      // (like MySQL, Derby) considers 'a' = 'a ' whereas others like (Postgres,
+      // Oracle) doesn't exhibit this problem.
+      if (mparts != null && mparts.size() > 0) {
+        if (mparts.size() > 1) {
+          throw new MetaException(
+              "Expecting only one partition but more than one partitions are found.");
+        } else {
+          MPartition mpart = mparts.get(0);
+          if (name.equals(mpart.getPartitionName())) {
+            ret = mpart;
+          } else {
+            throw new MetaException("Expecting a partition with name " + name
+                + ", but metastore is returning a partition with name " + mpart.getPartitionName()
+                + ".");
+          }
+        }
+      }
     } finally {
       if (!commited) {
         rollbackTransaction();
@@ -1837,7 +1855,7 @@ public class ObjectStore implements RawStore, Configurable {
         query.closeAll();
       }
     }
-    return mpart;
+    return ret;
   }
 
   /**
@@ -7641,37 +7659,10 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public boolean doesPartitionExist(String dbName, String tableName, List<String> partVals)
       throws MetaException {
-    boolean success = false;
-    Query query = null;
     try {
-      openTransaction();
-      dbName = HiveStringUtils.normalizeIdentifier(dbName);
-      tableName = HiveStringUtils.normalizeIdentifier(tableName);
-
-      // TODO: this could also be passed from upper layer; or this method should filter the list.
-      MTable mtbl = getMTable(dbName, tableName);
-      if (mtbl == null) {
-        success = commitTransaction();
-        return false;
-      }
-      query =
-          pm.newQuery("select partitionName from org.apache.hadoop.hive.metastore.model.MPartition "
-              + "where table.tableName == t1 && table.database.name == t2 && partitionName == t3");
-      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
-      query.setUnique(true);
-      query.setResult("partitionName");
-      String name =
-          Warehouse.makePartName(convertToFieldSchemas(mtbl.getPartitionKeys()), partVals);
-      String result = (String) query.execute(tableName, dbName, name);
-      success = commitTransaction();
-      return result != null;
-    } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
-      if (query != null) {
-        query.closeAll();
-      }
+      return this.getPartition(dbName, tableName, partVals) != null;
+    } catch (NoSuchObjectException e) {
+      return false;
     }
   }
 
