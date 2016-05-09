@@ -4216,7 +4216,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         fs.delete(location, true);
         fs.mkdirs(location);
         try {
-          HdfsUtils.setFullFileStatus(conf, status, fs, location);
+          HdfsUtils.setFullFileStatus(conf, status, fs, location, false);
         } catch (Exception e) {
           LOG.warn("Error setting permissions of " + location, e);
         }
