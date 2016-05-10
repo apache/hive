@@ -122,8 +122,8 @@ public enum HiveOperation {
   START_TRANSACTION("START TRANSACTION", null, null, false, false),
   COMMIT("COMMIT", null, null, true, true),
   ROLLBACK("ROLLBACK", null, null, true, true),
-  SET_AUTOCOMMIT("SET AUTOCOMMIT", null, null, true, false);
-  ;
+  SET_AUTOCOMMIT("SET AUTOCOMMIT", null, null, true, false),
+  ABORT_TRANSACTIONS("ABORT TRANSACTIONS", null, null, false, false);
 
   private String operationName;
 

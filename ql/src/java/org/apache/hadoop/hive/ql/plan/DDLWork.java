@@ -55,6 +55,7 @@ public class DDLWork implements Serializable {
   private ShowLocksDesc showLocksDesc;
   private ShowCompactionsDesc showCompactionsDesc;
   private ShowTxnsDesc showTxnsDesc;
+  private AbortTxnsDesc abortTxnsDesc;
   private DescFunctionDesc descFunctionDesc;
   private ShowPartitionsDesc showPartsDesc;
   private ShowCreateTableDesc showCreateTblDesc;
@@ -344,6 +345,12 @@ public class DDLWork implements Serializable {
                  ShowTxnsDesc showTxnsDesc) {
     this(inputs, outputs);
     this.showTxnsDesc = showTxnsDesc;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+                 AbortTxnsDesc abortTxnsDesc) {
+    this(inputs, outputs);
+    this.abortTxnsDesc = abortTxnsDesc;
   }
 
    /**
@@ -744,6 +751,11 @@ public class DDLWork implements Serializable {
     return showTxnsDesc;
   }
 
+  @Explain(displayName = "Abort Transactions Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public AbortTxnsDesc getAbortTxnsDesc() {
+    return abortTxnsDesc;
+  }
+
   /**
    * @return the lockTblDesc
    */
@@ -790,6 +802,10 @@ public class DDLWork implements Serializable {
 
   public void setShowTxnsDesc(ShowTxnsDesc showTxnsDesc) {
     this.showTxnsDesc = showTxnsDesc;
+  }
+
+  public void setAbortTxnsDesc(AbortTxnsDesc abortTxnsDesc) {
+    this.abortTxnsDesc = abortTxnsDesc;
   }
 
   /**

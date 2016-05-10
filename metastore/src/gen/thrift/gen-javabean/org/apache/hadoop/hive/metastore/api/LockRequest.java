@@ -689,14 +689,14 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
           case 1: // COMPONENT
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list452 = iprot.readListBegin();
-                struct.component = new ArrayList<LockComponent>(_list452.size);
-                LockComponent _elem453;
-                for (int _i454 = 0; _i454 < _list452.size; ++_i454)
+                org.apache.thrift.protocol.TList _list460 = iprot.readListBegin();
+                struct.component = new ArrayList<LockComponent>(_list460.size);
+                LockComponent _elem461;
+                for (int _i462 = 0; _i462 < _list460.size; ++_i462)
                 {
-                  _elem453 = new LockComponent();
-                  _elem453.read(iprot);
-                  struct.component.add(_elem453);
+                  _elem461 = new LockComponent();
+                  _elem461.read(iprot);
+                  struct.component.add(_elem461);
                 }
                 iprot.readListEnd();
               }
@@ -754,9 +754,9 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
         oprot.writeFieldBegin(COMPONENT_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.component.size()));
-          for (LockComponent _iter455 : struct.component)
+          for (LockComponent _iter463 : struct.component)
           {
-            _iter455.write(oprot);
+            _iter463.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -803,9 +803,9 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.component.size());
-        for (LockComponent _iter456 : struct.component)
+        for (LockComponent _iter464 : struct.component)
         {
-          _iter456.write(oprot);
+          _iter464.write(oprot);
         }
       }
       oprot.writeString(struct.user);
@@ -830,14 +830,14 @@ public class LockRequest implements org.apache.thrift.TBase<LockRequest, LockReq
     public void read(org.apache.thrift.protocol.TProtocol prot, LockRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list457 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.component = new ArrayList<LockComponent>(_list457.size);
-        LockComponent _elem458;
-        for (int _i459 = 0; _i459 < _list457.size; ++_i459)
+        org.apache.thrift.protocol.TList _list465 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.component = new ArrayList<LockComponent>(_list465.size);
+        LockComponent _elem466;
+        for (int _i467 = 0; _i467 < _list465.size; ++_i467)
         {
-          _elem458 = new LockComponent();
-          _elem458.read(iprot);
-          struct.component.add(_elem458);
+          _elem466 = new LockComponent();
+          _elem466.read(iprot);
+          struct.component.add(_elem466);
         }
       }
       struct.setComponentIsSet(true);

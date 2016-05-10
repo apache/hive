@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
@@ -118,6 +119,14 @@ public interface TxnStore {
    * @throws MetaException
    */
   public void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException;
+
+  /**
+   * Abort (rollback) a list of transactions in one request.
+   * @param rqst info on transactions to abort
+   * @throws NoSuchTxnException
+   * @throws MetaException
+   */
+  public void abortTxns(AbortTxnsRequest rqst) throws NoSuchTxnException, MetaException;
 
   /**
    * Commit a transaction

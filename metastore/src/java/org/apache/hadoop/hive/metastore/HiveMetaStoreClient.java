@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
@@ -1886,6 +1887,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public GetOpenTxnsInfoResponse showTxns() throws TException {
     return client.get_open_txns_info();
+  }
+
+  @Override
+  public void abortTxns(List<Long> txnids) throws NoSuchTxnException, TException {
+    client.abort_txns(new AbortTxnsRequest(txnids));
   }
 
   @Override

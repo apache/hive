@@ -26,6 +26,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URLClassLoader;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -149,6 +150,10 @@ public final class JavaUtils {
    */
   public static String txnIdToString(long txnId) {
     return "txnid:" + txnId;
+  }
+
+  public static String txnIdsToString(List<Long> txnIds) {
+    return "Transactions requested to be aborted: " + txnIds.toString();
   }
 
   private JavaUtils() {
