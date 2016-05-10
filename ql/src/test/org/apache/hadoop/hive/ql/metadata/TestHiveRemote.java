@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -34,43 +34,13 @@ import org.apache.hadoop.util.StringUtils;
 public class TestHiveRemote extends TestHive {
 
   /**
-   * Starts a remote metastore
-   */
-  private static class RunMS implements Runnable {
-    String port;
-
-    public RunMS(String port) {
-      this.port = port;
-    }
-
-    @Override
-    public void run() {
-      try {
-        HiveMetaStore.main(new String[] { port });
-      } catch (Throwable e) {
-        e.printStackTrace(System.err);
-        assert false;
-      }
-    }
-
-  }
-
-  /**
    * Start a remote metastore and initialize a Hive object pointing at it.
    */
   @Override
   protected void setUp() throws Exception {
     super.setUp();
     hiveConf = new HiveConf(this.getClass());
-    String port = findFreePort();
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
-
-    Thread t = new Thread(new RunMS(port));
-    t.start();
-
-    // Wait a little bit for the metastore to start.
-    Thread.sleep(5000);
-
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + MetaStoreUtils.startMetaStore());
 
     try {
       hm = Hive.get(hiveConf);

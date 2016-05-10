@@ -1176,22 +1176,38 @@ public class MetaStoreUtils {
     } catch (IOException e) {
       throw new MetaException("Unable to : " + path);
     }
+  }
 
+  public static int startMetaStore() throws Exception {
+    return startMetaStore(ShimLoader.getHadoopThriftAuthBridge(), null);
+  }
+
+  public static int startMetaStore(final HadoopThriftAuthBridge bridge, HiveConf conf) throws Exception {
+    int port = findFreePort();
+    startMetaStore(port, bridge, conf);
+    return port;
+  }
+
+  public static int startMetaStore(HiveConf conf) throws Exception {
+    return startMetaStore(ShimLoader.getHadoopThriftAuthBridge(), conf);
+  }
+
+  public static void startMetaStore(final int port, final HadoopThriftAuthBridge bridge) throws Exception {
+    startMetaStore(port, bridge, null);
   }
 
   public static void startMetaStore(final int port,
-      final HadoopThriftAuthBridge bridge) throws Exception {
-    startMetaStore(port, bridge, new HiveConf(HMSHandler.class));
-  }
-
-  public static void startMetaStore(final int port,
-      final HadoopThriftAuthBridge bridge, final HiveConf hiveConf)
+      final HadoopThriftAuthBridge bridge, HiveConf hiveConf)
       throws Exception{
+    if (hiveConf == null) {
+      hiveConf = new HiveConf(HMSHandler.class);
+    }
+    final HiveConf finalHiveConf = hiveConf;
     Thread thread = new Thread(new Runnable() {
       @Override
       public void run() {
         try {
-          HiveMetaStore.startMetaStore(port, bridge, hiveConf);
+          HiveMetaStore.startMetaStore(port, bridge, finalHiveConf);
         } catch (Throwable e) {
           LOG.error("Metastore Thrift Server threw an exception...",e);
         }

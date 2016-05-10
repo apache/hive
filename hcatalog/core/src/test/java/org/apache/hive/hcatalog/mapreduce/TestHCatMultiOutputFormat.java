@@ -33,8 +33,8 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
@@ -89,29 +89,13 @@ public class TestHCatMultiOutputFormat {
   private static HiveConf hiveConf;
   private static File workDir;
 
-  private static final String msPort = "20199";
+  private static int msPort;
   private static Thread t;
 
   static {
     schemaMap.put(tableNames[0], new HCatSchema(ColumnHolder.hCattest1Cols));
     schemaMap.put(tableNames[1], new HCatSchema(ColumnHolder.hCattest2Cols));
     schemaMap.put(tableNames[2], new HCatSchema(ColumnHolder.hCattest3Cols));
-  }
-
-  private static class RunMS implements Runnable {
-
-    @Override
-    public void run() {
-      try {
-        String warehouseConf = HiveConf.ConfVars.METASTOREWAREHOUSE.varname + "="
-          + warehousedir.toString();
-        HiveMetaStore.main(new String[]{"-v", "-p", msPort, "--hiveconf", warehouseConf});
-      } catch (Throwable t) {
-        System.err.println("Exiting. Got exception from metastore: " + t.getMessage());
-        t.printStackTrace();
-      }
-    }
-
   }
 
   /**
@@ -173,10 +157,11 @@ public class TestHCatMultiOutputFormat {
 
     warehousedir = new Path(System.getProperty("test.warehouse.dir"));
 
-    // Run hive metastore server
-    t = new Thread(new RunMS());
-    t.start();
+    HiveConf metastoreConf = new HiveConf();
+    metastoreConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, warehousedir.toString());
 
+    // Run hive metastore server
+    msPort = MetaStoreUtils.startMetaStore(metastoreConf);
     // LocalJobRunner does not work with mapreduce OutputCommitter. So need
     // to use MiniMRCluster. MAPREDUCE-2350
     Configuration conf = new Configuration(true);

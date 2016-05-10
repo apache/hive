@@ -49,7 +49,7 @@ import java.util.Map;
 public class TestHiveMetaStorePartitionSpecs {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveMetaStorePartitionSpecs.class);
-  private static final String msPort = "20102";
+  private static int msPort;
   private static HiveConf hiveConf;
   private static SecurityManager securityManager;
 
@@ -73,18 +73,6 @@ public class TestHiveMetaStorePartitionSpecs {
     }
   }
 
-  private static class RunMS implements Runnable {
-
-    @Override
-    public void run() {
-      try {
-        HiveMetaStore.main(new String[]{"-v", "-p", msPort, "--hiveconf",
-            "hive.metastore.expression.proxy=" + MockPartitionExpressionForMetastore.class.getCanonicalName()});
-      } catch (Throwable t) {
-        LOG.error("Exiting. Got exception from metastore: ", t);
-      }
-    }
-  }
 
   @AfterClass
   public static void tearDown() throws Exception {
@@ -95,10 +83,10 @@ public class TestHiveMetaStorePartitionSpecs {
   @BeforeClass
   public static void startMetaStoreServer() throws Exception {
 
-    Thread t = new Thread(new RunMS());
-    t.start();
-    Thread.sleep(10000);
-
+    HiveConf metastoreConf = new HiveConf();
+    metastoreConf.setClass(HiveConf.ConfVars.METASTORE_EXPRESSION_PROXY_CLASS.varname,
+      MockPartitionExpressionForMetastore.class, PartitionExpressionProxy.class);
+    msPort = MetaStoreUtils.startMetaStore(metastoreConf);
     securityManager = System.getSecurityManager();
     System.setSecurityManager(new NoExitSecurityManager());
     hiveConf = new HiveConf(TestHiveMetaStorePartitionSpecs.class);
