@@ -6158,14 +6158,6 @@ class ForeignKeysRequest:
     oprot.writeStructEnd()
 
   def validate(self):
-    if self.parent_db_name is None:
-      raise TProtocol.TProtocolException(message='Required field parent_db_name is unset!')
-    if self.parent_tbl_name is None:
-      raise TProtocol.TProtocolException(message='Required field parent_tbl_name is unset!')
-    if self.foreign_db_name is None:
-      raise TProtocol.TProtocolException(message='Required field foreign_db_name is unset!')
-    if self.foreign_tbl_name is None:
-      raise TProtocol.TProtocolException(message='Required field foreign_tbl_name is unset!')
     return
 
 

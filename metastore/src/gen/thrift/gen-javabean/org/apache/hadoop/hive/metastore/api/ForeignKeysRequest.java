@@ -125,13 +125,13 @@ public class ForeignKeysRequest implements org.apache.thrift.TBase<ForeignKeysRe
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.PARENT_DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("parent_db_name", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.PARENT_DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("parent_db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.PARENT_TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("parent_tbl_name", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.PARENT_TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("parent_tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.FOREIGN_DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("foreign_db_name", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.FOREIGN_DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("foreign_db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.FOREIGN_TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("foreign_tbl_name", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.FOREIGN_TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("foreign_tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ForeignKeysRequest.class, metaDataMap);
@@ -533,22 +533,6 @@ public class ForeignKeysRequest implements org.apache.thrift.TBase<ForeignKeysRe
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetParent_db_name()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'parent_db_name' is unset! Struct:" + toString());
-    }
-
-    if (!isSetParent_tbl_name()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'parent_tbl_name' is unset! Struct:" + toString());
-    }
-
-    if (!isSetForeign_db_name()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'foreign_db_name' is unset! Struct:" + toString());
-    }
-
-    if (!isSetForeign_tbl_name()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'foreign_tbl_name' is unset! Struct:" + toString());
-    }
-
     // check for sub-struct validity
   }
 
@@ -668,23 +652,54 @@ public class ForeignKeysRequest implements org.apache.thrift.TBase<ForeignKeysRe
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, ForeignKeysRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
-      oprot.writeString(struct.parent_db_name);
-      oprot.writeString(struct.parent_tbl_name);
-      oprot.writeString(struct.foreign_db_name);
-      oprot.writeString(struct.foreign_tbl_name);
+      BitSet optionals = new BitSet();
+      if (struct.isSetParent_db_name()) {
+        optionals.set(0);
+      }
+      if (struct.isSetParent_tbl_name()) {
+        optionals.set(1);
+      }
+      if (struct.isSetForeign_db_name()) {
+        optionals.set(2);
+      }
+      if (struct.isSetForeign_tbl_name()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetParent_db_name()) {
+        oprot.writeString(struct.parent_db_name);
+      }
+      if (struct.isSetParent_tbl_name()) {
+        oprot.writeString(struct.parent_tbl_name);
+      }
+      if (struct.isSetForeign_db_name()) {
+        oprot.writeString(struct.foreign_db_name);
+      }
+      if (struct.isSetForeign_tbl_name()) {
+        oprot.writeString(struct.foreign_tbl_name);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ForeignKeysRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      struct.parent_db_name = iprot.readString();
-      struct.setParent_db_nameIsSet(true);
-      struct.parent_tbl_name = iprot.readString();
-      struct.setParent_tbl_nameIsSet(true);
-      struct.foreign_db_name = iprot.readString();
-      struct.setForeign_db_nameIsSet(true);
-      struct.foreign_tbl_name = iprot.readString();
-      struct.setForeign_tbl_nameIsSet(true);
+      BitSet incoming = iprot.readBitSet(4);
+      if (incoming.get(0)) {
+        struct.parent_db_name = iprot.readString();
+        struct.setParent_db_nameIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.parent_tbl_name = iprot.readString();
+        struct.setParent_tbl_nameIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.foreign_db_name = iprot.readString();
+        struct.setForeign_db_nameIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.foreign_tbl_name = iprot.readString();
+        struct.setForeign_tbl_nameIsSet(true);
+      }
     }
   }
 

@@ -3302,15 +3302,15 @@ public class ObjectStore implements RawStore, Configurable {
     return sds;
   }
 
-  private MColumnDescriptor getColumnFromTable(MTable mtbl, String col) {
-   for (MFieldSchema mfs: mtbl.getSd().getCD().getCols()) {
-     if (mfs.getName().equals(col)) {
-       List<MFieldSchema> mfsl = new ArrayList<MFieldSchema>();
-       mfsl.add(mfs);
-       return new MColumnDescriptor(mfsl);
-     }
-   }
-   return null;
+  private int getColumnIndexForTable(MTable mtbl, String col) {
+    List<MFieldSchema> cols = mtbl.getSd().getCD().getCols();
+    for (int i = 0; i < cols.size(); i++) {
+      MFieldSchema mfs = cols.get(i);
+      if (mfs.getName().equalsIgnoreCase(col)) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   private  boolean constraintNameAlreadyExists(String name) {
@@ -3360,22 +3360,22 @@ public class ObjectStore implements RawStore, Configurable {
     for (int i = 0; i < fks.size(); i++) {
       MTable parentTable =
         getMTable(fks.get(i).getPktable_db(), fks.get(i).getPktable_name());
-      MTable childTable =
-        getMTable(fks.get(i).getFktable_db(), fks.get(i).getFktable_name());
-      MColumnDescriptor parentColumn =
-        getColumnFromTable(parentTable, fks.get(i).getPkcolumn_name());
-      MColumnDescriptor childColumn =
-        getColumnFromTable(childTable, fks.get(i).getFkcolumn_name());
       if (parentTable == null) {
         throw new InvalidObjectException("Parent table not found: " + fks.get(i).getPktable_name());
       }
+      MTable childTable =
+        getMTable(fks.get(i).getFktable_db(), fks.get(i).getFktable_name());
       if (childTable == null) {
         throw new InvalidObjectException("Child table not found: " + fks.get(i).getFktable_name());
       }
-      if (parentColumn == null) {
+      int parentIntegerIndex =
+        getColumnIndexForTable(parentTable, fks.get(i).getPkcolumn_name());
+      if (parentIntegerIndex == -1) {
         throw new InvalidObjectException("Parent column not found: " + fks.get(i).getPkcolumn_name());
       }
-      if (childColumn == null) {
+      int childIntegerIndex =
+        getColumnIndexForTable(childTable, fks.get(i).getFkcolumn_name());
+      if (childIntegerIndex == -1) {
         throw new InvalidObjectException("Child column not found" + fks.get(i).getFkcolumn_name());
       }
       if (fks.get(i).getFk_name() == null) {
@@ -3407,8 +3407,10 @@ public class ObjectStore implements RawStore, Configurable {
         enableValidateRely,
         parentTable,
         childTable,
-        parentColumn,
-        childColumn
+        parentTable.getSd().getCD(),
+        childTable.getSd().getCD(),
+        childIntegerIndex,
+        parentIntegerIndex
       );
       mpkfks.add(mpkfk);
     }
@@ -3422,12 +3424,12 @@ public class ObjectStore implements RawStore, Configurable {
     for (int i = 0; i < pks.size(); i++) {
       MTable parentTable =
         getMTable(pks.get(i).getTable_db(), pks.get(i).getTable_name());
-      MColumnDescriptor parentColumn =
-        getColumnFromTable(parentTable, pks.get(i).getColumn_name());
       if (parentTable == null) {
         throw new InvalidObjectException("Parent table not found: " + pks.get(i).getTable_name());
       }
-      if (parentColumn == null) {
+      int parentIntegerIndex =
+        getColumnIndexForTable(parentTable, pks.get(i).getColumn_name());
+      if (parentIntegerIndex == -1) {
         throw new InvalidObjectException("Parent column not found: " + pks.get(i).getColumn_name());
       }
       if (getPrimaryKeyConstraintName(
@@ -3454,8 +3456,10 @@ public class ObjectStore implements RawStore, Configurable {
         enableValidateRely,
         parentTable,
         null,
-        parentColumn,
-        null);
+        parentTable.getSd().getCD(),
+        null,
+        null,
+        parentIntegerIndex);
       mpks.add(mpk);
     }
     pm.makePersistentAll(mpks);
@@ -8174,7 +8178,7 @@ public class ObjectStore implements RawStore, Configurable {
         boolean rely = (enableValidateRely & 1) != 0;
         primaryKeys.add(new SQLPrimaryKey(db_name,
          tbl_name,
-         currPK.getParentColumn().getCols().get(0).getName(),
+         currPK.getParentColumn().getCols().get(currPK.getParentIntegerIndex()).getName(),
          currPK.getPosition(),
          currPK.getConstraintName(), enable, validate, rely));
       }
@@ -8260,11 +8264,11 @@ public class ObjectStore implements RawStore, Configurable {
     Map<String, String> tblToConstraint = new HashMap<String, String>();
     try {
       openTransaction();
-      String queryText = (parent_tbl_name != null ? "parentTable.tableName == parent_tbl_name &&" : "")
-        + (parent_db_name != null ? "parentTable.database.name == parent_db_name &&" : "")
-        + (foreign_tbl_name != null ? "childTable.tableName == foreign_tbl_name &&" : "")
-        + (parent_db_name != null ? "childTable.database.name == foreign_db_name &&" : "")
-        + "constraintType == MConstraint.FOREIGN_KEY_CONSTRAINT";
+      String queryText = (parent_tbl_name != null ? "parentTable.tableName == parent_tbl_name && " : "")
+        + (parent_db_name != null ? " parentTable.database.name == parent_db_name && " : "")
+        + (foreign_tbl_name != null ? " childTable.tableName == foreign_tbl_name && " : "")
+        + (foreign_db_name != null ? " childTable.database.name == foreign_db_name && " : "")
+        + " constraintType == MConstraint.FOREIGN_KEY_CONSTRAINT";
       queryText = queryText.trim();
       query = pm.newQuery(MConstraint.class, queryText);
       String paramText = (parent_tbl_name == null ? "" : "java.lang.String parent_tbl_name,")
@@ -8286,13 +8290,20 @@ public class ObjectStore implements RawStore, Configurable {
       if (foreign_tbl_name != null) {
         params.add(foreign_tbl_name);
       }
-      if (parent_db_name != null) {
+      if (foreign_db_name != null) {
         params.add(foreign_db_name);
       }
       if (params.size() == 0) {
         constraints = (Collection<?>) query.execute();
+      } else if (params.size() ==1) {
+        constraints = (Collection<?>) query.execute(params.get(0));
+      } else if (params.size() == 2) {
+        constraints = (Collection<?>) query.execute(params.get(0), params.get(1));
+      } else if (params.size() == 3) {
+        constraints = (Collection<?>) query.execute(params.get(0), params.get(1), params.get(2));
       } else {
-        constraints = (Collection<?>) query.executeWithArray(params);
+        constraints = (Collection<?>) query.executeWithArray(params.get(0), params.get(1),
+          params.get(2), params.get(3));
       }
       pm.retrieveAll(constraints);
       foreignKeys = new ArrayList<SQLForeignKey>();
@@ -8316,10 +8327,10 @@ public class ObjectStore implements RawStore, Configurable {
         foreignKeys.add(new SQLForeignKey(
           currPKFK.getParentTable().getDatabase().getName(),
           currPKFK.getParentTable().getDatabase().getName(),
-          currPKFK.getParentColumn().getCols().get(0).getName(),
+          currPKFK.getParentColumn().getCols().get(currPKFK.getParentIntegerIndex()).getName(),
           currPKFK.getChildTable().getDatabase().getName(),
           currPKFK.getChildTable().getTableName(),
-          currPKFK.getChildColumn().getCols().get(0).getName(),
+          currPKFK.getChildColumn().getCols().get(currPKFK.getChildIntegerIndex()).getName(),
           currPKFK.getPosition(),
           currPKFK.getUpdateRule(),
           currPKFK.getDeleteRule(),

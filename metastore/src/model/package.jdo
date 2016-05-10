@@ -194,11 +194,17 @@
       <field name="childColumn">
         <column name="CHILD_CD_ID"/>
       </field>
+      <field name="childIntegerIndex">
+        <column name="CHILD_INTEGER_IDX"/>
+      </field>
       <field name="childTable">
         <column name="CHILD_TBL_ID"/>
       </field>
       <field name="parentColumn">
         <column name="PARENT_CD_ID"/>
+      </field>
+      <field name="parentIntegerIndex">
+	<column name="PARENT_INTEGER_IDX"/>
       </field>
       <field name="parentTable">
         <column name="PARENT_TBL_ID"/>

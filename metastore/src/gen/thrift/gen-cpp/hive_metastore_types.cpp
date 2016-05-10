@@ -8770,10 +8770,6 @@ uint32_t ForeignKeysRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
 
   using ::apache::thrift::protocol::TProtocolException;
 
-  bool isset_parent_db_name = false;
-  bool isset_parent_tbl_name = false;
-  bool isset_foreign_db_name = false;
-  bool isset_foreign_tbl_name = false;
 
   while (true)
   {
@@ -8786,7 +8782,7 @@ uint32_t ForeignKeysRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
       case 1:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->parent_db_name);
-          isset_parent_db_name = true;
+          this->__isset.parent_db_name = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -8794,7 +8790,7 @@ uint32_t ForeignKeysRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
       case 2:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->parent_tbl_name);
-          isset_parent_tbl_name = true;
+          this->__isset.parent_tbl_name = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -8802,7 +8798,7 @@ uint32_t ForeignKeysRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
       case 3:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->foreign_db_name);
-          isset_foreign_db_name = true;
+          this->__isset.foreign_db_name = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -8810,7 +8806,7 @@ uint32_t ForeignKeysRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
       case 4:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->foreign_tbl_name);
-          isset_foreign_tbl_name = true;
+          this->__isset.foreign_tbl_name = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -8824,14 +8820,6 @@ uint32_t ForeignKeysRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
 
   xfer += iprot->readStructEnd();
 
-  if (!isset_parent_db_name)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_parent_tbl_name)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_foreign_db_name)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_foreign_tbl_name)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
 
@@ -8867,6 +8855,7 @@ void swap(ForeignKeysRequest &a, ForeignKeysRequest &b) {
   swap(a.parent_tbl_name, b.parent_tbl_name);
   swap(a.foreign_db_name, b.foreign_db_name);
   swap(a.foreign_tbl_name, b.foreign_tbl_name);
+  swap(a.__isset, b.__isset);
 }
 
 ForeignKeysRequest::ForeignKeysRequest(const ForeignKeysRequest& other367) {
@@ -8874,12 +8863,14 @@ ForeignKeysRequest::ForeignKeysRequest(const ForeignKeysRequest& other367) {
   parent_tbl_name = other367.parent_tbl_name;
   foreign_db_name = other367.foreign_db_name;
   foreign_tbl_name = other367.foreign_tbl_name;
+  __isset = other367.__isset;
 }
 ForeignKeysRequest& ForeignKeysRequest::operator=(const ForeignKeysRequest& other368) {
   parent_db_name = other368.parent_db_name;
   parent_tbl_name = other368.parent_tbl_name;
   foreign_db_name = other368.foreign_db_name;
   foreign_tbl_name = other368.foreign_tbl_name;
+  __isset = other368.__isset;
   return *this;
 }
 void ForeignKeysRequest::printTo(std::ostream& out) const {

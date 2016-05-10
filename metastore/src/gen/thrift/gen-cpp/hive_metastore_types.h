@@ -3683,6 +3683,13 @@ inline std::ostream& operator<<(std::ostream& out, const PrimaryKeysResponse& ob
   return out;
 }
 
+typedef struct _ForeignKeysRequest__isset {
+  _ForeignKeysRequest__isset() : parent_db_name(false), parent_tbl_name(false), foreign_db_name(false), foreign_tbl_name(false) {}
+  bool parent_db_name :1;
+  bool parent_tbl_name :1;
+  bool foreign_db_name :1;
+  bool foreign_tbl_name :1;
+} _ForeignKeysRequest__isset;
 
 class ForeignKeysRequest {
  public:
@@ -3697,6 +3704,8 @@ class ForeignKeysRequest {
   std::string parent_tbl_name;
   std::string foreign_db_name;
   std::string foreign_tbl_name;
+
+  _ForeignKeysRequest__isset __isset;
 
   void __set_parent_db_name(const std::string& val);
 

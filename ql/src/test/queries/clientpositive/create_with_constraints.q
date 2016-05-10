@@ -13,12 +13,52 @@ CREATE TABLE table10 (a STRING, b STRING, constraint pk10 primary key (a) disabl
 CREATE TABLE table11 (a STRING, b STRING, c STRING, constraint pk11 primary key (a) disable novalidate rely, foreign key (a, b) references table9(a, b) disable novalidate,
 foreign key (c) references table4(x) disable novalidate);
 
+DESCRIBE EXTENDED table1;
+DESCRIBE EXTENDED table2;
+DESCRIBE EXTENDED table3;
+DESCRIBE EXTENDED table4;
+DESCRIBE EXTENDED table5;
+DESCRIBE EXTENDED table6;
+DESCRIBE EXTENDED table7;
+DESCRIBE EXTENDED table8;
+DESCRIBE EXTENDED table9;
+DESCRIBE EXTENDED table10;
+DESCRIBE EXTENDED table11;
+
+DESCRIBE FORMATTED table1;
+DESCRIBE FORMATTED table2;
+DESCRIBE FORMATTED table3;
+DESCRIBE FORMATTED table4;
+DESCRIBE FORMATTED table5;
+DESCRIBE FORMATTED table6;
+DESCRIBE FORMATTED table7;
+DESCRIBE FORMATTED table8;
+DESCRIBE FORMATTED table9;
+DESCRIBE FORMATTED table10;
+DESCRIBE FORMATTED table11;
+
+
 ALTER TABLE table2 DROP CONSTRAINT pk1;
 ALTER TABLE table3 DROP CONSTRAINT fk1;
 ALTER TABLE table6 DROP CONSTRAINT fk4;
+
+DESCRIBE EXTENDED table2;
+DESCRIBE EXTENDED table3;
+DESCRIBE EXTENDED table6;
+
+DESCRIBE FORMATTED table2;
+DESCRIBE FORMATTED table3;
+DESCRIBE FORMATTED table6;
 
 CREATE DATABASE dbconstraint;
 USE dbconstraint;
 CREATE TABLE table2 (a STRING, b STRING, constraint pk1 primary key (a) disable novalidate);
 USE default;
+
+DESCRIBE EXTENDED dbconstraint.table2;
+DESCRIBE FORMATTED dbconstraint.table2;
+
 ALTER TABLE dbconstraint.table2 DROP CONSTRAINT pk1;
+
+DESCRIBE EXTENDED dbconstraint.table2;
+DESCRIBE FORMATTED dbconstraint.table2;

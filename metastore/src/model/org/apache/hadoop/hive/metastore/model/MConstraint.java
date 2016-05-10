@@ -13,6 +13,8 @@ public class MConstraint
   MTable childTable;
   MColumnDescriptor parentColumn;
   MColumnDescriptor childColumn;
+  Integer childIntegerIndex;
+  Integer parentIntegerIndex;
   int enableValidateRely;
 
   // 0 - Primary Key
@@ -52,18 +54,19 @@ public class MConstraint
   public MConstraint() {}
 
   public MConstraint(String constraintName, int constraintType, int position, Integer deleteRule, Integer updateRule, int enableRelyValidate, MTable parentTable,
-    MTable childTable, MColumnDescriptor parentColumn,
-    MColumnDescriptor childColumn) {
+    MTable childTable, MColumnDescriptor parentColumn, MColumnDescriptor childColumn, Integer childIntegerIndex, Integer parentIntegerIndex) {
    this.constraintName = constraintName;
    this.constraintType = constraintType;
-   this.parentColumn = parentColumn;
    this.parentTable = parentTable;
-   this.childColumn = childColumn;
    this.childTable = childTable;
+   this.parentColumn = parentColumn;
+   this.childColumn = childColumn;
    this.position = position;
    this.deleteRule = deleteRule;
    this.updateRule = updateRule;
    this.enableValidateRely = enableRelyValidate;
+   this.childIntegerIndex = childIntegerIndex;
+   this.parentIntegerIndex = parentIntegerIndex;
   }
 
   public String getConstraintName() {
@@ -106,6 +109,22 @@ public class MConstraint
     this.enableValidateRely = enableValidateRely;
   }
 
+  public Integer getChildIntegerIndex() {
+    return childIntegerIndex;
+  }
+
+  public void setChildIntegerIndex(Integer childIntegerIndex) {
+    this.childIntegerIndex = childIntegerIndex;
+  }
+
+  public Integer getParentIntegerIndex() {
+    return childIntegerIndex;
+  }
+
+  public void setParentIntegerIndex(Integer parentIntegerIndex) {
+    this.parentIntegerIndex = parentIntegerIndex;
+  }
+
   public Integer getUpdateRule() {
     return updateRule;
   }
@@ -130,19 +149,19 @@ public class MConstraint
     this.parentTable = pt;
   }
 
-  public MColumnDescriptor getChildColumn() {
-    return childColumn;
-  }
-
-  public void setChildColumn(MColumnDescriptor cc) {
-    this.childColumn = cc;
-  }
-
   public MColumnDescriptor getParentColumn() {
     return parentColumn;
   }
 
-  public void setParentColumn(MColumnDescriptor pc) {
-    this.parentColumn = pc;
+  public void setParentColumn(MColumnDescriptor name) {
+    this.parentColumn = name;
+  }
+
+  public MColumnDescriptor getChildColumn() {
+    return childColumn;
+  }
+
+  public void setChildColumn(MColumnDescriptor name) {
+    this.childColumn = name;
   }
 }

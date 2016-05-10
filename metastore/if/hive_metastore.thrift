@@ -477,10 +477,10 @@ struct PrimaryKeysResponse {
 }
 
 struct ForeignKeysRequest {
-  1: required string parent_db_name,
-  2: required string parent_tbl_name,
-  3: required string foreign_db_name,
-  4: required string foreign_tbl_name
+  1: string parent_db_name,
+  2: string parent_tbl_name,
+  3: string foreign_db_name,
+  4: string foreign_tbl_name
 }
 
 struct ForeignKeysResponse {

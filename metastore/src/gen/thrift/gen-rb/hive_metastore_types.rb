@@ -1364,10 +1364,6 @@ class ForeignKeysRequest
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field parent_db_name is unset!') unless @parent_db_name
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field parent_tbl_name is unset!') unless @parent_tbl_name
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field foreign_db_name is unset!') unless @foreign_db_name
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field foreign_tbl_name is unset!') unless @foreign_tbl_name
   end
 
   ::Thrift::Struct.generate_accessors self

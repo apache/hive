@@ -1468,7 +1468,9 @@ public class QTestUtil {
       ".*Input:.*/data/files/.*",
       ".*Output:.*/data/files/.*",
       ".*total number of created files now is.*",
-      ".*.hive-staging.*"
+      ".*.hive-staging.*",
+      "pk_-?[0-9]*_[0-9]*_[0-9]*",
+      "fk_-?[0-9]*_[0-9]*_[0-9]*"
   });
 
   private final Pattern[] partialReservedPlanMask = toPattern(new String[] {

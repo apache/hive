@@ -38,8 +38,11 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.ql.index.HiveIndex;
 import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
+import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
@@ -106,6 +109,7 @@ public final class MetaDataFormatUtils {
    * @param printHeader - if header should be included
    * @param isOutputPadded - make it more human readable by setting indentation
    *        with spaces. Turned off for use by HiveServer2
+   * @param showParColsSep - show partition column separator
    * @return string with formatted column information
    */
   public static String getAllColumnsInformation(List<FieldSchema> cols,
@@ -267,6 +271,69 @@ public final class MetaDataFormatUtils {
     formatOutput(indexColumns.toArray(new String[0]), indexInfo);
 
     return indexInfo.toString();
+  }
+
+  public static String getConstraintsInformation(PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo) {
+    StringBuilder constraintsInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
+
+    constraintsInfo.append(LINE_DELIM).append("# Constraints").append(LINE_DELIM);
+    if (pkInfo != null && !pkInfo.getColNames().isEmpty()) {
+      constraintsInfo.append(LINE_DELIM).append("# Primary Key").append(LINE_DELIM);
+      getPrimaryKeyInformation(constraintsInfo, pkInfo);
+    }
+    if (fkInfo != null && !fkInfo.getForeignKeys().isEmpty()) {
+      constraintsInfo.append(LINE_DELIM).append("# Foreign Keys").append(LINE_DELIM);
+      getForeignKeysInformation(constraintsInfo, fkInfo);
+    }
+    return constraintsInfo.toString();
+  }
+
+  private static void  getPrimaryKeyInformation(StringBuilder constraintsInfo,
+    PrimaryKeyInfo pkInfo) {
+    formatOutput("Table:", pkInfo.getDatabaseName()+"."+pkInfo.getTableName(), constraintsInfo);
+    formatOutput("Constraint Name:", pkInfo.getConstraintName(), constraintsInfo);
+    Map<Integer, String> colNames = pkInfo.getColNames();
+    final String columnNames = "Column Names:";
+    constraintsInfo.append(String.format("%-" + ALIGNMENT + "s", columnNames)).append(FIELD_DELIM);
+    if (colNames != null && colNames.size() > 0) {
+      formatOutput(colNames.values().toArray(new String[colNames.size()]), constraintsInfo);
+    }
+  }
+
+  private static void getForeignKeyColInformation(StringBuilder constraintsInfo,
+    ForeignKeyCol fkCol) {
+      String[] fkcFields = new String[3];
+      fkcFields[0] = "Parent Column Name:" + fkCol.parentDatabaseName +
+          "."+ fkCol.parentTableName + "." + fkCol.parentColName;
+      fkcFields[1] = "Column Name:" + fkCol.childColName;
+      fkcFields[2] = "Key Sequence:" + fkCol.position;
+      formatOutput(fkcFields, constraintsInfo);
+  }
+
+  private static void getForeignKeyRelInformation(
+    StringBuilder constraintsInfo,
+    String constraintName,
+    List<ForeignKeyCol> fkRel) {
+    formatOutput("Constraint Name:", constraintName, constraintsInfo);
+    if (fkRel != null && fkRel.size() > 0) {
+      for (ForeignKeyCol fkc : fkRel) {
+        getForeignKeyColInformation(constraintsInfo, fkc);
+      }
+    }
+    constraintsInfo.append(LINE_DELIM);
+  }
+
+  private static void  getForeignKeysInformation(StringBuilder constraintsInfo,
+    ForeignKeyInfo fkInfo) {
+    formatOutput("Table:",
+                 fkInfo.getChildDatabaseName()+"."+fkInfo.getChildTableName(),
+                 constraintsInfo);
+    Map<String, List<ForeignKeyCol>> foreignKeys = fkInfo.getForeignKeys();
+    if (foreignKeys != null && foreignKeys.size() > 0) {
+      for (Map.Entry<String, List<ForeignKeyCol>> me : foreignKeys.entrySet()) {
+        getForeignKeyRelInformation(constraintsInfo, me.getKey(), me.getValue());
+      }
+    }
   }
 
   public static String getPartitionInformation(Partition part) {
