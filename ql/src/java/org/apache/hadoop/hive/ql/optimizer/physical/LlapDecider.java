@@ -132,6 +132,12 @@ public class LlapDecider implements PhysicalPlanResolver {
       throws SemanticException {
       if (evaluateWork(tezWork, work)) {
         convertWork(tezWork, work);
+      } else {
+        if (mode == all) {
+          throw new SemanticException("Llap mode is set to all but cannot run work in llap mode." +
+              "Set " + HiveConf.ConfVars.LLAP_EXECUTION_MODE + " = auto or set " +
+              HiveConf.ConfVars.HIVE_EXECUTION_MODE + " = container");
+        }
       }
     }
 
@@ -228,6 +234,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       }
 
       // couldn't convince you otherwise? well then let's llap.
+      LOG.info("Can run work " + work.getName() + " in llap mode.");
       return true;
     }
 
@@ -304,6 +311,7 @@ public class LlapDecider implements PhysicalPlanResolver {
           @Override
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
               Object... os) {
+            LOG.debug("Cannot run operator [" + n + "] in llap mode.");
             return new Boolean(false);
           }
         });
@@ -313,7 +321,11 @@ public class LlapDecider implements PhysicalPlanResolver {
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
               Object... os) {
             ExprNodeDesc expr = ((FilterOperator)n).getConf().getPredicate();
-            return new Boolean(checkExpression(expr));
+            Boolean retval = new Boolean(checkExpression(expr));
+            if (!retval) {
+              LOG.info("Cannot run filter operator [" + n + "] in llap mode");
+            }
+            return new Boolean(retval);
           }
         });
       opRules.put(new RuleRegExp("No user code in gby", GroupByOperator.getOperatorName() + "%"),
@@ -321,9 +333,13 @@ public class LlapDecider implements PhysicalPlanResolver {
           @Override
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
               Object... os) {
-              @SuppressWarnings("unchecked")
-              List<AggregationDesc> aggs = ((Operator<GroupByDesc>) n).getConf().getAggregators();
-            return new Boolean(checkAggregators(aggs));
+            @SuppressWarnings("unchecked")
+            List<AggregationDesc> aggs = ((Operator<GroupByDesc>) n).getConf().getAggregators();
+            Boolean retval = new Boolean(checkAggregators(aggs));
+            if (!retval) {
+              LOG.info("Cannot run group by operator [" + n + "] in llap mode");
+            }
+            return new Boolean(retval);
           }
         });
       opRules.put(new RuleRegExp("No user code in select", SelectOperator.getOperatorName() + "%"),
@@ -331,9 +347,13 @@ public class LlapDecider implements PhysicalPlanResolver {
           @Override
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
               Object... os) {
-              @SuppressWarnings({ "unchecked" })
-              List<ExprNodeDesc> exprs = ((Operator<SelectDesc>) n).getConf().getColList();
-            return new Boolean(checkExpressions(exprs));
+            @SuppressWarnings({ "unchecked" })
+            List<ExprNodeDesc> exprs = ((Operator<SelectDesc>) n).getConf().getColList();
+            Boolean retval = new Boolean(checkExpressions(exprs));
+            if (!retval) {
+              LOG.info("Cannot run select operator [" + n + "] in llap mode");
+            }
+            return new Boolean(retval);
           }
         });
 
@@ -355,6 +375,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       for (Node n : nodeOutput.keySet()) {
         if (nodeOutput.get(n) != null) {
           if (!((Boolean)nodeOutput.get(n))) {
+            LOG.info("Cannot run in LLAP mode.");
             return false;
           }
         }
@@ -379,7 +400,7 @@ public class LlapDecider implements PhysicalPlanResolver {
           Arrays.asList(pd.getInputFileFormatClass().getInterfaces());
         if (!interfaceList.contains(VectorizedInputFormatInterface.class)) {
           LOG.info("Input format: " + pd.getInputFileFormatClassName()
-              + ", doesn't provide vectorized input");
+            + ", doesn't provide vectorized input");
           return false;
         }
       }

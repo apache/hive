@@ -12,8 +12,10 @@ create table src_orc stored as orc as select * from src;
 
 CREATE TEMPORARY FUNCTION test_udf0 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE';
 
+set hive.llap.execution.mode=auto;
 EXPLAIN SELECT test_udf0(cast(key as string)) from src_orc;
 
+set hive.llap.execution.mode=all;
 CREATE FUNCTION test_udf2 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaString';
 CREATE FUNCTION test_udf3 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaString';
 CREATE FUNCTION test_udf4 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE';
@@ -21,18 +23,21 @@ CREATE FUNCTION test_udf4 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEv
 EXPLAIN
 SELECT test_udf2(cast(key as string)), test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc;
 
+set hive.llap.execution.mode=auto;
 -- Verification is based on classes, so 0 would work based on 4.
 EXPLAIN
 SELECT test_udf0(cast(key as string)) from src_orc;
 
 DROP FUNCTION test_udf2;
 
+set hive.llap.execution.mode=all;
 -- ...verify that 3 still works
 EXPLAIN
 SELECT test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc;
 
 DROP FUNCTION test_udf4;
 
+set hive.llap.execution.mode=auto;
 -- ...now 0 should stop working
 EXPLAIN
 SELECT test_udf0(cast(key as string)) from src_orc;
