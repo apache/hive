@@ -1,0 +1,52 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: CREATE DATABASE db1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
+POSTHOOK: query: CREATE DATABASE db1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
+PREHOOK: query: CREATE TABLE db1.result(col1 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@result
+POSTHOOK: query: CREATE TABLE db1.result(col1 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@result
+PREHOOK: query: INSERT INTO TABLE db1.result SELECT 'db1_insert1' FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: db1@result
+POSTHOOK: query: INSERT INTO TABLE db1.result SELECT 'db1_insert1' FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: db1@result
+POSTHOOK: Lineage: result.col1 SIMPLE []
+PREHOOK: query: INSERT INTO TABLE db1.result SELECT 'db1_insert1' FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: db1@result
+POSTHOOK: query: INSERT INTO TABLE db1.result SELECT 'db1_insert1' FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: db1@result
+POSTHOOK: Lineage: result.col1 SIMPLE []
+PREHOOK: query: SELECT * FROM db1.result
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@result
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM db1.result
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@result
+#### A masked pattern was here ####
+db1_insert1
+db1_insert1
