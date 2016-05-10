@@ -951,7 +951,7 @@
                   <target>
                     <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask"
                       classpathref="maven.plugin.classpath" />
-                    <property name="thrift.args" value="-I ${thrift.home} --gen java:beans,hashcode --gen cpp --gen php --gen py --gen rb"/>
+                    <property name="thrift.args" value="-I ${thrift.home} --gen java:beans,hashcode,generated_annotations=undated --gen cpp --gen php --gen py --gen rb"/>
                     <property name="thrift.gen.dir" value="${basedir}/src/gen/thrift"/>
                     <delete dir="${thrift.gen.dir}"/>
                     <mkdir dir="${thrift.gen.dir}"/>
