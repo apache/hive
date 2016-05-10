@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -1528,7 +1529,7 @@ public class Hive {
       }
       List<Path> newFiles = null;
       if (replace || (oldPart == null && !isAcid)) {
-        Hive.replaceFiles(tbl.getPath(), loadPath, newPartPath, oldPartPath, getConf(),
+        replaceFiles(tbl.getPath(), loadPath, newPartPath, oldPartPath, getConf(),
             isSrcLocal);
       } else {
         if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && oldPart != null) {
@@ -3080,7 +3081,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param isSrcLocal
    *          If the source directory is LOCAL
    */
-  protected static void replaceFiles(Path tablePath, Path srcf, Path destf, Path oldPath, HiveConf conf,
+  protected void replaceFiles(Path tablePath, Path srcf, Path destf, Path oldPath, HiveConf conf,
           boolean isSrcLocal) throws HiveException {
     try {
 
@@ -3114,7 +3115,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               // existing content might result in incorrect (extra) data.
               // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
               // not the destf or its subdir?
-              oldPathDeleted = FileUtils.trashFilesUnderDir(fs2, oldPath, conf, true);
+              oldPathDeleted = trashFilesUnderDir(fs2, oldPath, conf);
             }
           }
         } catch (IOException e) {
@@ -3160,6 +3161,48 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (IOException e) {
       throw new HiveException(e.getMessage(), e);
     }
+  }
+
+
+  /**
+   * Trashes or deletes all files under a directory. Leaves the directory as is.
+   * @param fs FileSystem to use
+   * @param f path of directory
+   * @param conf hive configuration
+   * @param forceDelete whether to force delete files if trashing does not succeed
+   * @return true if deletion successful
+   * @throws IOException
+   */
+  private boolean trashFilesUnderDir(final FileSystem fs, Path f, final Configuration conf)
+      throws IOException {
+    FileStatus[] statuses = fs.listStatus(f, FileUtils.HIDDEN_FILES_PATH_FILTER);
+    boolean result = true;
+    final List<Future<Boolean>> futures = new LinkedList<>();
+    final ExecutorService pool = Executors.newFixedThreadPool(
+        conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Delete-Thread-%d").build());
+    final SessionState parentSession = SessionState.get();
+    for (final FileStatus status : statuses) {
+      futures.add(pool.submit(new Callable<Boolean>() {
+
+        @Override
+        public Boolean call() throws Exception {
+          SessionState.setCurrentSessionState(parentSession);
+          return FileUtils.moveToTrash(fs, status.getPath(), conf);
+        }
+      }));
+    }
+    pool.shutdown();
+    for (Future<Boolean> future : futures) {
+      try {
+        result &= future.get();
+      } catch (InterruptedException | ExecutionException e) {
+        LOG.error("Failed to delete: ",e);
+        pool.shutdownNow();
+        throw new IOException(e);
+      }
+    }
+    return result;
   }
 
   public static boolean isHadoop1() {
