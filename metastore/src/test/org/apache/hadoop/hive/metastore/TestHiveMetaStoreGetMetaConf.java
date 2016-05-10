@@ -40,7 +40,6 @@ public class TestHiveMetaStoreGetMetaConf {
   public ExpectedException thrown = ExpectedException.none();
 
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveMetaStoreGetMetaConf.class);
-  private static final String msPort = "20103";
   private static HiveConf hiveConf;
   private static SecurityManager securityManager;
 
@@ -65,20 +64,6 @@ public class TestHiveMetaStoreGetMetaConf {
     }
   }
 
-  private static class RunMS implements Runnable {
-
-    @Override
-    public void run() {
-      try {
-        HiveMetaStore.main(new String[]{"-v", "-p", msPort, "--hiveconf",
-            "hive.metastore.expression.proxy=" + MockPartitionExpressionForMetastore.class.getCanonicalName(),
-            "--hiveconf", "hive.metastore.try.direct.sql.ddl=false"});
-      } catch (Throwable t) {
-        LOG.error("Exiting. Got exception from metastore: ", t);
-      }
-    }
-  }
-
   @AfterClass
   public static void tearDown() throws Exception {
     LOG.info("Shutting down metastore.");
@@ -90,7 +75,11 @@ public class TestHiveMetaStoreGetMetaConf {
 
     securityManager = System.getSecurityManager();
     System.setSecurityManager(new NoExitSecurityManager());
-    
+    HiveConf metastoreConf = new HiveConf();
+    metastoreConf.setClass(HiveConf.ConfVars.METASTORE_EXPRESSION_PROXY_CLASS.varname,
+      MockPartitionExpressionForMetastore.class, PartitionExpressionProxy.class);
+    metastoreConf.setBoolVar(HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL, false);
+    int msPort = MetaStoreUtils.startMetaStore(metastoreConf);
     hiveConf = new HiveConf(TestHiveMetaStoreGetMetaConf.class);
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
         + msPort);
@@ -101,8 +90,6 @@ public class TestHiveMetaStoreGetMetaConf {
 
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
-
-    new Thread(new RunMS()).start();
   }
 
   @Before

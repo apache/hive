@@ -33,8 +33,10 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.ql.WindowsPathUtil;
@@ -81,41 +83,14 @@ import javax.annotation.Nullable;
 
 public class TestHCatClient {
   private static final Logger LOG = LoggerFactory.getLogger(TestHCatClient.class);
-  private static final String msPort = "20101";
+  private static int msPort;
   private static HiveConf hcatConf;
   private static boolean isReplicationTargetHCatRunning = false;
-  private static final String replicationTargetHCatPort = "20102";
+  private static int replicationTargetHCatPort;
   private static HiveConf replicationTargetHCatConf;
   private static SecurityManager securityManager;
   private static boolean useExternalMS = false;
   private static boolean useExternalMSForReplication = false;
-
-  public static class RunMS implements Runnable {
-
-    private final String msPort;
-    private List<String> args = new ArrayList<String>();
-
-    public RunMS(String msPort) {
-      this.msPort = msPort;
-      this.args.add("-v");
-      this.args.add("-p");
-      this.args.add(this.msPort);
-    }
-
-    public RunMS arg(String arg) {
-      this.args.add(arg);
-      return this;
-    }
-
-    @Override
-    public void run() {
-      try {
-        HiveMetaStore.main(args.toArray(new String[args.size()]));
-      } catch (Throwable t) {
-        LOG.error("Exiting. Got exception from metastore: ", t);
-      }
-    }
-  } // class RunMS;
 
   @AfterClass
   public static void tearDown() throws Exception {
@@ -141,10 +116,7 @@ public class TestHCatClient {
 
     System.setProperty(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS.varname,
         DbNotificationListener.class.getName()); // turn on db notification listener on metastore
-    Thread t = new Thread(new RunMS(msPort));
-    t.start();
-    Thread.sleep(10000);
-
+    msPort = MetaStoreUtils.startMetaStore();
     securityManager = System.getSecurityManager();
     System.setSecurityManager(new NoExitSecurityManager());
     hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
@@ -816,13 +788,10 @@ public class TestHCatClient {
 
   private void startReplicationTargetMetaStoreIfRequired() throws Exception {
     if (!isReplicationTargetHCatRunning) {
-      Thread t = new Thread(new RunMS(replicationTargetHCatPort)
-                              .arg("--hiveconf")
-                              .arg("javax.jdo.option.ConnectionURL") // Reset, to use a different Derby instance.
-                              .arg(hcatConf.get("javax.jdo.option.ConnectionURL")
-                                                 .replace("metastore", "target_metastore")));
-      t.start();
-      Thread.sleep(10000);
+      HiveConf conf = new HiveConf();
+      conf.set("javax.jdo.option.ConnectionURL", hcatConf.get("javax.jdo.option.ConnectionURL")
+        .replace("metastore", "target_metastore"));
+      replicationTargetHCatPort = MetaStoreUtils.startMetaStore(conf);
       replicationTargetHCatConf = new HiveConf(hcatConf);
       replicationTargetHCatConf.setVar(HiveConf.ConfVars.METASTOREURIS,
                                        "thrift://localhost:" + replicationTargetHCatPort);
