@@ -1914,8 +1914,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
+  @Deprecated
   public ShowLocksResponse showLocks() throws TException {
     return client.show_locks(new ShowLocksRequest());
+  }
+
+  @Override
+  public ShowLocksResponse showLocks(ShowLocksRequest request) throws TException {
+    return client.show_locks(request);
   }
 
   @Override

@@ -1115,6 +1115,34 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         String s = "select hl_lock_ext_id, hl_txnid, hl_db, hl_table, hl_partition, hl_lock_state, " +
           "hl_lock_type, hl_last_heartbeat, hl_acquired_at, hl_user, hl_host, hl_lock_int_id," +
           "hl_blockedby_ext_id, hl_blockedby_int_id from HIVE_LOCKS";
+
+        // Some filters may have been specified in the SHOW LOCKS statement. Add them to the query.
+        String dbName = rqst.getDbname();
+        String tableName = rqst.getTablename();
+        String partName = rqst.getPartname();
+
+        StringBuilder filter = new StringBuilder();
+        if (dbName != null && !dbName.isEmpty()) {
+          filter.append("hl_db=").append(quoteString(dbName));
+        }
+        if (tableName != null && !tableName.isEmpty()) {
+          if (filter.length() > 0) {
+            filter.append(" and ");
+          }
+          filter.append("hl_table=").append(quoteString(tableName));
+        }
+        if (partName != null && !partName.isEmpty()) {
+          if (filter.length() > 0) {
+            filter.append(" and ");
+          }
+          filter.append("hl_partition=").append(quoteString(partName));
+        }
+        String whereClause = filter.toString();
+
+        if (!whereClause.isEmpty()) {
+          s = s + " where " + whereClause;
+        }
+
         LOG.debug("Doing to execute query <" + s + ">");
         ResultSet rs = stmt.executeQuery(s);
         while (rs.next()) {

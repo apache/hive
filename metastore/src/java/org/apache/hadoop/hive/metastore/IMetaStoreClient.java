@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
@@ -1329,7 +1330,16 @@ public interface IMetaStoreClient {
    * @return List of currently held and waiting locks.
    * @throws TException
    */
+  @Deprecated
   ShowLocksResponse showLocks() throws TException;
+
+  /**
+   * Show all currently held and waiting locks.
+   * @param showLocksRequest SHOW LOCK request
+   * @return List of currently held and waiting locks.
+   * @throws TException
+   */
+  ShowLocksResponse showLocks(ShowLocksRequest showLocksRequest) throws TException;
 
   /**
    * Send a heartbeat to indicate that the client holding these locks (if

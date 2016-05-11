@@ -2,19 +2,60 @@ PREHOOK: query: show locks
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: show locks
 POSTHOOK: type: SHOWLOCKS
-Lock ID	Database	Table	Partition	State	Blocked By	Type	Transaction ID	Last Hearbeat	Acquired At	User
+Lock ID	Database	Table	Partition	State	Blocked By	Type	Transaction ID	Last Hearbeat	Acquired At	User	Hostname
 PREHOOK: query: show locks extended
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: show locks extended
 POSTHOOK: type: SHOWLOCKS
-Lock ID	Database	Table	Partition	State	Blocked By	Type	Transaction ID	Last Hearbeat	Acquired At	User
+Lock ID	Database	Table	Partition	State	Blocked By	Type	Transaction ID	Last Hearbeat	Acquired At	User	Hostname
 PREHOOK: query: show locks default
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: show locks default
 POSTHOOK: type: SHOWLOCKS
-Lock ID	Database	Table	Partition	State	Blocked By	Type	Transaction ID	Last Hearbeat	Acquired At	User
+Lock ID	Database	Table	Partition	State	Blocked By	Type	Transaction ID	Last Hearbeat	Acquired At	User	Hostname
 PREHOOK: query: show transactions
 PREHOOK: type: SHOW TRANSACTIONS
 POSTHOOK: query: show transactions
 POSTHOOK: type: SHOW TRANSACTIONS
 Transaction ID	Transaction State	User	Hostname
+PREHOOK: query: create table partitioned_acid_table (a int, b int) partitioned by (p string) clustered by (a) into 2 buckets stored as orc tblproperties ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partitioned_acid_table
+POSTHOOK: query: create table partitioned_acid_table (a int, b int) partitioned by (p string) clustered by (a) into 2 buckets stored as orc tblproperties ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partitioned_acid_table
+PREHOOK: query: show locks database default
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: show locks database default
+POSTHOOK: type: SHOWLOCKS
+Lock ID	Database	Table	Partition	State	Blocked By	Type	Transaction ID	Last Hearbeat	Acquired At	User	Hostname
+PREHOOK: query: show locks partitioned_acid_table
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: show locks partitioned_acid_table
+POSTHOOK: type: SHOWLOCKS
+Lock ID	Database	Table	Partition	State	Blocked By	Type	Transaction ID	Last Hearbeat	Acquired At	User	Hostname
+PREHOOK: query: show locks partitioned_acid_table extended
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: show locks partitioned_acid_table extended
+POSTHOOK: type: SHOWLOCKS
+Lock ID	Database	Table	Partition	State	Blocked By	Type	Transaction ID	Last Hearbeat	Acquired At	User	Hostname
+PREHOOK: query: show locks partitioned_acid_table partition (p='abc')
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: show locks partitioned_acid_table partition (p='abc')
+POSTHOOK: type: SHOWLOCKS
+Lock ID	Database	Table	Partition	State	Blocked By	Type	Transaction ID	Last Hearbeat	Acquired At	User	Hostname
+PREHOOK: query: show locks partitioned_acid_table partition (p='abc') extended
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: show locks partitioned_acid_table partition (p='abc') extended
+POSTHOOK: type: SHOWLOCKS
+Lock ID	Database	Table	Partition	State	Blocked By	Type	Transaction ID	Last Hearbeat	Acquired At	User	Hostname
+PREHOOK: query: drop table partitioned_acid_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@partitioned_acid_table
+PREHOOK: Output: default@partitioned_acid_table
+POSTHOOK: query: drop table partitioned_acid_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@partitioned_acid_table
+POSTHOOK: Output: default@partitioned_acid_table
