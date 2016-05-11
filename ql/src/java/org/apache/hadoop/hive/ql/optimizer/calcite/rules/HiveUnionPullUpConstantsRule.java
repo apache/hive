@@ -96,6 +96,7 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
     }
 
     // Create expressions for Project operators before and after the Union
+    boolean atLeastOneConstant = false;
     List<RelDataTypeField> fields = union.getRowType().getFieldList();
     List<Pair<RexNode, String>> newChildExprs = new ArrayList<>();
     List<RexNode> topChildExprs = new ArrayList<>();
@@ -104,6 +105,7 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
       RexNode expr = rexBuilder.makeInputRef(union, i);
       RelDataTypeField field = fields.get(i);
       if (constants.containsKey(expr)) {
+        atLeastOneConstant = true;
         topChildExprs.add(constants.get(expr));
         topChildExprsFields.add(field.getName());
       } else {
@@ -111,6 +113,11 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
         topChildExprs.add(expr);
         topChildExprsFields.add(field.getName());
       }
+    }
+
+    // No constants were found
+    if (!atLeastOneConstant) {
+      return;
     }
 
     // Update top Project positions
