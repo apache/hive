@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
@@ -1374,7 +1375,16 @@ public interface IMetaStoreClient {
    * @return List of currently held and waiting locks.
    * @throws TException
    */
+  @Deprecated
   ShowLocksResponse showLocks() throws TException;
+
+  /**
+   * Show all currently held and waiting locks.
+   * @param showLocksRequest SHOW LOCK request
+   * @return List of currently held and waiting locks.
+   * @throws TException
+   */
+  ShowLocksResponse showLocks(ShowLocksRequest showLocksRequest) throws TException;
 
   /**
    * Send a heartbeat to indicate that the client holding these locks (if

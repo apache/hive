@@ -53,8 +53,8 @@ public class ShowLocksDesc extends DDLDesc implements Serializable {
    * Schema for use with db txn manager.
    */
   private static final String newFormatSchema = "lockid,database,table,partition,lock_state," +
-      "lock_type,transaction_id,last_heartbeat,acquired_at,user," +
-      "hostname#string:string:string:string:string:string:string:string:string:string:string";
+      "blocked_by,lock_type,transaction_id,last_heartbeat,acquired_at,user,hostname#" +
+      "string:string:string:string:string:string:string:string:string:string:string:string";
 
   public String getDatabase() {
     return dbName;

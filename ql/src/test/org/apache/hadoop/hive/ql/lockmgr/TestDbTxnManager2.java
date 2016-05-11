@@ -24,9 +24,11 @@ import org.apache.hadoop.hive.ql.TestTxnCommands2;
 import org.apache.hadoop.hive.ql.txn.AcidWriteSetService;
 import org.junit.After;
 import org.junit.Assert;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
@@ -42,7 +44,9 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * See additional tests in {@link org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager}
@@ -633,6 +637,105 @@ public class TestDbTxnManager2 {
     Assert.assertEquals(actual.toString(), normalizeCase(expectedTable), normalizeCase(actual.getTablename()));
     Assert.assertEquals(actual.toString(), normalizeCase(expectedPartition), normalizeCase(actual.getPartname()));
   }
+
+  @Test
+  public void testShowLocksFilterOptions() throws Exception {
+    CommandProcessorResponse cpr = driver.run("drop table if exists db1.t14");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("drop table if exists db2.t14"); // Note that db1 and db2 have a table with common name
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("drop table if exists db2.t15");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("drop table if exists db2.t16");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("drop database if exists db1");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("drop database if exists db2");
+    checkCmdOnDriver(cpr);
+
+    cpr = driver.run("create database if not exists db1");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("create database if not exists db2");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("create table if not exists db1.t14 (a int, b int) partitioned by (ds string) clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("create table if not exists db2.t14 (a int, b int) clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("create table if not exists db2.t15 (a int, b int) clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("create table if not exists db2.t16 (a int, b int) clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    checkCmdOnDriver(cpr);
+
+    // Acquire different locks at different levels
+
+    cpr = driver.compileAndRespond("insert into table db1.t14 partition (ds='today') values (1, 2)");
+    checkCmdOnDriver(cpr);
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "Tom");
+
+    HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    cpr = driver.compileAndRespond("insert into table db1.t14 partition (ds='tomorrow') values (3, 4)");
+    checkCmdOnDriver(cpr);
+    txnMgr2.acquireLocks(driver.getPlan(), ctx, "Jerry");
+
+    HiveTxnManager txnMgr3 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    cpr = driver.compileAndRespond("select * from db2.t15");
+    checkCmdOnDriver(cpr);
+    txnMgr3.acquireLocks(driver.getPlan(), ctx, "Donald");
+
+    HiveTxnManager txnMgr4 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    cpr = driver.compileAndRespond("select * from db2.t16");
+    checkCmdOnDriver(cpr);
+    txnMgr4.acquireLocks(driver.getPlan(), ctx, "Hillary");
+
+    HiveTxnManager txnMgr5 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    cpr = driver.compileAndRespond("select * from db2.t14");
+    checkCmdOnDriver(cpr);
+    txnMgr5.acquireLocks(driver.getPlan(), ctx, "Obama");
+
+    // Simulate SHOW LOCKS with different filter options
+
+    // SHOW LOCKS (no filter)
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 7, locks.size());
+    // locks.get(0) is a lock on tmp table in default database used for insert
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db1", "t14", "ds=today", locks.get(1));
+    // locks.get(2) is a lock on tmp table in default database used for insert
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db1", "t14", "ds=tomorrow", locks.get(3));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db2", "t15", null, locks.get(4));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db2", "t16", null, locks.get(5));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db2", "t14", null, locks.get(6));
+
+    // SHOW LOCKS db2
+    locks = getLocksWithFilterOptions(txnMgr3, "db2", null, null);
+    Assert.assertEquals("Unexpected lock count", 3, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db2", "t15", null, locks.get(0));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db2", "t16", null, locks.get(1));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db2", "t14", null, locks.get(2));
+
+    // SHOW LOCKS t14
+    cpr = driver.run("use db1");
+    checkCmdOnDriver(cpr);
+    locks = getLocksWithFilterOptions(txnMgr, null, "t14", null);
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db1", "t14", "ds=today", locks.get(0));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db1", "t14", "ds=tomorrow", locks.get(1));
+    // Note that it shouldn't show t14 from db2
+
+    // SHOW LOCKS t14 PARTITION ds='today'
+    Map<String, String> partSpec = new HashMap<String, String>();
+    partSpec.put("ds", "today");
+    locks = getLocksWithFilterOptions(txnMgr, null, "t14", partSpec);
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db1", "t14", "ds=today", locks.get(0));
+
+    // SHOW LOCKS t15
+    cpr = driver.run("use db2");
+    checkCmdOnDriver(cpr);
+    locks = getLocksWithFilterOptions(txnMgr3, null, "t15", null);
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db2", "t15", null, locks.get(0));
+  }
+
   private void checkCmdOnDriver(CommandProcessorResponse cpr) {
     Assert.assertTrue(cpr.toString(), cpr.getResponseCode() == 0);
   }
@@ -1182,5 +1285,28 @@ public class TestDbTxnManager2 {
       1, TxnDbUtil.countQueryAgent("select count(*) from WRITE_SET where ws_partition='p=two' and ws_operation_type='d' and ws_table='tab1'"));
     Assert.assertEquals("COMPLETED_TXN_COMPONENTS mismatch: " + TxnDbUtil.queryToString("select * from COMPLETED_TXN_COMPONENTS"),
       4, TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_TXN_COMPONENTS where ctc_table='tab1' and ctc_partition is not null"));
+  }
+
+  private List<ShowLocksResponseElement> getLocksWithFilterOptions(HiveTxnManager txnMgr,
+      String dbName, String tblName, Map<String, String> partSpec) throws Exception {
+    if (dbName == null && tblName != null) {
+      dbName = SessionState.get().getCurrentDatabase();
+    }
+    ShowLocksRequest rqst = new ShowLocksRequest();
+    rqst.setDbname(dbName);
+    rqst.setTablename(tblName);
+    if (partSpec != null) {
+      List<String> keyList = new ArrayList<String>();
+      List<String> valList = new ArrayList<String>();
+      for (String partKey : partSpec.keySet()) {
+        String partVal = partSpec.remove(partKey);
+        keyList.add(partKey);
+        valList.add(partVal);
+      }
+      String partName = FileUtils.makePartName(keyList, valList);
+      rqst.setPartname(partName);
+    }
+    ShowLocksResponse rsp = ((DbLockManager)txnMgr.getLockManager()).getLocks(rqst);
+    return rsp.getLocks();
   }
 }

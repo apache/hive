@@ -84,6 +84,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
+import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
@@ -2628,7 +2629,29 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     lockMgr = (DbLockManager)lm;
 
-    ShowLocksResponse rsp = lockMgr.getLocks();
+    String dbName = showLocks.getDbName();
+    String tblName = showLocks.getTableName();
+    Map<String, String> partSpec = showLocks.getPartSpec();
+    if (dbName == null && tblName != null) {
+      dbName = SessionState.get().getCurrentDatabase();
+    }
+
+    ShowLocksRequest rqst = new ShowLocksRequest();
+    rqst.setDbname(dbName);
+    rqst.setTablename(tblName);
+    if (partSpec != null) {
+      List<String> keyList = new ArrayList<String>();
+      List<String> valList = new ArrayList<String>();
+      for (String partKey : partSpec.keySet()) {
+        String partVal = partSpec.remove(partKey);
+        keyList.add(partKey);
+        valList.add(partVal);
+      }
+      String partName = FileUtils.makePartName(keyList, valList);
+      rqst.setPartname(partName);
+    }
+
+    ShowLocksResponse rsp = lockMgr.getLocks(rqst);
 
     // write the results in the file
     DataOutputStream os = getOutputStream(showLocks.getResFile());

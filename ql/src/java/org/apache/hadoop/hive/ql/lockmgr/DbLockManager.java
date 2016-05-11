@@ -278,8 +278,12 @@ public class DbLockManager implements HiveLockManager{
   }
 
   public ShowLocksResponse getLocks() throws LockException {
+    return getLocks(new ShowLocksRequest());
+  }
+
+  public ShowLocksResponse getLocks(ShowLocksRequest showLocksRequest) throws LockException {
     try {
-      return client.showLocks();
+      return client.showLocks(showLocksRequest);
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }

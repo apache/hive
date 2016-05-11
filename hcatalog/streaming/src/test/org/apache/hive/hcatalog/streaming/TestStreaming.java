@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
@@ -647,13 +648,16 @@ public class TestStreaming {
     //todo: this should ideally check Transaction heartbeat as well, but heartbeat
     //timestamp is not reported yet
     //GetOpenTxnsInfoResponse txnresp = msClient.showTxns();
-    ShowLocksResponse response = msClient.showLocks();
+    ShowLocksRequest request = new ShowLocksRequest();
+    request.setDbname(dbName2);
+    request.setTablename(tblName2);
+    ShowLocksResponse response = msClient.showLocks(request);
     Assert.assertEquals("Wrong nubmer of locks: " + response, 1, response.getLocks().size());
     ShowLocksResponseElement lock = response.getLocks().get(0);
     long acquiredAt = lock.getAcquiredat();
     long heartbeatAt = lock.getLastheartbeat();
     txnBatch.heartbeat();
-    response = msClient.showLocks();
+    response = msClient.showLocks(request);
     Assert.assertEquals("Wrong number of locks2: " + response, 1, response.getLocks().size());
     lock = response.getLocks().get(0);
     Assert.assertEquals("Acquired timestamp didn't match", acquiredAt, lock.getAcquiredat());
