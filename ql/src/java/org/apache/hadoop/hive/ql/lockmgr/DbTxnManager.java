@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -167,9 +168,10 @@ public class DbTxnManager extends HiveTxnManagerImpl {
 
     // For each source to read, get a shared lock
     for (ReadEntity input : plan.getInputs()) {
-      if (!input.needsLock() || input.isUpdateOrDelete()) {
+      if (!input.needsLock() || input.isUpdateOrDelete() ||
+          (input.getType() == Entity.Type.TABLE && input.getTable().isTemporary())) {
         // We don't want to acquire read locks during update or delete as we'll be acquiring write
-        // locks instead.
+        // locks instead. Also, there's no need to lock temp tables since they're session wide
         continue;
       }
       LockComponentBuilder compBuilder = new LockComponentBuilder();
@@ -210,9 +212,9 @@ public class DbTxnManager extends HiveTxnManagerImpl {
     // overwrite) than we need a shared.  If it's update or delete then we
     // need a SEMI-SHARED.
     for (WriteEntity output : plan.getOutputs()) {
-      if (output.getType() == Entity.Type.DFS_DIR || output.getType() ==
-          Entity.Type.LOCAL_DIR) {
-        // We don't lock files or directories.
+      if (output.getType() == Entity.Type.DFS_DIR || output.getType() == Entity.Type.LOCAL_DIR ||
+          (output.getType() == Entity.Type.TABLE && output.getTable().isTemporary())) {
+        // We don't lock files or directories. We also skip locking temp tables.
         continue;
       }
       LockComponentBuilder compBuilder = new LockComponentBuilder();
