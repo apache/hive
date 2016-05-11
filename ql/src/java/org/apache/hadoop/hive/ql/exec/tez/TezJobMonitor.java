@@ -25,6 +25,7 @@ import static org.fusesource.jansi.internal.CLibrary.STDERR_FILENO;
 import static org.fusesource.jansi.internal.CLibrary.isatty;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -248,7 +249,7 @@ public class TezJobMonitor {
    * @return int 0 - success, 1 - killed, 2 - failed
    */
   public int monitorExecution(final DAGClient dagClient, HiveConf conf,
-      DAG dag) throws InterruptedException {
+      DAG dag, Context ctx) throws InterruptedException {
     DAGStatus status = null;
     completed = new HashSet<String>();
     diagnostics = new StringBuffer();
@@ -288,6 +289,10 @@ public class TezJobMonitor {
     while (true) {
 
       try {
+        if (ctx != null) {
+          ctx.checkHeartbeaterLockException();
+        }
+
         status = dagClient.getDAGStatus(opts);
         Map<String, Progress> progressMap = status.getVertexProgress();
         DAGStatus.State state = status.getState();

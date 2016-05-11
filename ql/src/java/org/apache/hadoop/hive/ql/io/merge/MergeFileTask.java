@@ -149,7 +149,7 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
       // Finally SUBMIT the JOB!
       rj = jc.submitJob(job);
 
-      returnVal = jobExecHelper.progress(rj, jc);
+      returnVal = jobExecHelper.progress(rj, jc, ctx);
       success = (returnVal == 0);
 
     } catch (Exception e) {

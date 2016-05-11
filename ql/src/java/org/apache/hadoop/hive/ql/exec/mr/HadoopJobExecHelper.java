@@ -37,12 +37,14 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskHandle;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.plan.ReducerTimeStatsPerJob;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -212,7 +214,7 @@ public class HadoopJobExecHelper {
     return this.callBackObj.checkFatalErrors(ctrs, errMsg);
   }
 
-  private MapRedStats progress(ExecDriverTaskHandle th) throws IOException {
+  private MapRedStats progress(ExecDriverTaskHandle th) throws IOException, LockException {
     JobClient jc = th.getJobClient();
     RunningJob rj = th.getRunningJob();
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
@@ -232,6 +234,10 @@ public class HadoopJobExecHelper {
     final boolean localMode = ShimLoader.getHadoopShims().isLocalMode(job);
 
     while (!rj.isComplete()) {
+      if (th.getContext() != null) {
+        th.getContext().checkHeartbeaterLockException();
+      }
+
       try {
         Thread.sleep(pullInterval);
       } catch (InterruptedException e) {
@@ -449,6 +455,7 @@ public class HadoopJobExecHelper {
   private static class ExecDriverTaskHandle extends TaskHandle {
     JobClient jc;
     RunningJob rj;
+    Context ctx;
 
     JobClient getJobClient() {
       return jc;
@@ -458,9 +465,14 @@ public class HadoopJobExecHelper {
       return rj;
     }
 
-    public ExecDriverTaskHandle(JobClient jc, RunningJob rj) {
+    Context getContext() {
+      return ctx;
+    }
+
+    public ExecDriverTaskHandle(JobClient jc, RunningJob rj, Context ctx) {
       this.jc = jc;
       this.rj = rj;
+      this.ctx = ctx;
     }
 
     public void setRunningJob(RunningJob job) {
@@ -513,7 +525,7 @@ public class HadoopJobExecHelper {
   }
 
 
-  public int progress(RunningJob rj, JobClient jc) throws IOException {
+  public int progress(RunningJob rj, JobClient jc, Context ctx) throws IOException, LockException {
     jobId = rj.getID();
 
     int returnVal = 0;
@@ -534,7 +546,7 @@ public class HadoopJobExecHelper {
 
     runningJobs.add(rj);
 
-    ExecDriverTaskHandle th = new ExecDriverTaskHandle(jc, rj);
+    ExecDriverTaskHandle th = new ExecDriverTaskHandle(jc, rj, ctx);
     jobInfo(rj);
     MapRedStats mapRedStats = progress(th);
 

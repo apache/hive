@@ -44,9 +44,11 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager.Heartbeater;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -113,6 +115,8 @@ public class Context {
       new HashMap<WriteEntity, List<HiveLockObj>>();
 
   private final String stagingDir;
+
+  private Heartbeater heartbeater;
 
   public Context(Configuration conf) throws IOException {
     this(conf, generateExecutionId());
@@ -713,4 +717,15 @@ public class Context {
     this.cboSucceeded = cboSucceeded;
   }
 
+  public Heartbeater getHeartbeater() {
+    return heartbeater;
+  }
+  public void setHeartbeater(Heartbeater heartbeater) {
+    this.heartbeater = heartbeater;
+  }
+  public void checkHeartbeaterLockException() throws LockException {
+    if (getHeartbeater() != null && getHeartbeater().getLockException() != null) {
+      throw getHeartbeater().getLockException();
+    }
+  }
 }

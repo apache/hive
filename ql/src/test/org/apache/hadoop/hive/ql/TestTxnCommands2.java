@@ -51,6 +51,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -745,6 +746,27 @@ public class TestTxnCommands2 {
     Assert.assertEquals("", expected,
       runStatementOnDriver("select a,b from " + tblName + " order by a"));
   }
+
+  /**
+   * Simulate the scenario when a heartbeat failed due to client errors such as no locks or no txns being found.
+   * When a heartbeat fails, the query should be failed too.
+   * @throws Exception
+   */
+  @Test
+  public void testFailHeartbeater() throws Exception {
+    // Fail heartbeater, so that we can get a RuntimeException from the query.
+    // More specifically, it's the original IOException thrown by either MR's or Tez's progress monitoring loop.
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILHEARTBEATER, true);
+    Exception exception = null;
+    try {
+      runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(new int[][]{{1, 2}, {3, 4}}));
+    } catch (RuntimeException e) {
+      exception = e;
+    }
+    Assert.assertNotNull(exception);
+    Assert.assertTrue(exception.getMessage().contains("HIVETESTMODEFAILHEARTBEATER=true"));
+  }
+
   /**
    * takes raw data and turns it into a string as if from Driver.getResults()
    * sorts rows in dictionary order

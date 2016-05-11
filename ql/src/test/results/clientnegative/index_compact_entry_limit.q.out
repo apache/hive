@@ -34,4 +34,4 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 Job Submission failed with exception 'java.io.IOException(org.apache.hadoop.hive.ql.metadata.HiveException: Number of compact index entries loaded during the query exceeded the maximum of 5 set in hive.index.compact.query.max.entries)'
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask. org.apache.hadoop.hive.ql.metadata.HiveException: Number of compact index entries loaded during the query exceeded the maximum of 5 set in hive.index.compact.query.max.entries
