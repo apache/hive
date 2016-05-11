@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -237,9 +238,8 @@ public class HiveAlterHandler implements AlterHandler {
           // alterPartition()
           MetaStoreUtils.updateTableStatsFast(db, newt, wh, false, true, environmentContext);
       }
-      updateTableColumnStatsForAlterTable(msdb, oldt, newt);
-      // now finally call alter table
-      msdb.alterTable(dbname, name, newt);
+
+      alterTableUpdateTableColumnStats(msdb, oldt, newt);
       // commit the changes
       success = msdb.commitTransaction();
     } catch (InvalidObjectException e) {
@@ -644,48 +644,73 @@ public class HiveAlterHandler implements AlterHandler {
     }
   }
 
-  private void updateTableColumnStatsForAlterTable(RawStore msdb, Table oldTable, Table newTable)
+  private void alterTableUpdateTableColumnStats(RawStore msdb,
+      Table oldTable, Table newTable)
       throws MetaException, InvalidObjectException {
-    String dbName = oldTable.getDbName();
-    String tableName = oldTable.getTableName();
-    String newDbName = HiveStringUtils.normalizeIdentifier(newTable.getDbName());
+    String dbName = oldTable.getDbName().toLowerCase();
+    String tableName = HiveStringUtils.normalizeIdentifier(oldTable.getTableName());
+    String newDbName = newTable.getDbName().toLowerCase();
     String newTableName = HiveStringUtils.normalizeIdentifier(newTable.getTableName());
 
     try {
-      if (!dbName.equals(newDbName) || !tableName.equals(newTableName)) {
-        msdb.deleteTableColumnStatistics(dbName, tableName, null);
-      } else {
-        List<FieldSchema> oldCols = oldTable.getSd().getCols();
-        List<FieldSchema> newCols = newTable.getSd().getCols();
-        if (!MetaStoreUtils.areSameColumns(oldCols, newCols)) {
+      List<FieldSchema> oldCols = oldTable.getSd().getCols();
+      List<FieldSchema> newCols = newTable.getSd().getCols();
+      List<ColumnStatisticsObj> newStatsObjs = new ArrayList<ColumnStatisticsObj>();
+      ColumnStatistics colStats = null;
+      boolean updateColumnStats = true;
+
+      // Nothing to update if everything is the same
+        if (newDbName.equals(dbName) &&
+            newTableName.equals(tableName) &&
+            MetaStoreUtils.areSameColumns(oldCols, newCols)) {
+          updateColumnStats = false;
+        }
+
+        if (updateColumnStats) {
           List<String> oldColNames = new ArrayList<String>(oldCols.size());
           for (FieldSchema oldCol : oldCols) {
             oldColNames.add(oldCol.getName());
           }
 
-          ColumnStatistics cs = msdb.getTableColumnStatistics(dbName, tableName, oldColNames);
-          if (cs == null) {
-            return;
-          }
-
-          List<ColumnStatisticsObj> statsObjs = cs.getStatsObj();
-          if (statsObjs != null) {
-            for (ColumnStatisticsObj statsObj : statsObjs) {
-              boolean found = false;
-              for (FieldSchema newCol : newCols) {
-                if (statsObj.getColName().equalsIgnoreCase(newCol.getName())
-                    && statsObj.getColType().equals(newCol.getType())) {
-                  found = true;
-                  break;
+          // Collect column stats which need to be rewritten and remove old stats
+          colStats = msdb.getTableColumnStatistics(dbName, tableName, oldColNames);
+          if (colStats == null) {
+            updateColumnStats = false;
+          } else {
+            List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
+            if (statsObjs != null) {
+              for (ColumnStatisticsObj statsObj : statsObjs) {
+                boolean found = false;
+                for (FieldSchema newCol : newCols) {
+                  if (statsObj.getColName().equalsIgnoreCase(newCol.getName())
+                      && statsObj.getColType().equals(newCol.getType())) {
+                    found = true;
+                    break;
+                  }
                 }
-              }
-              if (!found) {
-                msdb.deleteTableColumnStatistics(dbName, tableName, statsObj.getColName());
+
+                if (found) {
+                  if (!newDbName.equals(dbName) || !newTableName.equals(tableName)) {
+                    msdb.deleteTableColumnStatistics(dbName, tableName, statsObj.getColName());
+                    newStatsObjs.add(statsObj);
+                  }
+                } else {
+                  msdb.deleteTableColumnStatistics(dbName, tableName, statsObj.getColName());
+                }
               }
             }
           }
         }
-      }
+
+        // Change to new table and append stats for the new table
+        msdb.alterTable(dbName, tableName, newTable);
+        if (updateColumnStats && !newStatsObjs.isEmpty()) {
+          ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+          statsDesc.setDbName(newDbName);
+          statsDesc.setTableName(newTableName);
+          colStats.setStatsObj(newStatsObjs);
+          msdb.updateTableColumnStatistics(colStats);
+        }
     } catch (NoSuchObjectException nsoe) {
       LOG.debug("Could not find db entry." + nsoe);
     } catch (InvalidInputException e) {
