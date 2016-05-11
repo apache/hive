@@ -177,6 +177,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_KERBEROS_KEYTAB_FILE,
       HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL,
       HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL,
+      HiveConf.ConfVars.METASTORE_TOKEN_SIGNATURE,
       HiveConf.ConfVars.METASTORE_CACHE_PINOBJTYPES,
       HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE,
       HiveConf.ConfVars.METASTORE_VALIDATE_TABLES,
@@ -630,6 +631,8 @@ public class HiveConf extends Configuration {
     METASTORE_USE_THRIFT_COMPACT_PROTOCOL("hive.metastore.thrift.compact.protocol.enabled", false,
         "If true, the metastore Thrift interface will use TCompactProtocol. When false (default) TBinaryProtocol will be used.\n" +
         "Setting it to true will break compatibility with older clients running TBinaryProtocol."),
+    METASTORE_TOKEN_SIGNATURE("hive.metastore.token.signature", "",
+        "The delegation token service name to match when selecting a token from the current user's tokens."),
     METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS("hive.cluster.delegation.token.store.class",
         "org.apache.hadoop.hive.thrift.MemoryTokenStore",
         "The delegation token store implementation. Set to org.apache.hadoop.hive.thrift.ZooKeeperTokenStore for load-balanced cluster."),

@@ -627,7 +627,7 @@ public class HCatUtil {
     }
 
     if (conf.get(HCatConstants.HCAT_KEY_TOKEN_SIGNATURE) != null) {
-      hiveConf.set("hive.metastore.token.signature",
+      hiveConf.setVar(HiveConf.ConfVars.METASTORE_TOKEN_SIGNATURE,
         conf.get(HCatConstants.HCAT_KEY_TOKEN_SIGNATURE));
     }
 

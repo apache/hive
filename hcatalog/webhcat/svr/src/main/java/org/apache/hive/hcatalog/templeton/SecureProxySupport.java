@@ -128,7 +128,7 @@ public class SecureProxySupport {
   public void addArgs(List<String> args) {
     if (isEnabled) {
       args.add("-D");
-      args.add("hive.metastore.token.signature=" + getHcatServiceStr());
+      args.add(HiveConf.ConfVars.METASTORE_TOKEN_SIGNATURE + "=" + getHcatServiceStr());
       args.add("-D");
       args.add("proxy.user.name=" + user);
     }

@@ -352,7 +352,7 @@ public class TestHadoopAuthBridge23 extends TestCase {
         clientUgi.getShortUserName().equals(d.getUser().getShortUserName()));
 
     if (tokenSig != null) {
-      conf.set("hive.metastore.token.signature", tokenSig);
+      conf.setVar(HiveConf.ConfVars.METASTORE_TOKEN_SIGNATURE, tokenSig);
       t.setService(new Text(tokenSig));
     }
     //add the token to the clientUgi for securely talking to the metastore

@@ -115,7 +115,7 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
   private void setDelegationToken(String hmsDelegationTokenStr) throws HiveSQLException {
     this.hmsDelegationTokenStr = hmsDelegationTokenStr;
     if (hmsDelegationTokenStr != null) {
-      getHiveConf().set("hive.metastore.token.signature", HS2TOKEN);
+      getHiveConf().setVar(HiveConf.ConfVars.METASTORE_TOKEN_SIGNATURE, HS2TOKEN);
       try {
         Utils.setTokenStr(sessionUgi, hmsDelegationTokenStr, HS2TOKEN);
       } catch (IOException e) {

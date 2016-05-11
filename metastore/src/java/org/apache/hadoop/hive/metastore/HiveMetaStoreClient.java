@@ -432,7 +432,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
               // this should happen on the map/reduce tasks if the client added the
               // tokens into hadoop's credential store in the front end during job
               // submission.
-              String tokenSig = conf.get("hive.metastore.token.signature");
+              String tokenSig = conf.getVar(ConfVars.METASTORE_TOKEN_SIGNATURE);
               // tokenSig could be null
               tokenStrForm = Utils.getTokenStrForm(tokenSig);
               if(tokenStrForm != null) {
