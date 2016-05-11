@@ -29,6 +29,7 @@ public class ColumnStatsDesc extends DDLDesc implements Serializable, Cloneable 
 
   private static final long serialVersionUID = 1L;
   private boolean isTblLevel;
+  private int numBitVector;
   private String tableName;
   private List<String> colName;
   private List<String> colType;
@@ -36,12 +37,22 @@ public class ColumnStatsDesc extends DDLDesc implements Serializable, Cloneable 
   public ColumnStatsDesc() {
   }
 
-  public ColumnStatsDesc(String tableName, List<String> colName,
-    List<String> colType, boolean isTblLevel) {
+  public ColumnStatsDesc(String tableName, List<String> colName, List<String> colType,
+      boolean isTblLevel) {
     this.tableName = tableName;
     this.colName = colName;
     this.colType = colType;
     this.isTblLevel = isTblLevel;
+    this.numBitVector = 0;
+  }
+  
+  public ColumnStatsDesc(String tableName, List<String> colName,
+    List<String> colType, boolean isTblLevel, int numBitVector) {
+    this.tableName = tableName;
+    this.colName = colName;
+    this.colType = colType;
+    this.isTblLevel = isTblLevel;
+    this.numBitVector = numBitVector;
   }
 
   @Explain(displayName = "Table")
@@ -79,4 +90,13 @@ public class ColumnStatsDesc extends DDLDesc implements Serializable, Cloneable 
   public void setColType(List<String> colType) {
     this.colType = colType;
   }
+
+  public int getNumBitVector() {
+    return numBitVector;
+  }
+
+  public void setNumBitVector(int numBitVector) {
+    this.numBitVector = numBitVector;
+  }
+
 }

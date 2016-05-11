@@ -39,6 +39,7 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SetPartitionsStatsRequest");
 
   private static final org.apache.thrift.protocol.TField COL_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("colStats", org.apache.thrift.protocol.TType.LIST, (short)1);
+  private static final org.apache.thrift.protocol.TField NEED_MERGE_FIELD_DESC = new org.apache.thrift.protocol.TField("needMerge", org.apache.thrift.protocol.TType.BOOL, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,10 +48,12 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
   }
 
   private List<ColumnStatistics> colStats; // required
+  private boolean needMerge; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    COL_STATS((short)1, "colStats");
+    COL_STATS((short)1, "colStats"),
+    NEED_MERGE((short)2, "needMerge");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -67,6 +70,8 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
       switch(fieldId) {
         case 1: // COL_STATS
           return COL_STATS;
+        case 2: // NEED_MERGE
+          return NEED_MERGE;
         default:
           return null;
       }
@@ -107,12 +112,17 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
   }
 
   // isset id assignments
+  private static final int __NEEDMERGE_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.NEED_MERGE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.COL_STATS, new org.apache.thrift.meta_data.FieldMetaData("colStats", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ColumnStatistics.class))));
+    tmpMap.put(_Fields.NEED_MERGE, new org.apache.thrift.meta_data.FieldMetaData("needMerge", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SetPartitionsStatsRequest.class, metaDataMap);
   }
@@ -131,6 +141,7 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
    * Performs a deep copy on <i>other</i>.
    */
   public SetPartitionsStatsRequest(SetPartitionsStatsRequest other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetColStats()) {
       List<ColumnStatistics> __this__colStats = new ArrayList<ColumnStatistics>(other.colStats.size());
       for (ColumnStatistics other_element : other.colStats) {
@@ -138,6 +149,7 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
       }
       this.colStats = __this__colStats;
     }
+    this.needMerge = other.needMerge;
   }
 
   public SetPartitionsStatsRequest deepCopy() {
@@ -147,6 +159,8 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
   @Override
   public void clear() {
     this.colStats = null;
+    setNeedMergeIsSet(false);
+    this.needMerge = false;
   }
 
   public int getColStatsSize() {
@@ -187,6 +201,28 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
     }
   }
 
+  public boolean isNeedMerge() {
+    return this.needMerge;
+  }
+
+  public void setNeedMerge(boolean needMerge) {
+    this.needMerge = needMerge;
+    setNeedMergeIsSet(true);
+  }
+
+  public void unsetNeedMerge() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __NEEDMERGE_ISSET_ID);
+  }
+
+  /** Returns true if field needMerge is set (has been assigned a value) and false otherwise */
+  public boolean isSetNeedMerge() {
+    return EncodingUtils.testBit(__isset_bitfield, __NEEDMERGE_ISSET_ID);
+  }
+
+  public void setNeedMergeIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __NEEDMERGE_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case COL_STATS:
@@ -197,6 +233,14 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
       }
       break;
 
+    case NEED_MERGE:
+      if (value == null) {
+        unsetNeedMerge();
+      } else {
+        setNeedMerge((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -204,6 +248,9 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
     switch (field) {
     case COL_STATS:
       return getColStats();
+
+    case NEED_MERGE:
+      return isNeedMerge();
 
     }
     throw new IllegalStateException();
@@ -218,6 +265,8 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
     switch (field) {
     case COL_STATS:
       return isSetColStats();
+    case NEED_MERGE:
+      return isSetNeedMerge();
     }
     throw new IllegalStateException();
   }
@@ -244,6 +293,15 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
         return false;
     }
 
+    boolean this_present_needMerge = true && this.isSetNeedMerge();
+    boolean that_present_needMerge = true && that.isSetNeedMerge();
+    if (this_present_needMerge || that_present_needMerge) {
+      if (!(this_present_needMerge && that_present_needMerge))
+        return false;
+      if (this.needMerge != that.needMerge)
+        return false;
+    }
+
     return true;
   }
 
@@ -255,6 +313,11 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
     list.add(present_colStats);
     if (present_colStats)
       list.add(colStats);
+
+    boolean present_needMerge = true && (isSetNeedMerge());
+    list.add(present_needMerge);
+    if (present_needMerge)
+      list.add(needMerge);
 
     return list.hashCode();
   }
@@ -273,6 +336,16 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
     }
     if (isSetColStats()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.colStats, other.colStats);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetNeedMerge()).compareTo(other.isSetNeedMerge());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetNeedMerge()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.needMerge, other.needMerge);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -304,6 +377,12 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
       sb.append(this.colStats);
     }
     first = false;
+    if (isSetNeedMerge()) {
+      if (!first) sb.append(", ");
+      sb.append("needMerge:");
+      sb.append(this.needMerge);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -327,6 +406,8 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -370,6 +451,14 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 2: // NEED_MERGE
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.needMerge = iprot.readBool();
+              struct.setNeedMergeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -393,6 +482,11 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
           }
           oprot.writeListEnd();
         }
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetNeedMerge()) {
+        oprot.writeFieldBegin(NEED_MERGE_FIELD_DESC);
+        oprot.writeBool(struct.needMerge);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -419,6 +513,14 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
           _iter290.write(oprot);
         }
       }
+      BitSet optionals = new BitSet();
+      if (struct.isSetNeedMerge()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetNeedMerge()) {
+        oprot.writeBool(struct.needMerge);
+      }
     }
 
     @Override
@@ -436,6 +538,11 @@ public class SetPartitionsStatsRequest implements org.apache.thrift.TBase<SetPar
         }
       }
       struct.setColStatsIsSet(true);
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.needMerge = iprot.readBool();
+        struct.setNeedMergeIsSet(true);
+      }
     }
   }
 

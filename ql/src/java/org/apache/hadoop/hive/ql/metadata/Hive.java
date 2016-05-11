@@ -3312,24 +3312,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return indexes;
   }
 
-  public boolean updateTableColumnStatistics(ColumnStatistics statsObj) throws HiveException {
-    try {
-      return getMSC().updateTableColumnStatistics(statsObj);
-    } catch (Exception e) {
-      LOG.debug(StringUtils.stringifyException(e));
-      throw new HiveException(e);
-    }
-  }
-
-  public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj) throws HiveException {
-    try {
-      return getMSC().updatePartitionColumnStatistics(statsObj);
-    } catch (Exception e) {
-      LOG.debug(StringUtils.stringifyException(e));
-      throw new HiveException(e);
-    }
-  }
-
   public boolean setPartitionColumnStatistics(SetPartitionsStatsRequest request) throws HiveException {
     try {
       return getMSC().setPartitionColumnStatistics(request);

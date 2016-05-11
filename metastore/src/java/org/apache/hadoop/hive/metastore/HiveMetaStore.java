@@ -4421,7 +4421,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         statsObj = getMS().getTableColumnStatistics(
             dbName, tableName, Lists.newArrayList(colName));
-        assert statsObj.getStatsObjSize() <= 1;
+        if (statsObj != null) {
+          assert statsObj.getStatsObjSize() <= 1;
+        }
         return statsObj;
       } finally {
         endFunction("get_column_statistics_by_table: ", statsObj != null, null, tableName);
@@ -6009,8 +6011,62 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws NoSuchObjectException, InvalidObjectException, MetaException, InvalidInputException,
         TException {
       boolean ret = true;
-      for (ColumnStatistics colStats : request.getColStats()) {
-        ret = ret && update_partition_column_statistics(colStats);
+      List<ColumnStatistics> csNews = request.getColStats();
+      if (csNews == null || csNews.isEmpty()) {
+        return ret;
+      }
+      // figure out if it is table level or partition level
+      ColumnStatistics firstColStats = csNews.get(0);
+      ColumnStatisticsDesc statsDesc = firstColStats.getStatsDesc();
+      String dbName = statsDesc.getDbName();
+      String tableName = statsDesc.getTableName();
+      List<String> colNames = new ArrayList<>();
+      for (ColumnStatisticsObj obj : firstColStats.getStatsObj()) {
+        colNames.add(obj.getColName());
+      }
+      if (statsDesc.isIsTblLevel()) {
+        // there should be only one ColumnStatistics
+        if (request.getColStatsSize() != 1) {
+          throw new MetaException(
+              "Expecting only 1 ColumnStatistics for table's column stats, but find "
+                  + request.getColStatsSize());
+        } else {
+          if (request.isSetNeedMerge() && request.isNeedMerge()) {
+            // one single call to get all column stats
+            ColumnStatistics csOld = getMS().getTableColumnStatistics(dbName, tableName, colNames);
+            if (csOld != null && csOld.getStatsObjSize() != 0) {
+              MetaStoreUtils.mergeColStats(firstColStats, csOld);
+            }
+          }
+          return update_table_column_statistics(firstColStats);
+        }
+      } else {
+        // partition level column stats merging
+        List<String> partitionNames = new ArrayList<>();
+        for (ColumnStatistics csNew : csNews) {
+          partitionNames.add(csNew.getStatsDesc().getPartName());
+        }
+        Map<String, ColumnStatistics> map = new HashMap<>();
+        if (request.isSetNeedMerge() && request.isNeedMerge()) {
+          // a single call to get all column stats for all partitions
+          List<ColumnStatistics> csOlds = getMS().getPartitionColumnStatistics(dbName, tableName,
+              partitionNames, colNames);
+          if (csNews.size() != csOlds.size()) {
+            // some of the partitions miss stats.
+            LOG.debug("Some of the partitions miss stats.");
+          }
+          for (ColumnStatistics csOld : csOlds) {
+            map.put(csOld.getStatsDesc().getPartName(), csOld);
+          }
+        }
+        for (int index = 0; index < csNews.size(); index++) {
+          ColumnStatistics csNew = csNews.get(index);
+          ColumnStatistics csOld = map.get(csNew.getStatsDesc().getPartName());
+          if (csOld != null && csOld.getStatsObjSize() != 0) {
+            MetaStoreUtils.mergeColStats(csNew, csOld);
+          }
+          ret = ret && update_partition_column_statistics(csNew);
+        }
       }
       return ret;
     }

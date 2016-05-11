@@ -8165,6 +8165,11 @@ void SetPartitionsStatsRequest::__set_colStats(const std::vector<ColumnStatistic
   this->colStats = val;
 }
 
+void SetPartitionsStatsRequest::__set_needMerge(const bool val) {
+  this->needMerge = val;
+__isset.needMerge = true;
+}
+
 uint32_t SetPartitionsStatsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -8207,6 +8212,14 @@ uint32_t SetPartitionsStatsRequest::read(::apache::thrift::protocol::TProtocol* 
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->needMerge);
+          this->__isset.needMerge = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -8238,6 +8251,11 @@ uint32_t SetPartitionsStatsRequest::write(::apache::thrift::protocol::TProtocol*
   }
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.needMerge) {
+    xfer += oprot->writeFieldBegin("needMerge", ::apache::thrift::protocol::T_BOOL, 2);
+    xfer += oprot->writeBool(this->needMerge);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -8246,19 +8264,26 @@ uint32_t SetPartitionsStatsRequest::write(::apache::thrift::protocol::TProtocol*
 void swap(SetPartitionsStatsRequest &a, SetPartitionsStatsRequest &b) {
   using ::std::swap;
   swap(a.colStats, b.colStats);
+  swap(a.needMerge, b.needMerge);
+  swap(a.__isset, b.__isset);
 }
 
 SetPartitionsStatsRequest::SetPartitionsStatsRequest(const SetPartitionsStatsRequest& other329) {
   colStats = other329.colStats;
+  needMerge = other329.needMerge;
+  __isset = other329.__isset;
 }
 SetPartitionsStatsRequest& SetPartitionsStatsRequest::operator=(const SetPartitionsStatsRequest& other330) {
   colStats = other330.colStats;
+  needMerge = other330.needMerge;
+  __isset = other330.__isset;
   return *this;
 }
 void SetPartitionsStatsRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "SetPartitionsStatsRequest(";
   out << "colStats=" << to_string(colStats);
+  out << ", " << "needMerge="; (__isset.needMerge ? (out << to_string(needMerge)) : (out << "<null>"));
   out << ")";
 }
 

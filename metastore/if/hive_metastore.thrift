@@ -449,7 +449,8 @@ struct AggrStats {
 }
 
 struct SetPartitionsStatsRequest {
-1: required list<ColumnStatistics> colStats
+1: required list<ColumnStatistics> colStats,
+2: optional bool needMerge //stats need to be merged with the existing stats
 }
 
 // schema of the table/query results etc.

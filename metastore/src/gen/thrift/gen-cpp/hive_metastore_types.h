@@ -3464,23 +3464,36 @@ inline std::ostream& operator<<(std::ostream& out, const AggrStats& obj)
   return out;
 }
 
+typedef struct _SetPartitionsStatsRequest__isset {
+  _SetPartitionsStatsRequest__isset() : needMerge(false) {}
+  bool needMerge :1;
+} _SetPartitionsStatsRequest__isset;
 
 class SetPartitionsStatsRequest {
  public:
 
   SetPartitionsStatsRequest(const SetPartitionsStatsRequest&);
   SetPartitionsStatsRequest& operator=(const SetPartitionsStatsRequest&);
-  SetPartitionsStatsRequest() {
+  SetPartitionsStatsRequest() : needMerge(0) {
   }
 
   virtual ~SetPartitionsStatsRequest() throw();
   std::vector<ColumnStatistics>  colStats;
+  bool needMerge;
+
+  _SetPartitionsStatsRequest__isset __isset;
 
   void __set_colStats(const std::vector<ColumnStatistics> & val);
+
+  void __set_needMerge(const bool val);
 
   bool operator == (const SetPartitionsStatsRequest & rhs) const
   {
     if (!(colStats == rhs.colStats))
+      return false;
+    if (__isset.needMerge != rhs.__isset.needMerge)
+      return false;
+    else if (__isset.needMerge && !(needMerge == rhs.needMerge))
       return false;
     return true;
   }

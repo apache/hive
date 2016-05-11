@@ -8340,6 +8340,10 @@ class SetPartitionsStatsRequest {
    * @var \metastore\ColumnStatistics[]
    */
   public $colStats = null;
+  /**
+   * @var bool
+   */
+  public $needMerge = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -8353,11 +8357,18 @@ class SetPartitionsStatsRequest {
             'class' => '\metastore\ColumnStatistics',
             ),
           ),
+        2 => array(
+          'var' => 'needMerge',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['colStats'])) {
         $this->colStats = $vals['colStats'];
+      }
+      if (isset($vals['needMerge'])) {
+        $this->needMerge = $vals['needMerge'];
       }
     }
   }
@@ -8399,6 +8410,13 @@ class SetPartitionsStatsRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->needMerge);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -8427,6 +8445,11 @@ class SetPartitionsStatsRequest {
         }
         $output->writeListEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->needMerge !== null) {
+      $xfer += $output->writeFieldBegin('needMerge', TType::BOOL, 2);
+      $xfer += $output->writeBool($this->needMerge);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

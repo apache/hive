@@ -1593,6 +1593,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   /** {@inheritDoc} */
   @Override
+  @Deprecated
+  //use setPartitionColumnStatistics instead
   public boolean updateTableColumnStatistics(ColumnStatistics statsObj)
     throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
     InvalidInputException{
@@ -1601,6 +1603,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   /** {@inheritDoc} */
   @Override
+  @Deprecated
+  //use setPartitionColumnStatistics instead
   public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj)
     throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
     InvalidInputException{

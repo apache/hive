@@ -1262,9 +1262,11 @@ end
 class SetPartitionsStatsRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   COLSTATS = 1
+  NEEDMERGE = 2
 
   FIELDS = {
-    COLSTATS => {:type => ::Thrift::Types::LIST, :name => 'colStats', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ColumnStatistics}}
+    COLSTATS => {:type => ::Thrift::Types::LIST, :name => 'colStats', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ColumnStatistics}},
+    NEEDMERGE => {:type => ::Thrift::Types::BOOL, :name => 'needMerge', :optional => true}
   }
 
   def struct_fields; FIELDS; end

@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
+import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
@@ -325,15 +327,19 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
 
   /** {@inheritDoc} */
   @Override
-  public boolean updateTableColumnStatistics(ColumnStatistics statsObj)
+  public boolean setPartitionColumnStatistics(SetPartitionsStatsRequest request)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
       InvalidInputException {
-    String dbName = statsObj.getStatsDesc().getDbName().toLowerCase();
-    String tableName = statsObj.getStatsDesc().getTableName().toLowerCase();
-    if (getTempTable(dbName, tableName) != null) {
-      return updateTempTableColumnStats(dbName, tableName, statsObj);
+    if (request.getColStatsSize() == 1) {
+      ColumnStatistics colStats = request.getColStatsIterator().next();
+      ColumnStatisticsDesc desc = colStats.getStatsDesc();
+      String dbName = desc.getDbName().toLowerCase();
+      String tableName = desc.getTableName().toLowerCase();
+      if (getTempTable(dbName, tableName) != null) {
+        return updateTempTableColumnStats(dbName, tableName, colStats);
+      }
     }
-    return super.updateTableColumnStatistics(statsObj);
+    return super.setPartitionColumnStatistics(request);
   }
 
   /** {@inheritDoc} */

@@ -392,22 +392,16 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
     return statsDesc;
   }
 
-  private int persistPartitionStats(Hive db) throws HiveException, MetaException, IOException {
-
-    // Fetch result of the analyze table partition (p1=c1).. compute statistics for columns ..
+  private int persistColumnStats(Hive db) throws HiveException, MetaException, IOException {
     // Construct a column statistics object from the result
     List<ColumnStatistics> colStats = constructColumnStatsFromPackedRows(db);
     // Persist the column statistics object to the metastore
-    db.setPartitionColumnStatistics(new SetPartitionsStatsRequest(colStats));
-    return 0;
-  }
-
-  private int persistTableStats(Hive db) throws HiveException, MetaException, IOException {
-    // Fetch result of the analyze table .. compute statistics for columns ..
-    // Construct a column statistics object from the result
-    ColumnStatistics colStats = constructColumnStatsFromPackedRows(db).get(0);
-    // Persist the column statistics object to the metastore
-    db.updateTableColumnStatistics(colStats);
+    // Note, this function is shared for both table and partition column stats.
+    SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats);
+    if (work.getColStats() != null && work.getColStats().getNumBitVector() > 0) {
+      request.setNeedMerge(true);
+    }
+    db.setPartitionColumnStatistics(request);
     return 0;
   }
 
@@ -415,11 +409,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
   public int execute(DriverContext driverContext) {
     try {
       Hive db = getHive();
-      if (work.getColStats().isTblLevel()) {
-        return persistTableStats(db);
-      } else {
-        return persistPartitionStats(db);
-      }
+      return persistColumnStats(db);
     } catch (Exception e) {
       LOG.error("Failed to run column stats task", e);
     }

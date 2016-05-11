@@ -55,9 +55,12 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -65,6 +68,8 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.hbase.stats.merge.ColumnStatsMerger;
+import org.apache.hadoop.hive.metastore.hbase.stats.merge.ColumnStatsMergerFactory;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -1811,4 +1816,36 @@ public class MetaStoreUtils {
     return ret;
   }
 
+  // this function will merge csOld into csNew.
+  public static void mergeColStats(ColumnStatistics csNew, ColumnStatistics csOld)
+      throws InvalidObjectException {
+    List<ColumnStatisticsObj> list = new ArrayList<>();
+    if (csNew.getStatsObj().size() != csOld.getStatsObjSize()) {
+      // Some of the columns' stats are missing
+      // This implies partition schema has changed. We will merge columns
+      // present in both, overwrite stats for columns absent in metastore and
+      // leave alone columns stats missing from stats task. This last case may
+      // leave stats in stale state. This will be addressed later.
+      LOG.debug("New ColumnStats size is " + csNew.getStatsObj().size()
+          + ". But old ColumnStats size is " + csOld.getStatsObjSize());
+    }
+    // In this case, we have to find out which columns can be merged.
+    Map<String, ColumnStatisticsObj> map = new HashMap<>();
+    // We build a hash map from colName to object for old ColumnStats.
+    for (ColumnStatisticsObj obj : csOld.getStatsObj()) {
+      map.put(obj.getColName(), obj);
+    }
+    for (int index = 0; index < csNew.getStatsObj().size(); index++) {
+      ColumnStatisticsObj statsObjNew = csNew.getStatsObj().get(index);
+      ColumnStatisticsObj statsObjOld = map.get(statsObjNew.getColName());
+      if (statsObjOld != null) {
+        // If statsObjOld is found, we can merge.
+        ColumnStatsMerger merger = ColumnStatsMergerFactory.getColumnStatsMerger(statsObjNew,
+            statsObjOld);
+        merger.merge(statsObjNew, statsObjOld);
+      }
+      list.add(statsObjNew);
+    }
+    csNew.setStatsObj(list);
+  }
 }

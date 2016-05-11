@@ -5674,15 +5674,18 @@ class SetPartitionsStatsRequest:
   """
   Attributes:
    - colStats
+   - needMerge
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.LIST, 'colStats', (TType.STRUCT,(ColumnStatistics, ColumnStatistics.thrift_spec)), None, ), # 1
+    (2, TType.BOOL, 'needMerge', None, None, ), # 2
   )
 
-  def __init__(self, colStats=None,):
+  def __init__(self, colStats=None, needMerge=None,):
     self.colStats = colStats
+    self.needMerge = needMerge
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -5704,6 +5707,11 @@ class SetPartitionsStatsRequest:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.BOOL:
+          self.needMerge = iprot.readBool()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -5721,6 +5729,10 @@ class SetPartitionsStatsRequest:
         iter259.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
+    if self.needMerge is not None:
+      oprot.writeFieldBegin('needMerge', TType.BOOL, 2)
+      oprot.writeBool(self.needMerge)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -5733,6 +5745,7 @@ class SetPartitionsStatsRequest:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.colStats)
+    value = (value * 31) ^ hash(self.needMerge)
     return value
 
   def __repr__(self):
