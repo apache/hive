@@ -47,7 +47,7 @@ public class SparkHashTableSinkOperator
     extends TerminalOperator<SparkHashTableSinkDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
   private final String CLASS_NAME = this.getClass().getName();
-  private final PerfLogger perfLogger = SessionState.getPerfLogger();
+  private final transient PerfLogger perfLogger = SessionState.getPerfLogger();
   protected static final Logger LOG = LoggerFactory.getLogger(SparkHashTableSinkOperator.class.getName());
   public static final String DFS_REPLICATION_MAX = "dfs.replication.max";
   private int minReplication = 10;
