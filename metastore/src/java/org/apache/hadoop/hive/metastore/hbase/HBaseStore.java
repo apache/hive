@@ -2599,4 +2599,16 @@ public class HBaseStore implements RawStore {
     String constraintName) throws NoSuchObjectException {
     // TODO Auto-generated method stub 
   }
+
+  @Override
+  public void addPrimaryKeys(List<SQLPrimaryKey> pks)
+    throws InvalidObjectException, MetaException {
+    // TODO Auto-generated method stub
+  }
+
+  @Override
+  public void addForeignKeys(List<SQLForeignKey> fks)
+    throws InvalidObjectException, MetaException {
+    // TODO Auto-generated method stub
+  }
 }

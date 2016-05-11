@@ -1576,4 +1576,9 @@ public interface IMetaStoreClient {
   void dropConstraint(String dbName, String tableName, String constraintName) throws 
     MetaException, NoSuchObjectException, TException;
 
+  void addPrimaryKey(List<SQLPrimaryKey> primaryKeyCols) throws
+  MetaException, NoSuchObjectException, TException;
+
+  void addForeignKey(List<SQLForeignKey> foreignKeyCols) throws
+  MetaException, NoSuchObjectException, TException;
 }

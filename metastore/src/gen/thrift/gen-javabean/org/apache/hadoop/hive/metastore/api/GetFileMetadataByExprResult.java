@@ -444,16 +444,16 @@ public class GetFileMetadataByExprResult implements org.apache.thrift.TBase<GetF
           case 1: // METADATA
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map548 = iprot.readMapBegin();
-                struct.metadata = new HashMap<Long,MetadataPpdResult>(2*_map548.size);
-                long _key549;
-                MetadataPpdResult _val550;
-                for (int _i551 = 0; _i551 < _map548.size; ++_i551)
+                org.apache.thrift.protocol.TMap _map564 = iprot.readMapBegin();
+                struct.metadata = new HashMap<Long,MetadataPpdResult>(2*_map564.size);
+                long _key565;
+                MetadataPpdResult _val566;
+                for (int _i567 = 0; _i567 < _map564.size; ++_i567)
                 {
-                  _key549 = iprot.readI64();
-                  _val550 = new MetadataPpdResult();
-                  _val550.read(iprot);
-                  struct.metadata.put(_key549, _val550);
+                  _key565 = iprot.readI64();
+                  _val566 = new MetadataPpdResult();
+                  _val566.read(iprot);
+                  struct.metadata.put(_key565, _val566);
                 }
                 iprot.readMapEnd();
               }
@@ -487,10 +487,10 @@ public class GetFileMetadataByExprResult implements org.apache.thrift.TBase<GetF
         oprot.writeFieldBegin(METADATA_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT, struct.metadata.size()));
-          for (Map.Entry<Long, MetadataPpdResult> _iter552 : struct.metadata.entrySet())
+          for (Map.Entry<Long, MetadataPpdResult> _iter568 : struct.metadata.entrySet())
           {
-            oprot.writeI64(_iter552.getKey());
-            _iter552.getValue().write(oprot);
+            oprot.writeI64(_iter568.getKey());
+            _iter568.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -518,10 +518,10 @@ public class GetFileMetadataByExprResult implements org.apache.thrift.TBase<GetF
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.metadata.size());
-        for (Map.Entry<Long, MetadataPpdResult> _iter553 : struct.metadata.entrySet())
+        for (Map.Entry<Long, MetadataPpdResult> _iter569 : struct.metadata.entrySet())
         {
-          oprot.writeI64(_iter553.getKey());
-          _iter553.getValue().write(oprot);
+          oprot.writeI64(_iter569.getKey());
+          _iter569.getValue().write(oprot);
         }
       }
       oprot.writeBool(struct.isSupported);
@@ -531,16 +531,16 @@ public class GetFileMetadataByExprResult implements org.apache.thrift.TBase<GetF
     public void read(org.apache.thrift.protocol.TProtocol prot, GetFileMetadataByExprResult struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TMap _map554 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.metadata = new HashMap<Long,MetadataPpdResult>(2*_map554.size);
-        long _key555;
-        MetadataPpdResult _val556;
-        for (int _i557 = 0; _i557 < _map554.size; ++_i557)
+        org.apache.thrift.protocol.TMap _map570 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.metadata = new HashMap<Long,MetadataPpdResult>(2*_map570.size);
+        long _key571;
+        MetadataPpdResult _val572;
+        for (int _i573 = 0; _i573 < _map570.size; ++_i573)
         {
-          _key555 = iprot.readI64();
-          _val556 = new MetadataPpdResult();
-          _val556.read(iprot);
-          struct.metadata.put(_key555, _val556);
+          _key571 = iprot.readI64();
+          _val572 = new MetadataPpdResult();
+          _val572.read(iprot);
+          struct.metadata.put(_key571, _val572);
         }
       }
       struct.setMetadataIsSet(true);

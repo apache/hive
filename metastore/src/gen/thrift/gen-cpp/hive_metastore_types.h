@@ -253,6 +253,10 @@ class ForeignKeysResponse;
 
 class DropConstraintRequest;
 
+class AddPrimaryKeyRequest;
+
+class AddForeignKeyRequest;
+
 class PartitionsByExprResult;
 
 class PartitionsByExprRequest;
@@ -3832,6 +3836,86 @@ class DropConstraintRequest {
 void swap(DropConstraintRequest &a, DropConstraintRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const DropConstraintRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class AddPrimaryKeyRequest {
+ public:
+
+  AddPrimaryKeyRequest(const AddPrimaryKeyRequest&);
+  AddPrimaryKeyRequest& operator=(const AddPrimaryKeyRequest&);
+  AddPrimaryKeyRequest() {
+  }
+
+  virtual ~AddPrimaryKeyRequest() throw();
+  std::vector<SQLPrimaryKey>  primaryKeyCols;
+
+  void __set_primaryKeyCols(const std::vector<SQLPrimaryKey> & val);
+
+  bool operator == (const AddPrimaryKeyRequest & rhs) const
+  {
+    if (!(primaryKeyCols == rhs.primaryKeyCols))
+      return false;
+    return true;
+  }
+  bool operator != (const AddPrimaryKeyRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AddPrimaryKeyRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AddPrimaryKeyRequest &a, AddPrimaryKeyRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const AddPrimaryKeyRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class AddForeignKeyRequest {
+ public:
+
+  AddForeignKeyRequest(const AddForeignKeyRequest&);
+  AddForeignKeyRequest& operator=(const AddForeignKeyRequest&);
+  AddForeignKeyRequest() {
+  }
+
+  virtual ~AddForeignKeyRequest() throw();
+  std::vector<SQLForeignKey>  foreignKeyCols;
+
+  void __set_foreignKeyCols(const std::vector<SQLForeignKey> & val);
+
+  bool operator == (const AddForeignKeyRequest & rhs) const
+  {
+    if (!(foreignKeyCols == rhs.foreignKeyCols))
+      return false;
+    return true;
+  }
+  bool operator != (const AddForeignKeyRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AddForeignKeyRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AddForeignKeyRequest &a, AddForeignKeyRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const AddForeignKeyRequest& obj)
 {
   obj.printTo(out);
   return out;

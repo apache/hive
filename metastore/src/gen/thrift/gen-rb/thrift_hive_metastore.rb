@@ -352,6 +352,38 @@ module ThriftHiveMetastore
       return
     end
 
+    def add_primary_key(req)
+      send_add_primary_key(req)
+      recv_add_primary_key()
+    end
+
+    def send_add_primary_key(req)
+      send_message('add_primary_key', Add_primary_key_args, :req => req)
+    end
+
+    def recv_add_primary_key()
+      result = receive_message(Add_primary_key_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def add_foreign_key(req)
+      send_add_foreign_key(req)
+      recv_add_foreign_key()
+    end
+
+    def send_add_foreign_key(req)
+      send_message('add_foreign_key', Add_foreign_key_args, :req => req)
+    end
+
+    def recv_add_foreign_key()
+      result = receive_message(Add_foreign_key_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
     def drop_table(dbname, name, deleteData)
       send_drop_table(dbname, name, deleteData)
       recv_drop_table()
@@ -2733,6 +2765,32 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'drop_constraint', seqid)
     end
 
+    def process_add_primary_key(seqid, iprot, oprot)
+      args = read_args(iprot, Add_primary_key_args)
+      result = Add_primary_key_result.new()
+      begin
+        @handler.add_primary_key(args.req)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'add_primary_key', seqid)
+    end
+
+    def process_add_foreign_key(seqid, iprot, oprot)
+      args = read_args(iprot, Add_foreign_key_args)
+      result = Add_foreign_key_result.new()
+      begin
+        @handler.add_foreign_key(args.req)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'add_foreign_key', seqid)
+    end
+
     def process_drop_table(seqid, iprot, oprot)
       args = read_args(iprot, Drop_table_args)
       result = Drop_table_result.new()
@@ -5011,6 +5069,74 @@ module ThriftHiveMetastore
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_primary_key_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::AddPrimaryKeyRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_primary_key_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_foreign_key_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::AddForeignKeyRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_foreign_key_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

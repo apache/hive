@@ -122,6 +122,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_constraint\n");
   }
 
+  void add_primary_key(const AddPrimaryKeyRequest& req) {
+    // Your implementation goes here
+    printf("add_primary_key\n");
+  }
+
+  void add_foreign_key(const AddForeignKeyRequest& req) {
+    // Your implementation goes here
+    printf("add_foreign_key\n");
+  }
+
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) {
     // Your implementation goes here
     printf("drop_table\n");

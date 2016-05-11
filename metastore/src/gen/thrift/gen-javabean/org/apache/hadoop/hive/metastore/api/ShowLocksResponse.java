@@ -350,14 +350,14 @@ public class ShowLocksResponse implements org.apache.thrift.TBase<ShowLocksRespo
           case 1: // LOCKS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list484 = iprot.readListBegin();
-                struct.locks = new ArrayList<ShowLocksResponseElement>(_list484.size);
-                ShowLocksResponseElement _elem485;
-                for (int _i486 = 0; _i486 < _list484.size; ++_i486)
+                org.apache.thrift.protocol.TList _list500 = iprot.readListBegin();
+                struct.locks = new ArrayList<ShowLocksResponseElement>(_list500.size);
+                ShowLocksResponseElement _elem501;
+                for (int _i502 = 0; _i502 < _list500.size; ++_i502)
                 {
-                  _elem485 = new ShowLocksResponseElement();
-                  _elem485.read(iprot);
-                  struct.locks.add(_elem485);
+                  _elem501 = new ShowLocksResponseElement();
+                  _elem501.read(iprot);
+                  struct.locks.add(_elem501);
                 }
                 iprot.readListEnd();
               }
@@ -383,9 +383,9 @@ public class ShowLocksResponse implements org.apache.thrift.TBase<ShowLocksRespo
         oprot.writeFieldBegin(LOCKS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.locks.size()));
-          for (ShowLocksResponseElement _iter487 : struct.locks)
+          for (ShowLocksResponseElement _iter503 : struct.locks)
           {
-            _iter487.write(oprot);
+            _iter503.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -416,9 +416,9 @@ public class ShowLocksResponse implements org.apache.thrift.TBase<ShowLocksRespo
       if (struct.isSetLocks()) {
         {
           oprot.writeI32(struct.locks.size());
-          for (ShowLocksResponseElement _iter488 : struct.locks)
+          for (ShowLocksResponseElement _iter504 : struct.locks)
           {
-            _iter488.write(oprot);
+            _iter504.write(oprot);
           }
         }
       }
@@ -430,14 +430,14 @@ public class ShowLocksResponse implements org.apache.thrift.TBase<ShowLocksRespo
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list489 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.locks = new ArrayList<ShowLocksResponseElement>(_list489.size);
-          ShowLocksResponseElement _elem490;
-          for (int _i491 = 0; _i491 < _list489.size; ++_i491)
+          org.apache.thrift.protocol.TList _list505 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.locks = new ArrayList<ShowLocksResponseElement>(_list505.size);
+          ShowLocksResponseElement _elem506;
+          for (int _i507 = 0; _i507 < _list505.size; ++_i507)
           {
-            _elem490 = new ShowLocksResponseElement();
-            _elem490.read(iprot);
-            struct.locks.add(_elem490);
+            _elem506 = new ShowLocksResponseElement();
+            _elem506.read(iprot);
+            struct.locks.add(_elem506);
           }
         }
         struct.setLocksIsSet(true);

@@ -911,9 +911,12 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       createTable(tbl);
-      addPrimaryKeys(primaryKeys);
-      addForeignKeys(foreignKeys);
-	  success = commitTransaction();
+      // Add primary keys and foreign keys.
+      // We need not do a deep retrieval of the Table Column Descriptor while persisting the PK/FK
+      // since this transaction involving create table is not yet committed.
+      addPrimaryKeys(primaryKeys, false);
+      addForeignKeys(foreignKeys, false);
+      success = commitTransaction();
     } finally {
       if (!success) {
         rollbackTransaction();
@@ -1265,7 +1268,20 @@ public class ObjectStore implements RawStore, Configurable {
     return getTables(dbName, ".*");
   }
 
-  private MTable getMTable(String db, String table) {
+  class AttachedMTableInfo {
+    MTable mtbl;
+    MColumnDescriptor mcd;
+
+    public AttachedMTableInfo() {}
+
+    public AttachedMTableInfo(MTable mtbl, MColumnDescriptor mcd) {
+      this.mtbl = mtbl;
+      this.mcd = mcd;
+    }
+  }
+
+  private AttachedMTableInfo getMTable(String db, String table, boolean retrieveCD) {
+    AttachedMTableInfo nmtbl = new AttachedMTableInfo();
     MTable mtbl = null;
     boolean commited = false;
     Query query = null;
@@ -1278,6 +1294,12 @@ public class ObjectStore implements RawStore, Configurable {
       query.setUnique(true);
       mtbl = (MTable) query.execute(table, db);
       pm.retrieve(mtbl);
+      // Retrieving CD can be expensive and unnecessary, so do it only when required.
+      if (mtbl != null && retrieveCD) {
+        pm.retrieve(mtbl.getSd());
+        pm.retrieveAll(mtbl.getSd().getCD());
+        nmtbl.mcd = mtbl.getSd().getCD();
+      }
       commited = commitTransaction();
     } finally {
       if (!commited) {
@@ -1287,7 +1309,13 @@ public class ObjectStore implements RawStore, Configurable {
         query.closeAll();
       }
     }
-    return mtbl;
+    nmtbl.mtbl = mtbl;
+    return nmtbl;
+  }
+
+  private MTable getMTable(String db, String table) {
+    AttachedMTableInfo nmtbl = getMTable(db, table, false);
+    return nmtbl.mtbl;
   }
 
   @Override
@@ -3302,8 +3330,10 @@ public class ObjectStore implements RawStore, Configurable {
     return sds;
   }
 
-  private int getColumnIndexForTable(MTable mtbl, String col) {
-    List<MFieldSchema> cols = mtbl.getSd().getCD().getCols();
+  private int getColumnIndexFromTableColumns(List<MFieldSchema> cols, String col) {
+    if (cols == null) {
+      return -1;
+    }
     for (int i = 0; i < cols.size(); i++) {
       MFieldSchema mfs = cols.get(i);
       if (mfs.getName().equalsIgnoreCase(col)) {
@@ -3351,33 +3381,47 @@ public class ObjectStore implements RawStore, Configurable {
     throw new MetaException("Error while trying to generate the constraint name for " + ArrayUtils.toString(parameters));
   }
 
+  @Override
+  public void addForeignKeys(
+    List<SQLForeignKey> fks) throws InvalidObjectException, MetaException {
+   addForeignKeys(fks, true);
+  }
+
   private void addForeignKeys(
-    List<SQLForeignKey> fks) throws InvalidObjectException,
+    List<SQLForeignKey> fks, boolean retrieveCD) throws InvalidObjectException,
     MetaException {
     List<MConstraint> mpkfks = new ArrayList<MConstraint>();
     String currentConstraintName = null;
 
     for (int i = 0; i < fks.size(); i++) {
-      MTable parentTable =
-        getMTable(fks.get(i).getPktable_db(), fks.get(i).getPktable_name());
+      AttachedMTableInfo nParentTable = getMTable(fks.get(i).getPktable_db(), fks.get(i).getPktable_name(), retrieveCD);
+      MTable parentTable = nParentTable.mtbl;
       if (parentTable == null) {
         throw new InvalidObjectException("Parent table not found: " + fks.get(i).getPktable_name());
       }
-      MTable childTable =
-        getMTable(fks.get(i).getFktable_db(), fks.get(i).getFktable_name());
+
+      AttachedMTableInfo nChildTable = getMTable(fks.get(i).getFktable_db(), fks.get(i).getFktable_name(), retrieveCD);
+      MTable childTable = nChildTable.mtbl;
       if (childTable == null) {
         throw new InvalidObjectException("Child table not found: " + fks.get(i).getFktable_name());
       }
+
+      MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
+      List<MFieldSchema> parentCols = parentCD.getCols();
       int parentIntegerIndex =
-        getColumnIndexForTable(parentTable, fks.get(i).getPkcolumn_name());
+        getColumnIndexFromTableColumns(parentCols, fks.get(i).getPkcolumn_name());
       if (parentIntegerIndex == -1) {
         throw new InvalidObjectException("Parent column not found: " + fks.get(i).getPkcolumn_name());
       }
+
+      MColumnDescriptor childCD = retrieveCD ? nChildTable.mcd : childTable.getSd().getCD();
+      List<MFieldSchema> childCols = childCD.getCols();
       int childIntegerIndex =
-        getColumnIndexForTable(childTable, fks.get(i).getFkcolumn_name());
+        getColumnIndexFromTableColumns(childCols, fks.get(i).getFkcolumn_name());
       if (childIntegerIndex == -1) {
-        throw new InvalidObjectException("Child column not found" + fks.get(i).getFkcolumn_name());
+        throw new InvalidObjectException("Child column not found: " + fks.get(i).getFkcolumn_name());
       }
+
       if (fks.get(i).getFk_name() == null) {
         // When there is no explicit foreign key name associated with the constraint and the key is composite,
         // we expect the foreign keys to be send in order in the input list.
@@ -3407,8 +3451,8 @@ public class ObjectStore implements RawStore, Configurable {
         enableValidateRely,
         parentTable,
         childTable,
-        parentTable.getSd().getCD(),
-        childTable.getSd().getCD(),
+        parentCD,
+        childCD,
         childIntegerIndex,
         parentIntegerIndex
       );
@@ -3417,18 +3461,29 @@ public class ObjectStore implements RawStore, Configurable {
     pm.makePersistentAll(mpkfks);
   }
 
-  private void addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException,
+  @Override
+  public void addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException,
+    MetaException {
+    addPrimaryKeys(pks, true);
+  }
+
+  private void addPrimaryKeys(List<SQLPrimaryKey> pks, boolean retrieveCD) throws InvalidObjectException,
     MetaException {
     List<MConstraint> mpks = new ArrayList<MConstraint>();
     String constraintName = null;
+
     for (int i = 0; i < pks.size(); i++) {
-      MTable parentTable =
-        getMTable(pks.get(i).getTable_db(), pks.get(i).getTable_name());
+      AttachedMTableInfo nParentTable =
+        getMTable(pks.get(i).getTable_db(), pks.get(i).getTable_name(), retrieveCD);
+      MTable parentTable = nParentTable.mtbl;
       if (parentTable == null) {
         throw new InvalidObjectException("Parent table not found: " + pks.get(i).getTable_name());
       }
+
+      MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
       int parentIntegerIndex =
-        getColumnIndexForTable(parentTable, pks.get(i).getColumn_name());
+        getColumnIndexFromTableColumns(parentCD.getCols(), pks.get(i).getColumn_name());
+
       if (parentIntegerIndex == -1) {
         throw new InvalidObjectException("Parent column not found: " + pks.get(i).getColumn_name());
       }
@@ -3445,6 +3500,7 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         constraintName = pks.get(i).getPk_name();
       }
+
       int enableValidateRely = (pks.get(i).isEnable_cstr() ? 4 : 0) +
       (pks.get(i).isValidate_cstr() ? 2 : 0) + (pks.get(i).isRely_cstr() ? 1 : 0);
       MConstraint mpk = new MConstraint(
@@ -3456,7 +3512,7 @@ public class ObjectStore implements RawStore, Configurable {
         enableValidateRely,
         parentTable,
         null,
-        parentTable.getSd().getCD(),
+        parentCD,
         null,
         null,
         parentIntegerIndex);

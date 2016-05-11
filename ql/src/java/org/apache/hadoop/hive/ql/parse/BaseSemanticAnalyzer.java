@@ -706,13 +706,50 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   /**
+   * Process the primary keys from the ast nodes and populate the SQLPrimaryKey list.
+   * As of now, this is used by 'alter table add constraint' command. We expect constraint
+   * name to be user specified.
+   * @param parent Parent of the primary key token node
+   * @param child Child of the primary key token node containing the primary key columns details
+   * @param primaryKeys SQLPrimaryKey list to be populated by this function
+   * @throws SemanticException
+   */
+  protected static void processPrimaryKeys(ASTNode parent, ASTNode child, List<SQLPrimaryKey> primaryKeys)
+    throws SemanticException {
+    int relyIndex = 4;
+    int cnt = 1;
+    String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
+    for (int j = 0; j < child.getChild(1).getChildCount(); j++) {
+     Tree grandChild = child.getChild(1).getChild(j);
+     boolean rely = child.getChild(relyIndex).getType() == HiveParser.TOK_VALIDATE;
+     boolean enable =  child.getChild(relyIndex+1).getType() == HiveParser.TOK_ENABLE;
+     boolean validate =  child.getChild(relyIndex+2).getType() == HiveParser.TOK_VALIDATE;
+     if (enable) {
+       throw new SemanticException(
+         ErrorMsg.INVALID_PK_SYNTAX.getMsg(" ENABLE feature not supported yet"));
+     }
+     if (validate) {
+       throw new SemanticException(
+         ErrorMsg.INVALID_PK_SYNTAX.getMsg(" VALIDATE feature not supported yet"));
+     }
+     primaryKeys.add(
+       new SQLPrimaryKey(
+         qualifiedTabName[0], qualifiedTabName[1],
+         unescapeIdentifier(grandChild.getText().toLowerCase()),
+         cnt++,
+         unescapeIdentifier(child.getChild(3).getText().toLowerCase()), false, false,
+         rely));
+    }
+  }
+
+  /**
    * Process the foreign keys from the AST and populate the foreign keys in the SQLForeignKey list
    * @param parent  Parent of the foreign key token node
    * @param child Foreign Key token node
    * @param foreignKeys SQLForeignKey list
    * @throws SemanticException
    */
-  private static void processForeignKeys(
+  protected static void processForeignKeys(
     ASTNode parent, ASTNode child, List<SQLForeignKey> foreignKeys) throws SemanticException {
     String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
     // The ANTLR grammar looks like :

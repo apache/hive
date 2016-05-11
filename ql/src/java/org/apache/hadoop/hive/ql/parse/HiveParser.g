@@ -180,6 +180,7 @@ TOK_ALTERTABLE_BUCKETS;
 TOK_ALTERTABLE_CLUSTER_SORT;
 TOK_ALTERTABLE_COMPACT;
 TOK_ALTERTABLE_DROPCONSTRAINT;
+TOK_ALTERTABLE_ADDCONSTRAINT;
 TOK_ALTERINDEX_REBUILD;
 TOK_ALTERINDEX_PROPERTIES;
 TOK_MSCK;
@@ -1046,6 +1047,7 @@ alterTableStatementSuffix
     | alterStatementSuffixExchangePartition
     | alterStatementPartitionKeyType
     | alterStatementSuffixDropConstraint
+    | alterStatementSuffixAddConstraint
     | partitionSpec? alterTblPartitionStatementSuffix -> alterTblPartitionStatementSuffix partitionSpec?
     ;
 
@@ -1134,6 +1136,14 @@ alterStatementSuffixAddCol
     -> {$add != null}? ^(TOK_ALTERTABLE_ADDCOLS columnNameTypeList restrictOrCascade?)
     ->                 ^(TOK_ALTERTABLE_REPLACECOLS columnNameTypeList restrictOrCascade?)
     ;
+
+alterStatementSuffixAddConstraint
+@init { pushMsg("add constraint statement", state); }
+@after { popMsg(state); }
+   :  KW_ADD (fk=foreignKeyWithName | primaryKeyWithName)
+   -> {fk != null}? ^(TOK_ALTERTABLE_ADDCONSTRAINT foreignKeyWithName)
+   ->               ^(TOK_ALTERTABLE_ADDCONSTRAINT primaryKeyWithName)
+   ;
 
 alterStatementSuffixDropConstraint
 @init { pushMsg("drop constraint statement", state); }

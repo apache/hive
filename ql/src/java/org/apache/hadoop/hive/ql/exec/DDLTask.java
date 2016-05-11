@@ -362,6 +362,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (alterTbl != null) {
         if (alterTbl.getOp() == AlterTableTypes.DROPCONSTRAINT ) {
           return dropConstraint(db, alterTbl);
+        } else if (alterTbl.getOp() == AlterTableTypes.ADDCONSTRAINT) {
+          return addConstraint(db, alterTbl);
         } else {
           return alterTable(db, alterTbl);
         }
@@ -3630,6 +3632,21 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
      return 0;
    }
+
+   private int addConstraint(Hive db, AlterTableDesc alterTbl)
+    throws SemanticException, HiveException {
+    try {
+    // This is either an alter table add foreign key or add primary key command.
+    if (!alterTbl.getForeignKeyCols().isEmpty()) {
+       db.addForeignKey(alterTbl.getForeignKeyCols());
+     } else if (!alterTbl.getPrimaryKeyCols().isEmpty()) {
+       db.addPrimaryKey(alterTbl.getPrimaryKeyCols());
+     }
+    } catch (NoSuchObjectException e) {
+      throw new HiveException(e);
+    }
+    return 0;
+  }
 
    /**
    * Drop a given table or some partitions. DropTableDesc is currently used for both.

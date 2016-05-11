@@ -44,6 +44,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void create_table_with_environment_context(Table tbl, EnvironmentContext environment_context)')
   print('  void create_table_with_constraints(Table tbl,  primaryKeys,  foreignKeys)')
   print('  void drop_constraint(DropConstraintRequest req)')
+  print('  void add_primary_key(AddPrimaryKeyRequest req)')
+  print('  void add_foreign_key(AddForeignKeyRequest req)')
   print('  void drop_table(string dbname, string name, bool deleteData)')
   print('  void drop_table_with_environment_context(string dbname, string name, bool deleteData, EnvironmentContext environment_context)')
   print('   get_tables(string db_name, string pattern)')
@@ -359,6 +361,18 @@ elif cmd == 'drop_constraint':
     print('drop_constraint requires 1 args')
     sys.exit(1)
   pp.pprint(client.drop_constraint(eval(args[0]),))
+
+elif cmd == 'add_primary_key':
+  if len(args) != 1:
+    print('add_primary_key requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.add_primary_key(eval(args[0]),))
+
+elif cmd == 'add_foreign_key':
+  if len(args) != 1:
+    print('add_foreign_key requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.add_foreign_key(eval(args[0]),))
 
 elif cmd == 'drop_table':
   if len(args) != 3:

@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.plan;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
@@ -56,7 +58,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     DROPPARTITION("drop partition"), RENAMEPARTITION("rename partition"), ADDSKEWEDBY("add skew column"),
     ALTERSKEWEDLOCATION("alter skew location"), ALTERBUCKETNUM("alter bucket number"),
     ALTERPARTITION("alter partition"), COMPACT("compact"),
-    TRUNCATE("truncate"), MERGEFILES("merge files"), DROPCONSTRAINT("drop constraint");
+    TRUNCATE("truncate"), MERGEFILES("merge files"), DROPCONSTRAINT("drop constraint"), ADDCONSTRAINT("add constraint");
     ;
 
     private final String name;
@@ -117,6 +119,8 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   boolean isCascade = false;
   EnvironmentContext environmentContext;
   String dropConstraintName;
+  List<SQLPrimaryKey> primaryKeyCols;
+  List<SQLForeignKey> foreignKeyCols;
 
   public AlterTableDesc() {
   }
@@ -270,6 +274,13 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     op = AlterTableTypes.DROPCONSTRAINT;
   }
 
+  public AlterTableDesc(String tableName, List<SQLPrimaryKey> primaryKeyCols, List<SQLForeignKey> foreignKeyCols) {
+    this.oldName = tableName;
+    this.primaryKeyCols = primaryKeyCols;
+    this.foreignKeyCols = foreignKeyCols;
+    op = AlterTableTypes.ADDCONSTRAINT;
+  }
+
   @Explain(displayName = "new columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public List<String> getNewColsString() {
     return Utilities.getFieldSchemaString(getNewCols());
@@ -412,6 +423,36 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   @Explain(displayName = "storage handler", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getStorageHandler() {
     return storageHandler;
+  }
+
+  /**
+   * @param primaryKeyCols
+   *          the primary key cols to set
+   */
+  public void setPrimaryKeyCols(List<SQLPrimaryKey> primaryKeyCols) {
+    this.primaryKeyCols = primaryKeyCols;
+  }
+
+  /**
+   * @return the primary key cols
+   */
+  public List<SQLPrimaryKey> getPrimaryKeyCols() {
+    return primaryKeyCols;
+  }
+
+  /**
+   * @param foreignKeyCols
+   *          the foreign key cols to set
+   */
+  public void setForeignKeyCols(List<SQLForeignKey> foreignKeyCols) {
+    this.foreignKeyCols = foreignKeyCols;
+  }
+
+  /**
+   * @return the foreign key cols
+   */
+  public List<SQLForeignKey> getForeignKeyCols() {
+    return foreignKeyCols;
   }
 
   /**

@@ -29,8 +29,10 @@ import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
+import org.apache.hadoop.hive.metastore.api.AddForeignKeyRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsResult;
+import org.apache.hadoop.hive.metastore.api.AddPrimaryKeyRequest;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.CacheFileMetadataRequest;
@@ -770,6 +772,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public void dropConstraint(String dbName, String tableName, String constraintName) throws
     NoSuchObjectException, MetaException, TException {
     client.drop_constraint(new DropConstraintRequest(dbName, tableName, constraintName));
+  }
+
+  @Override
+  public void addPrimaryKey(List<SQLPrimaryKey> primaryKeyCols) throws
+    NoSuchObjectException, MetaException, TException {
+    client.add_primary_key(new AddPrimaryKeyRequest(primaryKeyCols));
+  }
+
+  @Override
+  public void addForeignKey(List<SQLForeignKey> foreignKeyCols) throws
+    NoSuchObjectException, MetaException, TException {
+    client.add_foreign_key(new AddForeignKeyRequest(foreignKeyCols));
   }
 
 /**

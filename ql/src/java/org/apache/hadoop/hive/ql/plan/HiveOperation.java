@@ -117,6 +117,8 @@ public enum HiveOperation {
   ALTERTABLE_EXCHANGEPARTITION("ALTERTABLE_EXCHANGEPARTITION", null, null),
   ALTERTABLE_DROPCONSTRAINT("ALTERTABLE_DROPCONSTRAINT",
       new Privilege[]{Privilege.ALTER_METADATA}, null),
+  ALTERTABLE_ADDCONSTRAINT("ALTERTABLE_ADDCONSTRAINT",
+      new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERVIEW_RENAME("ALTERVIEW_RENAME", new Privilege[] {Privilege.ALTER_METADATA}, null),
   ALTERVIEW_AS("ALTERVIEW_AS", new Privilege[] {Privilege.ALTER_METADATA}, null),
   ALTERTABLE_COMPACT("ALTERTABLE_COMPACT", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.ALTER_DATA}),

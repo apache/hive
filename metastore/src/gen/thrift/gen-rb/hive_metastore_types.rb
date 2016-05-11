@@ -1409,6 +1409,40 @@ class DropConstraintRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class AddPrimaryKeyRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PRIMARYKEYCOLS = 1
+
+  FIELDS = {
+    PRIMARYKEYCOLS => {:type => ::Thrift::Types::LIST, :name => 'primaryKeyCols', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLPrimaryKey}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field primaryKeyCols is unset!') unless @primaryKeyCols
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class AddForeignKeyRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  FOREIGNKEYCOLS = 1
+
+  FIELDS = {
+    FOREIGNKEYCOLS => {:type => ::Thrift::Types::LIST, :name => 'foreignKeyCols', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLForeignKey}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field foreignKeyCols is unset!') unless @foreignKeyCols
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class PartitionsByExprResult
   include ::Thrift::Struct, ::Thrift::Struct_Union
   PARTITIONS = 1

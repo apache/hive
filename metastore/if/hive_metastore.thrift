@@ -493,6 +493,14 @@ struct DropConstraintRequest {
   3: required string constraintname
 }
 
+struct AddPrimaryKeyRequest {
+  1: required list<SQLPrimaryKey> primaryKeyCols
+}
+
+struct AddForeignKeyRequest {
+  1: required list<SQLForeignKey> foreignKeyCols
+}
+
 // Return type for get_partitions_by_expr
 struct PartitionsByExprResult {
   1: required list<Partition> partitions,
@@ -994,6 +1002,10 @@ service ThriftHiveMetastore extends fb303.FacebookService
               4:NoSuchObjectException o4)
   void drop_constraint(1:DropConstraintRequest req)
       throws(1:NoSuchObjectException o1, 2:MetaException o3)
+  void add_primary_key(1:AddPrimaryKeyRequest req)
+      throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  void add_foreign_key(1:AddForeignKeyRequest req)
+      throws(1:NoSuchObjectException o1, 2:MetaException o2)  
 
   // drops the table and all the partitions associated with it if the table has partitions
   // delete data (including partitions) if deleteData is set to true

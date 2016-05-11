@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import java.util.TreeMap;
 
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 
@@ -64,7 +64,7 @@ public class ForeignKeyInfo implements Serializable {
   public ForeignKeyInfo(List<SQLForeignKey> fks, String childTableName, String childDatabaseName) {
     this.childTableName = childTableName;
     this.childDatabaseName = childDatabaseName;
-    foreignKeys = new HashMap<String, List<ForeignKeyCol>>();
+    foreignKeys = new TreeMap<String, List<ForeignKeyCol>>();
     if (fks == null) {
       return;
     }

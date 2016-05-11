@@ -3656,4 +3656,21 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  public void addPrimaryKey(List<SQLPrimaryKey> primaryKeyCols)
+    throws HiveException, NoSuchObjectException {
+    try {
+      getMSC().addPrimaryKey(primaryKeyCols);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void addForeignKey(List<SQLForeignKey> foreignKeyCols)
+    throws HiveException, NoSuchObjectException {
+    try {
+      getMSC().addForeignKey(foreignKeyCols);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
 };

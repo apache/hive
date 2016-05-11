@@ -1,0 +1,11 @@
+PREHOOK: query: CREATE TABLE table1 (a STRING, b STRING, primary key (a) disable novalidate)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
+POSTHOOK: query: CREATE TABLE table1 (a STRING, b STRING, primary key (a) disable novalidate)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1
+PREHOOK: query: alter table table1 add constraint pk4 primary key (b) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message: Primary key already exists for: default.table1)
