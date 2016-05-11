@@ -77,6 +77,9 @@ public class DbTxnManager extends HiveTxnManagerImpl {
    */
   private int statementId = -1;
 
+  // QueryId for the query in current transaction
+  private String queryId;
+
   // ExecutorService for sending heartbeat to metastore periodically.
   private static ScheduledExecutorService heartbeatExecutorService = null;
   private ScheduledFuture<?> heartbeatTask = null;
@@ -136,8 +139,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
   @Override
   public void acquireLocks(QueryPlan plan, Context ctx, String username) throws LockException {
     try {
-      acquireLocks(plan, ctx, username, true);
-      startHeartbeat();
+      acquireLocksWithHeartbeatDelay(plan, ctx, username, 0);
     }
     catch(LockException e) {
       if(e.getCause() instanceof TxnAbortedException) {
@@ -307,7 +309,8 @@ public class DbTxnManager extends HiveTxnManagerImpl {
   @VisibleForTesting
   void acquireLocksWithHeartbeatDelay(QueryPlan plan, Context ctx, String username, long delay) throws LockException {
     acquireLocks(plan, ctx, username, true);
-    startHeartbeat(delay);
+    ctx.setHeartbeater(startHeartbeat(delay));
+    queryId = plan.getQueryId();
   }
 
 
@@ -414,28 +417,51 @@ public class DbTxnManager extends HiveTxnManagerImpl {
     }
   }
 
-  private void startHeartbeat() throws LockException {
-    startHeartbeat(0);
+  private Heartbeater startHeartbeat() throws LockException {
+    return startHeartbeat(0);
   }
 
   /**
    *  This is for testing only.  Normally client should call {@link #startHeartbeat()}
    *  Make the heartbeater start before an initial delay period.
    *  @param delay time to delay before first execution, in milliseconds
+   *  @return heartbeater
    */
-  void startHeartbeat(long delay) throws LockException {
+  Heartbeater startHeartbeat(long delay) throws LockException {
     long heartbeatInterval = getHeartbeatInterval(conf);
     assert heartbeatInterval > 0;
+    Heartbeater heartbeater = new Heartbeater(this, conf);
     heartbeatTask = heartbeatExecutorService.scheduleAtFixedRate(
-        new Heartbeater(this), delay, heartbeatInterval, TimeUnit.MILLISECONDS);
-    LOG.info("Started " + Heartbeater.class.getName() + " with delay/interval = " +
-        0 + "/" + heartbeatInterval + " " + TimeUnit.MILLISECONDS);
+        heartbeater, delay, heartbeatInterval, TimeUnit.MILLISECONDS);
+    LOG.info("Started heartbeat with delay/interval = " + 0 + "/" + heartbeatInterval + " " +
+        TimeUnit.MILLISECONDS + " for query: " + queryId);
+    return heartbeater;
   }
 
-  private void stopHeartbeat() {
-    if (heartbeatTask != null && !heartbeatTask.isCancelled() && !heartbeatTask.isDone()) {
-      heartbeatTask.cancel(false);
+  private void stopHeartbeat() throws LockException {
+    if (heartbeatTask != null) {
+      heartbeatTask.cancel(true);
+      long startTime = System.currentTimeMillis();
+      long sleepInterval = 100;
+      while (!heartbeatTask.isCancelled() && !heartbeatTask.isDone()) {
+        // We will wait for 30 seconds for the task to be cancelled.
+        // If it's still not cancelled (unlikely), we will just move on.
+        long now = System.currentTimeMillis();
+        if (now - startTime > 30000) {
+          LOG.warn("Heartbeat task cannot be cancelled for unknown reason. QueryId: " + queryId);
+          break;
+        }
+        try {
+          Thread.sleep(sleepInterval);
+        } catch (InterruptedException e) {
+        }
+        sleepInterval *= 2;
+      }
+      if (heartbeatTask.isCancelled() || heartbeatTask.isDone()) {
+        LOG.info("Stopped heartbeat for query: " + queryId);
+      }
       heartbeatTask = null;
+      queryId = null;
     }
   }
 
@@ -553,13 +579,21 @@ public class DbTxnManager extends HiveTxnManagerImpl {
    */
   public static class Heartbeater implements Runnable {
     private HiveTxnManager txnMgr;
+    private HiveConf conf;
+
+    LockException lockException;
+    public LockException getLockException() {
+      return lockException;
+    }
 
     /**
      *
      * @param txnMgr transaction manager for this operation
      */
-    public Heartbeater(HiveTxnManager txnMgr) {
+    public Heartbeater(HiveTxnManager txnMgr, HiveConf conf) {
       this.txnMgr = txnMgr;
+      this.conf = conf;
+      lockException = null;
     }
 
     /**
@@ -568,10 +602,16 @@ public class DbTxnManager extends HiveTxnManagerImpl {
     @Override
     public void run() {
       try {
+        // For negative testing purpose..
+        if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILHEARTBEATER)) {
+          throw new LockException(HiveConf.ConfVars.HIVETESTMODEFAILHEARTBEATER.name() + "=true");
+        }
+
         LOG.debug("Heartbeating...");
         txnMgr.heartbeat();
       } catch (LockException e) {
         LOG.error("Failed trying to heartbeat " + e.getMessage());
+        lockException = e;
       }
     }
   }

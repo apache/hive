@@ -34,4 +34,4 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 Job Submission failed with exception 'java.io.IOException(Size of data to read during a compact-index-based query exceeded the maximum of 1024 set in hive.index.compact.query.max.size)'
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask. Size of data to read during a compact-index-based query exceeded the maximum of 1024 set in hive.index.compact.query.max.size

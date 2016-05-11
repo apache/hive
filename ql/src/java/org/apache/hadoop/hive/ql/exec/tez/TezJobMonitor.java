@@ -38,6 +38,7 @@ import java.util.TreeSet;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -217,7 +218,7 @@ public class TezJobMonitor {
    * @return int 0 - success, 1 - killed, 2 - failed
    */
   public int monitorExecution(final DAGClient dagClient, HiveConf conf,
-      DAG dag) throws InterruptedException {
+      DAG dag, Context ctx) throws InterruptedException {
     long monitorStartTime = System.currentTimeMillis();
     DAGStatus status = null;
     completed = new HashSet<String>();
@@ -247,6 +248,10 @@ public class TezJobMonitor {
     while (true) {
 
       try {
+        if (ctx != null) {
+          ctx.checkHeartbeaterLockException();
+        }
+
         status = dagClient.getDAGStatus(opts, checkInterval);
         progressMap = status.getVertexProgress();
         DAGStatus.State state = status.getState();
