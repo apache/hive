@@ -1792,6 +1792,7 @@ public class StatsRulesProcFactory {
         }
       }
 
+      denom = denom == 0 ? 1 : denom;
       factor = (double) max / (double) denom;
 
       for (int i = 0; i < rowCountParents.size(); i++) {

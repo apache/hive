@@ -1,0 +1,173 @@
+PREHOOK: query: create table testdeci2(
+id int,
+amount decimal(10,3),
+sales_tax decimal(10,3),
+item string)
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testdeci2
+POSTHOOK: query: create table testdeci2(
+id int,
+amount decimal(10,3),
+sales_tax decimal(10,3),
+item string)
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testdeci2
+PREHOOK: query: insert into table testdeci2 values(1,12.123,12345.123,'desk1'),(2,123.123,1234.123,'desk2')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@testdeci2
+POSTHOOK: query: insert into table testdeci2 values(1,12.123,12345.123,'desk1'),(2,123.123,1234.123,'desk2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@testdeci2
+POSTHOOK: Lineage: testdeci2.amount EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: testdeci2.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: testdeci2.item SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: testdeci2.sales_tax EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+PREHOOK: query: describe formatted testdeci2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@testdeci2
+POSTHOOK: query: describe formatted testdeci2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@testdeci2
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+amount              	decimal(10,3)       	                    
+sales_tax           	decimal(10,3)       	                    
+item                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	totalSize           	578                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted testdeci2 amount
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@testdeci2
+POSTHOOK: query: describe formatted testdeci2 amount
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@testdeci2
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+amount              	decimal(10,3)       	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: analyze table testdeci2 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testdeci2
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table testdeci2 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testdeci2
+#### A masked pattern was here ####
+PREHOOK: query: analyze table testdeci2 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testdeci2
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table testdeci2 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testdeci2
+#### A masked pattern was here ####
+PREHOOK: query: explain
+select s.id,
+coalesce(d.amount,0) as sales,
+coalesce(d.sales_tax,0) as tax
+from testdeci2 s join testdeci2 d
+on s.item=d.item and d.id=2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select s.id,
+coalesce(d.amount,0) as sales,
+coalesce(d.sales_tax,0) as tax
+from testdeci2 s join testdeci2 d
+on s.item=d.item and d.id=2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s
+            Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: item is not null (type: boolean)
+              Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: id (type: int), item (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
+                  Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: int)
+          TableScan
+            alias: s
+            Statistics: Num rows: 1 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: ((id = 2) and item is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: amount (type: decimal(10,3)), sales_tax (type: decimal(10,3)), item (type: string)
+                outputColumnNames: _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col3 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col3 (type: string)
+                  Statistics: Num rows: 1 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: decimal(10,3)), _col2 (type: decimal(10,3))
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 _col1 (type: string)
+            1 _col3 (type: string)
+          outputColumnNames: _col0, _col3, _col4
+          Statistics: Num rows: 5 Data size: 1140 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: _col0 (type: int), COALESCE(_col3,0) (type: decimal(13,3)), COALESCE(_col4,0) (type: decimal(13,3))
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 5 Data size: 1140 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 5 Data size: 1140 Basic stats: COMPLETE Column stats: COMPLETE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

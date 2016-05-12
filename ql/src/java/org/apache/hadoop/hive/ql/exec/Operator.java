@@ -412,7 +412,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   /**
-   * This metod can be used to retrieve the results from async operations
+   * This method can be used to retrieve the results from async operations
    * started at init time - before the operator pipeline is started.
    *
    * @param os

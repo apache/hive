@@ -1205,17 +1205,22 @@ public class HBaseUtils {
       if (decimalData.isSetBitVectors()) {
         builder.setBitVectors(decimalData.getBitVectors());
       }
-      builder.setDecimalStats(
-          HbaseMetastoreProto.ColumnStats.DecimalStats
-              .newBuilder()
-              .setLowValue(
-                  HbaseMetastoreProto.ColumnStats.DecimalStats.Decimal.newBuilder()
-                      .setUnscaled(ByteString.copyFrom(decimalData.getLowValue().getUnscaled()))
-                      .setScale(decimalData.getLowValue().getScale()).build())
-              .setHighValue(
-                  HbaseMetastoreProto.ColumnStats.DecimalStats.Decimal.newBuilder()
-                      .setUnscaled(ByteString.copyFrom(decimalData.getHighValue().getUnscaled()))
-                      .setScale(decimalData.getHighValue().getScale()).build())).build();
+      if (decimalData.getLowValue() != null && decimalData.getHighValue() != null) {
+        builder.setDecimalStats(
+            HbaseMetastoreProto.ColumnStats.DecimalStats
+                .newBuilder()
+                .setLowValue(
+                    HbaseMetastoreProto.ColumnStats.DecimalStats.Decimal.newBuilder()
+                        .setUnscaled(ByteString.copyFrom(decimalData.getLowValue().getUnscaled()))
+                        .setScale(decimalData.getLowValue().getScale()).build())
+                .setHighValue(
+                    HbaseMetastoreProto.ColumnStats.DecimalStats.Decimal.newBuilder()
+                        .setUnscaled(ByteString.copyFrom(decimalData.getHighValue().getUnscaled()))
+                        .setScale(decimalData.getHighValue().getScale()).build())).build();
+      } else {
+        builder.setDecimalStats(HbaseMetastoreProto.ColumnStats.DecimalStats.newBuilder().clear()
+            .build());
+      }
       break;
 
     default:
