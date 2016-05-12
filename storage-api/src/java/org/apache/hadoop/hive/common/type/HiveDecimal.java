@@ -35,8 +35,8 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
    * Default precision/scale when user doesn't specify in the column metadata, such as
    * decimal and decimal(8).
    */
-  public static final int USER_DEFAULT_PRECISION = 10;
-  public static final int USER_DEFAULT_SCALE = 0;
+  public static final int USER_DEFAULT_PRECISION = 38;
+  public static final int USER_DEFAULT_SCALE = 18;
 
   /**
    *  Default precision/scale when system is not able to determine them, such as in case
