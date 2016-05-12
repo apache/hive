@@ -246,7 +246,6 @@ public class SortedDynPartitionOptimizer extends Transform {
       // Create SelectDesc
       SelectDesc selConf = new SelectDesc(descs, colNames);
 
-
       // Create Select Operator
       SelectOperator selOp = (SelectOperator) OperatorFactory.getAndMakeChild(
               selConf, selRS, rsOp);
@@ -420,7 +419,6 @@ public class SortedDynPartitionOptimizer extends Transform {
       // 1) Partition columns
       // 2) Bucket number column
       // 3) Sort columns
-      // 4) Null sort columns
       Set<Integer> keyColsPosInVal = Sets.newLinkedHashSet();
       ArrayList<ExprNodeDesc> keyCols = Lists.newArrayList();
       List<Integer> newSortOrder = Lists.newArrayList();

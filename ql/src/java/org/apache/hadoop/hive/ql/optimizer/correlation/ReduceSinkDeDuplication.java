@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -50,11 +51,12 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-
-import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * If two reducer sink operators share the same partition/sort columns and order,
@@ -64,6 +66,8 @@ import com.google.common.collect.Lists;
  * This optimizer removes/replaces child-RS (not parent) which is safer way for DefaultGraphWalker.
  */
 public class ReduceSinkDeDuplication extends Transform {
+
+  protected static final Logger LOG = LoggerFactory.getLogger(ReduceSinkDeDuplication.class);
 
   private static final String RS = ReduceSinkOperator.getOperatorName();
   private static final String GBY = GroupByOperator.getOperatorName();
@@ -253,7 +257,7 @@ public class ReduceSinkDeDuplication extends Transform {
      */
     protected boolean merge(ReduceSinkOperator cRS, ReduceSinkOperator pRS, int minReducer)
         throws SemanticException {
-      int[] result = checkStatus(cRS, pRS, minReducer);
+      int[] result = extractMergeDirections(cRS, pRS, minReducer);
       if (result == null) {
         return false;
       }
@@ -334,7 +338,7 @@ public class ReduceSinkDeDuplication extends Transform {
      * 2. for -1, configuration of parent RS is more specific than child RS
      * 3. for 1, configuration of child RS is more specific than parent RS
      */
-    private int[] checkStatus(ReduceSinkOperator cRS, ReduceSinkOperator pRS, int minReducer)
+    private int[] extractMergeDirections(ReduceSinkOperator cRS, ReduceSinkOperator pRS, int minReducer)
         throws SemanticException {
       ReduceSinkDesc cConf = cRS.getConf();
       ReduceSinkDesc pConf = pRS.getConf();
@@ -494,6 +498,112 @@ public class ReduceSinkDeDuplication extends Transform {
       }
       return 0;
     }
+
+    protected boolean aggressiveDedup(ReduceSinkOperator cRS, ReduceSinkOperator pRS,
+            ReduceSinkDeduplicateProcCtx dedupCtx) throws SemanticException {
+      assert cRS.getNumParent() == 1;
+
+      ReduceSinkDesc cConf = cRS.getConf();
+      ReduceSinkDesc pConf = pRS.getConf();
+      List<ExprNodeDesc> cKeys = cConf.getKeyCols();
+      List<ExprNodeDesc> pKeys = pConf.getKeyCols();
+
+      // Check that in the path between cRS and pRS, there are only Select operators
+      // i.e. the sequence must be pRS-SEL*-cRS
+      Operator<? extends OperatorDesc> parent = cRS.getParentOperators().get(0);
+      while (parent != pRS) {
+        assert parent.getNumParent() == 1;
+        if (!(parent instanceof SelectOperator)) {
+          return false;
+        }
+        parent = parent.getParentOperators().get(0);
+      }
+
+      // If child keys are null or empty, we bail out
+      if (cKeys == null || cKeys.isEmpty()) {
+        return false;
+      }
+      // If parent keys are null or empty, we bail out
+      if (pKeys == null || pKeys.isEmpty()) {
+        return false;
+      }
+
+      // Backtrack key columns of cRS to pRS
+      // If we cannot backtrack any of the columns, bail out
+      List<ExprNodeDesc> cKeysInParentRS = ExprNodeDescUtils.backtrack(cKeys, cRS, pRS);
+      for (int i = 0; i < cKeysInParentRS.size(); i++) {
+        ExprNodeDesc pexpr = cKeysInParentRS.get(i);
+        if (pexpr == null) {
+          // We cannot backtrack the expression, we bail out
+          return false;
+        }
+      }
+      cRS.getConf().setKeyCols(ExprNodeDescUtils.backtrack(cKeysInParentRS, cRS, pRS));
+
+      // Backtrack partition columns of cRS to pRS
+      // If we cannot backtrack any of the columns, bail out
+      List<ExprNodeDesc> cPartitionInParentRS = ExprNodeDescUtils.backtrack(
+              cConf.getPartitionCols(), cRS, pRS);
+      for (int i = 0; i < cPartitionInParentRS.size(); i++) {
+        ExprNodeDesc pexpr = cPartitionInParentRS.get(i);
+        if (pexpr == null) {
+          // We cannot backtrack the expression, we bail out
+          return false;
+        }
+      }
+      cRS.getConf().setPartitionCols(ExprNodeDescUtils.backtrack(cPartitionInParentRS, cRS, pRS));
+
+      // Backtrack value columns of cRS to pRS
+      // If we cannot backtrack any of the columns, bail out
+      List<ExprNodeDesc> cValueInParentRS = ExprNodeDescUtils.backtrack(
+              cConf.getValueCols(), cRS, pRS);
+      for (int i = 0; i < cValueInParentRS.size(); i++) {
+        ExprNodeDesc pexpr = cValueInParentRS.get(i);
+        if (pexpr == null) {
+          // We cannot backtrack the expression, we bail out
+          return false;
+        }
+      }
+      cRS.getConf().setValueCols(ExprNodeDescUtils.backtrack(cValueInParentRS, cRS, pRS));
+
+      // Backtrack bucket columns of cRS to pRS (if any)
+      // If we cannot backtrack any of the columns, bail out
+      if (cConf.getBucketCols() != null) {
+        List<ExprNodeDesc> cBucketInParentRS = ExprNodeDescUtils.backtrack(
+                cConf.getBucketCols(), cRS, pRS);
+        for (int i = 0; i < cBucketInParentRS.size(); i++) {
+          ExprNodeDesc pexpr = cBucketInParentRS.get(i);
+          if (pexpr == null) {
+            // We cannot backtrack the expression, we bail out
+            return false;
+          }
+        }
+        cRS.getConf().setBucketCols(ExprNodeDescUtils.backtrack(cBucketInParentRS, cRS, pRS));
+      }
+
+      // Update column expression map
+      for (Entry<String, ExprNodeDesc> e : cRS.getColumnExprMap().entrySet()) {
+        e.setValue(ExprNodeDescUtils.backtrack(e.getValue(), cRS, pRS));
+      }
+
+      // Replace pRS with cRS and remove operator sequence from pRS to cRS
+      // Recall that the sequence must be pRS-SEL*-cRS
+      parent = cRS.getParentOperators().get(0);
+      while (parent != pRS) {
+        dedupCtx.addRemovedOperator(parent);
+        parent = parent.getParentOperators().get(0);
+      }
+      dedupCtx.addRemovedOperator(pRS);
+      cRS.getParentOperators().clear();
+      for (Operator<? extends OperatorDesc> op : pRS.getParentOperators()) {
+        op.replaceChild(pRS, cRS);
+        cRS.getParentOperators().add(op);
+      }
+      pRS.getParentOperators().clear();
+      pRS.getChildOperators().clear();
+
+      return true;
+    }
   }
 
   static class GroupbyReducerProc extends AbsctractReducerReducerProc {
@@ -601,11 +711,18 @@ public class ReduceSinkDeDuplication extends Transform {
       ReduceSinkOperator pRS =
           CorrelationUtilities.findPossibleParent(
               cRS, ReduceSinkOperator.class, dedupCtx.trustScript());
-      if (pRS != null && merge(cRS, pRS, dedupCtx.minReducer())) {
-        CorrelationUtilities.replaceReduceSinkWithSelectOperator(
-            cRS, dedupCtx.getPctx(), dedupCtx);
-        pRS.getConf().setDeduplicated(true);
-        return true;
+      if (pRS != null) {
+        // Try extended deduplication
+        if (aggressiveDedup(cRS, pRS, dedupCtx)) {
+          return true;
+        }
+        // Normal deduplication
+        if (merge(cRS, pRS, dedupCtx.minReducer())) {
+          CorrelationUtilities.replaceReduceSinkWithSelectOperator(
+              cRS, dedupCtx.getPctx(), dedupCtx);
+          pRS.getConf().setDeduplicated(true);
+          return true;
+        }
       }
       return false;
     }
