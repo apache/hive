@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -26,6 +29,8 @@ import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+
+import java.sql.Timestamp;
 
 // If there is a new UDFType to describe a function that is deterministic within a query
 // but changes value between queries, this function would fall into that category.
@@ -37,6 +42,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 public class GenericUDFCurrentTimestamp extends GenericUDF {
 
   protected TimestampWritable currentTimestamp;
+  private Configuration conf;
+
+  @Override
+  public void configure(MapredContext context) {
+    super.configure(context);
+    conf = context.getJobConf();
+  }
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)
@@ -48,7 +60,19 @@ public class GenericUDFCurrentTimestamp extends GenericUDF {
     }
 
     if (currentTimestamp == null) {
-      currentTimestamp = new TimestampWritable(SessionState.get().getQueryCurrentTimestamp());
+      SessionState ss = SessionState.get();
+      Timestamp queryTimestamp;
+      if (ss == null) {
+        if (conf == null) {
+          queryTimestamp = new Timestamp(System.currentTimeMillis());
+        } else {
+          queryTimestamp = new Timestamp(
+                  HiveConf.getLongVar(conf, HiveConf.ConfVars.HIVE_QUERY_TIMESTAMP));
+        }
+      } else {
+        queryTimestamp = ss.getQueryCurrentTimestamp();
+      }
+      currentTimestamp = new TimestampWritable(queryTimestamp);
     }
 
     return PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;

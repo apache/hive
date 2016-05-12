@@ -19,7 +19,11 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.io.PrintStream;
+import java.sql.Timestamp;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
@@ -40,6 +44,14 @@ import org.apache.hadoop.io.LongWritable;
 public class GenericUDFUnixTimeStamp extends GenericUDFToUnixTimeStamp {
   private static final Logger LOG = LoggerFactory.getLogger(GenericUDFUnixTimeStamp.class);
   private LongWritable currentTimestamp; // retValue is transient so store this separately.
+  private Configuration conf;
+
+  @Override
+  public void configure(MapredContext context) {
+    super.configure(context);
+    conf = context.getJobConf();
+  }
+
   @Override
   protected void initializeInput(ObjectInspector[] arguments) throws UDFArgumentException {
     if (arguments.length > 0) {
@@ -47,7 +59,19 @@ public class GenericUDFUnixTimeStamp extends GenericUDFToUnixTimeStamp {
     } else {
       if (currentTimestamp == null) {
         currentTimestamp = new LongWritable(0);
-        setValueFromTs(currentTimestamp, SessionState.get().getQueryCurrentTimestamp());
+        SessionState ss = SessionState.get();
+        Timestamp queryTimestamp;
+        if (ss == null) {
+          if (conf == null) {
+            queryTimestamp = new Timestamp(System.currentTimeMillis());
+          } else {
+            queryTimestamp = new Timestamp(
+                    HiveConf.getLongVar(conf, HiveConf.ConfVars.HIVE_QUERY_TIMESTAMP));
+          }
+        } else {
+          queryTimestamp = ss.getQueryCurrentTimestamp();
+        }
+        setValueFromTs(currentTimestamp, queryTimestamp);
         String msg = "unix_timestamp(void) is deprecated. Use current_timestamp instead.";
         LOG.warn(msg);
         PrintStream stream = LogHelper.getInfoStream();
