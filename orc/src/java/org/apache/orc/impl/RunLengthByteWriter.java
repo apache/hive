@@ -18,6 +18,8 @@
 package org.apache.orc.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A streamFactory that writes a sequence of bytes. A control byte is written before
@@ -33,6 +35,8 @@ public class RunLengthByteWriter {
   private int numLiterals = 0;
   private boolean repeat = false;
   private int tailRunLength = 0;
+  private List<PositionedOutputStream.CompressionCallback> callbacks =
+      new ArrayList<>();
 
   public RunLengthByteWriter(PositionedOutputStream output) {
     this.output = output;
@@ -51,6 +55,10 @@ public class RunLengthByteWriter {
       tailRunLength = 0;
       numLiterals = 0;
     }
+    for(PositionedOutputStream.CompressionCallback cb: callbacks) {
+      output.registerCallback(cb);
+    }
+    callbacks.clear();
   }
 
   public void flush() throws IOException {
@@ -102,5 +110,13 @@ public class RunLengthByteWriter {
   public void getPosition(PositionRecorder recorder) throws IOException {
     output.getPosition(recorder);
     recorder.addPosition(numLiterals);
+  }
+
+  public void registerCallback(PositionedOutputStream.CompressionCallback cb) {
+    if (numLiterals == 0) {
+      output.registerCallback(cb);
+    } else {
+      callbacks.add(cb);
+    }
   }
 }

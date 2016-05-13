@@ -17,10 +17,6 @@
  */
 package org.apache.orc.impl;
 
-import org.apache.orc.impl.PositionRecorder;
-import org.apache.orc.impl.PositionedOutputStream;
-import org.apache.orc.impl.RunLengthByteWriter;
-
 import java.io.IOException;
 
 public class BitFieldWriter {
@@ -69,5 +65,9 @@ public class BitFieldWriter {
   public void getPosition(PositionRecorder recorder) throws IOException {
     output.getPosition(recorder);
     recorder.addPosition(8 - bitsLeft);
+  }
+
+  public void registerCallback(PositionedOutputStream.CompressionCallback cb) {
+    output.registerCallback(cb);
   }
 }

@@ -39,17 +39,17 @@ File Statistics:
   Column 3: count: 21000 hasNull: false min: Darkness, max: worst sum: 81761
 
 Stripes:
-  Stripe: offset: 3 data: 63786 rows: 5000 tail: 85 index: 6974
+  Stripe: offset: 3 data: 63786 rows: 5000 tail: 85 index: 6997
     Stream: column 0 section ROW_INDEX start: 3 length 17
-    Stream: column 1 section ROW_INDEX start: 20 length 166
-    Stream: column 2 section ROW_INDEX start: 186 length 169
-    Stream: column 2 section BLOOM_FILTER start: 355 length 6535
-    Stream: column 3 section ROW_INDEX start: 6890 length 87
-    Stream: column 1 section DATA start: 6977 length 20035
-    Stream: column 2 section DATA start: 27012 length 40050
-    Stream: column 3 section DATA start: 67062 length 3543
-    Stream: column 3 section LENGTH start: 70605 length 25
-    Stream: column 3 section DICTIONARY_DATA start: 70630 length 133
+    Stream: column 1 section ROW_INDEX start: 20 length 175
+    Stream: column 2 section ROW_INDEX start: 195 length 176
+    Stream: column 2 section BLOOM_FILTER start: 371 length 6535
+    Stream: column 3 section ROW_INDEX start: 6906 length 94
+    Stream: column 1 section DATA start: 7000 length 20035
+    Stream: column 2 section DATA start: 27035 length 40050
+    Stream: column 3 section DATA start: 67085 length 3543
+    Stream: column 3 section LENGTH start: 70628 length 25
+    Stream: column 3 section DICTIONARY_DATA start: 70653 length 133
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
@@ -67,17 +67,17 @@ Stripes:
       Entry 3: numHashFunctions: 7 bitCount: 9600 popCount: 4971 loadFactor: 0.5178 expectedFpp: 0.009981772
       Entry 4: numHashFunctions: 7 bitCount: 9600 popCount: 4949 loadFactor: 0.5155 expectedFpp: 0.009676614
       Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 9347 loadFactor: 0.9736 expectedFpp: 0.829482
-  Stripe: offset: 70848 data: 63775 rows: 5000 tail: 85 index: 6965
-    Stream: column 0 section ROW_INDEX start: 70848 length 17
-    Stream: column 1 section ROW_INDEX start: 70865 length 164
-    Stream: column 2 section ROW_INDEX start: 71029 length 168
-    Stream: column 2 section BLOOM_FILTER start: 71197 length 6533
-    Stream: column 3 section ROW_INDEX start: 77730 length 83
-    Stream: column 1 section DATA start: 77813 length 20035
-    Stream: column 2 section DATA start: 97848 length 40050
-    Stream: column 3 section DATA start: 137898 length 3532
-    Stream: column 3 section LENGTH start: 141430 length 25
-    Stream: column 3 section DICTIONARY_DATA start: 141455 length 133
+  Stripe: offset: 70871 data: 63775 rows: 5000 tail: 85 index: 6987
+    Stream: column 0 section ROW_INDEX start: 70871 length 17
+    Stream: column 1 section ROW_INDEX start: 70888 length 175
+    Stream: column 2 section ROW_INDEX start: 71063 length 174
+    Stream: column 2 section BLOOM_FILTER start: 71237 length 6533
+    Stream: column 3 section ROW_INDEX start: 77770 length 88
+    Stream: column 1 section DATA start: 77858 length 20035
+    Stream: column 2 section DATA start: 97893 length 40050
+    Stream: column 3 section DATA start: 137943 length 3532
+    Stream: column 3 section LENGTH start: 141475 length 25
+    Stream: column 3 section DICTIONARY_DATA start: 141500 length 133
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
@@ -95,17 +95,17 @@ Stripes:
       Entry 3: numHashFunctions: 7 bitCount: 9600 popCount: 4962 loadFactor: 0.5169 expectedFpp: 0.009855959
       Entry 4: numHashFunctions: 7 bitCount: 9600 popCount: 4966 loadFactor: 0.5173 expectedFpp: 0.009911705
       Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 9344 loadFactor: 0.9733 expectedFpp: 0.8276205
-  Stripe: offset: 141673 data: 63787 rows: 5000 tail: 85 index: 6971
-    Stream: column 0 section ROW_INDEX start: 141673 length 17
-    Stream: column 1 section ROW_INDEX start: 141690 length 163
-    Stream: column 2 section ROW_INDEX start: 141853 length 168
-    Stream: column 2 section BLOOM_FILTER start: 142021 length 6533
-    Stream: column 3 section ROW_INDEX start: 148554 length 90
-    Stream: column 1 section DATA start: 148644 length 20035
-    Stream: column 2 section DATA start: 168679 length 40050
-    Stream: column 3 section DATA start: 208729 length 3544
-    Stream: column 3 section LENGTH start: 212273 length 25
-    Stream: column 3 section DICTIONARY_DATA start: 212298 length 133
+  Stripe: offset: 141718 data: 63787 rows: 5000 tail: 85 index: 6993
+    Stream: column 0 section ROW_INDEX start: 141718 length 17
+    Stream: column 1 section ROW_INDEX start: 141735 length 175
+    Stream: column 2 section ROW_INDEX start: 141910 length 174
+    Stream: column 2 section BLOOM_FILTER start: 142084 length 6533
+    Stream: column 3 section ROW_INDEX start: 148617 length 94
+    Stream: column 1 section DATA start: 148711 length 20035
+    Stream: column 2 section DATA start: 168746 length 40050
+    Stream: column 3 section DATA start: 208796 length 3544
+    Stream: column 3 section LENGTH start: 212340 length 25
+    Stream: column 3 section DICTIONARY_DATA start: 212365 length 133
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
@@ -123,17 +123,17 @@ Stripes:
       Entry 3: numHashFunctions: 7 bitCount: 9600 popCount: 4943 loadFactor: 0.5149 expectedFpp: 0.009594797
       Entry 4: numHashFunctions: 7 bitCount: 9600 popCount: 4930 loadFactor: 0.5135 expectedFpp: 0.009419539
       Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 9333 loadFactor: 0.9722 expectedFpp: 0.82082444
-  Stripe: offset: 212516 data: 63817 rows: 5000 tail: 85 index: 6964
-    Stream: column 0 section ROW_INDEX start: 212516 length 17
-    Stream: column 1 section ROW_INDEX start: 212533 length 165
-    Stream: column 2 section ROW_INDEX start: 212698 length 167
-    Stream: column 2 section BLOOM_FILTER start: 212865 length 6524
-    Stream: column 3 section ROW_INDEX start: 219389 length 91
-    Stream: column 1 section DATA start: 219480 length 20035
-    Stream: column 2 section DATA start: 239515 length 40050
-    Stream: column 3 section DATA start: 279565 length 3574
-    Stream: column 3 section LENGTH start: 283139 length 25
-    Stream: column 3 section DICTIONARY_DATA start: 283164 length 133
+  Stripe: offset: 212583 data: 63817 rows: 5000 tail: 85 index: 6987
+    Stream: column 0 section ROW_INDEX start: 212583 length 17
+    Stream: column 1 section ROW_INDEX start: 212600 length 176
+    Stream: column 2 section ROW_INDEX start: 212776 length 173
+    Stream: column 2 section BLOOM_FILTER start: 212949 length 6524
+    Stream: column 3 section ROW_INDEX start: 219473 length 97
+    Stream: column 1 section DATA start: 219570 length 20035
+    Stream: column 2 section DATA start: 239605 length 40050
+    Stream: column 3 section DATA start: 279655 length 3574
+    Stream: column 3 section LENGTH start: 283229 length 25
+    Stream: column 3 section DICTIONARY_DATA start: 283254 length 133
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
@@ -151,17 +151,17 @@ Stripes:
       Entry 3: numHashFunctions: 7 bitCount: 9600 popCount: 4941 loadFactor: 0.5147 expectedFpp: 0.009567649
       Entry 4: numHashFunctions: 7 bitCount: 9600 popCount: 4993 loadFactor: 0.5201 expectedFpp: 0.010295142
       Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 9353 loadFactor: 0.9743 expectedFpp: 0.8332165
-  Stripe: offset: 283382 data: 12943 rows: 1000 tail: 78 index: 1468
-    Stream: column 0 section ROW_INDEX start: 283382 length 12
-    Stream: column 1 section ROW_INDEX start: 283394 length 38
-    Stream: column 2 section ROW_INDEX start: 283432 length 41
-    Stream: column 2 section BLOOM_FILTER start: 283473 length 1337
-    Stream: column 3 section ROW_INDEX start: 284810 length 40
-    Stream: column 1 section DATA start: 284850 length 4007
-    Stream: column 2 section DATA start: 288857 length 8010
-    Stream: column 3 section DATA start: 296867 length 768
-    Stream: column 3 section LENGTH start: 297635 length 25
-    Stream: column 3 section DICTIONARY_DATA start: 297660 length 133
+  Stripe: offset: 283472 data: 12943 rows: 1000 tail: 78 index: 1480
+    Stream: column 0 section ROW_INDEX start: 283472 length 12
+    Stream: column 1 section ROW_INDEX start: 283484 length 42
+    Stream: column 2 section ROW_INDEX start: 283526 length 45
+    Stream: column 2 section BLOOM_FILTER start: 283571 length 1337
+    Stream: column 3 section ROW_INDEX start: 284908 length 44
+    Stream: column 1 section DATA start: 284952 length 4007
+    Stream: column 2 section DATA start: 288959 length 8010
+    Stream: column 3 section DATA start: 296969 length 768
+    Stream: column 3 section LENGTH start: 297737 length 25
+    Stream: column 3 section DICTIONARY_DATA start: 297762 length 133
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
@@ -172,7 +172,7 @@ Stripes:
       Entry 0: numHashFunctions: 7 bitCount: 9600 popCount: 4948 loadFactor: 0.5154 expectedFpp: 0.00966294
       Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 4948 loadFactor: 0.5154 expectedFpp: 0.00966294
 
-File length: 298416 bytes
+File length: 298516 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________

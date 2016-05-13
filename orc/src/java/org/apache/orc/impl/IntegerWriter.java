@@ -44,4 +44,9 @@ public interface IntegerWriter {
    * @throws IOException
    */
   void flush() throws IOException;
+
+  /**
+   * Register a callback for when the next compression is done.
+   */
+  void registerCallback(OutStream.CompressionCallback callback);
 }

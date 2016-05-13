@@ -63,7 +63,6 @@ import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.io.Text;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
@@ -96,9 +95,6 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
 
   private static final int HDFS_BUFFER_SIZE = 256 * 1024;
   private static final int MIN_ROW_INDEX_STRIDE = 1000;
-
-  // threshold above which buffer size will be automatically resized
-  private static final int COLUMN_COUNT_THRESHOLD = 1000;
 
   private final FileSystem fs;
   private final Path path;
@@ -383,6 +379,134 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
   }
 
+  private static int nextRowIndexEntryId = 0;
+
+  /**
+   * This class builds the RowIndexEntry for the row indexes. It represents
+   * the information about a row group (10,000 rows) with both the statistics
+   * and the position information.
+   */
+  static class RowIndexEntry implements PositionRecorder {
+    private int nextStream = 0;
+    private int streamsLeft = 0;
+    private boolean isActive = false;
+    private final int columnId;
+    private final int entryId;
+    private final List<RowIndexEntry> doneList;
+    private final List<Long> positions = new ArrayList<>();
+    private final List<Integer> lengths = new ArrayList<>();
+    private OrcProto.ColumnStatistics statistics;
+    private int firstPosition = 0;
+    private int firstLength = 0;
+
+    RowIndexEntry(List<RowIndexEntry> doneList,
+                  int columnId) {
+      this.doneList = doneList;
+      entryId = nextRowIndexEntryId++;
+      this.columnId = columnId;
+    }
+
+    void finishStream(int streamId, int length) {
+      lengths.set(streamId, length);
+      if (--streamsLeft == 0 && isActive) {
+        doneList.add(this);
+      }
+    }
+
+    @Override
+    public void addPosition(long offset) {
+      positions.add(offset);
+    }
+
+    /**
+     * The entry must be active and have no more remaining callbacks,
+     * for it to be finalized.
+     */
+    public void activate() {
+      if (!isActive) {
+        isActive = true;
+        if (streamsLeft == 0) {
+          doneList.add(this);
+        }
+      }
+    }
+
+    /**
+     * Add a callback to this entry.
+     * @return the new callback
+     */
+    public StreamCallback addCallback(long startPosition) {
+      int streamId = nextStream++;
+      streamsLeft += 1;
+      lengths.add(0);
+      return new StreamCallback(this, startPosition, streamId);
+    }
+
+    public int getPositionCount() {
+      return positions.size();
+    }
+
+    public long getPosition(int idx) {
+      return positions.get(idx);
+    }
+
+    public void removeStreams(int numPositions, int numStreams) {
+      firstPosition += numPositions;
+      firstLength += numStreams;
+    }
+
+    public void setStatistics(OrcProto.ColumnStatistics statistics) {
+      this.statistics = statistics;
+    }
+
+    public OrcProto.RowIndexEntry serialize() {
+      OrcProto.RowIndexEntry.Builder builder =
+          OrcProto.RowIndexEntry.newBuilder();
+      if (firstLength == 0 && firstPosition == 0) {
+        builder.addAllPositions(positions);
+        builder.addAllLengths(lengths);
+      } else {
+        builder.addAllPositions(positions.subList(firstPosition,
+            positions.size()));
+        builder.addAllLengths(lengths.subList(firstLength, lengths.size()));
+      }
+      if (statistics != null) {
+        builder.setStatistics(statistics);
+      }
+      return builder.build();
+    }
+
+    public String toString() {
+      return "row index entry " + columnId + "." + entryId +
+          (isActive ? " active" : " inactive") +
+          " streams left = " + streamsLeft;
+    }
+  }
+
+  /**
+   * This class is the proxy that gets called when the next RLE and
+   * compression blocks are closed.
+   */
+  static class StreamCallback
+      implements PositionedOutputStream.CompressionCallback {
+    final RowIndexEntry entry;
+    final int streamId;
+    final long startPosition;
+
+    StreamCallback(RowIndexEntry entry,
+                   long startPosition,
+                   int streamId) {
+      this.entry = entry;
+      this.streamId = streamId;
+      this.startPosition = startPosition;
+    }
+
+    @Override
+    public void compressionDone(long position) {
+      entry.finishStream(streamId, (int) (position - startPosition));
+    }
+  }
+
   /**
    * An output receiver that writes the ByteBuffers to the output stream
    * as they are received.
@@ -398,19 +522,6 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     public void output(ByteBuffer buffer) throws IOException {
       output.write(buffer.array(), buffer.arrayOffset() + buffer.position(),
         buffer.remaining());
-    }
-  }
-
-  private static class RowIndexPositionRecorder implements PositionRecorder {
-    private final OrcProto.RowIndexEntry.Builder builder;
-
-    RowIndexPositionRecorder(OrcProto.RowIndexEntry.Builder builder) {
-      this.builder = builder;
-    }
-
-    @Override
-    public void addPosition(long position) {
-      builder.addPositions(position);
     }
   }
 
@@ -564,14 +675,14 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   private abstract static class TreeWriter {
     protected final int id;
     protected final BitFieldWriter isPresent;
+    private long isPresentStart;
     private final boolean isCompressed;
     protected final ColumnStatisticsImpl indexStatistics;
     protected final ColumnStatisticsImpl stripeColStatistics;
-    private final ColumnStatisticsImpl fileStatistics;
+    protected final ColumnStatisticsImpl fileStatistics;
     protected TreeWriter[] childrenWriters;
-    protected final RowIndexPositionRecorder rowIndexPosition;
-    private final OrcProto.RowIndex.Builder rowIndex;
-    private final OrcProto.RowIndexEntry.Builder rowIndexEntry;
+    protected final List<RowIndexEntry> rowIndex = new ArrayList<>(100);
+    protected RowIndexEntry rowIndexEntry;
     private final PositionedOutputStream rowIndexStream;
     private final PositionedOutputStream bloomFilterStream;
     protected final BloomFilterIO bloomFilter;
@@ -611,9 +722,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       stripeColStatistics = ColumnStatisticsImpl.create(schema);
       fileStatistics = ColumnStatisticsImpl.create(schema);
       childrenWriters = new TreeWriter[0];
-      rowIndex = OrcProto.RowIndex.newBuilder();
-      rowIndexEntry = OrcProto.RowIndexEntry.newBuilder();
-      rowIndexPosition = new RowIndexPositionRecorder(rowIndexEntry);
+      rowIndexEntry = new RowIndexEntry(rowIndex, columnId);
       stripeStatsBuilders = Lists.newArrayList();
       if (streamFactory.buildIndex()) {
         rowIndexStream = streamFactory.createStream(id, OrcProto.Stream.Kind.ROW_INDEX);
@@ -634,16 +743,8 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       }
     }
 
-    protected OrcProto.RowIndex.Builder getRowIndex() {
-      return rowIndex;
-    }
-
     protected ColumnStatisticsImpl getStripeStatistics() {
       return stripeColStatistics;
-    }
-
-    protected OrcProto.RowIndexEntry.Builder getRowIndexEntry() {
-      return rowIndexEntry;
     }
 
     IntegerWriter createIntegerWriter(PositionedOutputStream output,
@@ -732,13 +833,20 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     private void removeIsPresentPositions() {
-      for(int i=0; i < rowIndex.getEntryCount(); ++i) {
-        OrcProto.RowIndexEntry.Builder entry = rowIndex.getEntryBuilder(i);
-        List<Long> positions = entry.getPositionsList();
-        // bit streams use 3 positions if uncompressed, 4 if compressed
-        positions = positions.subList(isCompressed ? 4 : 3, positions.size());
-        entry.clearPositions();
-        entry.addAllPositions(positions);
+      int positionsToRemove = isCompressed ? 4 : 3;
+      for(RowIndexEntry entry: rowIndex) {
+        entry.removeStreams(positionsToRemove, 1);
+      }
+    }
+
+    /**
+     * Flush all of the streams in preparation for writing the stripe.
+     * This guarantees that all of the compression callbacks are done before
+     * we start building the indexes.
+     */
+    void flush() throws IOException {
+      if (isPresent != null) {
+        isPresent.flush();
       }
     }
 
@@ -754,17 +862,13 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
      */
     void writeStripe(OrcProto.StripeFooter.Builder builder,
                      int requiredIndexEntries) throws IOException {
-      if (isPresent != null) {
-        isPresent.flush();
-
-        // if no nulls are found in a stream, then suppress the stream
-        if(!foundNulls) {
-          isPresentOutStream.suppress();
-          // since isPresent bitstream is suppressed, update the index to
-          // remove the positions of the isPresent stream
-          if (rowIndexStream != null) {
-            removeIsPresentPositions();
-          }
+      // if no nulls are found in a stream, then suppress the stream
+      if(isPresent != null && !foundNulls) {
+        isPresentOutStream.suppress();
+        // since isPresent bitstream is suppressed, update the index to
+        // remove the positions of the isPresent stream
+        if (rowIndexStream != null) {
+          removeIsPresentPositions();
         }
       }
 
@@ -782,16 +886,21 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         builder.setWriterTimezone(TimeZone.getDefault().getID());
       }
       if (rowIndexStream != null) {
-        if (rowIndex.getEntryCount() != requiredIndexEntries) {
-          throw new IllegalArgumentException("Column has wrong number of " +
-               "index entries found: " + rowIndex.getEntryCount() + " expected: " +
-               requiredIndexEntries);
+        if (rowIndex.size() != requiredIndexEntries) {
+          throw new IllegalArgumentException("Column " + id +
+              " has wrong number of index entries found: " +
+              rowIndex.size() + " expected: " +
+              requiredIndexEntries);
         }
-        rowIndex.build().writeTo(rowIndexStream);
+        OrcProto.RowIndex.Builder idxBuilder = OrcProto.RowIndex.newBuilder();
+        for(RowIndexEntry entry: rowIndex) {
+          idxBuilder.addEntry(entry.serialize());
+        }
+        idxBuilder.build().writeTo(rowIndexStream);
         rowIndexStream.flush();
       }
       rowIndex.clear();
-      rowIndexEntry.clear();
+      rowIndexEntry = new RowIndexEntry(rowIndex, id);
 
       // write the bloom filter to out stream
       if (bloomFilterStream != null) {
@@ -832,17 +941,23 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
      * next index and ensures all of the children columns also create an entry.
      * @throws IOException
      */
-    void createRowIndexEntry() throws IOException {
+    RowIndexEntry createRowIndexEntry() throws IOException {
       stripeColStatistics.merge(indexStatistics);
-      rowIndexEntry.setStatistics(indexStatistics.serialize());
+      rowIndexEntry.setStatistics(indexStatistics.serialize().build());
+      if (isPresent != null) {
+        isPresent.registerCallback(rowIndexEntry.addCallback(isPresentStart));
+      }
+      RowIndexEntry oldEntry = rowIndexEntry;
+
+      // Reset for the next index point
       indexStatistics.reset();
-      rowIndex.addEntry(rowIndexEntry);
-      rowIndexEntry.clear();
+      rowIndexEntry = new RowIndexEntry(rowIndex, id);
       addBloomFilterEntry();
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
       for(TreeWriter child: childrenWriters) {
         child.createRowIndexEntry();
       }
+      return oldEntry;
     }
 
     void addBloomFilterEntry() {
@@ -857,12 +972,13 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
 
     /**
      * Record the current position in each of this column's streams.
-     * @param recorder where should the locations be recorded
+     * @param entry where should the locations be recorded
      * @throws IOException
      */
-    void recordPosition(PositionRecorder recorder) throws IOException {
+    void recordPosition(RowIndexEntry entry) throws IOException {
       if (isPresent != null) {
-        isPresent.getPosition(recorder);
+        isPresent.getPosition(entry);
+        isPresentStart = entry.getPosition(0);
       }
     }
 
@@ -881,6 +997,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
 
   private static class BooleanTreeWriter extends TreeWriter {
     private final BitFieldWriter writer;
+    private long writerStart;
 
     BooleanTreeWriter(int columnId,
                       TypeDescription schema,
@@ -890,7 +1007,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       PositionedOutputStream out = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
       this.writer = new BitFieldWriter(out, 1);
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
     }
 
     @Override
@@ -918,22 +1035,38 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     @Override
-    void writeStripe(OrcProto.StripeFooter.Builder builder,
-                     int requiredIndexEntries) throws IOException {
-      super.writeStripe(builder, requiredIndexEntries);
+    void flush() throws IOException {
+      super.flush();
       writer.flush();
-      recordPosition(rowIndexPosition);
     }
 
     @Override
-    void recordPosition(PositionRecorder recorder) throws IOException {
+    void writeStripe(OrcProto.StripeFooter.Builder builder,
+                     int requiredIndexEntries) throws IOException {
+      super.writeStripe(builder, requiredIndexEntries);
+      recordPosition(rowIndexEntry);
+    }
+
+    @Override
+    void recordPosition(RowIndexEntry recorder) throws IOException {
       super.recordPosition(recorder);
+      int offset = recorder.getPositionCount();
       writer.getPosition(recorder);
+      writerStart = recorder.getPosition(offset);
+    }
+
+    @Override
+    RowIndexEntry createRowIndexEntry() throws IOException {
+      RowIndexEntry result = super.createRowIndexEntry();
+      writer.registerCallback(result.addCallback(writerStart));
+      result.activate();
+      return result;
     }
   }
 
   private static class ByteTreeWriter extends TreeWriter {
     private final RunLengthByteWriter writer;
+    private long writerStart;
 
     ByteTreeWriter(int columnId,
                       TypeDescription schema,
@@ -942,7 +1075,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       super(columnId, schema, writer, nullable);
       this.writer = new RunLengthByteWriter(writer.createStream(id,
           OrcProto.Stream.Kind.DATA));
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
     }
 
     @Override
@@ -976,22 +1109,38 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     @Override
-    void writeStripe(OrcProto.StripeFooter.Builder builder,
-                     int requiredIndexEntries) throws IOException {
-      super.writeStripe(builder, requiredIndexEntries);
+    void flush() throws IOException {
+      super.flush();
       writer.flush();
-      recordPosition(rowIndexPosition);
     }
 
     @Override
-    void recordPosition(PositionRecorder recorder) throws IOException {
+    void writeStripe(OrcProto.StripeFooter.Builder builder,
+                     int requiredIndexEntries) throws IOException {
+      super.writeStripe(builder, requiredIndexEntries);
+      recordPosition(rowIndexEntry);
+    }
+
+    @Override
+    void recordPosition(RowIndexEntry recorder) throws IOException {
       super.recordPosition(recorder);
+      int offset = recorder.getPositionCount();
       writer.getPosition(recorder);
+      writerStart = recorder.getPosition(offset);
+    }
+
+    @Override
+    RowIndexEntry createRowIndexEntry() throws IOException {
+      RowIndexEntry result = super.createRowIndexEntry();
+      writer.registerCallback(result.addCallback(writerStart));
+      result.activate();
+      return result;
     }
   }
 
   private static class IntegerTreeWriter extends TreeWriter {
     private final IntegerWriter writer;
+    private long writerStart;
     private boolean isDirectV2 = true;
 
     IntegerTreeWriter(int columnId,
@@ -1003,7 +1152,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
           OrcProto.Stream.Kind.DATA);
       this.isDirectV2 = isNewWriteFormat(writer);
       this.writer = createIntegerWriter(out, true, isDirectV2, writer);
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
     }
 
     @Override
@@ -1047,22 +1196,38 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     @Override
-    void writeStripe(OrcProto.StripeFooter.Builder builder,
-                     int requiredIndexEntries) throws IOException {
-      super.writeStripe(builder, requiredIndexEntries);
-      writer.flush();
-      recordPosition(rowIndexPosition);
+    RowIndexEntry createRowIndexEntry() throws IOException {
+      RowIndexEntry result = super.createRowIndexEntry();
+      writer.registerCallback(result.addCallback(writerStart));
+      result.activate();
+      return result;
     }
 
     @Override
-    void recordPosition(PositionRecorder recorder) throws IOException {
+    void flush() throws IOException {
+      super.flush();
+      writer.flush();
+    }
+
+    @Override
+    void writeStripe(OrcProto.StripeFooter.Builder builder,
+                     int requiredIndexEntries) throws IOException {
+      super.writeStripe(builder, requiredIndexEntries);
+      recordPosition(rowIndexEntry);
+    }
+
+    @Override
+    void recordPosition(RowIndexEntry recorder) throws IOException {
       super.recordPosition(recorder);
+      int offset = recorder.getPositionCount();
       writer.getPosition(recorder);
+      writerStart = recorder.getPosition(offset);
     }
   }
 
   private static class FloatTreeWriter extends TreeWriter {
     private final PositionedOutputStream stream;
+    private long streamStart;
     private final SerializationUtils utils;
 
     FloatTreeWriter(int columnId,
@@ -1073,7 +1238,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       this.stream = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
       this.utils = new SerializationUtils();
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
     }
 
     @Override
@@ -1106,24 +1271,39 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       }
     }
 
+    @Override
+    void flush() throws IOException {
+      super.flush();
+      stream.flush();
+    }
 
     @Override
     void writeStripe(OrcProto.StripeFooter.Builder builder,
                      int requiredIndexEntries) throws IOException {
       super.writeStripe(builder, requiredIndexEntries);
-      stream.flush();
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
     }
 
     @Override
-    void recordPosition(PositionRecorder recorder) throws IOException {
+    void recordPosition(RowIndexEntry recorder) throws IOException {
       super.recordPosition(recorder);
+      int offset = recorder.getPositionCount();
       stream.getPosition(recorder);
+      streamStart = recorder.getPosition(offset);
+    }
+
+    @Override
+    RowIndexEntry createRowIndexEntry() throws IOException {
+      RowIndexEntry result = super.createRowIndexEntry();
+      stream.registerCallback(result.addCallback(streamStart));
+      result.activate();
+      return result;
     }
   }
 
   private static class DoubleTreeWriter extends TreeWriter {
     private final PositionedOutputStream stream;
+    private long streamStart;
     private final SerializationUtils utils;
 
     DoubleTreeWriter(int columnId,
@@ -1134,7 +1314,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       this.stream = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
       this.utils = new SerializationUtils();
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
     }
 
     @Override
@@ -1168,41 +1348,63 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     @Override
-    void writeStripe(OrcProto.StripeFooter.Builder builder,
-                     int requiredIndexEntries) throws IOException {
-      super.writeStripe(builder, requiredIndexEntries);
+    void flush() throws IOException {
+      super.flush();
       stream.flush();
-      recordPosition(rowIndexPosition);
     }
 
     @Override
-    void recordPosition(PositionRecorder recorder) throws IOException {
+    void writeStripe(OrcProto.StripeFooter.Builder builder,
+                     int requiredIndexEntries) throws IOException {
+      super.writeStripe(builder, requiredIndexEntries);
+      recordPosition(rowIndexEntry);
+    }
+
+    @Override
+    RowIndexEntry createRowIndexEntry() throws IOException {
+      RowIndexEntry result = super.createRowIndexEntry();
+      stream.registerCallback(result.addCallback(streamStart));
+      result.activate();
+      return result;
+    }
+
+    @Override
+    void recordPosition(RowIndexEntry recorder) throws IOException {
       super.recordPosition(recorder);
+      int offset = recorder.getPositionCount();
       stream.getPosition(recorder);
+      streamStart = recorder.getPosition(offset);
     }
   }
 
   private static abstract class StringBaseTreeWriter extends TreeWriter {
     private static final int INITIAL_DICTIONARY_SIZE = 4096;
     private final OutStream stringOutput;
-    private final IntegerWriter lengthOutput;
-    private final IntegerWriter rowOutput;
+    protected final IntegerWriter lengthOutput;
+    private long lengthOutputStart;
+    protected final IntegerWriter rowOutput;
     protected final StringRedBlackTree dictionary =
         new StringRedBlackTree(INITIAL_DICTIONARY_SIZE);
     protected final DynamicIntArray rows = new DynamicIntArray();
-    protected final PositionedOutputStream directStreamOutput;
-    protected final IntegerWriter directLengthOutput;
-    private final List<OrcProto.RowIndexEntry> savedRowIndex =
-        new ArrayList<OrcProto.RowIndexEntry>();
-    private final boolean buildIndex;
+    protected final OutStream dataStream;
+    private long dataStreamStart;
+
+    // the list of row indexes that are saved until we are writing the stripe
+    // because we want to sort the dictionary
+    private final List<RowIndexEntry> savedRowIndex = new ArrayList<>();
+
+    // for each item in savedRowIndex, this is the row number the entry follows
     private final List<Long> rowIndexValueCount = new ArrayList<Long>();
+
+    // are we building an index?
+    private final boolean buildIndex;
+
     // If the number of keys in a dictionary is greater than this fraction of
     //the total number of non-null rows, turn off dictionary encoding
     private final double dictionaryKeySizeThreshold;
     protected boolean useDictionaryEncoding = true;
     private boolean isDirectV2 = true;
-    private boolean doneDictionaryCheck;
-    private final boolean strideDictionaryCheck;
+    private  boolean needStrideDictionaryCheck;
 
     StringBaseTreeWriter(int columnId,
                      TypeDescription schema,
@@ -1212,132 +1414,180 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       this.isDirectV2 = isNewWriteFormat(writer);
       stringOutput = writer.createStream(id,
           OrcProto.Stream.Kind.DICTIONARY_DATA);
-      lengthOutput = createIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
-      rowOutput = createIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.DATA), false, isDirectV2, writer);
-      recordPosition(rowIndexPosition);
-      rowIndexValueCount.add(0L);
+      dataStream = writer.createStream(id, OrcProto.Stream.Kind.DATA);
+      OutStream lengthStream = writer.createStream(id,
+          OrcProto.Stream.Kind.LENGTH);
+      lengthOutput = createIntegerWriter(lengthStream, false, isDirectV2,
+          writer);
+      rowOutput = createIntegerWriter(dataStream, false, isDirectV2, writer);
       buildIndex = writer.buildIndex();
-      directStreamOutput = writer.createStream(id, OrcProto.Stream.Kind.DATA);
-      directLengthOutput = createIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
+
       Configuration conf = writer.getConfiguration();
       dictionaryKeySizeThreshold =
           OrcConf.DICTIONARY_KEY_SIZE_THRESHOLD.getDouble(conf);
-      strideDictionaryCheck =
-          OrcConf.ROW_INDEX_STRIDE_DICTIONARY_CHECK.getBoolean(conf);
-      doneDictionaryCheck = false;
+      needStrideDictionaryCheck =
+          isDirectV2 &&
+              OrcConf.ROW_INDEX_STRIDE_DICTIONARY_CHECK.getBoolean(conf);
+      recordPosition(rowIndexEntry);
     }
 
-    private boolean checkDictionaryEncoding() {
-      if (!doneDictionaryCheck) {
+    private boolean checkDictionaryEncoding(boolean endOfStripe
+                                            ) throws IOException {
+      if ((endOfStripe || needStrideDictionaryCheck) && rows.size() > 0) {
         // Set the flag indicating whether or not to use dictionary encoding
         // based on whether or not the fraction of distinct keys over number of
         // non-null rows is less than the configured threshold
-        float ratio = rows.size() > 0 ? (float) (dictionary.size()) / rows.size() : 0.0f;
-        useDictionaryEncoding = !isDirectV2 || ratio <= dictionaryKeySizeThreshold;
-        doneDictionaryCheck = true;
+        float ratio = (float) (dictionary.size()) / rows.size();
+        useDictionaryEncoding = ratio <= dictionaryKeySizeThreshold;
+        needStrideDictionaryCheck = false;
+        if (!useDictionaryEncoding) {
+          switchToDirect();
+        }
       }
       return useDictionaryEncoding;
     }
 
     @Override
-    void writeStripe(OrcProto.StripeFooter.Builder builder,
-                     int requiredIndexEntries) throws IOException {
-      // if rows in stripe is less than dictionaryCheckAfterRows, dictionary
-      // checking would not have happened. So do it again here.
-      checkDictionaryEncoding();
-
+    void flush() throws IOException {
+      checkDictionaryEncoding(isDirectV2);
+      super.flush();
+      lengthOutput.flush();
       if (useDictionaryEncoding) {
-        flushDictionary();
+        writeDictionaryStripe();
+        stringOutput.flush();
+        rowOutput.flush();
       } else {
-        // flushout any left over entries from dictionary
-        if (rows.size() > 0) {
-          flushDictionary();
-        }
-
+        dataStream.flush();
         // suppress the stream for every stripe if dictionary is disabled
         stringOutput.suppress();
       }
+    }
 
-      // we need to build the rowindex before calling super, since it
-      // writes it out.
+    @Override
+    void writeStripe(OrcProto.StripeFooter.Builder builder,
+                     int requiredIndexEntries) throws IOException {
       super.writeStripe(builder, requiredIndexEntries);
-      stringOutput.flush();
-      lengthOutput.flush();
-      rowOutput.flush();
-      directStreamOutput.flush();
-      directLengthOutput.flush();
-      // reset all of the fields to be ready for the next stripe.
       dictionary.clear();
-      savedRowIndex.clear();
-      rowIndexValueCount.clear();
-      recordPosition(rowIndexPosition);
-      rowIndexValueCount.add(0L);
-
-      if (!useDictionaryEncoding) {
-        // record the start positions of first index stride of next stripe i.e
-        // beginning of the direct streams when dictionary is disabled
-        recordDirectStreamPosition();
+      if (buildIndex) {
+        if (useDictionaryEncoding) {
+          // reset all of the fields to be ready for the next stripe.
+          savedRowIndex.clear();
+          rowIndexValueCount.clear();
+        }
+        // record the start positions of first index stride of next stripe
+        recordPosition(rowIndexEntry);
       }
     }
 
-    private void flushDictionary() throws IOException {
-      final int[] dumpOrder = new int[dictionary.size()];
-
-      if (useDictionaryEncoding) {
-        // Write the dictionary by traversing the red-black tree writing out
-        // the bytes and lengths; and creating the map from the original order
-        // to the final sorted order.
-
-        dictionary.visit(new StringRedBlackTree.Visitor() {
-          private int currentId = 0;
-          @Override
-          public void visit(StringRedBlackTree.VisitorContext context
-                           ) throws IOException {
-            context.writeBytes(stringOutput);
-            lengthOutput.write(context.getLength());
-            dumpOrder[context.getOriginalPosition()] = currentId++;
-          }
-        });
-      } else {
-        // for direct encoding, we don't want the dictionary data stream
-        stringOutput.suppress();
-      }
+    /**
+     * After trying the dictionary, fall back to a direct encoding. This
+     * means that we need to write the values that are currently stored
+     * and clear them out.
+     * @throws IOException
+     */
+    private void switchToDirect() throws IOException {
       int length = rows.size();
-      int rowIndexEntry = 0;
-      OrcProto.RowIndex.Builder rowIndex = getRowIndex();
-      Text text = new Text();
+      int rowIndexEntryPosn = 0;
+      RowIndexEntry previous = null;
+      if (buildIndex) {
+        // get the first entry so that we can update its position
+        previous = savedRowIndex.isEmpty() ? rowIndexEntry :
+            savedRowIndex.get(0);
+        int offset = previous.getPositionCount();
+        dataStream.getPosition(previous);
+        dataStreamStart = previous.getPosition(offset);
+        offset = previous.getPositionCount();
+        lengthOutput.getPosition(previous);
+        lengthOutputStart = previous.getPosition(offset);
+      }
       // write the values translated into the dump order.
-      for(int i = 0; i <= length; ++i) {
+      for(int row = 0; row <= length; ++row) {
         // now that we are writing out the row values, we can finalize the
         // row index
         if (buildIndex) {
-          while (i == rowIndexValueCount.get(rowIndexEntry) &&
-              rowIndexEntry < savedRowIndex.size()) {
-            OrcProto.RowIndexEntry.Builder base =
-                savedRowIndex.get(rowIndexEntry++).toBuilder();
-            if (useDictionaryEncoding) {
-              rowOutput.getPosition(new RowIndexPositionRecorder(base));
+          while (rowIndexEntryPosn < savedRowIndex.size() &&
+                 row == rowIndexValueCount.get(rowIndexEntryPosn)) {
+            dataStream.registerCallback(previous.addCallback(dataStreamStart));
+            lengthOutput.registerCallback(previous.addCallback(
+                lengthOutputStart));
+            previous.activate();
+            if (++rowIndexEntryPosn < savedRowIndex.size()) {
+              previous = savedRowIndex.get(rowIndexEntryPosn);
             } else {
-              PositionRecorder posn = new RowIndexPositionRecorder(base);
-              directStreamOutput.getPosition(posn);
-              directLengthOutput.getPosition(posn);
+              previous = rowIndexEntry;
             }
-            rowIndex.addEntry(base.build());
+            int offset = previous.getPositionCount();
+            dataStream.getPosition(previous);
+            dataStreamStart = previous.getPosition(offset);
+            offset = previous.getPositionCount();
+            lengthOutput.getPosition(previous);
+            lengthOutputStart = previous.getPosition(offset);
           }
         }
-        if (i != length) {
-          if (useDictionaryEncoding) {
-            rowOutput.write(dumpOrder[rows.get(i)]);
-          } else {
-            dictionary.getText(text, rows.get(i));
-            directStreamOutput.write(text.getBytes(), 0, text.getLength());
-            directLengthOutput.write(text.getLength());
-          }
+        if (row < length) {
+          int len = dictionary.write(dataStream, rows.get(row));
+          lengthOutput.write(len);
         }
       }
+      dictionary.clear();
+      rows.clear();
+      savedRowIndex.clear();
+      rowIndexValueCount.clear();
+    }
+
+    private void writeDictionaryStripe() throws IOException {
+      final int[] dumpOrder = new int[dictionary.size()];
+
+      // Write the dictionary by traversing the red-black tree writing out
+      // the bytes and lengths; and creating the map from the original order
+      // to the final sorted order.
+
+      dictionary.visit(new StringRedBlackTree.Visitor() {
+        private int currentId = 0;
+        @Override
+        public void visit(StringRedBlackTree.VisitorContext context
+        ) throws IOException {
+          context.writeBytes(stringOutput);
+          lengthOutput.write(context.getLength());
+          dumpOrder[context.getOriginalPosition()] = currentId++;
+        }
+      });
+      lengthOutput.flush();
+      stringOutput.flush();
+      int length = rows.size();
+      int rowIndexEntry = 0;
+      RowIndexEntry previous = null;
+      if (buildIndex) {
+        previous = savedRowIndex.get(rowIndexEntry);
+        int offset = previous.getPositionCount();
+        // fill in the missing positions for the data stream
+        rowOutput.getPosition(previous);
+        dataStreamStart = previous.getPosition(offset);
+      }
+      // write the values translated into the dump order.
+      for(int row = 0; row <= length; ++row) {
+        // now that we are writing out the row values, we can finalize the
+        // row index
+        if (buildIndex) {
+          while (rowIndexEntry < savedRowIndex.size() &&
+                 row == rowIndexValueCount.get(rowIndexEntry)) {
+            rowOutput.registerCallback(previous.addCallback(
+                  dataStreamStart));
+            previous.activate();
+            // set the position on the next one
+            if (++rowIndexEntry < savedRowIndex.size()) {
+              previous = savedRowIndex.get(rowIndexEntry);
+              int offset = previous.getPositionCount();
+              rowOutput.getPosition(previous);
+              dataStreamStart = previous.getPosition(offset);
+            }
+          }
+        }
+        if (row < length) {
+          rowOutput.write(dumpOrder[rows.get(row)]);
+        }
+      }
+      rowOutput.flush();
       rows.clear();
     }
 
@@ -1364,43 +1614,39 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     /**
-     * This method doesn't call the super method, because unlike most of the
-     * other TreeWriters, this one can't record the position in the streams
-     * until the stripe is being flushed. Therefore it saves all of the entries
-     * and augments them with the final information as the stripe is written.
+     * When we are using dictionary encoding, this method is significantly
+     * different than the others. Because the data stream isn't written until
+     * the stripe is being flushed, we can't know the positions in the stream.
      * @throws IOException
      */
     @Override
-    void createRowIndexEntry() throws IOException {
-      getStripeStatistics().merge(indexStatistics);
-      OrcProto.RowIndexEntry.Builder rowIndexEntry = getRowIndexEntry();
-      rowIndexEntry.setStatistics(indexStatistics.serialize());
-      indexStatistics.reset();
-      OrcProto.RowIndexEntry base = rowIndexEntry.build();
-      savedRowIndex.add(base);
-      rowIndexEntry.clear();
-      addBloomFilterEntry();
-      recordPosition(rowIndexPosition);
-      rowIndexValueCount.add(Long.valueOf(rows.size()));
-      if (strideDictionaryCheck) {
-        checkDictionaryEncoding();
+    RowIndexEntry createRowIndexEntry() throws IOException {
+      checkDictionaryEncoding(false);
+      RowIndexEntry result = super.createRowIndexEntry();
+      if (useDictionaryEncoding) {
+        rowIndexValueCount.add((long) rows.size());
+        savedRowIndex.add(result);
+      } else {
+        dataStream.registerCallback(result.addCallback(dataStreamStart));
+        lengthOutput.registerCallback(result.addCallback(lengthOutputStart));
+        result.activate();
       }
-      if (!useDictionaryEncoding) {
-        if (rows.size() > 0) {
-          flushDictionary();
-          // just record the start positions of next index stride
-          recordDirectStreamPosition();
-        } else {
-          // record the start positions of next index stride
-          recordDirectStreamPosition();
-          getRowIndex().addEntry(base);
-        }
-      }
+      return result;
     }
 
-    private void recordDirectStreamPosition() throws IOException {
-      directStreamOutput.getPosition(rowIndexPosition);
-      directLengthOutput.getPosition(rowIndexPosition);
+    @Override
+    public void recordPosition(RowIndexEntry recorder) throws IOException {
+      super.recordPosition(recorder);
+      if (useDictionaryEncoding) {
+        // we'll fill this in later
+      } else {
+        int offset = recorder.getPositionCount();
+        dataStream.getPosition(recorder);
+        dataStreamStart = recorder.getPosition(offset);
+        offset = recorder.getPositionCount();
+        lengthOutput.getPosition(recorder);
+        lengthOutputStart = recorder.getPosition(offset);
+      }
     }
 
     @Override
@@ -1422,42 +1668,59 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
                     int length) throws IOException {
       super.writeBatch(vector, offset, length);
       BytesColumnVector vec = (BytesColumnVector) vector;
-      if (vector.isRepeating) {
-        if (vector.noNulls || !vector.isNull[0]) {
-          if (useDictionaryEncoding) {
+      if (useDictionaryEncoding) {
+        if (vector.isRepeating) {
+          if (vector.noNulls || !vector.isNull[0]) {
             int id = dictionary.add(vec.vector[0], vec.start[0], vec.length[0]);
-            for(int i=0; i < length; ++i) {
+            for (int i = 0; i < length; ++i) {
               rows.add(id);
             }
-          } else {
-            for(int i=0; i < length; ++i) {
-              directStreamOutput.write(vec.vector[0], vec.start[0],
-                  vec.length[0]);
-              directLengthOutput.write(vec.length[0]);
+            indexStatistics.updateString(vec.vector[0], vec.start[0],
+                vec.length[0], length);
+            if (createBloomFilter) {
+              bloomFilter.addBytes(vec.vector[0], vec.start[0], vec.length[0]);
             }
           }
-          indexStatistics.updateString(vec.vector[0], vec.start[0],
-              vec.length[0], length);
-          if (createBloomFilter) {
-            bloomFilter.addBytes(vec.vector[0], vec.start[0], vec.length[0]);
+        } else {
+          for (int i = 0; i < length; ++i) {
+            if (vec.noNulls || !vec.isNull[i + offset]) {
+              rows.add(dictionary.add(vec.vector[offset + i],
+                  vec.start[offset + i], vec.length[offset + i]));
+              indexStatistics.updateString(vec.vector[offset + i],
+                  vec.start[offset + i], vec.length[offset + i], 1);
+              if (createBloomFilter) {
+                bloomFilter.addBytes(vec.vector[offset + i],
+                    vec.start[offset + i], vec.length[offset + i]);
+              }
+            }
           }
         }
       } else {
-        for(int i=0; i < length; ++i) {
-          if (vec.noNulls || !vec.isNull[i + offset]) {
-            if (useDictionaryEncoding) {
-              rows.add(dictionary.add(vec.vector[offset + i],
-                  vec.start[offset + i], vec.length[offset + i]));
-            } else {
-              directStreamOutput.write(vec.vector[offset + i],
-                  vec.start[offset + i], vec.length[offset + i]);
-              directLengthOutput.write(vec.length[offset + i]);
+        if (vector.isRepeating) {
+          if (vector.noNulls || !vector.isNull[0]) {
+            for (int i = 0; i < length; ++i) {
+              dataStream.write(vec.vector[0], vec.start[0],
+                  vec.length[0]);
+              lengthOutput.write(vec.length[0]);
             }
-            indexStatistics.updateString(vec.vector[offset + i],
-                vec.start[offset + i], vec.length[offset + i], 1);
+            indexStatistics.updateString(vec.vector[0], vec.start[0],
+                vec.length[0], length);
             if (createBloomFilter) {
-              bloomFilter.addBytes(vec.vector[offset + i],
+              bloomFilter.addBytes(vec.vector[0], vec.start[0], vec.length[0]);
+            }
+          }
+        } else {
+          for (int i = 0; i < length; ++i) {
+            if (vec.noNulls || !vec.isNull[i + offset]) {
+              dataStream.write(vec.vector[offset + i],
                   vec.start[offset + i], vec.length[offset + i]);
+              lengthOutput.write(vec.length[offset + i]);
+              indexStatistics.updateString(vec.vector[offset + i],
+                  vec.start[offset + i], vec.length[offset + i], 1);
+              if (createBloomFilter) {
+                bloomFilter.addBytes(vec.vector[offset + i],
+                    vec.start[offset + i], vec.length[offset + i]);
+              }
             }
           }
         }
@@ -1507,8 +1770,8 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
             }
           } else {
             for(int i=0; i < length; ++i) {
-              directStreamOutput.write(ptr, ptrOffset, itemLength);
-              directLengthOutput.write(itemLength);
+              dataStream.write(ptr, ptrOffset, itemLength);
+              lengthOutput.write(itemLength);
             }
           }
           indexStatistics.updateString(ptr, ptrOffset, itemLength, length);
@@ -1535,8 +1798,8 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
             if (useDictionaryEncoding) {
               rows.add(dictionary.add(ptr, ptrOffset, itemLength));
             } else {
-              directStreamOutput.write(ptr, ptrOffset, itemLength);
-              directLengthOutput.write(itemLength);
+              dataStream.write(ptr, ptrOffset, itemLength);
+              lengthOutput.write(itemLength);
             }
             indexStatistics.updateString(ptr, ptrOffset, itemLength, 1);
             if (createBloomFilter) {
@@ -1569,7 +1832,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       BytesColumnVector vec = (BytesColumnVector) vector;
       if (vector.isRepeating) {
         if (vector.noNulls || !vector.isNull[0]) {
-          int itemLength = Math.min(vec.length[0], maxLength);
+          int itemLength = Math.min(maxLength, vec.length[0]);
           if (useDictionaryEncoding) {
             int id = dictionary.add(vec.vector[0], vec.start[0], itemLength);
             for(int i=0; i < length; ++i) {
@@ -1577,13 +1840,12 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
             }
           } else {
             for(int i=0; i < length; ++i) {
-              directStreamOutput.write(vec.vector[0], vec.start[0],
-                  itemLength);
-              directLengthOutput.write(itemLength);
+              dataStream.write(vec.vector[0], vec.start[0], itemLength);
+              lengthOutput.write(itemLength);
             }
           }
-          indexStatistics.updateString(vec.vector[0], vec.start[0],
-              itemLength, length);
+          indexStatistics.updateString(vec.vector[0], vec.start[0], itemLength,
+              length);
           if (createBloomFilter) {
             bloomFilter.addBytes(vec.vector[0], vec.start[0], itemLength);
           }
@@ -1591,20 +1853,20 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       } else {
         for(int i=0; i < length; ++i) {
           if (vec.noNulls || !vec.isNull[i + offset]) {
-            int itemLength = Math.min(vec.length[offset + i], maxLength);
+            int itemLength = Math.min(maxLength, vec.length[i + offset]);
             if (useDictionaryEncoding) {
-              rows.add(dictionary.add(vec.vector[offset + i],
-                  vec.start[offset + i], itemLength));
+              rows.add(dictionary.add(vec.vector[i + offset],
+                  vec.start[i + offset], itemLength));
             } else {
-              directStreamOutput.write(vec.vector[offset + i],
-                  vec.start[offset + i], itemLength);
-              directLengthOutput.write(itemLength);
+              dataStream.write(vec.vector[i + offset], vec.start[i + offset],
+                  itemLength);
+              lengthOutput.write(itemLength);
             }
-            indexStatistics.updateString(vec.vector[offset + i],
-                vec.start[offset + i], itemLength, 1);
+            indexStatistics.updateString(vec.vector[i + offset],
+                vec.start[i + offset], itemLength, 1);
             if (createBloomFilter) {
-              bloomFilter.addBytes(vec.vector[offset + i],
-                  vec.start[offset + i], itemLength);
+              bloomFilter.addBytes(vec.vector[i + offset],
+                  vec.start[i + offset], itemLength);
             }
           }
         }
@@ -1614,7 +1876,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
 
   private static class BinaryTreeWriter extends TreeWriter {
     private final PositionedOutputStream stream;
+    private long streamStart;
     private final IntegerWriter length;
+    private long lengthStart;
     private boolean isDirectV2 = true;
 
     BinaryTreeWriter(int columnId,
@@ -1627,7 +1891,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       this.isDirectV2 = isNewWriteFormat(writer);
       this.length = createIntegerWriter(writer.createStream(id,
           OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
     }
 
     @Override
@@ -1675,21 +1939,38 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       }
     }
 
+    @Override
+    void flush() throws IOException {
+      super.flush();
+      stream.flush();
+      length.flush();
+    }
 
     @Override
     void writeStripe(OrcProto.StripeFooter.Builder builder,
                      int requiredIndexEntries) throws IOException {
       super.writeStripe(builder, requiredIndexEntries);
-      stream.flush();
-      length.flush();
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
     }
 
     @Override
-    void recordPosition(PositionRecorder recorder) throws IOException {
+    void recordPosition(RowIndexEntry recorder) throws IOException {
       super.recordPosition(recorder);
+      int offset = recorder.getPositionCount();
       stream.getPosition(recorder);
+      streamStart = recorder.getPosition(offset);
+      offset = recorder.getPositionCount();
       length.getPosition(recorder);
+      lengthStart = recorder.getPosition(offset);
+    }
+
+    @Override
+    RowIndexEntry createRowIndexEntry() throws IOException {
+      RowIndexEntry result = super.createRowIndexEntry();
+      stream.registerCallback(result.addCallback(streamStart));
+      length.registerCallback(result.addCallback(lengthStart));
+      result.activate();
+      return result;
     }
   }
 
@@ -1701,7 +1982,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
 
   private static class TimestampTreeWriter extends TreeWriter {
     private final IntegerWriter seconds;
+    private long secondsStart;
     private final IntegerWriter nanos;
+    private long nanosStart;
     private final boolean isDirectV2;
     private final long base_timestamp;
 
@@ -1715,7 +1998,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
           OrcProto.Stream.Kind.DATA), true, isDirectV2, writer);
       this.nanos = createIntegerWriter(writer.createStream(id,
           OrcProto.Stream.Kind.SECONDARY), false, isDirectV2, writer);
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
       // for unit tests to set different time zones
       this.base_timestamp = Timestamp.valueOf(BASE_TIMESTAMP_STRING).getTime() / MILLIS_PER_SECOND;
       writer.useWriterTimeZone(true);
@@ -1770,12 +2053,17 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     @Override
+    void flush() throws IOException {
+      super.flush();
+      seconds.flush();
+      nanos.flush();
+    }
+
+    @Override
     void writeStripe(OrcProto.StripeFooter.Builder builder,
                      int requiredIndexEntries) throws IOException {
       super.writeStripe(builder, requiredIndexEntries);
-      seconds.flush();
-      nanos.flush();
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
     }
 
     private static long formatNanos(int nanos) {
@@ -1795,15 +2083,29 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     @Override
-    void recordPosition(PositionRecorder recorder) throws IOException {
+    void recordPosition(RowIndexEntry recorder) throws IOException {
       super.recordPosition(recorder);
+      int offset = recorder.getPositionCount();
       seconds.getPosition(recorder);
+      secondsStart = recorder.getPosition(offset);
+      offset = recorder.getPositionCount();
       nanos.getPosition(recorder);
+      nanosStart = recorder.getPosition(offset);
+    }
+
+    @Override
+    RowIndexEntry createRowIndexEntry() throws IOException {
+      RowIndexEntry result = super.createRowIndexEntry();
+      seconds.registerCallback(result.addCallback(secondsStart));
+      nanos.registerCallback(result.addCallback(nanosStart));
+      result.activate();
+      return result;
     }
   }
 
   private static class DateTreeWriter extends TreeWriter {
     private final IntegerWriter writer;
+    private long writerStart;
     private final boolean isDirectV2;
 
     DateTreeWriter(int columnId,
@@ -1815,7 +2117,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
           OrcProto.Stream.Kind.DATA);
       this.isDirectV2 = isNewWriteFormat(writer);
       this.writer = createIntegerWriter(out, true, isDirectV2, writer);
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
     }
 
     @Override
@@ -1849,17 +2151,24 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     @Override
-    void writeStripe(OrcProto.StripeFooter.Builder builder,
-                     int requiredIndexEntries) throws IOException {
-      super.writeStripe(builder, requiredIndexEntries);
+    void flush() throws IOException {
+      super.flush();
       writer.flush();
-      recordPosition(rowIndexPosition);
     }
 
     @Override
-    void recordPosition(PositionRecorder recorder) throws IOException {
+    void writeStripe(OrcProto.StripeFooter.Builder builder,
+                     int requiredIndexEntries) throws IOException {
+      super.writeStripe(builder, requiredIndexEntries);
+      recordPosition(rowIndexEntry);
+    }
+
+    @Override
+    void recordPosition(RowIndexEntry recorder) throws IOException {
       super.recordPosition(recorder);
+      int offset = recorder.getPositionCount();
       writer.getPosition(recorder);
+      writerStart = recorder.getPosition(offset);
     }
 
     @Override
@@ -1871,11 +2180,21 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       return OrcProto.ColumnEncoding.newBuilder()
           .setKind(OrcProto.ColumnEncoding.Kind.DIRECT).build();
     }
+
+    @Override
+    RowIndexEntry createRowIndexEntry() throws IOException {
+      RowIndexEntry result = super.createRowIndexEntry();
+      writer.registerCallback(result.addCallback(writerStart));
+      result.activate();
+      return result;
+    }
   }
 
   private static class DecimalTreeWriter extends TreeWriter {
     private final PositionedOutputStream valueStream;
+    private long valueStreamStart;
     private final IntegerWriter scaleStream;
+    private long scaleStreamStart;
     private final boolean isDirectV2;
 
     DecimalTreeWriter(int columnId,
@@ -1887,7 +2206,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       valueStream = writer.createStream(id, OrcProto.Stream.Kind.DATA);
       this.scaleStream = createIntegerWriter(writer.createStream(id,
           OrcProto.Stream.Kind.SECONDARY), true, isDirectV2, writer);
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
     }
 
     @Override
@@ -1935,19 +2254,37 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     @Override
-    void writeStripe(OrcProto.StripeFooter.Builder builder,
-                     int requiredIndexEntries) throws IOException {
-      super.writeStripe(builder, requiredIndexEntries);
+    void flush() throws IOException {
+      super.flush();
       valueStream.flush();
       scaleStream.flush();
-      recordPosition(rowIndexPosition);
     }
 
     @Override
-    void recordPosition(PositionRecorder recorder) throws IOException {
+    void writeStripe(OrcProto.StripeFooter.Builder builder,
+                     int requiredIndexEntries) throws IOException {
+      super.writeStripe(builder, requiredIndexEntries);
+      recordPosition(rowIndexEntry);
+    }
+
+    @Override
+    void recordPosition(RowIndexEntry recorder) throws IOException {
       super.recordPosition(recorder);
+      int offset = recorder.getPositionCount();
       valueStream.getPosition(recorder);
+      valueStreamStart = recorder.getPosition(offset);
+      offset = recorder.getPositionCount();
       scaleStream.getPosition(recorder);
+      scaleStreamStart = recorder.getPosition(offset);
+    }
+
+    @Override
+    RowIndexEntry createRowIndexEntry() throws IOException {
+      RowIndexEntry result = super.createRowIndexEntry();
+      valueStream.registerCallback(result.addCallback(valueStreamStart));
+      scaleStream.registerCallback(result.addCallback(scaleStreamStart));
+      result.activate();
+      return result;
     }
   }
 
@@ -1964,7 +2301,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
           children.get(i), writer,
           true);
       }
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
     }
 
     @Override
@@ -2022,18 +2359,34 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     @Override
+    void flush() throws IOException {
+      super.flush();
+      for(TreeWriter child: childrenWriters) {
+        child.flush();
+      }
+    }
+
+    @Override
     void writeStripe(OrcProto.StripeFooter.Builder builder,
                      int requiredIndexEntries) throws IOException {
       super.writeStripe(builder, requiredIndexEntries);
       for(TreeWriter child: childrenWriters) {
         child.writeStripe(builder, requiredIndexEntries);
       }
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
+    }
+
+    @Override
+    RowIndexEntry createRowIndexEntry() throws IOException {
+      RowIndexEntry result = super.createRowIndexEntry();
+      result.activate();
+      return result;
     }
   }
 
   private static class ListTreeWriter extends TreeWriter {
     private final IntegerWriter lengths;
+    private long lengthsStart;
     private final boolean isDirectV2;
 
     ListTreeWriter(int columnId,
@@ -2047,7 +2400,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         createTreeWriter(schema.getChildren().get(0), writer, true);
       lengths = createIntegerWriter(writer.createStream(columnId,
           OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
     }
 
     @Override
@@ -2107,25 +2460,44 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     @Override
-    void writeStripe(OrcProto.StripeFooter.Builder builder,
-                     int requiredIndexEntries) throws IOException {
-      super.writeStripe(builder, requiredIndexEntries);
+    void flush() throws IOException {
+      super.flush();
       lengths.flush();
       for(TreeWriter child: childrenWriters) {
-        child.writeStripe(builder, requiredIndexEntries);
+        child.flush();
       }
-      recordPosition(rowIndexPosition);
     }
 
     @Override
-    void recordPosition(PositionRecorder recorder) throws IOException {
+    void writeStripe(OrcProto.StripeFooter.Builder builder,
+                     int requiredIndexEntries) throws IOException {
+      super.writeStripe(builder, requiredIndexEntries);
+      for(TreeWriter child: childrenWriters) {
+        child.writeStripe(builder, requiredIndexEntries);
+      }
+      recordPosition(rowIndexEntry);
+    }
+
+    @Override
+    void recordPosition(RowIndexEntry recorder) throws IOException {
       super.recordPosition(recorder);
+      int offset = recorder.getPositionCount();
       lengths.getPosition(recorder);
+      lengthsStart = recorder.getPosition(offset);
+    }
+
+    @Override
+    RowIndexEntry createRowIndexEntry() throws IOException {
+      RowIndexEntry result = super.createRowIndexEntry();
+      lengths.registerCallback(result.addCallback(lengthsStart));
+      result.activate();
+      return result;
     }
   }
 
   private static class MapTreeWriter extends TreeWriter {
     private final IntegerWriter lengths;
+    private long lengthsStart;
     private final boolean isDirectV2;
 
     MapTreeWriter(int columnId,
@@ -2142,7 +2514,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         createTreeWriter(children.get(1), writer, true);
       lengths = createIntegerWriter(writer.createStream(columnId,
           OrcProto.Stream.Kind.LENGTH), false, isDirectV2, writer);
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
     }
 
     @Override
@@ -2207,25 +2579,44 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     @Override
-    void writeStripe(OrcProto.StripeFooter.Builder builder,
-                     int requiredIndexEntries) throws IOException {
-      super.writeStripe(builder, requiredIndexEntries);
+    void flush() throws IOException {
+      super.flush();
       lengths.flush();
       for(TreeWriter child: childrenWriters) {
-        child.writeStripe(builder, requiredIndexEntries);
+        child.flush();
       }
-      recordPosition(rowIndexPosition);
     }
 
     @Override
-    void recordPosition(PositionRecorder recorder) throws IOException {
+    void writeStripe(OrcProto.StripeFooter.Builder builder,
+                     int requiredIndexEntries) throws IOException {
+      super.writeStripe(builder, requiredIndexEntries);
+      for(TreeWriter child: childrenWriters) {
+        child.writeStripe(builder, requiredIndexEntries);
+      }
+      recordPosition(rowIndexEntry);
+    }
+
+    @Override
+    void recordPosition(RowIndexEntry recorder) throws IOException {
       super.recordPosition(recorder);
+      int offset = recorder.getPositionCount();
       lengths.getPosition(recorder);
+      lengthsStart = recorder.getPosition(offset);
+    }
+
+    @Override
+    RowIndexEntry createRowIndexEntry() throws IOException {
+      RowIndexEntry result = super.createRowIndexEntry();
+      lengths.registerCallback(result.addCallback(lengthsStart));
+      result.activate();
+      return result;
     }
   }
 
   private static class UnionTreeWriter extends TreeWriter {
     private final RunLengthByteWriter tags;
+    private long tagsStart;
 
     UnionTreeWriter(int columnId,
                   TypeDescription schema,
@@ -2241,7 +2632,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       tags =
         new RunLengthByteWriter(writer.createStream(columnId,
             OrcProto.Stream.Kind.DATA));
-      recordPosition(rowIndexPosition);
+      recordPosition(rowIndexEntry);
     }
 
     @Override
@@ -2297,20 +2688,38 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
 
     @Override
-    void writeStripe(OrcProto.StripeFooter.Builder builder,
-                     int requiredIndexEntries) throws IOException {
-      super.writeStripe(builder, requiredIndexEntries);
+    void flush() throws IOException {
+      super.flush();
       tags.flush();
       for(TreeWriter child: childrenWriters) {
-        child.writeStripe(builder, requiredIndexEntries);
+        child.flush();
       }
-      recordPosition(rowIndexPosition);
     }
 
     @Override
-    void recordPosition(PositionRecorder recorder) throws IOException {
+    void writeStripe(OrcProto.StripeFooter.Builder builder,
+                     int requiredIndexEntries) throws IOException {
+      super.writeStripe(builder, requiredIndexEntries);
+      for(TreeWriter child: childrenWriters) {
+        child.writeStripe(builder, requiredIndexEntries);
+      }
+      recordPosition(rowIndexEntry);
+    }
+
+    @Override
+    void recordPosition(RowIndexEntry recorder) throws IOException {
       super.recordPosition(recorder);
+      int offset = recorder.getPositionCount();
       tags.getPosition(recorder);
+      tagsStart = recorder.getPosition(offset);
+    }
+
+    @Override
+    RowIndexEntry createRowIndexEntry() throws IOException {
+      RowIndexEntry result = super.createRowIndexEntry();
+      tags.registerCallback(result.addCallback(tagsStart));
+      result.activate();
+      return result;
     }
   }
 
@@ -2495,6 +2904,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
           (int) ((rowsInStripe + rowIndexStride - 1) / rowIndexStride);
       OrcProto.StripeFooter.Builder builder =
           OrcProto.StripeFooter.newBuilder();
+      treeWriter.flush();
       treeWriter.writeStripe(builder, requiredIndexEntries);
       long indexSize = 0;
       long dataSize = 0;
@@ -2759,8 +3169,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       // right size indexes.
       int posn = 0;
       while (posn < batch.size) {
-        int chunkSize = Math.min(batch.size - posn,
-            rowIndexStride - rowsInIndex);
+        int chunkSize = Math.min(batch.size - posn, rowIndexStride - rowsInIndex);
         treeWriter.writeRootBatch(batch, posn, chunkSize);
         posn += chunkSize;
         rowsInIndex += chunkSize;

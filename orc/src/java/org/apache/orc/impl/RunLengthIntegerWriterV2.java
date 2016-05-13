@@ -18,6 +18,8 @@
 package org.apache.orc.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A writer that performs light weight compression over sequence of integers.
@@ -159,6 +161,8 @@ public class RunLengthIntegerWriterV2 implements IntegerWriter {
   private boolean isFixedDelta;
   private SerializationUtils utils;
   private boolean alignedBitpacking;
+  private final List<PositionedOutputStream.CompressionCallback> callbacks =
+      new ArrayList<>();
 
   RunLengthIntegerWriterV2(PositionedOutputStream output, boolean signed) {
     this(output, signed, true);
@@ -188,6 +192,10 @@ public class RunLengthIntegerWriterV2 implements IntegerWriter {
 
       // clear all the variables
       clear();
+      for(PositionedOutputStream.CompressionCallback cb: callbacks) {
+        output.registerCallback(cb);
+      }
+      callbacks.clear();
     }
   }
 
@@ -713,6 +721,15 @@ public class RunLengthIntegerWriterV2 implements IntegerWriter {
       }
     }
     output.flush();
+  }
+
+  @Override
+  public void registerCallback(OutStream.CompressionCallback callback) {
+    if (numLiterals == 0) {
+      output.registerCallback(callback);
+    } else {
+      callbacks.add(callback);
+    }
   }
 
   @Override

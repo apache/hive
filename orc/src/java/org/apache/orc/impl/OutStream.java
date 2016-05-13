@@ -21,6 +21,8 @@ import org.apache.orc.CompressionCodec;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OutStream extends PositionedOutputStream {
 
@@ -65,6 +67,7 @@ public class OutStream extends PositionedOutputStream {
   private final CompressionCodec codec;
   private long compressedBytes = 0;
   private long uncompressedBytes = 0;
+  private final List<CompressionCallback> callbacks = new ArrayList<>();
 
   public OutStream(String name,
                    int bufferSize,
@@ -75,6 +78,21 @@ public class OutStream extends PositionedOutputStream {
     this.codec = codec;
     this.receiver = receiver;
     this.suppress = false;
+  }
+
+  /**
+   * Register a callback for when the next compression buffer is completed.
+   * @param callback the method to call when the block is done.
+   */
+  @Override
+  public void registerCallback(CompressionCallback callback) {
+    if (codec == null) {
+      callback.compressionDone(uncompressedBytes);
+    } else if (current == null || current.position() == HEADER_SIZE) {
+      callback.compressionDone(compressedBytes);
+    } else {
+      callbacks.add(callback);
+    }
   }
 
   public void clear() throws IOException {
@@ -155,6 +173,13 @@ public class OutStream extends PositionedOutputStream {
     }
   }
 
+  private void doCallbacks(long position) {
+    for(CompressionCallback callback: callbacks) {
+      callback.compressionDone(position);
+    }
+    callbacks.clear();
+  }
+
   private void spill() throws java.io.IOException {
     // if there isn't anything in the current buffer, don't spill
     if (current == null ||
@@ -185,6 +210,7 @@ public class OutStream extends PositionedOutputStream {
         }
         compressedBytes += totalBytes + HEADER_SIZE;
         writeHeader(compressed, sizePosn, totalBytes, false);
+        doCallbacks(compressedBytes);
         // if we have less than the next header left, spill it.
         if (compressed.remaining() < HEADER_SIZE) {
           compressed.flip();
@@ -194,6 +220,7 @@ public class OutStream extends PositionedOutputStream {
         }
       } else {
         compressedBytes += uncompressedBytes + HEADER_SIZE;
+        doCallbacks(compressedBytes);
         uncompressedBytes = 0;
         // we are using the original, but need to spill the current
         // compressed buffer first. So back up to where we started,

@@ -164,6 +164,8 @@ public class TestVectorOrcFile {
     testFilePath = new Path(workDir, "TestVectorOrcFile." +
         testCaseName.getMethodName() + ".orc");
     fs.delete(testFilePath, false);
+    // clear the memory manager between tests
+    OrcFile.getStaticMemoryManager(conf).clearAll();
   }
 
   @Test
@@ -1926,8 +1928,9 @@ public class TestVectorOrcFile {
     @Override
     public void addedRow(int count) throws IOException {
       rows += count;
-      if (rows % 100 == 0) {
+      if (rows > 100) {
         callback.checkMemory(rate);
+        rows = 0;
       }
     }
   }

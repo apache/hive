@@ -533,7 +533,7 @@ public class OrcFile {
 
   private static ThreadLocal<MemoryManager> memoryManager = null;
 
-  private static synchronized MemoryManager getStaticMemoryManager(
+  static synchronized MemoryManager getStaticMemoryManager(
       final Configuration conf) {
     if (memoryManager == null) {
       memoryManager = new ThreadLocal<MemoryManager>() {

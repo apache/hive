@@ -6715,6 +6715,20 @@ public final class OrcProto {
      * <code>optional .orc.proto.ColumnStatistics statistics = 2;</code>
      */
     org.apache.orc.OrcProto.ColumnStatisticsOrBuilder getStatisticsOrBuilder();
+
+    // repeated uint32 lengths = 3 [packed = true];
+    /**
+     * <code>repeated uint32 lengths = 3 [packed = true];</code>
+     */
+    java.util.List<java.lang.Integer> getLengthsList();
+    /**
+     * <code>repeated uint32 lengths = 3 [packed = true];</code>
+     */
+    int getLengthsCount();
+    /**
+     * <code>repeated uint32 lengths = 3 [packed = true];</code>
+     */
+    int getLengths(int index);
   }
   /**
    * Protobuf type {@code orc.proto.RowIndexEntry}
@@ -6801,6 +6815,27 @@ public final class OrcProto {
               bitField0_ |= 0x00000001;
               break;
             }
+            case 24: {
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+                lengths_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000004;
+              }
+              lengths_.add(input.readUInt32());
+              break;
+            }
+            case 26: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004) && input.getBytesUntilLimit() > 0) {
+                lengths_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000004;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                lengths_.add(input.readUInt32());
+              }
+              input.popLimit(limit);
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -6811,6 +6846,9 @@ public final class OrcProto {
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
           positions_ = java.util.Collections.unmodifiableList(positions_);
+        }
+        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+          lengths_ = java.util.Collections.unmodifiableList(lengths_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -6890,9 +6928,34 @@ public final class OrcProto {
       return statistics_;
     }
 
+    // repeated uint32 lengths = 3 [packed = true];
+    public static final int LENGTHS_FIELD_NUMBER = 3;
+    private java.util.List<java.lang.Integer> lengths_;
+    /**
+     * <code>repeated uint32 lengths = 3 [packed = true];</code>
+     */
+    public java.util.List<java.lang.Integer>
+        getLengthsList() {
+      return lengths_;
+    }
+    /**
+     * <code>repeated uint32 lengths = 3 [packed = true];</code>
+     */
+    public int getLengthsCount() {
+      return lengths_.size();
+    }
+    /**
+     * <code>repeated uint32 lengths = 3 [packed = true];</code>
+     */
+    public int getLengths(int index) {
+      return lengths_.get(index);
+    }
+    private int lengthsMemoizedSerializedSize = -1;
+
     private void initFields() {
       positions_ = java.util.Collections.emptyList();
       statistics_ = org.apache.orc.OrcProto.ColumnStatistics.getDefaultInstance();
+      lengths_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -6915,6 +6978,13 @@ public final class OrcProto {
       }
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeMessage(2, statistics_);
+      }
+      if (getLengthsList().size() > 0) {
+        output.writeRawVarint32(26);
+        output.writeRawVarint32(lengthsMemoizedSerializedSize);
+      }
+      for (int i = 0; i < lengths_.size(); i++) {
+        output.writeUInt32NoTag(lengths_.get(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -6942,6 +7012,20 @@ public final class OrcProto {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, statistics_);
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < lengths_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeUInt32SizeNoTag(lengths_.get(i));
+        }
+        size += dataSize;
+        if (!getLengthsList().isEmpty()) {
+          size += 1;
+          size += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(dataSize);
+        }
+        lengthsMemoizedSerializedSize = dataSize;
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -7068,6 +7152,8 @@ public final class OrcProto {
           statisticsBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
+        lengths_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -7109,6 +7195,11 @@ public final class OrcProto {
         } else {
           result.statistics_ = statisticsBuilder_.build();
         }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          lengths_ = java.util.Collections.unmodifiableList(lengths_);
+          bitField0_ = (bitField0_ & ~0x00000004);
+        }
+        result.lengths_ = lengths_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -7137,6 +7228,16 @@ public final class OrcProto {
         }
         if (other.hasStatistics()) {
           mergeStatistics(other.getStatistics());
+        }
+        if (!other.lengths_.isEmpty()) {
+          if (lengths_.isEmpty()) {
+            lengths_ = other.lengths_;
+            bitField0_ = (bitField0_ & ~0x00000004);
+          } else {
+            ensureLengthsIsMutable();
+            lengths_.addAll(other.lengths_);
+          }
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -7346,6 +7447,72 @@ public final class OrcProto {
           statistics_ = null;
         }
         return statisticsBuilder_;
+      }
+
+      // repeated uint32 lengths = 3 [packed = true];
+      private java.util.List<java.lang.Integer> lengths_ = java.util.Collections.emptyList();
+      private void ensureLengthsIsMutable() {
+        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+          lengths_ = new java.util.ArrayList<java.lang.Integer>(lengths_);
+          bitField0_ |= 0x00000004;
+         }
+      }
+      /**
+       * <code>repeated uint32 lengths = 3 [packed = true];</code>
+       */
+      public java.util.List<java.lang.Integer>
+          getLengthsList() {
+        return java.util.Collections.unmodifiableList(lengths_);
+      }
+      /**
+       * <code>repeated uint32 lengths = 3 [packed = true];</code>
+       */
+      public int getLengthsCount() {
+        return lengths_.size();
+      }
+      /**
+       * <code>repeated uint32 lengths = 3 [packed = true];</code>
+       */
+      public int getLengths(int index) {
+        return lengths_.get(index);
+      }
+      /**
+       * <code>repeated uint32 lengths = 3 [packed = true];</code>
+       */
+      public Builder setLengths(
+          int index, int value) {
+        ensureLengthsIsMutable();
+        lengths_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated uint32 lengths = 3 [packed = true];</code>
+       */
+      public Builder addLengths(int value) {
+        ensureLengthsIsMutable();
+        lengths_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated uint32 lengths = 3 [packed = true];</code>
+       */
+      public Builder addAllLengths(
+          java.lang.Iterable<? extends java.lang.Integer> values) {
+        ensureLengthsIsMutable();
+        super.addAll(values, lengths_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated uint32 lengths = 3 [packed = true];</code>
+       */
+      public Builder clearLengths() {
+        lengths_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000004);
+        onChanged();
+        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:orc.proto.RowIndexEntry)
@@ -19962,60 +20129,60 @@ public final class OrcProto {
       "Statistics\0225\n\020binaryStatistics\030\010 \001(\0132\033.o" +
       "rc.proto.BinaryStatistics\022;\n\023timestampSt" +
       "atistics\030\t \001(\0132\036.orc.proto.TimestampStat" +
-      "istics\022\017\n\007hasNull\030\n \001(\010\"W\n\rRowIndexEntry" +
+      "istics\022\017\n\007hasNull\030\n \001(\010\"l\n\rRowIndexEntry" +
       "\022\025\n\tpositions\030\001 \003(\004B\002\020\001\022/\n\nstatistics\030\002 " +
-      "\001(\0132\033.orc.proto.ColumnStatistics\"3\n\010RowI" +
-      "ndex\022\'\n\005entry\030\001 \003(\0132\030.orc.proto.RowIndex" +
-      "Entry\"7\n\013BloomFilter\022\030\n\020numHashFunctions" +
-      "\030\001 \001(\r\022\016\n\006bitset\030\002 \003(\006\"?\n\020BloomFilterInd",
-      "ex\022+\n\013bloomFilter\030\001 \003(\0132\026.orc.proto.Bloo" +
-      "mFilter\"\325\001\n\006Stream\022$\n\004kind\030\001 \001(\0162\026.orc.p" +
-      "roto.Stream.Kind\022\016\n\006column\030\002 \001(\r\022\016\n\006leng" +
-      "th\030\003 \001(\004\"\204\001\n\004Kind\022\013\n\007PRESENT\020\000\022\010\n\004DATA\020\001" +
-      "\022\n\n\006LENGTH\020\002\022\023\n\017DICTIONARY_DATA\020\003\022\024\n\020DIC" +
-      "TIONARY_COUNT\020\004\022\r\n\tSECONDARY\020\005\022\r\n\tROW_IN" +
-      "DEX\020\006\022\020\n\014BLOOM_FILTER\020\007\"\234\001\n\016ColumnEncodi" +
-      "ng\022,\n\004kind\030\001 \001(\0162\036.orc.proto.ColumnEncod" +
-      "ing.Kind\022\026\n\016dictionarySize\030\002 \001(\r\"D\n\004Kind" +
-      "\022\n\n\006DIRECT\020\000\022\016\n\nDICTIONARY\020\001\022\r\n\tDIRECT_V",
-      "2\020\002\022\021\n\rDICTIONARY_V2\020\003\"v\n\014StripeFooter\022\"" +
-      "\n\007streams\030\001 \003(\0132\021.orc.proto.Stream\022*\n\007co" +
-      "lumns\030\002 \003(\0132\031.orc.proto.ColumnEncoding\022\026" +
-      "\n\016writerTimezone\030\003 \001(\t\"\341\002\n\004Type\022\"\n\004kind\030" +
-      "\001 \001(\0162\024.orc.proto.Type.Kind\022\024\n\010subtypes\030" +
-      "\002 \003(\rB\002\020\001\022\022\n\nfieldNames\030\003 \003(\t\022\025\n\rmaximum" +
-      "Length\030\004 \001(\r\022\021\n\tprecision\030\005 \001(\r\022\r\n\005scale" +
-      "\030\006 \001(\r\"\321\001\n\004Kind\022\013\n\007BOOLEAN\020\000\022\010\n\004BYTE\020\001\022\t" +
-      "\n\005SHORT\020\002\022\007\n\003INT\020\003\022\010\n\004LONG\020\004\022\t\n\005FLOAT\020\005\022" +
-      "\n\n\006DOUBLE\020\006\022\n\n\006STRING\020\007\022\n\n\006BINARY\020\010\022\r\n\tT",
-      "IMESTAMP\020\t\022\010\n\004LIST\020\n\022\007\n\003MAP\020\013\022\n\n\006STRUCT\020" +
-      "\014\022\t\n\005UNION\020\r\022\013\n\007DECIMAL\020\016\022\010\n\004DATE\020\017\022\013\n\007V" +
-      "ARCHAR\020\020\022\010\n\004CHAR\020\021\"x\n\021StripeInformation\022" +
-      "\016\n\006offset\030\001 \001(\004\022\023\n\013indexLength\030\002 \001(\004\022\022\n\n" +
-      "dataLength\030\003 \001(\004\022\024\n\014footerLength\030\004 \001(\004\022\024" +
-      "\n\014numberOfRows\030\005 \001(\004\"/\n\020UserMetadataItem" +
-      "\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\014\"A\n\020StripeS" +
-      "tatistics\022-\n\010colStats\030\001 \003(\0132\033.orc.proto." +
-      "ColumnStatistics\"<\n\010Metadata\0220\n\013stripeSt" +
-      "ats\030\001 \003(\0132\033.orc.proto.StripeStatistics\"\222",
-      "\002\n\006Footer\022\024\n\014headerLength\030\001 \001(\004\022\025\n\rconte" +
-      "ntLength\030\002 \001(\004\022-\n\007stripes\030\003 \003(\0132\034.orc.pr" +
-      "oto.StripeInformation\022\036\n\005types\030\004 \003(\0132\017.o" +
-      "rc.proto.Type\022-\n\010metadata\030\005 \003(\0132\033.orc.pr" +
-      "oto.UserMetadataItem\022\024\n\014numberOfRows\030\006 \001" +
-      "(\004\022/\n\nstatistics\030\007 \003(\0132\033.orc.proto.Colum" +
-      "nStatistics\022\026\n\016rowIndexStride\030\010 \001(\r\"\305\001\n\n" +
-      "PostScript\022\024\n\014footerLength\030\001 \001(\004\022/\n\013comp" +
-      "ression\030\002 \001(\0162\032.orc.proto.CompressionKin" +
-      "d\022\034\n\024compressionBlockSize\030\003 \001(\004\022\023\n\007versi",
-      "on\030\004 \003(\rB\002\020\001\022\026\n\016metadataLength\030\005 \001(\004\022\025\n\r" +
-      "writerVersion\030\006 \001(\r\022\016\n\005magic\030\300> \001(\t\"\206\001\n\010" +
-      "FileTail\022)\n\npostscript\030\001 \001(\0132\025.orc.proto" +
-      ".PostScript\022!\n\006footer\030\002 \001(\0132\021.orc.proto." +
-      "Footer\022\022\n\nfileLength\030\003 \001(\004\022\030\n\020postscript" +
-      "Length\030\004 \001(\004*:\n\017CompressionKind\022\010\n\004NONE\020" +
-      "\000\022\010\n\004ZLIB\020\001\022\n\n\006SNAPPY\020\002\022\007\n\003LZO\020\003B\020\n\016org." +
-      "apache.orc"
+      "\001(\0132\033.orc.proto.ColumnStatistics\022\023\n\007leng" +
+      "ths\030\003 \003(\rB\002\020\001\"3\n\010RowIndex\022\'\n\005entry\030\001 \003(\013" +
+      "2\030.orc.proto.RowIndexEntry\"7\n\013BloomFilte" +
+      "r\022\030\n\020numHashFunctions\030\001 \001(\r\022\016\n\006bitset\030\002 ",
+      "\003(\006\"?\n\020BloomFilterIndex\022+\n\013bloomFilter\030\001" +
+      " \003(\0132\026.orc.proto.BloomFilter\"\325\001\n\006Stream\022" +
+      "$\n\004kind\030\001 \001(\0162\026.orc.proto.Stream.Kind\022\016\n" +
+      "\006column\030\002 \001(\r\022\016\n\006length\030\003 \001(\004\"\204\001\n\004Kind\022\013" +
+      "\n\007PRESENT\020\000\022\010\n\004DATA\020\001\022\n\n\006LENGTH\020\002\022\023\n\017DIC" +
+      "TIONARY_DATA\020\003\022\024\n\020DICTIONARY_COUNT\020\004\022\r\n\t" +
+      "SECONDARY\020\005\022\r\n\tROW_INDEX\020\006\022\020\n\014BLOOM_FILT" +
+      "ER\020\007\"\234\001\n\016ColumnEncoding\022,\n\004kind\030\001 \001(\0162\036." +
+      "orc.proto.ColumnEncoding.Kind\022\026\n\016diction" +
+      "arySize\030\002 \001(\r\"D\n\004Kind\022\n\n\006DIRECT\020\000\022\016\n\nDIC",
+      "TIONARY\020\001\022\r\n\tDIRECT_V2\020\002\022\021\n\rDICTIONARY_V" +
+      "2\020\003\"v\n\014StripeFooter\022\"\n\007streams\030\001 \003(\0132\021.o" +
+      "rc.proto.Stream\022*\n\007columns\030\002 \003(\0132\031.orc.p" +
+      "roto.ColumnEncoding\022\026\n\016writerTimezone\030\003 " +
+      "\001(\t\"\341\002\n\004Type\022\"\n\004kind\030\001 \001(\0162\024.orc.proto.T" +
+      "ype.Kind\022\024\n\010subtypes\030\002 \003(\rB\002\020\001\022\022\n\nfieldN" +
+      "ames\030\003 \003(\t\022\025\n\rmaximumLength\030\004 \001(\r\022\021\n\tpre" +
+      "cision\030\005 \001(\r\022\r\n\005scale\030\006 \001(\r\"\321\001\n\004Kind\022\013\n\007" +
+      "BOOLEAN\020\000\022\010\n\004BYTE\020\001\022\t\n\005SHORT\020\002\022\007\n\003INT\020\003\022" +
+      "\010\n\004LONG\020\004\022\t\n\005FLOAT\020\005\022\n\n\006DOUBLE\020\006\022\n\n\006STRI",
+      "NG\020\007\022\n\n\006BINARY\020\010\022\r\n\tTIMESTAMP\020\t\022\010\n\004LIST\020" +
+      "\n\022\007\n\003MAP\020\013\022\n\n\006STRUCT\020\014\022\t\n\005UNION\020\r\022\013\n\007DEC" +
+      "IMAL\020\016\022\010\n\004DATE\020\017\022\013\n\007VARCHAR\020\020\022\010\n\004CHAR\020\021\"" +
+      "x\n\021StripeInformation\022\016\n\006offset\030\001 \001(\004\022\023\n\013" +
+      "indexLength\030\002 \001(\004\022\022\n\ndataLength\030\003 \001(\004\022\024\n" +
+      "\014footerLength\030\004 \001(\004\022\024\n\014numberOfRows\030\005 \001(" +
+      "\004\"/\n\020UserMetadataItem\022\014\n\004name\030\001 \001(\t\022\r\n\005v" +
+      "alue\030\002 \001(\014\"A\n\020StripeStatistics\022-\n\010colSta" +
+      "ts\030\001 \003(\0132\033.orc.proto.ColumnStatistics\"<\n" +
+      "\010Metadata\0220\n\013stripeStats\030\001 \003(\0132\033.orc.pro",
+      "to.StripeStatistics\"\222\002\n\006Footer\022\024\n\014header" +
+      "Length\030\001 \001(\004\022\025\n\rcontentLength\030\002 \001(\004\022-\n\007s" +
+      "tripes\030\003 \003(\0132\034.orc.proto.StripeInformati" +
+      "on\022\036\n\005types\030\004 \003(\0132\017.orc.proto.Type\022-\n\010me" +
+      "tadata\030\005 \003(\0132\033.orc.proto.UserMetadataIte" +
+      "m\022\024\n\014numberOfRows\030\006 \001(\004\022/\n\nstatistics\030\007 " +
+      "\003(\0132\033.orc.proto.ColumnStatistics\022\026\n\016rowI" +
+      "ndexStride\030\010 \001(\r\"\305\001\n\nPostScript\022\024\n\014foote" +
+      "rLength\030\001 \001(\004\022/\n\013compression\030\002 \001(\0162\032.orc" +
+      ".proto.CompressionKind\022\034\n\024compressionBlo",
+      "ckSize\030\003 \001(\004\022\023\n\007version\030\004 \003(\rB\002\020\001\022\026\n\016met" +
+      "adataLength\030\005 \001(\004\022\025\n\rwriterVersion\030\006 \001(\r" +
+      "\022\016\n\005magic\030\300> \001(\t\"\206\001\n\010FileTail\022)\n\npostscr" +
+      "ipt\030\001 \001(\0132\025.orc.proto.PostScript\022!\n\006foot" +
+      "er\030\002 \001(\0132\021.orc.proto.Footer\022\022\n\nfileLengt" +
+      "h\030\003 \001(\004\022\030\n\020postscriptLength\030\004 \001(\004*:\n\017Com" +
+      "pressionKind\022\010\n\004NONE\020\000\022\010\n\004ZLIB\020\001\022\n\n\006SNAP" +
+      "PY\020\002\022\007\n\003LZO\020\003B\020\n\016org.apache.orc"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -20081,7 +20248,7 @@ public final class OrcProto {
           internal_static_orc_proto_RowIndexEntry_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_orc_proto_RowIndexEntry_descriptor,
-              new java.lang.String[] { "Positions", "Statistics", });
+              new java.lang.String[] { "Positions", "Statistics", "Lengths", });
           internal_static_orc_proto_RowIndex_descriptor =
             getDescriptor().getMessageTypes().get(10);
           internal_static_orc_proto_RowIndex_fieldAccessorTable = new

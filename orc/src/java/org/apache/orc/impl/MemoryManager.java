@@ -154,6 +154,16 @@ public class MemoryManager {
   }
 
   /**
+   * Clear the writers that are currently registered.
+   * This is intended for test cases.
+   */
+  public void clearAll() throws IOException {
+    checkOwner();
+    writerList.clear();
+    updateScale(false);
+  }
+
+  /**
    * Get the total pool size that is available for ORC writers.
    * @return the number of bytes in the pool
    */

@@ -22,6 +22,13 @@ import java.io.OutputStream;
 
 public abstract class PositionedOutputStream extends OutputStream {
 
+  public interface CompressionCallback {
+    /**
+     * Called when each compression finished.
+     */
+    void compressionDone(long position);
+  }
+
   /**
    * Record the current position to the recorder.
    * @param recorder the object that receives the position
@@ -36,4 +43,10 @@ public abstract class PositionedOutputStream extends OutputStream {
    * @return the number of bytes used by buffers.
    */
   public abstract long getBufferSize();
+
+  /**
+   * Register a callback for when the next compression buffer is completed.
+   * @param callback the method to call when the block is done.
+   */
+  public abstract void registerCallback(CompressionCallback callback);
 }

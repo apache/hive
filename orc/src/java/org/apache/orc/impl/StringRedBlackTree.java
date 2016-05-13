@@ -191,6 +191,19 @@ public class StringRedBlackTree extends RedBlackTree {
     byteArray.setText(result, offset, length);
   }
 
+  public int write(OutputStream out,
+                   int originalPosition) throws IOException {
+    int offset = keyOffsets.get(originalPosition);
+    int length;
+    if (originalPosition + 1 == keyOffsets.size()) {
+      length = byteArray.size() - offset;
+    } else {
+      length = keyOffsets.get(originalPosition + 1) - offset;
+    }
+    byteArray.write(out, offset, length);
+    return length;
+  }
+
   /**
    * Get the size of the character data in the table.
    * @return the bytes used by the table

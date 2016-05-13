@@ -82,6 +82,7 @@ message ColumnStatistics {
 message RowIndexEntry {
   repeated uint64 positions = 1 [packed=true];
   optional ColumnStatistics statistics = 2;
+  repeated uint32 lengths = 3  [packed=true];
 }
 
 message RowIndex {
