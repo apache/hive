@@ -248,10 +248,11 @@ public class LlapServiceDriver {
       // Needs more explanation here
       // Xmx is not the max heap value in JDK8. You need to subtract 50% of the survivor fraction
       // from this, to get actual usable  memory before it goes into GC
-      xmx = (long) (options.getXmx() / (1024 * 1024));
-      conf.setLong(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, xmx);
+      xmx = options.getXmx();
+      long xmxMb = (long)(xmx / (1024 * 1024));
+      conf.setLong(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, xmxMb);
       propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname,
-          String.valueOf(xmx));
+          String.valueOf(xmxMb));
     }
 
     if (options.getLlapQueueName() != null && !options.getLlapQueueName().isEmpty()) {

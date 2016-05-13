@@ -103,7 +103,7 @@ def main(args):
 	java_home = config["java.home"]
 	max_direct_memory = config["max_direct_memory"]
 	daemon_args = args.args
-	if max_direct_memory > 0:
+	if long(max_direct_memory) > 0:
 		daemon_args = " -XX:MaxDirectMemorySize=%s %s" % (max_direct_memory, daemon_args)
 	resource = LlapResource(config)
 	# 5% container failure every monkey_interval seconds
