@@ -684,14 +684,12 @@ public class TestDbTxnManager2 {
 
     // SHOW LOCKS (no filter)
     List<ShowLocksResponseElement> locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", 7, locks.size());
-    // locks.get(0) is a lock on tmp table in default database used for insert
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db1", "t14", "ds=today", locks.get(1));
-    // locks.get(2) is a lock on tmp table in default database used for insert
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db1", "t14", "ds=tomorrow", locks.get(3));
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db2", "t15", null, locks.get(4));
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db2", "t16", null, locks.get(5));
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db2", "t14", null, locks.get(6));
+    Assert.assertEquals("Unexpected lock count", 5, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db1", "t14", "ds=today", locks.get(0));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db1", "t14", "ds=tomorrow", locks.get(1));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db2", "t15", null, locks.get(2));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db2", "t16", null, locks.get(3));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "db2", "t14", null, locks.get(4));
 
     // SHOW LOCKS db2
     locks = getLocksWithFilterOptions(txnMgr3, "db2", null, null);
