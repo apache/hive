@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -45,6 +46,7 @@ import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc.SampleDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
@@ -107,7 +109,7 @@ public class ParseContext {
   private AnalyzeRewriteContext analyzeRewrite;
   private CreateTableDesc createTableDesc;
   private boolean reduceSinkAddedBySortedDynPartition;
-
+  private Set<FileSinkDesc> acidFileSinks = Collections.emptySet();
 
   public ParseContext() {
   }
@@ -166,7 +168,8 @@ public class ParseContext {
       Map<String, ReadEntity> viewAliasToInput,
       List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting,
       AnalyzeRewriteContext analyzeRewrite, CreateTableDesc createTableDesc,
-      QueryProperties queryProperties) {
+      QueryProperties queryProperties, 
+      Set<FileSinkDesc> acidFileSinks) {
     this.conf = conf;
     this.opToPartPruner = opToPartPruner;
     this.opToPartList = opToPartList;
@@ -193,6 +196,16 @@ public class ParseContext {
     this.analyzeRewrite = analyzeRewrite;
     this.createTableDesc = createTableDesc;
     this.queryProperties = queryProperties;
+    if(acidFileSinks != null && !acidFileSinks.isEmpty()) {
+      this.acidFileSinks = new HashSet<>();
+      this.acidFileSinks.addAll(acidFileSinks);
+    }
+  }
+  public Set<FileSinkDesc> getAcidSinks() {
+    return acidFileSinks;
+  }
+  public boolean hasAcidWrite() {
+    return !acidFileSinks.isEmpty();
   }
 
   /**
