@@ -1,11 +1,13 @@
 Apache Hive (TM) @VERSION@
 ======================
 
-The Apache Hive (TM) data warehouse software facilitates querying and
-managing large datasets residing in distributed storage. Built on top
-of Apache Hadoop (TM), it provides:
+The Apache Hive (TM) data warehouse software facilitates reading, 
+writing, and managing large datasets residing in distributed storage
+using SQL. Built on top of Apache Hadoop (TM), it provides:
 
-* Tools to enable easy data extract/transform/load (ETL)
+* Tools to enable easy access to data via SQL, thus enabling data 
+  warehousing tasks such as extract/transform/load (ETL), reporting, 
+  and data analysis
 
 * A mechanism to impose structure on a variety of data formats
 
@@ -15,17 +17,11 @@ of Apache Hadoop (TM), it provides:
 * Query execution using Apache Hadoop MapReduce, Apache Tez
   or Apache Spark frameworks.
 
-Hive implements a dialect of SQL (Hive QL) that focuses on analytics
-and presents a rich set of SQL semantics including OLAP functions,
-subqueries, common table expressions and more. Hive allows SQL
-developers or users with SQL tools to easily query, analyze and
-process data stored in Hadoop.
-Hive also allows programmers familiar with the MapReduce framework
-to plug in their custom mappers and reducers to perform more
-sophisticated analysis that may not be supported by the built-in
-capabilities of the language. QL can also be extended with custom
-scalar functions (UDF's), aggregations (UDAF's), and table
-functions (UDTF's).
+Hive provides standard SQL functionality, including many of the later
+2003 and 2011 features for analytics.  These include OLAP functions, 
+subqueries, common table expressions, and more.  Hive's SQL can also be
+extended with user code via user defined functions (UDFs), user defined
+aggregates (UDAFs), and user defined table functions (UDTFs).
 
 Hive users have a choice of 3 runtimes when executing SQL queries.
 Users can choose between Apache Hadoop MapReduce, Apache Tez or
@@ -46,12 +42,10 @@ at any time. In each case, Hive is best suited for use cases
 where the amount of data processed is large enough to require a
 distributed system.
 
-Hive is not designed for online transaction processing and does
-not support row level insert/updates. It is best used for batch
-jobs over large sets of immutable data (like web logs). What
-Hive values most are scalability (scale out with more machines
-added dynamically to the Hadoop cluster), extensibility (with
-MapReduce framework and UDF/UDAF/UDTF), fault-tolerance, and
+Hive is not designed for online transaction processing. It is best used
+for traditional data warehousing tasks.  Hive is designed to maximize
+scalability (scale out with more machines added dynamically to the Hadoop
+cluster), performance, extensibility, fault-tolerance, and
 loose-coupling with its input formats.
 
 
@@ -79,9 +73,9 @@ Getting Started
 Requirements
 ============
 
-- Java 1.7
+- Java 1.7 or 1.8
 
-- Hadoop 1.x, 2.x
+- Hadoop 1.x, 2.x (2.x required for Hive 2.x)
 
 
 Upgrading from older versions of Hive
