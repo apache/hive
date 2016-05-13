@@ -577,6 +577,6 @@ public class TestHBaseSchemaTool extends HBaseIntegrationTests {
     outStr = new ByteArrayOutputStream();
     out = new PrintStream(outStr);
     tool.go(false, HBaseReadWrite.SEQUENCES_TABLE, null, "whatever", conf, out, err);
-    Assert.assertEquals("cv_PERMANENT_FUNCTION: 3\nmaster_key: 1" + lsep, outStr.toString());
+    Assert.assertEquals("master_key: 1" + lsep, outStr.toString());
   }
 }
