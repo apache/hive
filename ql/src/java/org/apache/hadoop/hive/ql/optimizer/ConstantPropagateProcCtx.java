@@ -20,9 +20,11 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -30,10 +32,16 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
 /**
@@ -73,37 +81,6 @@ public class ConstantPropagateProcCtx implements NodeProcessorCtx {
   }
 
   /**
-   * Resolve a ColumnInfo based on given RowResolver.
-   *
-   * @param ci
-   * @param rr
-   * @param parentRR
-   * @return
-   * @throws SemanticException
-   */
-  private ColumnInfo resolve(ColumnInfo ci, RowSchema rs, RowSchema parentRS) {
-    // Resolve new ColumnInfo from <tableAlias, alias>
-    String alias = ci.getAlias();
-    if (alias == null) {
-      alias = ci.getInternalName();
-    }
-    String tblAlias = ci.getTabAlias();
-    ColumnInfo rci = rs.getColumnInfo(tblAlias, alias);
-    if (rci == null && rs.getTableNames().size() == 1 &&
-            parentRS.getTableNames().size() == 1) {
-      rci = rs.getColumnInfo(rs.getTableNames().iterator().next(),
-              alias);
-    }
-    if (rci == null) {
-      return null;
-    }
-    LOG.debug("Resolved "
-        + ci.getTabAlias() + "." + ci.getAlias() + " as "
-        + rci.getTabAlias() + "." + rci.getAlias() + " with rs: " + rs);
-    return rci;
-  }
-
-  /**
    * Get propagated constant map from parents.
    *
    * Traverse all parents of current operator, if there is propagated constant (determined by
@@ -115,8 +92,8 @@ public class ConstantPropagateProcCtx implements NodeProcessorCtx {
    * @return map of ColumnInfo to ExprNodeDesc. The values of that map must be either
    *         ExprNodeConstantDesc or ExprNodeNullDesc.
    */
-  public Map<ColumnInfo, ExprNodeDesc> getPropagatedConstants(
-      Operator<? extends Serializable> op) {
+  public Map<ColumnInfo, ExprNodeDesc> getPropagatedConstants(Operator<? extends Serializable> op) {
+    // this map should map columnInfo to ExprConstantNodeDesc
     Map<ColumnInfo, ExprNodeDesc> constants = new HashMap<ColumnInfo, ExprNodeDesc>();
     if (op.getSchema() == null) {
       return constants;
@@ -128,82 +105,134 @@ public class ConstantPropagateProcCtx implements NodeProcessorCtx {
       return constants;
     }
 
-    if (op instanceof UnionOperator) {
-      String alias = rs.getSignature().get(0).getTabAlias();
-      // find intersection
-      Map<ColumnInfo, ExprNodeDesc> intersection = null;
-      for (Operator<?> parent : op.getParentOperators()) {
-        Map<ColumnInfo, ExprNodeDesc> unionConst = opToConstantExprs.get(parent);
-        LOG.debug("Constant of op " + parent.getOperatorId() + " " + unionConst);
-        if (intersection == null) {
-          intersection = new HashMap<ColumnInfo, ExprNodeDesc>();
-          for (Entry<ColumnInfo, ExprNodeDesc> e : unionConst.entrySet()) {
-            ColumnInfo ci = new ColumnInfo(e.getKey());
-            ci.setTabAlias(alias);
-            intersection.put(ci, e.getValue());
+    // A previous solution is based on tableAlias and colAlias, which is
+    // unsafe, esp. when CBO generates derived table names. see HIVE-13602.
+    // For correctness purpose, we only trust colExpMap.
+    // We assume that CBO can do the constantPropagation before this function is
+    // called to help improve the performance.
+    // UnionOperator, LimitOperator and FilterOperator are special, they should already be
+    // column-position aligned.
+
+    List<Map<Integer, ExprNodeDesc>> parentsToConstant = new ArrayList<>();
+    boolean areAllParentsContainConstant = true;
+    boolean noParentsContainConstant = true;
+    for (Operator<?> parent : op.getParentOperators()) {
+      Map<ColumnInfo, ExprNodeDesc> constMap = opToConstantExprs.get(parent);
+      if (constMap == null) {
+        LOG.debug("Constant of Op " + parent.getOperatorId() + " is not found");
+        areAllParentsContainConstant = false;
+      } else {
+        noParentsContainConstant = false;
+        Map<Integer, ExprNodeDesc> map = new HashMap<>();
+        for (Entry<ColumnInfo, ExprNodeDesc> entry : constMap.entrySet()) {
+          map.put(parent.getSchema().getPosition(entry.getKey().getInternalName()),
+              entry.getValue());
+        }
+        parentsToConstant.add(map);
+        LOG.debug("Constant of Op " + parent.getOperatorId() + " " + constMap);
+      }
+    }
+    if (noParentsContainConstant) {
+      return constants;
+    }
+
+    ArrayList<ColumnInfo> signature = op.getSchema().getSignature();
+    if (op instanceof LimitOperator || op instanceof FilterOperator) {
+      // there should be only one parent.
+      if (op.getParentOperators().size() == 1) {
+        Map<Integer, ExprNodeDesc> parentToConstant = parentsToConstant.get(0);
+        for (int index = 0; index < signature.size(); index++) {
+          if (parentToConstant.containsKey(index)) {
+            constants.put(signature.get(index), parentToConstant.get(index));
           }
-        } else {
-          Iterator<Entry<ColumnInfo, ExprNodeDesc>> itr = intersection.entrySet().iterator();
-          while (itr.hasNext()) {
-            Entry<ColumnInfo, ExprNodeDesc> e = itr.next();
-            boolean found = false;
-            for (Entry<ColumnInfo, ExprNodeDesc> f : opToConstantExprs.get(parent).entrySet()) {
-              if (e.getKey().getInternalName().equals(f.getKey().getInternalName())) {
-                if (e.getValue().isSame(f.getValue())) {
-                  found = true;
-                }
+        }
+      }
+    } else if (op instanceof UnionOperator && areAllParentsContainConstant) {
+      for (int index = 0; index < signature.size(); index++) {
+        ExprNodeDesc constant = null;
+        for (Map<Integer, ExprNodeDesc> parentToConstant : parentsToConstant) {
+          if (!parentToConstant.containsKey(index)) {
+            // if this parent does not contain a constant at this position, we
+            // continue to look at other positions.
+            constant = null;
+            break;
+          } else {
+            if (constant == null) {
+              constant = parentToConstant.get(index);
+            } else {
+              // compare if they are the same constant.
+              ExprNodeDesc nextConstant = parentToConstant.get(index);
+              if (!nextConstant.isSame(constant)) {
+                // they are not the same constant. for example, union all of 1
+                // and 2.
+                constant = null;
                 break;
               }
             }
-            if (!found) {
-              itr.remove();
-            }
           }
         }
-        if (intersection.isEmpty()) {
-          return intersection;
+        // we have checked all the parents for the "index" position.
+        if (constant != null) {
+          constants.put(signature.get(index), constant);
         }
       }
-      LOG.debug("Propagated union constants:" + intersection);
-      return intersection;
-    }
-
-    for (Operator<? extends Serializable> parent : op.getParentOperators()) {
-      Map<ColumnInfo, ExprNodeDesc> c = opToConstantExprs.get(parent);
-      for (Entry<ColumnInfo, ExprNodeDesc> e : c.entrySet()) {
-        ColumnInfo ci = e.getKey();
-        ExprNodeDesc constant = e.getValue();
-        boolean resolved = false;
-        ColumnInfo rci = resolve(ci, rs, parent.getSchema());
-
-        if (rci != null) {
-          constants.put(rci, constant);
-          resolved = true;
+    } else if (op instanceof JoinOperator) {
+      JoinOperator joinOp = (JoinOperator) op;
+      Iterator<Entry<Byte, List<ExprNodeDesc>>> itr = joinOp.getConf().getExprs().entrySet()
+          .iterator();
+      while (itr.hasNext()) {
+        Entry<Byte, List<ExprNodeDesc>> e = itr.next();
+        int tag = e.getKey();
+        Operator<?> parent = op.getParentOperators().get(tag);
+        List<ExprNodeDesc> exprs = e.getValue();
+        if (exprs == null) {
+          continue;
         }
-        if (!resolved &&
-            op.getColumnExprMap() != null && op.getColumnExprMap().entrySet() != null) {
-          for (Entry<String, ExprNodeDesc> entry : op.getColumnExprMap().entrySet()) {
-            if (entry.getValue().isSame(constant)) {
-              ColumnInfo rsColumnInfo = rs.getColumnInfo(entry.getKey());
-              if (rsColumnInfo == null) {
-                continue;
+        for (ExprNodeDesc expr : exprs) {
+          // we are only interested in ExprNodeColumnDesc
+          if (expr instanceof ExprNodeColumnDesc) {
+            String parentColName = ((ExprNodeColumnDesc) expr).getColumn();
+            // find this parentColName in its parent's rs
+            int parentPos = parent.getSchema().getPosition(parentColName);
+            if (parentsToConstant.get(tag).containsKey(parentPos)) {
+              // this position in parent is a constant
+              // reverse look up colExprMap to find the childColName
+              if (op.getColumnExprMap() != null && op.getColumnExprMap().entrySet() != null) {
+                for (Entry<String, ExprNodeDesc> entry : op.getColumnExprMap().entrySet()) {
+                  if (entry.getValue().isSame(expr)) {
+                    // now propagate the constant from the parent to the child
+                    constants.put(signature.get(op.getSchema().getPosition(entry.getKey())),
+                        parentsToConstant.get(tag).get(parentPos));
+                  }
+                }
               }
-              constants.put(rsColumnInfo, constant);
-              resolved = true;
             }
           }
         }
-
-        if (!resolved) {
-          LOG.debug("Can't resolve " + ci.getTabAlias() + "." + ci.getAlias() +
-                  "(" + ci.getInternalName() + ") from rs:" + rs);
+      }
+    } else {
+      // there should be only one parent.
+      if (op.getParentOperators().size() == 1) {
+        Operator<?> parent = op.getParentOperators().get(0);
+        if (op.getColumnExprMap() != null && op.getColumnExprMap().entrySet() != null) {
+          for (Entry<String, ExprNodeDesc> entry : op.getColumnExprMap().entrySet()) {
+            ExprNodeDesc expr = entry.getValue();
+            if (expr instanceof ExprNodeColumnDesc) {
+              String parentColName = ((ExprNodeColumnDesc) expr).getColumn();
+              // find this parentColName in its parent's rs
+              int parentPos = parent.getSchema().getPosition(parentColName);
+              if (parentsToConstant.get(0).containsKey(parentPos)) {
+                // this position in parent is a constant
+                // now propagate the constant from the parent to the child
+                constants.put(signature.get(op.getSchema().getPosition(entry.getKey())),
+                    parentsToConstant.get(0).get(parentPos));
+              }
+            }
+          }
         }
       }
     }
-
-    LOG.debug("Offerring constants " + constants.keySet()
-        + " to operator " + op.toString());
-
+    LOG.debug("Offerring constants " + constants.keySet() + " to operator " + op.toString());
     return constants;
   }
 

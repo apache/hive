@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -413,7 +414,7 @@ public class SortedDynPartitionOptimizer extends Transform {
     public ReduceSinkOperator getReduceSinkOp(List<Integer> partitionPositions,
         List<Integer> sortPositions, List<Integer> sortOrder, List<Integer> sortNullOrder,
         ArrayList<ExprNodeDesc> allCols, ArrayList<ExprNodeDesc> bucketColumns, int numBuckets,
-        Operator<? extends OperatorDesc> parent, AcidUtils.Operation writeType) {
+        Operator<? extends OperatorDesc> parent, AcidUtils.Operation writeType) throws SemanticException {
 
       // Order of KEY columns
       // 1) Partition columns
@@ -518,17 +519,21 @@ public class SortedDynPartitionOptimizer extends Transform {
         }
       }
 
+      // map _col0 to KEY._col0, etc
+      Map<String, String> nameMapping = new HashMap<>();
       ArrayList<String> keyColNames = Lists.newArrayList();
       for (ExprNodeDesc keyCol : keyCols) {
         String keyColName = keyCol.getExprString();
         keyColNames.add(keyColName);
         colExprMap.put(Utilities.ReduceField.KEY + "." +keyColName, keyCol);
+        nameMapping.put(keyColName, Utilities.ReduceField.KEY + "." + keyColName);
       }
       ArrayList<String> valColNames = Lists.newArrayList();
       for (ExprNodeDesc valCol : valCols) {
-        String colName =valCol.getExprString();
+        String colName = valCol.getExprString();
         valColNames.add(colName);
-        colExprMap.put(Utilities.ReduceField.VALUE + "." +colName, valCol);
+        colExprMap.put(Utilities.ReduceField.VALUE + "." + colName, valCol);
+        nameMapping.put(colName, Utilities.ReduceField.VALUE + "." + colName);
       }
 
       // Create Key/Value TableDesc. When the operator plan is split into MR tasks,
@@ -548,8 +553,15 @@ public class SortedDynPartitionOptimizer extends Transform {
           valueTable, writeType);
       rsConf.setBucketCols(bucketColumns);
       rsConf.setNumBuckets(numBuckets);
+
+      ArrayList<ColumnInfo> signature = new ArrayList<>();
+      for (int index = 0; index < parent.getSchema().getSignature().size(); index++) {
+        ColumnInfo colInfo = new ColumnInfo(parent.getSchema().getSignature().get(index));
+        colInfo.setInternalName(nameMapping.get(colInfo.getInternalName()));
+        signature.add(colInfo);
+      }
       ReduceSinkOperator op = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
-          rsConf, new RowSchema(parent.getSchema()), parent);
+          rsConf, new RowSchema(signature), parent);
       op.setColumnExprMap(colExprMap);
       return op;
     }

@@ -26,9 +26,11 @@ import java.util.ListIterator;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -174,5 +176,15 @@ public class VirtualColumn implements Serializable {
       inspectors.add(vc.oi);
     }
     return ObjectInspectorFactory.getStandardStructObjectInspector(names, inspectors);
+  }
+
+  public static boolean isVirtualColumnBasedOnAlias(ColumnInfo column) {
+    // Not using method column.getIsVirtualCol() because partitioning columns
+    // are also treated as virtual columns in ColumnInfo.
+    if (column.getAlias() != null
+        && VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(column.getAlias().toUpperCase())) {
+      return true;
+    }
+    return false;
   }
 }

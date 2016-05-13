@@ -85,26 +85,26 @@ STAGE PLANS:
           TableScan
             alias: employee_part
             Select Operator
-              expressions: 4000.0 (type: double), country (type: string), employeename (type: string), employeeid (type: int)
-              outputColumnNames: employeesalary, country, employeename, employeeid
+              expressions: country (type: string), employeename (type: string), employeeid (type: int)
+              outputColumnNames: country, employeename, employeeid
               Group By Operator
                 aggregations: compute_stats(employeename, 16), compute_stats(employeeid, 16)
-                keys: employeesalary (type: double), country (type: string)
+                keys: 4000.0 (type: double), country (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Reduce Output Operator
-                  key expressions: _col0 (type: double), _col1 (type: string)
+                  key expressions: 4000.0 (type: double), _col1 (type: string)
                   sort order: ++
-                  Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
+                  Map-reduce partition columns: 4000.0 (type: double), _col1 (type: string)
                   value expressions: _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
-          keys: KEY._col0 (type: double), KEY._col1 (type: string)
+          keys: 4000.0 (type: double), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3
           Select Operator
-            expressions: _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: double), _col1 (type: string)
+            expressions: _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), 4000.0 (type: double), _col1 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             File Output Operator
               compressed: false
@@ -158,26 +158,26 @@ STAGE PLANS:
           TableScan
             alias: employee_part
             Select Operator
-              expressions: 2000.0 (type: double), country (type: string), employeeid (type: int)
-              outputColumnNames: employeesalary, country, employeeid
+              expressions: country (type: string), employeeid (type: int)
+              outputColumnNames: country, employeeid
               Group By Operator
                 aggregations: compute_stats(employeeid, 16)
-                keys: employeesalary (type: double), country (type: string)
+                keys: 2000.0 (type: double), country (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Reduce Output Operator
-                  key expressions: _col0 (type: double), _col1 (type: string)
+                  key expressions: 2000.0 (type: double), _col1 (type: string)
                   sort order: ++
-                  Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
+                  Map-reduce partition columns: 2000.0 (type: double), _col1 (type: string)
                   value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0)
-          keys: KEY._col0 (type: double), KEY._col1 (type: string)
+          keys: 2000.0 (type: double), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
           Select Operator
-            expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: double), _col1 (type: string)
+            expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), 2000.0 (type: double), _col1 (type: string)
             outputColumnNames: _col0, _col1, _col2
             File Output Operator
               compressed: false
