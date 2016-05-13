@@ -460,7 +460,8 @@ public abstract class TaskCompiler {
         pCtx.getNameToSplitSample(), pCtx.getSemanticInputs(), rootTasks,
         pCtx.getOpToPartToSkewedPruner(), pCtx.getViewAliasToInput(),
         pCtx.getReduceSinkOperatorsAddedByEnforceBucketingSorting(),
-        pCtx.getAnalyzeRewrite(), pCtx.getCreateTable(), pCtx.getQueryProperties(), pCtx.getViewProjectToTableSchema());
+        pCtx.getAnalyzeRewrite(), pCtx.getCreateTable(), pCtx.getQueryProperties(), pCtx.getViewProjectToTableSchema(),
+        pCtx.getAcidSinks());
     clone.setFetchTask(pCtx.getFetchTask());
     clone.setLineageInfo(pCtx.getLineageInfo());
     clone.setMapJoinOps(pCtx.getMapJoinOps());
