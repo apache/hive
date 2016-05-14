@@ -117,6 +117,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.session.YarnFairScheduling;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.ClusterStatus;
@@ -476,6 +477,8 @@ public class Driver implements CommandProcessor {
         plan.getFetchTask().initialize(conf, plan, null);
       }
 
+      configureScheduling(conf, userName);
+
       //do the authorization check
       if (!sem.skipAuthorization() &&
           HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
@@ -535,6 +538,14 @@ public class Driver implements CommandProcessor {
       restoreSession(queryState);
       LOG.info("Completed compiling command(queryId=" + queryId + "); Time taken: " + duration + " seconds");
     }
+  }
+
+  private HiveConf configureScheduling(HiveConf configuration, String forUser) throws IOException, HiveException {
+    if (YarnFairScheduling.usingNonImpersonationModeWithFairScheduling(configuration)) {
+        YarnFairScheduling.validateYarnQueue(configuration, forUser);
+    }
+
+    return configuration;
   }
 
   private ImmutableMap<String, Long> dumpMetaCallTimingWithoutEx(String phase) {

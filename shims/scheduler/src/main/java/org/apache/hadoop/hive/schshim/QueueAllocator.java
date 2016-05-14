@@ -15,25 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.shims;
 
-import java.io.IOException;
+package org.apache.hadoop.hive.schshim;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.AllocationConfiguration;
 
-/**
- * Shim for Fair scheduler
- * HiveServer2 uses fair scheduler API to resolve the queue mapping for non-impersonation
- * mode. This shim is avoid direct dependency of yarn fair scheduler on Hive.
- */
-public interface SchedulerShim {
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
+
+public interface QueueAllocator {
   /**
-   * Reset the default fair scheduler queue mapping to end user.
-   * @param conf
-   * @param userName end user name
+   * Generates a queue resolver for a given configuration and username.
+   * @param configuration The HiveConf configuration.
+   * @param username The user to configure the job for.
+   * @return Returns the queue allocation configuration.
+   * @throws IOException
    */
-  public void refreshDefaultQueue(Configuration conf, String userName)
-      throws IOException;
-
-  public void validateQueueConfiguration(Configuration configuration, String forUser) throws IOException;
+  AtomicReference<AllocationConfiguration> makeConfigurationFor(Configuration configuration, String username) throws IOException;
+  void refresh(Configuration configuration);
 }

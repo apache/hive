@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.YarnFairScheduling;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.service.auth.HiveAuthFactory;
@@ -121,11 +122,10 @@ public class HiveSessionImpl implements HiveSession {
     try {
       // In non-impersonation mode, map scheduler queue to current user
       // if fair scheduler is configured.
-      if (! hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS) &&
-        hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_MAP_FAIR_SCHEDULER_QUEUE)) {
-        ShimLoader.getHadoopShims().refreshDefaultQueue(hiveConf, username);
+      if (YarnFairScheduling.usingNonImpersonationModeWithFairScheduling(hiveConf)) {
+        YarnFairScheduling.setDefaultJobQueue(hiveConf, username);
       }
-    } catch (IOException e) {
+    } catch (Exception e) {
       LOG.warn("Error setting scheduler queue: " + e, e);
     }
     // Set an explicit session name to control the download directory name
