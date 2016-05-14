@@ -1663,10 +1663,8 @@ public class TestRecordReaderImpl {
 
   private void closeMockedRecordReader(DataReader mockedDataReader) throws IOException {
     Configuration conf = new Configuration();
-    FileSystem fs = FileSystem.getLocal(conf).getRaw();
-    fs.delete(workDir, true);
-    fs.mkdirs(workDir);
     Path path = new Path(workDir, "empty.orc");
+    FileSystem.get(conf).delete(path, true);
     Writer writer = OrcFile.createWriter(path, OrcFile.writerOptions(conf)
         .setSchema(TypeDescription.createLong()));
     writer.close();
