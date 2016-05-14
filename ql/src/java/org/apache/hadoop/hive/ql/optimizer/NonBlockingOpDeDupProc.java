@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -109,7 +108,7 @@ public class NonBlockingOpDeDupProc extends Transform {
         if (cSEL.getColumnExprMap() == null) {
           // If the child SelectOperator does not have the ColumnExprMap,
           // we do not need to update the ColumnExprMap in the parent SelectOperator.
-          pSEL.getConf().setColList(ExprNodeDescUtils.backtrack(cSELColList, cSEL, pSEL));
+          pSEL.getConf().setColList(ExprNodeDescUtils.backtrack(cSELColList, cSEL, pSEL, true));
           pSEL.getConf().setOutputColumnNames(cSELOutputColumnNames);
         } else {
           // If the child SelectOperator has the ColumnExprMap,
@@ -121,7 +120,7 @@ public class NonBlockingOpDeDupProc extends Transform {
             String outputColumnName = cSELOutputColumnNames.get(i);
             ExprNodeDesc cSELExprNodeDesc = cSELColList.get(i);
             ExprNodeDesc newPSELExprNodeDesc =
-                ExprNodeDescUtils.backtrack(cSELExprNodeDesc, cSEL, pSEL);
+                ExprNodeDescUtils.backtrack(cSELExprNodeDesc, cSEL, pSEL, true);
             newPSELColList.add(newPSELExprNodeDesc);
             newPSELOutputColumnNames.add(outputColumnName);
             colExprMap.put(outputColumnName, newPSELExprNodeDesc);

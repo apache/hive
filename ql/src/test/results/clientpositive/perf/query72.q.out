@@ -76,11 +76,11 @@ Stage-0
                                     <-Map 21 [SIMPLE_EDGE]
                                       SHUFFLE [RS_51]
                                         PartitionCols:_col0
-                                        Select Operator [SEL_31] (rows=32306 width=5)
+                                        Select Operator [SEL_31] (rows=1553 width=104)
                                           Output:["_col0"]
-                                          Filter Operator [FIL_131] (rows=32306 width=5)
+                                          Filter Operator [FIL_131] (rows=1553 width=104)
                                             predicate:((cd_marital_status = 'M') and cd_demo_sk is not null)
-                                            TableScan [TS_29] (rows=64612 width=5)
+                                            TableScan [TS_29] (rows=3106 width=104)
                                               default@customer_demographics,customer_demographics,Tbl:COMPLETE,Col:NONE,Output:["cd_demo_sk","cd_marital_status"]
                                     <-Reducer 8 [SIMPLE_EDGE]
                                       SHUFFLE [RS_50]

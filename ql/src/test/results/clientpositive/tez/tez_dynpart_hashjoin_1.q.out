@@ -53,7 +53,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
+                    predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
@@ -178,7 +178,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
+                    predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cint (type: int)
@@ -301,7 +301,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
+                    predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cint (type: int)
@@ -447,7 +447,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
+                    predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
@@ -575,7 +575,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
+                    predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cint (type: int)
@@ -701,7 +701,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
+                    predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cint (type: int)

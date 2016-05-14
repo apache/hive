@@ -561,7 +561,7 @@ bar
 baz
 baz
 baz
-Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: EXPLAIN SELECT agg.amount
 FROM agg_01 agg,
 dim_shops d1
@@ -634,7 +634,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: SELECT agg.amount
 FROM agg_01 agg,
 dim_shops d1

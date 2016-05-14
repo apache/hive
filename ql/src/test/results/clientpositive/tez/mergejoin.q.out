@@ -2677,6 +2677,7 @@ POSTHOOK: Input: default@tab_part@ds=2008-04-08
 #### A masked pattern was here ####
 NULL	NULL	NULL	98	val_98	2008-04-08
 NULL	NULL	NULL	98	val_98	2008-04-08
+Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from
 (select * from tab where tab.key = 0)a
 full outer join
@@ -2684,6 +2685,7 @@ full outer join
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab
 PREHOOK: Input: default@tab_part
+PREHOOK: Input: default@tab_part@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select * from
 (select * from tab where tab.key = 0)a
@@ -2692,7 +2694,9 @@ full outer join
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab
 POSTHOOK: Input: default@tab_part
+POSTHOOK: Input: default@tab_part@ds=2008-04-08
 #### A masked pattern was here ####
+Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from
 (select * from tab where tab.key = 0)a
 full outer join
@@ -2715,7 +2719,7 @@ NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
 NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
 NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
 NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
-Warning: Shuffle Join MERGEJOIN[19][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[18][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from
 (select * from tab where tab.key = 0)a
 join

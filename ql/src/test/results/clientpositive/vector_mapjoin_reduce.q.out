@@ -469,18 +469,18 @@ STAGE PLANS:
               predicate: ((l_shipmode = 'AIR') and (l_linenumber = 1) and l_orderkey is not null) (type: boolean)
               Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: l_orderkey (type: int)
-                outputColumnNames: _col0
+                expressions: l_orderkey (type: int), 1 (type: int)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: _col0 (type: int), 1 (type: int)
+                  keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
                   HashTable Sink Operator
                     keys:
                       0 _col0 (type: int), 1 (type: int)
-                      1 _col0 (type: int), 1 (type: int)
+                      1 _col0 (type: int), _col1 (type: int)
 
   Stage: Stage-8
     Map Reduce
@@ -500,7 +500,7 @@ STAGE PLANS:
                        Left Semi Join 0 to 1
                   keys:
                     0 _col0 (type: int), 1 (type: int)
-                    1 _col0 (type: int), 1 (type: int)
+                    1 _col0 (type: int), _col1 (type: int)
                   outputColumnNames: _col1, _col2
                   Statistics: Num rows: 55 Data size: 6598 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator

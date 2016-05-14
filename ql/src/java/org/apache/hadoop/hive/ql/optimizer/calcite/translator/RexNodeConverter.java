@@ -74,7 +74,9 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToChar;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDecimal;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToVarchar;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -157,7 +159,7 @@ public class RexNodeConverter {
     }
   }
 
-  private RexNode convert(final ExprNodeGenericFuncDesc func) throws SemanticException {
+  private RexNode convert(ExprNodeGenericFuncDesc func) throws SemanticException {
     ExprNodeDesc tmpExprNode;
     RexNode tmpRN;
 
@@ -174,6 +176,8 @@ public class RexNodeConverter {
             ((PrimitiveTypeInfo) func.getTypeInfo()).getPrimitiveCategory())));
     boolean isCompare = !isNumeric && tgtUdf instanceof GenericUDFBaseCompare;
     boolean isWhenCase = tgtUdf instanceof GenericUDFWhen || tgtUdf instanceof GenericUDFCase;
+    boolean isTransformableTimeStamp = func.getGenericUDF() instanceof GenericUDFUnixTimeStamp &&
+            func.getChildren().size() != 0;
 
     if (isNumeric) {
       tgtDT = func.getTypeInfo();
@@ -189,6 +193,9 @@ public class RexNodeConverter {
       if (checkForStatefulFunctions(func.getChildren())) {
         throw new SemanticException("Stateful expressions cannot be used inside of CASE");
       }
+    } else if (isTransformableTimeStamp) {
+      // unix_timestamp(args) -> to_unix_timestamp(args)
+      func = ExprNodeGenericFuncDesc.newInstance(new GenericUDFToUnixTimeStamp(), func.getChildren());
     }
 
     for (ExprNodeDesc childExpr : func.getChildren()) {
@@ -460,14 +467,16 @@ public class RexNodeConverter {
       }
       break;
     case FLOAT:
-      calciteLiteral = rexBuilder.makeApproxLiteral(new BigDecimal((Float) value), calciteDataType);
+      calciteLiteral = rexBuilder.makeApproxLiteral(
+              new BigDecimal(Float.toString((Float)value)), calciteDataType);
       break;
     case DOUBLE:
       // TODO: The best solution is to support NaN in expression reduction.
       if (Double.isNaN((Double) value)) {
         throw new CalciteSemanticException("NaN", UnsupportedFeature.Invalid_decimal);
       }
-      calciteLiteral = rexBuilder.makeApproxLiteral(new BigDecimal((Double) value), calciteDataType);
+      calciteLiteral = rexBuilder.makeApproxLiteral(
+              new BigDecimal(Double.toString((Double)value)), calciteDataType);
       break;
     case CHAR:
       if (value instanceof HiveChar) {

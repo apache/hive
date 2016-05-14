@@ -29,7 +29,7 @@ POSTHOOK: query: insert overwrite table decimal_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@decimal_1
-POSTHOOK: Lineage: decimal_1.t EXPRESSION []
+POSTHOOK: Lineage: decimal_1.t SIMPLE []
 POSTHOOK: Lineage: decimal_1.u EXPRESSION []
 POSTHOOK: Lineage: decimal_1.v EXPRESSION []
 PREHOOK: query: analyze table decimal_1 compute statistics for columns

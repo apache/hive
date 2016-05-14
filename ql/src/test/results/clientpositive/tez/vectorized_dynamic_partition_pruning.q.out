@@ -1348,12 +1348,12 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
+                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
+                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
+                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -1375,7 +1375,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
+                  1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1455,9 +1455,9 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: (UDFToDouble(_col0) * UDFToDouble(2)) (type: double)
+                      key expressions: (UDFToDouble(_col0) * 2.0) (type: double)
                       sort order: +
-                      Map-reduce partition columns: (UDFToDouble(_col0) * UDFToDouble(2)) (type: double)
+                      Map-reduce partition columns: (UDFToDouble(_col0) * 2.0) (type: double)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -1499,7 +1499,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 (UDFToDouble(_col0) * UDFToDouble(2)) (type: double)
+                  0 (UDFToDouble(_col0) * 2.0) (type: double)
                   1 _col0 (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -1598,9 +1598,9 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
+                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
+                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Reducer 2 
@@ -1610,7 +1610,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
+                  1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1690,9 +1690,9 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: (UDFToDouble(_col0) * UDFToDouble(2)) (type: double)
+                      key expressions: (UDFToDouble(_col0) * 2.0) (type: double)
                       sort order: +
-                      Map-reduce partition columns: (UDFToDouble(_col0) * UDFToDouble(2)) (type: double)
+                      Map-reduce partition columns: (UDFToDouble(_col0) * 2.0) (type: double)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -1719,7 +1719,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 (UDFToDouble(_col0) * UDFToDouble(2)) (type: double)
+                  0 (UDFToDouble(_col0) * 2.0) (type: double)
                   1 _col0 (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -1813,9 +1813,9 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: UDFToString((UDFToDouble(_col0) * UDFToDouble(2))) (type: string)
+                      key expressions: UDFToString((UDFToDouble(_col0) * 2.0)) (type: string)
                       sort order: +
-                      Map-reduce partition columns: UDFToString((UDFToDouble(_col0) * UDFToDouble(2))) (type: string)
+                      Map-reduce partition columns: UDFToString((UDFToDouble(_col0) * 2.0)) (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -1857,7 +1857,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToString((UDFToDouble(_col0) * UDFToDouble(2))) (type: string)
+                  0 UDFToString((UDFToDouble(_col0) * 2.0)) (type: string)
                   1 UDFToString(_col0) (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -1923,6 +1923,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 #### A masked pattern was here ####
 1000
+Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: -- parent is reduce tasks
 EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
@@ -1947,42 +1948,40 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  filterExpr: (ds = '2008-04-08') (type: boolean)
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: ds (type: string)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      sort order: 
+                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
                   filterExpr: (ds = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    keys: '2008-04-08' (type: string)
-                    mode: hash
-                    outputColumnNames: _col0
+                  Select Operator
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: '2008-04-08' (type: string)
-                      sort order: +
-                      Map-reduce partition columns: '2008-04-08' (type: string)
+                    Group By Operator
+                      keys: '2008-04-08' (type: string)
+                      mode: hash
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col0 (type: string)
-                  1 '2008-04-08' (type: string)
-                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                  0 
+                  1 
+                Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -2011,32 +2010,15 @@ STAGE PLANS:
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
-                keys: '2008-04-08' (type: string)
+                keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: '2008-04-08' (type: string)
-                    sort order: +
-                    Map-reduce partition columns: '2008-04-08' (type: string)
+                    sort order: 
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: '2008-04-08' (type: string)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: _col0 (type: string)
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                      Dynamic Partitioning Event Operator
-                        Target column: ds (string)
-                        Target Input: srcpart
-                        Partition key expr: ds
-                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                        Target Vertex: Map 1
 
   Stage: Stage-0
     Fetch Operator
@@ -2044,21 +2026,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 1000
 PREHOOK: query: select count(*) from srcpart where ds = '2008-04-08'
@@ -2074,7 +2053,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 1000
-Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: -- non-equi join
 EXPLAIN select count(*) from srcpart, srcpart_date_hour where (srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11) and (srcpart.ds = srcpart_date_hour.ds or srcpart.hr = srcpart_date_hour.hr)
 PREHOOK: type: QUERY
@@ -2171,7 +2150,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select count(*) from srcpart, srcpart_date_hour where (srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11) and (srcpart.ds = srcpart_date_hour.ds or srcpart.hr = srcpart_date_hour.hr)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -4247,7 +4226,7 @@ STAGE PLANS:
                            Inner Join 0 to 1
                       keys:
                         0 UDFToDouble(_col0) (type: double)
-                        1 UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
+                        1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -4275,12 +4254,12 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
+                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
+                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: UDFToDouble(UDFToInteger((_col0 / UDFToDouble(2)))) (type: double)
+                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -4367,7 +4346,7 @@ STAGE PLANS:
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 (UDFToDouble(_col0) * UDFToDouble(2)) (type: double)
+                        0 (UDFToDouble(_col0) * 2.0) (type: double)
                         1 _col0 (type: double)
                       input vertices:
                         1 Map 3
@@ -4470,6 +4449,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 #### A masked pattern was here ####
 1000
+Warning: Map Join MAPJOIN[22][bigTable=?] in task 'Reducer 3' is a cross product
 PREHOOK: query: -- parent is reduce tasks
 EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
@@ -4485,57 +4465,68 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Reducer 4 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 4 <- Map 3 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (BROADCAST_EDGE), Map 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  filterExpr: (ds = '2008-04-08') (type: boolean)
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: ds (type: string)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 _col0 (type: string)
-                        1 '2008-04-08' (type: string)
-                      input vertices:
-                        1 Reducer 4
-                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
-        Map 3 
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
                   filterExpr: (ds = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    keys: '2008-04-08' (type: string)
-                    mode: hash
-                    outputColumnNames: _col0
+                  Select Operator
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: '2008-04-08' (type: string)
-                      sort order: +
-                      Map-reduce partition columns: '2008-04-08' (type: string)
+                    Group By Operator
+                      keys: '2008-04-08' (type: string)
+                      mode: hash
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-        Reducer 2 
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 
+                      1 
+                    input vertices:
+                      0 Map 1
+                    Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint)
+        Reducer 4 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -4550,36 +4541,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                keys: '2008-04-08' (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: '2008-04-08' (type: string)
-                    sort order: +
-                    Map-reduce partition columns: '2008-04-08' (type: string)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: '2008-04-08' (type: string)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: _col0 (type: string)
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                      Dynamic Partitioning Event Operator
-                        Target column: ds (string)
-                        Target Input: srcpart
-                        Partition key expr: ds
-                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                        Target Vertex: Map 1
 
   Stage: Stage-0
     Fetch Operator
@@ -4587,21 +4548,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+Warning: Map Join MAPJOIN[22][bigTable=?] in task 'Reducer 3' is a cross product
 PREHOOK: query: select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 1000
 PREHOOK: query: select count(*) from srcpart where ds = '2008-04-08'

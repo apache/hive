@@ -159,7 +159,8 @@ public class HiveGBOpConvUtil {
     // 1. Collect GB Keys
     RelNode aggInputRel = aggRel.getInput();
     ExprNodeConverter exprConv = new ExprNodeConverter(inputOpAf.tabAlias,
-        aggInputRel.getRowType(), new HashSet<Integer>(), aggRel.getCluster().getTypeFactory());
+        aggInputRel.getRowType(), new HashSet<Integer>(), aggRel.getCluster().getTypeFactory(),
+        true);
 
     ExprNodeDesc tmpExprNodeDesc;
     for (int i : aggRel.getGroupSet()) {

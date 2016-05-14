@@ -88,7 +88,7 @@ POSTHOOK: query: analyze table supplier_hive compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@supplier_hive
 #### A masked pattern was here ####
-Warning: Shuffle Join JOIN[24][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[23][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain select
 	p_brand,
 	p_type,

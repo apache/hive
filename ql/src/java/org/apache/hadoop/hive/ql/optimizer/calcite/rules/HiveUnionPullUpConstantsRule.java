@@ -80,32 +80,30 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
       return;
     }
 
-    Map<RexNode, RexNode> constants = HiveReduceExpressionsRule.predicateConstants(
+    Map<RexNode, RexNode> conditionsExtracted = HiveReduceExpressionsRule.predicateConstants(
             RexNode.class, rexBuilder, predicates);
+    Map<RexNode, RexNode> constants = new HashMap<>();
+    for (int i = 0; i < count ; i++) {
+      RexNode expr = rexBuilder.makeInputRef(union, i);
+      if (conditionsExtracted.containsKey(expr)) {
+        constants.put(expr, conditionsExtracted.get(expr));
+      }
+    }
 
     // None of the expressions are constant. Nothing to do.
     if (constants.isEmpty()) {
       return;
     }
 
-    if (count == constants.size()) {
-      // At least a single item in project is required.
-      final Map<RexNode, RexNode> map = new HashMap<>(constants);
-      map.remove(map.keySet().iterator().next());
-      constants = map;
-    }
-
     // Create expressions for Project operators before and after the Union
-    boolean atLeastOneConstant = false;
-    List<RelDataTypeField> fields = union.getRowType().getFieldList();
     List<Pair<RexNode, String>> newChildExprs = new ArrayList<>();
+    List<RelDataTypeField> fields = union.getRowType().getFieldList();
     List<RexNode> topChildExprs = new ArrayList<>();
     List<String> topChildExprsFields = new ArrayList<>();
     for (int i = 0; i < count ; i++) {
       RexNode expr = rexBuilder.makeInputRef(union, i);
       RelDataTypeField field = fields.get(i);
       if (constants.containsKey(expr)) {
-        atLeastOneConstant = true;
         topChildExprs.add(constants.get(expr));
         topChildExprsFields.add(field.getName());
       } else {
@@ -115,9 +113,10 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
       }
     }
 
-    // No constants were found
-    if (!atLeastOneConstant) {
-      return;
+    if (newChildExprs.isEmpty()) {
+      // At least a single item in project is required.
+      newChildExprs.add(Pair.<RexNode,String>of(
+              topChildExprs.get(0), topChildExprsFields.get(0)));
     }
 
     // Update top Project positions

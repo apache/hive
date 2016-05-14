@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
@@ -287,7 +288,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       }
       if (op.getColumnExprMap() != null) {
         for(String dpCol : dpCols) {
-          ExprNodeDesc end = findConstantExprOrigin(dpCol, op);
+          ExprNodeDesc end = ExprNodeDescUtils.findConstantExprOrigin(dpCol, op);
           if (!(end instanceof ExprNodeConstantDesc)) {
             return false;
           }
@@ -296,37 +297,6 @@ public class SortedDynPartitionOptimizer extends Transform {
         return false;
       }
       return true;
-    }
-
-    // Find the constant origin of a certain column if it is originated from a constant
-    // Otherwise, it returns the expression that originated the column
-    private ExprNodeDesc findConstantExprOrigin(String dpCol, Operator<? extends OperatorDesc> op) {
-      ExprNodeDesc expr = op.getColumnExprMap().get(dpCol);
-      ExprNodeDesc foldedExpr;
-      // If it is a function, we try to fold it
-      if (expr instanceof ExprNodeGenericFuncDesc) {
-        foldedExpr = ConstantPropagateProcFactory.foldExpr((ExprNodeGenericFuncDesc)expr);
-        if (foldedExpr == null) {
-          foldedExpr = expr;
-        }
-      } else {
-        foldedExpr = expr;
-      }
-      // If it is a column reference, we will try to resolve it
-      if (foldedExpr instanceof ExprNodeColumnDesc) {
-        Operator<? extends OperatorDesc> originOp = null;
-        for(Operator<? extends OperatorDesc> parentOp : op.getParentOperators()) {
-          if (parentOp.getColumnExprMap() != null) {
-            originOp = parentOp;
-            break;
-          }
-        }
-        if (originOp != null) {
-          return findConstantExprOrigin(((ExprNodeColumnDesc)foldedExpr).getColumn(), originOp);
-        }
-      }
-      // Otherwise, we return the expression
-      return foldedExpr;
     }
 
     // Remove RS and SEL introduced by enforce bucketing/sorting config

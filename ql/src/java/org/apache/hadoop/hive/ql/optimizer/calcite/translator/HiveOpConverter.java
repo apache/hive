@@ -278,7 +278,8 @@ public class HiveOpConverter {
     for (int pos = 0; pos < projectRel.getChildExps().size(); pos++) {
       ExprNodeConverter converter = new ExprNodeConverter(inputOpAf.tabAlias, projectRel
           .getRowType().getFieldNames().get(pos), projectRel.getInput().getRowType(),
-          projectRel.getRowType(), inputOpAf.vcolsInCalcite, projectRel.getCluster().getTypeFactory());
+          projectRel.getRowType(), inputOpAf.vcolsInCalcite, projectRel.getCluster().getTypeFactory(),
+          true);
       ExprNodeDesc exprCol = projectRel.getChildExps().get(pos).accept(converter);
       colExprMap.put(exprNames.get(pos), exprCol);
       exprCols.add(exprCol);
@@ -520,7 +521,7 @@ public class HiveOpConverter {
 
     ExprNodeDesc filCondExpr = filterRel.getCondition().accept(
         new ExprNodeConverter(inputOpAf.tabAlias, filterRel.getInput().getRowType(), inputOpAf.vcolsInCalcite,
-            filterRel.getCluster().getTypeFactory()));
+            filterRel.getCluster().getTypeFactory(), true));
     FilterDesc filDesc = new FilterDesc(filCondExpr, false);
     ArrayList<ColumnInfo> cinfoLst = createColInfos(inputOpAf.inputs.get(0));
     FilterOperator filOp = (FilterOperator) OperatorFactory.getAndMakeChild(filDesc,
@@ -1164,7 +1165,7 @@ public class HiveOpConverter {
   private static ExprNodeDesc convertToExprNode(RexNode rn, RelNode inputRel, String tabAlias,
           Set<Integer> vcolsInCalcite) {
     return rn.accept(new ExprNodeConverter(tabAlias, inputRel.getRowType(), vcolsInCalcite,
-        inputRel.getCluster().getTypeFactory()));
+        inputRel.getCluster().getTypeFactory(), true));
   }
 
   private static ArrayList<ColumnInfo> createColInfos(Operator<?> input) {

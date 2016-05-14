@@ -52,10 +52,12 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
@@ -1069,6 +1071,17 @@ public class TypeCheckProcFactory {
         } else {
           desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText,
               children);
+        }
+
+        // If the function is deterministic and the children are constants,
+        // we try to fold the expression to remove e.g. cast on constant
+        if (ctx.isFoldExpr() && desc instanceof ExprNodeGenericFuncDesc &&
+                FunctionRegistry.isDeterministic(genericUDF) &&
+                ExprNodeDescUtils.isAllConstants(children)) {
+          ExprNodeDesc constantExpr = ConstantPropagateProcFactory.foldExpr((ExprNodeGenericFuncDesc)desc);
+          if (constantExpr != null) {
+            desc = constantExpr;
+          }
         }
       }
       // UDFOPPositive is a no-op.

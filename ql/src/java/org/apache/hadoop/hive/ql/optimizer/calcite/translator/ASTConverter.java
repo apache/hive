@@ -45,6 +45,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
@@ -189,6 +190,10 @@ public class ASTConverter {
       int i = 0;
 
       for (RexNode r : select.getChildExps()) {
+        if (RexUtil.isNull(r) && r.getType().getSqlTypeName() != SqlTypeName.NULL) {
+          // It is NULL value with different type, we need to introduce a CAST to keep it
+          r = select.getCluster().getRexBuilder().makeAbstractCast(r.getType(), r);
+        }
         ASTNode expr = r.accept(new RexVisitor(schema, r instanceof RexLiteral));
         String alias = select.getRowType().getFieldNames().get(i++);
         ASTNode selectExpr = ASTBuilder.selectExpr(expr, alias);

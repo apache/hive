@@ -216,6 +216,10 @@ public class ConstantPropagateProcCtx implements NodeProcessorCtx {
         Operator<?> parent = op.getParentOperators().get(0);
         if (op.getColumnExprMap() != null && op.getColumnExprMap().entrySet() != null) {
           for (Entry<String, ExprNodeDesc> entry : op.getColumnExprMap().entrySet()) {
+            if (op.getSchema().getPosition(entry.getKey()) == -1) {
+              // Not present
+              continue;
+            }
             ExprNodeDesc expr = entry.getValue();
             if (expr instanceof ExprNodeColumnDesc) {
               String parentColName = ((ExprNodeColumnDesc) expr).getColumn();

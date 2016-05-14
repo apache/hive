@@ -73,7 +73,7 @@ SELECT key+11 FROM src WHERE key=484
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@fact_tz@ds=1/hr=2
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION []
 #### A masked pattern was here ####
 PREHOOK: query: -- switch fact_daily to skewed table and point its location to /fact_tz/ds=1
 alter table fact_daily skewed by (x) on (484)

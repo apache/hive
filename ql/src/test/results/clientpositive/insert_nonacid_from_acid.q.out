@@ -53,7 +53,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sample_06
 POSTHOOK: Output: default@tab1
 POSTHOOK: Lineage: tab1.age SIMPLE [(sample_06)sample_06.FieldSchema(name:age, type:int, comment:null), ]
-POSTHOOK: Lineage: tab1.gpa SIMPLE [(sample_06)sample_06.FieldSchema(name:gpa, type:decimal(3,2), comment:null), ]
+POSTHOOK: Lineage: tab1.gpa SIMPLE []
 POSTHOOK: Lineage: tab1.name SIMPLE [(sample_06)sample_06.FieldSchema(name:name, type:varchar(50), comment:null), ]
 PREHOOK: query: select * from tab1
 PREHOOK: type: QUERY

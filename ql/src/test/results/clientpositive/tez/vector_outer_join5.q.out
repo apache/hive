@@ -569,7 +569,7 @@ STAGE PLANS:
                            Left Outer Join0 to 1
                       keys:
                         0 UDFToLong(_col1) (type: bigint)
-                        1 (_col0 pmod UDFToLong(8)) (type: bigint)
+                        1 (_col0 pmod 8) (type: bigint)
                       outputColumnNames: _col0
                       input vertices:
                         1 Map 4
@@ -591,9 +591,9 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: (_col0 pmod UDFToLong(8)) (type: bigint)
+                      key expressions: (_col0 pmod 8) (type: bigint)
                       sort order: +
-                      Map-reduce partition columns: (_col0 pmod UDFToLong(8)) (type: bigint)
+                      Map-reduce partition columns: (_col0 pmod 8) (type: bigint)
                       Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Map 5 
@@ -1239,7 +1239,7 @@ STAGE PLANS:
                            Left Outer Join0 to 1
                       keys:
                         0 UDFToLong(_col1) (type: bigint)
-                        1 (_col0 pmod UDFToLong(8)) (type: bigint)
+                        1 (_col0 pmod 8) (type: bigint)
                       outputColumnNames: _col0
                       input vertices:
                         1 Map 4
@@ -1261,9 +1261,9 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: (_col0 pmod UDFToLong(8)) (type: bigint)
+                      key expressions: (_col0 pmod 8) (type: bigint)
                       sort order: +
-                      Map-reduce partition columns: (_col0 pmod UDFToLong(8)) (type: bigint)
+                      Map-reduce partition columns: (_col0 pmod 8) (type: bigint)
                       Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Map 5 

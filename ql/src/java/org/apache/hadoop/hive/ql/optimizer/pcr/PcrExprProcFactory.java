@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartExprEvalUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -474,7 +475,20 @@ public final class PcrExprProcFactory {
               new ExprNodeConstantDesc(fd.getTypeInfo(), result));
         }
 
-        return new NodeInfoWrapper(WalkState.CONSTANT, null, getOutExpr(fd, nodeOutputs));
+        // Try to fold, otherwise return the expression itself
+        final ExprNodeGenericFuncDesc desc = getOutExpr(fd, nodeOutputs);
+        final ExprNodeDesc foldedDesc = ConstantPropagateProcFactory.foldExpr(desc);
+        if (foldedDesc != null && foldedDesc instanceof ExprNodeConstantDesc) {
+          ExprNodeConstantDesc constant = (ExprNodeConstantDesc) foldedDesc;
+          if (Boolean.TRUE.equals(constant.getValue())) {
+            return new NodeInfoWrapper(WalkState.TRUE, null, constant);
+          } else if (Boolean.FALSE.equals(constant.getValue())) {
+            return new NodeInfoWrapper(WalkState.FALSE, null, constant);
+          } else {
+            return new NodeInfoWrapper(WalkState.CONSTANT, null, constant);
+          }
+        }
+        return new NodeInfoWrapper(WalkState.CONSTANT, null, desc);
       }
     }
   };

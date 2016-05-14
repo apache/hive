@@ -561,7 +561,7 @@ STAGE PLANS:
               HashTable Sink Operator
                 keys:
                   0 UDFToLong(_col1) (type: bigint)
-                  1 (_col0 pmod UDFToLong(8)) (type: bigint)
+                  1 (_col0 pmod 8) (type: bigint)
         $hdt$_2:s 
           TableScan
             alias: s
@@ -590,7 +590,7 @@ STAGE PLANS:
                      Left Outer Join0 to 1
                 keys:
                   0 UDFToLong(_col1) (type: bigint)
-                  1 (_col0 pmod UDFToLong(8)) (type: bigint)
+                  1 (_col0 pmod 8) (type: bigint)
                 outputColumnNames: _col0
                 Statistics: Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
@@ -1212,7 +1212,7 @@ STAGE PLANS:
               HashTable Sink Operator
                 keys:
                   0 UDFToLong(_col1) (type: bigint)
-                  1 (_col0 pmod UDFToLong(8)) (type: bigint)
+                  1 (_col0 pmod 8) (type: bigint)
         $hdt$_2:s 
           TableScan
             alias: s
@@ -1241,7 +1241,7 @@ STAGE PLANS:
                      Left Outer Join0 to 1
                 keys:
                   0 UDFToLong(_col1) (type: bigint)
-                  1 (_col0 pmod UDFToLong(8)) (type: bigint)
+                  1 (_col0 pmod 8) (type: bigint)
                 outputColumnNames: _col0
                 Statistics: Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator

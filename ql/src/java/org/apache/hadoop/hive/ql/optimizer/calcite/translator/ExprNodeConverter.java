@@ -36,6 +36,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
@@ -45,6 +46,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -79,6 +81,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
 
+  private final boolean            foldExpr;
   private final String             tabAlias;
   private final RelDataType        inputRowType;
   private final ImmutableSet<Integer>       inputVCols;
@@ -89,16 +92,28 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
 
   public ExprNodeConverter(String tabAlias, RelDataType inputRowType,
       Set<Integer> vCols, RelDataTypeFactory dTFactory) {
-    this(tabAlias, null, inputRowType, null, vCols, dTFactory);
+    this(tabAlias, null, inputRowType, null, vCols, dTFactory, false);
+  }
+
+  public ExprNodeConverter(String tabAlias, RelDataType inputRowType,
+      Set<Integer> vCols, RelDataTypeFactory dTFactory, boolean foldExpr) {
+    this(tabAlias, null, inputRowType, null, vCols, dTFactory, foldExpr);
   }
 
   public ExprNodeConverter(String tabAlias, String columnAlias, RelDataType inputRowType,
           RelDataType outputRowType, Set<Integer> inputVCols, RelDataTypeFactory dTFactory) {
+    this(tabAlias, columnAlias, inputRowType, outputRowType, inputVCols, dTFactory, false);
+  }
+
+  public ExprNodeConverter(String tabAlias, String columnAlias, RelDataType inputRowType,
+          RelDataType outputRowType, Set<Integer> inputVCols, RelDataTypeFactory dTFactory,
+          boolean foldExpr) {
     super(true);
     this.tabAlias = tabAlias;
     this.inputRowType = inputRowType;
     this.inputVCols = ImmutableSet.copyOf(inputVCols);
     this.dTFactory = dTFactory;
+    this.foldExpr = foldExpr;
   }
 
   public List<WindowFunctionSpec> getWindowFunctionSpec() {
@@ -117,7 +132,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
    */
   @Override
   public ExprNodeDesc visitCall(RexCall call) {
-    ExprNodeGenericFuncDesc gfDesc = null;
+    ExprNodeDesc gfDesc = null;
 
     if (!deep) {
       return null;
@@ -149,6 +164,15 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         throw new RuntimeException(e);
       }
     }
+
+    // Try to fold if it is a constant expression
+    if (foldExpr && RexUtil.isConstant(call)) {
+      ExprNodeDesc constantExpr = ConstantPropagateProcFactory.foldExpr((ExprNodeGenericFuncDesc)gfDesc);
+      if (constantExpr != null) {
+        gfDesc = constantExpr;
+      }
+    }
+
     return gfDesc;
   }
 

@@ -118,7 +118,7 @@ STAGE PLANS:
                Inner Join 0 to 1
           keys:
             0 UDFToDouble(_col0) (type: double)
-            1 UDFToDouble('5') (type: double)
+            1 5.0 (type: double)
           outputColumnNames: _col0
           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
           File Output Operator

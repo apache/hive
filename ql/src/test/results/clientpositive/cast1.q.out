@@ -110,8 +110,8 @@ POSTHOOK: Lineage: dest1.c2 SIMPLE []
 POSTHOOK: Lineage: dest1.c3 SIMPLE []
 POSTHOOK: Lineage: dest1.c4 SIMPLE []
 POSTHOOK: Lineage: dest1.c5 SIMPLE []
-POSTHOOK: Lineage: dest1.c6 EXPRESSION []
-POSTHOOK: Lineage: dest1.c7 EXPRESSION []
+POSTHOOK: Lineage: dest1.c6 SIMPLE []
+POSTHOOK: Lineage: dest1.c7 SIMPLE []
 PREHOOK: query: select dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1

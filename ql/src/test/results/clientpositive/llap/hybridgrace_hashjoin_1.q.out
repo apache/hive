@@ -1297,7 +1297,7 @@ POSTHOOK: Lineage: decimal_mapjoin.cdecimal1 EXPRESSION [(alltypesorc)alltypesor
 POSTHOOK: Lineage: decimal_mapjoin.cdecimal2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 POSTHOOK: Lineage: decimal_mapjoin.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 POSTHOOK: Lineage: decimal_mapjoin.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   FROM decimal_mapjoin l
   JOIN decimal_mapjoin r ON l.cint = r.cint
@@ -1380,7 +1380,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   FROM decimal_mapjoin l
   JOIN decimal_mapjoin r ON l.cint = r.cint
@@ -1495,7 +1495,7 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
-Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   FROM decimal_mapjoin l
   JOIN decimal_mapjoin r ON l.cint = r.cint
@@ -1578,7 +1578,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   FROM decimal_mapjoin l
   JOIN decimal_mapjoin r ON l.cint = r.cint

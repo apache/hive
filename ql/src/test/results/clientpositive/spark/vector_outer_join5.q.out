@@ -596,7 +596,7 @@ STAGE PLANS:
                     Spark HashTable Sink Operator
                       keys:
                         0 UDFToLong(_col1) (type: bigint)
-                        1 (_col0 pmod UDFToLong(8)) (type: bigint)
+                        1 (_col0 pmod 8) (type: bigint)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -637,7 +637,7 @@ STAGE PLANS:
                            Left Outer Join0 to 1
                       keys:
                         0 UDFToLong(_col1) (type: bigint)
-                        1 (_col0 pmod UDFToLong(8)) (type: bigint)
+                        1 (_col0 pmod 8) (type: bigint)
                       outputColumnNames: _col0
                       input vertices:
                         1 Map 3
@@ -1300,7 +1300,7 @@ STAGE PLANS:
                     Spark HashTable Sink Operator
                       keys:
                         0 UDFToLong(_col1) (type: bigint)
-                        1 (_col0 pmod UDFToLong(8)) (type: bigint)
+                        1 (_col0 pmod 8) (type: bigint)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -1341,7 +1341,7 @@ STAGE PLANS:
                            Left Outer Join0 to 1
                       keys:
                         0 UDFToLong(_col1) (type: bigint)
-                        1 (_col0 pmod UDFToLong(8)) (type: bigint)
+                        1 (_col0 pmod 8) (type: bigint)
                       outputColumnNames: _col0
                       input vertices:
                         1 Map 3

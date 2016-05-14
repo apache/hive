@@ -665,7 +665,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
-                expressions: 2001-01-01 (type: date), VALUE._col0 (type: date)
+                expressions: KEY.reducesinkkey0 (type: date), VALUE._col0 (type: date)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 74 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator

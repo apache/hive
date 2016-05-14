@@ -35,12 +35,12 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class HiveRelOptUtil extends RelOptUtil {
@@ -105,23 +105,6 @@ public class HiveRelOptUtil extends RelOptUtil {
     final RelOptCluster cluster = inputs.get(0).getCluster();
     final RexBuilder rexBuilder = cluster.getRexBuilder();
 
-    final ImmutableBitSet[] inputsRange = new ImmutableBitSet[inputs.size()];
-    int totalFieldCount = 0;
-    for (int i = 0; i < inputs.size(); i++) {
-      final int firstField = totalFieldCount + sysFieldCount;
-      totalFieldCount = firstField + inputs.get(i).getRowType().getFieldCount();
-      inputsRange[i] = ImmutableBitSet.range(firstField, totalFieldCount);
-    }
-
-    // adjustment array
-    int[] adjustments = new int[totalFieldCount];
-    for (int i = 0; i < inputs.size(); i++) {
-      final int adjustment = inputsRange[i].nextSetBit(0);
-      for (int j = adjustment; j < inputsRange[i].length(); j++) {
-        adjustments[j] = -adjustment;
-      }
-    }
-
     if (condition instanceof RexCall) {
       RexCall call = (RexCall) condition;
       if (call.getOperator() == SqlStdOperatorTable.AND) {
@@ -165,6 +148,14 @@ public class HiveRelOptUtil extends RelOptUtil {
         final ImmutableBitSet projRefs0 = InputFinder.bits(op0);
         final ImmutableBitSet projRefs1 = InputFinder.bits(op1);
 
+        final ImmutableBitSet[] inputsRange = new ImmutableBitSet[inputs.size()];
+        int totalFieldCount = 0;
+        for (int i = 0; i < inputs.size(); i++) {
+          final int firstField = totalFieldCount + sysFieldCount;
+          totalFieldCount = firstField + inputs.get(i).getRowType().getFieldCount();
+          inputsRange[i] = ImmutableBitSet.range(firstField, totalFieldCount);
+        }
+
         boolean foundBothInputs = false;
         for (int i = 0; i < inputs.size() && !foundBothInputs; i++) {
           if (projRefs0.intersects(inputsRange[i])
@@ -196,6 +187,15 @@ public class HiveRelOptUtil extends RelOptUtil {
         }
 
         if ((leftKey != null) && (rightKey != null)) {
+          // adjustment array
+          int[] adjustments = new int[totalFieldCount];
+          for (int i = 0; i < inputs.size(); i++) {
+            final int adjustment = inputsRange[i].nextSetBit(0);
+            for (int j = adjustment; j < inputsRange[i].length(); j++) {
+              adjustments[j] = -adjustment;
+            }
+          }
+
           // replace right Key input ref
           rightKey =
               rightKey.accept(

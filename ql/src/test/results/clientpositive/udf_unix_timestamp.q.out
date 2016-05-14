@@ -89,7 +89,7 @@ POSTHOOK: Input: default@oneline
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo
 POSTHOOK: Lineage: foo.a SIMPLE []
-POSTHOOK: Lineage: foo.b EXPRESSION []
+POSTHOOK: Lineage: foo.b SIMPLE []
 PREHOOK: query: drop table foo
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@foo

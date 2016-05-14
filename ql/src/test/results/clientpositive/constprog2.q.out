@@ -1,4 +1,4 @@
-Warning: Shuffle Join JOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT src1.key, src1.key + 1, src2.value
        FROM srcbucket src1 join srcbucket src2 ON src1.key = src2.key AND src1.key = 86
@@ -90,11 +90,13 @@ STAGE PLANS:
               predicate: (UDFToDouble(key) = 86.0) (type: boolean)
               Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
               Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: 86 (type: int)
+                  key expressions: _col0 (type: int)
                   sort order: +
-                  Map-reduce partition columns: 86 (type: int)
+                  Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src1
@@ -103,13 +105,13 @@ STAGE PLANS:
               predicate: (UDFToDouble(key) = 86.0) (type: boolean)
               Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: value (type: string)
-                outputColumnNames: _col1
+                expressions: key (type: int), value (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: 86 (type: int)
+                  key expressions: _col0 (type: int)
                   sort order: +
-                  Map-reduce partition columns: 86 (type: int)
+                  Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
       Reduce Operator Tree:
@@ -119,10 +121,10 @@ STAGE PLANS:
           keys:
             0 _col0 (type: int)
             1 _col0 (type: int)
-          outputColumnNames: _col2
+          outputColumnNames: _col0, _col2
           Statistics: Num rows: 550 Data size: 5831 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: 86 (type: int), 87 (type: int), _col2 (type: string)
+            expressions: _col0 (type: int), (_col0 + 1) (type: int), _col2 (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 550 Data size: 5831 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

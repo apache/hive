@@ -30,7 +30,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@myinput1
 POSTHOOK: Lineage: myinput1.key SIMPLE [(myinput1_txt)myinput1_txt.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: myinput1.value SIMPLE [(myinput1_txt)myinput1_txt.FieldSchema(name:value, type:int, comment:null), ]
-Warning: Map Join MAPJOIN[15][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -40,7 +40,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 13630578
-Warning: Map Join MAPJOIN[15][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1

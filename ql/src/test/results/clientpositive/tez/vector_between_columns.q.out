@@ -70,7 +70,7 @@ POSTHOOK: Output: default@TINT
 POSTHOOK: Lineage: tint.cint SIMPLE [(tint_txt)tint_txt.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: tint.rnum SIMPLE [(tint_txt)tint_txt.FieldSchema(name:rnum, type:int, comment:null), ]
 tint_txt.rnum	tint_txt.cint
-Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[10][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: explain
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint from tint , tsint where tint.cint between tsint.csint and tsint.csint
 PREHOOK: type: QUERY
@@ -144,7 +144,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[10][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: select tint.rnum, tsint.rnum, tint.cint, tsint.csint from tint , tsint where tint.cint between tsint.csint and tsint.csint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tint

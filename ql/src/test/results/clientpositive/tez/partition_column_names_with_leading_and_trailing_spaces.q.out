@@ -51,7 +51,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@foo_p
 POSTHOOK: Input: default@foo_p@p=a 
 #### A masked pattern was here ####
-1	a 
+1	a
 PREHOOK: query: select * from foo_p where p="a"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@foo_p

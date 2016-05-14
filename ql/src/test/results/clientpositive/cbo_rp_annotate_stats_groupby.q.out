@@ -362,11 +362,10 @@ STAGE PLANS:
               Group By Operator
                 keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 32 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
-                pruneGroupingSetId: true
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                   Statistics: Num rows: 32 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
@@ -420,11 +419,10 @@ STAGE PLANS:
               Group By Operator
                 keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 24 Data size: 4200 Basic stats: COMPLETE Column stats: COMPLETE
-                pruneGroupingSetId: true
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                   Statistics: Num rows: 24 Data size: 4200 Basic stats: COMPLETE Column stats: COMPLETE
@@ -478,11 +476,10 @@ STAGE PLANS:
               Group By Operator
                 keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 8 Data size: 1400 Basic stats: COMPLETE Column stats: COMPLETE
-                pruneGroupingSetId: true
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                   Statistics: Num rows: 8 Data size: 1400 Basic stats: COMPLETE Column stats: COMPLETE
@@ -536,11 +533,10 @@ STAGE PLANS:
               Group By Operator
                 keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 16 Data size: 2800 Basic stats: COMPLETE Column stats: COMPLETE
-                pruneGroupingSetId: true
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                   Statistics: Num rows: 16 Data size: 2800 Basic stats: COMPLETE Column stats: COMPLETE
@@ -594,11 +590,10 @@ STAGE PLANS:
               Group By Operator
                 keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 24 Data size: 4200 Basic stats: COMPLETE Column stats: COMPLETE
-                pruneGroupingSetId: true
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                   Statistics: Num rows: 24 Data size: 4200 Basic stats: COMPLETE Column stats: COMPLETE
@@ -652,11 +647,10 @@ STAGE PLANS:
               Group By Operator
                 keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 32 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
-                pruneGroupingSetId: true
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                   Statistics: Num rows: 32 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
@@ -767,11 +761,10 @@ STAGE PLANS:
               Group By Operator
                 keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 16 Data size: 2800 Basic stats: COMPLETE Column stats: COMPLETE
-                pruneGroupingSetId: true
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                   Statistics: Num rows: 16 Data size: 2800 Basic stats: COMPLETE Column stats: COMPLETE
@@ -880,11 +873,10 @@ STAGE PLANS:
               Group By Operator
                 keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
-                pruneGroupingSetId: true
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                   Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
@@ -938,11 +930,10 @@ STAGE PLANS:
               Group By Operator
                 keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 24 Data size: 2388 Basic stats: COMPLETE Column stats: NONE
-                pruneGroupingSetId: true
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                   Statistics: Num rows: 24 Data size: 2388 Basic stats: COMPLETE Column stats: NONE
@@ -996,11 +987,10 @@ STAGE PLANS:
               Group By Operator
                 keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
-                pruneGroupingSetId: true
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                   Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
@@ -1054,11 +1044,10 @@ STAGE PLANS:
               Group By Operator
                 keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
-                pruneGroupingSetId: true
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                   Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
@@ -1112,11 +1101,10 @@ STAGE PLANS:
               Group By Operator
                 keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 24 Data size: 2388 Basic stats: COMPLETE Column stats: NONE
-                pruneGroupingSetId: true
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                   Statistics: Num rows: 24 Data size: 2388 Basic stats: COMPLETE Column stats: NONE
@@ -1170,11 +1158,10 @@ STAGE PLANS:
               Group By Operator
                 keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
-                pruneGroupingSetId: true
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                   Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
@@ -1281,11 +1268,10 @@ STAGE PLANS:
               Group By Operator
                 keys: state (type: string), locid (type: int), '0' (type: string)
                 mode: hash
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
-                pruneGroupingSetId: true
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: int), '0' (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                   Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE

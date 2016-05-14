@@ -106,9 +106,9 @@ INSERT OVERWRITE TABLE dest1 SELECT 4 + NULL, src1.key - NULL, NULL + NULL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.c1 EXPRESSION []
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c3 EXPRESSION []
+POSTHOOK: Lineage: dest1.c3 SIMPLE []
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1

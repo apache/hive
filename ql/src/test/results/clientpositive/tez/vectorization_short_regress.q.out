@@ -2356,7 +2356,7 @@ STAGE PLANS:
                   alias: alltypesorc
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(ctimestamp1) <> 0.0) and (((-257 <> UDFToInteger(ctinyint)) and cstring1 regexp '.*ss' and (-3.0 < UDFToDouble(ctimestamp1)) and cboolean2 is not null) or (UDFToDouble(ctimestamp2) = -5.0) or ((UDFToDouble(ctimestamp1) < 0.0) and (cstring2 like '%b%')) or (cdouble = UDFToDouble(cint)) or (cboolean1 is null and (cfloat < UDFToFloat(cint))))) (type: boolean)
+                    predicate: ((UDFToDouble(ctimestamp1) <> 0.0) and (((-257 <> UDFToInteger(ctinyint)) and cboolean2 is not null and cstring1 regexp '.*ss' and (-3.0 < UDFToDouble(ctimestamp1))) or (UDFToDouble(ctimestamp2) = -5.0) or ((UDFToDouble(ctimestamp1) < 0.0) and (cstring2 like '%b%')) or (cdouble = UDFToDouble(cint)) or (cboolean1 is null and (cfloat < UDFToFloat(cint))))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cstring1 (type: string), ctimestamp1 (type: timestamp), cint (type: int), csmallint (type: smallint), ctinyint (type: tinyint), cfloat (type: float), cdouble (type: double)
@@ -2690,7 +2690,7 @@ STAGE PLANS:
                   alias: alltypesorc
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((cdouble < UDFToDouble(csmallint)) and (cboolean2 = cboolean1) and (UDFToDouble(cbigint) <= -863.257)) or ((cint >= -257) and (cboolean1 >= 1) and cstring1 is not null) or cstring2 regexp 'b' or ((csmallint >= UDFToShort(ctinyint)) and ctimestamp2 is null)) and cboolean1 is not null) (type: boolean)
+                    predicate: ((((cdouble < UDFToDouble(csmallint)) and (cboolean2 = cboolean1) and (UDFToDouble(cbigint) <= -863.257)) or ((cint >= -257) and cstring1 is not null and (cboolean1 >= 1)) or cstring2 regexp 'b' or ((csmallint >= UDFToShort(ctinyint)) and ctimestamp2 is null)) and cboolean1 is not null) (type: boolean)
                     Statistics: Num rows: 10239 Data size: 2201421 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cboolean1 (type: boolean), cfloat (type: float), cbigint (type: bigint), cint (type: int), cdouble (type: double), ctinyint (type: tinyint), csmallint (type: smallint)

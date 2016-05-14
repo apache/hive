@@ -32,7 +32,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@B
 POSTHOOK: Lineage: b.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-Warning: Shuffle Join MERGEJOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from A join B
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from A join B
@@ -99,7 +99,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from B d1 join B d2 on d1.key = d2.key join A
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from B d1 join B d2 on d1.key = d2.key join A
@@ -204,7 +204,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from A join 
          (select d1.key 
           from B d1 join B d2 on d1.key = d2.key
@@ -331,8 +331,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[19][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[20][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1  group by d1.key) od1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1  group by d1.key) od1
@@ -442,7 +442,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from 
 (select A.key from A  group by key) ss join
 (select d1.key from B d1 join B d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1

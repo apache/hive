@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
@@ -210,15 +211,25 @@ public class ExprNodeDescUtils {
    */
   public static ArrayList<ExprNodeDesc> backtrack(List<ExprNodeDesc> sources,
       Operator<?> current, Operator<?> terminal) throws SemanticException {
+    return backtrack(sources, current, terminal, false);
+  }
+
+  public static ArrayList<ExprNodeDesc> backtrack(List<ExprNodeDesc> sources,
+      Operator<?> current, Operator<?> terminal, boolean foldExpr) throws SemanticException {
     ArrayList<ExprNodeDesc> result = new ArrayList<ExprNodeDesc>();
     for (ExprNodeDesc expr : sources) {
-      result.add(backtrack(expr, current, terminal));
+      result.add(backtrack(expr, current, terminal, foldExpr));
     }
     return result;
   }
 
   public static ExprNodeDesc backtrack(ExprNodeDesc source, Operator<?> current,
       Operator<?> terminal) throws SemanticException {
+    return backtrack(source, current, terminal, false);
+  }
+
+  public static ExprNodeDesc backtrack(ExprNodeDesc source, Operator<?> current,
+      Operator<?> terminal, boolean foldExpr) throws SemanticException {
     Operator<?> parent = getSingleParent(current, terminal);
     if (parent == null) {
       return source;
@@ -226,7 +237,7 @@ public class ExprNodeDescUtils {
     if (source instanceof ExprNodeGenericFuncDesc) {
       // all children expression should be resolved
       ExprNodeGenericFuncDesc function = (ExprNodeGenericFuncDesc) source.clone();
-      List<ExprNodeDesc> children = backtrack(function.getChildren(), current, terminal);
+      List<ExprNodeDesc> children = backtrack(function.getChildren(), current, terminal, foldExpr);
       for (ExprNodeDesc child : children) {
         if (child == null) {
           // Could not resolve all of the function children, fail
@@ -234,6 +245,13 @@ public class ExprNodeDescUtils {
         }
       }
       function.setChildren(children);
+      if (foldExpr) {
+        // fold after replacing, if possible
+        ExprNodeDesc foldedFunction = ConstantPropagateProcFactory.foldExpr(function);
+        if (foldedFunction != null) {
+          return foldedFunction;
+        }
+      }
       return function;
     }
     if (source instanceof ExprNodeColumnDesc) {
@@ -243,7 +261,7 @@ public class ExprNodeDescUtils {
     if (source instanceof ExprNodeFieldDesc) {
       // field expression should be resolved
       ExprNodeFieldDesc field = (ExprNodeFieldDesc) source.clone();
-      ExprNodeDesc fieldDesc = backtrack(field.getDesc(), current, terminal);
+      ExprNodeDesc fieldDesc = backtrack(field.getDesc(), current, terminal, foldExpr);
       if (fieldDesc == null) {
         return null;
       }
@@ -485,6 +503,25 @@ public class ExprNodeDescUtils {
 		}
 	}
 
+  public static boolean isConstant(ExprNodeDesc value) {
+    if (value instanceof ExprNodeConstantDesc) {
+      return true;
+    }
+    if (value instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) value;
+      if (!FunctionRegistry.isDeterministic(func.getGenericUDF())) {
+        return false;
+      }
+      for (ExprNodeDesc child : func.getChildren()) {
+        if (!isConstant(child)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
   public static boolean isAllConstants(List<ExprNodeDesc> value) {
     for (ExprNodeDesc expr : value) {
       if (!(expr instanceof ExprNodeConstantDesc)) {
@@ -640,5 +677,36 @@ public class ExprNodeDescUtils {
       expr = expr.getChildren().get(0);
     }
     return (expr instanceof ExprNodeColumnDesc) ? (ExprNodeColumnDesc)expr : null;
+  }
+
+  // Find the constant origin of a certain column if it is originated from a constant
+  // Otherwise, it returns the expression that originated the column
+  public static ExprNodeDesc findConstantExprOrigin(String dpCol, Operator<? extends OperatorDesc> op) {
+    ExprNodeDesc expr = op.getColumnExprMap().get(dpCol);
+    ExprNodeDesc foldedExpr;
+    // If it is a function, we try to fold it
+    if (expr instanceof ExprNodeGenericFuncDesc) {
+      foldedExpr = ConstantPropagateProcFactory.foldExpr((ExprNodeGenericFuncDesc)expr);
+      if (foldedExpr == null) {
+        foldedExpr = expr;
+      }
+    } else {
+      foldedExpr = expr;
+    }
+    // If it is a column reference, we will try to resolve it
+    if (foldedExpr instanceof ExprNodeColumnDesc) {
+      Operator<? extends OperatorDesc> originOp = null;
+      for(Operator<? extends OperatorDesc> parentOp : op.getParentOperators()) {
+        if (parentOp.getColumnExprMap() != null) {
+          originOp = parentOp;
+          break;
+        }
+      }
+      if (originOp != null) {
+        return findConstantExprOrigin(((ExprNodeColumnDesc)foldedExpr).getColumn(), originOp);
+      }
+    }
+    // Otherwise, we return the expression
+    return foldedExpr;
   }
 }

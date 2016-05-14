@@ -115,7 +115,7 @@ public class HiveOpConverterPostProc extends Transform {
             "In return path join annotate rule, we find " + aliases == null ? null : aliases
                 .size() + " aliases for " + joinOp.toString());
       }
-      final String joinOpAlias = aliases.iterator().next();;
+      final String joinOpAlias = aliases.iterator().next();
       aliasToOpInfo.put(joinOpAlias, joinOp);
 
       // 3. Populate other data structures

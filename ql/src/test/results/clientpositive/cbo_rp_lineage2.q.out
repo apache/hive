@@ -18,7 +18,7 @@ PREHOOK: query: select * from src1 where key > 10 and value > 'val' order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
-{"version":"1.0","engine":"mr","database":"default","hash":"773d9d0ea92e797eae292ae1eeea11ab","queryText":"select * from src1 where key > 10 and value > 'val' order by key limit 5","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"edgeType":"PROJECTION"},{"sources":[2,3],"targets":[0,1],"expression":"((UDFToDouble(src1.key) > UDFToDouble(10)) and (src1.value > 'val'))","edgeType":"PREDICATE"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"src1.key"},{"id":1,"vertexType":"COLUMN","vertexId":"src1.value"},{"id":2,"vertexType":"COLUMN","vertexId":"default.src1.key"},{"id":3,"vertexType":"COLUMN","vertexId":"default.src1.value"}]}
+{"version":"1.0","engine":"mr","database":"default","hash":"773d9d0ea92e797eae292ae1eeea11ab","queryText":"select * from src1 where key > 10 and value > 'val' order by key limit 5","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"edgeType":"PROJECTION"},{"sources":[2,3],"targets":[0,1],"expression":"((UDFToDouble(src1.key) > 10.0) and (src1.value > 'val'))","edgeType":"PREDICATE"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"src1.key"},{"id":1,"vertexType":"COLUMN","vertexId":"src1.value"},{"id":2,"vertexType":"COLUMN","vertexId":"default.src1.key"},{"id":3,"vertexType":"COLUMN","vertexId":"default.src1.value"}]}
 146	val_146
 150	val_150
 213	val_213

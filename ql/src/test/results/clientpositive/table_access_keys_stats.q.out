@@ -77,7 +77,7 @@ SELECT 1, key, count(1) FROM T1 GROUP BY 1, key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-Operator:GBY_3
+Operator:GBY_2
 Table:default@t1
 Keys:key
 
@@ -90,7 +90,7 @@ PREHOOK: query: SELECT key, 1, val, count(1) FROM T1 GROUP BY key, 1, val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-Operator:GBY_3
+Operator:GBY_2
 Table:default@t1
 Keys:key,val
 
@@ -104,7 +104,7 @@ PREHOOK: query: SELECT key, 1, val, 2, count(1) FROM T1 GROUP BY key, 1, val, 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-Operator:GBY_3
+Operator:GBY_2
 Table:default@t1
 Keys:key,val
 
@@ -413,7 +413,7 @@ PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 Operator:JOIN_8
 Table:default@t1
-Keys:val,key
+Keys:key
 Table:default@t2
 Keys:key
 
@@ -439,7 +439,7 @@ Operator:JOIN_8
 Table:default@t1
 Keys:key
 Table:default@t2
-Keys:val,key
+Keys:key
 
 PREHOOK: query: -- no mapping on functions
 SELECT *
@@ -474,7 +474,7 @@ PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 Operator:JOIN_8
 Table:default@t1
-Keys:val,key
+Keys:key
 Table:default@t2
 Keys:key
 
@@ -505,7 +505,7 @@ PREHOOK: Input: default@t3
 #### A masked pattern was here ####
 Operator:JOIN_8
 Table:default@t1
-Keys:val,key
+Keys:key
 Table:default@t2
 Keys:key
 
@@ -518,6 +518,7 @@ Keys:val
 13.0	1
 17.0	1
 46.0	1
+Warning: Shuffle Join JOIN[20][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: -- join followed by join
 SELECT *
 FROM
@@ -543,7 +544,7 @@ PREHOOK: Input: default@t3
 #### A masked pattern was here ####
 Operator:JOIN_8
 Table:default@t1
-Keys:val,key
+Keys:key
 Table:default@t2
 Keys:key
 
