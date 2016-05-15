@@ -42,8 +42,7 @@ public abstract class VectorMapJoinFastBytesHashTable
 
   protected VectorMapJoinFastKeyStore keyStore;
 
-  private BytesWritable testKeyBytesWritable;
-  private BytesWritable testValueBytesWritable;
+  protected BytesWritable testKeyBytesWritable;
 
   @Override
   public void putRow(BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException {
@@ -51,17 +50,6 @@ public abstract class VectorMapJoinFastBytesHashTable
     byte[] keyBytes = currentKey.getBytes();
     int keyLength = currentKey.getLength();
     add(keyBytes, 0, keyLength, currentValue);
-  }
-
-  @VisibleForTesting
-  public void putRow(byte[] currentKey, byte[] currentValue) throws HiveException, IOException {
-    if (testKeyBytesWritable == null) {
-      testKeyBytesWritable = new BytesWritable();
-      testValueBytesWritable = new BytesWritable();
-    }
-    testKeyBytesWritable.set(currentKey, 0, currentKey.length);
-    testValueBytesWritable.set(currentValue, 0, currentValue.length);
-    putRow(testKeyBytesWritable, testValueBytesWritable);
   }
 
   protected abstract void assignSlot(int slot, byte[] keyBytes, int keyStart, int keyLength,

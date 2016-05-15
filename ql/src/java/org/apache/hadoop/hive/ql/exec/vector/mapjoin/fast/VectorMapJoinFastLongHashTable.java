@@ -58,8 +58,6 @@ public abstract class VectorMapJoinFastLongHashTable
   private long min;
   private long max;
 
-  private BytesWritable testValueBytesWritable;
-
   @Override
   public boolean useMinMax() {
     return useMinMax;
@@ -89,17 +87,6 @@ public abstract class VectorMapJoinFastLongHashTable
 
     add(key, currentValue);
   }
-
-
-  @VisibleForTesting
-  public void putRow(long currentKey, byte[] currentValue) throws HiveException, IOException {
-    if (testValueBytesWritable == null) {
-      testValueBytesWritable = new BytesWritable();
-    }
-    testValueBytesWritable.set(currentValue, 0, currentValue.length);
-    add(currentKey, testValueBytesWritable);
-  }
-
 
   protected abstract void assignSlot(int slot, long key, boolean isNewKey, BytesWritable currentValue);
 

@@ -23,7 +23,9 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
 import org.apache.hadoop.hive.serde2.WriteBuffers.ByteSegmentRef;
-import org.apache.hadoop.hive.serde2.WriteBuffers.Position;;
+import org.apache.hadoop.hive.serde2.WriteBuffers.Position;
+
+import com.google.common.base.Preconditions;
 
 
 // Supports random access.
@@ -142,7 +144,6 @@ public class VectorMapJoinFastValueStore {
     }
 
     public void set(VectorMapJoinFastValueStore valueStore, long valueRefWord) {
-      // LOG.debug("VectorMapJoinFastValueStore set valueRefWord " + Long.toHexString(valueRefWord));
 
       this.valueStore = valueStore;
       this.valueRefWord = valueRefWord;
@@ -217,6 +218,10 @@ public class VectorMapJoinFastValueStore {
 
       if (readIndex == 0) {
         /*
+         * Positioned to first.
+         */
+
+        /*
          * Extract information from reference word from slot table.
          */
         absoluteValueOffset =
@@ -226,19 +231,32 @@ public class VectorMapJoinFastValueStore {
         valueStore.writeBuffers.setReadPoint(absoluteValueOffset, readPos);
 
         if (isSingleRow) {
+          /*
+           * One element.
+           */
           isNextEof = true;
 
           valueLength =
               (int) ((valueRefWord & SmallValueLength.bitMask) >> SmallValueLength.bitShift);
           boolean isValueLengthSmall = (valueLength != SmallValueLength.allBitsOn);
           if (!isValueLengthSmall) {
-            // And, if current value is big we must read it.
+
+            // {Big Value Len} {Big Value Bytes}
             valueLength = valueStore.writeBuffers.readVInt(readPos);
+          } else {
+
+            // {Small Value Bytes}
+            // (use small length from valueWordRef)
           }
         } else {
+          /*
+           * First of Multiple elements.
+           */
           isNextEof = false;
 
-          // 2nd and beyond records have a relative offset word at the beginning.
+          /*
+           * Read the relative offset word at the beginning 2nd and beyond records.
+           */
           long relativeOffsetWord = valueStore.writeBuffers.readVLong(readPos);
 
           long relativeOffset =
@@ -246,25 +264,31 @@ public class VectorMapJoinFastValueStore {
 
           nextAbsoluteValueOffset = absoluteValueOffset - relativeOffset;
 
+          valueLength =
+              (int) ((valueRefWord & SmallValueLength.bitMask) >> SmallValueLength.bitShift);
+          boolean isValueLengthSmall = (valueLength != SmallValueLength.allBitsOn);
+
+          /*
+           * Optionally, read current value's big length.  {Big Value Len} {Big Value Bytes}
+           * Since this is the first record, the valueRefWord directs us.
+           */
+          if (!isValueLengthSmall) {
+            valueLength = valueStore.writeBuffers.readVInt(readPos);
+          }
+
           isNextLast = ((relativeOffsetWord & IsNextValueLastFlag.flagOnMask) != 0);
           isNextValueLengthSmall =
               ((relativeOffsetWord & IsNextValueLengthSmallFlag.flagOnMask) != 0);
-        }
 
-        valueLength =
-            (int) ((valueRefWord & SmallValueLength.bitMask) >> SmallValueLength.bitShift);
-        boolean isValueLengthSmall = (valueLength != SmallValueLength.allBitsOn);
-        if (!isValueLengthSmall) {
-          // And, if current value is big we must read it.
-          valueLength = valueStore.writeBuffers.readVInt(readPos);
-        }
-
-        // 2nd and beyond have the next value's small length in the current record.
-        if (isNextValueLengthSmall) {
-          nextSmallValueLength = valueStore.writeBuffers.readVInt(readPos);
-        } else {
-          nextSmallValueLength = -1;
-        }
+          /*
+           * Optionally, the next value's small length could be a 2nd integer...
+           */
+          if (isNextValueLengthSmall) {
+            nextSmallValueLength = valueStore.writeBuffers.readVInt(readPos);
+          } else {
+            nextSmallValueLength = -1;
+          }
+       }
 
       } else {
         if (isNextEof) {
@@ -277,24 +301,37 @@ public class VectorMapJoinFastValueStore {
         valueStore.writeBuffers.setReadPoint(absoluteValueOffset, readPos);
 
         if (isNextLast) {
+          /*
+           * No realativeOffsetWord in last value.  (This was the first value written.)
+           */
           isNextEof = true;
 
           if (isNextValueLengthSmall) {
+
+            // {Small Value Bytes}
             valueLength = nextSmallValueLength;
           } else {
-            valueLength = (int) valueStore.writeBuffers.readVLong(readPos);
+
+            // {Big Value Len} {Big Value Bytes}
+            valueLength = valueStore.writeBuffers.readVInt(readPos);
           }
         } else {
+          /*
+           * {Rel Offset Word} [Big Value Len] [Next Value Small Len] {Value Bytes}
+           *
+           * 2nd and beyond records have a relative offset word at the beginning.
+           */
           isNextEof = false;
 
-          // 2nd and beyond records have a relative offset word at the beginning.
           long relativeOffsetWord = valueStore.writeBuffers.readVLong(readPos);
 
-          // Read current value's big length now, if necessary.
+          /*
+           * Optionally, read current value's big length.  {Big Value Len} {Big Value Bytes}
+           */
           if (isNextValueLengthSmall) {
             valueLength = nextSmallValueLength;
           } else {
-            valueLength = (int) valueStore.writeBuffers.readVLong(readPos);
+            valueLength = valueStore.writeBuffers.readVInt(readPos);
           }
 
           long relativeOffset =
@@ -305,9 +342,13 @@ public class VectorMapJoinFastValueStore {
           isNextLast = ((relativeOffsetWord & IsNextValueLastFlag.flagOnMask) != 0);
           isNextValueLengthSmall =
               ((relativeOffsetWord & IsNextValueLengthSmallFlag.flagOnMask) != 0);
+
+          /*
+           * Optionally, the next value's small length could be a 2nd integer in the value's
+           * information.
+           */
           if (isNextValueLengthSmall) {
-            // TODO: Write readVInt
-            nextSmallValueLength = (int) valueStore.writeBuffers.readVLong(readPos);
+            nextSmallValueLength = valueStore.writeBuffers.readVInt(readPos);
           } else {
             nextSmallValueLength = -1;
           }
@@ -396,6 +437,51 @@ public class VectorMapJoinFastValueStore {
     private static final long flagOnMask = 1L << bitShift;
   }
 
+  private static String valueRefWordToString(long valueRef) {
+    StringBuilder sb = new StringBuilder();
+
+    sb.append(Long.toHexString(valueRef));
+    sb.append(", ");
+    if ((valueRef & IsInvalidFlag.flagOnMask) != 0) {
+      sb.append("(Invalid optimized hash table reference), ");
+    }
+    /*
+     * Extract information.
+     */
+    long absoluteValueOffset =
+        (valueRef & AbsoluteValueOffset.bitMask);
+    int smallValueLength =
+        (int) ((valueRef & SmallValueLength.bitMask) >> SmallValueLength.bitShift);
+    boolean isValueLengthSmall = (smallValueLength != SmallValueLength.allBitsOn);
+    int cappedCount =
+        (int) ((valueRef & CappedCount.bitMask) >> CappedCount.bitShift);
+    boolean isValueLast =
+        ((valueRef & IsLastFlag.flagOnMask) != 0);
+
+    sb.append("absoluteValueOffset ");
+    sb.append(absoluteValueOffset);
+    sb.append(" (");
+    sb.append(Long.toHexString(absoluteValueOffset));
+    sb.append("), ");
+
+    if (isValueLengthSmall) {
+      sb.append("smallValueLength ");
+      sb.append(smallValueLength);
+      sb.append(", ");
+    } else {
+      sb.append("isValueLengthSmall = false, ");
+    }
+
+    sb.append("cappedCount ");
+    sb.append(cappedCount);
+    sb.append(", ");
+
+    sb.append("isValueLast ");
+    sb.append(isValueLast);
+
+    return sb.toString();
+  }
+
   /**
    * Relative Offset Word stored at the beginning of all but the last value that has a
    * relative offset and 2 flags.
@@ -429,6 +515,33 @@ public class VectorMapJoinFastValueStore {
     private static final long allBitsOn = (1L << bitLength) - 1;
     private static final int bitShift = IsNextValueLastFlag.bitShift + IsNextValueLastFlag.bitLength;
     private static final long bitMask = allBitsOn << bitShift;
+  }
+
+  private static String relativeOffsetWordToString(long relativeOffsetWord) {
+    StringBuilder sb = new StringBuilder();
+
+    sb.append(Long.toHexString(relativeOffsetWord));
+    sb.append(", ");
+
+    long nextRelativeOffset =
+        (relativeOffsetWord & NextRelativeValueOffset.bitMask) >> NextRelativeValueOffset.bitShift;
+    sb.append("nextRelativeOffset ");
+    sb.append(nextRelativeOffset);
+    sb.append(" (");
+    sb.append(Long.toHexString(nextRelativeOffset));
+    sb.append("), ");
+
+    boolean isNextLast = ((relativeOffsetWord & IsNextValueLastFlag.flagOnMask) != 0);
+    sb.append("isNextLast ");
+    sb.append(isNextLast);
+    sb.append(", ");
+
+    boolean isNextValueLengthSmall =
+        ((relativeOffsetWord & IsNextValueLengthSmallFlag.flagOnMask) != 0);
+    sb.append("isNextValueLengthSmall ");
+    sb.append(isNextValueLengthSmall);
+
+    return sb.toString();
   }
 
   public long addFirst(byte[] valueBytes, int valueStart, int valueLength) {
@@ -473,8 +586,6 @@ public class VectorMapJoinFastValueStore {
       valueRefWord |= SmallValueLength.allBitsOnBitShifted;
     }
 
-    // LOG.debug("VectorMapJoinFastValueStore addFirst valueLength " + valueLength + " newAbsoluteOffset " + newAbsoluteOffset + " valueRefWord " + Long.toHexString(valueRefWord));
-
     // The lower bits are the absolute value offset.
     valueRefWord |= newAbsoluteOffset;
 
@@ -499,8 +610,6 @@ public class VectorMapJoinFastValueStore {
     boolean isOldValueLast =
         ((oldValueRef & IsLastFlag.flagOnMask) != 0);
 
-    // LOG.debug("VectorMapJoinFastValueStore addMore isOldValueLast " + isOldValueLast + " oldSmallValueLength " + oldSmallValueLength + " oldAbsoluteValueOffset " + oldAbsoluteValueOffset + " oldValueRef " + Long.toHexString(oldValueRef));
-
     /*
      * Write information about the old value (which becomes our next) at the beginning
      * of our new value.
@@ -523,12 +632,6 @@ public class VectorMapJoinFastValueStore {
 
     writeBuffers.writeVLong(relativeOffsetWord);
 
-    // When the next value is small it was not recorded with the old (i.e. next) value and we
-    // have to remember it.
-    if (isOldValueLengthSmall) {
-      writeBuffers.writeVInt(oldSmallValueLength);
-    }
-
     // Now, we have written all information about the next value, work on the *new* value.
 
     long newValueRef = ((long) newCappedCount) << CappedCount.bitShift;
@@ -536,17 +639,27 @@ public class VectorMapJoinFastValueStore {
     if (!isNewValueSmall) {
       // Use magic value to indicating we are writing the big value length.
       newValueRef |= ((long) SmallValueLength.allBitsOn << SmallValueLength.bitShift);
+      Preconditions.checkState(
+          (int) ((newValueRef & SmallValueLength.bitMask) >> SmallValueLength.bitShift) ==
+              SmallValueLength.allBitsOn);
       writeBuffers.writeVInt(valueLength);
+
     } else {
       // Caller must remember small value length.
       newValueRef |= ((long) valueLength) << SmallValueLength.bitShift;
     }
+
+    // When the next value is small it was not recorded with the old (i.e. next) value and we
+    // have to remember it.
+    if (isOldValueLengthSmall) {
+
+      writeBuffers.writeVInt(oldSmallValueLength);
+    }
+
     writeBuffers.write(valueBytes, valueStart, valueLength);
 
     // The lower bits are the absolute value offset.
     newValueRef |=  newAbsoluteOffset;
-
-    // LOG.debug("VectorMapJoinFastValueStore addMore valueLength " + valueLength + " newAbsoluteOffset " + newAbsoluteOffset + " newValueRef " + Long.toHexString(newValueRef));
 
     return newValueRef;
   }

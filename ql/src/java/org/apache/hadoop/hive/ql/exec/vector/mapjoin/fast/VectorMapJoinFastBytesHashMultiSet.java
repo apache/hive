@@ -18,16 +18,23 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashMultiSet;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMultiSetResult;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.common.util.HashCodeUtil;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /*
- * An single byte array value hash multi-set optimized for vector map join.
+ * An bytes key hash multi-set optimized for vector map join.
+ *
+ * This is the abstract base for the multi-key and string bytes key hash multi-set implementations.
  */
 public abstract class VectorMapJoinFastBytesHashMultiSet
         extends VectorMapJoinFastBytesHashTable
@@ -51,7 +58,6 @@ public abstract class VectorMapJoinFastBytesHashMultiSet
       slotTriples[tripleIndex + 1] = hashCode;
       slotTriples[tripleIndex + 2] = 1;    // Count.
       // LOG.debug("VectorMapJoinFastBytesHashMap add first keyRefWord " + Long.toHexString(slotTriples[tripleIndex]) + " hashCode " + Long.toHexString(slotTriples[tripleIndex + 1]) + " valueRefWord " + Long.toHexString(slotTriples[tripleIndex + 2]));
-      keysAssigned++;
     } else {
       // Add another value.
       // LOG.debug("VectorMapJoinFastBytesHashMap add more keyRefWord " + Long.toHexString(slotTriples[tripleIndex]) + " hashCode " + Long.toHexString(slotTriples[tripleIndex + 1]) + " valueRefWord " + Long.toHexString(slotTriples[tripleIndex + 2]));

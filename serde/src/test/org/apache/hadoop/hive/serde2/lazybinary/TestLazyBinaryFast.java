@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.lazybinary;
 
+import java.io.EOFException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,9 +28,13 @@ import junit.framework.TestCase;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.VerifyFast;
+import org.apache.hadoop.hive.serde2.binarysortable.MyTestClass;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass.ExtraTypeInfo;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeserializeRead;
+import org.apache.hadoop.hive.serde2.fast.RandomRowObjectSource;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinaryDeserializeRead;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinarySerializeWrite;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -43,24 +48,50 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.Writable;
 
 public class TestLazyBinaryFast extends TestCase {
 
-  private void testLazyBinaryFast(MyTestPrimitiveClass[] myTestPrimitiveClasses, SerDe[] serdes, StructObjectInspector[] rowOIs,
-      PrimitiveTypeInfo[][] primitiveTypeInfosArray) throws Throwable {
+  private void testLazyBinaryFast(
+      RandomRowObjectSource source, Object[][] rows,
+      SerDe serde, StructObjectInspector rowOI,
+      SerDe serde_fewer, StructObjectInspector writeRowOI,
+      PrimitiveTypeInfo[] primitiveTypeInfos,
+      boolean useIncludeColumns, boolean doWriteFewerColumns, Random r) throws Throwable {
 
-    LazyBinarySerializeWrite lazyBinarySerializeWrite = new LazyBinarySerializeWrite(MyTestPrimitiveClass.primitiveCount);
+    int rowCount = rows.length;
+    int columnCount = primitiveTypeInfos.length;
+
+    boolean[] columnsToInclude = null;
+    if (useIncludeColumns) {
+      columnsToInclude = new boolean[columnCount];
+      for (int i = 0; i < columnCount; i++) {
+        columnsToInclude[i] = r.nextBoolean();
+      }
+    }
+
+    int writeColumnCount = columnCount;
+    PrimitiveTypeInfo[] writePrimitiveTypeInfos = primitiveTypeInfos;
+    if (doWriteFewerColumns) {
+      writeColumnCount = writeRowOI.getAllStructFieldRefs().size();
+      writePrimitiveTypeInfos = Arrays.copyOf(primitiveTypeInfos, writeColumnCount);
+    }
+
+    LazyBinarySerializeWrite lazyBinarySerializeWrite =
+        new LazyBinarySerializeWrite(writeColumnCount);
 
     // Try to serialize
-    BytesWritable serializeWriteBytes[] = new BytesWritable[myTestPrimitiveClasses.length];
-    for (int i = 0; i < myTestPrimitiveClasses.length; i++) {
-      MyTestPrimitiveClass t = myTestPrimitiveClasses[i];
+    BytesWritable serializeWriteBytes[] = new BytesWritable[rowCount];
+    for (int i = 0; i < rowCount; i++) {
+      Object[] row = rows[i];
       Output output = new Output();
       lazyBinarySerializeWrite.set(output);
 
-      for (int index = 0; index < MyTestPrimitiveClass.primitiveCount; index++) {
-        Object object = t.getPrimitiveObject(index);
-        VerifyFast.serializeWrite(lazyBinarySerializeWrite, primitiveTypeInfosArray[i][index], object);
+      for (int index = 0; index < writeColumnCount; index++) {
+
+        Writable writable = (Writable) row[index];
+
+        VerifyFast.serializeWrite(lazyBinarySerializeWrite, primitiveTypeInfos[index], writable);
       }
 
       BytesWritable bytesWritable = new BytesWritable();
@@ -69,44 +100,63 @@ public class TestLazyBinaryFast extends TestCase {
     }
 
     // Try to deserialize
-    for (int i = 0; i < myTestPrimitiveClasses.length; i++) {
-      MyTestPrimitiveClass t = myTestPrimitiveClasses[i];
-      PrimitiveTypeInfo[] primitiveTypeInfos = primitiveTypeInfosArray[i];
-      LazyBinaryDeserializeRead lazyBinaryDeserializeRead = 
-              new LazyBinaryDeserializeRead(primitiveTypeInfos);
+    for (int i = 0; i < rowCount; i++) {
+      Object[] row = rows[i];
+
+      // Specifying the right type info length tells LazyBinaryDeserializeRead which is the last
+      // column.
+      LazyBinaryDeserializeRead lazyBinaryDeserializeRead =
+              new LazyBinaryDeserializeRead(writePrimitiveTypeInfos);
+
+      if (useIncludeColumns) {
+        lazyBinaryDeserializeRead.setColumnsToInclude(columnsToInclude);
+      }
 
       BytesWritable bytesWritable = serializeWriteBytes[i];
       lazyBinaryDeserializeRead.set(bytesWritable.getBytes(), 0, bytesWritable.getLength());
 
-      for (int index = 0; index < MyTestPrimitiveClass.primitiveCount; index++) {
-        Object object = t.getPrimitiveObject(index);
-        PrimitiveCategory primitiveCategory = t.getPrimitiveCategory(index);
-        VerifyFast.verifyDeserializeRead(lazyBinaryDeserializeRead, primitiveTypeInfos[index], object);
+      for (int index = 0; index < columnCount; index++) {
+        if (index >= writeColumnCount ||
+            (useIncludeColumns && !columnsToInclude[index])) {
+          // Should come back a null.
+          VerifyFast.verifyDeserializeRead(lazyBinaryDeserializeRead, primitiveTypeInfos[index], null);
+        } else {
+          Writable writable = (Writable) row[index];
+          VerifyFast.verifyDeserializeRead(lazyBinaryDeserializeRead, primitiveTypeInfos[index], writable);
+        }
       }
       lazyBinaryDeserializeRead.extraFieldsCheck();
-      TestCase.assertTrue(!lazyBinaryDeserializeRead.readBeyondConfiguredFieldsWarned());
+      if (doWriteFewerColumns) {
+        TestCase.assertTrue(lazyBinaryDeserializeRead.readBeyondConfiguredFieldsWarned());
+      } else {
+        TestCase.assertTrue(!lazyBinaryDeserializeRead.readBeyondConfiguredFieldsWarned());
+      }
       TestCase.assertTrue(!lazyBinaryDeserializeRead.readBeyondBufferRangeWarned());
       TestCase.assertTrue(!lazyBinaryDeserializeRead.bufferRangeHasExtraDataWarned());
     }
 
     // Try to deserialize using SerDe class our Writable row objects created by SerializeWrite.
-    for (int i = 0; i < myTestPrimitiveClasses.length; i++) {
+    for (int i = 0; i < rowCount; i++) {
       BytesWritable bytesWritable = serializeWriteBytes[i];
-      LazyBinaryStruct lazyBinaryStruct = (LazyBinaryStruct) serdes[i].deserialize(bytesWritable);
+      LazyBinaryStruct lazyBinaryStruct;
+      if (doWriteFewerColumns) {
+        lazyBinaryStruct = (LazyBinaryStruct) serde_fewer.deserialize(bytesWritable);
+      } else {
+        lazyBinaryStruct = (LazyBinaryStruct) serde.deserialize(bytesWritable);
+      }
 
-      MyTestPrimitiveClass t = myTestPrimitiveClasses[i];
-      PrimitiveTypeInfo[] primitiveTypeInfos = primitiveTypeInfosArray[i];
+      Object[] row = rows[i];
 
-      for (int index = 0; index < MyTestPrimitiveClass.primitiveCount; index++) {
+      for (int index = 0; index < writeColumnCount; index++) {
         PrimitiveTypeInfo primitiveTypeInfo = primitiveTypeInfos[index];
-        Object expected = t.getPrimitiveWritableObject(index, primitiveTypeInfo);
+        Writable writable = (Writable) row[index];
         Object object = lazyBinaryStruct.getField(index);
-        if (expected == null || object == null) {
-          if (expected != null || object != null) {
+        if (writable == null || object == null) {
+          if (writable != null || object != null) {
             fail("SerDe deserialized NULL column mismatch");
           }
         } else {
-          if (!object.equals(expected)) {
+          if (!object.equals(writable)) {
             fail("SerDe deserialized value does not match");
           }
         }
@@ -114,88 +164,167 @@ public class TestLazyBinaryFast extends TestCase {
     }
 
     // One Writable per row.
-    BytesWritable serdeBytes[] = new BytesWritable[myTestPrimitiveClasses.length];
-  
+    BytesWritable serdeBytes[] = new BytesWritable[rowCount];
+
     // Serialize using the SerDe, then below deserialize using DeserializeRead.
-    Object[] row = new Object[MyTestPrimitiveClass.primitiveCount];
-    for (int i = 0; i < myTestPrimitiveClasses.length; i++) {
-      MyTestPrimitiveClass t = myTestPrimitiveClasses[i];
-      PrimitiveTypeInfo[] primitiveTypeInfos = primitiveTypeInfosArray[i];
+    Object[] serdeRow = new Object[writeColumnCount];
+    for (int i = 0; i < rowCount; i++) {
+      Object[] row = rows[i];
 
       // LazyBinary seems to work better with an row object array instead of a Java object...
-      for (int index = 0; index < MyTestPrimitiveClass.primitiveCount; index++) {
-        Object object = t.getPrimitiveWritableObject(index, primitiveTypeInfos[index]);
-        row[index] = object;
+      for (int index = 0; index < writeColumnCount; index++) {
+        serdeRow[index] = row[index];
       }
 
-      BytesWritable serialized = (BytesWritable) serdes[i].serialize(row, rowOIs[i]);
-      BytesWritable bytesWritable = new BytesWritable();
-      bytesWritable.set(serialized);
-      byte[] bytes1 = Arrays.copyOfRange(bytesWritable.getBytes(), 0, bytesWritable.getLength());
+      BytesWritable serialized;
+      if (doWriteFewerColumns) {
+        serialized = (BytesWritable) serde_fewer.serialize(serdeRow, writeRowOI);
+      } else {
+        serialized = (BytesWritable) serde.serialize(serdeRow, rowOI);
+      }
 
-      byte[] bytes2 = Arrays.copyOfRange(serializeWriteBytes[i].getBytes(), 0, serializeWriteBytes[i].getLength());
+      BytesWritable bytesWritable =
+          new BytesWritable(
+              Arrays.copyOfRange(serialized.getBytes(), 0, serialized.getLength()));
+      byte[] bytes1 = bytesWritable.getBytes();
+
+      BytesWritable lazySerializedWriteBytes = serializeWriteBytes[i];
+      byte[] bytes2 = Arrays.copyOfRange(lazySerializedWriteBytes.getBytes(), 0, lazySerializedWriteBytes.getLength());
+      if (bytes1.length != bytes2.length) {
+        fail("SerializeWrite length " + bytes2.length + " and " +
+              "SerDe serialization length " + bytes1.length +
+              " do not match (" + Arrays.toString(primitiveTypeInfos) + ")");
+      }
       if (!Arrays.equals(bytes1, bytes2)) {
-        fail("SerializeWrite and SerDe serialization does not match");
+        fail("SerializeWrite and SerDe serialization does not match (" + Arrays.toString(primitiveTypeInfos) + ")");
       }
       serdeBytes[i] = bytesWritable;
     }
 
     // Try to deserialize using DeserializeRead our Writable row objects created by SerDe.
-    for (int i = 0; i < myTestPrimitiveClasses.length; i++) {
-      MyTestPrimitiveClass t = myTestPrimitiveClasses[i];
-      PrimitiveTypeInfo[] primitiveTypeInfos = primitiveTypeInfosArray[i];
-      LazyBinaryDeserializeRead lazyBinaryDeserializeRead = 
+    for (int i = 0; i < rowCount; i++) {
+      Object[] row = rows[i];
+
+      // When doWriteFewerColumns, try to read more fields than exist in buffer.
+      LazyBinaryDeserializeRead lazyBinaryDeserializeRead =
               new LazyBinaryDeserializeRead(primitiveTypeInfos);
+
+      if (useIncludeColumns) {
+        lazyBinaryDeserializeRead.setColumnsToInclude(columnsToInclude);
+      }
 
       BytesWritable bytesWritable = serdeBytes[i];
       lazyBinaryDeserializeRead.set(bytesWritable.getBytes(), 0, bytesWritable.getLength());
 
-      for (int index = 0; index < MyTestPrimitiveClass.primitiveCount; index++) {
-        Object object = t.getPrimitiveObject(index);
-        VerifyFast.verifyDeserializeRead(lazyBinaryDeserializeRead, primitiveTypeInfos[index], object);
+      for (int index = 0; index < columnCount; index++) {
+        if (index >= writeColumnCount ||
+            (useIncludeColumns && !columnsToInclude[index])) {
+          // Should come back a null.
+          VerifyFast.verifyDeserializeRead(lazyBinaryDeserializeRead, primitiveTypeInfos[index], null);
+        } else {
+          Writable writable = (Writable) row[index];
+          VerifyFast.verifyDeserializeRead(lazyBinaryDeserializeRead, primitiveTypeInfos[index], writable);
+        }
       }
       lazyBinaryDeserializeRead.extraFieldsCheck();
       TestCase.assertTrue(!lazyBinaryDeserializeRead.readBeyondConfiguredFieldsWarned());
-      TestCase.assertTrue(!lazyBinaryDeserializeRead.readBeyondBufferRangeWarned());
+      if (doWriteFewerColumns) {
+        // The nullByte may cause this to not be true...
+        // TestCase.assertTrue(lazyBinaryDeserializeRead.readBeyondBufferRangeWarned());
+      } else {
+        TestCase.assertTrue(!lazyBinaryDeserializeRead.readBeyondBufferRangeWarned());
+      }
       TestCase.assertTrue(!lazyBinaryDeserializeRead.bufferRangeHasExtraDataWarned());
     }
   }
 
+  public void testLazyBinaryFastCase(int caseNum, boolean doNonRandomFill, Random r) throws Throwable {
+
+    RandomRowObjectSource source = new RandomRowObjectSource();
+    source.init(r);
+
+    int rowCount = 1000;
+    Object[][] rows = source.randomRows(rowCount);
+
+    if (doNonRandomFill) {
+      MyTestClass.nonRandomRowFill(rows, source.primitiveCategories());
+    }
+
+    StructObjectInspector rowStructObjectInspector = source.rowStructObjectInspector();
+
+    PrimitiveTypeInfo[] primitiveTypeInfos = source.primitiveTypeInfos();
+    int columnCount = primitiveTypeInfos.length;
+
+    int writeColumnCount = columnCount;
+    StructObjectInspector writeRowStructObjectInspector = rowStructObjectInspector;
+    boolean doWriteFewerColumns = r.nextBoolean();
+    if (doWriteFewerColumns) {
+      writeColumnCount = 1 + r.nextInt(columnCount);
+      if (writeColumnCount == columnCount) {
+        doWriteFewerColumns = false;
+      } else {
+        writeRowStructObjectInspector = source.partialRowStructObjectInspector(writeColumnCount);
+      }
+    }
+
+    String fieldNames = ObjectInspectorUtils.getFieldNames(rowStructObjectInspector);
+    String fieldTypes = ObjectInspectorUtils.getFieldTypes(rowStructObjectInspector);
+
+    SerDe serde = TestLazyBinarySerDe.getSerDe(fieldNames, fieldTypes);
+
+    SerDe serde_fewer = null;
+    if (doWriteFewerColumns) {
+      String partialFieldNames = ObjectInspectorUtils.getFieldNames(writeRowStructObjectInspector);
+      String partialFieldTypes = ObjectInspectorUtils.getFieldTypes(writeRowStructObjectInspector);
+
+        serde_fewer = TestLazyBinarySerDe.getSerDe(partialFieldNames, partialFieldTypes);;
+    }
+
+    testLazyBinaryFast(
+        source, rows,
+        serde, rowStructObjectInspector,
+        serde_fewer, writeRowStructObjectInspector,
+        primitiveTypeInfos,
+        /* useIncludeColumns */ false, /* doWriteFewerColumns */ false, r);
+
+    testLazyBinaryFast(
+        source, rows,
+        serde, rowStructObjectInspector,
+        serde_fewer, writeRowStructObjectInspector,
+        primitiveTypeInfos,
+        /* useIncludeColumns */ true, /* doWriteFewerColumns */ false, r);
+
+    /*
+     * Can the LazyBinary format really tolerate writing fewer columns?
+     */
+    // if (doWriteFewerColumns) {
+    //   testLazyBinaryFast(
+    //       source, rows,
+    //       serde, rowStructObjectInspector,
+    //       serde_fewer, writeRowStructObjectInspector,
+    //       primitiveTypeInfos,
+    //       /* useIncludeColumns */ false, /* doWriteFewerColumns */ true, r);
+
+    //   testLazyBinaryFast(
+    //       source, rows,
+    //       serde, rowStructObjectInspector,
+    //       serde_fewer, writeRowStructObjectInspector,
+    //       primitiveTypeInfos,
+    //       /* useIncludeColumns */ true, /* doWriteFewerColumns */ true, r);
+    // }
+  }
+
   public void testLazyBinaryFast() throws Throwable {
+
     try {
+      Random r = new Random(35790);
 
-      int num = 1000;
-      Random r = new Random(1234);
-      MyTestPrimitiveClass[] rows = new MyTestPrimitiveClass[num];
-      PrimitiveTypeInfo[][] primitiveTypeInfosArray = new PrimitiveTypeInfo[num][];
-      for (int i = 0; i < num; i++) {
-        int randField = r.nextInt(MyTestPrimitiveClass.primitiveCount);
-        MyTestPrimitiveClass t = new MyTestPrimitiveClass();
-        int field = 0;
-        ExtraTypeInfo extraTypeInfo = new ExtraTypeInfo();
-        t.randomFill(r, randField, field, extraTypeInfo);
-        PrimitiveTypeInfo[] primitiveTypeInfos = MyTestPrimitiveClass.getPrimitiveTypeInfos(extraTypeInfo);
-        rows[i] = t;
-        primitiveTypeInfosArray[i] = primitiveTypeInfos;
+      int caseNum = 0;
+      for (int i = 0; i < 10; i++) {
+        testLazyBinaryFastCase(caseNum, (i % 2 == 0), r);
+        caseNum++;
       }
 
-      // To get the specific type information for CHAR and VARCHAR, seems like we need an
-      // inspector and SerDe per row...
-      StructObjectInspector[] rowOIs = new StructObjectInspector[num];
-      SerDe[] serdes = new SerDe[num];
-      for (int i = 0; i < num; i++) {
-        MyTestPrimitiveClass t = rows[i];
-
-        StructObjectInspector rowOI = t.getRowInspector(primitiveTypeInfosArray[i]);
-
-        String fieldNames = ObjectInspectorUtils.getFieldNames(rowOI);
-        String fieldTypes = ObjectInspectorUtils.getFieldTypes(rowOI);
-
-        rowOIs[i] = rowOI;
-        serdes[i] = TestLazyBinarySerDe.getSerDe(fieldNames, fieldTypes);
-      }
-
-      testLazyBinaryFast(rows, serdes, rowOIs, primitiveTypeInfosArray);
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;

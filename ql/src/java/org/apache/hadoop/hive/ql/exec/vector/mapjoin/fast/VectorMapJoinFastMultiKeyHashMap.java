@@ -18,17 +18,34 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
+import java.io.IOException;
+
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.io.BytesWritable;
+
 import com.google.common.annotations.VisibleForTesting;
 
 /*
  * An multi-key value hash map optimized for vector map join.
+ *
+ * The key is stored as the provided bytes (uninterpreted).
  */
 public class VectorMapJoinFastMultiKeyHashMap
         extends VectorMapJoinFastBytesHashMap {
 
+  /*
+   * A Unit Test convenience method for putting key and value into the hash table using the
+   * actual types.
+   */
   @VisibleForTesting
-  public VectorMapJoinFastMultiKeyHashMap(int initialCapacity, float loadFactor, int wbSize) {
-    this(false, initialCapacity, loadFactor, wbSize);
+  public void testPutRow(byte[] currentKey, byte[] currentValue) throws HiveException, IOException {
+    if (testKeyBytesWritable == null) {
+      testKeyBytesWritable = new BytesWritable();
+      testValueBytesWritable = new BytesWritable();
+    }
+    testKeyBytesWritable.set(currentKey, 0, currentKey.length);
+    testValueBytesWritable.set(currentValue, 0, currentValue.length);
+    putRow(testKeyBytesWritable, testValueBytesWritable);
   }
 
   public VectorMapJoinFastMultiKeyHashMap(

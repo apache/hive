@@ -18,17 +18,22 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinLongHashMap;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.common.util.HashCodeUtil;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /*
- * An single long value map optimized for vector map join.
+ * An single LONG key hash map optimized for vector map join.
  */
 public class VectorMapJoinFastLongHashMap
              extends VectorMapJoinFastLongHashTable
@@ -38,9 +43,24 @@ public class VectorMapJoinFastLongHashMap
 
   protected VectorMapJoinFastValueStore valueStore;
 
+  private BytesWritable testValueBytesWritable;
+
   @Override
   public VectorMapJoinHashMapResult createHashMapResult() {
     return new VectorMapJoinFastValueStore.HashMapResult();
+  }
+
+  /*
+   * A Unit Test convenience method for putting key and value into the hash table using the
+   * actual types.
+   */
+  @VisibleForTesting
+  public void testPutRow(long currentKey, byte[] currentValue) throws HiveException, IOException {
+    if (testValueBytesWritable == null) {
+      testValueBytesWritable = new BytesWritable();
+    }
+    testValueBytesWritable.set(currentValue, 0, currentValue.length);
+    add(currentKey, testValueBytesWritable);
   }
 
   @Override

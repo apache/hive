@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
@@ -30,6 +32,28 @@ import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.RandomTypeUtil;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass.ExtraTypeInfo;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBooleanObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableByteObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDoubleObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableFloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveCharObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveIntervalDayTimeObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveIntervalYearMonthObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveVarcharObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableIntObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableLongObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableShortObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+
+import com.sun.jdi.PrimitiveType;
 
 public class MyTestClass {
 
@@ -202,4 +226,66 @@ public class MyTestClass {
     static Object[] nrIntervalDayTime = {
       HiveIntervalDayTime.valueOf("1 0:0:0")
     };
+
+    public static void nonRandomRowFill(Object[][] rows, PrimitiveCategory[] primitiveCategories) {
+      int minCount = Math.min(rows.length, nrDecimal.length);
+      for (int i = 0; i < minCount; i++) {
+        Object[] row = rows[i];
+        for (int c = 0; c < primitiveCategories.length; c++) {
+          Object object = row[c];  // Current value.
+          switch (primitiveCategories[c]) {
+          case BOOLEAN:
+            // Use current for now.
+            break;
+          case BYTE:
+            object = nrByte;
+            break;
+          case SHORT:
+            object = nrShort;
+            break;
+          case INT:
+            object = nrInt;
+            break;
+          case LONG:
+            object = nrLong;
+            break;
+          case DATE:
+            object = nrDate;
+            break;
+          case FLOAT:
+            object = nrFloat;
+            break;
+          case DOUBLE:
+            object = nrDouble;
+            break;
+          case STRING:
+            object = nrString;
+            break;
+          case CHAR:
+            // Use current for now.
+            break;
+          case VARCHAR:
+            // Use current for now.
+            break;
+          case BINARY:
+            // Use current for now.
+            break;
+          case TIMESTAMP:
+            // Use current for now.
+            break;
+          case INTERVAL_YEAR_MONTH:
+            object = nrIntervalYearMonth;
+            break;
+          case INTERVAL_DAY_TIME:
+            object = nrIntervalDayTime;
+            break;
+          case DECIMAL:
+            object = nrDecimal[i];
+            break;
+          default:
+            throw new Error("Unknown primitive category " + primitiveCategories[c]);
+          }
+        }
+      }
+    }
 }

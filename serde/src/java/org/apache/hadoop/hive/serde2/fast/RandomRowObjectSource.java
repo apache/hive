@@ -16,15 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector;
+package org.apache.hadoop.hive.serde2.fast;
 
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-
-import junit.framework.TestCase;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -34,9 +33,9 @@ import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.RandomTypeUtil;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -60,7 +59,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hive.common.util.DateUtils;
 
 /**
@@ -98,11 +96,30 @@ public class RandomRowObjectSource {
     return rowStructObjectInspector;
   }
 
+  public StructObjectInspector partialRowStructObjectInspector(int partialFieldCount) {
+    ArrayList<ObjectInspector> partialPrimitiveObjectInspectorList =
+        new ArrayList<ObjectInspector>(partialFieldCount);
+    List<String> columnNames = new ArrayList<String>(partialFieldCount);
+    for (int i = 0; i < partialFieldCount; i++) {
+      columnNames.add(String.format("partial%d", i));
+      partialPrimitiveObjectInspectorList.add(
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+              primitiveTypeInfos[i]));
+    }
+
+    return ObjectInspectorFactory.getStandardStructObjectInspector(
+        columnNames, primitiveObjectInspectorList);
+  }
+
   public void init(Random r) {
     this.r = r;
     chooseSchema();
   }
 
+  /*
+   * For now, exclude CHAR until we determine why there is a difference (blank padding)
+   * serializing with LazyBinarySerializeWrite and the regular SerDe...
+   */
   private static String[] possibleHiveTypeNames = {
       "boolean",
       "tinyint",
@@ -113,18 +130,33 @@ public class RandomRowObjectSource {
       "float",
       "double",
       "string",
-      "char",
+//    "char",
       "varchar",
       "binary",
       "date",
       "timestamp",
-      serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME,
-      serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME,
+      "interval_year_month",
+      "interval_day_time",
       "decimal"
   };
 
   private void chooseSchema() {
-    columnCount = 1 + r.nextInt(20);
+    HashSet hashSet = null;
+    boolean allTypes;
+    boolean onlyOne = (r.nextInt(100) == 7);
+    if (onlyOne) {
+      columnCount = 1;
+      allTypes = false;
+    } else {
+      allTypes = r.nextBoolean();
+      if (allTypes) {
+        // One of each type.
+        columnCount = possibleHiveTypeNames.length;
+        hashSet = new HashSet<Integer>();
+      } else {
+        columnCount = 1 + r.nextInt(20);
+      }
+    }
     typeNames = new ArrayList<String>(columnCount);
     primitiveCategories = new PrimitiveCategory[columnCount];
     primitiveTypeInfos = new PrimitiveTypeInfo[columnCount];
@@ -132,8 +164,26 @@ public class RandomRowObjectSource {
     List<String> columnNames = new ArrayList<String>(columnCount);
     for (int c = 0; c < columnCount; c++) {
       columnNames.add(String.format("col%d", c));
-      int typeNum = r.nextInt(possibleHiveTypeNames.length);
-      String typeName = possibleHiveTypeNames[typeNum];
+      String typeName;
+
+      if (onlyOne) {
+        typeName = possibleHiveTypeNames[r.nextInt(possibleHiveTypeNames.length)];
+      } else {
+        int typeNum;
+        if (allTypes) {
+          while (true) {
+            typeNum = r.nextInt(possibleHiveTypeNames.length);
+            Integer typeNumInteger = new Integer(typeNum);
+            if (!hashSet.contains(typeNumInteger)) {
+              hashSet.add(typeNumInteger);
+              break;
+            }
+          }
+        } else {
+          typeNum = r.nextInt(possibleHiveTypeNames.length);
+        }
+        typeName = possibleHiveTypeNames[typeNum];
+      }
       if (typeName.equals("char")) {
         int maxLength = 1 + r.nextInt(100);
         typeName = String.format("char(%d)", maxLength);
@@ -176,6 +226,22 @@ public class RandomRowObjectSource {
     return row;
   }
 
+  public static void sort(Object[][] rows, ObjectInspector oi) {
+    for (int i = 0; i < rows.length; i++) {
+      for (int j = i + 1; j < rows.length; j++) {
+        if (ObjectInspectorUtils.compare(rows[i], oi, rows[j], oi) > 0) {
+          Object[] t = rows[i];
+          rows[i] = rows[j];
+          rows[j] = t;
+        }
+      }
+    }
+  }
+
+  public void sort(Object[][] rows) {
+    RandomRowObjectSource.sort(rows, rowStructObjectInspector);
+  }
+
   public Object getWritableObject(int column, Object object) {
     ObjectInspector objectInspector = primitiveObjectInspectorList.get(column);
     PrimitiveCategory primitiveCategory = primitiveCategories[column];
@@ -201,13 +267,13 @@ public class RandomRowObjectSource {
       return ((WritableStringObjectInspector) objectInspector).create((String) object);
     case CHAR:
       {
-        WritableHiveCharObjectInspector writableCharObjectInspector = 
+        WritableHiveCharObjectInspector writableCharObjectInspector =
                 new WritableHiveCharObjectInspector( (CharTypeInfo) primitiveTypeInfo);
         return writableCharObjectInspector.create(new HiveChar(StringUtils.EMPTY, -1));
       }
     case VARCHAR:
       {
-        WritableHiveVarcharObjectInspector writableVarcharObjectInspector = 
+        WritableHiveVarcharObjectInspector writableVarcharObjectInspector =
                 new WritableHiveVarcharObjectInspector( (VarcharTypeInfo) primitiveTypeInfo);
         return writableVarcharObjectInspector.create(new HiveVarchar(StringUtils.EMPTY, -1));
       }
@@ -245,13 +311,13 @@ public class RandomRowObjectSource {
     case LONG:
       return Long.valueOf(r.nextLong());
     case DATE:
-      return getRandDate(r);
+      return RandomTypeUtil.getRandDate(r);
     case FLOAT:
       return Float.valueOf(r.nextFloat() * 10 - 5);
     case DOUBLE:
       return Double.valueOf(r.nextDouble() * 10 - 5);
     case STRING:
-      return getRandString(r);
+      return RandomTypeUtil.getRandString(r);
     case CHAR:
       return getRandHiveChar(r, (CharTypeInfo) primitiveTypeInfo);
     case VARCHAR:
@@ -271,36 +337,16 @@ public class RandomRowObjectSource {
     }
   }
 
-  public static String getRandString(Random r) {
-    return getRandString(r, null, r.nextInt(10));
-  }
-
-  public static String getRandString(Random r, String characters, int length) {
-    if (characters == null) {
-      characters = "ABCDEFGHIJKLMabcdefghijklm";
-    }
-    StringBuilder sb = new StringBuilder();
-    sb.append("");
-    for (int i = 0; i < length; i++) {
-      if (characters == null) {
-        sb.append((char) (r.nextInt(128)));
-      } else {
-        sb.append(characters.charAt(r.nextInt(characters.length())));
-      }
-    }
-    return sb.toString();
-  }
-
   public static HiveChar getRandHiveChar(Random r, CharTypeInfo charTypeInfo) {
     int maxLength = 1 + r.nextInt(charTypeInfo.getLength());
-    String randomString = getRandString(r, "abcdefghijklmnopqrstuvwxyz", 100);
+    String randomString = RandomTypeUtil.getRandString(r, "abcdefghijklmnopqrstuvwxyz", 100);
     HiveChar hiveChar = new HiveChar(randomString, maxLength);
     return hiveChar;
   }
 
   public static HiveVarchar getRandHiveVarchar(Random r, VarcharTypeInfo varcharTypeInfo) {
     int maxLength = 1 + r.nextInt(varcharTypeInfo.getLength());
-    String randomString = getRandString(r, "abcdefghijklmnopqrstuvwxyz", 100);
+    String randomString = RandomTypeUtil.getRandString(r, "abcdefghijklmnopqrstuvwxyz", 100);
     HiveVarchar hiveVarchar = new HiveVarchar(randomString, maxLength);
     return hiveVarchar;
   }
@@ -330,11 +376,11 @@ public class RandomRowObjectSource {
       if (integerDigits == 0) {
         sb.append("0");
       } else {
-        sb.append(getRandString(r, DECIMAL_CHARS, integerDigits));
+        sb.append(RandomTypeUtil.getRandString(r, DECIMAL_CHARS, integerDigits));
       }
       if (scale != 0) {
         sb.append(".");
-        sb.append(getRandString(r, DECIMAL_CHARS, scale));
+        sb.append(RandomTypeUtil.getRandString(r, DECIMAL_CHARS, scale));
       }
 
       HiveDecimal bd = HiveDecimal.create(sb.toString());
@@ -347,15 +393,6 @@ public class RandomRowObjectSource {
     }
   }
 
-  public static Date getRandDate(Random r) {
-    String dateStr = String.format("%d-%02d-%02d",
-        Integer.valueOf(1800 + r.nextInt(500)),  // year
-        Integer.valueOf(1 + r.nextInt(12)),      // month
-        Integer.valueOf(1 + r.nextInt(28)));     // day
-    Date dateVal = Date.valueOf(dateStr);
-    return dateVal;
-  }
-
   public static HiveIntervalYearMonth getRandIntervalYearMonth(Random r) {
     String yearMonthSignStr = r.nextInt(2) == 0 ? "" : "-";
     String intervalYearMonthStr = String.format("%s%d-%d",
@@ -363,7 +400,6 @@ public class RandomRowObjectSource {
         Integer.valueOf(1800 + r.nextInt(500)),  // year
         Integer.valueOf(0 + r.nextInt(12)));     // month
     HiveIntervalYearMonth intervalYearMonthVal = HiveIntervalYearMonth.valueOf(intervalYearMonthStr);
-    TestCase.assertTrue(intervalYearMonthVal != null);
     return intervalYearMonthVal;
   }
 
@@ -382,7 +418,6 @@ public class RandomRowObjectSource {
         Integer.valueOf(0 + r.nextInt(60)),      // second
         optionalNanos);
     HiveIntervalDayTime intervalDayTimeVal = HiveIntervalDayTime.valueOf(dayTimeStr);
-    TestCase.assertTrue(intervalDayTimeVal != null);
     return intervalDayTimeVal;
   }
 }

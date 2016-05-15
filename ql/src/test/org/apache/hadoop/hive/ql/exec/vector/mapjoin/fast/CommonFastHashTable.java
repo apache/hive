@@ -18,15 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
-
-import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
-import org.apache.hadoop.hive.serde2.WriteBuffers;
-
-import static org.junit.Assert.*;
 
 public class CommonFastHashTable {
 
@@ -38,6 +30,10 @@ public class CommonFastHashTable {
   protected static final int LARGE_WB_SIZE = 1024 * 1024;
   protected static final int LARGE_CAPACITY = 8388608;
   protected static Random random;
+
+  protected static int MAX_KEY_LENGTH = 100;
+
+  protected static int MAX_VALUE_LENGTH = 1000;
 
   public static int generateLargeCount() {
     int count = 0;
@@ -74,55 +70,5 @@ public class CommonFastHashTable {
       }
     }
     return count;
-  }
-  public static void verifyHashMapResult(VectorMapJoinHashMapResult hashMapResult,
-      RandomByteArrayStream randomByteArrayStream ) {
-
-    List<byte[]> resultBytes = new ArrayList<byte[]>();
-    int count = 0;
-    if (hashMapResult.hasRows()) {
-      WriteBuffers.ByteSegmentRef ref = hashMapResult.first();
-      while (ref != null) {
-        count++;
-        byte[] bytes = ref.getBytes();
-        int offset = (int) ref.getOffset();
-        int length = ref.getLength();
-        resultBytes.add(Arrays.copyOfRange(bytes, offset, offset + length));
-        ref = hashMapResult.next();
-      }
-    } else {
-      assertTrue(hashMapResult.isEof());
-    }
-    if (randomByteArrayStream.size() != count) {
-      assertTrue(false);
-    }
-
-    for (int i = 0; i < count; ++i) {
-      byte[] bytes = resultBytes.get(i);
-      if (!randomByteArrayStream.contains(bytes)) {
-        assertTrue(false);
-      }
-    }
-  }
-
-  public static void verifyHashMapResult(VectorMapJoinHashMapResult hashMapResult,
-      byte[] valueBytes ) {
-
-    assertTrue(hashMapResult.hasRows());
-    WriteBuffers.ByteSegmentRef ref = hashMapResult.first();
-    byte[] bytes = ref.getBytes();
-    int offset = (int) ref.getOffset();
-    int length = ref.getLength();
-    assertTrue(valueBytes.length == length);
-    boolean match = true;  // Assume
-    for (int j = 0; j < length; j++) {
-      if (valueBytes[j] != bytes[offset + j]) {
-        match = false;
-        break;
-      }
-    }
-    if (!match) {
-      assertTrue(false);
-    }
   }
 }

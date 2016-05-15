@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
@@ -50,6 +48,7 @@ import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeserializeRead;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
+import org.apache.hadoop.hive.serde2.fast.RandomRowObjectSource;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazy.fast.LazySimpleDeserializeRead;
@@ -62,7 +61,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
 import org.apache.hadoop.io.BooleanWritable;
@@ -86,7 +84,7 @@ public class TestVectorSerDeRow extends TestCase {
     LAZY_SIMPLE
   }
 
-  void deserializeAndVerify(Output output, DeserializeRead deserializeRead, 
+  void deserializeAndVerify(Output output, DeserializeRead deserializeRead,
               RandomRowObjectSource source, Object[] expectedRow)
               throws HiveException, IOException {
     deserializeRead.set(output.getData(),  0, output.getLength());
@@ -523,7 +521,7 @@ public class TestVectorSerDeRow extends TestCase {
 
     // Set the configuration parameters
     tbl.setProperty(serdeConstants.SERIALIZATION_FORMAT, "9");
-    
+
     tbl.setProperty("columns", fieldNames);
     tbl.setProperty("columns.types", fieldTypes);
 

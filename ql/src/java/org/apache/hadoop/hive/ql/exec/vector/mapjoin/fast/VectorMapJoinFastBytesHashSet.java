@@ -27,7 +27,9 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.common.util.HashCodeUtil;
 
 /*
- * An single byte array value hash multi-set optimized for vector map join.
+ * An bytes key hash set optimized for vector map join.
+ *
+ * This is the abstract base for the multi-key and string bytes key hash set implementations.
  */
 public abstract class VectorMapJoinFastBytesHashSet
         extends VectorMapJoinFastBytesHashTable
@@ -50,7 +52,6 @@ public abstract class VectorMapJoinFastBytesHashSet
       slotTriples[tripleIndex] = keyStore.add(keyBytes, keyStart, keyLength);
       slotTriples[tripleIndex + 1] = hashCode;
       slotTriples[tripleIndex + 2] = 1;    // Existence
-      keysAssigned++;
     }
   }
 

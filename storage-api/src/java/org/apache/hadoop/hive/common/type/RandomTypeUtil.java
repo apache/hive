@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.common.type;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -25,6 +26,100 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class RandomTypeUtil {
+
+  public static String getRandString(Random r) {
+    return getRandString(r, null, r.nextInt(10));
+  }
+
+  public static String getRandString(Random r, String characters, int length) {
+    if (characters == null) {
+      characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    }
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < length; i++) {
+      if (characters == null) {
+        sb.append((char) (r.nextInt(128)));
+      } else {
+        sb.append(characters.charAt(r.nextInt(characters.length())));
+      }
+    }
+    return sb.toString();
+  }
+
+  public static byte[] getRandBinary(Random r, int len){
+    byte[] bytes = new byte[len];
+    for (int j = 0; j < len; j++){
+      bytes[j] = Byte.valueOf((byte) r.nextInt());
+    }
+    return bytes;
+  }
+
+  private static final String DECIMAL_CHARS = "0123456789";
+
+  public static class HiveDecimalAndPrecisionScale {
+    public HiveDecimal hiveDecimal;
+    public int precision;
+    public int scale;
+
+    HiveDecimalAndPrecisionScale(HiveDecimal hiveDecimal, int precision, int scale) {
+      this.hiveDecimal = hiveDecimal;
+      this.precision = precision;
+      this.scale = scale;
+    }
+  }
+
+  public static HiveDecimalAndPrecisionScale getRandHiveDecimal(Random r) {
+    int precision;
+    int scale;
+    while (true) {
+      StringBuilder sb = new StringBuilder();
+      precision = 1 + r.nextInt(18);
+      scale = 0 + r.nextInt(precision + 1);
+
+      int integerDigits = precision - scale;
+
+      if (r.nextBoolean()) {
+        sb.append("-");
+      }
+
+      if (integerDigits == 0) {
+        sb.append("0");
+      } else {
+        sb.append(getRandString(r, DECIMAL_CHARS, integerDigits));
+      }
+      if (scale != 0) {
+        sb.append(".");
+        sb.append(getRandString(r, DECIMAL_CHARS, scale));
+      }
+
+      HiveDecimal bd = HiveDecimal.create(sb.toString());
+      precision = bd.precision();
+      scale = bd.scale();
+      if (scale > precision) {
+        // Sometimes weird decimals are produced?
+        continue;
+      }
+
+      // For now, punt.
+      precision = HiveDecimal.SYSTEM_DEFAULT_PRECISION;
+      scale = HiveDecimal.SYSTEM_DEFAULT_SCALE;
+      return new HiveDecimalAndPrecisionScale(bd, precision, scale);
+    }
+  }
+
+  public static Date getRandDate(Random r) {
+    String dateStr = String.format("%d-%02d-%02d",
+        Integer.valueOf(1800 + r.nextInt(500)),  // year
+        Integer.valueOf(1 + r.nextInt(12)),      // month
+        Integer.valueOf(1 + r.nextInt(28)));     // day
+    Date dateVal = Date.valueOf(dateStr);
+    return dateVal;
+  }
+
+  /**
+   * TIMESTAMP.
+   */
 
   public static final long NANOSECONDS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
   public static final long MILLISECONDS_PER_SECOND = TimeUnit.SECONDS.toMillis(1);

@@ -24,7 +24,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.BytesWritable;
 
 /*
- * An single byte array value hash map optimized for vector map join.
+ * An single STRING key hash multi-set optimized for vector map join.
+ *
+ * The key will be deserialized and just the bytes will be stored.
  */
 public class VectorMapJoinFastStringHashMultiSet extends VectorMapJoinFastBytesHashMultiSet {
 

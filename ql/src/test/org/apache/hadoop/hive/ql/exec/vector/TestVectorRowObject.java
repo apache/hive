@@ -19,13 +19,10 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.fast.RandomRowObjectSource;
 
 import junit.framework.TestCase;
 
@@ -50,7 +47,7 @@ public class TestVectorRowObject extends TestCase {
     }
   }
 
-  void testVectorRowObject(int caseNum, Random r) throws HiveException {
+  void testVectorRowObject(int caseNum, boolean sort, Random r) throws HiveException {
 
     String[] emptyScratchTypeNames = new String[0];
 
@@ -74,6 +71,9 @@ public class TestVectorRowObject extends TestCase {
     vectorExtractRow.init(source.typeNames());
 
     Object[][] randomRows = source.randomRows(100000);
+    if (sort) {
+      source.sort(randomRows);
+    }
     int firstRandomRowIndex = 0;
     for (int i = 0; i < randomRows.length; i++) {
       Object[] row = randomRows[i];
@@ -93,14 +93,22 @@ public class TestVectorRowObject extends TestCase {
 
   public void testVectorRowObject() throws Throwable {
 
-  try {
-    Random r = new Random(5678);
-    for (int c = 0; c < 10; c++) {
-      testVectorRowObject(c, r);
+    try {
+      Random r = new Random(5678);
+
+      int caseNum = 0;
+      for (int i = 0; i < 10; i++) {
+        testVectorRowObject(caseNum, false, r);
+        caseNum++;
+      }
+
+      // Try one sorted.
+      testVectorRowObject(caseNum, true, r);
+      caseNum++;
+
+    } catch (Throwable e) {
+      e.printStackTrace();
+      throw e;
     }
-  } catch (Throwable e) {
-    e.printStackTrace();
-    throw e;
-  }
   }
 }

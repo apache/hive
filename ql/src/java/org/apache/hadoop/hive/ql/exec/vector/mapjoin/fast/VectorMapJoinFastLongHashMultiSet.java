@@ -31,8 +31,10 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.common.util.HashCodeUtil;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /*
- * An single long value multi-set optimized for vector map join.
+ * An single LONG key hash multi-set optimized for vector map join.
  */
 public class VectorMapJoinFastLongHashMultiSet
              extends VectorMapJoinFastLongHashTable
@@ -43,6 +45,15 @@ public class VectorMapJoinFastLongHashMultiSet
   @Override
   public VectorMapJoinHashMultiSetResult createHashMultiSetResult() {
     return new VectorMapJoinFastHashMultiSet.HashMultiSetResult();
+  }
+
+  /*
+   * A Unit Test convenience method for putting the key into the hash table using the
+   * actual type.
+   */
+  @VisibleForTesting
+  public void testPutRow(long currentKey) throws HiveException, IOException {
+    add(currentKey, null);
   }
 
   @Override
