@@ -83,6 +83,9 @@ elif $PATCH -p1 -E --dry-run < $PATCH_FILE 2>&1 > /dev/null; then
   PLEVEL=1
 elif $PATCH -p2 -E --dry-run < $PATCH_FILE 2>&1 > /dev/null; then
   PLEVEL=2
+elif git apply -p0 --check $PATCH_FILE 2>&1 > /dev/null; then
+  git apply -p0 $PATCH_FILE
+  cleanup $?
 else
   echo "The patch does not appear to apply with p0, p1, or p2";
   cleanup 1;
