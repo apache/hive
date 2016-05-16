@@ -4121,6 +4121,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       makeLocationQualified(tbl.getDbName(), tbl.getTTable().getSd(), tbl.getTableName(), conf);
     }
 
+    if (crtTbl.getLocation() == null && !tbl.isPartitioned()
+        && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+      StatsSetupConst.setBasicStatsStateForCreateTable(tbl.getTTable().getParameters(),
+          StatsSetupConst.TRUE);
+    }
+
     // create the table
     db.createTable(tbl, crtTbl.getIfNotExists());
     work.getOutputs().add(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
