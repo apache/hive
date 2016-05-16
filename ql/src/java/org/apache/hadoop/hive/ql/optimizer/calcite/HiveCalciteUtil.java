@@ -192,6 +192,7 @@ public class HiveCalciteUtil {
       newRightFieldNames.add(field.getName());
     }
 
+    ImmutableBitSet.Builder origColEqCondsPosBuilder = ImmutableBitSet.builder();
     int newKeyCount = 0;
     List<Pair<Integer, Integer>> origColEqConds = new ArrayList<Pair<Integer, Integer>>();
     for (i = 0; i < leftKeyCount; i++) {
@@ -201,6 +202,7 @@ public class HiveCalciteUtil {
       if (leftKey instanceof RexInputRef && rightKey instanceof RexInputRef) {
         origColEqConds.add(Pair.of(((RexInputRef) leftKey).getIndex(),
             ((RexInputRef) rightKey).getIndex()));
+        origColEqCondsPosBuilder.set(i);
       } else {
         newLeftFields.add(leftKey);
         newLeftFieldNames.add(null);
@@ -209,11 +211,13 @@ public class HiveCalciteUtil {
         newKeyCount++;
       }
     }
+    ImmutableBitSet origColEqCondsPos = origColEqCondsPosBuilder.build();
 
     for (i = 0; i < origColEqConds.size(); i++) {
       Pair<Integer, Integer> p = origColEqConds.get(i);
-      RexNode leftKey = leftJoinKeys.get(i);
-      RexNode rightKey = rightJoinKeys.get(i);
+      int condPos = origColEqCondsPos.nth(i);
+      RexNode leftKey = leftJoinKeys.get(condPos);
+      RexNode rightKey = rightJoinKeys.get(condPos);
       leftKeys.add(p.left);
       rightKeys.add(p.right);
       RexNode cond = rexBuilder.makeCall(
