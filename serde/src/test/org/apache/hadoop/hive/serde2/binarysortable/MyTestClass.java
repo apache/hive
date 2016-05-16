@@ -53,8 +53,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 
-import com.sun.jdi.PrimitiveType;
-
 public class MyTestClass {
 
     public Boolean myBool;
