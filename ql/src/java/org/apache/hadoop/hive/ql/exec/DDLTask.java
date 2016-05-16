@@ -4159,6 +4159,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         oldview.getTTable().getParameters().putAll(crtView.getTblProps());
       }
       oldview.setPartCols(crtView.getPartCols());
+      if (crtView.getInputFormat() != null) {
+        oldview.setInputFormatClass(crtView.getInputFormat());
+      }
+      if (crtView.getOutputFormat() != null) {
+        oldview.setOutputFormatClass(crtView.getOutputFormat());
+      }
       oldview.checkValidity(null);
       try {
         db.alterTable(crtView.getViewName(), oldview, null);
@@ -4184,6 +4190,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       if (crtView.getPartCols() != null) {
         tbl.setPartCols(crtView.getPartCols());
+      }
+
+      if (crtView.getInputFormat() != null) {
+        tbl.setInputFormatClass(crtView.getInputFormat());
+      }
+      if (crtView.getOutputFormat() != null) {
+        tbl.setOutputFormatClass(crtView.getOutputFormat());
       }
 
       db.createTable(tbl, crtView.getIfNotExists());

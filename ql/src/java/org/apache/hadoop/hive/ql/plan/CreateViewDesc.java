@@ -36,6 +36,8 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private String viewName;
+  private String inputFormat;
+  private String outputFormat;
   private String originalText;
   private String expandedText;
   private List<FieldSchema> schema;
@@ -54,12 +56,15 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   }
 
   public CreateViewDesc(String viewName, List<FieldSchema> schema,
-      String comment, Map<String, String> tblProps,
+      String comment, String inputFormat,
+      String outputFormat, Map<String, String> tblProps,
       List<String> partColNames, boolean ifNotExists,
       boolean orReplace, boolean isAlterViewAs) {
     this.viewName = viewName;
     this.schema = schema;
     this.comment = comment;
+    this.inputFormat = inputFormat;
+    this.outputFormat = outputFormat;
     this.tblProps = tblProps;
     this.partColNames = partColNames;
     this.ifNotExists = ifNotExists;
@@ -172,4 +177,21 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   public void setIsAlterViewAs(boolean isAlterViewAs) {
     this.isAlterViewAs = isAlterViewAs;
   }
+
+  public String getInputFormat() {
+    return inputFormat;
+  }
+
+  public void setInputFormat(String inputFormat) {
+    this.inputFormat = inputFormat;
+  }
+
+  public String getOutputFormat() {
+    return outputFormat;
+  }
+
+  public void setOutputFormat(String outputFormat) {
+    this.outputFormat = outputFormat;
+  }
+
 }

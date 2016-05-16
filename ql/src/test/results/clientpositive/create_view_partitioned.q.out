@@ -78,8 +78,8 @@ Table Parameters:
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
-InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
 Compressed:         	No                  	 
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
@@ -175,8 +175,8 @@ POSTHOOK: type: SHOW_TABLESTATUS
 tableName:vp1
 #### A masked pattern was here ####
 location:null
-inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
-outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key}
 partitioned:true
 partitionColumns:struct partition_columns { string value}
@@ -188,8 +188,8 @@ POSTHOOK: type: SHOW_TABLESTATUS
 tableName:vp1
 #### A masked pattern was here ####
 location:null
-inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
-outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key}
 partitioned:true
 partitionColumns:struct partition_columns { string value}
@@ -285,8 +285,8 @@ Table Parameters:
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
-InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
 Compressed:         	No                  	 
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
@@ -398,8 +398,8 @@ Table Parameters:
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
-InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
 Compressed:         	No                  	 
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 

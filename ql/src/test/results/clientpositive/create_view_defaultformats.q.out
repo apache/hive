@@ -1,0 +1,128 @@
+PREHOOK: query: drop view if exists sfsrc
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view if exists sfsrc
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: drop view if exists rcsrc
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view if exists rcsrc
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: create view sfsrc as select * from src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sfsrc
+POSTHOOK: query: create view sfsrc as select * from src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sfsrc
+PREHOOK: query: create view rcsrc as select * from src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rcsrc
+POSTHOOK: query: create view rcsrc as select * from src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@rcsrc
+PREHOOK: query: describe formatted sfsrc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@sfsrc
+POSTHOOK: query: describe formatted sfsrc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@sfsrc
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	select * from src   	 
+View Expanded Text: 	select `src`.`key`, `src`.`value` from `default`.`src`	 
+PREHOOK: query: describe formatted rcsrc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@rcsrc
+POSTHOOK: query: describe formatted rcsrc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@rcsrc
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	select * from src   	 
+View Expanded Text: 	select `src`.`key`, `src`.`value` from `default`.`src`	 
+PREHOOK: query: select * from sfsrc where key = 100 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sfsrc
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from sfsrc where key = 100 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sfsrc
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+100	val_100
+PREHOOK: query: select * from rcsrc where key = 100 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rcsrc
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from rcsrc where key = 100 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcsrc
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+100	val_100
+PREHOOK: query: drop view sfsrc
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@sfsrc
+PREHOOK: Output: default@sfsrc
+POSTHOOK: query: drop view sfsrc
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@sfsrc
+POSTHOOK: Output: default@sfsrc
+PREHOOK: query: drop view rcsrc
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@rcsrc
+PREHOOK: Output: default@rcsrc
+POSTHOOK: query: drop view rcsrc
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@rcsrc
+POSTHOOK: Output: default@rcsrc
