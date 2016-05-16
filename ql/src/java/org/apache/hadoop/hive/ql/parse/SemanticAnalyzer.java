@@ -10965,8 +10965,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       orReplace = true;
     }
 
+    StorageFormat defaultFmt = new StorageFormat(conf);
+    defaultFmt.fillDefaultStorageFormat();
     createVwDesc = new CreateViewDesc(
-      dbDotTable, cols, comment, tblProps, partColNames,
+      dbDotTable, cols, comment, defaultFmt.getInputFormat(),
+      defaultFmt.getOutputFormat(), tblProps, partColNames,
       ifNotExists, orReplace, isAlterViewAs);
 
     unparseTranslator.enable();
