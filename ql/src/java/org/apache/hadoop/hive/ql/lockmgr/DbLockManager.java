@@ -54,11 +54,11 @@ public class DbLockManager implements HiveLockManager{
   private long MAX_SLEEP;
   //longer term we should always have a txn id and then we won't need to track locks here at all
   private Set<DbHiveLock> locks;
-  private IMetaStoreClient client;
+  private DbTxnManager.SynchronizedMetaStoreClient client;
   private long nextSleep = 50;
   private final HiveConf conf;
 
-  DbLockManager(IMetaStoreClient client, HiveConf conf) {
+  DbLockManager(DbTxnManager.SynchronizedMetaStoreClient client, HiveConf conf) {
     locks = new HashSet<>();
     this.client = client;
     this.conf = conf;
