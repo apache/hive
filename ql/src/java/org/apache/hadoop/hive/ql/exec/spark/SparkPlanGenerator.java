@@ -215,9 +215,9 @@ public class SparkPlanGenerator {
         "AssertionError: SHUFFLE_NONE should only be used for UnionWork.");
     SparkShuffler shuffler;
     if (edge.isMRShuffle()) {
-      shuffler = new SortByShuffler(false);
+      shuffler = new SortByShuffler(false, sparkPlan);
     } else if (edge.isShuffleSort()) {
-      shuffler = new SortByShuffler(true);
+      shuffler = new SortByShuffler(true, sparkPlan);
     } else {
       shuffler = new GroupByShuffler();
     }

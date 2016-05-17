@@ -24,6 +24,7 @@ import org.apache.spark.HashPartitioner;
 import org.apache.spark.Partitioner;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
+import org.apache.spark.storage.StorageLevel;
 import scala.Tuple2;
 
 import java.util.*;
@@ -31,12 +32,14 @@ import java.util.*;
 public class SortByShuffler implements SparkShuffler {
 
   private final boolean totalOrder;
+  private final SparkPlan sparkPlan;
 
   /**
    * @param totalOrder whether this shuffler provides total order shuffle.
    */
-  public SortByShuffler(boolean totalOrder) {
+  public SortByShuffler(boolean totalOrder, SparkPlan sparkPlan) {
     this.totalOrder = totalOrder;
+    this.sparkPlan = sparkPlan;
   }
 
   @Override
@@ -45,6 +48,10 @@ public class SortByShuffler implements SparkShuffler {
     JavaPairRDD<HiveKey, BytesWritable> rdd;
     if (totalOrder) {
       if (numPartitions > 0) {
+        if (numPartitions > 1 && input.getStorageLevel() == StorageLevel.NONE()) {
+          input.persist(StorageLevel.DISK_ONLY());
+          sparkPlan.addCachedRDDId(input.id());
+        }
         rdd = input.sortByKey(true, numPartitions);
       } else {
         rdd = input.sortByKey(true);
