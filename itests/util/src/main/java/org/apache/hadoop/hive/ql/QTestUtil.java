@@ -1470,7 +1470,10 @@ public class QTestUtil {
       ".*total number of created files now is.*",
       ".*.hive-staging.*",
       "pk_-?[0-9]*_[0-9]*_[0-9]*",
-      "fk_-?[0-9]*_[0-9]*_[0-9]*"
+      "fk_-?[0-9]*_[0-9]*_[0-9]*",
+      ".*at com\\.sun\\.proxy.*",
+      ".*at com\\.jolbox.*",
+      "org\\.apache\\.hadoop\\.hive\\.metastore\\.model\\.MConstraint@([0-9]|[a-z])*"
   });
 
   private final Pattern[] partialReservedPlanMask = toPattern(new String[] {
