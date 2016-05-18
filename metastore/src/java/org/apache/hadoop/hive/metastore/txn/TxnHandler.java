@@ -1274,6 +1274,21 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
+  long generateCompactionQueueId(Statement stmt) throws SQLException, MetaException {
+    // Get the id for the next entry in the queue
+    String s = addForUpdateClause("select ncq_next from NEXT_COMPACTION_QUEUE_ID");
+    LOG.debug("going to execute query <" + s + ">");
+    ResultSet rs = stmt.executeQuery(s);
+    if (!rs.next()) {
+      throw new IllegalStateException("Transaction tables not properly initiated, " +
+        "no record found in next_compaction_queue_id");
+    }
+    long id = rs.getLong(1);
+    s = "update NEXT_COMPACTION_QUEUE_ID set ncq_next = " + (id + 1);
+    LOG.debug("Going to execute update <" + s + ">");
+    stmt.executeUpdate(s);
+    return id;
+  }
   public long compact(CompactionRequest rqst) throws MetaException {
     // Put a compaction request in the queue.
     try {
@@ -1283,21 +1298,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-
-        // Get the id for the next entry in the queue
-        String s = addForUpdateClause("select ncq_next from NEXT_COMPACTION_QUEUE_ID");
-        LOG.debug("going to execute query <" + s + ">");
-        ResultSet rs = stmt.executeQuery(s);
-        if (!rs.next()) {
-          LOG.debug("Going to rollback");
-          dbConn.rollback();
-          throw new MetaException("Transaction tables not properly initiated, " +
-            "no record found in next_compaction_queue_id");
-        }
-        long id = rs.getLong(1);
-        s = "update NEXT_COMPACTION_QUEUE_ID set ncq_next = " + (id + 1);
-        LOG.debug("Going to execute update <" + s + ">");
-        stmt.executeUpdate(s);
+        
+        long id = generateCompactionQueueId(stmt);
 
         StringBuilder buf = new StringBuilder("insert into COMPACTION_QUEUE (cq_id, cq_database, " +
           "cq_table, ");
@@ -1337,7 +1339,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           buf.append(rqst.getRunas());
         }
         buf.append("')");
-        s = buf.toString();
+        String s = buf.toString();
         LOG.debug("Going to execute update <" + s + ">");
         stmt.executeUpdate(s);
         LOG.debug("Going to commit");
@@ -1388,6 +1390,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             case READY_FOR_CLEANING: e.setState(CLEANING_RESPONSE); break;
             case FAILED_STATE: e.setState(FAILED_RESPONSE); break;
             case SUCCEEDED_STATE: e.setState(SUCCEEDED_RESPONSE); break;
+            case ATTEMPTED_STATE: e.setState(ATTEMPTED_RESPONSE); break;
             default:
               //do nothing to handle RU/D if we add another status
           }
