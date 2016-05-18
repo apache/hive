@@ -691,7 +691,7 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   /**
-   * For any given compactable entity (partition, table if not partitioned) the history of compactions
+   * For any given compactable entity (partition; table if not partitioned) the history of compactions
    * may look like "sssfffaaasffss", for example.  The idea is to retain the tail (most recent) of the
    * history such that a configurable number of each type of state is present.  Any other entries
    * can be purged.  This scheme has advantage of always retaining the last failure/success even if
@@ -793,7 +793,7 @@ class CompactionTxnHandler extends TxnHandler {
           "CC_DATABASE = " + quoteString(ci.dbname) + " and " +
           "CC_TABLE = " + quoteString(ci.tableName) +
           (ci.partName != null ? "and CC_PARTITION = " + quoteString(ci.partName) : "") +
-          " order by CC_ID desc");
+          " and CC_STATE != " + quoteChar(ATTEMPTED_STATE) + " order by CC_ID desc");
         int numFailed = 0;
         int numTotal = 0;
         int failedThreshold = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD);
@@ -824,8 +824,8 @@ class CompactionTxnHandler extends TxnHandler {
   /**
    * If there is an entry in compaction_queue with ci.id, remove it
    * Make entry in completed_compactions with status 'f'.
-   *
-   * but what abount markCleaned() which is called when table is had been deleted...
+   * If there is no entry in compaction_queue, it means Initiator failed to even schedule a compaction,
+   * which we record as ATTEMPTED_STATE entry in history.
    */
   public void markFailed(CompactionInfo ci) throws MetaException {//todo: this should not throw
     //todo: this should take "comment" as parameter to set in CC_META_INFO to provide some context for the failure
@@ -845,12 +845,27 @@ class CompactionTxnHandler extends TxnHandler {
           int updCnt = stmt.executeUpdate(s);
         }
         else {
-          throw new IllegalStateException("No record with CQ_ID=" + ci.id + " found in COMPACTION_QUEUE");
+          if(ci.id > 0) {
+            //the record with valid CQ_ID has disappeared - this is a sign of something wrong
+            throw new IllegalStateException("No record with CQ_ID=" + ci.id + " found in COMPACTION_QUEUE");
+          }
+        }
+        if(ci.id == 0) {
+          //The failure occurred before we even made an entry in COMPACTION_QUEUE
+          //generate ID so that we can make an entry in COMPLETED_COMPACTIONS
+          ci.id = generateCompactionQueueId(stmt);
+          //mostly this indicates that the Initiator is paying attention to some table even though
+          //compactions are not happening.
+          ci.state = ATTEMPTED_STATE;
+          //this is not strictly accurate, but 'type' cannot be null.
+          ci.type = CompactionType.MINOR;
+        }
+        else {
+          ci.state = FAILED_STATE;
         }
         close(rs, stmt, null);
 
         pStmt = dbConn.prepareStatement("insert into COMPLETED_COMPACTIONS(CC_ID, CC_DATABASE, CC_TABLE, CC_PARTITION, CC_STATE, CC_TYPE, CC_WORKER_ID, CC_START, CC_END, CC_RUN_AS, CC_HIGHEST_TXN_ID, CC_META_INFO, CC_HADOOP_JOB_ID) VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?)");
-        ci.state = FAILED_STATE;
         CompactionInfo.insertIntoCompletedCompactions(pStmt, ci, getDbTime(dbConn));
         int updCount = pStmt.executeUpdate();
         LOG.debug("Going to commit");

@@ -492,6 +492,15 @@ public class TestTxnCommands2 {
     Assert.assertEquals("Insert overwrite partition failed", stringifyValues(updatedData), rs2);
     //insert overwrite not supported for ACID tables
   }
+  private static void checkCompactionState(CompactionsByState expected, CompactionsByState actual) {
+    Assert.assertEquals(TxnStore.ATTEMPTED_RESPONSE, expected.attempted, actual.attempted);
+    Assert.assertEquals(TxnStore.FAILED_RESPONSE, expected.failed, actual.failed);
+    Assert.assertEquals(TxnStore.INITIATED_RESPONSE, expected.initiated, actual.initiated);
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, expected.readyToClean, actual.readyToClean);
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, expected.succeeded, actual.succeeded);
+    Assert.assertEquals(TxnStore.WORKING_RESPONSE, expected.working, actual.working);
+    Assert.assertEquals("total", expected.total, actual.total);
+  }
   /**
    * HIVE-12353
    * @throws Exception
@@ -519,58 +528,60 @@ public class TestTxnCommands2 {
       txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
       runWorker(hiveConf);
     }
-    //this should not schedule a new compaction due to prior failures
+    //this should not schedule a new compaction due to prior failures, but will create Attempted entry
     Initiator init = new Initiator();
     init.setThreadId((int)init.getId());
     init.setHiveConf(hiveConf);
     init.init(stop, new AtomicBoolean());
     init.run();
-
-    CompactionsByState cbs = countCompacts(txnHandler);
-    Assert.assertEquals("Unexpected number of failed compactions", numFailedCompactions, cbs.failed);
-    Assert.assertEquals("Unexpected total number of compactions", numFailedCompactions, cbs.total);
+    int numAttemptedCompactions = 1;
+    checkCompactionState(new CompactionsByState(numAttemptedCompactions,numFailedCompactions,0,0,0,0,numFailedCompactions + numAttemptedCompactions), countCompacts(txnHandler));
     
     hiveConf.setTimeVar(HiveConf.ConfVars.COMPACTOR_HISTORY_REAPER_INTERVAL, 10, TimeUnit.MILLISECONDS);
     AcidCompactionHistoryService compactionHistoryService = new AcidCompactionHistoryService();
     runHouseKeeperService(compactionHistoryService, hiveConf);//should not remove anything from history
-    cbs = countCompacts(txnHandler);
-    Assert.assertEquals("Number of failed compactions after History clean", numFailedCompactions, cbs.failed);
-    Assert.assertEquals("Total number of compactions after History clean", numFailedCompactions, cbs.total);
+    checkCompactionState(new CompactionsByState(numAttemptedCompactions,numFailedCompactions,0,0,0,0,numFailedCompactions + numAttemptedCompactions), countCompacts(txnHandler));
 
     txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MAJOR));
     runWorker(hiveConf);//will fail
     txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
     runWorker(hiveConf);//will fail
-    cbs = countCompacts(txnHandler);
-    Assert.assertEquals("Unexpected num failed1", numFailedCompactions + 2, cbs.failed);
-    Assert.assertEquals("Unexpected num total1", numFailedCompactions + 2, cbs.total);
+    init.run();
+    numAttemptedCompactions++;
+    init.run();
+    numAttemptedCompactions++;
+    checkCompactionState(new CompactionsByState(numAttemptedCompactions,numFailedCompactions + 2,0,0,0,0,numFailedCompactions + 2 + numAttemptedCompactions), countCompacts(txnHandler));
+
     runHouseKeeperService(compactionHistoryService, hiveConf);//should remove history so that we have
     //COMPACTOR_HISTORY_RETENTION_FAILED failed compacts left (and no other since we only have failed ones here)
-    cbs = countCompacts(txnHandler);
-    Assert.assertEquals("Unexpected num failed2", hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED), cbs.failed);
-    Assert.assertEquals("Unexpected num total2", hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED), cbs.total);
-    
+    checkCompactionState(new CompactionsByState(
+      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED),
+      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED),0,0,0,0,
+      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) + hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED)), countCompacts(txnHandler));
     
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, false);
     txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
-    //at this point "show compactions" should have (COMPACTOR_HISTORY_RETENTION_FAILED) failed + 1 initiated
-    cbs = countCompacts(txnHandler);
-    Assert.assertEquals("Unexpected num failed3", hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED), cbs.failed);
-    Assert.assertEquals("Unexpected num initiated", 1, cbs.initiated);
-    Assert.assertEquals("Unexpected num total3", hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) + 1, cbs.total);
+    //at this point "show compactions" should have (COMPACTOR_HISTORY_RETENTION_FAILED) failed + 1 initiated (explicitly by user)
+    checkCompactionState(new CompactionsByState(
+      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED),
+      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED),1,0,0,0,
+      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) +
+        hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED)+ 1), countCompacts(txnHandler));
 
     runWorker(hiveConf);//will succeed and transition to Initiated->Working->Ready for Cleaning
-    cbs = countCompacts(txnHandler);
-    Assert.assertEquals("Unexpected num failed4", hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED), cbs.failed);
-    Assert.assertEquals("Unexpected num ready to clean", 1, cbs.readyToClean);
-    Assert.assertEquals("Unexpected num total4", hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) + 1, cbs.total);
-    
+    checkCompactionState(new CompactionsByState(
+      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED),
+      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED),0,1,0,0,
+      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) +
+        hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED)+ 1), countCompacts(txnHandler));
+
     runCleaner(hiveConf); // transition to Success state
     runHouseKeeperService(compactionHistoryService, hiveConf);//should not purge anything as all items within retention sizes
-    cbs = countCompacts(txnHandler);
-    Assert.assertEquals("Unexpected num failed5", hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED), cbs.failed);
-    Assert.assertEquals("Unexpected num succeeded", 1, cbs.succeeded);
-    Assert.assertEquals("Unexpected num total5", hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) + 1, cbs.total);
+    checkCompactionState(new CompactionsByState(
+      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED),
+      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED),0,0,1,0,
+      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) +
+        hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED)+ 1), countCompacts(txnHandler));
   }
 
   /**
@@ -624,6 +635,18 @@ public class TestTxnCommands2 {
     private int succeeded;
     private int working;
     private int total;
+    CompactionsByState() {
+      this(0,0,0,0,0,0,0);
+    }
+    CompactionsByState(int attempted, int failed, int initiated, int readyToClean, int succeeded, int working, int total) {
+      this.attempted = attempted;
+      this.failed = failed;
+      this.initiated = initiated;
+      this.readyToClean = readyToClean;
+      this.succeeded = succeeded;
+      this.working = working;
+      this.total = total;
+    }
   }
   private static CompactionsByState countCompacts(TxnStore txnHandler) throws MetaException {
     ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
@@ -647,6 +670,9 @@ public class TestTxnCommands2 {
       }
       else if(TxnStore.ATTEMPTED_RESPONSE.equals(compact.getState())) {
         compactionsByState.attempted++;
+      }
+      else {
+        throw new IllegalStateException("Unexpected state: " + compact.getState());
       }
     }
     return compactionsByState;

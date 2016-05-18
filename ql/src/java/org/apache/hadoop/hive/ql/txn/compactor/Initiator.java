@@ -126,8 +126,9 @@ public class Initiator extends CompactorThread {
                 continue;
               }
               if(txnHandler.checkFailedCompactions(ci)) {
-                //todo: make 'a' state entry in completed_compactions
-                LOG.warn("Will not initiate compaction for " + ci.getFullPartitionName() + " since last 3 attempts to compact it failed.");
+                LOG.warn("Will not initiate compaction for " + ci.getFullPartitionName() + " since last "
+                  + HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD + " attempts to compact it failed.");
+                txnHandler.markFailed(ci);
                 continue;
               }
 
