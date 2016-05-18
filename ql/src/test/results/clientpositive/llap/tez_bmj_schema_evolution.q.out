@@ -105,7 +105,6 @@ STAGE PLANS:
                         input vertices:
                           1 Map 3
                         Statistics: Num rows: 1100 Data size: 57543 Basic stats: COMPLETE Column stats: NONE
-                        HybridGraceHashJoin: true
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           sort order: +

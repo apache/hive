@@ -299,7 +299,6 @@ STAGE PLANS:
                         input vertices:
                           0 Map 1
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -411,7 +410,6 @@ STAGE PLANS:
                         input vertices:
                           0 Map 1
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -523,7 +521,6 @@ STAGE PLANS:
                         input vertices:
                           0 Map 1
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -631,7 +628,6 @@ STAGE PLANS:
                           input vertices:
                             1 Map 4
                           Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                          HybridGraceHashJoin: true
                           Group By Operator
                             aggregations: count()
                             mode: hash
@@ -1013,7 +1009,6 @@ STAGE PLANS:
                         input vertices:
                           0 Map 1
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -1121,7 +1116,6 @@ STAGE PLANS:
                         input vertices:
                           0 Map 1
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                        HybridGraceHashJoin: true
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -1131,7 +1125,6 @@ STAGE PLANS:
                           input vertices:
                             1 Map 4
                           Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
-                          HybridGraceHashJoin: true
                           Group By Operator
                             aggregations: count()
                             mode: hash
@@ -1249,7 +1242,6 @@ STAGE PLANS:
                         input vertices:
                           1 Map 4
                         Statistics: Num rows: 266 Data size: 2822 Basic stats: COMPLETE Column stats: NONE
-                        HybridGraceHashJoin: true
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -1259,7 +1251,6 @@ STAGE PLANS:
                           input vertices:
                             1 Map 6
                           Statistics: Num rows: 558 Data size: 5926 Basic stats: COMPLETE Column stats: NONE
-                          HybridGraceHashJoin: true
                           Group By Operator
                             aggregations: count()
                             mode: hash
@@ -1311,7 +1302,6 @@ STAGE PLANS:
                         input vertices:
                           1 Map 6
                         Statistics: Num rows: 558 Data size: 5926 Basic stats: COMPLETE Column stats: NONE
-                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -1467,7 +1457,6 @@ STAGE PLANS:
                   input vertices:
                     0 Reducer 2
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-                  HybridGraceHashJoin: true
                   Group By Operator
                     aggregations: count()
                     mode: hash

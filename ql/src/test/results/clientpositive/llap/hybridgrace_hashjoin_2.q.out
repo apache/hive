@@ -211,7 +211,6 @@ STAGE PLANS:
                         0 Map 1
                         2 Map 4
                       Statistics: Num rows: 4400 Data size: 46745 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -512,7 +511,6 @@ STAGE PLANS:
                         2 Map 4
                         3 Map 5
                       Statistics: Num rows: 6600 Data size: 70118 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -948,7 +946,6 @@ STAGE PLANS:
                         0 Map 1
                         2 Map 6
                       Statistics: Num rows: 4400 Data size: 46745 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -1010,7 +1007,6 @@ STAGE PLANS:
                         0 Map 7
                         2 Map 10
                       Statistics: Num rows: 4400 Data size: 46745 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -1392,7 +1388,6 @@ STAGE PLANS:
                         0 Map 1
                         2 Map 4
                       Statistics: Num rows: 1465 Data size: 15565 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1405,7 +1400,6 @@ STAGE PLANS:
                           1 Map 5
                           2 Map 6
                         Statistics: Num rows: 3223 Data size: 34243 Basic stats: COMPLETE Column stats: NONE
-                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash

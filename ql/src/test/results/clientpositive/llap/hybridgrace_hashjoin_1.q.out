@@ -4,6 +4,7 @@ PREHOOK: query: -- Hybrid Grace Hash Join
 -- 2. Partitioned table spilling
 -- 3. Vectorization
 
+
 SELECT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -13,6 +14,7 @@ POSTHOOK: query: -- Hybrid Grace Hash Join
 -- 1. Various cases when hash partitions spill
 -- 2. Partitioned table spilling
 -- 3. Vectorization
+
 
 SELECT 1
 POSTHOOK: type: QUERY
@@ -196,7 +198,6 @@ STAGE PLANS:
                         input vertices:
                           1 Map 3
                         Statistics: Num rows: 4505 Data size: 968719 Basic stats: COMPLETE Column stats: NONE
-                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -439,7 +440,6 @@ STAGE PLANS:
                         input vertices:
                           1 Map 3
                         Statistics: Num rows: 13516 Data size: 2906160 Basic stats: COMPLETE Column stats: NONE
-                        HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -669,7 +669,6 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 13516 Data size: 2906160 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
                         mode: hash

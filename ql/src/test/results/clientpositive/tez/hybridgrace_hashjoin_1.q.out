@@ -4,6 +4,7 @@ PREHOOK: query: -- Hybrid Grace Hash Join
 -- 2. Partitioned table spilling
 -- 3. Vectorization
 
+
 SELECT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -13,6 +14,7 @@ POSTHOOK: query: -- Hybrid Grace Hash Join
 -- 1. Various cases when hash partitions spill
 -- 2. Partitioned table spilling
 -- 3. Vectorization
+
 
 SELECT 1
 POSTHOOK: type: QUERY

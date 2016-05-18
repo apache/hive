@@ -2852,6 +2852,8 @@ public class HiveConf extends Configuration {
         "protocol or ZK paths), similar to how ssh refuses a key with bad access permissions."),
     LLAP_DAEMON_OUTPUT_SERVICE_PORT("hive.llap.daemon.output.service.port", 15003,
         "LLAP daemon output service port"),
+    LLAP_ENABLE_GRACE_JOIN_IN_LLAP("hive.llap.enable.grace.join.in.llap", false,
+        "Override if grace join should be allowed to run in llap."),
 
     SPARK_CLIENT_FUTURE_TIMEOUT("hive.spark.client.future.timeout",
       "60s", new TimeValidator(TimeUnit.SECONDS),

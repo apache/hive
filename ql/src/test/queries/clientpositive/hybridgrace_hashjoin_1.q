@@ -6,6 +6,7 @@ set hive.explain.user=false;
 -- 2. Partitioned table spilling
 -- 3. Vectorization
 
+
 SELECT 1;
 
 set hive.auto.convert.join=true;
@@ -132,6 +133,7 @@ select count(*) from
  on cd.cint = c.cint) t1
 ;
 
+set hive.llap.enable.grace.join.in.llap=true;
 
 -- Partitioned table
 create table parttbl (key string, value char(20)) partitioned by (dt char(10));
