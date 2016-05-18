@@ -385,6 +385,11 @@ public class HybridHashTableContainer
         memoryUsed += hashPartitions[i].hashMap.memorySize();
       }
     }
+
+    if (writeBufferSize * (numPartitions - numPartitionsSpilledOnCreation) > memoryThreshold) {
+      LOG.error("There is not enough memory to allocate " +
+          (numPartitions - numPartitionsSpilledOnCreation) + " hash partitions.");
+    }
     assert numPartitionsSpilledOnCreation != numPartitions : "All partitions are directly spilled!" +
         " It is not supported now.";
     LOG.info("Number of partitions created: " + numPartitions);
@@ -558,7 +563,7 @@ public class HybridHashTableContainer
    * @return the biggest partition number
    */
   private int biggestPartition() {
-    int res = 0;
+    int res = -1;
     int maxSize = 0;
 
     // If a partition has been spilled to disk, its size will be 0, i.e. it won't be picked
@@ -574,6 +579,17 @@ public class HybridHashTableContainer
         res = i;
       }
     }
+
+    // It can happen that although there're some partitions in memory, but their sizes are all 0.
+    // In that case we just pick one and spill.
+    if (res == -1) {
+      for (int i = 0; i < hashPartitions.length; i++) {
+        if (!isOnDisk(i)) {
+          return i;
+        }
+      }
+    }
+
     return res;
   }
 
@@ -585,6 +601,10 @@ public class HybridHashTableContainer
   public long spillPartition(int partitionId) throws IOException {
     HashPartition partition = hashPartitions[partitionId];
     int inMemRowCount = partition.hashMap.getNumValues();
+    if (inMemRowCount == 0) {
+      LOG.warn("Trying to spill an empty hash partition! It may be due to " +
+          "hive.auto.convert.join.noconditionaltask.size being set too low.");
+    }
 
     File file = FileUtils.createLocalDirsTempFile(
         spillLocalDirs, "partition-" + partitionId + "-", null, false);
