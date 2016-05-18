@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GetTokenResponseProto;
@@ -51,7 +52,6 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.security.token.Token;
-import org.apache.hadoop.hive.llap.security.LlapSecurityHelper;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.security.SecretManager;
 import org.apache.hadoop.service.AbstractService;
@@ -150,12 +150,13 @@ public class LlapProtocolServerImpl extends AbstractService
     }
     String llapPrincipal = HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_PRINCIPAL),
         llapKeytab = HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_KEYTAB_FILE);
-    zkSecretManager = SecretManager.createSecretManager(conf, llapPrincipal, llapKeytab, daemonId);
+    zkSecretManager = SecretManager.createSecretManager(
+        conf, llapPrincipal, llapKeytab, daemonId.getClusterString());
 
     // Start the protocol server after properly authenticating with daemon keytab.
     UserGroupInformation daemonUgi = null;
     try {
-      daemonUgi = LlapSecurityHelper.loginWithKerberos(llapPrincipal, llapKeytab);
+      daemonUgi = LlapUtil.loginWithKerberos(llapPrincipal, llapKeytab);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -265,9 +266,11 @@ public class LlapProtocolServerImpl extends AbstractService
     if (zkSecretManager == null) {
       throw new ServiceException("Operation not supported on unsecure cluster");
     }
-    UserGroupInformation ugi;
+    UserGroupInformation ugi = null;
+    Token<LlapTokenIdentifier> token = null;
     try {
       ugi = UserGroupInformation.getCurrentUser();
+      token = zkSecretManager.createLlapToken(request.getAppId(), null);
     } catch (IOException e) {
       throw new ServiceException(e);
     }
@@ -278,20 +281,7 @@ public class LlapProtocolServerImpl extends AbstractService
           + " or adjust " + ConfVars.LLAP_MANAGEMENT_ACL.varname + " and "
           + ConfVars.LLAP_MANAGEMENT_ACL_DENY.varname + " to a more restrictive ACL.");
     }
-    String user = ugi.getUserName();
-    Text owner = new Text(user);
-    Text realUser = null;
-    if (ugi.getRealUser() != null) {
-      realUser = new Text(ugi.getRealUser().getUserName());
-    }
-    Text renewer = new Text(ugi.getShortUserName());
-    LlapTokenIdentifier llapId = new LlapTokenIdentifier(owner, renewer, realUser,
-        daemonId.getClusterString(), request.hasAppId() ? request.getAppId() : null);
-    // TODO: note that the token is not renewable right now and will last for 2 weeks by default.
-    Token<LlapTokenIdentifier> token = new Token<LlapTokenIdentifier>(llapId, zkSecretManager);
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Created LLAP token " + token);
-    }
+
     ByteArrayDataOutput out = ByteStreams.newDataOutput();
     try {
       token.write(out);

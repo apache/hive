@@ -18,13 +18,13 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.DaemonId;
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.delegation.ZKDelegationTokenSecretManager;
@@ -34,9 +34,11 @@ import org.slf4j.LoggerFactory;
 
 public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdentifier> {
   private static final Logger LOG = LoggerFactory.getLogger(SecretManager.class);
+  private final String clusterId;
 
-  public SecretManager(Configuration conf) {
+  public SecretManager(Configuration conf, String clusterId) {
     super(conf);
+    this.clusterId = clusterId;
     checkForZKDTSMBug(conf);
   }
 
@@ -84,14 +86,21 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     return id;
   }
 
-  public static SecretManager createSecretManager(
-      final Configuration conf, String llapPrincipal, String llapKeytab, DaemonId daemonId) {
+  public static SecretManager createSecretManager(final Configuration conf, String clusterId) {
+    String llapPrincipal = HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_PRINCIPAL),
+        llapKeytab = HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_KEYTAB_FILE);
+    return SecretManager.createSecretManager(conf, llapPrincipal, llapKeytab, clusterId);
+  }
+
+
+  public static SecretManager createSecretManager(final Configuration conf,
+      String llapPrincipal, String llapKeytab, final String clusterId) {
     // Create ZK connection under a separate ugi (if specified) - ZK works in mysterious ways.
     UserGroupInformation zkUgi = null;
     String principal = HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_KERBEROS_PRINCIPAL, llapPrincipal);
     String keyTab = HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_KERBEROS_KEYTAB_FILE, llapKeytab);
     try {
-      zkUgi = LlapSecurityHelper.loginWithKerberos(principal, keyTab);
+      zkUgi = LlapUtil.loginWithKerberos(principal, keyTab);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -104,7 +113,7 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     zkConf.setLong(DelegationTokenManager.RENEW_INTERVAL, tokenLifetime);
     zkConf.set(SecretManager.ZK_DTSM_ZK_KERBEROS_PRINCIPAL, principal);
     zkConf.set(SecretManager.ZK_DTSM_ZK_KERBEROS_KEYTAB, keyTab);
-    String zkPath = daemonId.getClusterString();
+    String zkPath = clusterId;
     LOG.info("Using {} as ZK secret manager path", zkPath);
     zkConf.set(SecretManager.ZK_DTSM_ZNODE_WORKING_PATH, "zkdtsm_" + zkPath);
     setZkConfIfNotSet(zkConf, SecretManager.ZK_DTSM_ZK_AUTH_TYPE, "sasl");
@@ -113,7 +122,7 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     return zkUgi.doAs(new PrivilegedAction<SecretManager>() {
       @Override
       public SecretManager run() {
-        SecretManager zkSecretManager = new SecretManager(zkConf);
+        SecretManager zkSecretManager = new SecretManager(zkConf, clusterId);
         try {
           zkSecretManager.startThreads();
         } catch (IOException e) {
@@ -127,5 +136,27 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
   private static void setZkConfIfNotSet(Configuration zkConf, String name, String value) {
     if (zkConf.get(name) != null) return;
     zkConf.set(name, value);
+  }
+
+  public Token<LlapTokenIdentifier> createLlapToken(String appId, String user) throws IOException {
+    Text realUser = null, renewer = null;
+    if (user == null) {
+      UserGroupInformation ugi  = UserGroupInformation.getCurrentUser();
+      user = ugi.getUserName();
+      if (ugi.getRealUser() != null) {
+        realUser = new Text(ugi.getRealUser().getUserName());
+      }
+      renewer = new Text(ugi.getShortUserName());
+    } else {
+      renewer = new Text(user);
+    }
+    LlapTokenIdentifier llapId = new LlapTokenIdentifier(
+        new Text(user), renewer, realUser, clusterId, appId);
+    // TODO: note that the token is not renewable right now and will last for 2 weeks by default.
+    Token<LlapTokenIdentifier> token = new Token<LlapTokenIdentifier>(llapId, this);
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Created LLAP token {}", token);
+    }
+    return token;
   }
 }

@@ -13,14 +13,40 @@
  */
 package org.apache.hadoop.hive.llap;
 
+import java.io.IOException;
+import java.util.regex.Pattern;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.security.SecurityUtil;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LlapUtil {
+  private static final Logger LOG = LoggerFactory.getLogger(LlapUtil.class);
+
   public static String getDaemonLocalDirList(Configuration conf) {
     String localDirList = HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_WORK_DIRS);
     if (localDirList != null && !localDirList.isEmpty()) return localDirList;
     return conf.get("yarn.nodemanager.local-dirs");
+  }
+
+  public static UserGroupInformation loginWithKerberos(
+      String principal, String keytabFile) throws IOException {
+    if (!UserGroupInformation.isSecurityEnabled()) return null;
+    if (principal.isEmpty() || keytabFile.isEmpty()) {
+      throw new RuntimeException("Kerberos principal and/or keytab are empty");
+    }
+    LOG.info("Logging in as " + principal + " via " + keytabFile);
+    return UserGroupInformation.loginUserFromKeytabAndReturnUGI(
+        SecurityUtil.getServerPrincipal(principal, "0.0.0.0"), keytabFile);
+  }
+
+  private final static Pattern hostsRe = Pattern.compile("[^A-Za-z0-9_-]");
+  public static String generateClusterName(Configuration conf) {
+    String hosts = HiveConf.getTrimmedVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
+    return hostsRe.matcher(hosts.startsWith("@") ? hosts.substring(1) : hosts).replaceAll("_");
   }
 }

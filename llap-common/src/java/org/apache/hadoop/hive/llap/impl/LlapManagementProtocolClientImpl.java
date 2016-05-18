@@ -65,8 +65,7 @@ public class LlapManagementProtocolClientImpl implements LlapManagementProtocolP
     RPC.setProtocolEngine(conf, LlapManagementProtocolPB.class, ProtobufRpcEngine.class);
     ProtocolProxy<LlapManagementProtocolPB> proxy =
         RPC.getProtocolProxy(LlapManagementProtocolPB.class, 0, serverAddr,
-            UserGroupInformation.getCurrentUser(), conf, NetUtils.getDefaultSocketFactory(conf), 0,
-            retryPolicy);
+            UserGroupInformation.getCurrentUser(), conf, socketFactory, 0, retryPolicy);
     return proxy.getProxy();
   }
 

@@ -32,7 +32,14 @@ public class DaemonId {
   }
 
   public String getClusterString() {
-    return userName + "_" + clusterName + "_" + appId;
+    return createClusterString(userName, clusterName);
+  }
+
+  public static String createClusterString(String userName, String clusterName) {
+    // Note that this doesn't include appId. We assume that all the subsequent instances
+    // of the same user+cluster are logically the same, i.e. all the ZK paths will be reused,
+    // all the security tokens/etc. should transition between them, etc.
+    return userName + "_" + clusterName;
   }
 
   public String getApplicationId() {

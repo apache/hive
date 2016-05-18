@@ -106,12 +106,6 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   private final String[] localDirs;
   private final DaemonId daemonId;
 
-  private final static Pattern hostsRe = Pattern.compile("[^A-Za-z0-9_-]");
-  private static String generateClusterName(Configuration conf) {
-    String hosts = HiveConf.getTrimmedVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
-    return hostsRe.matcher(hosts.startsWith("@") ? hosts.substring(1) : hosts).replaceAll("_");
-  }
-
   // TODO Not the best way to share the address
   private final AtomicReference<InetSocketAddress> srvAddress = new AtomicReference<>(),
       mngAddress = new AtomicReference<>();
@@ -150,7 +144,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     String hostName = MetricsUtils.getHostName();
     try {
       daemonId = new DaemonId(UserGroupInformation.getCurrentUser().getUserName(),
-          generateClusterName(daemonConf), hostName, appName, System.currentTimeMillis());
+          LlapUtil.generateClusterName(daemonConf), hostName, appName, System.currentTimeMillis());
     } catch (IOException ex) {
       throw new RuntimeException(ex);
     }
