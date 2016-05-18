@@ -264,8 +264,14 @@ public class SQLOperation extends ExecuteStatementOperation {
     setState(OperationState.PENDING);
     final HiveConf opConfig = getConfigForOperation();
 
-    prepare(opConfig);
-    if (!shouldRunAsync()) {
+    boolean runAsync = shouldRunAsync();
+    final boolean asyncPrepare = runAsync
+      && HiveConf.getBoolVar(opConfig,
+        HiveConf.ConfVars.HIVE_SERVER2_ASYNC_EXEC_ASYNC_COMPILE);
+    if (!asyncPrepare) {
+      prepare(opConfig);
+    }
+    if (!runAsync) {
       runQuery(opConfig);
     } else {
       // We'll pass ThreadLocals in the background thread from the foreground (handler) thread
@@ -290,6 +296,9 @@ public class SQLOperation extends ExecuteStatementOperation {
               registerCurrentOperationLog();
               registerLoggingContext();
               try {
+                if (asyncPrepare) {
+                  prepare(opConfig);
+                }
                 runQuery(opConfig);
               } catch (HiveSQLException e) {
                 setOperationException(e);
