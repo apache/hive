@@ -1540,7 +1540,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   public Map<Map<String, String>, Partition> loadDynamicPartitions(Path loadPath,
       String tableName, Map<String, String> partSpec, boolean replace,
-      int numDP, boolean holdDDLTime, boolean listBucketingEnabled, boolean isAcid, long txnId)
+      int numDP, boolean holdDDLTime, boolean listBucketingEnabled, boolean isAcid, long txnId,
+      AcidUtils.Operation operation)
       throws HiveException {
 
     Set<Path> validPartitions = new HashSet<Path>();
@@ -1603,7 +1604,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         for (Partition p : partitionsMap.values()) {
           partNames.add(p.getName());
         }
-        metaStoreClient.addDynamicPartitions(txnId, tbl.getDbName(), tbl.getTableName(), partNames);
+        metaStoreClient.addDynamicPartitions(txnId, tbl.getDbName(), tbl.getTableName(),
+          partNames, operation.toDataOperationType());
       }
       return partitionsMap;
     } catch (IOException e) {

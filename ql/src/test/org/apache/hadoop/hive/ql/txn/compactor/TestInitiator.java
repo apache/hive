@@ -110,6 +110,7 @@ public class TestInitiator extends CompactorTest {
       long txnid = openTxn();
       LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE,  "default");
       comp.setTablename("mcottma");
+      comp.setOperationType(DataOperationType.UPDATE);
       List<LockComponent> components = new ArrayList<LockComponent>(1);
       components.add(comp);
       LockRequest req = new LockRequest(components, "me", "localhost");
@@ -140,6 +141,7 @@ public class TestInitiator extends CompactorTest {
       LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
       comp.setTablename("mcoptma");
       comp.setPartitionname("ds=today");
+      comp.setOperationType(DataOperationType.DELETE);
       List<LockComponent> components = new ArrayList<LockComponent>(1);
       components.add(comp);
       LockRequest req = new LockRequest(components, "me", "localhost");
@@ -173,6 +175,7 @@ public class TestInitiator extends CompactorTest {
       LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE,  "default");
       comp.setTablename("ncomdpa");
       comp.setPartitionname("ds=day-" + i);
+      comp.setOperationType(DataOperationType.UPDATE);
       List<LockComponent> components = new ArrayList<LockComponent>(1);
       components.add(comp);
       LockRequest req = new LockRequest(components, "me", "localhost");
@@ -197,6 +200,7 @@ public class TestInitiator extends CompactorTest {
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
     comp.setTablename("ceat");
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -229,6 +233,7 @@ public class TestInitiator extends CompactorTest {
       long txnid = openTxn();
       LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
       comp.setTablename("ncwncs");
+      comp.setOperationType(DataOperationType.UPDATE);
       List<LockComponent> components = new ArrayList<LockComponent>(1);
       components.add(comp);
       LockRequest req = new LockRequest(components, "me", "localhost");
@@ -254,6 +259,7 @@ public class TestInitiator extends CompactorTest {
     for (int i = 0; i < 11; i++) {
       long txnid = openTxn();
       LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
+      comp.setOperationType(DataOperationType.DELETE);
       comp.setTablename("ncwncs");
       List<LockComponent> components = new ArrayList<LockComponent>(1);
       components.add(comp);
@@ -279,6 +285,7 @@ public class TestInitiator extends CompactorTest {
       long txnid = openTxn();
       LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE,  "default");
       comp.setTablename("ncwcas");
+      comp.setOperationType(DataOperationType.UPDATE);
       List<LockComponent> components = new ArrayList<LockComponent>(1);
       components.add(comp);
       LockRequest req = new LockRequest(components, "me", "localhost");
@@ -319,6 +326,7 @@ public class TestInitiator extends CompactorTest {
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
     comp.setTablename("cthdp");
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -351,6 +359,7 @@ public class TestInitiator extends CompactorTest {
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
     comp.setTablename("cphdp");
     comp.setPartitionname("ds=today");
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -382,6 +391,7 @@ public class TestInitiator extends CompactorTest {
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
     comp.setTablename("nctdpnhe");
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -417,6 +427,7 @@ public class TestInitiator extends CompactorTest {
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
     comp.setTablename("cttmd");
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -458,6 +469,7 @@ public class TestInitiator extends CompactorTest {
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
     comp.setTablename("cptmd");
     comp.setPartitionname("ds=today");
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -489,6 +501,7 @@ public class TestInitiator extends CompactorTest {
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
     comp.setTablename("nctned");
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -524,6 +537,7 @@ public class TestInitiator extends CompactorTest {
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
     comp.setTablename("cmomwbv");
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -564,6 +578,7 @@ public class TestInitiator extends CompactorTest {
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
     comp.setTablename("ednb");
     comp.setPartitionname("ds=today");
+    comp.setOperationType(DataOperationType.DELETE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -597,6 +612,7 @@ public class TestInitiator extends CompactorTest {
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
     comp.setTablename("ttospgocr");
     comp.setPartitionname("ds=today");
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -608,6 +624,7 @@ public class TestInitiator extends CompactorTest {
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
     comp.setTablename("ttospgocr");
     comp.setPartitionname("ds=today");
+    comp.setOperationType(DataOperationType.UPDATE);
     components = new ArrayList<LockComponent>(1);
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -640,6 +657,7 @@ public class TestInitiator extends CompactorTest {
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
     comp.setTablename("nctdp");
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -667,6 +685,7 @@ public class TestInitiator extends CompactorTest {
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
     comp.setTablename("dt");
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -698,6 +717,7 @@ public class TestInitiator extends CompactorTest {
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
     comp.setTablename("dp");
     comp.setPartitionname("ds=today");
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");

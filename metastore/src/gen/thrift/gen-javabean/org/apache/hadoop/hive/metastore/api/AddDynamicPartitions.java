@@ -42,6 +42,7 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
   private static final org.apache.thrift.protocol.TField DBNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbname", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField TABLENAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tablename", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField PARTITIONNAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionnames", org.apache.thrift.protocol.TType.LIST, (short)4);
+  private static final org.apache.thrift.protocol.TField OPERATION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("operationType", org.apache.thrift.protocol.TType.I32, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -53,13 +54,19 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
   private String dbname; // required
   private String tablename; // required
   private List<String> partitionnames; // required
+  private DataOperationType operationType; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     TXNID((short)1, "txnid"),
     DBNAME((short)2, "dbname"),
     TABLENAME((short)3, "tablename"),
-    PARTITIONNAMES((short)4, "partitionnames");
+    PARTITIONNAMES((short)4, "partitionnames"),
+    /**
+     * 
+     * @see DataOperationType
+     */
+    OPERATION_TYPE((short)5, "operationType");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -82,6 +89,8 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
           return TABLENAME;
         case 4: // PARTITIONNAMES
           return PARTITIONNAMES;
+        case 5: // OPERATION_TYPE
+          return OPERATION_TYPE;
         default:
           return null;
       }
@@ -124,6 +133,7 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
   // isset id assignments
   private static final int __TXNID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.OPERATION_TYPE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -136,11 +146,15 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
     tmpMap.put(_Fields.PARTITIONNAMES, new org.apache.thrift.meta_data.FieldMetaData("partitionnames", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.OPERATION_TYPE, new org.apache.thrift.meta_data.FieldMetaData("operationType", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, DataOperationType.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(AddDynamicPartitions.class, metaDataMap);
   }
 
   public AddDynamicPartitions() {
+    this.operationType = org.apache.hadoop.hive.metastore.api.DataOperationType.UNSET;
+
   }
 
   public AddDynamicPartitions(
@@ -173,6 +187,9 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
       List<String> __this__partitionnames = new ArrayList<String>(other.partitionnames);
       this.partitionnames = __this__partitionnames;
     }
+    if (other.isSetOperationType()) {
+      this.operationType = other.operationType;
+    }
   }
 
   public AddDynamicPartitions deepCopy() {
@@ -186,6 +203,8 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
     this.dbname = null;
     this.tablename = null;
     this.partitionnames = null;
+    this.operationType = org.apache.hadoop.hive.metastore.api.DataOperationType.UNSET;
+
   }
 
   public long getTxnid() {
@@ -294,6 +313,37 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
     }
   }
 
+  /**
+   * 
+   * @see DataOperationType
+   */
+  public DataOperationType getOperationType() {
+    return this.operationType;
+  }
+
+  /**
+   * 
+   * @see DataOperationType
+   */
+  public void setOperationType(DataOperationType operationType) {
+    this.operationType = operationType;
+  }
+
+  public void unsetOperationType() {
+    this.operationType = null;
+  }
+
+  /** Returns true if field operationType is set (has been assigned a value) and false otherwise */
+  public boolean isSetOperationType() {
+    return this.operationType != null;
+  }
+
+  public void setOperationTypeIsSet(boolean value) {
+    if (!value) {
+      this.operationType = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TXNID:
@@ -328,6 +378,14 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
       }
       break;
 
+    case OPERATION_TYPE:
+      if (value == null) {
+        unsetOperationType();
+      } else {
+        setOperationType((DataOperationType)value);
+      }
+      break;
+
     }
   }
 
@@ -344,6 +402,9 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
 
     case PARTITIONNAMES:
       return getPartitionnames();
+
+    case OPERATION_TYPE:
+      return getOperationType();
 
     }
     throw new IllegalStateException();
@@ -364,6 +425,8 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
       return isSetTablename();
     case PARTITIONNAMES:
       return isSetPartitionnames();
+    case OPERATION_TYPE:
+      return isSetOperationType();
     }
     throw new IllegalStateException();
   }
@@ -417,6 +480,15 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
         return false;
     }
 
+    boolean this_present_operationType = true && this.isSetOperationType();
+    boolean that_present_operationType = true && that.isSetOperationType();
+    if (this_present_operationType || that_present_operationType) {
+      if (!(this_present_operationType && that_present_operationType))
+        return false;
+      if (!this.operationType.equals(that.operationType))
+        return false;
+    }
+
     return true;
   }
 
@@ -443,6 +515,11 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
     list.add(present_partitionnames);
     if (present_partitionnames)
       list.add(partitionnames);
+
+    boolean present_operationType = true && (isSetOperationType());
+    list.add(present_operationType);
+    if (present_operationType)
+      list.add(operationType.getValue());
 
     return list.hashCode();
   }
@@ -495,6 +572,16 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetOperationType()).compareTo(other.isSetOperationType());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetOperationType()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.operationType, other.operationType);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -542,6 +629,16 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
       sb.append(this.partitionnames);
     }
     first = false;
+    if (isSetOperationType()) {
+      if (!first) sb.append(", ");
+      sb.append("operationType:");
+      if (this.operationType == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.operationType);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -645,6 +742,14 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // OPERATION_TYPE
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.operationType = org.apache.hadoop.hive.metastore.api.DataOperationType.findByValue(iprot.readI32());
+              struct.setOperationTypeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -683,6 +788,13 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
         }
         oprot.writeFieldEnd();
       }
+      if (struct.operationType != null) {
+        if (struct.isSetOperationType()) {
+          oprot.writeFieldBegin(OPERATION_TYPE_FIELD_DESC);
+          oprot.writeI32(struct.operationType.getValue());
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -710,6 +822,14 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
           oprot.writeString(_iter504);
         }
       }
+      BitSet optionals = new BitSet();
+      if (struct.isSetOperationType()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetOperationType()) {
+        oprot.writeI32(struct.operationType.getValue());
+      }
     }
 
     @Override
@@ -732,6 +852,11 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
         }
       }
       struct.setPartitionnamesIsSet(true);
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.operationType = org.apache.hadoop.hive.metastore.api.DataOperationType.findByValue(iprot.readI32());
+        struct.setOperationTypeIsSet(true);
+      }
     }
   }
 

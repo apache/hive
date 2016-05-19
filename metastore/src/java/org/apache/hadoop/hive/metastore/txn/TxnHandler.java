@@ -131,7 +131,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   static private boolean doRetryOnConnPool = false;
   
   private enum OpertaionType {
-    INSERT('i'), UPDATE('u'), DELETE('d');
+    SELECT('s'), INSERT('i'), UPDATE('u'), DELETE('d');
     private final char sqlConst;
     OpertaionType(char sqlConst) {
       this.sqlConst = sqlConst;
@@ -141,6 +141,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
     public static OpertaionType fromString(char sqlConst) {
       switch (sqlConst) {
+        case 's':
+          return SELECT;
         case 'i':
           return INSERT;
         case 'u':
@@ -151,16 +153,18 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           throw new IllegalArgumentException(quoteChar(sqlConst));
       }
     }
-    //we should instead just pass in OpertaionType from client (HIVE-13622)
-    @Deprecated
-    public static OpertaionType fromLockType(LockType lockType) {
-      switch (lockType) {
-        case SHARED_READ:
-          return INSERT;
-        case SHARED_WRITE:
-          return UPDATE;
+    public static OpertaionType fromDataOperationType(DataOperationType dop) {
+      switch (dop) {
+        case SELECT:
+          return OpertaionType.SELECT;
+        case INSERT:
+          return OpertaionType.INSERT;
+        case UPDATE:
+          return OpertaionType.UPDATE;
+        case DELETE:
+          return OpertaionType.DELETE;
         default:
-          throw new IllegalArgumentException("Unexpected lock type: " + lockType);
+          throw new IllegalArgumentException("Unexpected value: " + dop);
       }
     }
   }
@@ -674,20 +678,21 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         String s = "insert into COMPLETED_TXN_COMPONENTS select tc_txnid, tc_database, tc_table, " +
           "tc_partition from TXN_COMPONENTS where tc_txnid = " + txnid;
         LOG.debug("Going to execute insert <" + s + ">");
-        if (stmt.executeUpdate(s) < 1) {
+        int modCount = 0;
+        if ((modCount = stmt.executeUpdate(s)) < 1) {
           //this can be reasonable for an empty txn START/COMMIT or read-only txn
           LOG.info("Expected to move at least one record from txn_components to " +
             "completed_txn_components when committing txn! " + JavaUtils.txnIdToString(txnid));
         }
         s = "delete from TXN_COMPONENTS where tc_txnid = " + txnid;
         LOG.debug("Going to execute update <" + s + ">");
-        stmt.executeUpdate(s);
+        modCount = stmt.executeUpdate(s);
         s = "delete from HIVE_LOCKS where hl_txnid = " + txnid;
         LOG.debug("Going to execute update <" + s + ">");
-        stmt.executeUpdate(s);
+        modCount = stmt.executeUpdate(s);
         s = "delete from TXNS where txn_id = " + txnid;
         LOG.debug("Going to execute update <" + s + ">");
-        stmt.executeUpdate(s);
+        modCount = stmt.executeUpdate(s);
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
@@ -829,7 +834,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         /** Get the next lock id.
          * This has to be atomic with adding entries to HIVE_LOCK entries (1st add in W state) to prevent a race.
          * Suppose ID gen is a separate txn and 2 concurrent lock() methods are running.  1st one generates nl_next=7,
-         * 2nd nl_next=8.  Then 8 goes first to insert into HIVE_LOCKS and aquires the locks.  Then 7 unblocks,
+         * 2nd nl_next=8.  Then 8 goes first to insert into HIVE_LOCKS and acquires the locks.  Then 7 unblocks,
          * and add it's W locks but it won't see locks from 8 since to be 'fair' {@link #checkLock(java.sql.Connection, long)}
          * doesn't block on locks acquired later than one it's checking*/
         String s = addForUpdateClause("select nl_next from NEXT_LOCK_ID");
@@ -847,13 +852,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         stmt.executeUpdate(s);
 
         if (txnid > 0) {
-          /**DBTxnManager#acquireLocks() knows if it's I/U/D (that's how it decides what lock to get)
-           * So if we add that to LockRequest we'll know that here 
-           * Should probably add it to LockComponent so that if in the future we decide wo allow 1 LockRequest
-           * to contain LockComponent for multiple operations.
-           * Deriving it from lock info doesn't distinguish between Update and Delete
-           * 
-           * QueryPlan has BaseSemanticAnalyzer which has acidFileSinks list of FileSinkDesc
+          /**
+           * todo QueryPlan has BaseSemanticAnalyzer which has acidFileSinks list of FileSinkDesc
            * FileSinkDesc.table is ql.metadata.Table
            * Table.tableSpec which is TableSpec, which has specType which is SpecType
            * So maybe this can work to know that this is part of dynamic partition insert in which case
@@ -862,8 +862,35 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
            */
           // For each component in this lock request,
           // add an entry to the txn_components table
-          // This must be done before HIVE_LOCKS is accessed
           for (LockComponent lc : rqst.getComponent()) {
+            if(lc.isSetIsAcid() && !lc.isIsAcid()) {
+              //we don't prevent using non-acid resources in a txn but we do lock them
+              continue;
+            }
+            boolean updateTxnComponents;
+            if(!lc.isSetOperationType()) {
+              //request came from old version of the client
+              updateTxnComponents = true;//this matches old behavior
+            }
+            else {
+              switch (lc.getOperationType()) {
+                case INSERT:
+                case UPDATE:
+                case DELETE:
+                  updateTxnComponents = true;
+                  break;
+                case SELECT:
+                  updateTxnComponents = false;
+                  break;
+                default:
+                  //since we have an open transaction, only 4 values above are expected 
+                  throw new IllegalStateException("Unexpected DataOperationType: " + lc.getOperationType()
+                    + " agentInfo=" + rqst.getAgentInfo() + " " + JavaUtils.txnIdToString(txnid));
+              }
+            }
+            if(!updateTxnComponents) {
+              continue;
+            }
             String dbName = lc.getDbname();
             String tblName = lc.getTablename();
             String partName = lc.getPartitionname();
@@ -872,14 +899,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               "values (" + txnid + ", '" + dbName + "', " +
               (tblName == null ? "null" : "'" + tblName + "'") + ", " +
               (partName == null ? "null" : "'" + partName + "'")+ "," +
-              quoteString(OpertaionType.fromLockType(lc.getType()).toString()) + ")";
+              quoteString(OpertaionType.fromDataOperationType(lc.getOperationType()).toString()) + ")";
             LOG.debug("Going to execute update <" + s + ">");
-            stmt.executeUpdate(s);
+            int modCount = stmt.executeUpdate(s);
           }
         }
 
         long intLockId = 0;
         for (LockComponent lc : rqst.getComponent()) {
+          if(lc.isSetOperationType() && lc.getOperationType() == DataOperationType.UNSET) {
+            //old version of thrift client should have (lc.isSetOperationType() == false)
+            throw new IllegalStateException("Bug: operationType=" + lc.getOperationType() + " for component "
+              + lc + " agentInfo=" + rqst.getAgentInfo());
+          }
           intLockId++;
           String dbName = lc.getDbname();
           String tblName = lc.getTablename();
@@ -1454,21 +1486,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           ensureValidTxn(dbConn, rqst.getTxnid(), stmt);
           shouldNeverHappen(rqst.getTxnid());
         }
-        //we should be able to get this from AddDynamicPartitions object longer term; in fact we'd have to
-        //for multi stmt txns if same table is written more than once per tx
-        // MoveTask knows if it's I/U/D
-        // MoveTask calls Hive.loadDynamicPartitions() which calls HiveMetaStoreClient.addDynamicPartitions()
-        // which ends up here so we'd need to add a field to AddDynamicPartitions.
-        String findOperationType = " tc_operation_type from TXN_COMPONENTS where tc_txnid=" + rqst.getTxnid()
-          + " and tc_database=" + quoteString(rqst.getDbname()) + " and tc_table=" + quoteString(rqst.getTablename());
-        //do limit 1 on this; currently they will all have the same operations
-        rs = stmt.executeQuery(addLimitClause(1, findOperationType));
-        if(!rs.next()) {
-          throw new IllegalStateException("Unable to determine tc_operation_type for " + JavaUtils.txnIdToString(rqst.getTxnid()));
+        //for RU this may be null so we should default it to 'u' which is most restrictive
+        OpertaionType ot = OpertaionType.UPDATE;
+        if(rqst.isSetOperationType()) {
+          ot = OpertaionType.fromDataOperationType(rqst.getOperationType());
         }
-        OpertaionType ot = OpertaionType.fromString(rs.getString(1).charAt(0));
         
-        //what if a txn writes the same table > 1 time... let's go with this for now, but really
+        //what if a txn writes the same table > 1 time...(HIVE-9675) let's go with this for now, but really
         //need to not write this in the first place, i.e. make this delete not needed
         //see enqueueLockWithRetry() - that's where we write to TXN_COMPONENTS
         String deleteSql = "delete from TXN_COMPONENTS where tc_txnid=" + rqst.getTxnid() + " and tc_database=" +
@@ -1477,14 +1501,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         //much "wider" than necessary in a lot of cases.  Here on the other hand, we know exactly which
         //partitions have been written to.  w/o this WRITE_SET would contain entries for partitions not actually
         //written to
-        stmt.executeUpdate(deleteSql);
+        int modCount = stmt.executeUpdate(deleteSql);
         for (String partName : rqst.getPartitionnames()) {
           String s =
             "insert into TXN_COMPONENTS (tc_txnid, tc_database, tc_table, tc_partition, tc_operation_type) values (" +
               rqst.getTxnid() + "," + quoteString(rqst.getDbname()) + "," + quoteString(rqst.getTablename()) +
               "," + quoteString(partName) + "," + quoteChar(ot.sqlConst) + ")";
           LOG.debug("Going to execute update <" + s + ">");
-          stmt.executeUpdate(s);
+          modCount = stmt.executeUpdate(s);
         }
         LOG.debug("Going to commit");
         dbConn.commit();
@@ -1504,8 +1528,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   /**
-   * Clean up corresponding records in metastore tables, specifically:
-   * TXN_COMPONENTS, COMPLETED_TXN_COMPONENTS, COMPACTION_QUEUE, COMPLETED_COMPACTIONS
+   * Clean up corresponding records in metastore tables when corresponding object is dropped,
+   * specifically: TXN_COMPONENTS, COMPLETED_TXN_COMPONENTS, COMPACTION_QUEUE, COMPLETED_COMPACTIONS
    */
   @Override
   public void cleanupRecords(HiveObjectType type, Database db, Table table,

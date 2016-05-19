@@ -208,6 +208,7 @@ public class TestCleaner extends CompactorTest {
 
     LockComponent comp = new LockComponent(LockType.SHARED_READ, LockLevel.TABLE, "default");
     comp.setTablename("bblt");
+    comp.setOperationType(DataOperationType.SELECT);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -246,6 +247,7 @@ public class TestCleaner extends CompactorTest {
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
     comp.setTablename("bblp");
     comp.setPartitionname("ds=today");
+    comp.setOperationType(DataOperationType.DELETE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -288,6 +290,7 @@ public class TestCleaner extends CompactorTest {
 
     LockComponent comp = new LockComponent(LockType.SHARED_READ, LockLevel.TABLE, "default");
     comp.setTablename("bblt");
+    comp.setOperationType(DataOperationType.INSERT);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -311,6 +314,7 @@ public class TestCleaner extends CompactorTest {
     // clean request
     LockComponent comp2 = new LockComponent(LockType.SHARED_READ, LockLevel.TABLE, "default");
     comp2.setTablename("bblt");
+    comp.setOperationType(DataOperationType.SELECT);
     List<LockComponent> components2 = new ArrayList<LockComponent>(1);
     components2.add(comp2);
     LockRequest req2 = new LockRequest(components, "me", "localhost");
@@ -360,6 +364,7 @@ public class TestCleaner extends CompactorTest {
     LockComponent comp = new LockComponent(LockType.SHARED_READ, LockLevel.PARTITION, "default");
     comp.setTablename("bblt");
     comp.setPartitionname("ds=today");
+    comp.setOperationType(DataOperationType.INSERT);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -385,6 +390,7 @@ public class TestCleaner extends CompactorTest {
     LockComponent comp2 = new LockComponent(LockType.SHARED_READ, LockLevel.PARTITION, "default");
     comp2.setTablename("bblt");
     comp2.setPartitionname("ds=today");
+    comp.setOperationType(DataOperationType.SELECT);
     List<LockComponent> components2 = new ArrayList<LockComponent>(1);
     components2.add(comp2);
     LockRequest req2 = new LockRequest(components, "me", "localhost");

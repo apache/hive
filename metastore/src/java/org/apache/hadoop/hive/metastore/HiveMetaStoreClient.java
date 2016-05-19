@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
@@ -1958,10 +1959,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return client.show_compact(new ShowCompactRequest());
   }
 
+  @Deprecated
   @Override
   public void addDynamicPartitions(long txnId, String dbName, String tableName,
                                    List<String> partNames) throws TException {
     client.add_dynamic_partitions(new AddDynamicPartitions(txnId, dbName, tableName, partNames));
+  }  
+  @Override
+  public void addDynamicPartitions(long txnId, String dbName, String tableName,
+                                   List<String> partNames, DataOperationType operationType) throws TException {
+    AddDynamicPartitions adp = new AddDynamicPartitions(txnId, dbName, tableName, partNames);
+    adp.setOperationType(operationType);
+    client.add_dynamic_partitions(adp);
   }
 
   @InterfaceAudience.LimitedPrivate({"HCatalog"})

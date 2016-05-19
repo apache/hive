@@ -35,10 +35,19 @@ public class LockRequestBuilder {
   private LockTrie trie;
   private boolean userSet;
 
+  /**
+   * @deprecated 
+   */
   public LockRequestBuilder() {
+    this(null);
+  }
+  public LockRequestBuilder(String agentInfo) {
     req = new LockRequest();
     trie = new LockTrie();
     userSet = false;
+    if(agentInfo != null) {
+      req.setAgentInfo(agentInfo);
+    }
   }
 
   /**

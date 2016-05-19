@@ -28,12 +28,11 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.OutputFormat;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -219,7 +218,20 @@ public class AcidUtils {
     return result;
   }
 
-  public enum Operation { NOT_ACID, INSERT, UPDATE, DELETE }
+  public enum Operation {
+    NOT_ACID(DataOperationType.UNSET),
+    INSERT(DataOperationType.INSERT),
+    UPDATE(DataOperationType.UPDATE),
+    DELETE(DataOperationType.DELETE);
+    
+    private final DataOperationType dop;
+    private Operation(DataOperationType dop) {
+      this.dop = dop;
+    }
+    public DataOperationType toDataOperationType() {
+      return dop;
+    }
+  }
 
   public static interface Directory {
 

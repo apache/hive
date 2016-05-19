@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.FireEventResponse;
@@ -61,7 +62,6 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
@@ -1402,6 +1402,12 @@ public interface IMetaStoreClient {
   ShowCompactResponse showCompactions() throws TException;
 
   /**
+   * @deprecated in Hive 1.3.0/2.1.0 - will be removed in 2 releases
+   */
+  @Deprecated
+  void addDynamicPartitions(long txnId, String dbName, String tableName, List<String> partNames)
+    throws TException;
+  /**
    * Send a list of partitions to the metastore to indicate which partitions were loaded
    * dynamically.
    * @param txnId id of the transaction
@@ -1410,7 +1416,8 @@ public interface IMetaStoreClient {
    * @param partNames partition name, as constructed by Warehouse.makePartName
    * @throws TException
    */
-  void addDynamicPartitions(long txnId, String dbName, String tableName, List<String> partNames)
+  void addDynamicPartitions(long txnId, String dbName, String tableName, List<String> partNames,
+                            DataOperationType operationType)
     throws TException;
 
   /**

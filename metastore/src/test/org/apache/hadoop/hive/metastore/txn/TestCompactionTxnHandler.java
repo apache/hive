@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.log4j.Level;
@@ -270,12 +268,14 @@ public class TestCompactionTxnHandler {
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB,
         "mydb");
     comp.setTablename("mytable");
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB,
         "mydb");
     comp.setTablename("yourtable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.UPDATE);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
@@ -306,6 +306,7 @@ public class TestCompactionTxnHandler {
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB,
         "mydb");
     comp.setTablename("mytable");
+    comp.setOperationType(DataOperationType.INSERT);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -317,6 +318,7 @@ public class TestCompactionTxnHandler {
     txnid = openTxn();
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("yourtable");
+    comp.setOperationType(DataOperationType.DELETE);
     components = new ArrayList<LockComponent>(1);
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -329,6 +331,7 @@ public class TestCompactionTxnHandler {
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("foo");
     comp.setPartitionname("bar");
+    comp.setOperationType(DataOperationType.UPDATE);
     components = new ArrayList<LockComponent>(1);
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -339,6 +342,7 @@ public class TestCompactionTxnHandler {
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("foo");
     comp.setPartitionname("baz");
+    comp.setOperationType(DataOperationType.UPDATE);
     components = new ArrayList<LockComponent>(1);
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -395,13 +399,17 @@ public class TestCompactionTxnHandler {
     // lock a table, as in dynamic partitions
     LockComponent lc = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, dbName);
     lc.setTablename(tableName);
+    DataOperationType dop = DataOperationType.UPDATE; 
+    lc.setOperationType(dop);
     LockRequest lr = new LockRequest(Arrays.asList(lc), "me", "localhost");
     lr.setTxnid(txnId);
     LockResponse lock = txnHandler.lock(lr);
     assertEquals(LockState.ACQUIRED, lock.getState());
 
-    txnHandler.addDynamicPartitions(new AddDynamicPartitions(txnId, dbName, tableName,
-        Arrays.asList("ds=yesterday", "ds=today")));
+    AddDynamicPartitions adp = new AddDynamicPartitions(txnId, dbName, tableName,
+      Arrays.asList("ds=yesterday", "ds=today"));
+    adp.setOperationType(dop);
+    txnHandler.addDynamicPartitions(adp);
     txnHandler.commitTxn(new CommitTxnRequest(txnId));
 
     Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(1000);

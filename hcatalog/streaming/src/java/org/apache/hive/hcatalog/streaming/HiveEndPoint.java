@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
@@ -964,7 +965,8 @@ public class HiveEndPoint {
       LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
               .setDbName(hiveEndPoint.database)
               .setTableName(hiveEndPoint.table)
-              .setShared();
+              .setShared()
+              .setOperationType(DataOperationType.INSERT);
       if (partNameForLock!=null && !partNameForLock.isEmpty() ) {
           lockCompBuilder.setPartitionName(partNameForLock);
       }

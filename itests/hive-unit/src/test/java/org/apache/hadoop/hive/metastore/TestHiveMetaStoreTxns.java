@@ -21,6 +21,7 @@ import junit.framework.Assert;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
@@ -151,14 +152,17 @@ public class TestHiveMetaStoreTxns {
         .setTableName("mytable")
         .setPartitionName("mypartition")
         .setExclusive()
+        .setOperationType(DataOperationType.NO_TXN)
         .build());
     rqstBuilder.addLockComponent(new LockComponentBuilder()
         .setDbName("mydb")
         .setTableName("yourtable")
         .setSemiShared()
+        .setOperationType(DataOperationType.NO_TXN)
         .build());
     rqstBuilder.addLockComponent(new LockComponentBuilder()
         .setDbName("yourdb")
+        .setOperationType(DataOperationType.NO_TXN)
         .setShared()
         .build());
     rqstBuilder.setUser("fred");
@@ -187,15 +191,18 @@ public class TestHiveMetaStoreTxns {
         .setTableName("mytable")
         .setPartitionName("mypartition")
         .setSemiShared()
+        .setOperationType(DataOperationType.UPDATE)
         .build())
       .addLockComponent(new LockComponentBuilder()
         .setDbName("mydb")
         .setTableName("yourtable")
         .setSemiShared()
+        .setOperationType(DataOperationType.UPDATE)
         .build())
       .addLockComponent(new LockComponentBuilder()
         .setDbName("yourdb")
         .setShared()
+        .setOperationType(DataOperationType.SELECT)
         .build())
       .setUser("fred");
 
