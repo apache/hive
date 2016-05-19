@@ -1681,14 +1681,14 @@ public class Vectorizer implements PhysicalPlanResolver {
     if (desc.getChildren() != null) {
       if (isInExpression
           && desc.getChildren().get(0).getTypeInfo().getCategory() == Category.STRUCT) {
-        // Don't restrict child expressions for projection. 
+        // Don't restrict child expressions for projection.
         // Always use loose FILTER mode.
         if (!validateStructInExpression(desc, VectorExpressionDescriptor.Mode.FILTER)) {
           return false;
         }
       } else {
         for (ExprNodeDesc d : desc.getChildren()) {
-          // Don't restrict child expressions for projection. 
+          // Don't restrict child expressions for projection.
           // Always use loose FILTER mode.
           if (!validateExprNodeDescRecursive(d, VectorExpressionDescriptor.Mode.FILTER)) {
             return false;
@@ -1754,10 +1754,16 @@ public class Vectorizer implements PhysicalPlanResolver {
         return false;
       }
     } catch (Exception e) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Failed to vectorize", e);
+      if (e instanceof HiveException) {
+        LOG.info(e.getMessage());
+      } else {
+        if (LOG.isDebugEnabled()) {
+          // Show stack trace.
+          LOG.debug("Failed to vectorize", e);
+        } else {
+          LOG.info("Failed to vectorize", e.getMessage());
+        }
       }
-
       return false;
     }
     return true;
@@ -2219,7 +2225,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     if (keySerializerClass != org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe.class) {
       return false;
     }
- 
+
     TableDesc valueTableDesc = desc.getValueSerializeInfo();
     Class<? extends Deserializer> valueDeserializerClass = valueTableDesc.getDeserializerClass();
     if (valueDeserializerClass != org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe.class) {
@@ -2278,7 +2284,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     } else {
       reduceSinkValueExpressions = reduceSinkValueExpressionsList.toArray(new VectorExpression[0]);
     }
- 
+
     vectorReduceSinkInfo.setReduceSinkKeyColumnMap(reduceSinkKeyColumnMap);
     vectorReduceSinkInfo.setReduceSinkKeyTypeInfos(reduceSinkKeyTypeInfos);
     vectorReduceSinkInfo.setReduceSinkKeyColumnVectorTypes(reduceSinkKeyColumnVectorTypes);
@@ -2333,7 +2339,7 @@ public class Vectorizer implements PhysicalPlanResolver {
           }
         }
         break;
-      
+
       case REDUCESINK:
         {
           VectorReduceSinkInfo vectorReduceSinkInfo = new VectorReduceSinkInfo();

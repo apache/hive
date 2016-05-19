@@ -135,6 +135,12 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append(genericUDF.getClass().getSimpleName());
+    if (genericUDF instanceof GenericUDFBridge) {
+      GenericUDFBridge genericUDFBridge = (GenericUDFBridge) genericUDF;
+      sb.append(" ==> ");
+      sb.append(genericUDFBridge.getUdfName());
+      sb.append(" ");
+    }
     sb.append("(");
     if (chidren != null) {
       for (int i = 0; i < chidren.size(); i++) {

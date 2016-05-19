@@ -1,12 +1,18 @@
 PREHOOK: query: -- SORT_QUERY_RESULTS
-
+--
+-- The following WILL NOT BE ABLE TO USE the VectorUDFAdaptor to GenericUDFBetween
+-- because the mode = FILTER is not supported yet.
+--
 create table if not exists TSINT_txt ( RNUM int , CSINT smallint )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@TSINT_txt
 POSTHOOK: query: -- SORT_QUERY_RESULTS
-
+--
+-- The following WILL NOT BE ABLE TO USE the VectorUDFAdaptor to GenericUDFBetween
+-- because the mode = FILTER is not supported yet.
+--
 create table if not exists TSINT_txt ( RNUM int , CSINT smallint )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 POSTHOOK: type: CREATETABLE
@@ -65,15 +71,11 @@ POSTHOOK: Lineage: tint.cint SIMPLE [(tint_txt)tint_txt.FieldSchema(name:cint, t
 POSTHOOK: Lineage: tint.rnum SIMPLE [(tint_txt)tint_txt.FieldSchema(name:rnum, type:int, comment:null), ]
 tint_txt.rnum	tint_txt.cint
 Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
-PREHOOK: query: -- We DO NOT expect the following to vectorized because the BETWEEN range expressions
--- are not constants.  We currently do not support the range expressions being columns.
-explain
-select tint.rnum, tsint.rnum from tint , tsint where tint.cint between tsint.csint and tsint.csint
+PREHOOK: query: explain
+select tint.rnum, tsint.rnum, tint.cint, tsint.csint from tint , tsint where tint.cint between tsint.csint and tsint.csint
 PREHOOK: type: QUERY
-POSTHOOK: query: -- We DO NOT expect the following to vectorized because the BETWEEN range expressions
--- are not constants.  We currently do not support the range expressions being columns.
-explain
-select tint.rnum, tsint.rnum from tint , tsint where tint.cint between tsint.csint and tsint.csint
+POSTHOOK: query: explain
+select tint.rnum, tsint.rnum, tint.cint, tsint.csint from tint , tsint where tint.cint between tsint.csint and tsint.csint
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -124,8 +126,8 @@ STAGE PLANS:
                   predicate: _col1 BETWEEN _col3 AND _col3 (type: boolean)
                   Statistics: Num rows: 2 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: _col0 (type: int), _col2 (type: int)
-                    outputColumnNames: _col0, _col1
+                    expressions: _col0 (type: int), _col2 (type: int), _col1 (type: int), _col3 (type: smallint)
+                    outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 2 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -144,18 +146,18 @@ STAGE PLANS:
         ListSink
 
 Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
-PREHOOK: query: select tint.rnum, tsint.rnum from tint , tsint where tint.cint between tsint.csint and tsint.csint
+PREHOOK: query: select tint.rnum, tsint.rnum, tint.cint, tsint.csint from tint , tsint where tint.cint between tsint.csint and tsint.csint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tint
 PREHOOK: Input: default@tsint
 #### A masked pattern was here ####
-POSTHOOK: query: select tint.rnum, tsint.rnum from tint , tsint where tint.cint between tsint.csint and tsint.csint
+POSTHOOK: query: select tint.rnum, tsint.rnum, tint.cint, tsint.csint from tint , tsint where tint.cint between tsint.csint and tsint.csint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tint
 POSTHOOK: Input: default@tsint
 #### A masked pattern was here ####
-tint.rnum	tsint.rnum
-1	1
-2	2
-3	3
-4	4
+tint.rnum	tsint.rnum	tint.cint	tsint.csint
+1	1	-1	-1
+2	2	0	0
+3	3	1	1
+4	4	10	10
