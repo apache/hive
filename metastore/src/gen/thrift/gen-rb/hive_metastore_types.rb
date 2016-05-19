@@ -79,6 +79,17 @@ module GrantRevokeType
   VALID_VALUES = Set.new([GRANT, REVOKE]).freeze
 end
 
+module DataOperationType
+  SELECT = 1
+  INSERT = 2
+  UPDATE = 3
+  DELETE = 4
+  UNSET = 5
+  NO_TXN = 6
+  VALUE_MAP = {1 => "SELECT", 2 => "INSERT", 3 => "UPDATE", 4 => "DELETE", 5 => "UNSET", 6 => "NO_TXN"}
+  VALID_VALUES = Set.new([SELECT, INSERT, UPDATE, DELETE, UNSET, NO_TXN]).freeze
+end
+
 module EventRequestType
   INSERT = 1
   UPDATE = 2
@@ -1948,13 +1959,17 @@ class LockComponent
   DBNAME = 3
   TABLENAME = 4
   PARTITIONNAME = 5
+  OPERATIONTYPE = 6
+  ISACID = 7
 
   FIELDS = {
     TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::LockType},
     LEVEL => {:type => ::Thrift::Types::I32, :name => 'level', :enum_class => ::LockLevel},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename', :optional => true},
-    PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true}
+    PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
+    OPERATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'operationType', :default =>     5, :optional => true, :enum_class => ::DataOperationType},
+    ISACID => {:type => ::Thrift::Types::BOOL, :name => 'isAcid', :default => false, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1968,6 +1983,9 @@ class LockComponent
     end
     unless @level.nil? || ::LockLevel::VALID_VALUES.include?(@level)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field level!')
+    end
+    unless @operationType.nil? || ::DataOperationType::VALID_VALUES.include?(@operationType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field operationType!')
     end
   end
 
@@ -2330,12 +2348,14 @@ class AddDynamicPartitions
   DBNAME = 2
   TABLENAME = 3
   PARTITIONNAMES = 4
+  OPERATIONTYPE = 5
 
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename'},
-    PARTITIONNAMES => {:type => ::Thrift::Types::LIST, :name => 'partitionnames', :element => {:type => ::Thrift::Types::STRING}}
+    PARTITIONNAMES => {:type => ::Thrift::Types::LIST, :name => 'partitionnames', :element => {:type => ::Thrift::Types::STRING}},
+    OPERATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'operationType', :default =>     5, :optional => true, :enum_class => ::DataOperationType}
   }
 
   def struct_fields; FIELDS; end
@@ -2345,6 +2365,9 @@ class AddDynamicPartitions
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbname is unset!') unless @dbname
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tablename is unset!') unless @tablename
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partitionnames is unset!') unless @partitionnames
+    unless @operationType.nil? || ::DataOperationType::VALID_VALUES.include?(@operationType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field operationType!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self

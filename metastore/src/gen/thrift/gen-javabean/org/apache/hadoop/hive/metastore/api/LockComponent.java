@@ -43,6 +43,8 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
   private static final org.apache.thrift.protocol.TField DBNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbname", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField TABLENAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tablename", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField PARTITIONNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionname", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField OPERATION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("operationType", org.apache.thrift.protocol.TType.I32, (short)6);
+  private static final org.apache.thrift.protocol.TField IS_ACID_FIELD_DESC = new org.apache.thrift.protocol.TField("isAcid", org.apache.thrift.protocol.TType.BOOL, (short)7);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -55,6 +57,8 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
   private String dbname; // required
   private String tablename; // optional
   private String partitionname; // optional
+  private DataOperationType operationType; // optional
+  private boolean isAcid; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -70,7 +74,13 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
     LEVEL((short)2, "level"),
     DBNAME((short)3, "dbname"),
     TABLENAME((short)4, "tablename"),
-    PARTITIONNAME((short)5, "partitionname");
+    PARTITIONNAME((short)5, "partitionname"),
+    /**
+     * 
+     * @see DataOperationType
+     */
+    OPERATION_TYPE((short)6, "operationType"),
+    IS_ACID((short)7, "isAcid");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -95,6 +105,10 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
           return TABLENAME;
         case 5: // PARTITIONNAME
           return PARTITIONNAME;
+        case 6: // OPERATION_TYPE
+          return OPERATION_TYPE;
+        case 7: // IS_ACID
+          return IS_ACID;
         default:
           return null;
       }
@@ -135,7 +149,9 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.TABLENAME,_Fields.PARTITIONNAME};
+  private static final int __ISACID_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.TABLENAME,_Fields.PARTITIONNAME,_Fields.OPERATION_TYPE,_Fields.IS_ACID};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -149,11 +165,19 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.PARTITIONNAME, new org.apache.thrift.meta_data.FieldMetaData("partitionname", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.OPERATION_TYPE, new org.apache.thrift.meta_data.FieldMetaData("operationType", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, DataOperationType.class)));
+    tmpMap.put(_Fields.IS_ACID, new org.apache.thrift.meta_data.FieldMetaData("isAcid", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LockComponent.class, metaDataMap);
   }
 
   public LockComponent() {
+    this.operationType = org.apache.hadoop.hive.metastore.api.DataOperationType.UNSET;
+
+    this.isAcid = false;
+
   }
 
   public LockComponent(
@@ -171,6 +195,7 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
    * Performs a deep copy on <i>other</i>.
    */
   public LockComponent(LockComponent other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetType()) {
       this.type = other.type;
     }
@@ -186,6 +211,10 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
     if (other.isSetPartitionname()) {
       this.partitionname = other.partitionname;
     }
+    if (other.isSetOperationType()) {
+      this.operationType = other.operationType;
+    }
+    this.isAcid = other.isAcid;
   }
 
   public LockComponent deepCopy() {
@@ -199,6 +228,10 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
     this.dbname = null;
     this.tablename = null;
     this.partitionname = null;
+    this.operationType = org.apache.hadoop.hive.metastore.api.DataOperationType.UNSET;
+
+    this.isAcid = false;
+
   }
 
   /**
@@ -332,6 +365,59 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
     }
   }
 
+  /**
+   * 
+   * @see DataOperationType
+   */
+  public DataOperationType getOperationType() {
+    return this.operationType;
+  }
+
+  /**
+   * 
+   * @see DataOperationType
+   */
+  public void setOperationType(DataOperationType operationType) {
+    this.operationType = operationType;
+  }
+
+  public void unsetOperationType() {
+    this.operationType = null;
+  }
+
+  /** Returns true if field operationType is set (has been assigned a value) and false otherwise */
+  public boolean isSetOperationType() {
+    return this.operationType != null;
+  }
+
+  public void setOperationTypeIsSet(boolean value) {
+    if (!value) {
+      this.operationType = null;
+    }
+  }
+
+  public boolean isIsAcid() {
+    return this.isAcid;
+  }
+
+  public void setIsAcid(boolean isAcid) {
+    this.isAcid = isAcid;
+    setIsAcidIsSet(true);
+  }
+
+  public void unsetIsAcid() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ISACID_ISSET_ID);
+  }
+
+  /** Returns true if field isAcid is set (has been assigned a value) and false otherwise */
+  public boolean isSetIsAcid() {
+    return EncodingUtils.testBit(__isset_bitfield, __ISACID_ISSET_ID);
+  }
+
+  public void setIsAcidIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISACID_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TYPE:
@@ -374,6 +460,22 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
       }
       break;
 
+    case OPERATION_TYPE:
+      if (value == null) {
+        unsetOperationType();
+      } else {
+        setOperationType((DataOperationType)value);
+      }
+      break;
+
+    case IS_ACID:
+      if (value == null) {
+        unsetIsAcid();
+      } else {
+        setIsAcid((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -393,6 +495,12 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
 
     case PARTITIONNAME:
       return getPartitionname();
+
+    case OPERATION_TYPE:
+      return getOperationType();
+
+    case IS_ACID:
+      return isIsAcid();
 
     }
     throw new IllegalStateException();
@@ -415,6 +523,10 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
       return isSetTablename();
     case PARTITIONNAME:
       return isSetPartitionname();
+    case OPERATION_TYPE:
+      return isSetOperationType();
+    case IS_ACID:
+      return isSetIsAcid();
     }
     throw new IllegalStateException();
   }
@@ -477,6 +589,24 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
         return false;
     }
 
+    boolean this_present_operationType = true && this.isSetOperationType();
+    boolean that_present_operationType = true && that.isSetOperationType();
+    if (this_present_operationType || that_present_operationType) {
+      if (!(this_present_operationType && that_present_operationType))
+        return false;
+      if (!this.operationType.equals(that.operationType))
+        return false;
+    }
+
+    boolean this_present_isAcid = true && this.isSetIsAcid();
+    boolean that_present_isAcid = true && that.isSetIsAcid();
+    if (this_present_isAcid || that_present_isAcid) {
+      if (!(this_present_isAcid && that_present_isAcid))
+        return false;
+      if (this.isAcid != that.isAcid)
+        return false;
+    }
+
     return true;
   }
 
@@ -508,6 +638,16 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
     list.add(present_partitionname);
     if (present_partitionname)
       list.add(partitionname);
+
+    boolean present_operationType = true && (isSetOperationType());
+    list.add(present_operationType);
+    if (present_operationType)
+      list.add(operationType.getValue());
+
+    boolean present_isAcid = true && (isSetIsAcid());
+    list.add(present_isAcid);
+    if (present_isAcid)
+      list.add(isAcid);
 
     return list.hashCode();
   }
@@ -566,6 +706,26 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
     }
     if (isSetPartitionname()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.partitionname, other.partitionname);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetOperationType()).compareTo(other.isSetOperationType());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetOperationType()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.operationType, other.operationType);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetIsAcid()).compareTo(other.isSetIsAcid());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetIsAcid()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isAcid, other.isAcid);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -633,6 +793,22 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
       }
       first = false;
     }
+    if (isSetOperationType()) {
+      if (!first) sb.append(", ");
+      sb.append("operationType:");
+      if (this.operationType == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.operationType);
+      }
+      first = false;
+    }
+    if (isSetIsAcid()) {
+      if (!first) sb.append(", ");
+      sb.append("isAcid:");
+      sb.append(this.isAcid);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -664,6 +840,8 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -728,6 +906,22 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // OPERATION_TYPE
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.operationType = org.apache.hadoop.hive.metastore.api.DataOperationType.findByValue(iprot.readI32());
+              struct.setOperationTypeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 7: // IS_ACID
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.isAcid = iprot.readBool();
+              struct.setIsAcidIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -770,6 +964,18 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
           oprot.writeFieldEnd();
         }
       }
+      if (struct.operationType != null) {
+        if (struct.isSetOperationType()) {
+          oprot.writeFieldBegin(OPERATION_TYPE_FIELD_DESC);
+          oprot.writeI32(struct.operationType.getValue());
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.isSetIsAcid()) {
+        oprot.writeFieldBegin(IS_ACID_FIELD_DESC);
+        oprot.writeBool(struct.isAcid);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -797,12 +1003,24 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
       if (struct.isSetPartitionname()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetOperationType()) {
+        optionals.set(2);
+      }
+      if (struct.isSetIsAcid()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetTablename()) {
         oprot.writeString(struct.tablename);
       }
       if (struct.isSetPartitionname()) {
         oprot.writeString(struct.partitionname);
+      }
+      if (struct.isSetOperationType()) {
+        oprot.writeI32(struct.operationType.getValue());
+      }
+      if (struct.isSetIsAcid()) {
+        oprot.writeBool(struct.isAcid);
       }
     }
 
@@ -815,7 +1033,7 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
       struct.setLevelIsSet(true);
       struct.dbname = iprot.readString();
       struct.setDbnameIsSet(true);
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.tablename = iprot.readString();
         struct.setTablenameIsSet(true);
@@ -823,6 +1041,14 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
       if (incoming.get(1)) {
         struct.partitionname = iprot.readString();
         struct.setPartitionnameIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.operationType = org.apache.hadoop.hive.metastore.api.DataOperationType.findByValue(iprot.readI32());
+        struct.setOperationTypeIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.isAcid = iprot.readBool();
+        struct.setIsAcidIsSet(true);
       }
     }
   }

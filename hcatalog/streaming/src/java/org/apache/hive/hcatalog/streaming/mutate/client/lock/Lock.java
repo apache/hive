@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
@@ -178,10 +179,12 @@ public class Lock {
     for (Table table : tables) {
       LockComponentBuilder componentBuilder = new LockComponentBuilder().setDbName(table.getDbName()).setTableName(
           table.getTableName());
+      //todo: DataOperationType is set conservatively here, we'd really want to distinguish update/delete
+      //and insert/select and if resource (that is written to) is ACID or not
       if (sinks.contains(table)) {
-        componentBuilder.setSemiShared();
+        componentBuilder.setSemiShared().setOperationType(DataOperationType.UPDATE).setIsAcid(true);
       } else {
-        componentBuilder.setShared();
+        componentBuilder.setShared().setOperationType(DataOperationType.INSERT).setIsAcid(true);
       }
       LockComponent component = componentBuilder.build();
       requestBuilder.addLockComponent(component);

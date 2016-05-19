@@ -162,7 +162,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
 
     boolean atLeastOneLock = false;
 
-    LockRequestBuilder rqstBuilder = new LockRequestBuilder();
+    LockRequestBuilder rqstBuilder = new LockRequestBuilder(plan.getQueryId());
     //link queryId to txnId
     LOG.info("Setting lock request transaction to " + JavaUtils.txnIdToString(txnId) + " for queryId=" + plan.getQueryId());
     rqstBuilder.setTransactionId(txnId)
@@ -178,6 +178,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
       }
       LockComponentBuilder compBuilder = new LockComponentBuilder();
       compBuilder.setShared();
+      compBuilder.setOperationType(DataOperationType.SELECT);
 
       Table t = null;
       switch (input.getType()) {
@@ -203,6 +204,9 @@ public class DbTxnManager extends HiveTxnManagerImpl {
           // This is a file or something we don't hold locks for.
           continue;
       }
+      if(t != null && AcidUtils.isAcidTable(t)) {
+        compBuilder.setIsAcid(true);
+      }
       LockComponent comp = compBuilder.build();
       LOG.debug("Adding lock component to lock request " + comp.toString());
       rqstBuilder.addLockComponent(comp);
@@ -226,27 +230,35 @@ public class DbTxnManager extends HiveTxnManagerImpl {
         case DDL_EXCLUSIVE:
         case INSERT_OVERWRITE:
           compBuilder.setExclusive();
+          compBuilder.setOperationType(DataOperationType.NO_TXN);
           break;
 
         case INSERT:
-          t = output.getTable();
-          if(t == null) {
-            throw new IllegalStateException("No table info for " + output);
-          }
+          t = getTable(output);
           if(AcidUtils.isAcidTable(t)) {
             compBuilder.setShared();
+            compBuilder.setIsAcid(true);
           }
           else {
             compBuilder.setExclusive();
+            compBuilder.setIsAcid(false);
           }
+          compBuilder.setOperationType(DataOperationType.INSERT);
           break;
         case DDL_SHARED:
           compBuilder.setShared();
+          compBuilder.setOperationType(DataOperationType.NO_TXN);
           break;
 
         case UPDATE:
+          compBuilder.setSemiShared();
+          compBuilder.setOperationType(DataOperationType.UPDATE);
+          t = getTable(output);
+          break;
         case DELETE:
           compBuilder.setSemiShared();
+          compBuilder.setOperationType(DataOperationType.DELETE);
+          t = getTable(output);
           break;
 
         case DDL_NO_LOCK:
@@ -280,12 +292,15 @@ public class DbTxnManager extends HiveTxnManagerImpl {
           // This is a file or something we don't hold locks for.
           continue;
       }
+      if(t != null && AcidUtils.isAcidTable(t)) {
+        compBuilder.setIsAcid(true);
+      }
       LockComponent comp = compBuilder.build();
       LOG.debug("Adding lock component to lock request " + comp.toString());
       rqstBuilder.addLockComponent(comp);
       atLeastOneLock = true;
     }
-
+    //plan
     // Make sure we need locks.  It's possible there's nothing to lock in
     // this operation.
     if (!atLeastOneLock) {
@@ -300,6 +315,13 @@ public class DbTxnManager extends HiveTxnManagerImpl {
     LockState lockState = lockMgr.lock(rqstBuilder.build(), plan.getQueryId(), isBlocking, locks);
     ctx.setHiveLocks(locks);
     return lockState;
+  }
+  private static Table getTable(WriteEntity we) {
+    Table t = we.getTable();
+    if(t == null) {
+      throw new IllegalStateException("No table info for " + we);
+    }
+    return t;
   }
   /**
    * This is for testing only.

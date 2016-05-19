@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
 import org.apache.hadoop.hive.metastore.api.LockType;
@@ -70,7 +71,16 @@ public class LockComponentBuilder {
     component.setDbname(dbName);
     return this;
   }
+  
+  public LockComponentBuilder setOperationType(DataOperationType dop) {
+    component.setOperationType(dop);
+    return this;
+  }
 
+  public LockComponentBuilder setIsAcid(boolean t) {
+    component.setIsAcid(t);
+    return this;
+  }
   /**
    * Set the table name.
    * @param tableName table name

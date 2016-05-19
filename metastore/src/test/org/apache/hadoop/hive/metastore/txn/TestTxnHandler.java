@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
@@ -216,6 +217,7 @@ public class TestTxnHandler {
   public void testLockDifferentDBs() throws Exception {
     // Test that two different databases don't collide on their locks
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -223,6 +225,7 @@ public class TestTxnHandler {
     assertTrue(res.getState() == LockState.ACQUIRED);
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "yourdb");
+    comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -234,6 +237,7 @@ public class TestTxnHandler {
   public void testLockSameDB() throws Exception {
     // Test that two different databases don't collide on their locks
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -241,6 +245,7 @@ public class TestTxnHandler {
     assertTrue(res.getState() == LockState.ACQUIRED);
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
+    comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -252,6 +257,7 @@ public class TestTxnHandler {
   public void testLockDbLocksTable() throws Exception {
     // Test that locking a database prevents locking of tables in the database
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -259,6 +265,7 @@ public class TestTxnHandler {
     assertTrue(res.getState() == LockState.ACQUIRED);
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
+    comp.setOperationType(DataOperationType.NO_TXN);
     comp.setTablename("mytable");
     components.clear();
     components.add(comp);
@@ -271,6 +278,7 @@ public class TestTxnHandler {
   public void testLockDbDoesNotLockTableInDifferentDB() throws Exception {
     // Test that locking a database prevents locking of tables in the database
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -278,6 +286,7 @@ public class TestTxnHandler {
     assertTrue(res.getState() == LockState.ACQUIRED);
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "yourdb");
+    comp.setOperationType(DataOperationType.NO_TXN);
     comp.setTablename("mytable");
     components.clear();
     components.add(comp);
@@ -290,6 +299,7 @@ public class TestTxnHandler {
   public void testLockDifferentTables() throws Exception {
     // Test that two different tables don't collide on their locks
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
+    comp.setOperationType(DataOperationType.NO_TXN);
     comp.setTablename("mytable");
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -298,6 +308,7 @@ public class TestTxnHandler {
     assertTrue(res.getState() == LockState.ACQUIRED);
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
+    comp.setOperationType(DataOperationType.NO_TXN);
     comp.setTablename("yourtable");
     components.clear();
     components.add(comp);
@@ -311,6 +322,7 @@ public class TestTxnHandler {
     // Test that two different tables don't collide on their locks
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -319,6 +331,7 @@ public class TestTxnHandler {
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
+    comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -331,6 +344,7 @@ public class TestTxnHandler {
     // Test that locking a table prevents locking of partitions of the table
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -340,6 +354,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -352,6 +367,7 @@ public class TestTxnHandler {
     // Test that locking a table prevents locking of partitions of the table
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -361,6 +377,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("yourtable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -374,6 +391,7 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -383,6 +401,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("yourpartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -396,6 +415,7 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -405,6 +425,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -418,6 +439,7 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.INSERT);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -427,6 +449,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.SELECT);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -440,6 +463,7 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -449,6 +473,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.INSERT);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -458,6 +483,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.SELECT);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -471,6 +497,7 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.INSERT);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -480,6 +507,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.DELETE);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -494,6 +522,7 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -503,6 +532,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.SELECT);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -512,6 +542,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.UPDATE);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -526,6 +557,7 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.SELECT);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -535,6 +567,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -548,6 +581,7 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -557,6 +591,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.SELECT);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -566,6 +601,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -579,6 +615,7 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -589,6 +626,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.SELECT);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -602,6 +640,7 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -612,6 +651,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.DELETE);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -622,6 +662,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.INSERT);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -630,11 +671,31 @@ public class TestTxnHandler {
   }
 
   @Test
+  public void testWrongLockForOperation() throws Exception {
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
+    comp.setTablename("mytable");
+    comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
+    List<LockComponent> components = new ArrayList<LockComponent>(1);
+    components.add(comp);
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(openTxn());
+    Exception expectedError = null;
+    try {
+      LockResponse res = txnHandler.lock(req);
+    }
+    catch(Exception e) {
+      expectedError = e;
+    }
+    Assert.assertTrue(expectedError != null && expectedError.getMessage().contains("Unexpected DataOperationType"));
+  }
+  @Test
   public void testLockSWSWSW() throws Exception {
     // Test that write blocks two writes
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.DELETE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -645,6 +706,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.DELETE);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -655,6 +717,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.DELETE);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -669,6 +732,7 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -678,6 +742,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -687,6 +752,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.DELETE);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -701,6 +767,7 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -710,6 +777,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -719,6 +787,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.SELECT);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -731,6 +800,7 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.DELETE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -743,6 +813,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.UPDATE);
     components.clear();
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -772,6 +843,7 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.DELETE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -794,12 +866,14 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(2);
     components.add(comp);
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("anotherpartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
     LockResponse res = txnHandler.lock(req);
@@ -817,12 +891,14 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(2);
     components.add(comp);
 
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("anotherpartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
     LockResponse res = txnHandler.lock(req);
@@ -833,6 +909,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     components = new ArrayList<LockComponent>(1);
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -852,6 +929,7 @@ public class TestTxnHandler {
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB,  "mydb");
     comp.setTablename("mytable");
+    comp.setOperationType(DataOperationType.DELETE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -867,6 +945,7 @@ public class TestTxnHandler {
     // Test that committing unlocks
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
+    comp.setOperationType(DataOperationType.UPDATE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -886,6 +965,7 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.DELETE);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -932,6 +1012,7 @@ public class TestTxnHandler {
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
     comp.setPartitionname("mypartition");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -996,6 +1077,7 @@ public class TestTxnHandler {
       LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
       comp.setTablename("mytable");
       comp.setPartitionname("mypartition");
+      comp.setOperationType(DataOperationType.NO_TXN);
       List<LockComponent> components = new ArrayList<LockComponent>(1);
       components.add(comp);
       LockRequest req = new LockRequest(components, "me", "localhost");
@@ -1083,6 +1165,7 @@ public class TestTxnHandler {
   public void showLocks() throws Exception {
     long begining = System.currentTimeMillis();
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
+    comp.setOperationType(DataOperationType.NO_TXN);
     List<LockComponent> components = new ArrayList<LockComponent>(1);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -1092,6 +1175,7 @@ public class TestTxnHandler {
     long txnid = openTxn();
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.TABLE, "mydb");
     comp.setTablename("mytable");
+    comp.setOperationType(DataOperationType.SELECT);
     components = new ArrayList<LockComponent>(1);
     components.add(comp);
     req = new LockRequest(components, "me", "localhost");
@@ -1103,6 +1187,7 @@ public class TestTxnHandler {
     comp = new LockComponent(LockType.SHARED_READ, LockLevel.PARTITION, "yourdb");
     comp.setTablename("yourtable");
     comp.setPartitionname("yourpartition");
+    comp.setOperationType(DataOperationType.INSERT);
     components.add(comp);
     req = new LockRequest(components, "you", "remotehost");
     res = txnHandler.lock(req);

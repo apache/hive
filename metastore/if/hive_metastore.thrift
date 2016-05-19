@@ -134,6 +134,15 @@ enum GrantRevokeType {
     REVOKE = 2,
 }
 
+enum DataOperationType {
+    SELECT = 1,
+    INSERT = 2
+    UPDATE = 3,
+    DELETE = 4,
+    UNSET = 5,//this is the default to distinguish from NULL from old clients
+    NO_TXN = 6,//drop table, insert overwrite, etc - something non-transactional
+}
+
 // Types of events the client can request that the metastore fire.  For now just support DML operations, as the metastore knows
 // about DDL operations and there's no reason for the client to request such an event.
 enum EventRequestType {
@@ -657,6 +666,8 @@ struct LockComponent {
     3: required string dbname,
     4: optional string tablename,
     5: optional string partitionname,
+    6: optional DataOperationType operationType = DataOperationType.UNSET,
+    7: optional bool isAcid = false
 }
 
 struct LockRequest {
@@ -762,6 +773,7 @@ struct AddDynamicPartitions {
     2: required string dbname,
     3: required string tablename,
     4: required list<string> partitionnames,
+    5: optional DataOperationType operationType = DataOperationType.UNSET
 }
 
 struct NotificationEventRequest {

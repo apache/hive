@@ -109,6 +109,19 @@ struct GrantRevokeType {
 
 extern const std::map<int, const char*> _GrantRevokeType_VALUES_TO_NAMES;
 
+struct DataOperationType {
+  enum type {
+    SELECT = 1,
+    INSERT = 2,
+    UPDATE = 3,
+    DELETE = 4,
+    UNSET = 5,
+    NO_TXN = 6
+  };
+};
+
+extern const std::map<int, const char*> _DataOperationType_VALUES_TO_NAMES;
+
 struct EventRequestType {
   enum type {
     INSERT = 1,
@@ -5137,9 +5150,11 @@ inline std::ostream& operator<<(std::ostream& out, const CommitTxnRequest& obj)
 }
 
 typedef struct _LockComponent__isset {
-  _LockComponent__isset() : tablename(false), partitionname(false) {}
+  _LockComponent__isset() : tablename(false), partitionname(false), operationType(true), isAcid(true) {}
   bool tablename :1;
   bool partitionname :1;
+  bool operationType :1;
+  bool isAcid :1;
 } _LockComponent__isset;
 
 class LockComponent {
@@ -5147,7 +5162,9 @@ class LockComponent {
 
   LockComponent(const LockComponent&);
   LockComponent& operator=(const LockComponent&);
-  LockComponent() : type((LockType::type)0), level((LockLevel::type)0), dbname(), tablename(), partitionname() {
+  LockComponent() : type((LockType::type)0), level((LockLevel::type)0), dbname(), tablename(), partitionname(), operationType((DataOperationType::type)5), isAcid(false) {
+    operationType = (DataOperationType::type)5;
+
   }
 
   virtual ~LockComponent() throw();
@@ -5156,6 +5173,8 @@ class LockComponent {
   std::string dbname;
   std::string tablename;
   std::string partitionname;
+  DataOperationType::type operationType;
+  bool isAcid;
 
   _LockComponent__isset __isset;
 
@@ -5168,6 +5187,10 @@ class LockComponent {
   void __set_tablename(const std::string& val);
 
   void __set_partitionname(const std::string& val);
+
+  void __set_operationType(const DataOperationType::type val);
+
+  void __set_isAcid(const bool val);
 
   bool operator == (const LockComponent & rhs) const
   {
@@ -5184,6 +5207,14 @@ class LockComponent {
     if (__isset.partitionname != rhs.__isset.partitionname)
       return false;
     else if (__isset.partitionname && !(partitionname == rhs.partitionname))
+      return false;
+    if (__isset.operationType != rhs.__isset.operationType)
+      return false;
+    else if (__isset.operationType && !(operationType == rhs.operationType))
+      return false;
+    if (__isset.isAcid != rhs.__isset.isAcid)
+      return false;
+    else if (__isset.isAcid && !(isAcid == rhs.isAcid))
       return false;
     return true;
   }
@@ -6105,13 +6136,19 @@ inline std::ostream& operator<<(std::ostream& out, const ShowCompactResponse& ob
   return out;
 }
 
+typedef struct _AddDynamicPartitions__isset {
+  _AddDynamicPartitions__isset() : operationType(true) {}
+  bool operationType :1;
+} _AddDynamicPartitions__isset;
 
 class AddDynamicPartitions {
  public:
 
   AddDynamicPartitions(const AddDynamicPartitions&);
   AddDynamicPartitions& operator=(const AddDynamicPartitions&);
-  AddDynamicPartitions() : txnid(0), dbname(), tablename() {
+  AddDynamicPartitions() : txnid(0), dbname(), tablename(), operationType((DataOperationType::type)5) {
+    operationType = (DataOperationType::type)5;
+
   }
 
   virtual ~AddDynamicPartitions() throw();
@@ -6119,6 +6156,9 @@ class AddDynamicPartitions {
   std::string dbname;
   std::string tablename;
   std::vector<std::string>  partitionnames;
+  DataOperationType::type operationType;
+
+  _AddDynamicPartitions__isset __isset;
 
   void __set_txnid(const int64_t val);
 
@@ -6127,6 +6167,8 @@ class AddDynamicPartitions {
   void __set_tablename(const std::string& val);
 
   void __set_partitionnames(const std::vector<std::string> & val);
+
+  void __set_operationType(const DataOperationType::type val);
 
   bool operator == (const AddDynamicPartitions & rhs) const
   {
@@ -6137,6 +6179,10 @@ class AddDynamicPartitions {
     if (!(tablename == rhs.tablename))
       return false;
     if (!(partitionnames == rhs.partitionnames))
+      return false;
+    if (__isset.operationType != rhs.__isset.operationType)
+      return false;
+    else if (__isset.operationType && !(operationType == rhs.operationType))
       return false;
     return true;
   }

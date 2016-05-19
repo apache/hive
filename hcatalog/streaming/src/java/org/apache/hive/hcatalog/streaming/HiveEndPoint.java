@@ -19,6 +19,7 @@
 package org.apache.hive.hcatalog.streaming;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -964,7 +965,8 @@ public class HiveEndPoint {
       LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
               .setDbName(hiveEndPoint.database)
               .setTableName(hiveEndPoint.table)
-              .setShared();
+              .setShared()
+              .setOperationType(DataOperationType.INSERT);
       if (partNameForLock!=null && !partNameForLock.isEmpty() ) {
           lockCompBuilder.setPartitionName(partNameForLock);
       }

@@ -43,6 +43,7 @@ import java.util.Timer;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
@@ -174,10 +175,14 @@ public class TestLock {
 
     LockComponent expected1 = new LockComponent(LockType.SHARED_READ, LockLevel.TABLE, "DB");
     expected1.setTablename("SOURCE_1");
+    expected1.setOperationType(DataOperationType.INSERT);
+    expected1.setIsAcid(true);
     assertTrue(components.contains(expected1));
 
     LockComponent expected2 = new LockComponent(LockType.SHARED_READ, LockLevel.TABLE, "DB");
     expected2.setTablename("SOURCE_2");
+    expected2.setOperationType(DataOperationType.INSERT);
+    expected2.setIsAcid(true);
     assertTrue(components.contains(expected2));
   }
 
@@ -197,14 +202,20 @@ public class TestLock {
 
     LockComponent expected1 = new LockComponent(LockType.SHARED_READ, LockLevel.TABLE, "DB");
     expected1.setTablename("SOURCE_1");
+    expected1.setOperationType(DataOperationType.INSERT);
+    expected1.setIsAcid(true);
     assertTrue(components.contains(expected1));
 
     LockComponent expected2 = new LockComponent(LockType.SHARED_READ, LockLevel.TABLE, "DB");
     expected2.setTablename("SOURCE_2");
+    expected2.setOperationType(DataOperationType.INSERT);
+    expected2.setIsAcid(true);
     assertTrue(components.contains(expected2));
 
     LockComponent expected3 = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "DB");
     expected3.setTablename("SINK");
+    expected3.setOperationType(DataOperationType.UPDATE);
+    expected3.setIsAcid(true);
     assertTrue(components.contains(expected3));
   }
 

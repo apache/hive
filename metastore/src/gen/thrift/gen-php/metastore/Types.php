@@ -114,6 +114,23 @@ final class GrantRevokeType {
   );
 }
 
+final class DataOperationType {
+  const SELECT = 1;
+  const INSERT = 2;
+  const UPDATE = 3;
+  const DELETE = 4;
+  const UNSET = 5;
+  const NO_TXN = 6;
+  static public $__names = array(
+    1 => 'SELECT',
+    2 => 'INSERT',
+    3 => 'UPDATE',
+    4 => 'DELETE',
+    5 => 'UNSET',
+    6 => 'NO_TXN',
+  );
+}
+
 final class EventRequestType {
   const INSERT = 1;
   const UPDATE = 2;
@@ -12625,6 +12642,14 @@ class LockComponent {
    * @var string
    */
   public $partitionname = null;
+  /**
+   * @var int
+   */
+  public $operationType =   5;
+  /**
+   * @var bool
+   */
+  public $isAcid = false;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -12649,6 +12674,14 @@ class LockComponent {
           'var' => 'partitionname',
           'type' => TType::STRING,
           ),
+        6 => array(
+          'var' => 'operationType',
+          'type' => TType::I32,
+          ),
+        7 => array(
+          'var' => 'isAcid',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -12666,6 +12699,12 @@ class LockComponent {
       }
       if (isset($vals['partitionname'])) {
         $this->partitionname = $vals['partitionname'];
+      }
+      if (isset($vals['operationType'])) {
+        $this->operationType = $vals['operationType'];
+      }
+      if (isset($vals['isAcid'])) {
+        $this->isAcid = $vals['isAcid'];
       }
     }
   }
@@ -12724,6 +12763,20 @@ class LockComponent {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 6:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->operationType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isAcid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -12760,6 +12813,16 @@ class LockComponent {
     if ($this->partitionname !== null) {
       $xfer += $output->writeFieldBegin('partitionname', TType::STRING, 5);
       $xfer += $output->writeString($this->partitionname);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->operationType !== null) {
+      $xfer += $output->writeFieldBegin('operationType', TType::I32, 6);
+      $xfer += $output->writeI32($this->operationType);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->isAcid !== null) {
+      $xfer += $output->writeFieldBegin('isAcid', TType::BOOL, 7);
+      $xfer += $output->writeBool($this->isAcid);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -14954,6 +15017,10 @@ class AddDynamicPartitions {
    * @var string[]
    */
   public $partitionnames = null;
+  /**
+   * @var int
+   */
+  public $operationType =   5;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -14978,6 +15045,10 @@ class AddDynamicPartitions {
             'type' => TType::STRING,
             ),
           ),
+        5 => array(
+          'var' => 'operationType',
+          'type' => TType::I32,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -14992,6 +15063,9 @@ class AddDynamicPartitions {
       }
       if (isset($vals['partitionnames'])) {
         $this->partitionnames = $vals['partitionnames'];
+      }
+      if (isset($vals['operationType'])) {
+        $this->operationType = $vals['operationType'];
       }
     }
   }
@@ -15053,6 +15127,13 @@ class AddDynamicPartitions {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->operationType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -15096,6 +15177,11 @@ class AddDynamicPartitions {
         }
         $output->writeListEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->operationType !== null) {
+      $xfer += $output->writeFieldBegin('operationType', TType::I32, 5);
+      $xfer += $output->writeI32($this->operationType);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

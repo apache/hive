@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -221,7 +222,20 @@ public class AcidUtils {
     return result;
   }
 
-  public enum Operation { NOT_ACID, INSERT, UPDATE, DELETE }
+  public enum Operation {
+    NOT_ACID(DataOperationType.UNSET),
+    INSERT(DataOperationType.INSERT),
+    UPDATE(DataOperationType.UPDATE),
+    DELETE(DataOperationType.DELETE);
+    
+    private final DataOperationType dop;
+    private Operation(DataOperationType dop) {
+      this.dop = dop;
+    }
+    public DataOperationType toDataOperationType() {
+      return dop;
+    }
+  }
 
   public static interface Directory {
 
