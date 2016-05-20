@@ -1539,10 +1539,10 @@ POSTHOOK: Input: default@part_change_various_various_string@part=1
 POSTHOOK: Input: default@part_change_various_various_string@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	b
-1	1	TRUE	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135	dynamic reptile	dynamic reptile  	0004-09-22 18:26:29.519542222	2007-02-09	binary	original
-2	1	TRUE	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488	  baffling	  baffling    	2007-02-09 05:17:29.368756876	0004-09-22	binary	original
-3	1	FALSE	72	NULL	-93222	30	-66475.56	-66475.561431	0.561431	1	1	6229-06-28 02:54:28.970117179	5966-07-09	binary	original
-4	1	TRUE	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.75	junkyard	junkyard	2002-05-10 05:29:48.990818073	1815-05-06	binary	original
+1	1	TRUE	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135	dynamic reptile	dynamic reptile  	0004-09-22 18:26:29.519542222	2007-02-09	62 69 6e 61 72 79	original
+2	1	TRUE	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488	  baffling	  baffling    	2007-02-09 05:17:29.368756876	0004-09-22	62 69 6e 61 72 79	original
+3	1	FALSE	72	NULL	-93222	30	-66475.56	-66475.561431	0.561431	1	1	6229-06-28 02:54:28.970117179	5966-07-09	62 69 6e 61 72 79	original
+4	1	TRUE	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.75	junkyard	junkyard	2002-05-10 05:29:48.990818073	1815-05-06	62 69 6e 61 72 79	original
 5	2	true	400	44388	-100	953967041.	62.079153	718.78	1	verdict	verdict	timestamp	date	binary	new
 6	1	-false	-67	833	63993	 1255178165.77663	905070.974	-4314.7918	-1240033819	trial	trial	2016-03-07 03:02:22.0	2016-03-07	binary	new
 PREHOOK: query: drop table part_change_various_various_string
@@ -1716,10 +1716,10 @@ POSTHOOK: Input: default@part_change_various_various_char@part=1
 POSTHOOK: Input: default@part_change_various_various_char@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	b
-1	1	TRUE                     	NULL	NULL	3244222                  	-99999999999             	-29.0764                 	4.70614135E8             	470614135                	dynamic reptile          	dynamic reptile          	0004-09-22 18:26:29.51954	2007-02-09               	binary                   	original
-2	1	TRUE                     	100                      	NULL	14                       	-23866739993             	-3651.672                	46114.284799488          	46114.284799488          	  baffling               	  baffling               	2007-02-09 05:17:29.36875	0004-09-22               	binary                   	original
-3	1	FALSE                    	72                       	NULL	-93222                   	30                       	-66475.56                	-66475.561431            	0.561431                 	1                        	1                        	6229-06-28 02:54:28.97011	5966-07-09               	binary                   	original
-4	1	TRUE                     	-90                      	NULL	3289094                  	46114                    	9250341.0                	9250340.75               	9250340.75               	junkyard                 	junkyard                 	2002-05-10 05:29:48.99081	1815-05-06               	binary                   	original
+1	1	TRUE                     	NULL	NULL	3244222                  	-99999999999             	-29.0764                 	4.70614135E8             	470614135                	dynamic reptile          	dynamic reptile          	0004-09-22 18:26:29.51954	2007-02-09               	62 69 6e 61 72 79        	original
+2	1	TRUE                     	100                      	NULL	14                       	-23866739993             	-3651.672                	46114.284799488          	46114.284799488          	  baffling               	  baffling               	2007-02-09 05:17:29.36875	0004-09-22               	62 69 6e 61 72 79        	original
+3	1	FALSE                    	72                       	NULL	-93222                   	30                       	-66475.56                	-66475.561431            	0.561431                 	1                        	1                        	6229-06-28 02:54:28.97011	5966-07-09               	62 69 6e 61 72 79        	original
+4	1	TRUE                     	-90                      	NULL	3289094                  	46114                    	9250341.0                	9250340.75               	9250340.75               	junkyard                 	junkyard                 	2002-05-10 05:29:48.99081	1815-05-06               	62 69 6e 61 72 79        	original
 5	2	true                     	400                      	44388                    	-100                     	953967041.               	62.079153                	718.78                   	1                        	verdict                  	verdict                  	timestamp                	date                     	binary                   	new
 6	1	-false                   	-67                      	833                      	63993                    	 1255178165.77663        	905070.974               	-4314.7918               	-1240033819              	trial                    	trial                    	2016-03-07 03:02:22.0    	2016-03-07               	binary                   	new
 PREHOOK: query: drop table part_change_various_various_char
@@ -1893,10 +1893,10 @@ POSTHOOK: Input: default@part_change_various_various_char_trunc@part=1
 POSTHOOK: Input: default@part_change_various_various_char_trunc@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	b
-1	1	TRUE    	NULL	NULL	3244222 	-9999999	-29.0764	4.706141	47061413	dynamic 	dynamic 	0004-09-	2007-02-	binary  	original
-2	1	TRUE    	100     	NULL	14      	-2386673	-3651.67	46114.28	46114.28	  baffli	  baffli	2007-02-	0004-09-	binary  	original
-3	1	FALSE   	72      	NULL	-93222  	30      	-66475.5	-66475.5	0.561431	1       	1       	6229-06-	5966-07-	binary  	original
-4	1	TRUE    	-90     	NULL	3289094 	46114   	9250341.	9250340.	9250340.	junkyard	junkyard	2002-05-	1815-05-	binary  	original
+1	1	TRUE    	NULL	NULL	3244222 	-9999999	-29.0764	4.706141	47061413	dynamic 	dynamic 	0004-09-	2007-02-	62 69 6e	original
+2	1	TRUE    	100     	NULL	14      	-2386673	-3651.67	46114.28	46114.28	  baffli	  baffli	2007-02-	0004-09-	62 69 6e	original
+3	1	FALSE   	72      	NULL	-93222  	30      	-66475.5	-66475.5	0.561431	1       	1       	6229-06-	5966-07-	62 69 6e	original
+4	1	TRUE    	-90     	NULL	3289094 	46114   	9250341.	9250340.	9250340.	junkyard	junkyard	2002-05-	1815-05-	62 69 6e	original
 5	2	true    	400     	44388   	-100    	95396704	62.07915	718.78  	1       	verdict 	verdict 	timestam	date    	binary  	new
 6	1	-false  	-67     	833     	63993   	 1255178	905070.9	-4314.79	-1240033	trial   	trial   	2016-03-	2016-03-	binary  	new
 PREHOOK: query: drop table part_change_various_various_char_trunc
@@ -2070,10 +2070,10 @@ POSTHOOK: Input: default@part_change_various_various_varchar@part=1
 POSTHOOK: Input: default@part_change_various_various_varchar@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	b
-1	1	TRUE	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135	dynamic reptile  	dynamic reptile	0004-09-22 18:26:29.51954	2007-02-09	binary	original
-2	1	TRUE	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488	  baffling    	  baffling	2007-02-09 05:17:29.36875	0004-09-22	binary	original
-3	1	FALSE	72	NULL	-93222	30	-66475.56	-66475.561431	0.561431	1	1	6229-06-28 02:54:28.97011	5966-07-09	binary	original
-4	1	TRUE	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.75	junkyard	junkyard	2002-05-10 05:29:48.99081	1815-05-06	binary	original
+1	1	TRUE	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135	dynamic reptile  	dynamic reptile	0004-09-22 18:26:29.51954	2007-02-09	62 69 6e 61 72 79	original
+2	1	TRUE	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488	  baffling    	  baffling	2007-02-09 05:17:29.36875	0004-09-22	62 69 6e 61 72 79	original
+3	1	FALSE	72	NULL	-93222	30	-66475.56	-66475.561431	0.561431	1	1	6229-06-28 02:54:28.97011	5966-07-09	62 69 6e 61 72 79	original
+4	1	TRUE	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.75	junkyard	junkyard	2002-05-10 05:29:48.99081	1815-05-06	62 69 6e 61 72 79	original
 5	2	true	400	44388	-100	953967041.	62.079153	718.78	1	verdict	verdict	timestamp	date	binary	new
 6	1	-false	-67	833	63993	 1255178165.77663	905070.974	-4314.7918	-1240033819	trial	trial	2016-03-07 03:02:22.0	2016-03-07	binary	new
 PREHOOK: query: drop table part_change_various_various_varchar
@@ -2247,10 +2247,10 @@ POSTHOOK: Input: default@part_change_various_various_varchar_trunc@part=1
 POSTHOOK: Input: default@part_change_various_various_varchar_trunc@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	b
-1	1	TRUE	NULL	NULL	3244222	-9999999	-29.0764	4.706141	47061413	dynamic 	dynamic 	0004-09-	2007-02-	binary	original
-2	1	TRUE	100	NULL	14	-2386673	-3651.67	46114.28	46114.28	  baffli	  baffli	2007-02-	0004-09-	binary	original
-3	1	FALSE	72	NULL	-93222	30	-66475.5	-66475.5	0.561431	1	1	6229-06-	5966-07-	binary	original
-4	1	TRUE	-90	NULL	3289094	46114	9250341.	9250340.	9250340.	junkyard	junkyard	2002-05-	1815-05-	binary	original
+1	1	TRUE	NULL	NULL	3244222	-9999999	-29.0764	4.706141	47061413	dynamic 	dynamic 	0004-09-	2007-02-	62 69 6e	original
+2	1	TRUE	100	NULL	14	-2386673	-3651.67	46114.28	46114.28	  baffli	  baffli	2007-02-	0004-09-	62 69 6e	original
+3	1	FALSE	72	NULL	-93222	30	-66475.5	-66475.5	0.561431	1	1	6229-06-	5966-07-	62 69 6e	original
+4	1	TRUE	-90	NULL	3289094	46114	9250341.	9250340.	9250340.	junkyard	junkyard	2002-05-	1815-05-	62 69 6e	original
 5	2	true	400	44388	-100	95396704	62.07915	718.78	1	verdict	verdict	timestam	date	binary	new
 6	1	-false	-67	833	63993	 1255178	905070.9	-4314.79	-1240033	trial	trial	2016-03-	2016-03-	binary	new
 PREHOOK: query: drop table part_change_various_various_varchar_trunc

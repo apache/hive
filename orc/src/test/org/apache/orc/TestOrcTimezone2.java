@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.orc;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -30,9 +30,8 @@ import java.util.TimeZone;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -98,15 +97,12 @@ public class TestOrcTimezone2 {
 
   @Test
   public void testTimestampWriter() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Timestamp.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createTimestamp();
 
     TimeZone.setDefault(TimeZone.getTimeZone(writerTimeZone));
     Writer writer = OrcFile.createWriter(testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000).bufferSize(10000));
+        OrcFile.writerOptions(conf).setSchema(schema)
+            .stripeSize(100000).bufferSize(10000));
     assertEquals(writerTimeZone, TimeZone.getDefault().getID());
     List<String> ts = Lists.newArrayList();
     ts.add("2003-01-01 01:00:00.000000222");
@@ -121,21 +117,26 @@ public class TestOrcTimezone2 {
     ts.add("1998-11-02 10:00:00.857340643");
     ts.add("2008-10-02 11:00:00.0");
     ts.add("2037-01-01 00:00:00.000999");
+    VectorizedRowBatch batch = schema.createRowBatch();
+    TimestampColumnVector tsc = (TimestampColumnVector) batch.cols[0];
     for (String t : ts) {
-      writer.addRow(Timestamp.valueOf(t));
+      tsc.set(batch.size++, Timestamp.valueOf(t));
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     TimeZone.setDefault(TimeZone.getTimeZone(readerTimeZone));
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     assertEquals(readerTimeZone, TimeZone.getDefault().getID());
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      Timestamp got = ((TimestampWritable) row).getTimestamp();
-      assertEquals(ts.get(idx++), got.toString());
+    batch = reader.getSchema().createRowBatch();
+    tsc = (TimestampColumnVector) batch.cols[0];
+    while (rows.nextBatch(batch)) {
+      for (int r=0; r < batch.size; ++r) {
+        assertEquals(ts.get(idx++), tsc.asScratchTimestamp(r).toString());
+      }
     }
     rows.close();
   }

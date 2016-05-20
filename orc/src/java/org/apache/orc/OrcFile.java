@@ -25,6 +25,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.orc.impl.MemoryManager;
+import org.apache.orc.impl.ReaderImpl;
 import org.apache.orc.impl.WriterImpl;
 
 /**
@@ -210,6 +211,11 @@ public class OrcFile {
 
   public static ReaderOptions readerOptions(Configuration conf) {
     return new ReaderOptions(conf);
+  }
+
+  public static Reader createReader(Path path,
+                                    ReaderOptions options) throws IOException {
+    return new ReaderImpl(path, options);
   }
 
   public interface WriterContext {

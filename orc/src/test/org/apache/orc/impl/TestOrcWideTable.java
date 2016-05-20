@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.orc.impl;
 
 import static org.junit.Assert.assertEquals;
 

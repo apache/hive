@@ -20,14 +20,11 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import org.junit.Test;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.Random;
 
 import org.apache.hadoop.hive.common.type.RandomTypeUtil;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.ql.util.TimestampUtils;
 
 import static org.junit.Assert.*;
 
@@ -58,7 +55,7 @@ public class TestTimestampWritableAndColumnVector {
       if (!retrievedTimestamp.equals(randTimestamp)) {
         assertTrue(false);
       }
-      double randDouble = TimestampWritable.getDouble(randTimestamp);
+      double randDouble = TimestampUtils.getDouble(randTimestamp);
       double retrievedDouble = timestampColVector.getDouble(i);
       if (randDouble != retrievedDouble) {
         assertTrue(false);

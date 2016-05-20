@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.shims;
+package org.apache.orc.impl;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -25,14 +25,11 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.ReadOption;
 import org.apache.hadoop.io.ByteBufferPool;
 
-import org.apache.hadoop.hive.shims.HadoopShims.ByteBufferPoolShim;
-import org.apache.hadoop.hive.shims.HadoopShims.ZeroCopyReaderShim;
-
 class ZeroCopyShims {
   private static final class ByteBufferPoolAdapter implements ByteBufferPool {
-    private ByteBufferPoolShim pool;
+    private HadoopShims.ByteBufferPoolShim pool;
 
-    public ByteBufferPoolAdapter(ByteBufferPoolShim pool) {
+    public ByteBufferPoolAdapter(HadoopShims.ByteBufferPoolShim pool) {
       this.pool = pool;
     }
 
@@ -47,7 +44,7 @@ class ZeroCopyShims {
     }
   }
 
-  private static final class ZeroCopyAdapter implements ZeroCopyReaderShim {
+  private static final class ZeroCopyAdapter implements HadoopShims.ZeroCopyReaderShim {
     private final FSDataInputStream in;
     private final ByteBufferPoolAdapter pool;
     private final static EnumSet<ReadOption> CHECK_SUM = EnumSet
@@ -55,7 +52,8 @@ class ZeroCopyShims {
     private final static EnumSet<ReadOption> NO_CHECK_SUM = EnumSet
         .of(ReadOption.SKIP_CHECKSUMS);
 
-    public ZeroCopyAdapter(FSDataInputStream in, ByteBufferPoolShim poolshim) {
+    public ZeroCopyAdapter(FSDataInputStream in,
+                           HadoopShims.ByteBufferPoolShim poolshim) {
       this.in = in;
       if (poolshim != null) {
         pool = new ByteBufferPoolAdapter(poolshim);
@@ -76,10 +74,15 @@ class ZeroCopyShims {
     public final void releaseBuffer(ByteBuffer buffer) {
       this.in.releaseBuffer(buffer);
     }
+
+    @Override
+    public final void close() throws IOException {
+      this.in.close();
+    }
   }
 
-  public static ZeroCopyReaderShim getZeroCopyReader(FSDataInputStream in,
-      ByteBufferPoolShim pool) throws IOException {
+  public static HadoopShims.ZeroCopyReaderShim getZeroCopyReader(FSDataInputStream in,
+                                                                 HadoopShims.ByteBufferPoolShim pool) throws IOException {
     return new ZeroCopyAdapter(in, pool);
   }
 

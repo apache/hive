@@ -15,18 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.orc.impl;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -44,34 +40,8 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.shims.HadoopShims.TextReaderShim;
-import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.io.BooleanWritable;
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.orc.TypeDescription;
-import org.apache.orc.impl.BitFieldReader;
-import org.apache.orc.impl.DynamicByteArray;
-import org.apache.orc.impl.InStream;
-import org.apache.orc.impl.IntegerReader;
 import org.apache.orc.OrcProto;
-import org.apache.orc.impl.PositionProvider;
-import org.apache.orc.impl.RunLengthByteReader;
-import org.apache.orc.impl.RunLengthIntegerReader;
-import org.apache.orc.impl.RunLengthIntegerReaderV2;
-import org.apache.orc.impl.SerializationUtils;
-import org.apache.orc.impl.StreamName;
 
 /**
  * Factory for creating ORC tree readers.
@@ -171,19 +141,6 @@ public class TreeReaderFactory {
 
     abstract void skipRows(long rows) throws IOException;
 
-    void readValuePresent() throws IOException {
-      if (present != null) {
-        valuePresent = present.next() == 1;
-      }
-    }
-
-    Object next(Object previous) throws IOException {
-      if (present != null) {
-        valuePresent = present.next() == 1;
-      }
-      return previous;
-    }
-
     /**
      * Called at the top level to read into the given batch.
      * @param batch the batch to read into
@@ -274,12 +231,7 @@ public class TreeReaderFactory {
     }
 
     @Override
-    Object next(Object previous) {
-      return null;
-    }
-
-    @Override
-    public void nextVector(ColumnVector vector, boolean[] isNull, final int batchSize) {
+    public void nextVector(ColumnVector vector, boolean[] isNull, int size) {
       vector.noNulls = false;
       vector.isNull[0] = true;
       vector.isRepeating = true;
@@ -326,21 +278,6 @@ public class TreeReaderFactory {
     }
 
     @Override
-    Object next(Object previous) throws IOException {
-      super.next(previous);
-      BooleanWritable result = null;
-      if (valuePresent) {
-        if (previous == null) {
-          result = new BooleanWritable();
-        } else {
-          result = (BooleanWritable) previous;
-        }
-        result.set(reader.next() == 1);
-      }
-      return result;
-    }
-
-    @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
                            final int batchSize) throws IOException {
@@ -384,21 +321,6 @@ public class TreeReaderFactory {
     public void seek(PositionProvider index) throws IOException {
       super.seek(index);
       reader.seek(index);
-    }
-
-    @Override
-    Object next(Object previous) throws IOException {
-      super.next(previous);
-      ByteWritable result = null;
-      if (valuePresent) {
-        if (previous == null) {
-          result = new ByteWritable();
-        } else {
-          result = (ByteWritable) previous;
-        }
-        result.set(reader.next());
-      }
-      return result;
     }
 
     @Override
@@ -469,21 +391,6 @@ public class TreeReaderFactory {
     }
 
     @Override
-    Object next(Object previous) throws IOException {
-      super.next(previous);
-      ShortWritable result = null;
-      if (valuePresent) {
-        if (previous == null) {
-          result = new ShortWritable();
-        } else {
-          result = (ShortWritable) previous;
-        }
-        result.set((short) reader.next());
-      }
-      return result;
-    }
-
-    @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
                            final int batchSize) throws IOException {
@@ -548,21 +455,6 @@ public class TreeReaderFactory {
     public void seek(PositionProvider index) throws IOException {
       super.seek(index);
       reader.seek(index);
-    }
-
-    @Override
-    Object next(Object previous) throws IOException {
-      super.next(previous);
-      IntWritable result = null;
-      if (valuePresent) {
-        if (previous == null) {
-          result = new IntWritable();
-        } else {
-          result = (IntWritable) previous;
-        }
-        result.set((int) reader.next());
-      }
-      return result;
     }
 
     @Override
@@ -634,21 +526,6 @@ public class TreeReaderFactory {
     }
 
     @Override
-    Object next(Object previous) throws IOException {
-      super.next(previous);
-      LongWritable result = null;
-      if (valuePresent) {
-        if (previous == null) {
-          result = new LongWritable();
-        } else {
-          result = (LongWritable) previous;
-        }
-        result.set(reader.next());
-      }
-      return result;
-    }
-
-    @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
                            final int batchSize) throws IOException {
@@ -700,21 +577,6 @@ public class TreeReaderFactory {
     public void seek(PositionProvider index) throws IOException {
       super.seek(index);
       stream.seek(index);
-    }
-
-    @Override
-    Object next(Object previous) throws IOException {
-      super.next(previous);
-      FloatWritable result = null;
-      if (valuePresent) {
-        if (previous == null) {
-          result = new FloatWritable();
-        } else {
-          result = (FloatWritable) previous;
-        }
-        result.set(utils.readFloat(stream));
-      }
-      return result;
     }
 
     @Override
@@ -809,21 +671,6 @@ public class TreeReaderFactory {
     public void seek(PositionProvider index) throws IOException {
       super.seek(index);
       stream.seek(index);
-    }
-
-    @Override
-    Object next(Object previous) throws IOException {
-      super.next(previous);
-      DoubleWritable result = null;
-      if (valuePresent) {
-        if (previous == null) {
-          result = new DoubleWritable();
-        } else {
-          result = (DoubleWritable) previous;
-        }
-        result.set(utils.readDouble(stream));
-      }
-      return result;
     }
 
     @Override
@@ -936,31 +783,6 @@ public class TreeReaderFactory {
       super.seek(index);
       stream.seek(index);
       lengths.seek(index);
-    }
-
-    @Override
-    Object next(Object previous) throws IOException {
-      super.next(previous);
-      BytesWritable result = null;
-      if (valuePresent) {
-        if (previous == null) {
-          result = new BytesWritable();
-        } else {
-          result = (BytesWritable) previous;
-        }
-        int len = (int) lengths.next();
-        result.setSize(len);
-        int offset = 0;
-        while (len > 0) {
-          int written = stream.read(result.getBytes(), offset, len);
-          if (written < 0) {
-            throw new EOFException("Can't finish byte read from " + stream);
-          }
-          len -= written;
-          offset += written;
-        }
-      }
-      return result;
     }
 
     @Override
@@ -1087,48 +909,6 @@ public class TreeReaderFactory {
     }
 
     @Override
-    Object next(Object previous) throws IOException {
-      super.next(previous);
-      TimestampWritable result = null;
-      if (valuePresent) {
-        if (previous == null) {
-          result = new TimestampWritable();
-        } else {
-          result = (TimestampWritable) previous;
-        }
-        long millis = (data.next() + base_timestamp) * WriterImpl.MILLIS_PER_SECOND;
-        int newNanos = parseNanos(nanos.next());
-        // fix the rounding when we divided by 1000.
-        if (millis >= 0) {
-          millis += newNanos / WriterImpl.NANOS_PER_MILLI;
-        } else {
-          millis -= newNanos / WriterImpl.NANOS_PER_MILLI;
-        }
-        long offset = 0;
-        // If reader and writer time zones have different rules, adjust the timezone difference
-        // between reader and writer taking day light savings into account.
-        if (!hasSameTZRules) {
-          offset = writerTimeZone.getOffset(millis) - readerTimeZone.getOffset(millis);
-        }
-        long adjustedMillis = millis + offset;
-        Timestamp ts = new Timestamp(adjustedMillis);
-        // Sometimes the reader timezone might have changed after adding the adjustedMillis.
-        // To account for that change, check for any difference in reader timezone after
-        // adding adjustedMillis. If so use the new offset (offset at adjustedMillis point of time).
-        if (!hasSameTZRules &&
-            (readerTimeZone.getOffset(millis) != readerTimeZone.getOffset(adjustedMillis))) {
-          long newOffset =
-              writerTimeZone.getOffset(millis) - readerTimeZone.getOffset(adjustedMillis);
-          adjustedMillis = millis + newOffset;
-          ts.setTime(adjustedMillis);
-        }
-        ts.setNanos(newNanos);
-        result.set(ts);
-      }
-      return result;
-    }
-
-    @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
                            final int batchSize) throws IOException {
@@ -1237,21 +1017,6 @@ public class TreeReaderFactory {
     }
 
     @Override
-    Object next(Object previous) throws IOException {
-      super.next(previous);
-      DateWritable result = null;
-      if (valuePresent) {
-        if (previous == null) {
-          result = new DateWritable();
-        } else {
-          result = (DateWritable) previous;
-        }
-        result.set((int) reader.next());
-      }
-      return result;
-    }
-
-    @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
                            final int batchSize) throws IOException {
@@ -1329,35 +1094,17 @@ public class TreeReaderFactory {
     }
 
     @Override
-    Object next(Object previous) throws IOException {
-      super.next(previous);
-      final HiveDecimalWritable result;
-      if (valuePresent) {
-        if (previous == null) {
-          result = new HiveDecimalWritable();
-        } else {
-          result = (HiveDecimalWritable) previous;
-        }
-        result.set(HiveDecimal.create(SerializationUtils.readBigInteger
-                (valueStream), (int) scaleReader.next()));
-        return HiveDecimalWritable.enforcePrecisionScale(result, precision,
-            scale);
-      }
-      return null;
-    }
-
-    @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
                            final int batchSize) throws IOException {
       final DecimalColumnVector result = (DecimalColumnVector) previousVector;
-
       // Read present/isNull stream
       super.nextVector(result, isNull, batchSize);
 
       if (batchSize > scratchScaleVector.length) {
         scratchScaleVector = new int[(int) batchSize];
       }
+      // read the scales
       scaleReader.nextVector(result, scratchScaleVector, batchSize);
       // Read value entries based on isNull entries
       if (result.noNulls) {
@@ -1459,11 +1206,6 @@ public class TreeReaderFactory {
     }
 
     @Override
-    Object next(Object previous) throws IOException {
-      return reader.next(previous);
-    }
-
-    @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
                            final int batchSize) throws IOException {
@@ -1557,8 +1299,9 @@ public class TreeReaderFactory {
    * stripe.
    */
   public static class StringDirectTreeReader extends TreeReader {
+    private static final HadoopShims SHIMS = HadoopShims.Factory.get();
     protected InStream stream;
-    protected TextReaderShim data;
+    protected HadoopShims.TextReaderShim data;
     protected IntegerReader lengths;
     private final LongColumnVector scratchlcv;
 
@@ -1573,7 +1316,7 @@ public class TreeReaderFactory {
       this.stream = data;
       if (length != null && encoding != null) {
         this.lengths = createIntegerReader(encoding, length, false, false);
-        this.data = ShimLoader.getHadoopShims().getTextReaderShim(this.stream);
+        this.data = SHIMS.getTextReaderShim(this.stream);
       }
     }
 
@@ -1594,7 +1337,7 @@ public class TreeReaderFactory {
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DATA);
       stream = streams.get(name);
-      data = ShimLoader.getHadoopShims().getTextReaderShim(this.stream);
+      data = SHIMS.getTextReaderShim(this.stream);
       lengths = createIntegerReader(stripeFooter.getColumnsList().get(columnId).getKind(),
           streams.get(new StreamName(columnId, OrcProto.Stream.Kind.LENGTH)),
           false, false);
@@ -1611,22 +1354,6 @@ public class TreeReaderFactory {
       stream.seek(index);
       // don't seek data stream
       lengths.seek(index);
-    }
-
-    @Override
-    Object next(Object previous) throws IOException {
-      super.next(previous);
-      Text result = null;
-      if (valuePresent) {
-        if (previous == null) {
-          result = new Text();
-        } else {
-          result = (Text) previous;
-        }
-        int len = (int) lengths.next();
-        data.read(result, len);
-      }
-      return result;
     }
 
     @Override
@@ -1777,31 +1504,6 @@ public class TreeReaderFactory {
     }
 
     @Override
-    Object next(Object previous) throws IOException {
-      super.next(previous);
-      Text result = null;
-      if (valuePresent) {
-        int entry = (int) reader.next();
-        if (previous == null) {
-          result = new Text();
-        } else {
-          result = (Text) previous;
-        }
-        int offset = dictionaryOffsets[entry];
-        int length = getDictionaryEntryLength(entry, offset);
-        // If the column is just empty strings, the size will be zero,
-        // so the buffer will be null, in that case just return result
-        // as it will default to empty
-        if (dictionaryBuffer != null) {
-          dictionaryBuffer.setText(result, offset, length);
-        } else {
-          result.clear();
-        }
-      }
-      return result;
-    }
-
-    @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
                            final int batchSize) throws IOException {
@@ -1900,25 +1602,6 @@ public class TreeReaderFactory {
     }
 
     @Override
-    Object next(Object previous) throws IOException {
-      final HiveCharWritable result;
-      if (previous == null) {
-        result = new HiveCharWritable();
-      } else {
-        result = (HiveCharWritable) previous;
-      }
-      // Use the string reader implementation to populate the internal Text value
-      Object textVal = super.next(result.getTextValue());
-      if (textVal == null) {
-        return null;
-      }
-      // result should now hold the value that was read in.
-      // enforce char length
-      result.enforceMaxLength(maxLength);
-      return result;
-    }
-
-    @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
                            final int batchSize) throws IOException {
@@ -1975,25 +1658,6 @@ public class TreeReaderFactory {
     }
 
     @Override
-    Object next(Object previous) throws IOException {
-      final HiveVarcharWritable result;
-      if (previous == null) {
-        result = new HiveVarcharWritable();
-      } else {
-        result = (HiveVarcharWritable) previous;
-      }
-      // Use the string reader implementation to populate the internal Text value
-      Object textVal = super.next(result.getTextValue());
-      if (textVal == null) {
-        return null;
-      }
-      // result should now hold the value that was read in.
-      // enforce varchar length
-      result.enforceMaxLength(maxLength);
-      return result;
-    }
-
-    @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
                            final int batchSize) throws IOException {
@@ -2045,8 +1709,6 @@ public class TreeReaderFactory {
                                boolean skipCorrupt) throws IOException {
       super(columnId);
 
-      TypeDescription fileSchema = evolution.getFileType(readerSchema);
-
       List<TypeDescription> childrenTypes = readerSchema.getChildren();
       this.fields = new TreeReader[childrenTypes.size()];
       for (int i = 0; i < fields.length; ++i) {
@@ -2063,30 +1725,6 @@ public class TreeReaderFactory {
           kid.seek(index);
         }
       }
-    }
-
-    @Override
-    Object next(Object previous) throws IOException {
-      super.next(previous);
-      OrcStruct result = null;
-      if (valuePresent) {
-        if (previous == null) {
-          result = new OrcStruct(fields.length);
-        } else {
-          result = (OrcStruct) previous;
-
-          // If the input format was initialized with a file with a
-          // different number of fields, the number of fields needs to
-          // be updated to the correct number
-          result.setNumFields(fields.length);
-        }
-        for (int i = 0; i < fields.length; ++i) {
-          if (fields[i] != null) {
-            result.setFieldValue(i, fields[i].next(result.getFieldValue(i)));
-          }
-        }
-      }
-      return result;
     }
 
     @Override
@@ -2171,24 +1809,6 @@ public class TreeReaderFactory {
     }
 
     @Override
-    Object next(Object previous) throws IOException {
-      super.next(previous);
-      OrcUnion result = null;
-      if (valuePresent) {
-        if (previous == null) {
-          result = new OrcUnion();
-        } else {
-          result = (OrcUnion) previous;
-        }
-        byte tag = tags.next();
-        Object previousVal = result.getObject();
-        result.set(tag, fields[tag].next(tag == result.getTag() ?
-            previousVal : null));
-      }
-      return result;
-    }
-
-    @Override
     public void nextVector(ColumnVector previousVector,
                            boolean[] isNull,
                            final int batchSize) throws IOException {
@@ -2257,36 +1877,6 @@ public class TreeReaderFactory {
       super.seek(index);
       lengths.seek(index[columnId]);
       elementReader.seek(index);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    Object next(Object previous) throws IOException {
-      super.next(previous);
-      List<Object> result = null;
-      if (valuePresent) {
-        if (previous == null) {
-          result = new ArrayList<>();
-        } else {
-          result = (ArrayList<Object>) previous;
-        }
-        int prevLength = result.size();
-        int length = (int) lengths.next();
-        // extend the list to the new length
-        for (int i = prevLength; i < length; ++i) {
-          result.add(null);
-        }
-        // read the new elements into the array
-        for (int i = 0; i < length; i++) {
-          result.set(i, elementReader.next(i < prevLength ?
-              result.get(i) : null));
-        }
-        // remove any extra elements
-        for (int i = prevLength - 1; i >= length; --i) {
-          result.remove(i);
-        }
-      }
-      return result;
     }
 
     @Override
@@ -2369,28 +1959,6 @@ public class TreeReaderFactory {
       lengths.seek(index[columnId]);
       keyReader.seek(index);
       valueReader.seek(index);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    Object next(Object previous) throws IOException {
-      super.next(previous);
-      Map<Object, Object> result = null;
-      if (valuePresent) {
-        if (previous == null) {
-          result = new LinkedHashMap<>();
-        } else {
-          result = (LinkedHashMap<Object, Object>) previous;
-        }
-        // for now just clear and create new objects
-        result.clear();
-        int length = (int) lengths.next();
-        // read the new elements into the array
-        for (int i = 0; i < length; i++) {
-          result.put(keyReader.next(null), valueReader.next(null));
-        }
-      }
-      return result;
     }
 
     @Override

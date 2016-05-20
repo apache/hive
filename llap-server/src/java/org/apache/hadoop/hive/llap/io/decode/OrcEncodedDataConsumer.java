@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedTreeReaderFactory.Settabl
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
-import org.apache.hadoop.hive.ql.io.orc.TreeReaderFactory;
+import org.apache.orc.impl.TreeReaderFactory;
 import org.apache.hadoop.hive.ql.io.orc.WriterImpl;
 import org.apache.orc.OrcProto;
 

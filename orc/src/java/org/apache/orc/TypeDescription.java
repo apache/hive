@@ -344,25 +344,25 @@ public class TypeDescription {
       case INT:
       case LONG:
       case DATE:
-        return new LongColumnVector();
+        return new LongColumnVector(maxSize);
       case TIMESTAMP:
-        return new TimestampColumnVector();
+        return new TimestampColumnVector(maxSize);
       case FLOAT:
       case DOUBLE:
-        return new DoubleColumnVector();
+        return new DoubleColumnVector(maxSize);
       case DECIMAL:
-        return new DecimalColumnVector(precision, scale);
+        return new DecimalColumnVector(maxSize, precision, scale);
       case STRING:
       case BINARY:
       case CHAR:
       case VARCHAR:
-        return new BytesColumnVector();
+        return new BytesColumnVector(maxSize);
       case STRUCT: {
         ColumnVector[] fieldVector = new ColumnVector[children.size()];
         for(int i=0; i < fieldVector.length; ++i) {
           fieldVector[i] = children.get(i).createColumn(maxSize);
         }
-        return new StructColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+        return new StructColumnVector(maxSize,
                 fieldVector);
       }
       case UNION: {
@@ -370,14 +370,14 @@ public class TypeDescription {
         for(int i=0; i < fieldVector.length; ++i) {
           fieldVector[i] = children.get(i).createColumn(maxSize);
         }
-        return new UnionColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+        return new UnionColumnVector(maxSize,
             fieldVector);
       }
       case LIST:
-        return new ListColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+        return new ListColumnVector(maxSize,
             children.get(0).createColumn(maxSize));
       case MAP:
-        return new MapColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+        return new MapColumnVector(maxSize,
             children.get(0).createColumn(maxSize),
             children.get(1).createColumn(maxSize));
       default:

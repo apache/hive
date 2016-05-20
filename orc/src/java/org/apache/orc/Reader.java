@@ -334,7 +334,7 @@ public interface Reader {
    * @return a new RecordReader
    * @throws IOException
    */
-  RecordReader rowsOptions(Options options) throws IOException;
+  RecordReader rows(Options options) throws IOException;
 
   /**
    * @return List of integers representing version of the file, in order from major to minor.

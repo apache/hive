@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.orc;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
@@ -27,16 +27,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TimeZone;
 
+import junit.framework.Assert;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
-import org.apache.hive.common.util.HiveTestUtils;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -114,15 +110,12 @@ public class TestOrcTimezone1 {
 
   @Test
   public void testTimestampWriter() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Timestamp.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createTimestamp();
 
     TimeZone.setDefault(TimeZone.getTimeZone(writerTimeZone));
     Writer writer = OrcFile.createWriter(testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000).bufferSize(10000));
+        OrcFile.writerOptions(conf).setSchema(schema).stripeSize(100000)
+            .bufferSize(10000));
     assertEquals(writerTimeZone, TimeZone.getDefault().getID());
     List<String> ts = Lists.newArrayList();
     ts.add("2003-01-01 01:00:00.000000222");
@@ -138,21 +131,26 @@ public class TestOrcTimezone1 {
     ts.add("2008-10-02 11:00:00.0");
     ts.add("2037-01-01 00:00:00.000999");
     ts.add("2014-03-28 00:00:00.0");
+    VectorizedRowBatch batch = schema.createRowBatch();
+    TimestampColumnVector times = (TimestampColumnVector) batch.cols[0];
     for (String t : ts) {
-      writer.addRow(Timestamp.valueOf(t));
+      times.set(batch.size++, Timestamp.valueOf(t));
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     TimeZone.setDefault(TimeZone.getTimeZone(readerTimeZone));
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     assertEquals(readerTimeZone, TimeZone.getDefault().getID());
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
+    times = (TimestampColumnVector) batch.cols[0];
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      Timestamp got = ((TimestampWritable) row).getTimestamp();
-      assertEquals(ts.get(idx++), got.toString());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(ts.get(idx++), times.asScratchTimestamp(r).toString());
+      }
     }
     rows.close();
   }
@@ -160,35 +158,32 @@ public class TestOrcTimezone1 {
   @Test
   public void testReadTimestampFormat_0_11() throws Exception {
     TimeZone.setDefault(TimeZone.getTimeZone(readerTimeZone));
-    Path oldFilePath =
-        new Path(HiveTestUtils.getFileFromClasspath("orc-file-11-format.orc"));
+    Path oldFilePath = new Path(getClass().getClassLoader().
+        getSystemResource("orc-file-11-format.orc").getPath());
     Reader reader = OrcFile.createReader(oldFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
+    TypeDescription schema = reader.getSchema();
+    int col = schema.getFieldNames().indexOf("ts");
+    VectorizedRowBatch batch = schema.createRowBatch(10);
+    TimestampColumnVector ts = (TimestampColumnVector) batch.cols[col];
 
-    StructObjectInspector readerInspector = (StructObjectInspector) reader
-        .getObjectInspector();
-    List<? extends StructField> fields = readerInspector
-        .getAllStructFieldRefs();
-    TimestampObjectInspector tso = (TimestampObjectInspector) readerInspector
-        .getStructFieldRef("ts").getFieldObjectInspector();
-    
-    RecordReader rows = reader.rows();
-    Object row = rows.next(null);
-    assertNotNull(row);
+    boolean[] include = new boolean[schema.getMaximumId() + 1];
+    include[schema.getChildren().get(col).getId()] = true;
+    RecordReader rows = reader.rows
+        (new Reader.Options().include(include));
+    assertEquals(true, rows.nextBatch(batch));
     assertEquals(Timestamp.valueOf("2000-03-12 15:00:00"),
-        tso.getPrimitiveJavaObject(readerInspector.getStructFieldData(row,
-            fields.get(12))));
-    
+        ts.asScratchTimestamp(0));
+
     // check the contents of second row
-    assertEquals(true, rows.hasNext());
     rows.seekToRow(7499);
-    row = rows.next(null);
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(1, batch.size);
     assertEquals(Timestamp.valueOf("2000-03-12 15:00:01"),
-        tso.getPrimitiveJavaObject(readerInspector.getStructFieldData(row,
-            fields.get(12))));
-    
+        ts.asScratchTimestamp(0));
+
     // handle the close up
-    assertEquals(false, rows.hasNext());
+    Assert.assertEquals(false, rows.nextBatch(batch));
     rows.close();
   }
 }

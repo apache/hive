@@ -281,8 +281,13 @@ public class TimestampColumnVector extends ColumnVector {
    * @param timestamp
    */
   public void set(int elementNum, Timestamp timestamp) {
-    this.time[elementNum] = timestamp.getTime();
-    this.nanos[elementNum] = timestamp.getNanos();
+    if (timestamp == null) {
+      this.noNulls = false;
+      this.isNull[elementNum] = true;
+    } else {
+      this.time[elementNum] = timestamp.getTime();
+      this.nanos[elementNum] = timestamp.getNanos();
+    }
   }
 
   /**

@@ -38,7 +38,7 @@ import org.apache.orc.CompressionCodec;
 import org.apache.orc.DataReader;
 import org.apache.orc.OrcConf;
 import org.apache.orc.impl.OutStream;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils;
+import org.apache.orc.impl.RecordReaderUtils;
 import org.apache.orc.impl.StreamName;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.impl.BufferChunk;

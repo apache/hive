@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.TimeZone;
 
+import org.apache.hadoop.hive.ql.util.TimestampUtils;
 import org.junit.*;
 import static org.junit.Assert.*;
 
@@ -70,7 +71,7 @@ public class TestTimestampWritable {
     long seconds = (ts.getTime() - ts.getNanos() / 1000000) / 1000;
 
     // It should also be possible to calculate this based on ts.getTime() only.
-    assertEquals(seconds, TimestampWritable.millisToSeconds(ts.getTime()));
+    assertEquals(seconds, TimestampUtils.millisToSeconds(ts.getTime()));
 
     return seconds;
   }
@@ -335,10 +336,10 @@ public class TestTimestampWritable {
             Math.pow(10, 9 - nanosPrecision));
         assertEquals(String.format("Invalid nanosecond part recovered from %f", asDouble),
           nanos, recoveredNanos);
-        assertEquals(ts, TimestampWritable.doubleToTimestamp(asDouble));
+        assertEquals(ts, TimestampUtils.doubleToTimestamp(asDouble));
         // decimalToTimestamp should be consistent with doubleToTimestamp for this level of
         // precision.
-        assertEquals(ts, TimestampWritable.decimalToTimestamp(
+        assertEquals(ts, TimestampUtils.decimalToTimestamp(
             HiveDecimal.create(BigDecimal.valueOf(asDouble))));
       }
     }
@@ -358,7 +359,7 @@ public class TestTimestampWritable {
       Timestamp ts = new Timestamp(
           randomMillis(MIN_FOUR_DIGIT_YEAR_MILLIS, MAX_FOUR_DIGIT_YEAR_MILLIS, rand));
       ts.setNanos(randomNanos(rand, 9));  // full precision
-      assertEquals(ts, TimestampWritable.decimalToTimestamp(timestampToDecimal(ts)));
+      assertEquals(ts, TimestampUtils.decimalToTimestamp(timestampToDecimal(ts)));
     }
   }
 
@@ -371,8 +372,8 @@ public class TestTimestampWritable {
     for (int nanos : new int[] { 100000, 900000, 999100000, 999900000 }) {
       ts.setNanos(nanos);
       HiveDecimal d = timestampToDecimal(ts);
-      assertEquals(ts, TimestampWritable.decimalToTimestamp(d));
-      assertEquals(ts, TimestampWritable.doubleToTimestamp(d.bigDecimalValue().doubleValue()));
+      assertEquals(ts, TimestampUtils.decimalToTimestamp(d));
+      assertEquals(ts, TimestampUtils.doubleToTimestamp(d.bigDecimalValue().doubleValue()));
     }
   }
 
@@ -435,20 +436,20 @@ public class TestTimestampWritable {
   @Concurrent(count=4)
   @Repeating(repetition=100)
   public void testMillisToSeconds() {
-    assertEquals(0, TimestampWritable.millisToSeconds(0));
-    assertEquals(-1, TimestampWritable.millisToSeconds(-1));
-    assertEquals(-1, TimestampWritable.millisToSeconds(-999));
-    assertEquals(-1, TimestampWritable.millisToSeconds(-1000));
-    assertEquals(-2, TimestampWritable.millisToSeconds(-1001));
-    assertEquals(-2, TimestampWritable.millisToSeconds(-1999));
-    assertEquals(-2, TimestampWritable.millisToSeconds(-2000));
-    assertEquals(-3, TimestampWritable.millisToSeconds(-2001));
-    assertEquals(-99, TimestampWritable.millisToSeconds(-99000));
-    assertEquals(-100, TimestampWritable.millisToSeconds(-99001));
-    assertEquals(-100, TimestampWritable.millisToSeconds(-100000));
-    assertEquals(1, TimestampWritable.millisToSeconds(1500));
-    assertEquals(19, TimestampWritable.millisToSeconds(19999));
-    assertEquals(20, TimestampWritable.millisToSeconds(20000));
+    assertEquals(0, TimestampUtils.millisToSeconds(0));
+    assertEquals(-1, TimestampUtils.millisToSeconds(-1));
+    assertEquals(-1, TimestampUtils.millisToSeconds(-999));
+    assertEquals(-1, TimestampUtils.millisToSeconds(-1000));
+    assertEquals(-2, TimestampUtils.millisToSeconds(-1001));
+    assertEquals(-2, TimestampUtils .millisToSeconds(-1999));
+    assertEquals(-2, TimestampUtils .millisToSeconds(-2000));
+    assertEquals(-3, TimestampUtils .millisToSeconds(-2001));
+    assertEquals(-99, TimestampUtils .millisToSeconds(-99000));
+    assertEquals(-100, TimestampUtils .millisToSeconds(-99001));
+    assertEquals(-100, TimestampUtils .millisToSeconds(-100000));
+    assertEquals(1, TimestampUtils .millisToSeconds(1500));
+    assertEquals(19, TimestampUtils .millisToSeconds(19999));
+    assertEquals(20, TimestampUtils .millisToSeconds(20000));
   }
 
   private static int compareEqualLengthByteArrays(byte[] a, byte[] b) {

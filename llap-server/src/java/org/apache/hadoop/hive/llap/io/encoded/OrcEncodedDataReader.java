@@ -67,13 +67,12 @@ import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl.SargApplier;
 import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedOrcFile;
 import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedReader;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.PoolFactory;
-import org.apache.hadoop.hive.ql.io.orc.RecordReaderUtils;
+import org.apache.orc.impl.RecordReaderUtils;
 import org.apache.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.mapred.FileSplit;
@@ -343,7 +342,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         // intermediate changes for individual columns will unset values in the array.
         // Skip this case for 0-column read. We could probably special-case it just like we do
         // in EncodedReaderImpl, but for now it's not that important.
-        if (colRgs.length > 0 && colRgs[0] == SargApplier.READ_NO_RGS) continue;
+        if (colRgs.length > 0 && colRgs[0] ==
+            RecordReaderImpl.SargApplier.READ_NO_RGS) continue;
 
         // 6.1. Determine the columns to read (usually the same as requested).
         if (cols == null || cols.size() == colRgs.length) {
@@ -691,12 +691,13 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    */
   private boolean determineRgsToRead(boolean[] globalIncludes, int rowIndexStride,
       ArrayList<OrcStripeMetadata> metadata) throws IOException {
-    SargApplier sargApp = null;
+    RecordReaderImpl.SargApplier sargApp = null;
     if (sarg != null && rowIndexStride != 0) {
       List<OrcProto.Type> types = fileMetadata.getTypes();
       String[] colNamesForSarg = OrcInputFormat.getSargColumnNames(
           columnNames, types, globalIncludes, fileMetadata.isOriginalFormat());
-      sargApp = new SargApplier(sarg, colNamesForSarg, rowIndexStride, types, globalIncludes.length);
+      sargApp = new RecordReaderImpl.SargApplier(sarg, colNamesForSarg,
+          rowIndexStride, types, globalIncludes.length);
     }
     boolean hasAnyData = false;
     // readState should have been initialized by this time with an empty array.
@@ -710,8 +711,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         rgsToRead = sargApp.pickRowGroups(stripe, stripeMetadata.getRowIndexes(),
             stripeMetadata.getBloomFilterIndexes(), true);
       }
-      boolean isNone = rgsToRead == SargApplier.READ_NO_RGS,
-          isAll = rgsToRead == SargApplier.READ_ALL_RGS;
+      boolean isNone = rgsToRead == RecordReaderImpl.SargApplier.READ_NO_RGS,
+          isAll = rgsToRead == RecordReaderImpl.SargApplier.READ_ALL_RGS;
       hasAnyData = hasAnyData || !isNone;
       if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
         if (isNone) {

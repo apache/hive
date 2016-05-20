@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.orc.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
@@ -24,8 +24,9 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PositionedReadable;
 import org.apache.hadoop.fs.Seekable;
-import org.apache.hadoop.hive.ql.io.FileFormatException;
+import org.apache.orc.FileFormatException;
 import org.apache.hadoop.io.Text;
+import org.apache.orc.OrcFile;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.Rule;
@@ -68,7 +69,7 @@ public class TestReaderImpl {
 
   @Test
   public void testEnsureOrcFooterCorrectORCFooter() throws IOException {
-    prepareTestCase(composeContent("",OrcFile.MAGIC));
+    prepareTestCase(composeContent("", OrcFile.MAGIC));
     ReaderImpl.ensureOrcFooter(in, path, psLen, buffer);
   }
 

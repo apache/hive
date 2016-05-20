@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.orc;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assume.assumeTrue;
@@ -31,21 +31,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.orc.ColumnStatistics;
 import org.apache.orc.impl.ColumnStatisticsImpl;
-import org.apache.orc.DateColumnStatistics;
-import org.apache.orc.DecimalColumnStatistics;
-import org.apache.orc.DoubleColumnStatistics;
-import org.apache.orc.IntegerColumnStatistics;
-import org.apache.orc.StringColumnStatistics;
-import org.apache.orc.StripeStatistics;
-import org.apache.orc.TimestampColumnStatistics;
-import org.apache.orc.TypeDescription;
+import org.apache.orc.tools.FileDump;
+import org.apache.orc.tools.TestFileDump;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -194,20 +187,6 @@ public class TestColumnStatistics {
   }
 
 
-  public static class SimpleStruct {
-    BytesWritable bytes1;
-    Text string1;
-
-    SimpleStruct(BytesWritable b1, String s1) {
-      this.bytes1 = b1;
-      if (s1 == null) {
-        this.string1 = null;
-      } else {
-        this.string1 = new Text(s1);
-      }
-    }
-  }
-
   Path workDir = new Path(System.getProperty("test.tmp.dir",
       "target" + File.separator + "test" + File.separator + "tmp"));
 
@@ -236,53 +215,86 @@ public class TestColumnStatistics {
     return result;
   }
 
+  void appendRow(VectorizedRowBatch batch, BytesWritable bytes,
+                 String str) {
+    int row = batch.size++;
+    if (bytes == null) {
+      batch.cols[0].noNulls = false;
+      batch.cols[0].isNull[row] = true;
+    } else {
+      ((BytesColumnVector) batch.cols[0]).setVal(row, bytes.getBytes(),
+          0, bytes.getLength());
+    }
+    if (str == null) {
+      batch.cols[1].noNulls = false;
+      batch.cols[1].isNull[row] = true;
+    } else {
+      ((BytesColumnVector) batch.cols[1]).setVal(row, str.getBytes());
+    }
+  }
+
   @Test
   public void testHasNull() throws Exception {
-
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector
-          (SimpleStruct.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema =
+        TypeDescription.createStruct()
+        .addField("bytes1", TypeDescription.createBinary())
+        .addField("string1", TypeDescription.createString());
     Writer writer = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
-            .inspector(inspector)
+            .setSchema(schema)
             .rowIndexStride(1000)
             .stripeSize(10000)
             .bufferSize(10000));
+    VectorizedRowBatch batch = schema.createRowBatch(5000);
     // STRIPE 1
     // RG1
     for(int i=0; i<1000; i++) {
-      writer.addRow(new SimpleStruct(bytes(1,2,3), "RG1"));
+      appendRow(batch, bytes(1, 2, 3), "RG1");
     }
+    writer.addRowBatch(batch);
+    batch.reset();
     // RG2
     for(int i=0; i<1000; i++) {
-      writer.addRow(new SimpleStruct(bytes(1,2,3), null));
+      appendRow(batch, bytes(1, 2, 3), null);
     }
+    writer.addRowBatch(batch);
+    batch.reset();
     // RG3
     for(int i=0; i<1000; i++) {
-      writer.addRow(new SimpleStruct(bytes(1,2,3), "RG3"));
+      appendRow(batch, bytes(1, 2, 3), "RG3");
     }
+    writer.addRowBatch(batch);
+    batch.reset();
     // RG4
-    for(int i=0; i<1000; i++) {
-      writer.addRow(new SimpleStruct(bytes(1,2,3), null));
+    for (int i = 0; i < 1000; i++) {
+      appendRow(batch, bytes(1,2,3), null);
     }
+    writer.addRowBatch(batch);
+    batch.reset();
     // RG5
     for(int i=0; i<1000; i++) {
-      writer.addRow(new SimpleStruct(bytes(1,2,3), null));
+      appendRow(batch, bytes(1, 2, 3), null);
     }
+    writer.addRowBatch(batch);
+    batch.reset();
     // STRIPE 2
-    for(int i=0; i<5000; i++) {
-      writer.addRow(new SimpleStruct(bytes(1,2,3), null));
+    for (int i = 0; i < 5000; i++) {
+      appendRow(batch, bytes(1,2,3), null);
     }
+    writer.addRowBatch(batch);
+    batch.reset();
     // STRIPE 3
-    for(int i=0; i<5000; i++) {
-      writer.addRow(new SimpleStruct(bytes(1,2,3), "STRIPE-3"));
+    for (int i = 0; i < 5000; i++) {
+      appendRow(batch, bytes(1,2,3), "STRIPE-3");
     }
+    writer.addRowBatch(batch);
+    batch.reset();
     // STRIPE 4
-    for(int i=0; i<5000; i++) {
-      writer.addRow(new SimpleStruct(bytes(1,2,3), null));
+    for (int i = 0; i < 5000; i++) {
+      appendRow(batch, bytes(1,2,3), null);
     }
+    writer.addRowBatch(batch);
+    batch.reset();
     writer.close();
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));

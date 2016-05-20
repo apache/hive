@@ -16,10 +16,9 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.orc.impl;
 
 import org.apache.orc.OrcProto;
-import org.apache.orc.impl.StreamName;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

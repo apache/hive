@@ -78,4 +78,5 @@ public interface IntegerReader {
   void nextVector(ColumnVector column,
                   int[] data,
                   int length
-                  ) throws IOException;}
+                  ) throws IOException;
+}

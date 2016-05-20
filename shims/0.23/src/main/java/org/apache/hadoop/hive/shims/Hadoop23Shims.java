@@ -102,42 +102,18 @@ import org.apache.tez.test.MiniTezCluster;
 public class Hadoop23Shims extends HadoopShimsSecure {
 
   HadoopShims.MiniDFSShim cluster = null;
-  final boolean zeroCopy;
   final boolean storagePolicy;
-  final boolean fastread;
 
   public Hadoop23Shims() {
-    boolean zcr = false;
+    // in-memory HDFS
     boolean storage = false;
-    boolean fastread = false;
     try {
-      Class.forName("org.apache.hadoop.fs.CacheFlag", false,
-          ShimLoader.class.getClassLoader());
-      zcr = true;
+      Class.forName("org.apache.hadoop.hdfs.protocol.BlockStoragePolicy",
+            false, ShimLoader.class.getClassLoader());
+      storage = true;
     } catch (ClassNotFoundException ce) {
     }
-
-    if (zcr) {
-      // in-memory HDFS is only available after zcr
-      try {
-        Class.forName("org.apache.hadoop.hdfs.protocol.BlockStoragePolicy",
-            false, ShimLoader.class.getClassLoader());
-        storage = true;
-      } catch (ClassNotFoundException ce) {
-      }
-    }
-
-    if (storage) {
-      for (Method m : Text.class.getMethods()) {
-        if ("readWithKnownLength".equals(m.getName())) {
-          fastread = true;
-        }
-      }
-    }
-
     this.storagePolicy = storage;
-    this.zeroCopy = zcr;
-    this.fastread = fastread;
   }
 
   @Override
@@ -854,15 +830,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
-  public ZeroCopyReaderShim getZeroCopyReader(FSDataInputStream in, ByteBufferPoolShim pool) throws IOException {
-    if(zeroCopy) {
-      return ZeroCopyShims.getZeroCopyReader(in, pool);
-    }
-    /* not supported */
-    return null;
-  }
-
-  @Override
   public Configuration getConfiguration(org.apache.hadoop.mapreduce.JobContext context) {
     return context.getConfiguration();
   }
@@ -1302,26 +1269,4 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public long getFileId(FileSystem fs, String path) throws IOException {
     return ensureDfs(fs).getClient().getFileInfo(path).getFileId();
   }
-
-  private final class FastTextReaderShim implements TextReaderShim {
-    private final DataInputStream din;
-
-    public FastTextReaderShim(InputStream in) {
-      this.din = new DataInputStream(in);
-    }
-
-    @Override
-    public void read(Text txt, int len) throws IOException {
-      txt.readWithKnownLength(din, len);
-    }
-  }
-
-  @Override
-  public TextReaderShim getTextReaderShim(InputStream in) throws IOException {
-    if (!fastread) {
-      return super.getTextReaderShim(in);
-    }
-    return new FastTextReaderShim(in);
-  }
-
 }

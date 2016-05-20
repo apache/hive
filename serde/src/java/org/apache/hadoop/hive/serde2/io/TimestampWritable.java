@@ -21,13 +21,13 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.ql.util.TimestampUtils;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
@@ -61,7 +61,6 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
 
   private static final long SEVEN_BYTE_LONG_SIGN_FLIP = 0xff80L << 48;
 
-  private static final BigDecimal BILLION_BIG_DECIMAL = BigDecimal.valueOf(1000000000);
 
   /** The maximum number of bytes required for a TimestampWritable */
   public static final int MAX_BYTES = 13;
@@ -181,7 +180,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
    */
   public long getSeconds() {
     if (!timestampEmpty) {
-      return millisToSeconds(timestamp.getTime());
+      return TimestampUtils.millisToSeconds(timestamp.getTime());
     } else if (!bytesEmpty) {
       return TimestampWritable.getSeconds(currentBytes, offset);
     } else {
@@ -313,7 +312,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   public double getDouble() {
     double seconds, nanos;
     if (bytesEmpty) {
-      seconds = millisToSeconds(timestamp.getTime());
+      seconds = TimestampUtils.millisToSeconds(timestamp.getTime());
       nanos = timestamp.getNanos();
     } else {
       seconds = getSeconds();
@@ -325,17 +324,6 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   public static long getLong(Timestamp timestamp) {
     return timestamp.getTime() / 1000;
   }
-
-  /**
-  *
-  * @return double representation of the timestamp, accurate to nanoseconds
-  */
- public static double getDouble(Timestamp timestamp) {
-   double seconds, nanos;
-   seconds = millisToSeconds(timestamp.getTime());
-   nanos = timestamp.getNanos();
-   return seconds + nanos / 1000000000;
- }
 
   public void readFields(DataInput in) throws IOException {
     in.readFully(internalBytes, 0, 4);
@@ -493,7 +481,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
     long millis = t.getTime();
     int nanos = t.getNanos();
 
-    long seconds = millisToSeconds(millis);
+    long seconds = TimestampUtils.millisToSeconds(millis);
     boolean hasSecondVInt = seconds < 0 || seconds > Integer.MAX_VALUE;
     boolean hasDecimal = setNanosBytes(nanos, b, offset+4, hasSecondVInt);
 
@@ -541,20 +529,6 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
     return decimal != 0;
   }
 
-  public static Timestamp decimalToTimestamp(HiveDecimal d) {
-    BigDecimal nanoInstant = d.bigDecimalValue().multiply(BILLION_BIG_DECIMAL);
-    int nanos = nanoInstant.remainder(BILLION_BIG_DECIMAL).intValue();
-    if (nanos < 0) {
-      nanos += 1000000000;
-    }
-    long seconds =
-      nanoInstant.subtract(new BigDecimal(nanos)).divide(BILLION_BIG_DECIMAL).longValue();
-    Timestamp t = new Timestamp(seconds * 1000);
-    t.setNanos(nanos);
-
-    return t;
-  }
-
   public HiveDecimal getHiveDecimal() {
     if (timestampEmpty) {
       populateTimestamp();
@@ -565,10 +539,11 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   public static HiveDecimal getHiveDecimal(Timestamp timestamp) {
     // The BigDecimal class recommends not converting directly from double to BigDecimal,
     // so we convert through a string...
-    Double timestampDouble = TimestampWritable.getDouble(timestamp);
+    Double timestampDouble = TimestampUtils.getDouble(timestamp);
     HiveDecimal result = HiveDecimal.create(timestampDouble.toString());
     return result;
   }
+
 
   /**
    * Converts the time in seconds or milliseconds to a timestamp.
@@ -578,71 +553,6 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   public static Timestamp longToTimestamp(long time, boolean intToTimestampInSeconds) {
       // If the time is in seconds, converts it to milliseconds first.
       return new Timestamp(intToTimestampInSeconds ?  time * 1000 : time);
-  }
-
-  /**
-   * Converts the time in seconds or milliseconds to a timestamp.
-   * @param time time in seconds or in milliseconds
-   * @return the timestamp
-   */
-  public static void setTimestampFromLong(Timestamp timestamp, long time,
-      boolean intToTimestampInSeconds) {
-      // If the time is in seconds, converts it to milliseconds first.
-    timestamp.setTime(intToTimestampInSeconds ?  time * 1000 : time);
-  }
-
-  public static Timestamp doubleToTimestamp(double f) {
-    long seconds = (long) f;
-
-    // We must ensure the exactness of the double's fractional portion.
-    // 0.6 as the fraction part will be converted to 0.59999... and
-    // significantly reduce the savings from binary serialization
-    BigDecimal bd = new BigDecimal(String.valueOf(f));
-    bd = bd.subtract(new BigDecimal(seconds)).multiply(new BigDecimal(1000000000));
-    int nanos = bd.intValue();
-
-    // Convert to millis
-    long millis = seconds * 1000;
-    if (nanos < 0) {
-      millis -= 1000;
-      nanos += 1000000000;
-    }
-    Timestamp t = new Timestamp(millis);
-
-    // Set remaining fractional portion to nanos
-    t.setNanos(nanos);
-    return t;
-  }
-
-  public static void setTimestampFromDouble(Timestamp timestamp, double f) {
-    // Otherwise, BigDecimal throws an exception.  (Support vector operations that sometimes
-    // do work on double Not-a-Number NaN values).
-    if (Double.isNaN(f)) {
-      timestamp.setTime(0);
-      return;
-    }
-    // Algorithm used by TimestampWritable.doubleToTimestamp method.
-    // Allocates a BigDecimal object!
-
-    long seconds = (long) f;
-
-    // We must ensure the exactness of the double's fractional portion.
-    // 0.6 as the fraction part will be converted to 0.59999... and
-    // significantly reduce the savings from binary serialization
-    BigDecimal bd = new BigDecimal(String.valueOf(f));
-    bd = bd.subtract(new BigDecimal(seconds)).multiply(new BigDecimal(1000000000));
-    int nanos = bd.intValue();
-
-    // Convert to millis
-    long millis = seconds * 1000;
-    if (nanos < 0) {
-      millis -= 1000;
-      nanos += 1000000000;
-    }
-    timestamp.setTime(millis);
-
-    // Set remaining fractional portion to nanos
-    timestamp.setNanos(nanos);
   }
 
   public static void setTimestamp(Timestamp t, byte[] bytes, int offset) {
@@ -736,17 +646,5 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
         | ((0xFFL & bytes[offset+4]) << 24)
         | ((0xFFL & bytes[offset+5]) << 16)
         | ((0xFFL & bytes[offset+6]) << 8)) >> 8;
-  }
-
-  /**
-   * Rounds the number of milliseconds relative to the epoch down to the nearest whole number of
-   * seconds. 500 would round to 0, -500 would round to -1.
-   */
-  public static long millisToSeconds(long millis) {
-    if (millis >= 0) {
-      return millis / 1000;
-    } else {
-      return (millis - 999) / 1000;
-    }
   }
 }

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.orc.impl;
 
 import static org.junit.Assert.assertEquals;
 
@@ -27,8 +27,13 @@ import java.util.Random;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.orc.CompressionKind;
+import org.apache.orc.OrcFile;
+import org.apache.orc.TypeDescription;
+import org.apache.orc.Writer;
+import org.apache.orc.tools.FileDump;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,22 +58,26 @@ public class TestRLEv2 {
     fs.delete(testFilePath, false);
   }
 
+  void appendInt(VectorizedRowBatch batch, int i) {
+    ((LongColumnVector) batch.cols[0]).vector[batch.size++] = i;
+  }
+
   @Test
   public void testFixedDeltaZero() throws Exception {
-    ObjectInspector inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-        Integer.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    TypeDescription schema = TypeDescription.createInt();
     Writer w = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
             .compress(CompressionKind.NONE)
-            .inspector(inspector)
+            .setSchema(schema)
             .rowIndexStride(0)
             .encodingStrategy(OrcFile.EncodingStrategy.COMPRESSION)
             .version(OrcFile.Version.V_0_12)
     );
-
+    VectorizedRowBatch batch = schema.createRowBatch(5120);
     for (int i = 0; i < 5120; ++i) {
-      w.addRow(123);
+      appendInt(batch, 123);
     }
+    w.addRowBatch(batch);
     w.close();
 
     PrintStream origOut = System.out;
@@ -85,20 +94,20 @@ public class TestRLEv2 {
 
   @Test
   public void testFixedDeltaOne() throws Exception {
-    ObjectInspector inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-        Integer.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    TypeDescription schema = TypeDescription.createInt();
     Writer w = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
             .compress(CompressionKind.NONE)
-            .inspector(inspector)
+            .setSchema(schema)
             .rowIndexStride(0)
             .encodingStrategy(OrcFile.EncodingStrategy.COMPRESSION)
             .version(OrcFile.Version.V_0_12)
     );
-
+    VectorizedRowBatch batch = schema.createRowBatch(5120);
     for (int i = 0; i < 5120; ++i) {
-      w.addRow(i % 512);
+      appendInt(batch, i % 512);
     }
+    w.addRowBatch(batch);
     w.close();
 
     PrintStream origOut = System.out;
@@ -115,20 +124,20 @@ public class TestRLEv2 {
 
   @Test
   public void testFixedDeltaOneDescending() throws Exception {
-    ObjectInspector inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-        Integer.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    TypeDescription schema = TypeDescription.createInt();
     Writer w = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
             .compress(CompressionKind.NONE)
-            .inspector(inspector)
+            .setSchema(schema)
             .rowIndexStride(0)
             .encodingStrategy(OrcFile.EncodingStrategy.COMPRESSION)
             .version(OrcFile.Version.V_0_12)
     );
-
+    VectorizedRowBatch batch = schema.createRowBatch(5120);
     for (int i = 0; i < 5120; ++i) {
-      w.addRow(512 - (i % 512));
+      appendInt(batch, 512 - (i % 512));
     }
+    w.addRowBatch(batch);
     w.close();
 
     PrintStream origOut = System.out;
@@ -145,20 +154,20 @@ public class TestRLEv2 {
 
   @Test
   public void testFixedDeltaLarge() throws Exception {
-    ObjectInspector inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-        Integer.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    TypeDescription schema = TypeDescription.createInt();
     Writer w = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
             .compress(CompressionKind.NONE)
-            .inspector(inspector)
+            .setSchema(schema)
             .rowIndexStride(0)
             .encodingStrategy(OrcFile.EncodingStrategy.COMPRESSION)
             .version(OrcFile.Version.V_0_12)
     );
-
+    VectorizedRowBatch batch = schema.createRowBatch(5120);
     for (int i = 0; i < 5120; ++i) {
-      w.addRow(i % 512 + ((i % 512 ) * 100));
+      appendInt(batch, i % 512 + ((i % 512) * 100));
     }
+    w.addRowBatch(batch);
     w.close();
 
     PrintStream origOut = System.out;
@@ -175,20 +184,20 @@ public class TestRLEv2 {
 
   @Test
   public void testFixedDeltaLargeDescending() throws Exception {
-    ObjectInspector inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-        Integer.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    TypeDescription schema = TypeDescription.createInt();
     Writer w = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
             .compress(CompressionKind.NONE)
-            .inspector(inspector)
+            .setSchema(schema)
             .rowIndexStride(0)
             .encodingStrategy(OrcFile.EncodingStrategy.COMPRESSION)
             .version(OrcFile.Version.V_0_12)
     );
-
+    VectorizedRowBatch batch = schema.createRowBatch(5120);
     for (int i = 0; i < 5120; ++i) {
-      w.addRow((512 - i % 512) + ((i % 512 ) * 100));
+      appendInt(batch, (512 - i % 512) + ((i % 512) * 100));
     }
+    w.addRowBatch(batch);
     w.close();
 
     PrintStream origOut = System.out;
@@ -205,20 +214,20 @@ public class TestRLEv2 {
 
   @Test
   public void testShortRepeat() throws Exception {
-    ObjectInspector inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-        Integer.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    TypeDescription schema = TypeDescription.createInt();
     Writer w = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
             .compress(CompressionKind.NONE)
-            .inspector(inspector)
+            .setSchema(schema)
             .rowIndexStride(0)
             .encodingStrategy(OrcFile.EncodingStrategy.COMPRESSION)
             .version(OrcFile.Version.V_0_12)
     );
-
+    VectorizedRowBatch batch = schema.createRowBatch(5120);
     for (int i = 0; i < 5; ++i) {
-      w.addRow(10);
+      appendInt(batch, 10);
     }
+    w.addRowBatch(batch);
     w.close();
 
     PrintStream origOut = System.out;
@@ -234,21 +243,21 @@ public class TestRLEv2 {
 
   @Test
   public void testDeltaUnknownSign() throws Exception {
-    ObjectInspector inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-        Integer.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    TypeDescription schema = TypeDescription.createInt();
     Writer w = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
             .compress(CompressionKind.NONE)
-            .inspector(inspector)
+            .setSchema(schema)
             .rowIndexStride(0)
             .encodingStrategy(OrcFile.EncodingStrategy.COMPRESSION)
             .version(OrcFile.Version.V_0_12)
     );
-
-    w.addRow(0);
+    VectorizedRowBatch batch = schema.createRowBatch(5120);
+    appendInt(batch, 0);
     for (int i = 0; i < 511; ++i) {
-      w.addRow(i);
+      appendInt(batch, i);
     }
+    w.addRowBatch(batch);
     w.close();
 
     PrintStream origOut = System.out;
@@ -266,22 +275,23 @@ public class TestRLEv2 {
 
   @Test
   public void testPatchedBase() throws Exception {
-    ObjectInspector inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-        Integer.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    TypeDescription schema = TypeDescription.createInt();
     Writer w = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
             .compress(CompressionKind.NONE)
-            .inspector(inspector)
+            .setSchema(schema)
             .rowIndexStride(0)
             .encodingStrategy(OrcFile.EncodingStrategy.COMPRESSION)
             .version(OrcFile.Version.V_0_12)
     );
 
     Random rand = new Random(123);
-    w.addRow(10000000);
+    VectorizedRowBatch batch = schema.createRowBatch(5120);
+    appendInt(batch, 10000000);
     for (int i = 0; i < 511; ++i) {
-      w.addRow(rand.nextInt(i+1));
+      appendInt(batch, rand.nextInt(i+1));
     }
+    w.addRowBatch(batch);
     w.close();
 
     PrintStream origOut = System.out;

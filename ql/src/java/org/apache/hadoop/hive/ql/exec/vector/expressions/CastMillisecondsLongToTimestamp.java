@@ -38,10 +38,9 @@ public class CastMillisecondsLongToTimestamp extends VectorExpression {
     super();
   }
 
-  private void setMilliseconds(TimestampColumnVector timestampColVector, long[] vector, int elementNum) {
-    TimestampWritable.setTimestampFromLong(
-        timestampColVector.getScratchTimestamp(), vector[elementNum],
-        /* intToTimestampInSeconds */ false);
+  private void setMilliseconds(TimestampColumnVector timestampColVector,
+                               long[] vector, int elementNum) {
+    timestampColVector.getScratchTimestamp().setTime(vector[elementNum]);
     timestampColVector.setFromScratchTimestamp(elementNum);
   }
 

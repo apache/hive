@@ -403,57 +403,6 @@ public interface HadoopShims {
   public StoragePolicyShim getStoragePolicyShim(FileSystem fs);
 
   /**
-   * a hadoop.io ByteBufferPool shim.
-   */
-  public interface ByteBufferPoolShim {
-    /**
-     * Get a new ByteBuffer from the pool.  The pool can provide this from
-     * removing a buffer from its internal cache, or by allocating a
-     * new buffer.
-     *
-     * @param direct     Whether the buffer should be direct.
-     * @param length     The minimum length the buffer will have.
-     * @return           A new ByteBuffer. Its capacity can be less
-     *                   than what was requested, but must be at
-     *                   least 1 byte.
-     */
-    ByteBuffer getBuffer(boolean direct, int length);
-
-    /**
-     * Release a buffer back to the pool.
-     * The pool may choose to put this buffer into its cache/free it.
-     *
-     * @param buffer    a direct bytebuffer
-     */
-    void putBuffer(ByteBuffer buffer);
-  }
-
-  /**
-   * Provides an HDFS ZeroCopyReader shim.
-   * @param in FSDataInputStream to read from (where the cached/mmap buffers are tied to)
-   * @param in ByteBufferPoolShim to allocate fallback buffers with
-   *
-   * @return returns null if not supported
-   */
-  public ZeroCopyReaderShim getZeroCopyReader(FSDataInputStream in, ByteBufferPoolShim pool) throws IOException;
-
-  public interface ZeroCopyReaderShim {
-    /**
-     * Get a ByteBuffer from the FSDataInputStream - this can be either a HeapByteBuffer or an MappedByteBuffer.
-     * Also move the in stream by that amount. The data read can be small than maxLength.
-     *
-     * @return ByteBuffer read from the stream,
-     */
-    public ByteBuffer readBuffer(int maxLength, boolean verifyChecksums) throws IOException;
-    /**
-     * Release a ByteBuffer obtained from a read on the
-     * Also move the in stream by that amount. The data read can be small than maxLength.
-     *
-     */
-    public void releaseBuffer(ByteBuffer buffer);
-  }
-
-  /**
    * Get configuration from JobContext
    */
   public Configuration getConfiguration(JobContext context);
@@ -692,23 +641,4 @@ public interface HadoopShims {
    */
   long getFileId(FileSystem fs, String path) throws IOException;
 
-  /**
-   * Read data into a Text object in the fastest way possible
-   */
-  public interface TextReaderShim {
-    /**
-     * @param txt
-     * @param len
-     * @return bytes read
-     * @throws IOException
-     */
-    void read(Text txt, int size) throws IOException;
-  }
-
-  /**
-   * Wrap a TextReaderShim around an input stream. The reader shim will not
-   * buffer any reads from the underlying stream and will only consume bytes
-   * which are required for TextReaderShim.read() input.
-   */
-  public TextReaderShim getTextReaderShim(InputStream input) throws IOException;
 }

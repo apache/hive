@@ -57,16 +57,15 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnState;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
-import org.apache.hadoop.hive.ql.io.orc.FileDump;
+import org.apache.orc.impl.OrcAcidUtils;
+import org.apache.orc.tools.FileDump;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.OrcStruct;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.RecordReader;
@@ -1089,7 +1088,7 @@ public class TestStreaming {
     Reader reader = OrcFile.createReader(orcFile,
             OrcFile.readerOptions(conf).filesystem(fs));
 
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
     StructObjectInspector inspector = (StructObjectInspector) reader
             .getObjectInspector();
 
@@ -1561,7 +1560,7 @@ public class TestStreaming {
       final Map<String, List<Long>> offsetMap, final String key, final int numEntries)
       throws IOException {
     Path dataPath = new Path(file);
-    Path sideFilePath = OrcRecordUpdater.getSideFile(dataPath);
+    Path sideFilePath = OrcAcidUtils.getSideFile(dataPath);
     Path cPath = new Path(sideFilePath.getParent(), sideFilePath.getName() + ".corrupt");
     FileSystem fs = sideFilePath.getFileSystem(conf);
     List<Long> offsets = offsetMap.get(key);

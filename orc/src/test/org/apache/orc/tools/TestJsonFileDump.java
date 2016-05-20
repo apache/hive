@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.orc.tools;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -26,20 +26,31 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.PrintStream;
+import java.net.URL;
 import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hive.common.util.HiveTestUtils;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.orc.CompressionKind;
+import org.apache.orc.OrcConf;
+import org.apache.orc.OrcFile;
+import org.apache.orc.TypeDescription;
+import org.apache.orc.Writer;
 import org.junit.Before;
 import org.junit.Test;
 
 public class TestJsonFileDump {
+  public static String getFileFromClasspath(String name) {
+    URL url = ClassLoader.getSystemResource(name);
+    if (url == null) {
+      throw new IllegalArgumentException("Could not find " + name);
+    }
+    return url.getPath();
+  }
 
   Path workDir = new Path(System.getProperty("test.tmp.dir"));
   Configuration conf;
@@ -55,21 +66,10 @@ public class TestJsonFileDump {
     fs.delete(testFilePath, false);
   }
 
-  static class MyRecord {
-    int i;
-    long l;
-    String s;
-    MyRecord(int i, long l, String s) {
-      this.i = i;
-      this.l = l;
-      this.s = s;
-    }
-  }
-
   static void checkOutput(String expected,
                                   String actual) throws Exception {
     BufferedReader eStream =
-        new BufferedReader(new FileReader(HiveTestUtils.getFileFromClasspath(expected)));
+        new BufferedReader(new FileReader(getFileFromClasspath(expected)));
     BufferedReader aStream =
         new BufferedReader(new FileReader(actual));
     String expectedLine = eStream.readLine();
@@ -86,15 +86,14 @@ public class TestJsonFileDump {
 
   @Test
   public void testJsonDump() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector
-          (MyRecord.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
-    conf.set(HiveConf.ConfVars.HIVE_ORC_ENCODING_STRATEGY.varname, "COMPRESSION");
+    TypeDescription schema = TypeDescription.createStruct()
+        .addField("i", TypeDescription.createInt())
+        .addField("l", TypeDescription.createLong())
+        .addField("s", TypeDescription.createString());
+    conf.set(OrcConf.ENCODING_STRATEGY.getAttribute(), "COMPRESSION");
     OrcFile.WriterOptions options = OrcFile.writerOptions(conf)
         .fileSystem(fs)
-        .inspector(inspector)
+        .setSchema(schema)
         .stripeSize(100000)
         .compress(CompressionKind.ZLIB)
         .bufferSize(10000)
@@ -113,13 +112,25 @@ public class TestJsonFileDump {
         "before", "us,", "we", "were", "all", "going", "direct", "to",
         "Heaven,", "we", "were", "all", "going", "direct", "the", "other",
         "way"};
+    VectorizedRowBatch batch = schema.createRowBatch(1000);
     for(int i=0; i < 21000; ++i) {
+      ((LongColumnVector) batch.cols[0]).vector[batch.size] = r1.nextInt();
+      ((LongColumnVector) batch.cols[1]).vector[batch.size] = r1.nextLong();
       if (i % 100 == 0) {
-        writer.addRow(new MyRecord(r1.nextInt(), r1.nextLong(), null));
+        batch.cols[2].noNulls = false;
+        batch.cols[2].isNull[batch.size] = true;
       } else {
-        writer.addRow(new MyRecord(r1.nextInt(), r1.nextLong(),
-            words[r1.nextInt(words.length)]));
+        ((BytesColumnVector) batch.cols[2]).setVal(batch.size,
+            words[r1.nextInt(words.length)].getBytes());
       }
+      batch.size += 1;
+      if (batch.size == batch.getMaxSize()) {
+        writer.addRowBatch(batch);
+        batch.reset();
+      }
+    }
+    if (batch.size > 0) {
+      writer.addRowBatch(batch);
     }
 
     writer.close();

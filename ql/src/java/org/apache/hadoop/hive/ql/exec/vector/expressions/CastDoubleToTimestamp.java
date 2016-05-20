@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.*;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.util.TimestampUtils;
 
 public class CastDoubleToTimestamp extends VectorExpression {
   private static final long serialVersionUID = 1L;
@@ -40,9 +42,8 @@ public class CastDoubleToTimestamp extends VectorExpression {
 
   private void setDouble(TimestampColumnVector timestampColVector,
       double[] vector, int elementNum) {
-    TimestampWritable.setTimestampFromDouble(
-        timestampColVector.getScratchTimestamp(), vector[elementNum]);
-    timestampColVector.setFromScratchTimestamp(elementNum);
+    timestampColVector.set(elementNum,
+        TimestampUtils.doubleToTimestamp(vector[elementNum]));
   }
 
   @Override

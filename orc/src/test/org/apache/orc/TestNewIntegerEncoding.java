@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.orc;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -29,12 +29,9 @@ import java.util.Random;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.orc.CompressionKind;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -70,14 +67,23 @@ public class TestNewIntegerEncoding {
     }
   }
 
-  public static class Row {
-    Integer int1;
-    Long long1;
+  public static TypeDescription getRowSchema() {
+    return TypeDescription.createStruct()
+        .addField("int1", TypeDescription.createInt())
+        .addField("long1", TypeDescription.createLong());
+  }
 
-    public Row(int val, long l) {
-      this.int1 = val;
-      this.long1 = l;
-    }
+  public static void appendRow(VectorizedRowBatch batch,
+                               int int1, long long1) {
+    int row = batch.size++;
+    ((LongColumnVector) batch.cols[0]).vector[row] = int1;
+    ((LongColumnVector) batch.cols[1]).vector[row] = long1;
+  }
+
+  public static void appendLong(VectorizedRowBatch batch,
+                                long long1) {
+    int row = batch.size++;
+    ((LongColumnVector) batch.cols[0]).vector[row] = long1;
   }
 
   Path workDir = new Path(System.getProperty("test.tmp.dir", "target"
@@ -101,42 +107,36 @@ public class TestNewIntegerEncoding {
 
   @Test
   public void testBasicRow() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Row.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
-
+    TypeDescription schema= getRowSchema();
     Writer writer = OrcFile.createWriter(testFilePath,
                                          OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
+                                         .setSchema(schema)
                                          .stripeSize(100000)
                                          .compress(CompressionKind.NONE)
                                          .bufferSize(10000)
                                          .encodingStrategy(encodingStrategy));
-    writer.addRow(new Row(111, 1111L));
-    writer.addRow(new Row(111, 1111L));
-    writer.addRow(new Row(111, 1111L));
+    VectorizedRowBatch batch = schema.createRowBatch();
+    appendRow(batch, 111, 1111L);
+    appendRow(batch, 111, 1111L);
+    appendRow(batch, 111, 1111L);
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(new IntWritable(111), ((OrcStruct) row).getFieldValue(0));
-      assertEquals(new LongWritable(1111), ((OrcStruct) row).getFieldValue(1));
+    batch = reader.getSchema().createRowBatch();
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(111, ((LongColumnVector) batch.cols[0]).vector[r]);
+        assertEquals(1111, ((LongColumnVector) batch.cols[1]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testBasicOld() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
-
+    TypeDescription schema = TypeDescription.createLong();
     long[] inp = new long[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 6,
         7, 8, 9, 10, 1, 1, 1, 1, 1, 1, 10, 9, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1,
         2, 5, 1, 3, 7, 1, 9, 2, 6, 3, 7, 1, 9, 2, 6, 3, 7, 1, 9, 2, 6, 3, 7, 1,
@@ -145,33 +145,34 @@ public class TestNewIntegerEncoding {
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
     Writer writer = OrcFile.createWriter(testFilePath,
                                          OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
+                                         .setSchema(schema)
                                          .compress(CompressionKind.NONE)
                                          .version(OrcFile.Version.V_0_11)
                                          .bufferSize(10000)
                                          .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    batch = reader.getSchema().createRowBatch();
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testBasicNew() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     long[] inp = new long[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 6,
         7, 8, 9, 10, 1, 1, 1, 1, 1, 1, 10, 9, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1,
@@ -181,167 +182,171 @@ public class TestNewIntegerEncoding {
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .compress(CompressionKind.NONE)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .compress(CompressionKind.NONE)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    batch = reader.getSchema().createRowBatch();
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
   
   @Test
   public void testBasicDelta1() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     long[] inp = new long[] { -500, -400, -350, -325, -310 };
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .compress(CompressionKind.NONE)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .compress(CompressionKind.NONE)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testBasicDelta2() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     long[] inp = new long[] { -500, -600, -650, -675, -710 };
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .compress(CompressionKind.NONE)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .compress(CompressionKind.NONE)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testBasicDelta3() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     long[] inp = new long[] { 500, 400, 350, 325, 310 };
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .compress(CompressionKind.NONE)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .compress(CompressionKind.NONE)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testBasicDelta4() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     long[] inp = new long[] { 500, 600, 650, 675, 710 };
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .compress(CompressionKind.NONE)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .compress(CompressionKind.NONE)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testDeltaOverflow() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory
-          .getReflectionObjectInspector(Long.class,
-              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     long[] inp = new long[]{4513343538618202719l, 4513343538618202711l,
         2911390882471569739l,
@@ -350,31 +355,31 @@ public class TestNewIntegerEncoding {
 
     Writer writer = OrcFile.createWriter(
         testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000)
+        OrcFile.writerOptions(conf).setSchema(schema).stripeSize(100000)
             .compress(CompressionKind.NONE).bufferSize(10000));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for (Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile
         .createReader(testFilePath, OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testDeltaOverflow2() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory
-          .getReflectionObjectInspector(Long.class,
-              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     long[] inp = new long[]{Long.MAX_VALUE, 4513343538618202711l,
         2911390882471569739l,
@@ -383,31 +388,31 @@ public class TestNewIntegerEncoding {
 
     Writer writer = OrcFile.createWriter(
         testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000)
+        OrcFile.writerOptions(conf).setSchema(schema).stripeSize(100000)
             .compress(CompressionKind.NONE).bufferSize(10000));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for (Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile
         .createReader(testFilePath, OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testDeltaOverflow3() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory
-          .getReflectionObjectInspector(Long.class,
-              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     long[] inp = new long[]{-4513343538618202711l, -2911390882471569739l, -2,
         Long.MAX_VALUE};
@@ -415,161 +420,166 @@ public class TestNewIntegerEncoding {
 
     Writer writer = OrcFile.createWriter(
         testFilePath,
-        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000)
+        OrcFile.writerOptions(conf).setSchema(schema).stripeSize(100000)
             .compress(CompressionKind.NONE).bufferSize(10000));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for (Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile
         .createReader(testFilePath, OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testIntegerMin() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     List<Long> input = Lists.newArrayList();
     input.add((long) Integer.MIN_VALUE);
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testIntegerMax() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     List<Long> input = Lists.newArrayList();
     input.add((long) Integer.MAX_VALUE);
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .compress(CompressionKind.NONE)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .compress(CompressionKind.NONE)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testLongMin() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     List<Long> input = Lists.newArrayList();
     input.add(Long.MIN_VALUE);
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .compress(CompressionKind.NONE)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .compress(CompressionKind.NONE)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testLongMax() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     List<Long> input = Lists.newArrayList();
     input.add(Long.MAX_VALUE);
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .compress(CompressionKind.NONE)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .compress(CompressionKind.NONE)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testRandomInt() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     List<Long> input = Lists.newArrayList();
     Random rand = new Random();
@@ -578,34 +588,35 @@ public class TestNewIntegerEncoding {
     }
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .compress(CompressionKind.NONE)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .compress(CompressionKind.NONE)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch(100000);
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testRandomLong() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     List<Long> input = Lists.newArrayList();
     Random rand = new Random();
@@ -614,34 +625,35 @@ public class TestNewIntegerEncoding {
     }
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .compress(CompressionKind.NONE)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .compress(CompressionKind.NONE)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch(100000);
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testPatchedBaseNegativeMin() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     long[] inp = new long[] { 20, 2, 3, 2, 1, 3, 17, 71, 35, 2, 1, 139, 2, 2,
         3, 1783, 475, 2, 1, 1, 3, 1, 3, 2, 32, 1, 2, 3, 1, 8, 30, 1, 3, 414, 1,
@@ -658,34 +670,35 @@ public class TestNewIntegerEncoding {
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .compress(CompressionKind.NONE)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .compress(CompressionKind.NONE)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testPatchedBaseNegativeMin2() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     long[] inp = new long[] { 20, 2, 3, 2, 1, 3, 17, 71, 35, 2, 1, 139, 2, 2,
         3, 1783, 475, 2, 1, 1, 3, 1, 3, 2, 32, 1, 2, 3, 1, 8, 30, 1, 3, 414, 1,
@@ -702,34 +715,35 @@ public class TestNewIntegerEncoding {
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .compress(CompressionKind.NONE)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .compress(CompressionKind.NONE)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testPatchedBaseNegativeMin3() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     long[] inp = new long[] { 20, 2, 3, 2, 1, 3, 17, 71, 35, 2, 1, 139, 2, 2,
         3, 1783, 475, 2, 1, 1, 3, 1, 3, 2, 32, 1, 2, 3, 1, 8, 30, 1, 3, 414, 1,
@@ -746,34 +760,35 @@ public class TestNewIntegerEncoding {
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .compress(CompressionKind.NONE)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .compress(CompressionKind.NONE)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testPatchedBaseNegativeMin4() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     long[] inp = new long[] { 13, 13, 11, 8, 13, 10, 10, 11, 11, 14, 11, 7, 13,
         12, 12, 11, 15, 12, 12, 9, 8, 10, 13, 11, 8, 6, 5, 6, 11, 7, 15, 10, 7,
@@ -781,34 +796,35 @@ public class TestNewIntegerEncoding {
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .compress(CompressionKind.NONE)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .compress(CompressionKind.NONE)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testPatchedBaseAt0() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     List<Long> input = Lists.newArrayList();
     Random rand = new Random();
@@ -818,34 +834,35 @@ public class TestNewIntegerEncoding {
     input.set(0, 20000L);
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .compress(CompressionKind.NONE)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .compress(CompressionKind.NONE)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch(5120);
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testPatchedBaseAt1() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     List<Long> input = Lists.newArrayList();
     Random rand = new Random();
@@ -855,34 +872,34 @@ public class TestNewIntegerEncoding {
     input.set(1, 20000L);
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .compress(CompressionKind.NONE)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .compress(CompressionKind.NONE)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch(5120);
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testPatchedBaseAt255() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     List<Long> input = Lists.newArrayList();
     Random rand = new Random();
@@ -892,33 +909,34 @@ public class TestNewIntegerEncoding {
     input.set(255, 20000L);
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch(5120);
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testPatchedBaseAt256() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     List<Long> input = Lists.newArrayList();
     Random rand = new Random();
@@ -928,33 +946,34 @@ public class TestNewIntegerEncoding {
     input.set(256, 20000L);
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch(5120);
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testPatchedBase510() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     List<Long> input = Lists.newArrayList();
     Random rand = new Random();
@@ -964,33 +983,34 @@ public class TestNewIntegerEncoding {
     input.set(510, 20000L);
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch(5120);
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testPatchedBase511() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     List<Long> input = Lists.newArrayList();
     Random rand = new Random();
@@ -1000,33 +1020,34 @@ public class TestNewIntegerEncoding {
     input.set(511, 20000L);
 
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .stripeSize(100000)
-                                         .bufferSize(10000)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .stripeSize(100000)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch(5120);
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testPatchedBaseMax1() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     List<Long> input = Lists.newArrayList();
     Random rand = new Random();
@@ -1037,32 +1058,33 @@ public class TestNewIntegerEncoding {
 
     Writer writer = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
-        .inspector(inspector)
-        .stripeSize(100000)
-        .bufferSize(10000)
-        .encodingStrategy(encodingStrategy));
+            .setSchema(schema)
+            .stripeSize(100000)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch(5120);
     for (Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testPatchedBaseMax2() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     List<Long> input = Lists.newArrayList();
     Random rand = new Random();
@@ -1075,32 +1097,33 @@ public class TestNewIntegerEncoding {
 
     Writer writer = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
-        .inspector(inspector)
-        .stripeSize(100000)
-        .bufferSize(10000)
-        .encodingStrategy(encodingStrategy));
+            .setSchema(schema)
+            .stripeSize(100000)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch(5120);
     for (Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testPatchedBaseMax3() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     List<Long> input = Lists.newArrayList();
     input.add(371946367L);
@@ -1126,32 +1149,32 @@ public class TestNewIntegerEncoding {
 
     Writer writer = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
-        .inspector(inspector)
-        .stripeSize(100000)
-        .bufferSize(10000)
-        .encodingStrategy(encodingStrategy));
+            .setSchema(schema)
+            .stripeSize(100000)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for (Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testPatchedBaseMax4() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     List<Long> input = Lists.newArrayList();
     for (int i = 0; i < 25; i++) {
@@ -1180,39 +1203,42 @@ public class TestNewIntegerEncoding {
 
     Writer writer = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
-        .inspector(inspector)
-        .stripeSize(100000)
-        .bufferSize(10000)
-        .encodingStrategy(encodingStrategy));
+            .setSchema(schema)
+            .stripeSize(100000)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
     for (Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 
   @Test
   public void testPatchedBaseTimestamp() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(TSRow.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createStruct()
+        .addField("ts", TypeDescription.createTimestamp());
 
     Writer writer = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
-        .inspector(inspector)
-        .stripeSize(100000)
-        .bufferSize(10000)
-        .encodingStrategy(encodingStrategy));
+            .setSchema(schema)
+            .stripeSize(100000)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
 
     List<Timestamp> tslist = Lists.newArrayList();
     tslist.add(Timestamp.valueOf("2099-01-01 00:00:00"));
@@ -1248,68 +1274,68 @@ public class TestNewIntegerEncoding {
     tslist.add(Timestamp.valueOf("2002-01-01 00:00:00"));
     tslist.add(Timestamp.valueOf("2005-01-01 00:00:00"));
     tslist.add(Timestamp.valueOf("1974-01-01 00:00:00"));
-
+    int idx = 0;
     for (Timestamp ts : tslist) {
-      writer.addRow(new TSRow(ts));
+      ((TimestampColumnVector) batch.cols[0]).set(idx, ts);
     }
-
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
-    int idx = 0;
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(tslist.get(idx++).getNanos(),
-          ((TimestampWritable) ((OrcStruct) row).getFieldValue(0)).getNanos());
+    batch = reader.getSchema().createRowBatch();
+    idx = 0;
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(tslist.get(idx++),
+            ((TimestampColumnVector) batch.cols[0]).asScratchTimestamp(r));
+      }
     }
   }
 
   @Test
   public void testDirectLargeNegatives() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
-          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     Writer writer = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
-        .inspector(inspector)
-        .stripeSize(100000)
-        .bufferSize(10000)
-        .encodingStrategy(encodingStrategy));
+            .setSchema(schema)
+            .stripeSize(100000)
+            .bufferSize(10000)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch();
 
-    writer.addRow(-7486502418706614742L);
-    writer.addRow(0L);
-    writer.addRow(1L);
-    writer.addRow(1L);
-    writer.addRow(-5535739865598783616L);
+    appendLong(batch, -7486502418706614742L);
+    appendLong(batch, 0L);
+    appendLong(batch, 1L);
+    appendLong(batch, 1L);
+    appendLong(batch, -5535739865598783616L);
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
-    Object row = rows.next(null);
-    assertEquals(-7486502418706614742L, ((LongWritable) row).get());
-    row = rows.next(row);
-    assertEquals(0L, ((LongWritable) row).get());
-    row = rows.next(row);
-    assertEquals(1L, ((LongWritable) row).get());
-    row = rows.next(row);
-    assertEquals(1L, ((LongWritable) row).get());
-    row = rows.next(row);
-    assertEquals(-5535739865598783616L, ((LongWritable) row).get());
+    batch = reader.getSchema().createRowBatch();
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(5, batch.size);
+    assertEquals(-7486502418706614742L,
+        ((LongColumnVector) batch.cols[0]).vector[0]);
+    assertEquals(0L,
+        ((LongColumnVector) batch.cols[0]).vector[1]);
+    assertEquals(1L,
+        ((LongColumnVector) batch.cols[0]).vector[2]);
+    assertEquals(1L,
+        ((LongColumnVector) batch.cols[0]).vector[3]);
+    assertEquals(-5535739865598783616L,
+        ((LongColumnVector) batch.cols[0]).vector[4]);
+    assertEquals(false, rows.nextBatch(batch));
   }
 
   @Test
   public void testSeek() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory.getReflectionObjectInspector(
-          Long.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
+    TypeDescription schema = TypeDescription.createLong();
 
     List<Long> input = Lists.newArrayList();
     Random rand = new Random();
@@ -1317,26 +1343,31 @@ public class TestNewIntegerEncoding {
       input.add((long) rand.nextInt());
     }
     Writer writer = OrcFile.createWriter(testFilePath,
-                                         OrcFile.writerOptions(conf)
-                                         .inspector(inspector)
-                                         .compress(CompressionKind.NONE)
-                                         .stripeSize(100000)
-                                         .bufferSize(10000)
-                                         .version(OrcFile.Version.V_0_11)
-                                         .encodingStrategy(encodingStrategy));
+        OrcFile.writerOptions(conf)
+            .setSchema(schema)
+            .compress(CompressionKind.NONE)
+            .stripeSize(100000)
+            .bufferSize(10000)
+            .version(OrcFile.Version.V_0_11)
+            .encodingStrategy(encodingStrategy));
+    VectorizedRowBatch batch = schema.createRowBatch(100000);
     for(Long l : input) {
-      writer.addRow(l);
+      appendLong(batch, l);
     }
+    writer.addRowBatch(batch);
     writer.close();
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
     RecordReader rows = reader.rows();
+    batch = reader.getSchema().createRowBatch();
     int idx = 55555;
     rows.seekToRow(idx);
-    while (rows.hasNext()) {
-      Object row = rows.next(null);
-      assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
+    while (rows.nextBatch(batch)) {
+      for(int r=0; r < batch.size; ++r) {
+        assertEquals(input.get(idx++).longValue(),
+            ((LongColumnVector) batch.cols[0]).vector[r]);
+      }
     }
   }
 }

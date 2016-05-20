@@ -45,6 +45,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.TypeDesc;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
@@ -537,7 +538,7 @@ public class TestOrcFile {
 
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
     int idx = 0;
     while (rows.hasNext()) {
       Object row = rows.next(null);
@@ -574,7 +575,7 @@ public class TestOrcFile {
     List<? extends StructField> fields = readerInspector.getAllStructFieldRefs();
     HiveDecimalObjectInspector doi = (HiveDecimalObjectInspector) readerInspector.
         getStructFieldRef("dec").getFieldObjectInspector();
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
     while (rows.hasNext()) {
       Object row = rows.next(null);
       assertEquals(null, doi.getPrimitiveWritableObject(readerInspector.getStructFieldData(row,
@@ -617,7 +618,7 @@ public class TestOrcFile {
     List<? extends StructField> fields = readerInspector.getAllStructFieldRefs();
     HiveDecimalObjectInspector doi = (HiveDecimalObjectInspector) readerInspector.
         getStructFieldRef("dec").getFieldObjectInspector();
-    RecordReader rows = reader.rows(null);
+    RecordReader rows = reader.rows();
     int idx = 0;
     while (rows.hasNext()) {
       Object row = rows.next(null);
@@ -1702,6 +1703,11 @@ public class TestOrcFile {
     RecordReader rows = reader.rows();
     OrcStruct row = null;
     for(int i=COUNT-1; i >= 0; --i) {
+      // since we are walking backwards, seek back a buffer width so that
+      // we load the previous buffer of rows
+      if (i % COUNT == COUNT - 1) {
+        rows.seekToRow(i - (COUNT - 1));
+      }
       rows.seekToRow(i);
       row = (OrcStruct) rows.next(row);
       BigRow expected = createRandomRow(intValues, doubleValues,
@@ -1816,6 +1822,11 @@ public class TestOrcFile {
     /* all tests are identical to the other seek() tests */
     OrcStruct row = null;
     for(int i=COUNT-1; i >= 0; --i) {
+      // since we are walking backwards, seek back a buffer width so that
+      // we load the previous buffer of rows
+      if (i % COUNT == COUNT - 1) {
+        rows.seekToRow(i - (COUNT - 1));
+      }
       rows.seekToRow(i);
       row = (OrcStruct) rows.next(row);
       BigRow expected = createRandomRow(intValues, doubleValues,
@@ -2067,10 +2078,11 @@ public class TestOrcFile {
         .range(0L, Long.MAX_VALUE)
         .include(new boolean[]{true, true, true})
         .searchArgument(sarg, new String[]{null, "int1", "string1"}));
-    assertEquals(1000L, rows.getRowNumber());
+    assertEquals(0L, rows.getRowNumber());
     OrcStruct row = null;
     for(int i=1000; i < 2000; ++i) {
       assertTrue(rows.hasNext());
+      assertEquals(i, rows.getRowNumber());
       row = (OrcStruct) rows.next(row);
       assertEquals(300 * i, ((IntWritable) row.getFieldValue(0)).get());
       assertEquals(Integer.toHexString(10*i), row.getFieldValue(1).toString());
@@ -2088,7 +2100,6 @@ public class TestOrcFile {
         .range(0L, Long.MAX_VALUE)
         .include(new boolean[]{true, true, true})
         .searchArgument(sarg, new String[]{null, "int1", "string1"}));
-    assertEquals(3500L, rows.getRowNumber());
     assertTrue(!rows.hasNext());
 
     // select first 100 and last 100 rows
@@ -2153,5 +2164,54 @@ public class TestOrcFile {
       Object row = rows.next(null);
       Assert.assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
     }
+  }
+
+  static class MyList {
+    List<Integer> list = new ArrayList<>();
+  }
+
+  @Test
+  public void testListExpansion() throws Exception {
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector
+          (MyList.class,
+              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+    Writer writer = OrcFile.createWriter(testFilePath,
+        OrcFile.writerOptions(conf).inspector(inspector));
+    MyList row = new MyList();
+    row.list.add(1);
+    row.list.add(2);
+    row.list.add(3);
+    writer.addRow(row);
+    row.list.clear();
+    writer.addRow(row);
+    row.list.add(11);
+    row.list.add(12);
+    writer.addRow(row);
+    row.list = null;
+    writer.addRow(row);
+    row.list = new ArrayList<>();
+    row.list.add(21);
+    row.list.add(22);
+    row.list.add(23);
+    row.list.add(24);
+    writer.addRow(row);
+    writer.close();
+    RecordReader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf)).rows();
+    assertEquals(true, reader.hasNext());
+    OrcStruct orcrow = (OrcStruct) reader.next(null);
+    assertEquals(3, ((List<IntWritable>) orcrow.getFieldValue(0)).size());
+    orcrow = (OrcStruct) reader.next(row);
+    assertEquals(0, ((List<IntWritable>) orcrow.getFieldValue(0)).size());
+    orcrow = (OrcStruct) reader.next(row);
+    assertEquals(2, ((List<IntWritable>) orcrow.getFieldValue(0)).size());
+    assertEquals(null, ((OrcStruct) reader.next(row)).getFieldValue(0));
+    orcrow = (OrcStruct) reader.next(row);
+    assertEquals(4, ((List<IntWritable>) orcrow.getFieldValue(0)).size());
+    assertEquals(false, reader.hasNext());
+    reader.close();
   }
 }

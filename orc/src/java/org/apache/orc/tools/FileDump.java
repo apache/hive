@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.orc;
+package org.apache.orc.tools;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -24,7 +24,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
@@ -39,22 +38,34 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.orc.BloomFilterIO;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.io.BooleanWritable;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.orc.ColumnStatistics;
+import org.apache.orc.CompressionKind;
+import org.apache.orc.OrcFile;
+import org.apache.orc.Reader;
+import org.apache.orc.RecordReader;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.Writer;
+import org.apache.orc.impl.AcidStats;
 import org.apache.orc.impl.ColumnStatisticsImpl;
+import org.apache.orc.impl.OrcAcidUtils;
 import org.apache.orc.impl.OrcIndex;
 import org.apache.orc.OrcProto;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.StripeStatistics;
+import org.apache.orc.impl.RecordReaderImpl;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONWriter;
 
@@ -74,7 +85,7 @@ public final class FileDump {
     public boolean accept(Path p) {
       String name = p.getName();
       return !name.startsWith("_") && !name.startsWith(".") && !name.endsWith(
-          AcidUtils.DELTA_SIDE_FILE_SUFFIX);
+          OrcAcidUtils.DELTA_SIDE_FILE_SUFFIX);
     }
   };
 
@@ -171,7 +182,7 @@ public final class FileDump {
     FileSystem fs = path.getFileSystem(conf);
     long dataFileLen = fs.getFileStatus(path).getLen();
     System.err.println("Processing data file " + path + " [length: " + dataFileLen + "]");
-    Path sideFile = OrcRecordUpdater.getSideFile(path);
+    Path sideFile = OrcAcidUtils.getSideFile(path);
     final boolean sideFileExists = fs.exists(sideFile);
     boolean openDataFile = false;
     boolean openSideFile = false;
@@ -198,7 +209,7 @@ public final class FileDump {
 
     Reader reader = null;
     if (sideFileExists) {
-      final long maxLen = OrcRawRecordMerger.getLastFlushLength(fs, path);
+      final long maxLen = OrcAcidUtils.getLastFlushLength(fs, path);
       final long sideFileLen = fs.getFileStatus(sideFile).getLen();
       System.err.println("Found flush length file " + sideFile
           + " [length: " + sideFileLen + ", maxFooterOffset: " + maxLen + "]");
@@ -320,11 +331,11 @@ public final class FileDump {
         " with " + reader.getWriterVersion());
     RecordReaderImpl rows = (RecordReaderImpl) reader.rows();
     System.out.println("Rows: " + reader.getNumberOfRows());
-    System.out.println("Compression: " + reader.getCompression());
-    if (reader.getCompression() != CompressionKind.NONE) {
+    System.out.println("Compression: " + reader.getCompressionKind());
+    if (reader.getCompressionKind() != CompressionKind.NONE) {
       System.out.println("Compression size: " + reader.getCompressionSize());
     }
-    System.out.println("Type: " + reader.getObjectInspector().getTypeName());
+    System.out.println("Type: " + reader.getSchema().toString());
     System.out.println("\nStripe Statistics:");
     List<StripeStatistics> stripeStats = reader.getStripeStatistics();
     for (int n = 0; n < stripeStats.size(); n++) {
@@ -408,7 +419,7 @@ public final class FileDump {
     System.out.println("\nFile length: " + fileLen + " bytes");
     System.out.println("Padding length: " + paddedBytes + " bytes");
     System.out.println("Padding ratio: " + format.format(percentPadding) + "%");
-    OrcRecordUpdater.AcidStats acidStats = OrcRecordUpdater.parseAcidStats(reader);
+    AcidStats acidStats = OrcAcidUtils.parseAcidStats(reader);
     if (acidStats != null) {
       System.out.println("ACID stats:" + acidStats);
     }
@@ -541,7 +552,7 @@ public final class FileDump {
       moveFiles(fs, corruptPath, backupDataPath);
 
       // Move side file to backup path
-      Path sideFilePath = OrcRecordUpdater.getSideFile(corruptPath);
+      Path sideFilePath = OrcAcidUtils.getSideFile(corruptPath);
       Path backupSideFilePath = new Path(backupDataPath.getParent(), sideFilePath.getName());
       moveFiles(fs, sideFilePath, backupSideFilePath);
 
@@ -758,123 +769,162 @@ public final class FileDump {
   }
 
   private static void printMap(JSONWriter writer,
-      Map<Object, Object> obj,
-      List<OrcProto.Type> types,
-      OrcProto.Type type
-  ) throws IOException, JSONException {
+                               MapColumnVector vector,
+                               TypeDescription schema,
+                               int row) throws JSONException {
     writer.array();
-    int keyType = type.getSubtypes(0);
-    int valueType = type.getSubtypes(1);
-    for (Map.Entry<Object, Object> item : obj.entrySet()) {
+    TypeDescription keyType = schema.getChildren().get(0);
+    TypeDescription valueType = schema.getChildren().get(1);
+    int offset = (int) vector.offsets[row];
+    for (int i = 0; i < vector.lengths[row]; ++i) {
       writer.object();
       writer.key("_key");
-      printObject(writer, item.getKey(), types, keyType);
+      printValue(writer, vector.keys, keyType, offset + i);
       writer.key("_value");
-      printObject(writer, item.getValue(), types, valueType);
+      printValue(writer, vector.values, valueType, offset + i);
       writer.endObject();
     }
     writer.endArray();
   }
 
   private static void printList(JSONWriter writer,
-      List<Object> obj,
-      List<OrcProto.Type> types,
-      OrcProto.Type type
-  ) throws IOException, JSONException {
-    int subtype = type.getSubtypes(0);
+                                ListColumnVector vector,
+                                TypeDescription schema,
+                                int row) throws JSONException {
     writer.array();
-    for (Object item : obj) {
-      printObject(writer, item, types, subtype);
+    int offset = (int) vector.offsets[row];
+    TypeDescription childType = schema.getChildren().get(0);
+    for (int i = 0; i < vector.lengths[row]; ++i) {
+      printValue(writer, vector.child, childType, offset + i);
     }
     writer.endArray();
   }
 
   private static void printUnion(JSONWriter writer,
-      OrcUnion obj,
-      List<OrcProto.Type> types,
-      OrcProto.Type type
-  ) throws IOException, JSONException {
-    int subtype = type.getSubtypes(obj.getTag());
-    printObject(writer, obj.getObject(), types, subtype);
+                                 UnionColumnVector vector,
+                                 TypeDescription schema,
+                                 int row) throws JSONException {
+    int tag = vector.tags[row];
+    printValue(writer, vector.fields[tag], schema.getChildren().get(tag), row);
   }
 
   static void printStruct(JSONWriter writer,
-      OrcStruct obj,
-      List<OrcProto.Type> types,
-      OrcProto.Type type) throws IOException, JSONException {
+                          StructColumnVector batch,
+                          TypeDescription schema,
+                          int row) throws JSONException {
     writer.object();
-    List<Integer> fieldTypes = type.getSubtypesList();
+    List<String> fieldNames = schema.getFieldNames();
+    List<TypeDescription> fieldTypes = schema.getChildren();
     for (int i = 0; i < fieldTypes.size(); ++i) {
-      writer.key(type.getFieldNames(i));
-      printObject(writer, obj.getFieldValue(i), types, fieldTypes.get(i));
+      writer.key(fieldNames.get(i));
+      printValue(writer, batch.fields[i], fieldTypes.get(i), row);
     }
     writer.endObject();
   }
 
-  static void printObject(JSONWriter writer,
-      Object obj,
-      List<OrcProto.Type> types,
-      int typeId) throws IOException, JSONException {
-    OrcProto.Type type = types.get(typeId);
-    if (obj == null) {
-      writer.value(null);
-    } else {
-      switch (type.getKind()) {
-        case STRUCT:
-          printStruct(writer, (OrcStruct) obj, types, type);
-          break;
-        case UNION:
-          printUnion(writer, (OrcUnion) obj, types, type);
-          break;
-        case LIST:
-          printList(writer, (List<Object>) obj, types, type);
-          break;
-        case MAP:
-          printMap(writer, (Map<Object, Object>) obj, types, type);
+  static void printBinary(JSONWriter writer, BytesColumnVector vector,
+                          int row) throws JSONException {
+    writer.array();
+    int offset = vector.start[row];
+    for(int i=0; i < vector.length[row]; ++i) {
+      writer.value(0xff & (int) vector.vector[row][offset + i]);
+    }
+    writer.endArray();
+  }
+  static void printValue(JSONWriter writer, ColumnVector vector,
+                         TypeDescription schema, int row) throws JSONException {
+    if (vector.isRepeating) {
+      row = 0;
+    }
+    if (vector.noNulls || !vector.isNull[row]) {
+      switch (schema.getCategory()) {
+        case BOOLEAN:
+          writer.value(((LongColumnVector) vector).vector[row] != 0);
           break;
         case BYTE:
-          writer.value(((ByteWritable) obj).get());
-          break;
         case SHORT:
-          writer.value(((ShortWritable) obj).get());
-          break;
         case INT:
-          writer.value(((IntWritable) obj).get());
-          break;
         case LONG:
-          writer.value(((LongWritable) obj).get());
+          writer.value(((LongColumnVector) vector).vector[row]);
           break;
         case FLOAT:
-          writer.value(((FloatWritable) obj).get());
-          break;
         case DOUBLE:
-          writer.value(((DoubleWritable) obj).get());
+          writer.value(((DoubleColumnVector) vector).vector[row]);
           break;
-        case BOOLEAN:
-          writer.value(((BooleanWritable) obj).get());
+        case STRING:
+        case CHAR:
+        case VARCHAR:
+          writer.value(((BytesColumnVector) vector).toString(row));
+          break;
+        case BINARY:
+          printBinary(writer, (BytesColumnVector) vector, row);
+          break;
+        case DECIMAL:
+          writer.value(((DecimalColumnVector) vector).vector[row].toString());
+          break;
+        case DATE:
+          writer.value(new DateWritable(
+              (int) ((LongColumnVector) vector).vector[row]).toString());
+          break;
+        case TIMESTAMP:
+          writer.value(((TimestampColumnVector) vector)
+              .asScratchTimestamp(row).toString());
+          break;
+        case LIST:
+          printList(writer, (ListColumnVector) vector, schema, row);
+          break;
+        case MAP:
+          printMap(writer, (MapColumnVector) vector, schema, row);
+          break;
+        case STRUCT:
+          printStruct(writer, (StructColumnVector) vector, schema, row);
+          break;
+        case UNION:
+          printUnion(writer, (UnionColumnVector) vector, schema, row);
           break;
         default:
-          writer.value(obj.toString());
-          break;
+          throw new IllegalArgumentException("Unknown type " +
+              schema.toString());
       }
+    } else {
+      writer.value(null);
+    }
+  }
+
+  static void printRow(JSONWriter writer,
+                       VectorizedRowBatch batch,
+                       TypeDescription schema,
+                       int row) throws JSONException {
+    if (schema.getCategory() == TypeDescription.Category.STRUCT) {
+      List<TypeDescription> fieldTypes = schema.getChildren();
+      List<String> fieldNames = schema.getFieldNames();
+      writer.object();
+      for (int c = 0; c < batch.cols.length; ++c) {
+        writer.key(fieldNames.get(c));
+        printValue(writer, batch.cols[c], fieldTypes.get(c), row);
+      }
+      writer.endObject();
+    } else {
+      printValue(writer, batch.cols[0], schema, row);
     }
   }
 
   static void printJsonData(final Reader reader) throws IOException, JSONException {
     PrintStream printStream = System.out;
     OutputStreamWriter out = new OutputStreamWriter(printStream, "UTF-8");
-    RecordReader rows = reader.rows(null);
-    Object row = null;
+    RecordReader rows = reader.rows();
     try {
-      List<OrcProto.Type> types = reader.getTypes();
-      while (rows.hasNext()) {
-        row = rows.next(row);
-        JSONWriter writer = new JSONWriter(out);
-        printObject(writer, row, types, 0);
-        out.write("\n");
-        out.flush();
-        if (printStream.checkError()) {
-          throw new IOException("Error encountered when writing to stdout.");
+      TypeDescription schema = reader.getSchema();
+      VectorizedRowBatch batch = schema.createRowBatch();
+      while (rows.nextBatch(batch)) {
+        for(int r=0; r < batch.size; ++r) {
+          JSONWriter writer = new JSONWriter(out);
+          printRow(writer, batch, schema, r);
+          out.write("\n");
+          out.flush();
+          if (printStream.checkError()) {
+            throw new IOException("Error encountered when writing to stdout.");
+          }
         }
       }
     } finally {
