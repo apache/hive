@@ -1033,8 +1033,8 @@ public class Commands {
     while (beeLine.getConsoleReader() != null && !(line.trim().endsWith(";")) && beeLine.getOpts()
         .isAllowMultiLineCommand()) {
 
+      StringBuilder prompt = new StringBuilder(beeLine.getPrompt());
       if (!beeLine.getOpts().isSilent()) {
-        StringBuilder prompt = new StringBuilder(beeLine.getPrompt());
         for (int i = 0; i < prompt.length() - 1; i++) {
           if (prompt.charAt(i) != '>') {
             prompt.setCharAt(i, i % 2 == 0 ? '.' : ' ');
@@ -1046,7 +1046,7 @@ public class Commands {
       if (beeLine.getOpts().isSilent() && beeLine.getOpts().getScriptFile() != null) {
         extra = beeLine.getConsoleReader().readLine(null, jline.console.ConsoleReader.NULL_MASK);
       } else {
-        extra = beeLine.getConsoleReader().readLine(beeLine.getPrompt());
+        extra = beeLine.getConsoleReader().readLine(prompt.toString());
       }
 
       if (extra == null) { //it happens when using -f and the line of cmds does not end with ;
