@@ -1,6 +1,5 @@
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
--- JAVA_VERSION_SPECIFIC_OUTPUT
 
 drop table stats_list_bucket;
 drop table stats_list_bucket_1;

@@ -2,7 +2,6 @@ set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.autho
 set hive.mapred.mode=nonstrict;
 set hive.security.authorization.enabled=true;
 
--- JAVA_VERSION_SPECIFIC_OUTPUT
 
 explain authorization select * from src join srcpart;
 explain formatted authorization select * from src join srcpart;

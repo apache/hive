@@ -4,7 +4,6 @@ set hive.cbo.returnpath.hiveop=true;
 set hive.optimize.ppd=true;
 
 -- SORT_QUERY_RESULTS
--- JAVA_VERSION_SPECIFIC_OUTPUT
 
 EXPLAIN EXTENDED
  FROM 

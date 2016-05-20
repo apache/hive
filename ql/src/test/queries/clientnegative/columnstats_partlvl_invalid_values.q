@@ -1,4 +1,3 @@
--- JAVA_VERSION_SPECIFIC_OUTPUT
 
 DROP TABLE Employee_Part;
 

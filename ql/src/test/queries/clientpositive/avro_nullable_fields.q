@@ -1,6 +1,5 @@
 -- Verify that nullable fields properly work
 
--- JAVA_VERSION_SPECIFIC_OUTPUT
 
 CREATE TABLE test_serializer(string1 STRING,
                              int1 INT,
