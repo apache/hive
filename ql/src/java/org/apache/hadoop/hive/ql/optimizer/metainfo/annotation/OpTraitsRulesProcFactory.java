@@ -125,6 +125,11 @@ public class OpTraitsRulesProcFactory {
     public boolean checkBucketedTable(Table tbl, ParseContext pGraphContext,
         PrunedPartitionList prunedParts) throws SemanticException {
 
+      final int numBuckets = tbl.getNumBuckets();
+      if (numBuckets <= 0) {
+        return false;
+      }
+
       if (tbl.isPartitioned()) {
         List<Partition> partitions = prunedParts.getNotDeniedPartns();
         // construct a mapping of (Partition->bucket file names) and (Partition -> bucket number)
@@ -135,9 +140,7 @@ public class OpTraitsRulesProcFactory {
                     pGraphContext);
             // The number of files for the table should be same as number of
             // buckets.
-            int bucketCount = p.getBucketCount();
-
-            if (fileNames.size() != 0 && fileNames.size() != bucketCount) {
+            if (fileNames.size() != 0 && fileNames.size() != numBuckets) {
               return false;
             }
           }
@@ -147,10 +150,8 @@ public class OpTraitsRulesProcFactory {
         List<String> fileNames =
             AbstractBucketJoinProc.getBucketFilePathsOfPartition(tbl.getDataLocation(),
                 pGraphContext);
-        Integer num = new Integer(tbl.getNumBuckets());
-
         // The number of files for the table should be same as number of buckets.
-        if (fileNames.size() != 0 && fileNames.size() != num) {
+        if (fileNames.size() != 0 && fileNames.size() != numBuckets) {
           return false;
         }
       }
