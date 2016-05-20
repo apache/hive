@@ -73,8 +73,8 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 2 <- Map 10 (PARTITION-LEVEL SORT, 1), Reducer 9 (PARTITION-LEVEL SORT, 1)
-        Reducer 3 <- Map 7 (PARTITION-LEVEL SORT, 1), Reducer 2 (PARTITION-LEVEL SORT, 1)
-        Reducer 5 <- Map 11 (PARTITION-LEVEL SORT, 1), Map 6 (PARTITION-LEVEL SORT, 1)
+        Reducer 3 <- Map 7 (PARTITION-LEVEL SORT, 4), Reducer 2 (PARTITION-LEVEL SORT, 4)
+        Reducer 5 <- Map 11 (PARTITION-LEVEL SORT, 4), Map 6 (PARTITION-LEVEL SORT, 4)
         Reducer 9 <- Map 8 (GROUP, 1)
         Reducer 4 <- Reducer 3 (SORT, 1)
 #### A masked pattern was here ####
@@ -105,21 +105,21 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key > '9') and value is not null) (type: boolean)
-                    Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: string)
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string), _col1 (type: string)
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                          Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -235,19 +235,17 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col0 = 0) (type: boolean)
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: 0 (type: bigint)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: _col0 (type: bigint)
+                      keys: 0 (type: bigint)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-1
     Move Operator
@@ -308,10 +306,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_4
 POSTHOOK: Output: default@src_5
-POSTHOOK: Lineage: src_4.key EXPRESSION [(src)b.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_4.value EXPRESSION [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_5.key EXPRESSION [(src)b.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_5.value EXPRESSION [(src)b.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_4.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_4.value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_5.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_5.value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
 RUN: Stage-2:MAPRED
 RUN: Stage-1:MOVE
 RUN: Stage-0:MOVE
@@ -514,16 +512,16 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key > '9') and value is not null) (type: boolean)
-                    Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: string)
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                         Spark HashTable Sink Operator
                           keys:
                             0 key (type: string), value (type: string)
@@ -578,16 +576,14 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col0 = 0) (type: boolean)
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: 0 (type: bigint)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: _col0 (type: bigint)
+                      keys: 0 (type: bigint)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 
@@ -730,10 +726,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_4
 POSTHOOK: Output: default@src_5
-POSTHOOK: Lineage: src_4.key EXPRESSION [(src)b.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_4.value EXPRESSION [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_5.key EXPRESSION [(src)b.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_5.value EXPRESSION [(src)b.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_4.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_4.value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_5.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_5.value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
 RUN: Stage-5:MAPRED
 RUN: Stage-2:MAPRED
 RUN: Stage-1:MOVE

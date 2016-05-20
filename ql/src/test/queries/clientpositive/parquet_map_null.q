@@ -1,5 +1,4 @@
 -- This test attempts to write a parquet table from an avro table that contains map null values
--- JAVA_VERSION_SPECIFIC_OUTPUT
 
 DROP TABLE IF EXISTS avro_table;
 DROP TABLE IF EXISTS parquet_table;

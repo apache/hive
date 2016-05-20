@@ -1,6 +1,5 @@
 set hive.mapred.mode=nonstrict;
 -- non agg, non corr
--- JAVA_VERSION_SPECIFIC_OUTPUT
 
 explain
 select key, count(*) 
