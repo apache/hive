@@ -176,11 +176,6 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
-  'COLUMN_STATS_ACCURATE'='{\"BASIC_STATS\":\"true\"}', 
-  'numFiles'='1', 
-  'numRows'='10', 
-  'rawDataSize'='70', 
-  'totalSize'='80', 
 #### A masked pattern was here ####
 1.01
 1.01

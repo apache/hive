@@ -137,6 +137,10 @@ public class StatsSetupConst {
 
   public static final String FALSE = "false";
 
+  // The parameter keys for the table statistics. Those keys are excluded from 'show create table' command output.
+  public static final String[] TABLE_PARAMS_STATS_KEYS = new String[] {
+    COLUMN_STATS_ACCURATE, NUM_FILES, TOTAL_SIZE,ROW_COUNT, RAW_DATA_SIZE, NUM_PARTITIONS};
+
   public static boolean areBasicStatsUptoDate(Map<String, String> params) {
     String statsAcc = params.get(COLUMN_STATS_ACCURATE);
     if (statsAcc == null) {
