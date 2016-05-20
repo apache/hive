@@ -26,9 +26,12 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HouseKeeperService;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
+import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
@@ -39,6 +42,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.AcidCompactionHistoryService;
+import org.apache.hadoop.hive.ql.txn.AcidOpenTxnsCounterService;
 import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
 import org.apache.hadoop.hive.ql.txn.compactor.Initiator;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
@@ -704,7 +708,7 @@ public class TestTxnCommands2 {
     while(houseKeeperService.getIsAliveCounter() <= lastCount) {
       if(iterCount++ >= maxIter) {
         //prevent test hangs
-        throw new IllegalStateException("HouseKeeper didn't run after " + iterCount + " waits");
+        throw new IllegalStateException("HouseKeeper didn't run after " + (iterCount - 1) + " waits");
       }
       try {
         Thread.sleep(100);//make sure it has run at least once
@@ -792,6 +796,41 @@ public class TestTxnCommands2 {
     }
     Assert.assertNotNull(exception);
     Assert.assertTrue(exception.getMessage().contains("HIVETESTMODEFAILHEARTBEATER=true"));
+  }
+
+  @Test
+  public void testOpenTxnsCounter() throws Exception {
+    hiveConf.setIntVar(HiveConf.ConfVars.HIVE_MAX_OPEN_TXNS, 3);
+    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_COUNT_OPEN_TXNS_INTERVAL, 10, TimeUnit.MILLISECONDS);
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    OpenTxnsResponse openTxnsResponse = txnHandler.openTxns(new OpenTxnRequest(3, "me", "localhost"));
+
+    AcidOpenTxnsCounterService openTxnsCounterService = new AcidOpenTxnsCounterService();
+    runHouseKeeperService(openTxnsCounterService, hiveConf);  // will update current number of open txns to 3
+
+    MetaException exception = null;
+    // This should fail once it finds out the threshold has been reached
+    try {
+      txnHandler.openTxns(new OpenTxnRequest(1, "you", "localhost"));
+    } catch (MetaException e) {
+      exception = e;
+    }
+    Assert.assertNotNull("Opening new transaction shouldn't be allowed", exception);
+    Assert.assertTrue(exception.getMessage().equals("Maximum allowed number of open transactions has been reached. See hive.max.open.txns."));
+
+    // After committing the initial txns, and updating current number of open txns back to 0,
+    // new transactions should be allowed to open
+    for (long txnid : openTxnsResponse.getTxn_ids()) {
+      txnHandler.commitTxn(new CommitTxnRequest(txnid));
+    }
+    runHouseKeeperService(openTxnsCounterService, hiveConf);  // will update current number of open txns back to 0
+    exception = null;
+    try {
+      txnHandler.openTxns(new OpenTxnRequest(1, "him", "localhost"));
+    } catch (MetaException e) {
+      exception = e;
+    }
+    Assert.assertNull(exception);
   }
 
   /**

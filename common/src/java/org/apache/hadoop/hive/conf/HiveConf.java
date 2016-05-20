@@ -1681,6 +1681,12 @@ public class HiveConf extends Configuration {
         " of the lock manager is dumped to log file.  This is for debugging.  See also " +
         "hive.lock.numretries and hive.lock.sleep.between.retries."),
 
+    HIVE_MAX_OPEN_TXNS("hive.max.open.txns", 100000, "Maximum number of open transactions. If \n" +
+        "current open transactions reach this limit, future open transaction requests will be \n" +
+        "rejected, until this number goes below the limit."),
+    HIVE_COUNT_OPEN_TXNS_INTERVAL("hive.count.open.txns.interval", "1s",
+        new TimeValidator(TimeUnit.SECONDS), "Time in seconds between checks to count open transactions."),
+
     HIVE_TXN_MAX_OPEN_BATCH("hive.txn.max.open.batch", 1000,
         "Maximum number of transactions that can be fetched in one call to open_txns().\n" +
         "This controls how many transactions streaming agents such as Flume or Storm open\n" +
