@@ -37,7 +37,7 @@
       </url>
       <!-- File resolver to add jars from the local system. -->
       <filesystem name="test" checkmodified="true">
-        <artifact pattern="/tmp/[module]-[revision](-[classifier]).jar"/>
+        <artifact pattern="${test.tmp.dir}/[module]-[revision](-[classifier]).jar"/>
       </filesystem>
 
     </chain>
