@@ -105,6 +105,12 @@ public interface TxnStore {
   public GetOpenTxnsResponse getOpenTxns() throws MetaException;
 
   /**
+   * Get the count for open transactions.
+   * @throws MetaException
+   */
+  public void countOpenTxns() throws MetaException;
+
+  /**
    * Open a set of transactions
    * @param rqst request to open transactions
    * @return information on opened transactions
