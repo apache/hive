@@ -90,7 +90,7 @@ public class DfsProcessor implements CommandProcessor {
 
       int ret = dfs.run(tokens);
       if (ret != 0) {
-        console.printError("Command failed with exit code = " + ret);
+        console.printError("Command " + command + " failed with exit code = " + ret);
       }
 
       System.setOut(oldOut);
