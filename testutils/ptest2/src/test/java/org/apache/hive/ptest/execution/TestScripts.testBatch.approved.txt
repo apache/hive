@@ -61,7 +61,7 @@ then
     testModule=./
   fi
   pushd $testModule
-  timeout 2h mvn -B test -Dmaven.repo.local=/some/local/dir/instance-1/maven \
+  timeout 1h mvn -B test -Dmaven.repo.local=/some/local/dir/instance-1/maven \
     -Dant=arg1 $mavenTestArgs -Dtest=arg1 1>/some/log/dir/maven-test.txt 2>&1 </dev/null &
 
   pid=$!
@@ -69,7 +69,7 @@ then
   popd
 elif [[ "maven" == "ant" ]]
 then
-  timeout 2h ant testonly -Dtest.junit.output.format=xml \
+  timeout 1h ant testonly -Dtest.junit.output.format=xml \
     -Divy.default.ivy.user.dir=/some/local/dir/instance-1/ivy \
     -Divy.default.always.check.exact.revision=false \
     -Divy.cache.ttl.default=eternal -Divy.checkmodified=false \

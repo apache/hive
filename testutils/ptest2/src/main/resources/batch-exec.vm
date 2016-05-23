@@ -62,7 +62,7 @@ then
     testModule=./
   fi
   pushd $testModule
-  timeout 2h mvn -B test -Dmaven.repo.local=$localDir/$instanceName/maven \
+  timeout 1h mvn -B test -Dmaven.repo.local=$localDir/$instanceName/maven \
     $mavenArgs $mavenTestArgs $testArguments 1>$logDir/maven-test.txt 2>&1 </dev/null &
 #[[
   pid=$!
@@ -70,7 +70,7 @@ then
   popd
 elif [[ "${buildTool}" == "ant" ]]
 then
-  timeout 2h ant ${antTestTarget} -Dtest.junit.output.format=xml \
+  timeout 1h ant ${antTestTarget} -Dtest.junit.output.format=xml \
     -Divy.default.ivy.user.dir=$localDir/$instanceName/ivy \
     -Divy.default.always.check.exact.revision=false \
     -Divy.cache.ttl.default=eternal -Divy.checkmodified=false \
