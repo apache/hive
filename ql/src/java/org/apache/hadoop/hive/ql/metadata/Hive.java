@@ -2860,6 +2860,16 @@ private void constructOneLBLocationMap(FileStatus fSta,
           if (destIsSubDir) {
             FileStatus[] srcs = destFs.listStatus(srcf, FileUtils.HIDDEN_FILES_PATH_FILTER);
 
+            if (inheritPerms) {
+              try {
+                HdfsUtils.setFullFileStatus(conf, destStatus, destFs, destf, false);
+              } catch (IOException e) {
+                String msg = "Error setting permission of file " + destf;
+                LOG.error(msg);
+                throw new HiveException(msg, e);
+              }
+            }
+
             List<Future<Void>> futures = new LinkedList<>();
             final ExecutorService pool = Executors.newFixedThreadPool(
                 conf.getIntVar(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT),
