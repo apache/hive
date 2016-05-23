@@ -14,6 +14,7 @@
 
 package org.apache.hadoop.hive.llap.daemon.impl;
 
+import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -21,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.tez.common.CallableWithNdc;
 
@@ -134,9 +136,12 @@ public class QueryTracker extends AbstractService {
       boolean isExistingQueryInfo = true;
       QueryInfo queryInfo = queryInfoMap.get(queryIdentifier);
       if (queryInfo == null) {
+        String tokenUser = tokenInfo.getLeft(), tokenAppId = tokenInfo.getRight();
+        if (UserGroupInformation.isSecurityEnabled()) {
+          Preconditions.checkNotNull(tokenUser);
+        }
         queryInfo = new QueryInfo(queryIdentifier, appIdString, dagName, dagIdentifier, user,
-            getSourceCompletionMap(queryIdentifier), localDirsBase, localFs,
-            tokenInfo.getLeft(), tokenInfo.getRight());
+           getSourceCompletionMap(queryIdentifier), localDirsBase, localFs, tokenUser, tokenAppId);
         QueryInfo old = queryInfoMap.putIfAbsent(queryIdentifier, queryInfo);
         if (old != null) {
           queryInfo = old;
@@ -341,8 +346,8 @@ public class QueryTracker extends AbstractService {
   private QueryInfo checkPermissionsAndGetQuery(QueryIdentifier queryId) throws IOException {
     QueryInfo queryInfo = queryInfoMap.get(queryId);
     if (queryInfo == null) return null;
-    LlapTokenChecker.checkPermissions(clusterId, queryInfo.getTokenAppId(),
-        queryInfo.getTokenUserName(), queryInfo.getQueryIdentifier());
+    LlapTokenChecker.checkPermissions(clusterId, queryInfo.getTokenUserName(),
+        queryInfo.getTokenAppId(), queryInfo.getQueryIdentifier());
     return queryInfo;
   }
 

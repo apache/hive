@@ -28,6 +28,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenIdentifier;
 
+import com.google.common.base.Preconditions;
+
 /** For now, a LLAP token gives access to any LLAP server. */
 public class LlapTokenIdentifier extends AbstractDelegationTokenIdentifier {
   private static final String KIND = "LLAP_TOKEN";
@@ -42,6 +44,7 @@ public class LlapTokenIdentifier extends AbstractDelegationTokenIdentifier {
   public LlapTokenIdentifier(Text owner, Text renewer, Text realUser,
       String clusterId, String appId) {
     super(owner, renewer, realUser);
+    Preconditions.checkNotNull(clusterId);
     this.clusterId = clusterId;
     this.appId = appId == null ? "" : appId;
   }
@@ -57,7 +60,9 @@ public class LlapTokenIdentifier extends AbstractDelegationTokenIdentifier {
   public void readFields(DataInput in) throws IOException {
     super.readFields(in);
     clusterId = in.readUTF();
+    Preconditions.checkNotNull(clusterId);
     appId = in.readUTF();
+    appId = appId == null ? "" : appId;
   }
 
   @Override
@@ -76,7 +81,7 @@ public class LlapTokenIdentifier extends AbstractDelegationTokenIdentifier {
   @Override
   public int hashCode() {
     final int prime = 31;
-    int result = prime * super.hashCode() + ((appId == null) ? 0 : appId.hashCode());
+    int result = prime * super.hashCode() + (StringUtils.isBlank(appId) ? 0 : appId.hashCode());
     return prime * result + ((clusterId == null) ? 0 : clusterId.hashCode());
   }
 
@@ -85,14 +90,14 @@ public class LlapTokenIdentifier extends AbstractDelegationTokenIdentifier {
     if (this == obj) return true;
     if (!(obj instanceof LlapTokenIdentifier) || !super.equals(obj)) return false;
     LlapTokenIdentifier other = (LlapTokenIdentifier) obj;
-    return (appId == null ? other.appId == null : appId.equals(other.appId))
+    return (StringUtils.isBlank(appId)
+        ? StringUtils.isBlank(other.appId) : appId.equals(other.appId))
         && (clusterId == null ? other.clusterId == null : clusterId.equals(other.clusterId));
   }
 
   @Override
   public String toString() {
-    return KIND + "; " + super.toString() + ", cluster " + clusterId + ", app secret hash "
-        + (StringUtils.isBlank(appId) ? 0 : appId.hashCode());
+    return KIND + "; " + super.toString() + ", cluster " + clusterId + ", app ID " + appId;
   }
 
   @InterfaceAudience.Private

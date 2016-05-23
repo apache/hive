@@ -79,7 +79,7 @@ public class TaskExecutorTestHelpers {
     QueryInfo queryInfo =
         new QueryInfo(queryIdentifier, "fake_app_id_string", "fake_dag_name", 1, "fakeUser",
             new ConcurrentHashMap<String, LlapDaemonProtocolProtos.SourceStateProto>(),
-            new String[0], null, null, null);
+            new String[0], null, "fakeUser", null);
     return queryInfo;
   }
 

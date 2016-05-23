@@ -143,7 +143,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     }
     String hostName = MetricsUtils.getHostName();
     try {
-      daemonId = new DaemonId(UserGroupInformation.getCurrentUser().getUserName(),
+      daemonId = new DaemonId(UserGroupInformation.getCurrentUser().getShortUserName(),
           LlapUtil.generateClusterName(daemonConf), hostName, appName, System.currentTimeMillis());
     } catch (IOException ex) {
       throw new RuntimeException(ex);

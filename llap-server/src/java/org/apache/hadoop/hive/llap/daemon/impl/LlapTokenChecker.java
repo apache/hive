@@ -14,6 +14,7 @@
 package org.apache.hadoop.hive.llap.daemon.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 
 import java.util.ArrayList;
 
@@ -95,6 +96,7 @@ public final class LlapTokenChecker {
   public static void checkPermissions(
       String clusterId, String userName, String appId, Object hint) throws IOException {
     if (!UserGroupInformation.isSecurityEnabled()) return;
+    Preconditions.checkNotNull(userName);
     UserGroupInformation current = UserGroupInformation.getCurrentUser();
     String kerberosName = current.hasKerberosCredentials() ? current.getShortUserName() : null;
     List<LlapTokenIdentifier> tokens = getLlapTokens(current, clusterId);
@@ -104,7 +106,7 @@ public final class LlapTokenChecker {
   @VisibleForTesting
   static void checkPermissionsInternal(String kerberosName, List<LlapTokenIdentifier> tokens,
       String userName, String appId, Object hint) {
-    if (kerberosName != null && StringUtils.isEmpty(appId) && kerberosName.equals(userName)) {
+    if (kerberosName != null && StringUtils.isBlank(appId) && kerberosName.equals(userName)) {
       return;
     }
     if (tokens != null) {
@@ -132,6 +134,6 @@ public final class LlapTokenChecker {
   private static boolean checkTokenPermissions(
       String userName, String appId, String tokenUser, String tokenAppId) {
     return userName.equals(tokenUser)
-        && (StringUtils.isEmpty(appId) || appId.equals(tokenAppId));
+        && (StringUtils.isBlank(appId) || appId.equals(tokenAppId));
   }
 }
