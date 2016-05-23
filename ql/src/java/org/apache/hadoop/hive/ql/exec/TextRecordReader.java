@@ -40,12 +40,14 @@ public class TextRecordReader implements RecordReader {
   private InputStream in;
   private Text row;
   private Configuration conf;
+  private boolean escape;
 
   public void initialize(InputStream in, Configuration conf, Properties tbl)
       throws IOException {
     lineReader = new LineReader(in, conf);
     this.in = in;
     this.conf = conf;
+    escape = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESCRIPTESCAPE);
   }
 
   public Writable createRow() throws IOException {
@@ -60,7 +62,7 @@ public class TextRecordReader implements RecordReader {
 
     int bytesConsumed = lineReader.readLine((Text) row);
 
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESCRIPTESCAPE)) {
+    if (escape) {
       return HiveUtils.unescapeText((Text) row);
     }
     return bytesConsumed;
