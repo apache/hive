@@ -169,7 +169,7 @@
 
     <fileSet>
       <fileMode>666</fileMode>
-      <directory>${project.parent.basedir}/llap-server/sql</directory>
+      <directory>${project.parent.basedir}/llap-server/scripts</directory>
       <includes>
         <include>**/*</include>
       </includes>
