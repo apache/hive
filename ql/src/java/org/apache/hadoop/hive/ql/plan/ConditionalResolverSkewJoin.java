@@ -51,7 +51,7 @@ public class ConditionalResolverSkewJoin implements ConditionalResolver, Seriali
     // this map stores mapping from "big key dir" to its corresponding mapjoin
     // task.
     private HashMap<Path, Task<? extends Serializable>> dirToTaskMap;
-    private Task<? extends Serializable> noSkewTask;
+    private List<Task<? extends Serializable>> noSkewTask;
 
     /**
      * For serialization use only.
@@ -61,7 +61,7 @@ public class ConditionalResolverSkewJoin implements ConditionalResolver, Seriali
 
     public ConditionalResolverSkewJoinCtx(
         HashMap<Path, Task<? extends Serializable>> dirToTaskMap,
-        Task<? extends Serializable> noSkewTask) {
+        List<Task<? extends Serializable>> noSkewTask) {
       super();
       this.dirToTaskMap = dirToTaskMap;
       this.noSkewTask = noSkewTask;
@@ -76,11 +76,11 @@ public class ConditionalResolverSkewJoin implements ConditionalResolver, Seriali
       this.dirToTaskMap = dirToTaskMap;
     }
 
-    public Task<? extends Serializable> getNoSkewTask() {
+    public List<Task<? extends Serializable>> getNoSkewTask() {
       return noSkewTask;
     }
 
-    public void setNoSkewTask(Task<? extends Serializable> noSkewTask) {
+    public void setNoSkewTask(List<Task<? extends Serializable>> noSkewTask) {
       this.noSkewTask = noSkewTask;
     }
   }
@@ -121,7 +121,7 @@ public class ConditionalResolverSkewJoin implements ConditionalResolver, Seriali
       e.printStackTrace();
     }
     if (resTsks.isEmpty() && ctx.getNoSkewTask() != null) {
-      resTsks.add(ctx.getNoSkewTask());
+      resTsks.addAll(ctx.getNoSkewTask());
     }
     return resTsks;
   }

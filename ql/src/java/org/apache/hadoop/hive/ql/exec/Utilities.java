@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.exec;
 import java.util.ArrayList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import java.beans.DefaultPersistenceDelegate;
 import java.beans.Encoder;
 import java.beans.Expression;
@@ -97,7 +96,6 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -196,7 +194,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.KryoException;
 import com.google.common.base.Preconditions;
 
 /**
@@ -439,7 +436,6 @@ public final class Utilities {
             throw new RuntimeException("Unknown work type: " + name);
           }
         }
-
         gWorkMap.get(conf).put(path, gWork);
       } else if (LOG.isDebugEnabled()) {
         LOG.debug("Found plan in cache for name: " + name);
@@ -450,16 +446,6 @@ public final class Utilities {
       LOG.debug("File not found: " + fnf.getMessage());
       LOG.info("No plan file found: "+path);
       return null;
-    } catch (KryoException ke) {
-      Throwable cnfThrowable = findClassNotFoundException(ke);
-      if (LlapProxy.isDaemon() && (cnfThrowable != null)) {
-        LOG.error("Missing class \"" + cnfThrowable.getMessage() + "\". If this is a UDF and you " +
-            "are running LLAP, you may need to regenerate the llap startup script and restart " +
-            "llap with jars for your udf.", cnfThrowable);
-        throw new RuntimeException("Cannot find \"" + cnfThrowable.getMessage() + "\" You may" +
-           " need to regenerate the LLAP startup script and restart llap daemons.", cnfThrowable);
-      }
-      throw new RuntimeException(ke);
     } catch (Exception e) {
       String msg = "Failed to load plan: " + path + ": " + e;
       LOG.error(msg, e);
@@ -472,16 +458,6 @@ public final class Utilities {
         } catch (IOException cantBlameMeForTrying) { }
       }
     }
-  }
-
-  private static Throwable findClassNotFoundException(Throwable ke) {
-    while (ke != null) {
-      if (ke instanceof ClassNotFoundException) {
-        return ke;
-      }
-      ke = ke.getCause();
-    }
-    return null;
   }
 
   public static void setWorkflowAdjacencies(Configuration conf, QueryPlan plan) {

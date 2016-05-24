@@ -39,7 +39,6 @@ import org.apache.tez.runtime.api.ExecutionContext;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.LogicalOutput;
 import org.apache.tez.runtime.api.ProcessorContext;
-import org.apache.tez.runtime.api.TaskFailureType;
 import org.apache.tez.runtime.library.api.KeyValueWriter;
 
 /**
@@ -179,8 +178,6 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     } finally {
       if (originalThrowable != null && originalThrowable instanceof Error) {
         LOG.error(StringUtils.stringifyException(originalThrowable));
-        getContext().reportFailure(TaskFailureType.FATAL, originalThrowable,
-            "Cannot recover from this error");
         throw new RuntimeException(originalThrowable);
       }
 

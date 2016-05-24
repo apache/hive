@@ -20,15 +20,19 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -68,6 +72,8 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.thrift.ThriftFormatter;
 import org.apache.hadoop.hive.serde2.thrift.ThriftJDBCBinarySerDe;
+
+import akka.util.Collections;
 
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
@@ -251,15 +257,6 @@ public abstract class TaskCompiler {
 
     generateTaskTree(rootTasks, pCtx, mvTask, inputs, outputs);
 
-    /*
-     * If the query was the result of analyze table column compute statistics rewrite, create
-     * a column stats task instead of a fetch task to persist stats to the metastore.
-     */
-    if (isCStats) {
-      genColumnStatsTask(pCtx.getAnalyzeRewrite(), loadTableWork, loadFileWork,
-            rootTasks, outerQueryLimit);
-    }
-
     // For each task, set the key descriptor for the reducer
     for (Task<? extends Serializable> rootTask : rootTasks) {
       GenMapRedUtils.setKeyAndValueDescForTaskTree(rootTask);
@@ -272,6 +269,35 @@ public abstract class TaskCompiler {
     }
 
     optimizeTaskPlan(rootTasks, pCtx, ctx);
+
+    /*
+     * If the query was the result of analyze table column compute statistics rewrite, create
+     * a column stats task instead of a fetch task to persist stats to the metastore.
+     */
+    if (isCStats || !pCtx.getColumnStatsAutoGatherContexts().isEmpty()) {
+      Set<Task<? extends Serializable>> leafTasks = new LinkedHashSet<Task<? extends Serializable>>();
+      getLeafTasks(rootTasks, leafTasks);
+      if (isCStats) {
+        genColumnStatsTask(pCtx.getAnalyzeRewrite(), loadFileWork, leafTasks, outerQueryLimit, 0);
+      } else {
+        for (ColumnStatsAutoGatherContext columnStatsAutoGatherContext : pCtx
+            .getColumnStatsAutoGatherContexts()) {
+          if (!columnStatsAutoGatherContext.isInsertInto()) {
+            genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
+                columnStatsAutoGatherContext.getLoadFileWork(), leafTasks, outerQueryLimit, 0);
+          } else {
+            int numBitVector;
+            try {
+              numBitVector = HiveStatsUtils.getNumBitVectorsForNDVEstimation(conf);
+            } catch (Exception e) {
+              throw new SemanticException(e.getMessage());
+            }
+            genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
+                columnStatsAutoGatherContext.getLoadFileWork(), leafTasks, outerQueryLimit, numBitVector);
+          }
+        }
+      }
+    }
 
     decideExecMode(rootTasks, ctx, globalLimitCtx);
 
@@ -355,8 +381,9 @@ public abstract class TaskCompiler {
    * @param qb
    */
   @SuppressWarnings("unchecked")
-  protected void genColumnStatsTask(AnalyzeRewriteContext analyzeRewrite, List<LoadTableDesc> loadTableWork,
-      List<LoadFileDesc> loadFileWork, List<Task<? extends Serializable>> rootTasks, int outerQueryLimit) {
+  protected void genColumnStatsTask(AnalyzeRewriteContext analyzeRewrite,
+      List<LoadFileDesc> loadFileWork, Set<Task<? extends Serializable>> leafTasks,
+      int outerQueryLimit, int numBitVector) {
     ColumnStatsTask cStatsTask = null;
     ColumnStatsWork cStatsWork = null;
     FetchWork fetch = null;
@@ -385,12 +412,12 @@ public abstract class TaskCompiler {
     fetch = new FetchWork(loadFileWork.get(0).getSourcePath(), resultTab, outerQueryLimit);
 
     ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tableName,
-        colName, colType, isTblLevel);
+        colName, colType, isTblLevel, numBitVector);
     cStatsWork = new ColumnStatsWork(fetch, cStatsDesc);
     cStatsTask = (ColumnStatsTask) TaskFactory.get(cStatsWork, conf);
-    // This is a column stats task. According to the semantic, there should be
-    // only one MR task in the rootTask.
-    rootTasks.get(0).addDependentTask(cStatsTask);
+    for (Task<? extends Serializable> tsk : leafTasks) {
+      tsk.addDependentTask(cStatsTask);
+    }
   }
 
 
@@ -398,7 +425,7 @@ public abstract class TaskCompiler {
    * Find all leaf tasks of the list of root tasks.
    */
   protected void getLeafTasks(List<Task<? extends Serializable>> rootTasks,
-      HashSet<Task<? extends Serializable>> leaves) {
+      Set<Task<? extends Serializable>> leaves) {
 
     for (Task<? extends Serializable> root : rootTasks) {
       getLeafTasks(root, leaves);
@@ -406,7 +433,7 @@ public abstract class TaskCompiler {
   }
 
   private void getLeafTasks(Task<? extends Serializable> task,
-      HashSet<Task<? extends Serializable>> leaves) {
+      Set<Task<? extends Serializable>> leaves) {
     if (task.getDependentTasks() == null) {
       if (!leaves.contains(task)) {
         leaves.add(task);
@@ -453,7 +480,7 @@ public abstract class TaskCompiler {
     ParseContext clone = new ParseContext(queryState,
         pCtx.getOpToPartPruner(), pCtx.getOpToPartList(), pCtx.getTopOps(),
         pCtx.getJoinOps(), pCtx.getSmbMapJoinOps(),
-        pCtx.getLoadTableWork(), pCtx.getLoadFileWork(), pCtx.getContext(),
+        pCtx.getLoadTableWork(), pCtx.getLoadFileWork(), pCtx.getColumnStatsAutoGatherContexts(), pCtx.getContext(),
         pCtx.getIdToTableNameMap(), pCtx.getDestTableId(), pCtx.getUCtx(),
         pCtx.getListMapJoinOpsNoReducer(),
         pCtx.getPrunedPartitions(), pCtx.getTabNameToTabObject(), pCtx.getOpToSamplePruner(), pCtx.getGlobalLimitCtx(),

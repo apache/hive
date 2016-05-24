@@ -93,9 +93,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.beeline.cli.CliOptionsProcessor;
 
-import org.apache.hive.jdbc.Utils;
-import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
-
 /**
  * A console SQL shell with command completion.
  * <p>
@@ -142,6 +139,7 @@ public class BeeLine implements Closeable {
   private static final Options options = new Options();
 
   public static final String BEELINE_DEFAULT_JDBC_DRIVER = "org.apache.hive.jdbc.HiveDriver";
+  public static final String BEELINE_DEFAULT_JDBC_URL = "jdbc:hive2://";
   public static final String DEFAULT_DATABASE_NAME = "default";
 
   private static final String SCRIPT_OUTPUT_PREFIX = ">>>";
@@ -768,14 +766,6 @@ public class BeeLine implements Closeable {
     */
 
     if (url != null) {
-      if (user == null) {
-        user = Utils.parsePropertyFromUrl(url, JdbcConnectionParams.AUTH_USER);
-      }
-
-      if (pass == null) {
-        pass = Utils.parsePropertyFromUrl(url, JdbcConnectionParams.AUTH_PASSWD);
-      }
-
       String com = constructCmd(url, user, pass, driver, false);
       String comForDebug = constructCmd(url, user, pass, driver, true);
       debug("issuing: " + comForDebug);
@@ -904,7 +894,7 @@ public class BeeLine implements Closeable {
   }
 
   private int embeddedConnect() {
-    if (!execCommandWithPrefix("!connect " + Utils.URL_PREFIX + " '' ''")) {
+    if (!execCommandWithPrefix("!connect " + BEELINE_DEFAULT_JDBC_URL + " '' ''")) {
       return ERRNO_OTHER;
     } else {
       return ERRNO_OK;

@@ -37,12 +37,12 @@ import org.apache.http.cookie.Cookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Utils {
+class Utils {
   static final Logger LOG = LoggerFactory.getLogger(Utils.class.getName());
   /**
     * The required prefix for the connection URL.
     */
-  public static final String URL_PREFIX = "jdbc:hive2://";
+  static final String URL_PREFIX = "jdbc:hive2://";
 
   /**
     * If host is provided, without a port.
@@ -63,7 +63,7 @@ public class Utils {
   static final String HIVE_SERVER2_RETRY_TRUE = "true";
   static final String HIVE_SERVER2_RETRY_FALSE = "false";
 
-  public static class JdbcConnectionParams {
+  static class JdbcConnectionParams {
     // Note on client side parameter naming convention:
     // Prefer using a shorter camelCase param name instead of using the same name as the
     // corresponding
@@ -76,33 +76,31 @@ public class Utils {
     // Retry setting
     static final String RETRIES = "retries";
 
-    public static final String AUTH_TYPE = "auth";
+    static final String AUTH_TYPE = "auth";
     // We're deprecating this variable's name.
-    public static final String AUTH_QOP_DEPRECATED = "sasl.qop";
-    public static final String AUTH_QOP = "saslQop";
-    public static final String AUTH_SIMPLE = "noSasl";
-    public static final String AUTH_TOKEN = "delegationToken";
-    public static final String AUTH_USER = "user";
-    public static final String AUTH_PRINCIPAL = "principal";
-    public static final String AUTH_PASSWD = "password";
-    public static final String AUTH_KERBEROS_AUTH_TYPE = "kerberosAuthType";
-    public static final String AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT = "fromSubject";
-    public static final String ANONYMOUS_USER = "anonymous";
-    public static final String ANONYMOUS_PASSWD = "anonymous";
-    public static final String USE_SSL = "ssl";
-    public static final String SSL_TRUST_STORE = "sslTrustStore";
-    public static final String SSL_TRUST_STORE_PASSWORD = "trustStorePassword";
+    static final String AUTH_QOP_DEPRECATED = "sasl.qop";
+    static final String AUTH_QOP = "saslQop";
+    static final String AUTH_SIMPLE = "noSasl";
+    static final String AUTH_TOKEN = "delegationToken";
+    static final String AUTH_USER = "user";
+    static final String AUTH_PRINCIPAL = "principal";
+    static final String AUTH_PASSWD = "password";
+    static final String AUTH_KERBEROS_AUTH_TYPE = "kerberosAuthType";
+    static final String AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT = "fromSubject";
+    static final String ANONYMOUS_USER = "anonymous";
+    static final String ANONYMOUS_PASSWD = "anonymous";
+    static final String USE_SSL = "ssl";
+    static final String SSL_TRUST_STORE = "sslTrustStore";
+    static final String SSL_TRUST_STORE_PASSWORD = "trustStorePassword";
     // We're deprecating the name and placement of this in the parsed map (from hive conf vars to
     // hive session vars).
     static final String TRANSPORT_MODE_DEPRECATED = "hive.server2.transport.mode";
-    public static final String TRANSPORT_MODE = "transportMode";
+    static final String TRANSPORT_MODE = "transportMode";
     // We're deprecating the name and placement of this in the parsed map (from hive conf vars to
     // hive session vars).
     static final String HTTP_PATH_DEPRECATED = "hive.server2.thrift.http.path";
-    public static final String HTTP_PATH = "httpPath";
-    public static final String SERVICE_DISCOVERY_MODE = "serviceDiscoveryMode";
-    public static final String PROPERTY_DRIVER        = "driver";
-    public static final String PROPERTY_URL           = "url";
+    static final String HTTP_PATH = "httpPath";
+    static final String SERVICE_DISCOVERY_MODE = "serviceDiscoveryMode";
     // Don't use dynamic service discovery
     static final String SERVICE_DISCOVERY_MODE_NONE = "none";
     // Use ZooKeeper for indirection while using dynamic service discovery
@@ -632,15 +630,5 @@ public class Utils {
       }
     }
     return true;
-  }
-
-  public static String parsePropertyFromUrl(final String url, final String key) {
-    String[] tokens = url.split(";");
-    for (String token : tokens) {
-      if (token.trim().startsWith(key.trim() + "=")) {
-        return token.trim().substring((key.trim() + "=").length());
-      }
-    }
-    return null;
   }
 }

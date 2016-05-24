@@ -93,9 +93,6 @@ public class GenSparkSkewJoinProcessor {
 
     List<Task<? extends Serializable>> children = currTask.getChildTasks();
 
-    Task<? extends Serializable> child =
-        children != null && children.size() == 1 ? children.get(0) : null;
-
     Path baseTmpDir = parseCtx.getContext().getMRTmpPath();
 
     JoinDesc joinDescriptor = joinOp.getConf();
@@ -334,14 +331,17 @@ public class GenSparkSkewJoinProcessor {
           tsk.addDependentTask(oldChild);
         }
       }
-    }
-    if (child != null) {
-      currTask.removeDependentTask(child);
-      listTasks.add(child);
-      listWorks.add(child.getWork());
+      currTask.setChildTasks(new ArrayList<Task<? extends Serializable>>());
+      for (Task<? extends Serializable> oldChild : children) {
+        oldChild.getParentTasks().remove(currTask);
+      }
+      listTasks.addAll(children);
+      for (Task<? extends Serializable> oldChild : children) {
+        listWorks.add(oldChild.getWork());
+      }
     }
     ConditionalResolverSkewJoin.ConditionalResolverSkewJoinCtx context =
-        new ConditionalResolverSkewJoin.ConditionalResolverSkewJoinCtx(bigKeysDirToTaskMap, child);
+        new ConditionalResolverSkewJoin.ConditionalResolverSkewJoinCtx(bigKeysDirToTaskMap, children);
 
     ConditionalWork cndWork = new ConditionalWork(listWorks);
     ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork, parseCtx.getConf());

@@ -61,8 +61,6 @@ import java.util.TreeSet;
 
 import org.apache.hadoop.hive.common.cli.ShellCmdExecutor;
 import org.apache.hive.jdbc.HiveStatement;
-import org.apache.hive.jdbc.Utils;
-import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 
 
 public class Commands {
@@ -1316,41 +1314,18 @@ public class Commands {
     Properties props = new Properties();
     if (url != null) {
       String saveUrl = getUrlToUse(url);
-      props.setProperty(JdbcConnectionParams.PROPERTY_URL, url);
+      props.setProperty("url", saveUrl);
     }
-
-    String value = null;
     if (driver != null) {
-      props.setProperty(JdbcConnectionParams.PROPERTY_DRIVER, driver);
-    } else {
-      value = Utils.parsePropertyFromUrl(url, JdbcConnectionParams.PROPERTY_DRIVER);
-      if (value != null) {
-        props.setProperty(JdbcConnectionParams.PROPERTY_DRIVER, value);
-      }
+      props.setProperty("driver", driver);
     }
-
     if (user != null) {
-      props.setProperty(JdbcConnectionParams.AUTH_USER, user);
-    } else {
-      value = Utils.parsePropertyFromUrl(url, JdbcConnectionParams.AUTH_USER);
-      if (value != null) {
-        props.setProperty(JdbcConnectionParams.AUTH_USER, value);
-      }
+      props.setProperty("user", user);
     }
-
     if (pass != null) {
-      props.setProperty(JdbcConnectionParams.AUTH_PASSWD, pass);
-    } else {
-      value = Utils.parsePropertyFromUrl(url, JdbcConnectionParams.AUTH_PASSWD);
-      if (value != null) {
-        props.setProperty(JdbcConnectionParams.AUTH_PASSWD, value);
-      }
+      props.setProperty("password", pass);
     }
 
-    value = Utils.parsePropertyFromUrl(url, JdbcConnectionParams.AUTH_TYPE);
-    if (value != null) {
-      props.setProperty(JdbcConnectionParams.AUTH_TYPE, value);
-    }
     return connect(props);
   }
 
@@ -1403,25 +1378,26 @@ public class Commands {
 
   public boolean connect(Properties props) throws IOException {
     String url = getProperty(props, new String[] {
-        JdbcConnectionParams.PROPERTY_URL,
+        "url",
         "javax.jdo.option.ConnectionURL",
         "ConnectionURL",
     });
     String driver = getProperty(props, new String[] {
-        JdbcConnectionParams.PROPERTY_DRIVER,
+        "driver",
         "javax.jdo.option.ConnectionDriverName",
         "ConnectionDriverName",
     });
     String username = getProperty(props, new String[] {
-        JdbcConnectionParams.AUTH_USER,
+        "user",
         "javax.jdo.option.ConnectionUserName",
         "ConnectionUserName",
     });
     String password = getProperty(props, new String[] {
-        JdbcConnectionParams.AUTH_PASSWD,
+        "password",
         "javax.jdo.option.ConnectionPassword",
         "ConnectionPassword",
     });
+    String auth = getProperty(props, new String[] {"auth"});
 
     if (url == null || url.length() == 0) {
       return beeLine.error("Property \"url\" is required");
@@ -1432,25 +1408,23 @@ public class Commands {
       }
     }
 
-    String auth = getProperty(props, new String[] {JdbcConnectionParams.AUTH_TYPE});
+    beeLine.info("Connecting to " + url);
+
+    if (username == null) {
+      username = beeLine.getConsoleReader().readLine("Enter username for " + url + ": ");
+    }
+    props.setProperty("user", username);
+    if (password == null) {
+      password = beeLine.getConsoleReader().readLine("Enter password for " + url + ": ",
+          new Character('*'));
+    }
+    props.setProperty("password", password);
+
     if (auth == null) {
       auth = beeLine.getOpts().getAuthType();
-      if (auth != null) {
-        props.setProperty(JdbcConnectionParams.AUTH_TYPE, auth);
-      }
     }
-
-    beeLine.info("Connecting to " + url);
-    if (Utils.parsePropertyFromUrl(url, JdbcConnectionParams.AUTH_PRINCIPAL) == null) {
-      if (username == null) {
-        username = beeLine.getConsoleReader().readLine("Enter username for " + url + ": ");
-      }
-      props.setProperty(JdbcConnectionParams.AUTH_USER, username);
-      if (password == null) {
-        password = beeLine.getConsoleReader().readLine("Enter password for " + url + ": ",
-          new Character('*'));
-      }
-      props.setProperty(JdbcConnectionParams.AUTH_PASSWD, password);
+    if (auth != null) {
+      props.setProperty("auth", auth);
     }
 
     try {

@@ -117,12 +117,6 @@ public final class GenMRSkewJoinProcessor {
     }
 
     List<Task<? extends Serializable>> children = currTask.getChildTasks();
-    if (children != null && children.size() > 1) {
-      throw new SemanticException("Should not happened");
-    }
-
-    Task<? extends Serializable> child =
-        children != null && children.size() == 1 ? children.get(0) : null;
 
     Path baseTmpDir = parseCtx.getContext().getMRTmpPath();
 
@@ -347,13 +341,14 @@ public final class GenMRSkewJoinProcessor {
           tsk.addDependentTask(oldChild);
         }
       }
-    }
-    if (child != null) {
-      currTask.removeDependentTask(child);
-      listTasks.add(child);
+      currTask.setChildTasks(new ArrayList<Task<? extends Serializable>>());
+      for (Task<? extends Serializable> oldChild : children) {
+        oldChild.getParentTasks().remove(currTask);
+      }
+      listTasks.addAll(children);
     }
     ConditionalResolverSkewJoinCtx context =
-        new ConditionalResolverSkewJoinCtx(bigKeysDirToTaskMap, child);
+        new ConditionalResolverSkewJoinCtx(bigKeysDirToTaskMap, children);
 
     ConditionalWork cndWork = new ConditionalWork(listWorks);
     ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork, parseCtx.getConf());

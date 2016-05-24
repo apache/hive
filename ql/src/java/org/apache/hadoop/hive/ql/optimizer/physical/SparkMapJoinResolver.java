@@ -411,7 +411,9 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
         context.setDirToTaskMap(newbigKeysDirToTaskMap);
         // update no skew task
         if (context.getNoSkewTask() != null && context.getNoSkewTask().equals(originalTask)) {
-          context.setNoSkewTask(newTask);
+          List<Task<? extends Serializable>> noSkewTask = new ArrayList<>();
+          noSkewTask.add(newTask);
+          context.setNoSkewTask(noSkewTask);
         }
       }
     }

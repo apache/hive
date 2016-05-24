@@ -80,6 +80,7 @@ public class ParseContext {
   private HashMap<String, SplitSample> nameToSplitSample;
   private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
+  private List<ColumnStatsAutoGatherContext> columnStatsAutoGatherContexts;
   private Context ctx;
   private QueryState queryState;
   private HiveConf conf;
@@ -166,6 +167,7 @@ public class ParseContext {
       Set<JoinOperator> joinOps,
       Set<SMBMapJoinOperator> smbMapJoinOps,
       List<LoadTableDesc> loadTableWork, List<LoadFileDesc> loadFileWork,
+      List<ColumnStatsAutoGatherContext> columnStatsAutoGatherContexts,
       Context ctx, HashMap<String, String> idToTableNameMap, int destTableId,
       UnionProcContext uCtx, List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer,
       Map<String, PrunedPartitionList> prunedPartitions,
@@ -188,6 +190,7 @@ public class ParseContext {
     this.smbMapJoinOps = smbMapJoinOps;
     this.loadFileWork = loadFileWork;
     this.loadTableWork = loadTableWork;
+    this.columnStatsAutoGatherContexts = columnStatsAutoGatherContexts;
     this.topOps = topOps;
     this.ctx = ctx;
     this.idToTableNameMap = idToTableNameMap;
@@ -607,5 +610,14 @@ public class ParseContext {
 
   public Map<String, Table> getTabNameToTabObject() {
     return tabNameToTabObject;
+  }
+
+  public List<ColumnStatsAutoGatherContext> getColumnStatsAutoGatherContexts() {
+    return columnStatsAutoGatherContexts;
+  }
+
+  public void setColumnStatsAutoGatherContexts(
+      List<ColumnStatsAutoGatherContext> columnStatsAutoGatherContexts) {
+    this.columnStatsAutoGatherContexts = columnStatsAutoGatherContexts;
   }
 }

@@ -406,11 +406,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       }
     }
     if (asyncEx != null) {
-      if (asyncEx instanceof Exception) {
-        throw new HiveException("Async initialization failed", asyncEx);
-      } else {
-        throw (Error) asyncEx;
-      }
+      throw new HiveException("Async initialization failed", asyncEx);
     }
     completeInitializationOp(os);
   }

@@ -35,20 +35,18 @@ public class TextRecordWriter implements RecordWriter {
 
   private OutputStream out;
   private Configuration conf;
-  private boolean escape;
 
   public void initialize(OutputStream out, Configuration conf)
       throws IOException {
     this.out = out;
     this.conf = conf;
-    escape = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESCRIPTESCAPE);
   }
 
   public void write(Writable row) throws IOException {
     Text text = (Text) row;
     Text escapeText = text;
 
-    if (escape) {
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESCRIPTESCAPE)) {
       escapeText = HiveUtils.escapeText(text);
     }
 

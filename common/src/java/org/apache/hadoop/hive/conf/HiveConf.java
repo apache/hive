@@ -1519,7 +1519,9 @@ public class HiveConf extends Configuration {
 
     // Statistics
     HIVESTATSAUTOGATHER("hive.stats.autogather", true,
-        "A flag to gather statistics automatically during the INSERT OVERWRITE command."),
+        "A flag to gather statistics (only basic) automatically during the INSERT OVERWRITE command."),
+    HIVESTATSCOLAUTOGATHER("hive.stats.column.autogather", false,
+        "A flag to gather column statistics automatically."),
     HIVESTATSDBCLASS("hive.stats.dbclass", "fs", new PatternSet("custom", "fs"),
         "The storage that stores temporary Hive statistics. In filesystem based statistics collection ('fs'), \n" +
         "each task writes statistics it has collected in a file on the filesystem, which will be aggregated \n" +
