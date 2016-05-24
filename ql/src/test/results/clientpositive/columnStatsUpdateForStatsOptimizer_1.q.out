@@ -204,7 +204,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"year\":\"true\",\"month\":\"true\"},\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"year\":\"true\",\"month\":\"true\"}}
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	21                  
@@ -429,7 +429,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"year\":\"true\"},\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"year\":\"true\"}}
 	numFiles            	2                   
 	numRows             	4                   
 	rawDataSize         	28                  
@@ -552,7 +552,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"month\":\"true\",\"year\":\"true\"},\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"month\":\"true\",\"year\":\"true\"}}
 	numFiles            	2                   
 	numRows             	4                   
 	rawDataSize         	28                  
@@ -737,7 +737,7 @@ Database:           	default
 Table:              	calendarp           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"year\":\"true\"},\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"year\":\"true\"}}
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	12                  
