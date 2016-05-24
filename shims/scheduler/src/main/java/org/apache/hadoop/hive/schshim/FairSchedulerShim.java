@@ -98,8 +98,12 @@ public class FairSchedulerShim implements SchedulerShim {
         LOG.info("Setting queue name to: '{}' for user '{}'", requestedQueue, forUser);
         conf.set(MR2_JOB_QUEUE_PROPERTY, requestedQueue);
       } else {
-        LOG.warn("Unable to set queue: {} for user: {}, resetting to user's default queue.", requestedQueue, forUser);
-        conf.set(MR2_JOB_QUEUE_PROPERTY, queuePolicy.assignAppToQueue(YarnConfiguration.DEFAULT_QUEUE_NAME, forUser));
+        requestedQueue = queuePolicy.assignAppToQueue(YarnConfiguration.DEFAULT_QUEUE_NAME, forUser);
+        if (StringUtils.isNotBlank(requestedQueue)) {
+          LOG.warn("Unable to set queue: {} for user: {}, resetting to user's default queue.", requestedQueue, forUser);
+        } else {
+          LOG.warn("Unable to set queue for: {}", forUser);
+        }
       }
     }
   }

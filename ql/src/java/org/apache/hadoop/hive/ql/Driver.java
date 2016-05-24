@@ -541,6 +541,7 @@ public class Driver implements CommandProcessor {
   }
 
   private HiveConf configureScheduling(HiveConf configuration, String forUser) throws IOException, HiveException {
+    if (configuration == null || StringUtils.isEmpty(forUser)) return configuration;
     if (YarnFairScheduling.usingNonImpersonationModeWithFairScheduling(configuration)) {
         YarnFairScheduling.validateYarnQueue(configuration, forUser);
     }
