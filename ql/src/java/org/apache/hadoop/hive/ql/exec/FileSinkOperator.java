@@ -938,7 +938,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           // we cannot proceed and need to tell the hive client that retries won't succeed either
           throw new HiveFatalException(
                ErrorMsg.DYNAMIC_PARTITIONS_TOO_MANY_PER_NODE_ERROR.getErrorCodedMsg()
-               + "Maximum was set to: " + maxPartitions);
+               + "Maximum was set to " + maxPartitions + " partitions per node"
+               + ", number of dynamic partitions on this node: " + valToPaths.size());
         }
 
         if (!conf.getDpSortState().equals(DPSortState.NONE) && prevFsp != null) {
