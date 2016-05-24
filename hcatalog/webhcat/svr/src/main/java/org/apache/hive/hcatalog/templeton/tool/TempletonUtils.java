@@ -104,14 +104,14 @@ public class TempletonUtils {
   public static final Pattern HIVE_COMPLETE = Pattern.compile(" map = (\\d+%),\\s+reduce = (\\d+%).*$");
   /**
    * Hive on Tez produces progress report that looks like this
-   * Map 1: -/-	Reducer 2: 0/1	
-   * Map 1: -/-	Reducer 2: 0(+1)/1	
+   * Map 1: -/-	Reducer 2: 0/1
+   * Map 1: -/-	Reducer 2: 0(+1)/1
    * Map 1: -/-	Reducer 2: 1/1
-   * 
+   *
    * -/- means there are no tasks (yet)
    * 0/1 means 1 total tasks, 0 completed
    * 1(+2)/3 means 3 total, 1 completed and 2 running
-   * 
+   *
    * HIVE-8495, in particular https://issues.apache.org/jira/secure/attachment/12675504/Screen%20Shot%202014-10-16%20at%209.35.26%20PM.png
    * has more examples.
    * To report progress, we'll assume all tasks are equal size and compute "completed" as percent of "total"
@@ -132,7 +132,7 @@ public class TempletonUtils {
     Matcher pig = PIG_COMPLETE.matcher(line);
     if (pig.find())
       return pig.group().trim();
-    
+
     Matcher hive = HIVE_COMPLETE.matcher(line);
     if(hive.find()) {
       return "map " + hive.group(1) + " reduce " + hive.group(2);
@@ -274,7 +274,7 @@ public class TempletonUtils {
     if(!fs.exists(p)) {
       return Collections.emptyList();
     }
-    List<FileStatus> children = ShimLoader.getHadoopShims().listLocatedStatus(fs, p, null);
+    FileStatus[] children = fs.listStatus(p);
     if(!isset(children)) {
       return Collections.emptyList();
     }
@@ -327,9 +327,10 @@ public class TempletonUtils {
     }
     final String finalFName = new String(fname);
 
-    final FileSystem defaultFs = 
+    final FileSystem defaultFs =
         ugi.doAs(new PrivilegedExceptionAction<FileSystem>() {
-          public FileSystem run() 
+          @Override
+          public FileSystem run()
             throws URISyntaxException, IOException, InterruptedException {
             return FileSystem.get(new URI(finalFName), conf);
           }

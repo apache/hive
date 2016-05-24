@@ -234,18 +234,6 @@ public interface HadoopShims {
         Class<RecordReader<K, V>> rrClass) throws IOException;
   }
 
-  /**
-   * Get the block locations for the given directory.
-   * @param fs the file system
-   * @param path the directory name to get the status and block locations
-   * @param filter a filter that needs to accept the file (or null)
-   * @return an list for the located file status objects
-   * @throws IOException
-   */
-  List<FileStatus> listLocatedStatus(FileSystem fs, Path path,
-                                     PathFilter filter) throws IOException;
-
-
   List<HdfsFileStatusWithId> listLocatedHdfsStatus(
       FileSystem fs, Path path, PathFilter filter) throws IOException;
 

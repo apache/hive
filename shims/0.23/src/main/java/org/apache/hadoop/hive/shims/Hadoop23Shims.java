@@ -52,7 +52,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.ProxyFileSystem;
 import org.apache.hadoop.fs.RemoteIterator;
-import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.TrashPolicy;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -662,22 +661,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public WebHCatJTShim getWebHCatShim(Configuration conf, UserGroupInformation ugi) throws IOException {
     return new WebHCatJTShim23(conf, ugi);//this has state, so can't be cached
-  }
-
-  @Override
-  public List<FileStatus> listLocatedStatus(final FileSystem fs,
-                                            final Path path,
-                                            final PathFilter filter
-                                           ) throws IOException {
-    RemoteIterator<LocatedFileStatus> itr = fs.listLocatedStatus(path);
-    List<FileStatus> result = new ArrayList<FileStatus>();
-    while(itr.hasNext()) {
-      FileStatus stat = itr.next();
-      if (filter == null || filter.accept(stat.getPath())) {
-        result.add(stat);
-      }
-    }
-    return result;
   }
 
   private static final class HdfsFileStatusWithIdImpl implements HdfsFileStatusWithId {

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import org.apache.orc.impl.InStream;
 
-  
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
@@ -80,6 +79,7 @@ import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Directory;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
+import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.LlapWrappableInputFormatInterface;
@@ -1034,7 +1034,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       }
 
       // Fall back to regular API and create states without ID.
-      List<FileStatus> children = SHIMS.listLocatedStatus(fs, base, AcidUtils.hiddenFileFilter);
+      List<FileStatus> children = HdfsUtils.listLocatedStatus(fs, base, AcidUtils.hiddenFileFilter);
       List<HdfsFileStatusWithId> result = new ArrayList<>(children.size());
       for (FileStatus child : children) {
         result.add(AcidUtils.createOriginalObj(null, child));

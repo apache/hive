@@ -19,12 +19,17 @@
 package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -53,7 +58,7 @@ public class HdfsUtils {
     int fileSizeHash = (int)(fileSize ^ (fileSize >>> 32)),
         modTimeHash = (int)(modTime ^ (modTime >>> 32)),
         combinedHash = modTimeHash ^ fileSizeHash;
-    long id = (((long)nameHash & 0xffffffffL) << 32) | ((long)combinedHash & 0xffffffffL);
+    long id = ((nameHash & 0xffffffffL) << 32) | (combinedHash & 0xffffffffL);
     if (doLog) {
       LOG.warn("Cannot get unique file ID from " + fsName + "; using " + id
           + " (" + pathStr + "," + nameHash + "," + fileSize + ")");
@@ -61,8 +66,20 @@ public class HdfsUtils {
     return id;
   }
 
-
-
+  public static List<FileStatus> listLocatedStatus(final FileSystem fs,
+      final Path path,
+      final PathFilter filter
+      ) throws IOException {
+    RemoteIterator<LocatedFileStatus> itr = fs.listLocatedStatus(path);
+    List<FileStatus> result = new ArrayList<FileStatus>();
+    while(itr.hasNext()) {
+      FileStatus stat = itr.next();
+      if (filter == null || filter.accept(stat.getPath())) {
+        result.add(stat);
+      }
+    }
+    return result;
+  }
 
   // TODO: this relies on HDFS not changing the format; we assume if we could get inode ID, this
   //       is still going to work. Otherwise, file IDs can be turned off. Later, we should use

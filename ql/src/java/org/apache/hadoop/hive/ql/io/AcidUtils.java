@@ -507,7 +507,7 @@ public class AcidUtils {
             originalDirectories, original, obsolete, bestBase, ignoreEmptyFiles);
       }
     } else {
-      List<FileStatus> children = SHIMS.listLocatedStatus(fs, directory, hiddenFileFilter);
+      List<FileStatus> children = HdfsUtils.listLocatedStatus(fs, directory, hiddenFileFilter);
       for (FileStatus child : children) {
         getChildState(
             child, null, txnList, working, originalDirectories, original, obsolete, bestBase, ignoreEmptyFiles);
@@ -675,7 +675,7 @@ public class AcidUtils {
         }
       }
     } else {
-      List<FileStatus> children = SHIMS.listLocatedStatus(fs, stat.getPath(), hiddenFileFilter);
+      List<FileStatus> children = HdfsUtils.listLocatedStatus(fs, stat.getPath(), hiddenFileFilter);
       for (FileStatus child : children) {
         if (child.isDir()) {
           findOriginals(fs, child, original, useFileIds);
