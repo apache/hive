@@ -98,7 +98,7 @@ public class PostExecOrcFileDump implements ExecuteWithHookContext {
               // just creating orc reader is going to do sanity checks to make sure its valid ORC file
               OrcFile.createReader(fs, fileStatus.getPath());
               console.printError("-- BEGIN ORC FILE DUMP --");
-              FileDump.main(new String[]{fileStatus.getPath().toString(), "--rowindex=1"});
+              FileDump.main(new String[]{fileStatus.getPath().toString(), "--rowindex=*"});
               console.printError("-- END ORC FILE DUMP --");
             } catch (FileFormatException e) {
               LOG.warn("File " + fileStatus.getPath() + " is not ORC. Skip printing orc file dump");

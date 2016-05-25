@@ -18,6 +18,7 @@
 package org.apache.orc.tools;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -114,6 +115,12 @@ public class JsonFileDump {
 
         ColumnStatistics[] stats = reader.getStatistics();
         int colCount = stats.length;
+        if (rowIndexCols == null) {
+          rowIndexCols = new ArrayList<>(colCount);
+          for (int i = 0; i < colCount; ++i) {
+            rowIndexCols.add(i);
+          }
+        }
         writer.key("fileStatistics").array();
         for (int i = 0; i < stats.length; ++i) {
           writer.object();
@@ -165,8 +172,7 @@ public class JsonFileDump {
             writer.endObject();
           }
           writer.endArray();
-
-          if (rowIndexCols != null && !rowIndexCols.isEmpty()) {
+          if (!rowIndexCols.isEmpty()) {
             // include the columns that are specified, only if the columns are included, bloom filter
             // will be read
             boolean[] sargColumns = new boolean[colCount];
