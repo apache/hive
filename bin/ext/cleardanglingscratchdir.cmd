@@ -16,7 +16,6 @@
 
 set CLASS=org.apache.hadoop.hive.ql.session.ClearDanglingScratchDir
 set HIVE_OPTS=
-set HADOOP_CLASSPATH=
 
 pushd %HIVE_LIB%
 for /f %%a IN ('dir /b hive-exec-*.jar') do (
