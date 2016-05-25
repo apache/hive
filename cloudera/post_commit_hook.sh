@@ -18,7 +18,12 @@ cd $(dirname $0)
 
 HIVE_PTEST_DIR=".hive-ptest"
 
-HIVE_BRANCH=$(git status | grep 'On branch' | cut -d' ' -f3)
+if [ -n "$GIT_BRANCH" ]; then
+  HIVE_BRANCH="${GIT_BRANCH#*/}"
+else
+  HIVE_BRANCH=$(git status | grep 'On branch' | cut -d' ' -f3)
+fi
+
 [ -z "$HIVE_BRANCH" ] && echo "Fatal: Cannot find GIT branch name." && exit 1
 
 export PTEST_PROPERTIES_FILE="cdh5-1.1.x.properties"
