@@ -96,7 +96,7 @@ public final class FileDump {
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
 
-    List<Integer> rowIndexCols = null;
+    List<Integer> rowIndexCols = new ArrayList<Integer>(0);
     Options opts = createOptions();
     CommandLine cli = new GnuParser().parse(opts, args);
 
@@ -115,10 +115,15 @@ public final class FileDump {
     }
 
     if (cli.hasOption("r")) {
-      String[] colStrs = cli.getOptionValue("r").split(",");
-      rowIndexCols = new ArrayList<Integer>(colStrs.length);
-      for (String colStr : colStrs) {
-        rowIndexCols.add(Integer.parseInt(colStr));
+      String val = cli.getOptionValue("r");
+      if (val != null && val.trim().equals("*")) {
+        rowIndexCols = null; // All the columns
+      } else {
+        String[] colStrs = cli.getOptionValue("r").split(",");
+        rowIndexCols = new ArrayList<Integer>(colStrs.length);
+        for (String colStr : colStrs) {
+          rowIndexCols.add(Integer.parseInt(colStr));
+        }
       }
     }
 
@@ -317,7 +322,7 @@ public final class FileDump {
   }
 
   private static void printMetaDataImpl(final String filename,
-      final Configuration conf, final List<Integer> rowIndexCols, final boolean printTimeZone,
+      final Configuration conf, List<Integer> rowIndexCols, final boolean printTimeZone,
       final List<String> corruptFiles) throws IOException {
     Path file = new Path(filename);
     Reader reader = getReader(file, conf, corruptFiles);
@@ -348,6 +353,12 @@ public final class FileDump {
     }
     ColumnStatistics[] stats = reader.getStatistics();
     int colCount = stats.length;
+    if (rowIndexCols == null) {
+      rowIndexCols = new ArrayList<>(colCount);
+      for (int i = 0; i < colCount; ++i) {
+        rowIndexCols.add(i);
+      }
+    }
     System.out.println("\nFile Statistics:");
     for (int i = 0; i < stats.length; ++i) {
       System.out.println("  Column " + i + ": " + stats[i].toString());
@@ -712,6 +723,7 @@ public final class FileDump {
     return paddedBytes;
   }
 
+  @SuppressWarnings("static-access")
   static Options createOptions() {
     Options result = new Options();
 

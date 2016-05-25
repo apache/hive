@@ -184,6 +184,13 @@ Stripes:
     Encoding column 9: DIRECT_V2
     Encoding column 10: DIRECT_V2
     Encoding column 11: DIRECT_V2
+    Row group indices for column 0:
+      Entry 0: count: 1000 hasNull: false positions: 
+      Entry 1: count: 49 hasNull: false positions: 
+    Bloom filters for column 0:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 0 loadFactor: 0 expectedFpp: 0.0
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 0 loadFactor: 0 expectedFpp: 0.0
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 0 loadFactor: 0 expectedFpp: 0.0
     Row group indices for column 1:
       Entry 0: count: 997 hasNull: true min: -3 max: 124 sum: 59325 positions: 0,0,0,0,0,0,0
       Entry 1: count: 49 hasNull: false min: 2 max: 123 sum: 3105 positions: 0,10,113,0,0,903,101
@@ -191,6 +198,76 @@ Stripes:
       Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 492 loadFactor: 0.0784 expectedFpp: 3.7864847E-5
       Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 168 loadFactor: 0.0268 expectedFpp: 5.147697E-7
       Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 492 loadFactor: 0.0784 expectedFpp: 3.7864847E-5
+    Row group indices for column 2:
+      Entry 0: count: 997 hasNull: true min: 256 max: 511 sum: 381766 positions: 0,0,0,0,0,0,0
+      Entry 1: count: 49 hasNull: false min: 256 max: 507 sum: 17123 positions: 0,10,114,0,0,1026,485
+    Bloom filters for column 2:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 928 loadFactor: 0.148 expectedFpp: 4.792562E-4
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 175 loadFactor: 0.0279 expectedFpp: 6.0607726E-7
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 928 loadFactor: 0.148 expectedFpp: 4.792562E-4
+    Row group indices for column 3:
+      Entry 0: count: 1000 hasNull: false min: 65536 max: 65791 sum: 65662251 positions: 0,0,0
+      Entry 1: count: 49 hasNull: false min: 65540 max: 65788 sum: 3218800 positions: 0,1538,488
+    Bloom filters for column 3:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 947 loadFactor: 0.151 expectedFpp: 5.1972753E-4
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 171 loadFactor: 0.0273 expectedFpp: 5.525356E-7
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 951 loadFactor: 0.1516 expectedFpp: 5.285643E-4
+    Row group indices for column 4:
+      Entry 0: count: 1000 hasNull: false min: 4294967296 max: 4294967551 sum: 4294967421966 positions: 0,0,0
+      Entry 1: count: 49 hasNull: false min: 4294967301 max: 4294967550 sum: 210453403987 positions: 0,2885,422
+    Bloom filters for column 4:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 900 loadFactor: 0.1435 expectedFpp: 4.2398053E-4
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 177 loadFactor: 0.0282 expectedFpp: 6.342622E-7
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 905 loadFactor: 0.1443 expectedFpp: 4.3348098E-4
+    Row group indices for column 5:
+      Entry 0: count: 1000 hasNull: false min: 0.07999999821186066 max: 99.91999816894531 sum: 49977.420025609434 positions: 0,0
+      Entry 1: count: 49 hasNull: false min: 2.7899999618530273 max: 97.6500015258789 sum: 2767.280002593994 positions: 0,4000
+    Bloom filters for column 5:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 2846 loadFactor: 0.4538 expectedFpp: 0.042395078
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 192 loadFactor: 0.0306 expectedFpp: 8.781743E-7
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 2940 loadFactor: 0.4688 expectedFpp: 0.048279762
+    Row group indices for column 6:
+      Entry 0: count: 1000 hasNull: false min: 0.02 max: 49.85 sum: 25045.26999999998 positions: 0,0
+      Entry 1: count: 49 hasNull: false min: 1.71 max: 48.78 sum: 1241.08 positions: 0,8000
+    Bloom filters for column 6:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 2696 loadFactor: 0.4298 expectedFpp: 0.03413936
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 195 loadFactor: 0.0311 expectedFpp: 9.3436E-7
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 2792 loadFactor: 0.4452 expectedFpp: 0.03926788
+    Row group indices for column 7:
+      Entry 0: count: 1000 hasNull: false true: 501 positions: 0,0,0,0
+      Entry 1: count: 49 hasNull: false true: 25 positions: 0,0,125,0
+    Bloom filters for column 7:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 0 loadFactor: 0 expectedFpp: 0.0
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 0 loadFactor: 0 expectedFpp: 0.0
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 0 loadFactor: 0 expectedFpp: 0.0
+    Row group indices for column 8:
+      Entry 0: count: 1000 hasNull: false min:  max: zach zipper sum: 12798 positions: 0,0,0
+      Entry 1: count: 49 hasNull: false min: alice allen max: zach xylophone sum: 645 positions: 0,1026,488
+    Bloom filters for column 8:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 1735 loadFactor: 0.2766 expectedFpp: 0.0058556325
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 182 loadFactor: 0.029 expectedFpp: 7.090246E-7
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 1772 loadFactor: 0.2825 expectedFpp: 0.0063713384
+    Row group indices for column 9:
+      Entry 0: count: 1000 hasNull: false min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703 positions: 0,0,0,0,0,0
+      Entry 1: count: 49 hasNull: false min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703 positions: 0,7,488,0,1538,488
+    Bloom filters for column 9:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 4 loadFactor: 0.0006 expectedFpp: 1.6543056E-13
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 4 loadFactor: 0.0006 expectedFpp: 1.6543056E-13
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 4 loadFactor: 0.0006 expectedFpp: 1.6543056E-13
+    Row group indices for column 10:
+      Entry 0: count: 1000 hasNull: false min: 0.08 max: 99.94 sum: 51182.11 positions: 0,0,0,0,0
+      Entry 1: count: 49 hasNull: false min: 2.48 max: 94.9 sum: 2464.05 positions: 0,2159,0,476,4
+    Bloom filters for column 10:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 2848 loadFactor: 0.4541 expectedFpp: 0.042514365
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 194 loadFactor: 0.0309 expectedFpp: 9.153406E-7
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 2952 loadFactor: 0.4707 expectedFpp: 0.049072847
+    Row group indices for column 11:
+      Entry 0: count: 1000 hasNull: false sum: 12674 positions: 0,0,0,0,0
+      Entry 1: count: 49 hasNull: false sum: 604 positions: 0,12674,0,979,20
+    Bloom filters for column 11:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 102 loadFactor: 0.0163 expectedFpp: 6.9948186E-8
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 98 loadFactor: 0.0156 expectedFpp: 5.9604645E-8
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 102 loadFactor: 0.0163 expectedFpp: 6.9948186E-8
 
 File length: 33416 bytes
 Padding length: 0 bytes
@@ -304,6 +381,13 @@ Stripes:
     Encoding column 9: DIRECT_V2
     Encoding column 10: DIRECT_V2
     Encoding column 11: DIRECT_V2
+    Row group indices for column 0:
+      Entry 0: count: 1000 hasNull: false positions: 
+      Entry 1: count: 49 hasNull: false positions: 
+    Bloom filters for column 0:
+      Entry 0: numHashFunctions: 7 bitCount: 9600 popCount: 0 loadFactor: 0 expectedFpp: 0.0
+      Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 0 loadFactor: 0 expectedFpp: 0.0
+      Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 0 loadFactor: 0 expectedFpp: 0.0
     Row group indices for column 1:
       Entry 0: count: 997 hasNull: true min: -3 max: 124 sum: 59325 positions: 0,0,0,0,0,0,0
       Entry 1: count: 49 hasNull: false min: 2 max: 123 sum: 3105 positions: 0,10,113,0,0,903,101
@@ -311,6 +395,76 @@ Stripes:
       Entry 0: numHashFunctions: 7 bitCount: 9600 popCount: 849 loadFactor: 0.0884 expectedFpp: 4.231118E-8
       Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 285 loadFactor: 0.0297 expectedFpp: 2.0324289E-11
       Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 849 loadFactor: 0.0884 expectedFpp: 4.231118E-8
+    Row group indices for column 2:
+      Entry 0: count: 997 hasNull: true min: 256 max: 511 sum: 381766 positions: 0,0,0,0,0,0,0
+      Entry 1: count: 49 hasNull: false min: 256 max: 507 sum: 17123 positions: 0,10,114,0,0,1026,485
+    Bloom filters for column 2:
+      Entry 0: numHashFunctions: 7 bitCount: 9600 popCount: 1617 loadFactor: 0.1684 expectedFpp: 3.8465505E-6
+      Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 306 loadFactor: 0.0319 expectedFpp: 3.343115E-11
+      Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 1617 loadFactor: 0.1684 expectedFpp: 3.8465505E-6
+    Row group indices for column 3:
+      Entry 0: count: 1000 hasNull: false min: 65536 max: 65791 sum: 65662251 positions: 0,0,0
+      Entry 1: count: 49 hasNull: false min: 65540 max: 65788 sum: 3218800 positions: 0,1538,488
+    Bloom filters for column 3:
+      Entry 0: numHashFunctions: 7 bitCount: 9600 popCount: 1632 loadFactor: 0.17 expectedFpp: 4.1033873E-6
+      Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 296 loadFactor: 0.0308 expectedFpp: 2.6493746E-11
+      Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 1638 loadFactor: 0.1706 expectedFpp: 4.2101606E-6
+    Row group indices for column 4:
+      Entry 0: count: 1000 hasNull: false min: 4294967296 max: 4294967551 sum: 4294967421966 positions: 0,0,0
+      Entry 1: count: 49 hasNull: false min: 4294967301 max: 4294967550 sum: 210453403987 positions: 0,2885,422
+    Bloom filters for column 4:
+      Entry 0: numHashFunctions: 7 bitCount: 9600 popCount: 1611 loadFactor: 0.1678 expectedFpp: 3.7477455E-6
+      Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 318 loadFactor: 0.0331 expectedFpp: 4.3761383E-11
+      Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 1622 loadFactor: 0.169 expectedFpp: 3.9305864E-6
+    Row group indices for column 5:
+      Entry 0: count: 1000 hasNull: false min: 0.07999999821186066 max: 99.91999816894531 sum: 49977.420025609434 positions: 0,0
+      Entry 1: count: 49 hasNull: false min: 2.7899999618530273 max: 97.6500015258789 sum: 2767.280002593994 positions: 0,4000
+    Bloom filters for column 5:
+      Entry 0: numHashFunctions: 7 bitCount: 9600 popCount: 4847 loadFactor: 0.5049 expectedFpp: 0.008363968
+      Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 341 loadFactor: 0.0355 expectedFpp: 7.134803E-11
+      Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 4989 loadFactor: 0.5197 expectedFpp: 0.010237543
+    Row group indices for column 6:
+      Entry 0: count: 1000 hasNull: false min: 0.02 max: 49.85 sum: 25045.26999999998 positions: 0,0
+      Entry 1: count: 49 hasNull: false min: 1.71 max: 48.78 sum: 1241.08 positions: 0,8000
+    Bloom filters for column 6:
+      Entry 0: numHashFunctions: 7 bitCount: 9600 popCount: 4562 loadFactor: 0.4752 expectedFpp: 0.005472533
+      Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 337 loadFactor: 0.0351 expectedFpp: 6.569173E-11
+      Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 4710 loadFactor: 0.4906 expectedFpp: 0.006843018
+    Row group indices for column 7:
+      Entry 0: count: 1000 hasNull: false true: 501 positions: 0,0,0,0
+      Entry 1: count: 49 hasNull: false true: 25 positions: 0,0,125,0
+    Bloom filters for column 7:
+      Entry 0: numHashFunctions: 7 bitCount: 9600 popCount: 0 loadFactor: 0 expectedFpp: 0.0
+      Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 0 loadFactor: 0 expectedFpp: 0.0
+      Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 0 loadFactor: 0 expectedFpp: 0.0
+    Row group indices for column 8:
+      Entry 0: count: 1000 hasNull: false min:  max: zach zipper sum: 12798 positions: 0,0,0
+      Entry 1: count: 49 hasNull: false min: alice allen max: zach xylophone sum: 645 positions: 0,1026,488
+    Bloom filters for column 8:
+      Entry 0: numHashFunctions: 7 bitCount: 9600 popCount: 2961 loadFactor: 0.3084 expectedFpp: 2.655646E-4
+      Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 317 loadFactor: 0.033 expectedFpp: 4.2807122E-11
+      Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 3015 loadFactor: 0.3141 expectedFpp: 3.0137875E-4
+    Row group indices for column 9:
+      Entry 0: count: 1000 hasNull: false min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703 positions: 0,0,0,0,0,0
+      Entry 1: count: 49 hasNull: false min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703 positions: 0,7,488,0,1538,488
+    Bloom filters for column 9:
+      Entry 0: numHashFunctions: 7 bitCount: 9600 popCount: 7 loadFactor: 0.0007 expectedFpp: 1.0959422E-22
+      Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 7 loadFactor: 0.0007 expectedFpp: 1.0959422E-22
+      Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 7 loadFactor: 0.0007 expectedFpp: 1.0959422E-22
+    Row group indices for column 10:
+      Entry 0: count: 1000 hasNull: false min: 0.08 max: 99.94 sum: 51182.11 positions: 0,0,0,0,0
+      Entry 1: count: 49 hasNull: false min: 2.48 max: 94.9 sum: 2464.05 positions: 0,2159,0,476,4
+    Bloom filters for column 10:
+      Entry 0: numHashFunctions: 7 bitCount: 9600 popCount: 4796 loadFactor: 0.4996 expectedFpp: 0.0077670407
+      Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 339 loadFactor: 0.0353 expectedFpp: 6.846983E-11
+      Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 4947 loadFactor: 0.5153 expectedFpp: 0.009649276
+    Row group indices for column 11:
+      Entry 0: count: 1000 hasNull: false sum: 12674 positions: 0,0,0,0,0
+      Entry 1: count: 49 hasNull: false sum: 604 positions: 0,12674,0,979,20
+    Bloom filters for column 11:
+      Entry 0: numHashFunctions: 7 bitCount: 9600 popCount: 181 loadFactor: 0.0189 expectedFpp: 8.4693775E-13
+      Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 174 loadFactor: 0.0181 expectedFpp: 6.426078E-13
+      Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 181 loadFactor: 0.0189 expectedFpp: 8.4693775E-13
 
 File length: 38568 bytes
 Padding length: 0 bytes
@@ -436,6 +590,13 @@ Stripes:
     Encoding column 9: DIRECT_V2
     Encoding column 10: DIRECT_V2
     Encoding column 11: DIRECT_V2
+    Row group indices for column 0:
+      Entry 0: count: 1000 hasNull: false positions: 
+      Entry 1: count: 49 hasNull: false positions: 
+    Bloom filters for column 0:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 0 loadFactor: 0 expectedFpp: 0.0
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 0 loadFactor: 0 expectedFpp: 0.0
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 0 loadFactor: 0 expectedFpp: 0.0
     Row group indices for column 1:
       Entry 0: count: 997 hasNull: true min: -3 max: 124 sum: 59325 positions: 0,0,0,0,0,0,0
       Entry 1: count: 49 hasNull: false min: 2 max: 123 sum: 3105 positions: 0,10,113,0,0,903,101
@@ -443,6 +604,76 @@ Stripes:
       Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 492 loadFactor: 0.0784 expectedFpp: 3.7864847E-5
       Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 168 loadFactor: 0.0268 expectedFpp: 5.147697E-7
       Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 492 loadFactor: 0.0784 expectedFpp: 3.7864847E-5
+    Row group indices for column 2:
+      Entry 0: count: 997 hasNull: true min: 256 max: 511 sum: 381766 positions: 0,0,0,0,0,0,0
+      Entry 1: count: 49 hasNull: false min: 256 max: 507 sum: 17123 positions: 0,10,114,0,0,1026,485
+    Bloom filters for column 2:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 928 loadFactor: 0.148 expectedFpp: 4.792562E-4
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 175 loadFactor: 0.0279 expectedFpp: 6.0607726E-7
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 928 loadFactor: 0.148 expectedFpp: 4.792562E-4
+    Row group indices for column 3:
+      Entry 0: count: 1000 hasNull: false min: 65536 max: 65791 sum: 65662251 positions: 0,0,0
+      Entry 1: count: 49 hasNull: false min: 65540 max: 65788 sum: 3218800 positions: 0,1538,488
+    Bloom filters for column 3:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 947 loadFactor: 0.151 expectedFpp: 5.1972753E-4
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 171 loadFactor: 0.0273 expectedFpp: 5.525356E-7
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 951 loadFactor: 0.1516 expectedFpp: 5.285643E-4
+    Row group indices for column 4:
+      Entry 0: count: 1000 hasNull: false min: 4294967296 max: 4294967551 sum: 4294967421966 positions: 0,0,0
+      Entry 1: count: 49 hasNull: false min: 4294967301 max: 4294967550 sum: 210453403987 positions: 0,2885,422
+    Bloom filters for column 4:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 900 loadFactor: 0.1435 expectedFpp: 4.2398053E-4
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 177 loadFactor: 0.0282 expectedFpp: 6.342622E-7
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 905 loadFactor: 0.1443 expectedFpp: 4.3348098E-4
+    Row group indices for column 5:
+      Entry 0: count: 1000 hasNull: false min: 0.07999999821186066 max: 99.91999816894531 sum: 49977.420025609434 positions: 0,0
+      Entry 1: count: 49 hasNull: false min: 2.7899999618530273 max: 97.6500015258789 sum: 2767.280002593994 positions: 0,4000
+    Bloom filters for column 5:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 2846 loadFactor: 0.4538 expectedFpp: 0.042395078
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 192 loadFactor: 0.0306 expectedFpp: 8.781743E-7
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 2940 loadFactor: 0.4688 expectedFpp: 0.048279762
+    Row group indices for column 6:
+      Entry 0: count: 1000 hasNull: false min: 0.02 max: 49.85 sum: 25045.26999999998 positions: 0,0
+      Entry 1: count: 49 hasNull: false min: 1.71 max: 48.78 sum: 1241.08 positions: 0,8000
+    Bloom filters for column 6:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 2696 loadFactor: 0.4298 expectedFpp: 0.03413936
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 195 loadFactor: 0.0311 expectedFpp: 9.3436E-7
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 2792 loadFactor: 0.4452 expectedFpp: 0.03926788
+    Row group indices for column 7:
+      Entry 0: count: 1000 hasNull: false true: 501 positions: 0,0,0,0
+      Entry 1: count: 49 hasNull: false true: 25 positions: 0,0,125,0
+    Bloom filters for column 7:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 0 loadFactor: 0 expectedFpp: 0.0
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 0 loadFactor: 0 expectedFpp: 0.0
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 0 loadFactor: 0 expectedFpp: 0.0
+    Row group indices for column 8:
+      Entry 0: count: 1000 hasNull: false min:  max: zach zipper sum: 12798 positions: 0,0,0
+      Entry 1: count: 49 hasNull: false min: alice allen max: zach xylophone sum: 645 positions: 0,1026,488
+    Bloom filters for column 8:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 1735 loadFactor: 0.2766 expectedFpp: 0.0058556325
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 182 loadFactor: 0.029 expectedFpp: 7.090246E-7
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 1772 loadFactor: 0.2825 expectedFpp: 0.0063713384
+    Row group indices for column 9:
+      Entry 0: count: 1000 hasNull: false min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703 positions: 0,0,0,0,0,0
+      Entry 1: count: 49 hasNull: false min: 2013-03-01 09:11:58.703 max: 2013-03-01 09:11:58.703 positions: 0,7,488,0,1538,488
+    Bloom filters for column 9:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 4 loadFactor: 0.0006 expectedFpp: 1.6543056E-13
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 4 loadFactor: 0.0006 expectedFpp: 1.6543056E-13
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 4 loadFactor: 0.0006 expectedFpp: 1.6543056E-13
+    Row group indices for column 10:
+      Entry 0: count: 1000 hasNull: false min: 0.08 max: 99.94 sum: 51182.11 positions: 0,0,0,0,0
+      Entry 1: count: 49 hasNull: false min: 2.48 max: 94.9 sum: 2464.05 positions: 0,2159,0,476,4
+    Bloom filters for column 10:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 2848 loadFactor: 0.4541 expectedFpp: 0.042514365
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 194 loadFactor: 0.0309 expectedFpp: 9.153406E-7
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 2952 loadFactor: 0.4707 expectedFpp: 0.049072847
+    Row group indices for column 11:
+      Entry 0: count: 1000 hasNull: false sum: 12674 positions: 0,0,0,0,0
+      Entry 1: count: 49 hasNull: false sum: 604 positions: 0,12674,0,979,20
+    Bloom filters for column 11:
+      Entry 0: numHashFunctions: 4 bitCount: 6272 popCount: 102 loadFactor: 0.0163 expectedFpp: 6.9948186E-8
+      Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 98 loadFactor: 0.0156 expectedFpp: 5.9604645E-8
+      Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 102 loadFactor: 0.0163 expectedFpp: 6.9948186E-8
 
 File length: 33416 bytes
 Padding length: 0 bytes
