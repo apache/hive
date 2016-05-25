@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColLikeStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectStringColLikeStringScalar;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.Text;
 
@@ -37,7 +38,7 @@ import org.apache.hadoop.io.Text;
     extended = "Example:\n"
     + "  > SELECT a.* FROM srcpart a WHERE a.hr _FUNC_ '%2' LIMIT 1;\n"
     + "  27      val_27  2008-04-08      12")
-@VectorizedExpressions({FilterStringColLikeStringScalar.class})
+@VectorizedExpressions({FilterStringColLikeStringScalar.class, SelectStringColLikeStringScalar.class})
 public class UDFLike extends UDF {
   private final Text lastLikePattern = new Text();
   private Pattern p = null;
