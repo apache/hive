@@ -200,16 +200,23 @@ public class LlapServiceDriver {
 
     if (options.getSize() != -1) {
       if (options.getCache() != -1) {
-        Preconditions.checkArgument(options.getCache() < options.getSize(),
-            "Cache has to be smaller than the container sizing");
+        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MAPPED) == false) {
+          // direct heap allocations need to be safer
+          Preconditions.checkArgument(options.getCache() < options.getSize(),
+              "Cache has to be smaller than the container sizing");
+        } else if (options.getCache() < options.getSize()) {
+          LOG.warn("Note that this might need YARN physical memory monitoring to be turned off (yarn.nodemanager.pmem-check-enabled=false)");
+        }
       }
       if (options.getXmx() != -1) {
         Preconditions.checkArgument(options.getXmx() < options.getSize(),
             "Working memory has to be smaller than the container sizing");
       }
-      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_DIRECT)) {
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_DIRECT)
+          && false == HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MAPPED)) {
+        // direct and not memory mapped
         Preconditions.checkArgument(options.getXmx() + options.getCache() < options.getSize(),
-            "Working memory + cache has to be smaller than the containing sizing ");
+            "Working memory + cache has to be smaller than the container sizing ");
       }
     }
 

@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.conf;
 
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -346,4 +349,30 @@ public interface Validator {
       return current > 0 ? ((long)(size / current) + "Pb") : (size + units[0]);
     }
   }
+
+  public class WritableDirectoryValidator implements Validator {
+
+    @Override
+    public String validate(String value) {
+      final Path path = FileSystems.getDefault().getPath(value);
+      if (path == null && value != null) {
+        return String.format("Path '%s' provided could not be located.", value);
+      }
+      final boolean isDir = Files.isDirectory(path);
+      final boolean isWritable = Files.isWritable(path);
+      if (!isDir) {
+        return String.format("Path '%s' provided is not a directory.", value);
+      }
+      if (!isWritable) {
+        return String.format("Path '%s' provided is not writable.", value);
+      }
+      return null;
+    }
+
+    @Override
+    public String toDescription() {
+      return "Expects a writable directory on the local filesystem";
+    }
+  }
+
 }

@@ -18,8 +18,9 @@
 package org.apache.hadoop.hive.llap.cache;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -27,18 +28,33 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.io.Allocator.AllocatorOutOfMemoryException;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+@RunWith(Parameterized.class)
 public class TestBuddyAllocator {
   private static final Logger LOG = LoggerFactory.getLogger(TestBuddyAllocator.class);
   private final Random rdm = new Random(2284);
+  private final boolean isDirect;
+  private final boolean isMapped;
+  private final String tmpDir = System.getProperty("java.io.tmpdir", ".");
+
+  @Parameters
+  public static Collection<Object[]> data() {
+    return Arrays.asList(new Object[][] { { false, false }, { true, false }, { true, true } });
+  }
+
+  public TestBuddyAllocator(boolean direct, boolean mmap) {
+    isDirect = direct;
+    isMapped = mmap;
+  }
 
   private static class DummyMemoryManager implements MemoryManager {
     @Override
@@ -78,8 +94,8 @@ public class TestBuddyAllocator {
   @Test
   public void testSameSizes() throws Exception {
     int min = 3, max = 8, maxAlloc = 1 << max;
-    BuddyAllocator a = new BuddyAllocator(false, 1 << min, maxAlloc, maxAlloc, maxAlloc,
-        new DummyMemoryManager(), LlapDaemonCacheMetrics.create("test", "1"));
+    BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc, maxAlloc, maxAlloc,
+        tmpDir, new DummyMemoryManager(), LlapDaemonCacheMetrics.create("test", "1"));
     for (int i = max; i >= min; --i) {
       allocSameSize(a, 1 << (max - i), i);
     }
@@ -88,16 +104,16 @@ public class TestBuddyAllocator {
   @Test
   public void testMultipleArenas() throws Exception {
     int max = 8, maxAlloc = 1 << max, allocLog2 = max - 1, arenaCount = 5;
-    BuddyAllocator a = new BuddyAllocator(false, 1 << 3, maxAlloc, maxAlloc, maxAlloc * arenaCount,
-        new DummyMemoryManager(), LlapDaemonCacheMetrics.create("test", "1"));
+    BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << 3, maxAlloc, maxAlloc, maxAlloc * arenaCount,
+        tmpDir, new DummyMemoryManager(), LlapDaemonCacheMetrics.create("test", "1"));
     allocSameSize(a, arenaCount * 2, allocLog2);
   }
 
   @Test
   public void testMTT() {
     final int min = 3, max = 8, maxAlloc = 1 << max, allocsPerSize = 3;
-    final BuddyAllocator a = new BuddyAllocator(false, 1 << min, maxAlloc, maxAlloc * 8,
-        maxAlloc * 24, new DummyMemoryManager(), LlapDaemonCacheMetrics.create("test", "1"));
+    final BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc, maxAlloc * 8,
+        maxAlloc * 24, tmpDir, new DummyMemoryManager(), LlapDaemonCacheMetrics.create("test", "1"));
     ExecutorService executor = Executors.newFixedThreadPool(3);
     final CountDownLatch cdlIn = new CountDownLatch(3), cdlOut = new CountDownLatch(1);
     FutureTask<Void> upTask = new FutureTask<Void>(new Callable<Void>() {
@@ -140,8 +156,8 @@ public class TestBuddyAllocator {
   @Test
   public void testMTTArenas() {
     final int min = 3, max = 4, maxAlloc = 1 << max, minAllocCount = 2048, threadCount = 4;
-    final BuddyAllocator a = new BuddyAllocator(false, 1 << min, maxAlloc, maxAlloc,
-        (1 << min) * minAllocCount, new DummyMemoryManager(),
+    final BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc, maxAlloc,
+        (1 << min) * minAllocCount, tmpDir, new DummyMemoryManager(),
         LlapDaemonCacheMetrics.create("test", "1"));
     ExecutorService executor = Executors.newFixedThreadPool(threadCount);
     final CountDownLatch cdlIn = new CountDownLatch(threadCount), cdlOut = new CountDownLatch(1);
@@ -180,8 +196,8 @@ public class TestBuddyAllocator {
   private void testVariableSizeInternal(
       int allocCount, int arenaSizeMult, int arenaCount) throws Exception {
     int min = 3, max = 8, maxAlloc = 1 << max, arenaSize = maxAlloc * arenaSizeMult;
-    BuddyAllocator a = new BuddyAllocator(false, 1 << min, maxAlloc, arenaSize,
-        arenaSize * arenaCount, new DummyMemoryManager(),
+    BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc, arenaSize,
+        arenaSize * arenaCount, tmpDir , new DummyMemoryManager(),
         LlapDaemonCacheMetrics.create("test", "1"));
     allocateUp(a, min, max, allocCount, true);
     allocateDown(a, min, max, allocCount, true);

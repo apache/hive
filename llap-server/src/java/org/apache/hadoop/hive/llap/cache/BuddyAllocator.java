@@ -18,9 +18,23 @@
 package org.apache.hadoop.hive.llap.cache;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel.MapMode;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -39,6 +53,8 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
   private final int minAllocation, maxAllocation, arenaSize;
   private final long maxSize;
   private final boolean isDirect;
+  private final boolean isMapped;
+  private final Path cacheDir;
   private final LlapDaemonCacheMetrics metrics;
 
   // We don't know the acceptable size for Java array, so we'll use 1Gb boundary.
@@ -47,13 +63,21 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
   // Don't try to operate with less than MIN_SIZE allocator space, it will just give you grief.
   private static final int MIN_TOTAL_MEMORY_SIZE = 64*1024*1024;
 
+  private static final FileAttribute<Set<PosixFilePermission>> RWX = PosixFilePermissions
+      .asFileAttribute(PosixFilePermissions.fromString("rwx------"));
+  private static final FileAttribute<Set<PosixFilePermission>> RW_ = PosixFilePermissions
+      .asFileAttribute(PosixFilePermissions.fromString("rw-------"));
+
 
   public BuddyAllocator(Configuration conf, MemoryManager mm, LlapDaemonCacheMetrics metrics) {
     this(HiveConf.getBoolVar(conf, ConfVars.LLAP_ALLOCATOR_DIRECT),
+        HiveConf.getBoolVar(conf, ConfVars.LLAP_ALLOCATOR_MAPPED),
         (int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC),
         (int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MAX_ALLOC),
         HiveConf.getIntVar(conf, ConfVars.LLAP_ALLOCATOR_ARENA_COUNT),
-        getMaxTotalMemorySize(conf), mm, metrics);
+        getMaxTotalMemorySize(conf), 
+        HiveConf.getVar(conf, ConfVars.LLAP_ALLOCATOR_MAPPED_PATH),
+        mm, metrics);
   }
 
   private static long getMaxTotalMemorySize(Configuration conf) {
@@ -71,14 +95,35 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
   @VisibleForTesting
   public BuddyAllocator(boolean isDirectVal, int minAllocVal, int maxAllocVal, int arenaCount,
       long maxSizeVal, MemoryManager memoryManager, LlapDaemonCacheMetrics metrics) {
+    this(isDirectVal, false /*isMapped*/,  minAllocVal, maxAllocVal, arenaCount, maxSizeVal, 
+        null /* mapping path */, memoryManager, metrics);
+  }
+
+  @VisibleForTesting
+  public BuddyAllocator(boolean isDirectVal, boolean isMappedVal, int minAllocVal, int maxAllocVal,
+      int arenaCount, long maxSizeVal, String mapPath, MemoryManager memoryManager,
+      LlapDaemonCacheMetrics metrics) {
     isDirect = isDirectVal;
+    isMapped = isMappedVal;
     minAllocation = minAllocVal;
     maxAllocation = maxAllocVal;
+    if (isMapped) {
+      try {
+        cacheDir =
+            Files.createTempDirectory(FileSystems.getDefault().getPath(mapPath), "llap-", RWX);
+      } catch (IOException ioe) {
+        // conf validator already checks this, so it will never trigger usually
+        throw new AssertionError("Configured mmap directory should be writable", ioe);
+      }
+    } else {
+      cacheDir = null;
+    }
     int arenaSizeVal = (arenaCount == 0) ? MAX_ARENA_SIZE : (int)(maxSizeVal / arenaCount);
     arenaSizeVal = Math.max(maxAllocation, Math.min(arenaSizeVal, MAX_ARENA_SIZE));
     if (LlapIoImpl.LOG.isInfoEnabled()) {
-      LlapIoImpl.LOG.info("Buddy allocator with " + (isDirect ? "direct" : "byte")
-          + " buffers; allocation sizes " + minAllocation + " - " + maxAllocation
+      LlapIoImpl.LOG.info("Buddy allocator with " + (isDirect ? "direct" : "byte") + " buffers;"
+          + (isMapped ? (" memory mapped off " + cacheDir.toString() + "; ") : "")
+          + "allocation sizes " + minAllocation + " - " + maxAllocation
           + ", arena size " + arenaSizeVal + ". total size " + maxSizeVal);
     }
 
@@ -288,6 +333,28 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     return maxSize;
   }
 
+  private ByteBuffer preallocate(int arenaSize) {
+    if (isMapped) {
+      Preconditions.checkArgument(isDirect, "All memory mapped allocations have to be direct buffers");
+      try {
+        File rf = File.createTempFile("arena-", ".cache", cacheDir.toFile());
+        RandomAccessFile rwf = new RandomAccessFile(rf, "rw");
+        rwf.setLength(arenaSize); // truncate (TODO: posix_fallocate?)
+        ByteBuffer rwbuf = rwf.getChannel().map(MapMode.PRIVATE, 0, arenaSize);
+        // A mapping, once established, is not dependent upon the file channel that was used to
+        // create it. delete file and hold onto the map
+        rwf.close();
+        rf.delete();
+        return rwbuf;
+      } catch (IOException ioe) {
+        LlapIoImpl.LOG.warn("Failed trying to allocate memory mapped arena", ioe);
+        // fail similarly when memory allocations fail
+        throw new OutOfMemoryError("Failed trying to allocate memory mapped arena: " + ioe.getMessage());
+      }
+    }
+    return isDirect ? ByteBuffer.allocateDirect(arenaSize) : ByteBuffer.allocate(arenaSize);
+  }
+
   private class Arena {
     private ByteBuffer data;
     // Avoid storing headers with data since we expect binary size allocations.
@@ -297,7 +364,7 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
 
     void init() {
       try {
-        data = isDirect ? ByteBuffer.allocateDirect(arenaSize) : ByteBuffer.allocate(arenaSize);
+        data = preallocate(arenaSize);
       } catch (OutOfMemoryError oom) {
         throw new OutOfMemoryError("Cannot allocate " + arenaSize + " bytes: " + oom.getMessage()
             + "; make sure your xmx and process size are set correctly.");
