@@ -36,6 +36,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.tez.LlapProtocolClientProxy;
@@ -273,11 +274,15 @@ public class TestLlapTaskCommunicator {
     final TezVertexID vertexId1 = TezVertexID.getInstance(dagid, 300);
     final TezVertexID vertexId2 = TezVertexID.getInstance(dagid, 301);
     final Configuration conf = new Configuration(false);
-    final UserPayload userPayload = TezUtils.createUserPayloadFromConf(conf);
+    final UserPayload userPayload;
 
     final LlapTaskCommunicatorForTest taskCommunicator;
 
     public LlapTaskCommunicatorWrapperForTest(LlapProtocolClientProxy llapProxy) throws Exception {
+
+      HiveConf.setVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS, "fake-non-zk-cluster");
+      userPayload = TezUtils.createUserPayloadFromConf(conf);
+
       doReturn(appAttemptId).when(taskCommunicatorContext).getApplicationAttemptId();
       doReturn(new Credentials()).when(taskCommunicatorContext).getAMCredentials();
       doReturn(userPayload).when(taskCommunicatorContext).getInitialUserPayload();
