@@ -361,6 +361,9 @@ goto :EOF
 
 	set /a SERVICE_COUNT = %SERVICE_COUNT% + 1
 	set VAR%SERVICE_COUNT%=schematool
+
+        set /a SERVICE_COUNT = %SERVICE_COUNT% + 1
+        set VAR%SERVICE_COUNT%=cleardanglingscratchdir
 goto :EOF
 
 :AddToAuxParam
