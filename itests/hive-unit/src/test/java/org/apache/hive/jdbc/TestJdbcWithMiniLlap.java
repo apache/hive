@@ -103,9 +103,6 @@ public class TestJdbcWithMiniLlap {
 
     conf = new HiveConf();
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    // Necessary for GetSplits()/LlapInputFormat,
-    // the config generated for the query fragment needs to include the MapWork
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_RPC_QUERY_PLAN, true);
 
     conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
         + "/tez-site.xml"));

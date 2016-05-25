@@ -205,6 +205,8 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE, "llap");
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS, true);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS, true);
+    // Tez/LLAP requires RPC query plan
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_RPC_QUERY_PLAN, true);
 
     try {
       jc = DagUtils.getInstance().createConfiguration(conf);
