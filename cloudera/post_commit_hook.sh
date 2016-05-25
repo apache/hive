@@ -17,7 +17,9 @@ set -ex
 cd $(dirname $0)
 
 HIVE_PTEST_DIR=".hive-ptest"
-HIVE_BRANCH="cdh5-1.1.0_dev"
+
+HIVE_BRANCH=$(git status | grep 'On branch' | cut -d' ' -f3)
+[ -z "$HIVE_BRANCH" ] && echo "Fatal: Cannot find GIT branch name." && exit 1
 
 export PTEST_PROPERTIES_FILE="cdh5-1.1.x.properties"
 export JAVA7_BUILD="1"
