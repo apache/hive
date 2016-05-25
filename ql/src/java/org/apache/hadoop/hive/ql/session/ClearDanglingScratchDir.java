@@ -30,6 +30,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException;
+import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.ipc.RemoteException;
@@ -52,6 +54,10 @@ import org.apache.hadoop.ipc.RemoteException;
 public class ClearDanglingScratchDir {
 
   public static void main(String[] args) throws Exception {
+    try {
+      LogUtils.initHiveLog4j();
+    } catch (LogInitializationException e) {
+    }
     Options opts = createOptions();
     CommandLine cli = new GnuParser().parse(opts, args);
 
