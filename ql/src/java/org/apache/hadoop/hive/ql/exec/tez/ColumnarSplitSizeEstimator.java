@@ -42,7 +42,6 @@ public class ColumnarSplitSizeEstimator implements SplitSizeEstimator {
       if (isDebugEnabled) {
         LOG.debug("Estimated column projection size: " + colProjSize);
       }
-      return colProjSize;
     } else if (inputSplit instanceof HiveInputFormat.HiveInputSplit) {
       InputSplit innerSplit = ((HiveInputFormat.HiveInputSplit) inputSplit).getInputSplit();
 
@@ -51,8 +50,11 @@ public class ColumnarSplitSizeEstimator implements SplitSizeEstimator {
         if (isDebugEnabled) {
           LOG.debug("Estimated column projection size: " + colProjSize);
         }
-        return colProjSize;
       }
+    }
+    if (colProjSize <= 0) {
+      /* columnar splits of unknown size - estimate worst-case */
+      return Integer.MAX_VALUE;
     }
     return colProjSize;
   }
