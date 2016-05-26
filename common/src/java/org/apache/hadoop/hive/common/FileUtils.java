@@ -382,14 +382,18 @@ public final class FileUtils {
     // Otherwise, try user impersonation. Current user must be configured to do user impersonation.
     UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(
         user, UserGroupInformation.getLoginUser());
-    proxyUser.doAs(new PrivilegedExceptionAction<Object>() {
-      @Override
-      public Object run() throws Exception {
-        FileSystem fsAsUser = FileSystem.get(fs.getUri(), fs.getConf());
-        ShimLoader.getHadoopShims().checkFileAccess(fsAsUser, stat, action);
-        return null;
-      }
-    });
+    try {
+      proxyUser.doAs(new PrivilegedExceptionAction<Object>() {
+        @Override
+        public Object run() throws Exception {
+          FileSystem fsAsUser = FileSystem.get(fs.getUri(), fs.getConf());
+          ShimLoader.getHadoopShims().checkFileAccess(fsAsUser, stat, action);
+          return null;
+        }
+      });
+    } finally {
+      FileSystem.closeAllForUGI(proxyUser);
+    }
   }
 
   /**
