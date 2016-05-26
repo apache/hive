@@ -420,6 +420,12 @@ public class HiveRexUtil {
 
   private static RexCall invert(RexBuilder rexBuilder, RexCall call) {
     switch (call.getKind()) {
+      case EQUALS:
+        return (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
+                Lists.reverse(call.getOperands()));
+      case NOT_EQUALS:
+        return (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.NOT_EQUALS,
+                Lists.reverse(call.getOperands()));
       case LESS_THAN:
         return (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.GREATER_THAN,
                 Lists.reverse(call.getOperands()));
@@ -467,6 +473,24 @@ public class HiveRexUtil {
     default:
       throw new AssertionError(kind);
     }
+  }
+
+  public static SqlKind invert(SqlKind kind) {
+    switch (kind) {
+      case EQUALS:
+        return SqlKind.EQUALS;
+      case NOT_EQUALS:
+        return SqlKind.NOT_EQUALS;
+      case LESS_THAN:
+        return SqlKind.GREATER_THAN;
+      case GREATER_THAN:
+        return SqlKind.LESS_THAN;
+      case LESS_THAN_OR_EQUAL:
+        return SqlKind.GREATER_THAN_OR_EQUAL;
+      case GREATER_THAN_OR_EQUAL:
+        return SqlKind.LESS_THAN_OR_EQUAL;
+    }
+    return null;
   }
 
   public static class ExprSimplifier extends RexShuttle {

@@ -277,4 +277,9 @@
   <value>true</value>
 </property>
 
+<property>
+  <name>hive.optimize.filter.stats.reduction</name>
+  <value>true</value>
+</property>
+
 </configuration>
