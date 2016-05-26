@@ -387,7 +387,10 @@ public final class Utilities {
 
       path = getPlanPath(conf, name);
       LOG.info("PLAN PATH = " + path);
-      assert path != null;
+      if (path == null) { // Map/reduce plan may not be generated
+        return null;
+      }
+
       BaseWork gWork = gWorkMap.get(conf).get(path);
       if (gWork == null) {
         Path localPath = path;
@@ -443,12 +446,11 @@ public final class Utilities {
       return gWork;
     } catch (FileNotFoundException fnf) {
       // happens. e.g.: no reduce work.
-      LOG.debug("File not found: " + fnf.getMessage());
-      LOG.info("No plan file found: "+path);
+      LOG.debug("No plan file found: " + path, fnf);
       return null;
     } catch (Exception e) {
-      String msg = "Failed to load plan: " + path + ": " + e;
-      LOG.error(msg, e);
+      String msg = "Failed to load plan: " + path;
+      LOG.error("Failed to load plan: " + path, e);
       throw new RuntimeException(msg, e);
     } finally {
       SerializationUtilities.releaseKryo(kryo);
