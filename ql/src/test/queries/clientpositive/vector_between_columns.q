@@ -7,8 +7,7 @@ set hive.mapred.mode=nonstrict;
 
 -- SORT_QUERY_RESULTS
 --
--- The following WILL NOT BE ABLE TO USE the VectorUDFAdaptor to GenericUDFBetween
--- because the mode = FILTER is not supported yet.
+-- Verify the VectorUDFAdaptor to GenericUDFBetween works for PROJECTION and FILTER.
 --
 create table if not exists TSINT_txt ( RNUM int , CSINT smallint )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n';
@@ -24,6 +23,11 @@ create table TSINT stored as orc AS SELECT * FROM TSINT_txt;
 
 create table TINT stored as orc AS SELECT * FROM TINT_txt;
 
+
+explain
+select tint.rnum, tsint.rnum, tint.cint, tsint.csint, (case when (tint.cint between tsint.csint and tsint.csint) then "Ok" else "NoOk" end) as between_col from tint , tsint;
+
+select tint.rnum, tsint.rnum, tint.cint, tsint.csint, (case when (tint.cint between tsint.csint and tsint.csint) then "Ok" else "NoOk" end) as between_col from tint , tsint;
 
 
 explain

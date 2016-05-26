@@ -1946,8 +1946,17 @@ public class VectorizationContext {
   private VectorExpression getCustomUDFExpression(ExprNodeGenericFuncDesc expr,  Mode mode)
       throws HiveException {
 
-    if (mode != Mode.PROJECTION) {
-      return null;
+    boolean isFilter = false;    // Assume.
+    if (mode == Mode.FILTER) {
+
+      // Is output type a BOOLEAN?
+      TypeInfo resultTypeInfo = expr.getTypeInfo();
+      if (resultTypeInfo.getCategory() == Category.PRIMITIVE &&
+          ((PrimitiveTypeInfo) resultTypeInfo).getPrimitiveCategory() == PrimitiveCategory.BOOLEAN) {
+        isFilter = true;
+      } else {
+        return null;
+      }
     }
 
     //GenericUDFBridge udfBridge = (GenericUDFBridge) expr.getGenericUDF();
@@ -2018,7 +2027,14 @@ public class VectorizationContext {
     for (Integer i : exprResultColumnNums) {
       ocm.freeOutputColumn(i);
     }
-    return ve;
+
+    if (isFilter) {
+      SelectColumnIsTrue filterVectorExpr = new SelectColumnIsTrue(outputCol);
+      filterVectorExpr.setChildExpressions(new VectorExpression[] {ve});
+      return filterVectorExpr;
+    } else {
+      return ve;
+    }
   }
 
   public static boolean isStringFamily(String resultType) {
