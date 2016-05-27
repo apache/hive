@@ -196,11 +196,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-<<<<<<< HEAD
-	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"},\"BASIC_STATS\":\"true\"}
-=======
 	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
->>>>>>> e482144... HIVE-13838: Set basic stats as inaccurate for all ACID tables (Pengcheng Xiong, reviewed by Ashutosh Chauhan)
 	numFiles            	2                   
 	numRows             	0                   
 	rawDataSize         	0                   

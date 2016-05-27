@@ -93,8 +93,8 @@ POSTHOOK: query: select * from json_serde1_2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_serde1_2
 #### A masked pattern was here ####
-[3,2,1]	{1:"2001-01-01",2:null}	{"c1":123456,"c2":"hello","c3":["aa","bb","cc"],"c4":{"xyz":456,"abc":123},"c5":{"c5_1":"bye","c5_2":88}}
-[3,2,1]	{1:"2001-01-01",2:null}	{"c1":123456,"c2":"hello","c3":["aa","bb","cc"],"c4":{"xyz":456,"abc":123},"c5":{"c5_1":"bye","c5_2":88}}
+[3,2,1]	{1:"2001-01-01",2:null}	{"c1":123456,"c2":"hello","c3":["aa","bb","cc"],"c4":{"abc":123,"xyz":456},"c5":{"c5_1":"bye","c5_2":88}}
+[3,2,1]	{1:"2001-01-01",2:null}	{"c1":123456,"c2":"hello","c3":["aa","bb","cc"],"c4":{"abc":123,"xyz":456},"c5":{"c5_1":"bye","c5_2":88}}
 PREHOOK: query: drop table json_serde1_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@json_serde1_1

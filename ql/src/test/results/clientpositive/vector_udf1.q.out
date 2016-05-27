@@ -1285,7 +1285,7 @@ from varchar_udf_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_udf_1
 #### A masked pattern was here ####
-{"b":"2","a":"1","c":"3"}	{"b":"2","a":"1","c":"3"}
+{"a":"1","b":"2","c":"3"}	{"a":"1","b":"2","c":"3"}
 PREHOOK: query: explain
 select
   substr(c2, 1, 3),
