@@ -122,9 +122,9 @@ public class TestHS2AuthzContext {
     QueryContext context = contextCapturer.getValue();
 
     assertEquals("Command ", ctxCmd, context.getCommandString());
-    assertTrue("ip address pattern check", authenticator.getUserIpAddress().matches("[.:a-fA-F0-9]+"));
+    assertTrue("ip address pattern check", context.getIpAddress().matches("[.:a-fA-F0-9]+"));
     // ip address size check - check for something better than non zero
-    assertTrue("ip address size check", authenticator.getUserIpAddress().length() > 7);
+    assertTrue("ip address size check", context.getIpAddress().length() > 7);
 
   }
 
