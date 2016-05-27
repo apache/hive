@@ -95,6 +95,11 @@ public class Udf extends GenericUDF {
       else if (argumentsOI[i] instanceof IntObjectInspector) {
         Integer value = (Integer)((IntObjectInspector)argumentsOI[i]).getPrimitiveJavaObject(arguments[i].get());
         if (value != null) {
+          // By default, exec.currentScope is null.
+          if (exec.currentScope == null) {
+            exec.globalScope = new Scope(Scope.Type.GLOBAL);
+            exec.currentScope = exec.globalScope;
+          }
           exec.setVariable(name, new Var(new Long(value)));
         }        
       }
