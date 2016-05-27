@@ -2148,6 +2148,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
+  @Deprecated
   public void compact(String dbname, String tableName, String partitionName,  CompactionType type)
       throws TException {
     CompactionRequest cr = new CompactionRequest();
@@ -2156,6 +2157,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     cr.setTablename(tableName);
     if (partitionName != null) cr.setPartitionname(partitionName);
     cr.setType(type);
+    client.compact(cr);
+  }
+
+  @Override
+  public void compact(String dbname, String tableName, String partitionName, CompactionType type,
+                      Map<String, String> tblproperties) throws TException {
+    CompactionRequest cr = new CompactionRequest();
+    if (dbname == null) cr.setDbname(DEFAULT_DATABASE_NAME);
+    else cr.setDbname(dbname);
+    cr.setTablename(tableName);
+    if (partitionName != null) cr.setPartitionname(partitionName);
+    cr.setType(type);
+    cr.setProperties(tblproperties);
     client.compact(cr);
   }
 

@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.mapred.JobConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -56,6 +57,7 @@ public class Worker extends CompactorThread {
   static final private int baseThreadNum = 10002;
 
   private String name;
+  private JobConf mrJob; // the MR job for compaction
 
   /**
    * Get the hostname that this worker is run on.  Made static and public so that other classes
@@ -180,6 +182,9 @@ public class Worker extends CompactorThread {
             }
           }
           txnHandler.markCompacted(ci);
+          if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
+            mrJob = mr.getMrJob();
+          }
         } catch (Exception e) {
           LOG.error("Caught exception while trying to compact " + ci +
               ".  Marking failed to avoid repeated failures, " + StringUtils.stringifyException(e));
@@ -211,6 +216,10 @@ public class Worker extends CompactorThread {
     name.append(getId());
     this.name = name.toString();
     setName(name.toString());
+  }
+
+  public JobConf getMrJob() {
+    return mrJob;
   }
 
   static final class StatsUpdater {

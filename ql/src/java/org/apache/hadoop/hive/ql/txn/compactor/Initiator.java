@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -57,6 +58,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Initiator extends CompactorThread {
   static final private String CLASS_NAME = Initiator.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+
+  static final private String COMPACTORTHRESHOLD_PREFIX = "compactorthreshold.";
 
   private long checkInterval;
 
@@ -144,7 +147,7 @@ public class Initiator extends CompactorThread {
               /*Future thought: checkForCompaction will check a lot of file metadata and may be expensive.
               * Long term we should consider having a thread pool here and running checkForCompactionS
               * in parallel*/
-              CompactionType compactionNeeded = checkForCompaction(ci, txns, sd, runAs);
+              CompactionType compactionNeeded = checkForCompaction(ci, txns, sd, t.getParameters(), runAs);
               if (compactionNeeded != null) requestCompaction(ci, runAs, compactionNeeded);
             } catch (Throwable t) {
               LOG.error("Caught exception while trying to determine if we should compact " +
@@ -213,6 +216,7 @@ public class Initiator extends CompactorThread {
   private CompactionType checkForCompaction(final CompactionInfo ci,
                                             final ValidTxnList txns,
                                             final StorageDescriptor sd,
+                                            final Map<String, String> tblproperties,
                                             final String runAs)
       throws IOException, InterruptedException {
     // If it's marked as too many aborted, we already know we need to compact
@@ -222,7 +226,7 @@ public class Initiator extends CompactorThread {
       return CompactionType.MAJOR;
     }
     if (runJobAsSelf(runAs)) {
-      return determineCompactionType(ci, txns, sd);
+      return determineCompactionType(ci, txns, sd, tblproperties);
     } else {
       LOG.info("Going to initiate as user " + runAs);
       UserGroupInformation ugi = UserGroupInformation.createProxyUser(runAs,
@@ -230,7 +234,7 @@ public class Initiator extends CompactorThread {
       CompactionType compactionType = ugi.doAs(new PrivilegedExceptionAction<CompactionType>() {
         @Override
         public CompactionType run() throws Exception {
-          return determineCompactionType(ci, txns, sd);
+          return determineCompactionType(ci, txns, sd, tblproperties);
         }
       });
       try {
@@ -244,7 +248,7 @@ public class Initiator extends CompactorThread {
   }
 
   private CompactionType determineCompactionType(CompactionInfo ci, ValidTxnList txns,
-                                                 StorageDescriptor sd)
+                                                 StorageDescriptor sd, Map<String, String> tblproperties)
       throws IOException, InterruptedException {
     boolean noBase = false;
     Path location = new Path(sd.getLocation());
@@ -282,8 +286,11 @@ public class Initiator extends CompactorThread {
     if (baseSize == 0 && deltaSize > 0) {
       noBase = true;
     } else {
-      float deltaPctThreshold = HiveConf.getFloatVar(conf,
+      String deltaPctProp = tblproperties.get(COMPACTORTHRESHOLD_PREFIX +
           HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD);
+      float deltaPctThreshold = deltaPctProp == null ?
+          HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD) :
+          Float.parseFloat(deltaPctProp);
       boolean bigEnough =   (float)deltaSize/(float)baseSize > deltaPctThreshold;
       if (LOG.isDebugEnabled()) {
         StringBuilder msg = new StringBuilder("delta size: ");
@@ -299,8 +306,11 @@ public class Initiator extends CompactorThread {
       if (bigEnough) return CompactionType.MAJOR;
     }
 
-    int deltaNumThreshold = HiveConf.getIntVar(conf,
+    String deltaNumProp = tblproperties.get(COMPACTORTHRESHOLD_PREFIX +
         HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD);
+    int deltaNumThreshold = deltaNumProp == null ?
+        HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD) :
+        Integer.parseInt(deltaNumProp);
     boolean enough = deltas.size() > deltaNumThreshold;
     if (enough) {
       LOG.debug("Found " + deltas.size() + " delta files, threshold is " + deltaNumThreshold +
