@@ -33,6 +33,7 @@ public class AlterTableSimpleDesc extends DDLDesc {
   private String compactionType;
 
   AlterTableTypes type;
+  private Map<String, String> props;
 
   public AlterTableSimpleDesc() {
   }
@@ -99,4 +100,11 @@ public class AlterTableSimpleDesc extends DDLDesc {
     return compactionType;
   }
 
+  public Map<String, String> getProps() {
+    return props;
+  }
+
+  public void setProps(Map<String, String> props) {
+    this.props = props;
+  }
 }
