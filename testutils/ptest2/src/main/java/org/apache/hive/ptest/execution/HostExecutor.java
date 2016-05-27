@@ -40,6 +40,7 @@ import org.apache.hive.ptest.execution.ssh.SSHCommand;
 import org.apache.hive.ptest.execution.ssh.SSHCommandExecutor;
 import org.apache.hive.ptest.execution.ssh.SSHExecutionException;
 import org.apache.hive.ptest.execution.ssh.SSHResult;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -243,6 +244,9 @@ class HostExecutor {
     templateVariables.put("testArguments", batch.getTestArguments());
     templateVariables.put("localDir", drone.getLocalDirectory());
     templateVariables.put("logDir", drone.getLocalLogDirectory());
+    if (!Strings.isEmpty(batch.getTestModule())) {
+      templateVariables.put("testModule", batch.getTestModule());
+    }
     String command = Templates.getTemplateResult("bash $localDir/$instanceName/scratch/" + script.getName(),
         templateVariables);
     Templates.writeTemplateResult("batch-exec.vm", script, templateVariables);
