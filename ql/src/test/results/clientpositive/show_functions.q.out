@@ -221,6 +221,7 @@ unbase64
 unhex
 unix_timestamp
 upper
+uuid
 var_pop
 var_samp
 variance
