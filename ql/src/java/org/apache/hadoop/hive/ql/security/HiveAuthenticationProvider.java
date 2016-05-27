@@ -32,8 +32,6 @@ public interface HiveAuthenticationProvider extends Configurable{
 
   public String getUserName();
 
-  public String getUserIpAddress();
-
   public List<String> getGroupNames();
 
   public void destroy() throws HiveException;

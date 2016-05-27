@@ -806,6 +806,7 @@ public class Driver implements CommandProcessor {
      */
 
     QueryContext.Builder authzContextBuilder = new QueryContext.Builder();
+    authzContextBuilder.setUserIpAddress(ss.getUserIpAddress());
     authzContextBuilder.setForwardedAddresses(ss.getForwardedAddresses());
     authzContextBuilder.setCommandString(command);
 

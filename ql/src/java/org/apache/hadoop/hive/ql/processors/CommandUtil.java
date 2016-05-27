@@ -82,6 +82,7 @@ class CommandUtil {
     HivePrivilegeObject commandObj = HivePrivilegeObject.createHivePrivilegeObject(command);
     QueryContext.Builder ctxBuilder = new QueryContext.Builder();
     ctxBuilder.setCommandString(Joiner.on(' ').join(command));
+    ctxBuilder.setUserIpAddress(ss.getUserIpAddress());
     ctxBuilder.setForwardedAddresses(ss.getForwardedAddresses());
     ss.getAuthorizerV2().checkPrivileges(type, Arrays.asList(commandObj), null, ctxBuilder.build());
   }

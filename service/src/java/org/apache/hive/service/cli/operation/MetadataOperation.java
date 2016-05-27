@@ -135,6 +135,7 @@ public abstract class MetadataOperation extends Operation {
       String cmdString) throws HiveSQLException {
     SessionState ss = SessionState.get();
     QueryContext.Builder ctxBuilder = new QueryContext.Builder();
+    ctxBuilder.setUserIpAddress(ss.getUserIpAddress());
     ctxBuilder.setForwardedAddresses(ss.getForwardedAddresses());
     ctxBuilder.setCommandString(cmdString);
     try {

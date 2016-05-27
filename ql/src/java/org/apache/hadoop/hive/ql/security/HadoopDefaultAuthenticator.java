@@ -81,9 +81,4 @@ public class HadoopDefaultAuthenticator implements HiveAuthenticationProvider {
     //no op
   }
 
-  @Override
-  public String getUserIpAddress() {
-    return null;
-  }
-
 }

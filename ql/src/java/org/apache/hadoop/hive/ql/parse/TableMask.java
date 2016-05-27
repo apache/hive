@@ -51,8 +51,11 @@ public class TableMask {
     try {
       authorizer = SessionState.get().getAuthorizerV2();
       String cmdString = analyzer.ctx.getCmd();
+      SessionState ss = SessionState.get();
       QueryContext.Builder ctxBuilder = new QueryContext.Builder();
       ctxBuilder.setCommandString(cmdString);
+      ctxBuilder.setUserIpAddress(ss.getUserIpAddress());
+      ctxBuilder.setForwardedAddresses(ss.getForwardedAddresses());
       queryContext = ctxBuilder.build();
       if (authorizer != null && needTransform()) {
         enable = true;

@@ -34,6 +34,21 @@ public final class QueryContext {
   public static class Builder {
     private String commandString;
     private List<String> forwardedAddresses;
+    private String userIpAddress;
+
+    /**
+     * Get user's ip address. This is set only if the authorization api is
+     * invoked from a HiveServer2 instance in standalone mode.
+     *
+     * @return ip address
+     */
+    public String getUserIpAddress() {
+      return userIpAddress;
+    }
+
+    public void setUserIpAddress(String userIpAddress) {
+      this.userIpAddress = userIpAddress;
+    }
 
     public String getCommandString() {
       return commandString;
@@ -54,12 +69,18 @@ public final class QueryContext {
     }
   }
 
+  private final String userIpAddress;
   private final String commandString;
   private final List<String> forwardedAddresses;
 
   private QueryContext(Builder builder) {
+    this.userIpAddress = builder.userIpAddress;
     this.commandString = builder.commandString;
     this.forwardedAddresses = builder.forwardedAddresses;
+  }
+
+  public String getIpAddress() {
+    return userIpAddress;
   }
 
   public String getCommandString() {
