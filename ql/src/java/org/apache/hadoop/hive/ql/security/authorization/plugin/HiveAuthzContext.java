@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
  */
 @LimitedPrivate(value = { "Apache Argus (incubating)" })
 @Evolving
-public final class QueryContext {
+public final class HiveAuthzContext {
 
   public static class Builder {
     private String commandString;
@@ -64,8 +64,8 @@ public final class QueryContext {
       this.forwardedAddresses = forwardedAddresses;
     }
 
-    public QueryContext build(){
-      return new QueryContext(this);
+    public HiveAuthzContext build(){
+      return new HiveAuthzContext(this);
     }
   }
 
@@ -73,7 +73,7 @@ public final class QueryContext {
   private final String commandString;
   private final List<String> forwardedAddresses;
 
-  private QueryContext(Builder builder) {
+  private HiveAuthzContext(Builder builder) {
     this.userIpAddress = builder.userIpAddress;
     this.commandString = builder.commandString;
     this.forwardedAddresses = builder.forwardedAddresses;

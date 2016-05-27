@@ -34,15 +34,15 @@ public interface HiveAuthorizationValidator {
    * see HiveAuthorizer.checkPrivileges
    */
   void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,
-      List<HivePrivilegeObject> outputHObjs, QueryContext context) throws HiveAuthzPluginException, HiveAccessControlException;
+      List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context) throws HiveAuthzPluginException, HiveAccessControlException;
 
   /**
    * see HiveAuthorizer.filterListCmdObjects
    */
   List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
-      QueryContext context);
+      HiveAuthzContext context);
 
-  public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(QueryContext context,
+  public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(HiveAuthzContext context,
       List<HivePrivilegeObject> privObjs) throws SemanticException;
 
   public boolean needTransform();

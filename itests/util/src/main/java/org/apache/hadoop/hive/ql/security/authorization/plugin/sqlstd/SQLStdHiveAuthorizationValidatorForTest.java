@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.QueryContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
@@ -93,7 +93,7 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
 
   @Override
   public void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,
-      List<HivePrivilegeObject> outputHObjs, QueryContext context) throws HiveAuthzPluginException,
+      List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context) throws HiveAuthzPluginException,
       HiveAccessControlException {
     switch (hiveOpType) {
     case DFS:
@@ -115,7 +115,7 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
 
   // Please take a look at the instructions in HiveAuthorizer.java before
   // implementing applyRowFilterAndColumnMasking
-  public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(QueryContext context,
+  public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(HiveAuthzContext context,
       List<HivePrivilegeObject> privObjs) throws SemanticException {
     List<HivePrivilegeObject> needRewritePrivObjs = new ArrayList<>(); 
     for (HivePrivilegeObject privObj : privObjs) {

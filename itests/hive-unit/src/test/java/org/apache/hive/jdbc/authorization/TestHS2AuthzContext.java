@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionC
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.QueryContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -112,14 +112,14 @@ public class TestHS2AuthzContext {
     stmt.close();
     hs2Conn.close();
 
-    ArgumentCaptor<QueryContext> contextCapturer = ArgumentCaptor
-        .forClass(QueryContext.class);
+    ArgumentCaptor<HiveAuthzContext> contextCapturer = ArgumentCaptor
+        .forClass(HiveAuthzContext.class);
 
     verify(mockedAuthorizer).checkPrivileges(any(HiveOperationType.class),
         Matchers.anyListOf(HivePrivilegeObject.class),
         Matchers.anyListOf(HivePrivilegeObject.class), contextCapturer.capture());
 
-    QueryContext context = contextCapturer.getValue();
+    HiveAuthzContext context = contextCapturer.getValue();
 
     assertEquals("Command ", ctxCmd, context.getCommandString());
     assertTrue("ip address pattern check", context.getIpAddress().matches("[.:a-fA-F0-9]+"));

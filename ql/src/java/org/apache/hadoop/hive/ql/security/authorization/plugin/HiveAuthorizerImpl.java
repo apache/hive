@@ -82,7 +82,7 @@ public class HiveAuthorizerImpl extends AbstractHiveAuthorizer {
 
   @Override
   public void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,
-      List<HivePrivilegeObject> outputHObjs, QueryContext context)
+      List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context)
       throws HiveAuthzPluginException, HiveAccessControlException {
     authValidator.checkPrivileges(hiveOpType, inputHObjs, outputHObjs, context);
   }
@@ -90,7 +90,7 @@ public class HiveAuthorizerImpl extends AbstractHiveAuthorizer {
 
   @Override
   public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
-      QueryContext context) throws HiveAuthzPluginException, HiveAccessControlException {
+      HiveAuthzContext context) throws HiveAuthzPluginException, HiveAccessControlException {
     return authValidator.filterListCmdObjects(listObjs, context);
   }
 
@@ -143,7 +143,7 @@ public class HiveAuthorizerImpl extends AbstractHiveAuthorizer {
   }
 
   @Override
-  public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(QueryContext context,
+  public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(HiveAuthzContext context,
       List<HivePrivilegeObject> privObjs) throws SemanticException {
     return authValidator.applyRowFilterAndColumnMasking(context, privObjs);
   }
