@@ -37,6 +37,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   String workerId;
   long start;
   public String runAs;
+  public String properties;
   public boolean tooManyAborts = false;
   /**
    * {@code 0} means it wasn't set (e.g. in case of upgrades, since ResultSet.getLong() will return 0 if field is NULL) 
@@ -102,6 +103,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       "partName:" + partName + "," +
       "state:" + state + "," +
       "type:" + type + "," +
+      "properties:" + properties + "," +
       "runAs:" + runAs + "," +
       "tooManyAborts:" + tooManyAborts + "," +
       "highestTxnId:" + highestTxnId;
@@ -120,12 +122,13 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     fullCi.partName = rs.getString(4);
     fullCi.state = rs.getString(5).charAt(0);//cq_state
     fullCi.type = TxnHandler.dbCompactionType2ThriftType(rs.getString(6).charAt(0));
-    fullCi.workerId = rs.getString(7);
-    fullCi.start = rs.getLong(8);
-    fullCi.runAs = rs.getString(9);
-    fullCi.highestTxnId = rs.getLong(10);
-    fullCi.metaInfo = rs.getBytes(11);
-    fullCi.hadoopJobId = rs.getString(12);
+    fullCi.properties = rs.getString(7);
+    fullCi.workerId = rs.getString(8);
+    fullCi.start = rs.getLong(9);
+    fullCi.runAs = rs.getString(10);
+    fullCi.highestTxnId = rs.getLong(11);
+    fullCi.metaInfo = rs.getBytes(12);
+    fullCi.hadoopJobId = rs.getString(13);
     return fullCi;
   }
   static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException {
@@ -135,12 +138,13 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     pStmt.setString(4, ci.partName);
     pStmt.setString(5, Character.toString(ci.state));
     pStmt.setString(6, Character.toString(TxnHandler.thriftCompactionType2DbType(ci.type)));
-    pStmt.setString(7, ci.workerId);
-    pStmt.setLong(8, ci.start);
-    pStmt.setLong(9, endTime);
-    pStmt.setString(10, ci.runAs);
-    pStmt.setLong(11, ci.highestTxnId);
-    pStmt.setBytes(12, ci.metaInfo);
-    pStmt.setString(13, ci.hadoopJobId);
+    pStmt.setString(7, ci.properties);
+    pStmt.setString(8, ci.workerId);
+    pStmt.setLong(9, ci.start);
+    pStmt.setLong(10, endTime);
+    pStmt.setString(11, ci.runAs);
+    pStmt.setLong(12, ci.highestTxnId);
+    pStmt.setBytes(13, ci.metaInfo);
+    pStmt.setString(14, ci.hadoopJobId);
   }
 }

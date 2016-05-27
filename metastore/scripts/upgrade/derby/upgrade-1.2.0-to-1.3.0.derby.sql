@@ -11,5 +11,6 @@ RUN '030-HIVE-12823.derby.sql';
 RUN '031-HIVE-12831.derby.sql';
 RUN '032-HIVE-12832.derby.sql';
 RUN '035-HIVE-13395.derby.sql';
+RUN '036-HIVE-13354.derby.sql';
 
 UPDATE "APP".VERSION SET SCHEMA_VERSION='1.3.0', VERSION_COMMENT='Hive release version 1.3.0' where VER_ID=1;

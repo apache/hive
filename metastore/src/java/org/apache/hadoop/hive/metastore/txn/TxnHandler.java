@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HouseKeeperService;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils.StringableMap;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 
@@ -1385,6 +1386,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         String partName = rqst.getPartitionname();
         if (partName != null) buf.append("cq_partition, ");
         buf.append("cq_state, cq_type");
+        if (rqst.getProperties() != null) {
+          buf.append(", cq_tblproperties");
+        }
         if (rqst.getRunas() != null) buf.append(", cq_run_as");
         buf.append(") values (");
         buf.append(id);
@@ -1412,6 +1416,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             LOG.debug("Going to rollback");
             dbConn.rollback();
             throw new MetaException("Unexpected compaction type " + rqst.getType().toString());
+        }
+        if (rqst.getProperties() != null) {
+          buf.append("', '");
+          buf.append(new StringableMap(rqst.getProperties()).toString());
         }
         if (rqst.getRunas() != null) {
           buf.append("', '");

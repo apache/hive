@@ -43,6 +43,7 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
   private static final org.apache.thrift.protocol.TField PARTITIONNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionname", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.I32, (short)4);
   private static final org.apache.thrift.protocol.TField RUNAS_FIELD_DESC = new org.apache.thrift.protocol.TField("runas", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField PROPERTIES_FIELD_DESC = new org.apache.thrift.protocol.TField("properties", org.apache.thrift.protocol.TType.MAP, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -55,6 +56,7 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
   private String partitionname; // optional
   private CompactionType type; // required
   private String runas; // optional
+  private Map<String,String> properties; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -66,7 +68,8 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
      * @see CompactionType
      */
     TYPE((short)4, "type"),
-    RUNAS((short)5, "runas");
+    RUNAS((short)5, "runas"),
+    PROPERTIES((short)6, "properties");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -91,6 +94,8 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
           return TYPE;
         case 5: // RUNAS
           return RUNAS;
+        case 6: // PROPERTIES
+          return PROPERTIES;
         default:
           return null;
       }
@@ -131,7 +136,7 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.RUNAS};
+  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.RUNAS,_Fields.PROPERTIES};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -145,6 +150,10 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, CompactionType.class)));
     tmpMap.put(_Fields.RUNAS, new org.apache.thrift.meta_data.FieldMetaData("runas", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.PROPERTIES, new org.apache.thrift.meta_data.FieldMetaData("properties", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CompactionRequest.class, metaDataMap);
   }
@@ -182,6 +191,10 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
     if (other.isSetRunas()) {
       this.runas = other.runas;
     }
+    if (other.isSetProperties()) {
+      Map<String,String> __this__properties = new HashMap<String,String>(other.properties);
+      this.properties = __this__properties;
+    }
   }
 
   public CompactionRequest deepCopy() {
@@ -195,6 +208,7 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
     this.partitionname = null;
     this.type = null;
     this.runas = null;
+    this.properties = null;
   }
 
   public String getDbname() {
@@ -320,6 +334,40 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
     }
   }
 
+  public int getPropertiesSize() {
+    return (this.properties == null) ? 0 : this.properties.size();
+  }
+
+  public void putToProperties(String key, String val) {
+    if (this.properties == null) {
+      this.properties = new HashMap<String,String>();
+    }
+    this.properties.put(key, val);
+  }
+
+  public Map<String,String> getProperties() {
+    return this.properties;
+  }
+
+  public void setProperties(Map<String,String> properties) {
+    this.properties = properties;
+  }
+
+  public void unsetProperties() {
+    this.properties = null;
+  }
+
+  /** Returns true if field properties is set (has been assigned a value) and false otherwise */
+  public boolean isSetProperties() {
+    return this.properties != null;
+  }
+
+  public void setPropertiesIsSet(boolean value) {
+    if (!value) {
+      this.properties = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case DBNAME:
@@ -362,6 +410,14 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
       }
       break;
 
+    case PROPERTIES:
+      if (value == null) {
+        unsetProperties();
+      } else {
+        setProperties((Map<String,String>)value);
+      }
+      break;
+
     }
   }
 
@@ -381,6 +437,9 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
 
     case RUNAS:
       return getRunas();
+
+    case PROPERTIES:
+      return getProperties();
 
     }
     throw new IllegalStateException();
@@ -403,6 +462,8 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
       return isSetType();
     case RUNAS:
       return isSetRunas();
+    case PROPERTIES:
+      return isSetProperties();
     }
     throw new IllegalStateException();
   }
@@ -465,6 +526,15 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
         return false;
     }
 
+    boolean this_present_properties = true && this.isSetProperties();
+    boolean that_present_properties = true && that.isSetProperties();
+    if (this_present_properties || that_present_properties) {
+      if (!(this_present_properties && that_present_properties))
+        return false;
+      if (!this.properties.equals(that.properties))
+        return false;
+    }
+
     return true;
   }
 
@@ -496,6 +566,11 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
     list.add(present_runas);
     if (present_runas)
       list.add(runas);
+
+    boolean present_properties = true && (isSetProperties());
+    list.add(present_properties);
+    if (present_properties)
+      list.add(properties);
 
     return list.hashCode();
   }
@@ -554,6 +629,16 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
     }
     if (isSetRunas()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.runas, other.runas);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetProperties()).compareTo(other.isSetProperties());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetProperties()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.properties, other.properties);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -618,6 +703,16 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
         sb.append("null");
       } else {
         sb.append(this.runas);
+      }
+      first = false;
+    }
+    if (isSetProperties()) {
+      if (!first) sb.append(", ");
+      sb.append("properties:");
+      if (this.properties == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.properties);
       }
       first = false;
     }
@@ -716,6 +811,26 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // PROPERTIES
+            if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
+              {
+                org.apache.thrift.protocol.TMap _map492 = iprot.readMapBegin();
+                struct.properties = new HashMap<String,String>(2*_map492.size);
+                String _key493;
+                String _val494;
+                for (int _i495 = 0; _i495 < _map492.size; ++_i495)
+                {
+                  _key493 = iprot.readString();
+                  _val494 = iprot.readString();
+                  struct.properties.put(_key493, _val494);
+                }
+                iprot.readMapEnd();
+              }
+              struct.setPropertiesIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -758,6 +873,21 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
           oprot.writeFieldEnd();
         }
       }
+      if (struct.properties != null) {
+        if (struct.isSetProperties()) {
+          oprot.writeFieldBegin(PROPERTIES_FIELD_DESC);
+          {
+            oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.properties.size()));
+            for (Map.Entry<String, String> _iter496 : struct.properties.entrySet())
+            {
+              oprot.writeString(_iter496.getKey());
+              oprot.writeString(_iter496.getValue());
+            }
+            oprot.writeMapEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -785,12 +915,25 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
       if (struct.isSetRunas()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetProperties()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetPartitionname()) {
         oprot.writeString(struct.partitionname);
       }
       if (struct.isSetRunas()) {
         oprot.writeString(struct.runas);
+      }
+      if (struct.isSetProperties()) {
+        {
+          oprot.writeI32(struct.properties.size());
+          for (Map.Entry<String, String> _iter497 : struct.properties.entrySet())
+          {
+            oprot.writeString(_iter497.getKey());
+            oprot.writeString(_iter497.getValue());
+          }
+        }
       }
     }
 
@@ -803,7 +946,7 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
       struct.setTablenameIsSet(true);
       struct.type = org.apache.hadoop.hive.metastore.api.CompactionType.findByValue(iprot.readI32());
       struct.setTypeIsSet(true);
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.partitionname = iprot.readString();
         struct.setPartitionnameIsSet(true);
@@ -811,6 +954,21 @@ public class CompactionRequest implements org.apache.thrift.TBase<CompactionRequ
       if (incoming.get(1)) {
         struct.runas = iprot.readString();
         struct.setRunasIsSet(true);
+      }
+      if (incoming.get(2)) {
+        {
+          org.apache.thrift.protocol.TMap _map498 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.properties = new HashMap<String,String>(2*_map498.size);
+          String _key499;
+          String _val500;
+          for (int _i501 = 0; _i501 < _map498.size; ++_i501)
+          {
+            _key499 = iprot.readString();
+            _val500 = iprot.readString();
+            struct.properties.put(_key499, _val500);
+          }
+        }
+        struct.setPropertiesIsSet(true);
       }
     }
   }

@@ -12,6 +12,7 @@ SOURCE 030-HIVE-12823.mysql.sql;
 SOURCE 031-HIVE-12831.mysql.sql;
 SOURCE 032-HIVE-12832.mysql.sql;
 SOURCE 035-HIVE-13395.mysql.sql;
+SOURCE 036-HIVE-13354.mysql.sql;
 
 UPDATE VERSION SET SCHEMA_VERSION='1.3.0', VERSION_COMMENT='Hive release version 1.3.0' where VER_ID=1;
 SELECT 'Finished upgrading MetaStore schema from 1.2.0 to 1.3.0' AS ' ';

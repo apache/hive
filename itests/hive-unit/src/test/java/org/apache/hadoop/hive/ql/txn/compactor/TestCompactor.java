@@ -14,6 +14,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcStruct;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.streaming.DelimitedInputWriter;
 import org.apache.hive.hcatalog.streaming.HiveEndPoint;
@@ -61,6 +63,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeUnit;
 
 /**
  */
@@ -834,6 +837,137 @@ public class TestCompactor {
       connection.close();
     }
   }
+
+  /**
+   * Users have the choice of specifying compaction related tblproperties either in CREATE TABLE
+   * statement or in ALTER TABLE .. COMPACT statement. This tests both cases.
+   * @throws Exception
+   */
+  @Test
+  public void testTableProperties() throws Exception {
+    String tblName1 = "ttp1"; // plain acid table
+    String tblName2 = "ttp2"; // acid table with customized tblproperties
+    executeStatementOnDriver("drop table if exists " + tblName1, driver);
+    executeStatementOnDriver("drop table if exists " + tblName2, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName1 + "(a INT, b STRING) " +
+        " CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName2 + "(a INT, b STRING) " +
+        " CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES (" +
+        "'transactional'='true'," +
+        "'compactor.mapreduce.map.memory.mb'='2048'," + // 2048 MB memory for compaction map job
+        "'compactorthreshold.hive.compactor.delta.num.threshold'='4'," +  // minor compaction if more than 4 delta dirs
+        "'compactorthreshold.hive.compactor.delta.pct.threshold'='0.5'" + // major compaction if more than 50%
+        ")", driver);
+
+    // Insert 5 rows to both tables
+    executeStatementOnDriver("insert into " + tblName1 + " values (1, 'a')", driver);
+    executeStatementOnDriver("insert into " + tblName1 + " values (2, 'b')", driver);
+    executeStatementOnDriver("insert into " + tblName1 + " values (3, 'c')", driver);
+    executeStatementOnDriver("insert into " + tblName1 + " values (4, 'd')", driver);
+    executeStatementOnDriver("insert into " + tblName1 + " values (5, 'e')", driver);
+
+    executeStatementOnDriver("insert into " + tblName2 + " values (1, 'a')", driver);
+    executeStatementOnDriver("insert into " + tblName2 + " values (2, 'b')", driver);
+    executeStatementOnDriver("insert into " + tblName2 + " values (3, 'c')", driver);
+    executeStatementOnDriver("insert into " + tblName2 + " values (4, 'd')", driver);
+    executeStatementOnDriver("insert into " + tblName2 + " values (5, 'e')", driver);
+
+    runInitiator(conf);
+
+    // Compactor should only schedule compaction for ttp2 (delta.num.threshold=4), not ttp1
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompacts().size());
+    Assert.assertEquals(TxnStore.INITIATED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals("ttp2", rsp.getCompacts().get(0).getTablename());
+    Assert.assertEquals(CompactionType.MAJOR, rsp.getCompacts().get(0).getType()); // type is MAJOR since there's no base yet
+
+    // Finish the scheduled compaction for ttp2, and manually compact ttp1, to make them comparable again
+    executeStatementOnDriver("alter table " + tblName1 + " compact 'major'", driver);
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(2, rsp.getCompacts().size());
+    Assert.assertEquals("ttp2", rsp.getCompacts().get(0).getTablename());
+    Assert.assertEquals(TxnStore.INITIATED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals("ttp1", rsp.getCompacts().get(1).getTablename());
+    Assert.assertEquals(TxnStore.INITIATED_RESPONSE, rsp.getCompacts().get(1).getState());
+    // compact ttp2, by running the Worker explicitly, in order to get the reference to the compactor MR job
+    AtomicBoolean stop = new AtomicBoolean(true);
+    Worker t = new Worker();
+    t.setThreadId((int) t.getId());
+    t.setHiveConf(conf);
+    AtomicBoolean looped = new AtomicBoolean();
+    t.init(stop, looped);
+    t.run();
+    JobConf job = t.getMrJob();
+    Assert.assertEquals("2048", job.get("mapreduce.map.memory.mb"));  // 2048 comes from tblproperties
+    // Compact ttp1
+    stop = new AtomicBoolean(true);
+    t = new Worker();
+    t.setThreadId((int) t.getId());
+    t.setHiveConf(conf);
+    looped = new AtomicBoolean();
+    t.init(stop, looped);
+    t.run();
+    job = t.getMrJob();
+    Assert.assertEquals("1024", job.get("mapreduce.map.memory.mb"));  // 1024 is the default value
+    // Clean up
+    runCleaner(conf);
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(2, rsp.getCompacts().size());
+    Assert.assertEquals("ttp2", rsp.getCompacts().get(0).getTablename());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals("ttp1", rsp.getCompacts().get(1).getTablename());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(1).getState());
+
+    // Insert one more row - this should trigger hive.compactor.delta.pct.threshold to be reached for ttp2
+    executeStatementOnDriver("insert into " + tblName1 + " values (6, 'f')", driver);
+    executeStatementOnDriver("insert into " + tblName2 + " values (6, 'f')", driver);
+
+    // Intentionally set this high so that it will not trigger major compaction for ttp1.
+    // Only trigger major compaction for ttp2 (delta.pct.threshold=0.5) because of the newly inserted row (actual pct: 0.66)
+    conf.setFloatVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD, 0.8f);
+    runInitiator(conf);
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(4, rsp.getCompacts().size());
+    Assert.assertEquals("ttp1", rsp.getCompacts().get(0).getTablename());
+    Assert.assertEquals(TxnStore.INITIATED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals("ttp2", rsp.getCompacts().get(1).getTablename());
+    Assert.assertEquals(TxnStore.INITIATED_RESPONSE, rsp.getCompacts().get(1).getState());
+
+    // Finish the scheduled compaction for ttp2
+    runWorker(conf);
+    runWorker(conf);
+    runCleaner(conf);
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(4, rsp.getCompacts().size());
+    Assert.assertEquals("ttp2", rsp.getCompacts().get(0).getTablename());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+
+    // Now test tblproperties specified on ALTER TABLE .. COMPACT .. statement
+    executeStatementOnDriver("insert into " + tblName2 + " values (7, 'g')", driver);
+    executeStatementOnDriver("alter table " + tblName2 + " compact 'major'" +
+        " with overwrite tblproperties (" +
+        "'compactor.mapreduce.map.memory.mb'='3072'," +
+        "'tblprops.orc.compress.size'='8192')", driver);
+
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(5, rsp.getCompacts().size());
+    Assert.assertEquals("ttp2", rsp.getCompacts().get(0).getTablename());
+    Assert.assertEquals(TxnStore.INITIATED_RESPONSE, rsp.getCompacts().get(0).getState());
+
+    // Run the Worker explicitly, in order to get the reference to the compactor MR job
+    stop = new AtomicBoolean(true);
+    t = new Worker();
+    t.setThreadId((int) t.getId());
+    t.setHiveConf(conf);
+    looped = new AtomicBoolean();
+    t.init(stop, looped);
+    t.run();
+    job = t.getMrJob();
+    Assert.assertEquals("3072", job.get("mapreduce.map.memory.mb"));
+    Assert.assertTrue(job.get("hive.compactor.table.props").contains("orc.compress.size4:8192"));
+  }
+
   private void writeBatch(StreamingConnection connection, DelimitedInputWriter writer,
                           boolean closeEarly)
       throws InterruptedException, StreamingException {
@@ -956,5 +1090,35 @@ public class TestCompactor {
       }
     }
 
+  }
+
+  static void runInitiator(HiveConf hiveConf) throws MetaException {
+    AtomicBoolean stop = new AtomicBoolean(true);
+    Initiator t = new Initiator();
+    t.setThreadId((int) t.getId());
+    t.setHiveConf(hiveConf);
+    AtomicBoolean looped = new AtomicBoolean();
+    t.init(stop, looped);
+    t.run();
+  }
+
+  static void runWorker(HiveConf hiveConf) throws MetaException {
+    AtomicBoolean stop = new AtomicBoolean(true);
+    Worker t = new Worker();
+    t.setThreadId((int) t.getId());
+    t.setHiveConf(hiveConf);
+    AtomicBoolean looped = new AtomicBoolean();
+    t.init(stop, looped);
+    t.run();
+  }
+
+  static void runCleaner(HiveConf hiveConf) throws MetaException {
+    AtomicBoolean stop = new AtomicBoolean(true);
+    Cleaner t = new Cleaner();
+    t.setThreadId((int) t.getId());
+    t.setHiveConf(hiveConf);
+    AtomicBoolean looped = new AtomicBoolean();
+    t.init(stop, looped);
+    t.run();
   }
 }

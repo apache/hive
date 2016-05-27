@@ -5202,9 +5202,10 @@ inline std::ostream& operator<<(std::ostream& out, const HeartbeatTxnRangeRespon
 }
 
 typedef struct _CompactionRequest__isset {
-  _CompactionRequest__isset() : partitionname(false), runas(false) {}
+  _CompactionRequest__isset() : partitionname(false), runas(false), properties(false) {}
   bool partitionname :1;
   bool runas :1;
+  bool properties :1;
 } _CompactionRequest__isset;
 
 class CompactionRequest {
@@ -5221,6 +5222,7 @@ class CompactionRequest {
   std::string partitionname;
   CompactionType::type type;
   std::string runas;
+  std::map<std::string, std::string>  properties;
 
   _CompactionRequest__isset __isset;
 
@@ -5233,6 +5235,8 @@ class CompactionRequest {
   void __set_type(const CompactionType::type val);
 
   void __set_runas(const std::string& val);
+
+  void __set_properties(const std::map<std::string, std::string> & val);
 
   bool operator == (const CompactionRequest & rhs) const
   {
@@ -5249,6 +5253,10 @@ class CompactionRequest {
     if (__isset.runas != rhs.__isset.runas)
       return false;
     else if (__isset.runas && !(runas == rhs.runas))
+      return false;
+    if (__isset.properties != rhs.__isset.properties)
+      return false;
+    else if (__isset.properties && !(properties == rhs.properties))
       return false;
     return true;
   }

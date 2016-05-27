@@ -674,6 +674,7 @@ struct CompactionRequest {
     3: optional string partitionname,
     4: required CompactionType type,
     5: optional string runas,
+    6: optional map<string, string> properties
 }
 
 struct ShowCompactRequest {

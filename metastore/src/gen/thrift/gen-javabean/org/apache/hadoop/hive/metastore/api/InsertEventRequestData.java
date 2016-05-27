@@ -351,13 +351,13 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
           case 1: // FILES_ADDED
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list516 = iprot.readListBegin();
-                struct.filesAdded = new ArrayList<String>(_list516.size);
-                String _elem517;
-                for (int _i518 = 0; _i518 < _list516.size; ++_i518)
+                org.apache.thrift.protocol.TList _list526 = iprot.readListBegin();
+                struct.filesAdded = new ArrayList<String>(_list526.size);
+                String _elem527;
+                for (int _i528 = 0; _i528 < _list526.size; ++_i528)
                 {
-                  _elem517 = iprot.readString();
-                  struct.filesAdded.add(_elem517);
+                  _elem527 = iprot.readString();
+                  struct.filesAdded.add(_elem527);
                 }
                 iprot.readListEnd();
               }
@@ -383,9 +383,9 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
         oprot.writeFieldBegin(FILES_ADDED_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.filesAdded.size()));
-          for (String _iter519 : struct.filesAdded)
+          for (String _iter529 : struct.filesAdded)
           {
-            oprot.writeString(_iter519);
+            oprot.writeString(_iter529);
           }
           oprot.writeListEnd();
         }
@@ -410,9 +410,9 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.filesAdded.size());
-        for (String _iter520 : struct.filesAdded)
+        for (String _iter530 : struct.filesAdded)
         {
-          oprot.writeString(_iter520);
+          oprot.writeString(_iter530);
         }
       }
     }
@@ -421,13 +421,13 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
     public void read(org.apache.thrift.protocol.TProtocol prot, InsertEventRequestData struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list521 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.filesAdded = new ArrayList<String>(_list521.size);
-        String _elem522;
-        for (int _i523 = 0; _i523 < _list521.size; ++_i523)
+        org.apache.thrift.protocol.TList _list531 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.filesAdded = new ArrayList<String>(_list531.size);
+        String _elem532;
+        for (int _i533 = 0; _i533 < _list531.size; ++_i533)
         {
-          _elem522 = iprot.readString();
-          struct.filesAdded.add(_elem522);
+          _elem532 = iprot.readString();
+          struct.filesAdded.add(_elem532);
         }
       }
       struct.setFilesAddedIsSet(true);
