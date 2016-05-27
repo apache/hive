@@ -97,6 +97,7 @@ import org.apache.hadoop.hive.ql.udf.UDFToLong;
 import org.apache.hadoop.hive.ql.udf.UDFToShort;
 import org.apache.hadoop.hive.ql.udf.UDFToString;
 import org.apache.hadoop.hive.ql.udf.UDFType;
+import org.apache.hadoop.hive.ql.udf.UDFUUID;
 import org.apache.hadoop.hive.ql.udf.UDFUnbase64;
 import org.apache.hadoop.hive.ql.udf.UDFUnhex;
 import org.apache.hadoop.hive.ql.udf.UDFVersion;
@@ -221,6 +222,8 @@ public final class FunctionRegistry {
     system.registerUDF("unhex", UDFUnhex.class, false);
     system.registerUDF("base64", UDFBase64.class, false);
     system.registerUDF("unbase64", UDFUnbase64.class, false);
+    
+    system.registerUDF("uuid", UDFUUID.class, false);
 
     system.registerGenericUDF("encode", GenericUDFEncode.class);
     system.registerGenericUDF("decode", GenericUDFDecode.class);
