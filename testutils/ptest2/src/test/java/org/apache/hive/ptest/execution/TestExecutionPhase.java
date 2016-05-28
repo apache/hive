@@ -69,7 +69,9 @@ public class TestExecutionPhase extends AbstractTestPhase {
   private void setupQFile(boolean isParallel) throws Exception {
     testDir = Dirs.create( new File(baseDir, "test"));
     Assert.assertTrue(new File(testDir, QFILENAME).createNewFile());
-    testBatch = new QFileTestBatch("testcase", DRIVER, "qfile", Sets.newHashSet(QFILENAME), isParallel);
+    testBatch =
+        new QFileTestBatch("testcase", DRIVER, "qfile", Sets.newHashSet(QFILENAME), isParallel,
+            "testModule");
     testBatches = Collections.singletonList(testBatch);
   }
   private void setupUnitTest() throws Exception {

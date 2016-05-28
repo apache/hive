@@ -32,6 +32,7 @@ public class TestQFileTestBatch {
 
   private static final String DRIVER = "driver";
   private static final String QUERY_FILES_PROPERTY = "qfile";
+  private static final String TEST_MODULE_NAME = "testModule";
 
   private Set<String> tests;
 
@@ -42,23 +43,28 @@ public class TestQFileTestBatch {
 
   @Test
   public void testParallel() throws Exception {
-    QFileTestBatch batch = new QFileTestBatch("testcase", DRIVER, QUERY_FILES_PROPERTY, tests, true);
+    QFileTestBatch batch =
+        new QFileTestBatch("testcase", DRIVER, QUERY_FILES_PROPERTY, tests, true, TEST_MODULE_NAME);
     Assert.assertTrue(batch.isParallel());
     Assert.assertEquals(DRIVER, batch.getDriver());
     Assert.assertEquals(Joiner.on("-").join(DRIVER, "a", "b", "c"), batch.getName());
     Assert.assertEquals(String.format("-Dtestcase=%s -D%s=a,b,c", DRIVER,
         QUERY_FILES_PROPERTY), batch.getTestArguments());
+    Assert.assertEquals(TEST_MODULE_NAME, batch.getTestModule());
   }
   @Test
   public void testMoreThanThreeTests() throws Exception {
     Assert.assertTrue(tests.add("d"));
-    QFileTestBatch batch = new QFileTestBatch("testcase", DRIVER, QUERY_FILES_PROPERTY, tests, true);
+    QFileTestBatch batch =
+        new QFileTestBatch("testcase", DRIVER, QUERY_FILES_PROPERTY, tests, true, TEST_MODULE_NAME);
     Assert.assertEquals(Joiner.on("-").join(DRIVER, "a", "b", "c", "and", "1", "more"),
         batch.getName());
   }
   @Test
   public void testNotParallel() throws Exception {
-    QFileTestBatch batch = new QFileTestBatch("testcase", DRIVER, QUERY_FILES_PROPERTY, tests, false);
+    QFileTestBatch batch =
+        new QFileTestBatch("testcase", DRIVER, QUERY_FILES_PROPERTY, tests, false,
+            TEST_MODULE_NAME);
     Assert.assertFalse(batch.isParallel());
   }
 }
