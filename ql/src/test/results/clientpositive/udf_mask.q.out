@@ -53,7 +53,14 @@ PREHOOK: query: select mask('TestString-123', 'X', 'x', '0', ':'),
        mask(cast(12345 as smallint), -1, -1, -1, -1, '5'),
        mask(cast(12345 as int), -1, -1, -1, -1, '5'),
        mask(cast(12345 as bigint), -1, -1, -1, -1, '5'),
-       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 0, 0, 0)
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 0, 0, 0),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, -1, 0, 0),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 1, -1, 0),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 1, 0, -1),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 1, -1, -1),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, -1, 0, -1),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, -1, -1, 0),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, -1, -1, -1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
@@ -64,8 +71,15 @@ POSTHOOK: query: select mask('TestString-123', 'X', 'x', '0', ':'),
        mask(cast(12345 as smallint), -1, -1, -1, -1, '5'),
        mask(cast(12345 as int), -1, -1, -1, -1, '5'),
        mask(cast(12345 as bigint), -1, -1, -1, -1, '5'),
-       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 0, 0, 0)
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 0, 0, 0),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, -1, 0, 0),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 1, -1, 0),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 1, 0, -1),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, 1, -1, -1),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, -1, 0, -1),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, -1, -1, 0),
+       mask(cast('2016-04-20' as date), -1, -1, -1, -1, -1, -1, -1, -1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-XxxxXxxxxx:000	XxxxXxxxxx:000	XxxxXxxxxx:000::::::::::                                                                                                                                                                                                                                       	43	-9981	55555	55555	1900-01-01
+XxxxXxxxxx:000	XxxxXxxxxx:000	XxxxXxxxxx:000::::::::::                                                                                                                                                                                                                                       	43	-9981	55555	55555	1900-01-01	1900-01-20	1900-04-01	2016-01-01	2016-04-01	2016-01-20	1900-04-20	2016-04-20

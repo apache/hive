@@ -96,12 +96,16 @@ class MaskTransformer extends AbstractTransformer {
       maskedNumber = MASKED_NUMBER;
     }
 
-    if(maskedDayValue < 1 || maskedDayValue > 31) {
-      maskedDayValue = MASKED_DAY_COMPONENT_VAL;
+    if(maskedDayValue != UNMASKED_VAL) {
+      if(maskedDayValue < 1 || maskedDayValue > 31) {
+        maskedDayValue = MASKED_DAY_COMPONENT_VAL;
+      }
     }
 
-    if(maskedMonthValue < 0 || maskedMonthValue > 11) {
-      maskedMonthValue = MASKED_MONTH_COMPONENT_VAL;
+    if(maskedMonthValue != UNMASKED_VAL) {
+      if(maskedMonthValue < 0 || maskedMonthValue > 11) {
+        maskedMonthValue = MASKED_MONTH_COMPONENT_VAL;
+      }
     }
   }
 
