@@ -622,8 +622,6 @@ public class TestVectorizationContext {
     assertEquals(veAnd.getClass(), ColAndCol.class);
     assertEquals(1, veAnd.getChildExpressions().length);
     assertEquals(veAnd.getChildExpressions()[0].getClass(), LongColGreaterLongScalar.class);
-    assertEquals(2, ((ColAndCol) veAnd).getColNum1());
-    assertEquals(1, ((ColAndCol) veAnd).getColNum2());
     assertEquals(3, ((ColAndCol) veAnd).getOutputColumn());
 
     //OR
@@ -647,8 +645,6 @@ public class TestVectorizationContext {
     assertEquals(veOr.getClass(), ColOrCol.class);
     assertEquals(1, veAnd.getChildExpressions().length);
     assertEquals(veAnd.getChildExpressions()[0].getClass(), LongColGreaterLongScalar.class);
-    assertEquals(2, ((ColOrCol) veOr).getColNum1());
-    assertEquals(1, ((ColOrCol) veOr).getColNum2());
     assertEquals(3, ((ColOrCol) veOr).getOutputColumn());
   }
 

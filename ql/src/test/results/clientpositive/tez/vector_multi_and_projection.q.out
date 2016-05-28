@@ -1,0 +1,821 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+create table vectortab2k(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectortab2k
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+create table vectortab2k(
+            t tinyint,
+            si smallint,
+            i int,
+            b bigint,
+            f float,
+            d double,
+            dc decimal(38,18),
+            bo boolean,
+            s string,
+            s2 string,
+            ts timestamp,
+            ts2 timestamp,
+            dt date)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectortab2k
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@vectortab2k
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@vectortab2k
+PREHOOK: query: CREATE TABLE scratch AS SELECT t, si, i, b, bo FROM vectortab2k
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@vectortab2k
+PREHOOK: Output: database:default
+PREHOOK: Output: default@scratch
+POSTHOOK: query: CREATE TABLE scratch AS SELECT t, si, i, b, bo FROM vectortab2k
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@vectortab2k
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@scratch
+POSTHOOK: Lineage: scratch.b SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: scratch.bo SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: scratch.i SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: scratch.si SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: scratch.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t, type:tinyint, comment:null), ]
+t	si	i	b	bo
+PREHOOK: query: INSERT INTO TABLE scratch VALUES (NULL, NULL, NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@scratch
+POSTHOOK: query: INSERT INTO TABLE scratch VALUES (NULL, NULL, NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@scratch
+POSTHOOK: Lineage: scratch.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: scratch.bo EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+POSTHOOK: Lineage: scratch.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: scratch.si EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: scratch.t EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+_col0	_col1	_col2	_col3	_col4
+PREHOOK: query: CREATE TABLE vectortab2k_orc STORED AS ORC AS SELECT * FROM scratch
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@scratch
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectortab2k_orc
+POSTHOOK: query: CREATE TABLE vectortab2k_orc STORED AS ORC AS SELECT * FROM scratch
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@scratch
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectortab2k_orc
+POSTHOOK: Lineage: vectortab2k_orc.b SIMPLE [(scratch)scratch.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc.bo SIMPLE [(scratch)scratch.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc.i SIMPLE [(scratch)scratch.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc.si SIMPLE [(scratch)scratch.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc.t SIMPLE [(scratch)scratch.FieldSchema(name:t, type:tinyint, comment:null), ]
+scratch.t	scratch.si	scratch.i	scratch.b	scratch.bo
+PREHOOK: query: EXPLAIN
+SELECT sum(hash(*)) FROM
+    (SELECT t, si, i, (t < 0) as child1, (si > 0) as child2, (i < 0) as child3, (t < 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc
+        order by t, si, i) as q
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT sum(hash(*)) FROM
+    (SELECT t, si, i, (t < 0) as child1, (si > 0) as child2, (i < 0) as child3, (t < 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc
+        order by t, si, i) as q
+POSTHOOK: type: QUERY
+Explain
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vectortab2k_orc
+                  Statistics: Num rows: 2001 Data size: 45620 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: t (type: tinyint), si (type: smallint), i (type: int), (t < 0) (type: boolean), (si > 0) (type: boolean), (i < 0) (type: boolean), ((t < 0) and (si > 0) and (i < 0)) (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Statistics: Num rows: 2001 Data size: 45620 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int)
+                      sort order: +++
+                      Statistics: Num rows: 2001 Data size: 45620 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col6 (type: boolean)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: hash(KEY.reducesinkkey0,KEY.reducesinkkey1,KEY.reducesinkkey2,VALUE._col0,VALUE._col1,VALUE._col2,VALUE._col3) (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 2001 Data size: 45620 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: sum(_col0)
+                  mode: complete
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si, i, (t < 0) as child1, (si > 0) as child2, (i < 0) as child3, (t < 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc
+        order by t, si, i) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si, i, (t < 0) as child1, (si > 0) as child2, (i < 0) as child3, (t < 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc
+        order by t, si, i) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc
+#### A masked pattern was here ####
+c0
+-64411366206
+PREHOOK: query: EXPLAIN
+SELECT sum(hash(*)) FROM
+    (SELECT t, si, i, b, (t < 0) as child1, (si > 0) as child2, (i < 0) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND i < 0 AND b > 0) as multi_and_col from vectortab2k_orc
+        order by t, si, i, b) as q
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT sum(hash(*)) FROM
+    (SELECT t, si, i, b, (t < 0) as child1, (si > 0) as child2, (i < 0) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND i < 0 AND b > 0) as multi_and_col from vectortab2k_orc
+        order by t, si, i, b) as q
+POSTHOOK: type: QUERY
+Explain
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vectortab2k_orc
+                  Statistics: Num rows: 2001 Data size: 45620 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), (t < 0) (type: boolean), (si > 0) (type: boolean), (i < 0) (type: boolean), (b > 0) (type: boolean), ((t < 0) and (si > 0) and (i < 0) and (b > 0)) (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Statistics: Num rows: 2001 Data size: 45620 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint)
+                      sort order: ++++
+                      Statistics: Num rows: 2001 Data size: 45620 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col4 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: hash(KEY.reducesinkkey0,KEY.reducesinkkey1,KEY.reducesinkkey2,KEY.reducesinkkey3,VALUE._col0,VALUE._col1,VALUE._col2,VALUE._col3,VALUE._col4) (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 2001 Data size: 45620 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: sum(_col0)
+                  mode: complete
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si, i, b, (t < 0) as child1, (si > 0) as child2, (i < 0) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND i < 0 AND b > 0) as multi_and_col from vectortab2k_orc
+        order by t, si, i, b) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si, i, b, (t < 0) as child1, (si > 0) as child2, (i < 0) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND i < 0 AND b > 0) as multi_and_col from vectortab2k_orc
+        order by t, si, i, b) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc
+#### A masked pattern was here ####
+c0
+96890477236
+PREHOOK: query: -- Use a boolean column rather than a column comparison expression.
+EXPLAIN
+SELECT sum(hash(*)) FROM
+    (SELECT t, si, bo, b, (t < 0) as child1, (si > 0) as child2, (bo) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND bo AND b > 0) as multi_and_col from vectortab2k_orc
+        order by t, si, bo, b) as q
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Use a boolean column rather than a column comparison expression.
+EXPLAIN
+SELECT sum(hash(*)) FROM
+    (SELECT t, si, bo, b, (t < 0) as child1, (si > 0) as child2, (bo) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND bo AND b > 0) as multi_and_col from vectortab2k_orc
+        order by t, si, bo, b) as q
+POSTHOOK: type: QUERY
+Explain
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vectortab2k_orc
+                  Statistics: Num rows: 2001 Data size: 45620 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: t (type: tinyint), si (type: smallint), bo (type: boolean), b (type: bigint), (t < 0) (type: boolean), (si > 0) (type: boolean), (b > 0) (type: boolean), ((t < 0) and (si > 0) and bo and (b > 0)) (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col7, _col8
+                    Statistics: Num rows: 2001 Data size: 45620 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: boolean), _col3 (type: bigint)
+                      sort order: ++++
+                      Statistics: Num rows: 2001 Data size: 45620 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col4 (type: boolean), _col5 (type: boolean), _col7 (type: boolean), _col8 (type: boolean)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: hash(KEY.reducesinkkey0,KEY.reducesinkkey1,KEY.reducesinkkey2,KEY.reducesinkkey3,VALUE._col0,VALUE._col1,KEY.reducesinkkey2,VALUE._col2,VALUE._col3) (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 2001 Data size: 45620 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: sum(_col0)
+                  mode: complete
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si, bo, b, (t < 0) as child1, (si > 0) as child2, (bo) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND bo AND b > 0) as multi_and_col from vectortab2k_orc
+        order by t, si, bo, b) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si, bo, b, (t < 0) as child1, (si > 0) as child2, (bo) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND bo AND b > 0) as multi_and_col from vectortab2k_orc
+        order by t, si, bo, b) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc
+#### A masked pattern was here ####
+c0
+26141424353
+PREHOOK: query: -- With some filtering
+SELECT sum(hash(*)) FROM
+    (SELECT t, si, i, (t < 0) as child1, (si > 0) as child2, (i < 0) as child3, (t < 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc
+        where pmod(t, 4) > 1
+        order by t, si, i) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc
+#### A masked pattern was here ####
+POSTHOOK: query: -- With some filtering
+SELECT sum(hash(*)) FROM
+    (SELECT t, si, i, (t < 0) as child1, (si > 0) as child2, (i < 0) as child3, (t < 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc
+        where pmod(t, 4) > 1
+        order by t, si, i) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc
+#### A masked pattern was here ####
+c0
+-28501090956
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si, i, b, (t < 0) as child1, (si > 0) as child2, (i < 0) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND i < 0 AND b > 0) as multi_and_col from vectortab2k_orc
+        where pmod(t, 4) < 2
+        order by t, si, i, b) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si, i, b, (t < 0) as child1, (si > 0) as child2, (i < 0) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND i < 0 AND b > 0) as multi_and_col from vectortab2k_orc
+        where pmod(t, 4) < 2
+        order by t, si, i, b) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc
+#### A masked pattern was here ####
+c0
+38348662460
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si, bo, b, (t < 0) as child1, (si > 0) as child2, (bo) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND bo AND b > 0) as multi_and_col from vectortab2k_orc
+        where pmod(b, 8) == 7
+        order by t, si, bo, b) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si, bo, b, (t < 0) as child1, (si > 0) as child2, (bo) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND bo AND b > 0) as multi_and_col from vectortab2k_orc
+        where pmod(b, 8) == 7
+        order by t, si, bo, b) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc
+#### A masked pattern was here ####
+c0
+5176369462
+PREHOOK: query: CREATE TABLE scratch_repeat AS SELECT t, si, i, b, bo, 20 as t_repeat,
+     9000 as si_repeat, 9233320 as i_repeat, -823823999339992 as b_repeat, false as bo_repeat_false, true as bo_repeat_true FROM vectortab2k
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@vectortab2k
+PREHOOK: Output: database:default
+PREHOOK: Output: default@scratch_repeat
+POSTHOOK: query: CREATE TABLE scratch_repeat AS SELECT t, si, i, b, bo, 20 as t_repeat,
+     9000 as si_repeat, 9233320 as i_repeat, -823823999339992 as b_repeat, false as bo_repeat_false, true as bo_repeat_true FROM vectortab2k
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@vectortab2k
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@scratch_repeat
+POSTHOOK: Lineage: scratch_repeat.b SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: scratch_repeat.b_repeat SIMPLE []
+POSTHOOK: Lineage: scratch_repeat.bo SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: scratch_repeat.bo_repeat_false SIMPLE []
+POSTHOOK: Lineage: scratch_repeat.bo_repeat_true SIMPLE []
+POSTHOOK: Lineage: scratch_repeat.i SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: scratch_repeat.i_repeat SIMPLE []
+POSTHOOK: Lineage: scratch_repeat.si SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: scratch_repeat.si_repeat SIMPLE []
+POSTHOOK: Lineage: scratch_repeat.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: scratch_repeat.t_repeat SIMPLE []
+t	si	i	b	bo	t_repeat	si_repeat	i_repeat	b_repeat	bo_repeat_false	bo_repeat_true
+PREHOOK: query: -- The repeated columns ought to create repeated VectorizedRowBatch for those columns.
+-- And then when we do a comparison, we should generate a repeated boolean result.
+CREATE TABLE vectortab2k_orc_repeat STORED AS ORC AS SELECT * FROM scratch_repeat
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@scratch_repeat
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectortab2k_orc_repeat
+POSTHOOK: query: -- The repeated columns ought to create repeated VectorizedRowBatch for those columns.
+-- And then when we do a comparison, we should generate a repeated boolean result.
+CREATE TABLE vectortab2k_orc_repeat STORED AS ORC AS SELECT * FROM scratch_repeat
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@scratch_repeat
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectortab2k_orc_repeat
+POSTHOOK: Lineage: vectortab2k_orc_repeat.b SIMPLE [(scratch_repeat)scratch_repeat.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_repeat.b_repeat SIMPLE [(scratch_repeat)scratch_repeat.FieldSchema(name:b_repeat, type:bigint, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_repeat.bo SIMPLE [(scratch_repeat)scratch_repeat.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_repeat.bo_repeat_false SIMPLE [(scratch_repeat)scratch_repeat.FieldSchema(name:bo_repeat_false, type:boolean, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_repeat.bo_repeat_true SIMPLE [(scratch_repeat)scratch_repeat.FieldSchema(name:bo_repeat_true, type:boolean, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_repeat.i SIMPLE [(scratch_repeat)scratch_repeat.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_repeat.i_repeat SIMPLE [(scratch_repeat)scratch_repeat.FieldSchema(name:i_repeat, type:int, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_repeat.si SIMPLE [(scratch_repeat)scratch_repeat.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_repeat.si_repeat SIMPLE [(scratch_repeat)scratch_repeat.FieldSchema(name:si_repeat, type:int, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_repeat.t SIMPLE [(scratch_repeat)scratch_repeat.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_repeat.t_repeat SIMPLE [(scratch_repeat)scratch_repeat.FieldSchema(name:t_repeat, type:int, comment:null), ]
+scratch_repeat.t	scratch_repeat.si	scratch_repeat.i	scratch_repeat.b	scratch_repeat.bo	scratch_repeat.t_repeat	scratch_repeat.si_repeat	scratch_repeat.i_repeat	scratch_repeat.b_repeat	scratch_repeat.bo_repeat_false	scratch_repeat.bo_repeat_true
+PREHOOK: query: -- t_repeat > 0 should generate all true.
+SELECT sum(hash(*)) FROM
+    (SELECT t_repeat, si, i, (t_repeat > 0) as child1, (si > 0) as child2, (i < 0) as child3, (t_repeat > 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc_repeat
+        order by t_repeat, si, i) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+POSTHOOK: query: -- t_repeat > 0 should generate all true.
+SELECT sum(hash(*)) FROM
+    (SELECT t_repeat, si, i, (t_repeat > 0) as child1, (si > 0) as child2, (i < 0) as child3, (t_repeat > 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc_repeat
+        order by t_repeat, si, i) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+c0
+-53648296618
+PREHOOK: query: -- t_repeat < 0 should generate all false.
+SELECT sum(hash(*)) FROM
+    (SELECT t_repeat, si, i, (t_repeat < 0) as child1, (si > 0) as child2, (i < 0) as child3, (t_repeat < 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc_repeat
+        order by t_repeat, si, i) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+POSTHOOK: query: -- t_repeat < 0 should generate all false.
+SELECT sum(hash(*)) FROM
+    (SELECT t_repeat, si, i, (t_repeat < 0) as child1, (si > 0) as child2, (i < 0) as child3, (t_repeat < 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc_repeat
+        order by t_repeat, si, i) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+c0
+-53707879050
+PREHOOK: query: -- Two repeated false columns at beginning...
+SELECT sum(hash(*)) FROM
+    (SELECT t_repeat, si_repeat, i, (t_repeat > 0) as child1, (si_repeat > 0) as child2, (i < 0) as child3, (t_repeat > 0 AND si_repeat > 0 AND i < 0) as multi_and_col from vectortab2k_orc_repeat
+        order by t_repeat, si_repeat, i) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+POSTHOOK: query: -- Two repeated false columns at beginning...
+SELECT sum(hash(*)) FROM
+    (SELECT t_repeat, si_repeat, i, (t_repeat > 0) as child1, (si_repeat > 0) as child2, (i < 0) as child3, (t_repeat > 0 AND si_repeat > 0 AND i < 0) as multi_and_col from vectortab2k_orc_repeat
+        order by t_repeat, si_repeat, i) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+c0
+-55121400269
+PREHOOK: query: -- si_repeat > 0 should generate all true.
+SELECT sum(hash(*)) FROM
+    (SELECT t, si_repeat, i, b_repeat, (t < 0 ) as child1, (si_repeat > 0) as child2, (i < 0) as child3, (b_repeat > 0) as child4, (t < 0 AND si_repeat > 0 AND i < 0 AND b_repeat > 0) as multi_and_col from vectortab2k_orc_repeat
+        order by t, si_repeat, i, b_repeat) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+POSTHOOK: query: -- si_repeat > 0 should generate all true.
+SELECT sum(hash(*)) FROM
+    (SELECT t, si_repeat, i, b_repeat, (t < 0 ) as child1, (si_repeat > 0) as child2, (i < 0) as child3, (b_repeat > 0) as child4, (t < 0 AND si_repeat > 0 AND i < 0 AND b_repeat > 0) as multi_and_col from vectortab2k_orc_repeat
+        order by t, si_repeat, i, b_repeat) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+c0
+-39803959564
+PREHOOK: query: -- si_repeat < 0 should generate all false.
+SELECT sum(hash(*)) FROM
+    (SELECT t, si_repeat, i, b_repeat, (t < 0) as child1, (si_repeat < 0) as child2, (i < 0) as child3, (b_repeat > 0) as child4, (t < 0 AND si_repeat < 0 AND i < 0 AND b_repeat > 0) as multi_and_col from vectortab2k_orc_repeat
+        order by t, si_repeat, i, b_repeat) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+POSTHOOK: query: -- si_repeat < 0 should generate all false.
+SELECT sum(hash(*)) FROM
+    (SELECT t, si_repeat, i, b_repeat, (t < 0) as child1, (si_repeat < 0) as child2, (i < 0) as child3, (b_repeat > 0) as child4, (t < 0 AND si_repeat < 0 AND i < 0 AND b_repeat > 0) as multi_and_col from vectortab2k_orc_repeat
+        order by t, si_repeat, i, b_repeat) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+c0
+-39863541564
+PREHOOK: query: -- Use a boolean column rather than a column comparison expression.
+SELECT sum(hash(*)) FROM
+    (SELECT t, si, bo_repeat_false, b, (t < 0) as child1, (si > 0) as child2, (bo_repeat_false) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND bo_repeat_false AND b > 0) as multi_and_col from vectortab2k_orc_repeat
+        order by t, si, bo_repeat_false, b) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+POSTHOOK: query: -- Use a boolean column rather than a column comparison expression.
+SELECT sum(hash(*)) FROM
+    (SELECT t, si, bo_repeat_false, b, (t < 0) as child1, (si > 0) as child2, (bo_repeat_false) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND bo_repeat_false AND b > 0) as multi_and_col from vectortab2k_orc_repeat
+        order by t, si, bo_repeat_false, b) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+c0
+56950496526
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si, bo_repeat_true, b, (t < 0) as child1, (si > 0) as child2, (bo_repeat_true) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND bo_repeat_true AND b > 0) as multi_and_col from vectortab2k_orc_repeat
+        order by t, si, bo_repeat_true, b) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si, bo_repeat_true, b, (t < 0) as child1, (si > 0) as child2, (bo_repeat_true) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND bo_repeat_true AND b > 0) as multi_and_col from vectortab2k_orc_repeat
+        order by t, si, bo_repeat_true, b) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+c0
+2303712725
+PREHOOK: query: -- With some filtering
+SELECT sum(hash(*)) FROM
+    (SELECT t_repeat, si, i, (t_repeat > 0) as child1, (si > 0) as child2, (i < 0) as child3, (t_repeat > 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc_repeat
+        where pmod(si, 4) = 0
+        order by t_repeat, si, i) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+POSTHOOK: query: -- With some filtering
+SELECT sum(hash(*)) FROM
+    (SELECT t_repeat, si, i, (t_repeat > 0) as child1, (si > 0) as child2, (i < 0) as child3, (t_repeat > 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc_repeat
+        where pmod(si, 4) = 0
+        order by t_repeat, si, i) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+c0
+-4381273667
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_repeat, si, i, (t_repeat < 0) as child1, (si > 0) as child2, (i < 0) as child3, (t_repeat < 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc_repeat
+        where pmod(si, 4) = 3
+        order by t_repeat, si, i) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_repeat, si, i, (t_repeat < 0) as child1, (si > 0) as child2, (i < 0) as child3, (t_repeat < 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc_repeat
+        where pmod(si, 4) = 3
+        order by t_repeat, si, i) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+c0
+-954303006
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_repeat, si_repeat, i, (t_repeat > 0) as child1, (si_repeat > 0) as child2, (i < 0) as child3, (t_repeat > 0 AND si_repeat > 0 AND i < 0) as multi_and_col from vectortab2k_orc_repeat
+        where pmod(si, 4) != 3
+        order by t_repeat, si_repeat, i) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_repeat, si_repeat, i, (t_repeat > 0) as child1, (si_repeat > 0) as child2, (i < 0) as child3, (t_repeat > 0 AND si_repeat > 0 AND i < 0) as multi_and_col from vectortab2k_orc_repeat
+        where pmod(si, 4) != 3
+        order by t_repeat, si_repeat, i) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+c0
+-45312591578
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si_repeat, i, b_repeat, (t < 0 ) as child1, (si_repeat > 0) as child2, (i < 0) as child3, (b_repeat > 0) as child4, (t < 0 AND si_repeat > 0 AND i < 0 AND b_repeat > 0) as multi_and_col from vectortab2k_orc_repeat
+        where pmod(si, 4) < 2
+        order by t, si_repeat, i, b_repeat) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si_repeat, i, b_repeat, (t < 0 ) as child1, (si_repeat > 0) as child2, (i < 0) as child3, (b_repeat > 0) as child4, (t < 0 AND si_repeat > 0 AND i < 0 AND b_repeat > 0) as multi_and_col from vectortab2k_orc_repeat
+        where pmod(si, 4) < 2
+        order by t, si_repeat, i, b_repeat) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+c0
+-30297068525
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si_repeat, i, b_repeat, (t < 0) as child1, (si_repeat < 0) as child2, (i < 0) as child3, (b_repeat > 0) as child4, (t < 0 AND si_repeat < 0 AND i < 0 AND b_repeat > 0) as multi_and_col from vectortab2k_orc_repeat
+        where pmod(t, 4) = 0
+        order by t, si_repeat, i, b_repeat) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si_repeat, i, b_repeat, (t < 0) as child1, (si_repeat < 0) as child2, (i < 0) as child3, (b_repeat > 0) as child4, (t < 0 AND si_repeat < 0 AND i < 0 AND b_repeat > 0) as multi_and_col from vectortab2k_orc_repeat
+        where pmod(t, 4) = 0
+        order by t, si_repeat, i, b_repeat) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+c0
+32929905326
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si, bo_repeat_false, b, (t < 0) as child1, (si > 0) as child2, (bo_repeat_false) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND bo_repeat_false AND b > 0) as multi_and_col from vectortab2k_orc_repeat
+        where pmod(b, 4) > 1
+        order by t, si, bo_repeat_false, b) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si, bo_repeat_false, b, (t < 0) as child1, (si > 0) as child2, (bo_repeat_false) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND bo_repeat_false AND b > 0) as multi_and_col from vectortab2k_orc_repeat
+        where pmod(b, 4) > 1
+        order by t, si, bo_repeat_false, b) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+c0
+10610127509
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si, bo_repeat_true, b, (t < 0) as child1, (si > 0) as child2, (bo_repeat_true) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND bo_repeat_true AND b > 0) as multi_and_col from vectortab2k_orc_repeat
+        where pmod(si, 4) < 3
+        order by t, si, bo_repeat_true, b) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t, si, bo_repeat_true, b, (t < 0) as child1, (si > 0) as child2, (bo_repeat_true) as child3, (b > 0) as child4, (t < 0 AND si > 0 AND bo_repeat_true AND b > 0) as multi_and_col from vectortab2k_orc_repeat
+        where pmod(si, 4) < 3
+        order by t, si, bo_repeat_true, b) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_repeat
+#### A masked pattern was here ####
+c0
+-16740409601
+PREHOOK: query: CREATE TABLE scratch_null AS SELECT t, si, i, b, bo,
+     cast(null as tinyint) as t_null, cast(null as smallint) as si_null, cast(null as int) as i_null, cast(null as bigint) as b_null, cast(null as boolean) as bo_null FROM vectortab2k
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@vectortab2k
+PREHOOK: Output: database:default
+PREHOOK: Output: default@scratch_null
+POSTHOOK: query: CREATE TABLE scratch_null AS SELECT t, si, i, b, bo,
+     cast(null as tinyint) as t_null, cast(null as smallint) as si_null, cast(null as int) as i_null, cast(null as bigint) as b_null, cast(null as boolean) as bo_null FROM vectortab2k
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@vectortab2k
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@scratch_null
+POSTHOOK: Lineage: scratch_null.b SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: scratch_null.b_null SIMPLE []
+POSTHOOK: Lineage: scratch_null.bo SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: scratch_null.bo_null SIMPLE []
+POSTHOOK: Lineage: scratch_null.i SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: scratch_null.i_null SIMPLE []
+POSTHOOK: Lineage: scratch_null.si SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: scratch_null.si_null SIMPLE []
+POSTHOOK: Lineage: scratch_null.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: scratch_null.t_null SIMPLE []
+t	si	i	b	bo	t_null	si_null	i_null	b_null	bo_null
+PREHOOK: query: -- The nulled columns ought to create repeated null VectorizedRowBatch for those columns.
+CREATE TABLE vectortab2k_orc_null STORED AS ORC AS SELECT * FROM scratch_null
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@scratch_null
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectortab2k_orc_null
+POSTHOOK: query: -- The nulled columns ought to create repeated null VectorizedRowBatch for those columns.
+CREATE TABLE vectortab2k_orc_null STORED AS ORC AS SELECT * FROM scratch_null
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@scratch_null
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectortab2k_orc_null
+POSTHOOK: Lineage: vectortab2k_orc_null.b SIMPLE [(scratch_null)scratch_null.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_null.b_null SIMPLE [(scratch_null)scratch_null.FieldSchema(name:b_null, type:bigint, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_null.bo SIMPLE [(scratch_null)scratch_null.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_null.bo_null SIMPLE [(scratch_null)scratch_null.FieldSchema(name:bo_null, type:boolean, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_null.i SIMPLE [(scratch_null)scratch_null.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_null.i_null SIMPLE [(scratch_null)scratch_null.FieldSchema(name:i_null, type:int, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_null.si SIMPLE [(scratch_null)scratch_null.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_null.si_null SIMPLE [(scratch_null)scratch_null.FieldSchema(name:si_null, type:smallint, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_null.t SIMPLE [(scratch_null)scratch_null.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: vectortab2k_orc_null.t_null SIMPLE [(scratch_null)scratch_null.FieldSchema(name:t_null, type:tinyint, comment:null), ]
+scratch_null.t	scratch_null.si	scratch_null.i	scratch_null.b	scratch_null.bo	scratch_null.t_null	scratch_null.si_null	scratch_null.i_null	scratch_null.b_null	scratch_null.bo_null
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_null, si, i, (t_null is null) as child1, (si > 0) as child2, (i < 0) as child3, (t_null is null AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc_null
+        order by t_null, si, i) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_null
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_null, si, i, (t_null is null) as child1, (si > 0) as child2, (i < 0) as child3, (t_null is null AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc_null
+        order by t_null, si, i) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_null
+#### A masked pattern was here ####
+c0
+-77365671658
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_null, si, i, (t_null < 0) as child1, (si > 0) as child2, (i < 0) as child3, (t_null < 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc_null
+        order by t_null, si, i) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_null
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_null, si, i, (t_null < 0) as child1, (si > 0) as child2, (i < 0) as child3, (t_null < 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc_null
+        order by t_null, si, i) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_null
+#### A masked pattern was here ####
+c0
+-77425254090
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_null, si_null, i, (t_null is null) as child1, (si_null > 0) as child2, (i < 0) as child3, (t_null is null AND si_null > 0 AND i < 0) as multi_and_col from vectortab2k_orc_null
+        order by t_null, si_null, i) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_null
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_null, si_null, i, (t_null is null) as child1, (si_null > 0) as child2, (i < 0) as child3, (t_null is null AND si_null > 0 AND i < 0) as multi_and_col from vectortab2k_orc_null
+        order by t_null, si_null, i) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_null
+#### A masked pattern was here ####
+c0
+-127742262531
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_null, si_null, i_null, (t_null is null) as child1, (si_null is null) as child2, (i_null is null) as child3, (t_null is null AND si_null is null AND i_null is null) as multi_and_col from vectortab2k_orc_null
+        order by t_null, si_null, i_null) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_null
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_null, si_null, i_null, (t_null is null) as child1, (si_null is null) as child2, (i_null is null) as child3, (t_null is null AND si_null is null AND i_null is null) as multi_and_col from vectortab2k_orc_null
+        order by t_null, si_null, i_null) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_null
+#### A masked pattern was here ####
+c0
+61568000
+PREHOOK: query: -- With some filtering
+SELECT sum(hash(*)) FROM
+    (SELECT t_null, si, i, (t_null is null) as child1, (si > 0) as child2, (i < 0) as child3, (t_null is null AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc_null
+        where pmod(i,4) = 3
+        order by t_null, si, i) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_null
+#### A masked pattern was here ####
+POSTHOOK: query: -- With some filtering
+SELECT sum(hash(*)) FROM
+    (SELECT t_null, si, i, (t_null is null) as child1, (si > 0) as child2, (i < 0) as child3, (t_null is null AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc_null
+        where pmod(i,4) = 3
+        order by t_null, si, i) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_null
+#### A masked pattern was here ####
+c0
+-48771559290
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_null, si, i, (t_null < 0) as child1, (si > 0) as child2, (i < 0) as child3, (t_null < 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc_null
+        where pmod(i,4) = 2
+        order by t_null, si, i) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_null
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_null, si, i, (t_null < 0) as child1, (si > 0) as child2, (i < 0) as child3, (t_null < 0 AND si > 0 AND i < 0) as multi_and_col from vectortab2k_orc_null
+        where pmod(i,4) = 2
+        order by t_null, si, i) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_null
+#### A masked pattern was here ####
+c0
+-13491514290
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_null, si_null, i, (t_null is null) as child1, (si_null > 0) as child2, (i < 0) as child3, (t_null is null AND si_null > 0 AND i < 0) as multi_and_col from vectortab2k_orc_null
+        where pmod(i,4) != 3
+        order by t_null, si_null, i) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_null
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_null, si_null, i, (t_null is null) as child1, (si_null > 0) as child2, (i < 0) as child3, (t_null is null AND si_null > 0 AND i < 0) as multi_and_col from vectortab2k_orc_null
+        where pmod(i,4) != 3
+        order by t_null, si_null, i) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_null
+#### A masked pattern was here ####
+c0
+-96004829404
+PREHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_null, si_null, i_null, (t_null is null) as child1, (si_null is null) as child2, (i_null is null) as child3, (t_null is null AND si_null is null AND i_null is null) as multi_and_col from vectortab2k_orc_null
+        where pmod(i,4) < 3
+        order by t_null, si_null, i_null) as q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2k_orc_null
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(*)) FROM
+    (SELECT t_null, si_null, i_null, (t_null is null) as child1, (si_null is null) as child2, (i_null is null) as child3, (t_null is null AND si_null is null AND i_null is null) as multi_and_col from vectortab2k_orc_null
+        where pmod(i,4) < 3
+        order by t_null, si_null, i_null) as q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2k_orc_null
+#### A masked pattern was here ####
+c0
+45252480

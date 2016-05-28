@@ -17,26 +17,38 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
+import com.google.common.base.Preconditions;
+
 /**
- * Evaluate AND of two boolean columns and store result in the output boolean column.
+ * Evaluate AND of 2 or more boolean columns and store the boolean result in the
+ * output boolean column.  This is a projection or result producing expression (as opposed to
+ * a filter expression).
+ *
+ * Some child boolean columns may be vector expressions evaluated into boolean scratch columns.
  */
 public class ColAndCol extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum1;
-  private int colNum2;
+  private int[] colNums;
   private int outputColumn;
+  private int[] mapToChildExpression;
+  private int[] andSelected;
+  private boolean[] intermediateNulls;
 
-  public ColAndCol(int colNum1, int colNum2, int outputColumn) {
+  public ColAndCol(int[] colNums, int outputColumn) {
     this();
-    this.colNum1 = colNum1;
-    this.colNum2 = colNum2;
+    this.colNums = colNums;
     this.outputColumn = outputColumn;
+    mapToChildExpression = null;
+    andSelected = new int[VectorizedRowBatch.DEFAULT_SIZE];
+    intermediateNulls = new boolean[VectorizedRowBatch.DEFAULT_SIZE];
   }
 
   public ColAndCol() {
@@ -46,240 +58,493 @@ public class ColAndCol extends VectorExpression {
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
-    if (childExpressions != null) {
-      super.evaluateChildren(batch);
+    Preconditions.checkState(colNums.length >= 2);
+
+    /*
+     * Vector child expressions will be omitted if they are existing boolean vector columns,
+     * so the child index does not necessarily index into the childExpressions.
+     * We construct a simple index map to the child expression in mapToChildExpression.
+     */
+    if (childExpressions != null && mapToChildExpression == null) {
+      // 
+      mapToChildExpression = new int [colNums.length];
+      int childIndex = 0;
+      for (int i = 0; i < childExpressions.length; i++) {
+        VectorExpression ve = childExpressions[i];
+        int outputColumn = ve.getOutputColumn();
+        while (outputColumn != colNums[childIndex]) {
+          mapToChildExpression[childIndex++] = -1;
+        }
+        mapToChildExpression[childIndex++] = i;
+      }
+      Preconditions.checkState(childIndex == colNums.length);
     }
 
-    LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[colNum1];
-    LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[colNum2];
-    int[] sel = batch.selected;
-    int n = batch.size;
-    long[] vector1 = inputColVector1.vector;
-    long[] vector2 = inputColVector2.vector;
-
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
-    long[] outputVector = outV.vector;
+    final int n = batch.size;
     if (n <= 0) {
       // Nothing to do
       return;
     }
 
-    long vector1Value = vector1[0];
-    long vector2Value = vector2[0];
-    if (inputColVector1.noNulls && inputColVector2.noNulls) {
-      if ((inputColVector1.isRepeating) && (inputColVector2.isRepeating)) {
-        // All must be selected otherwise size would be zero
-        // Repeating property will not change.
-        outV.isRepeating = true;
-        outputVector[0] = vector1[0] & vector2[0];
-      } else if (inputColVector1.isRepeating && !inputColVector2.isRepeating) {
-        if (batch.selectedInUse) {
-          for (int j = 0; j != n; j++) {
-            int i = sel[j];
-            outputVector[i] = vector1Value & vector2[i];
-          }
-        } else {
-          for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1Value & vector2[i];
-          }
-        }
-        outV.isRepeating = false;
-      } else if (!inputColVector1.isRepeating && inputColVector2.isRepeating) {
-        if (batch.selectedInUse) {
-          for (int j = 0; j != n; j++) {
-            int i = sel[j];
-            outputVector[i] = vector1[i] & vector2Value;
-          }
-        } else {
-          for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1[i] & vector2Value;
-          }
-        }
-        outV.isRepeating = false;
-      } else /* neither side is repeating */{
-        if (batch.selectedInUse) {
-          for (int j = 0; j != n; j++) {
-            int i = sel[j];
-            outputVector[i] = vector1[i] & vector2[i];
-          }
-        } else {
-          for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1[i] & vector2[i];
-          }
-        }
-        outV.isRepeating = false;
+    if (childExpressions != null) {
+      /*
+       * Evaluate first child expression.  Other child are conditionally evaluated later
+       * based on whether there is still a need for AND processing.
+       */
+      int childExpressionIndex = mapToChildExpression[0];
+      if (childExpressionIndex != -1) {
+        VectorExpression ve = childExpressions[childExpressionIndex];
+        Preconditions.checkState(ve.getOutputColumn() == colNums[0]);
+        ve.evaluate(batch);
       }
-      outV.noNulls = true;
-    } else if (inputColVector1.noNulls && !inputColVector2.noNulls) {
-      // only input 2 side has nulls
-      if ((inputColVector1.isRepeating) && (inputColVector2.isRepeating)) {
-        // All must be selected otherwise size would be zero
-        // Repeating property will not change.
-        outV.isRepeating = true;
-        outputVector[0] = vector1[0] & vector2[0];
-        outV.isNull[0] = (vector1[0] == 1) && inputColVector2.isNull[0];
-      } else if (inputColVector1.isRepeating && !inputColVector2.isRepeating) {
-        if (batch.selectedInUse) {
-          for (int j = 0; j != n; j++) {
-            int i = sel[j];
-            outputVector[i] = vector1Value & vector2[i];
-            outV.isNull[i] = (vector1[0] == 1) && inputColVector2.isNull[i];
-          }
+    }
+
+    int[] sel = batch.selected;
+
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+    long[] outputVector = outV.vector;
+
+    /**
+     * Null processing complicates the algorithm here for Multi-AND.
+     *
+     * All true --> true
+     * 0 or more true with 1 or more null --> result = null
+     * Any false --> false
+     *
+     * For AND-processing, we remember nulls in the intermediateNulls array as we go along so
+     * later we can mark the row as null instead of true when there is a null.
+     */
+
+    /*
+     * andRepeating will be true when all the children column vectors processed so far are
+     * some combination of repeating true and repeating null.
+     * andRepeatingIsNull will be true when there has been at least one repeating null column.
+     */
+    boolean andRepeating = false;
+    boolean andRepeatingIsNull = false;
+
+    /*
+     * The andSel variable and andSelected member array represent rows that have at have
+     * some combination of true and nulls.
+     */
+    int andSel = 0;
+
+    Arrays.fill(intermediateNulls, 0, VectorizedRowBatch.DEFAULT_SIZE, false);
+
+    // Reset noNulls to true, isNull to false, isRepeating to false.
+    outV.reset();
+
+    LongColumnVector firstColVector = (LongColumnVector) batch.cols[colNums[0]];
+    long[] firstVector = firstColVector.vector;
+
+    /*
+     * We prime the pump by evaluating the first child to see if we are starting with
+     * andRepeating/andRepeatingHasNulls or we are starting with andSel/andSelected processing.
+     */
+    if (firstColVector.isRepeating) {
+      if (firstColVector.noNulls || !firstColVector.isNull[0]) {
+        if (firstVector[0] == 0) {
+          // When the entire child column is repeating false, we are done for AND.
+          outV.isRepeating = true;
+          outputVector[0] = 0;
+          return;
         } else {
-          for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1Value & vector2[i];
-            outV.isNull[i] = (vector1[0] == 1) && inputColVector2.isNull[i];
-          }
+          // First column is repeating true.
         }
-        outV.isRepeating = false;
-      } else if (!inputColVector1.isRepeating && inputColVector2.isRepeating) {
-        if (batch.selectedInUse) {
-          for (int j = 0; j != n; j++) {
-            int i = sel[j];
-            outputVector[i] = vector1[i] & vector2Value;
-            outV.isNull[i] = (vector1[i] == 1) && inputColVector2.isNull[0];
-          }
-        } else {
-          for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1[i] & vector2Value;
-            outV.isNull[i] = (vector1[i] == 1) && inputColVector2.isNull[0];
-          }
-        }
-        outV.isRepeating = false;
-      } else /* neither side is repeating */{
-        if (batch.selectedInUse) {
-          for (int j = 0; j != n; j++) {
-            int i = sel[j];
-            outputVector[i] = vector1[i] & vector2[i];
-            outV.isNull[i] = (vector1[i] == 1) && inputColVector2.isNull[i];
-          }
-        } else {
-          for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1[i] & vector2[i];
-            outV.isNull[i] = (vector1[i] == 1) && inputColVector2.isNull[i];
-          }
-        }
-        outV.isRepeating = false;
+      } else {
+        Preconditions.checkState(firstColVector.isNull[0]);
+
+        // At least one repeating null column.
+        andRepeatingIsNull = true;
       }
-      outV.noNulls = false;
-    } else if (!inputColVector1.noNulls && inputColVector2.noNulls) {
-      // only input 1 side has nulls
-      if ((inputColVector1.isRepeating) && (inputColVector2.isRepeating)) {
-        // All must be selected otherwise size would be zero
-        // Repeating property will not change.
-        outV.isRepeating = true;
-        outputVector[0] = vector1[0] & vector2[0];
-        outV.isNull[0] = inputColVector1.isNull[0] && (vector2[0] == 1);
-      } else if (inputColVector1.isRepeating && !inputColVector2.isRepeating) {
-        if (batch.selectedInUse) {
-          for (int j = 0; j != n; j++) {
-            int i = sel[j];
-            outputVector[i] = vector1Value & vector2[i];
-            outV.isNull[i] = inputColVector1.isNull[0] && (vector2[i] == 1);
-          }
-        } else {
-          for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1Value & vector2[i];
-            outV.isNull[i] = inputColVector1.isNull[0] && (vector2[i] == 1);
+      andRepeating = true;
+    } else if (firstColVector.noNulls) {
+
+      /*
+       * No nulls -- so all true rows go in andSel/andSelected.
+       */
+      if (batch.selectedInUse) {
+        for (int j = 0; j != n; j++) {
+          int i = sel[j];
+          if (firstVector[i] == 1) {
+            andSelected[andSel++] = i;
           }
         }
-        outV.isRepeating = false;
-      } else if (!inputColVector1.isRepeating && inputColVector2.isRepeating) {
-        if (batch.selectedInUse) {
-          for (int j = 0; j != n; j++) {
-            int i = sel[j];
-            outputVector[i] = vector1[i] & vector2Value;
-            outV.isNull[i] = inputColVector1.isNull[i] && (vector2[0] == 1);
-          }
-        } else {
-          for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1[i] & vector2Value;
-            outV.isNull[i] = inputColVector1.isNull[i] && (vector2[0] == 1);
+      } else {
+        for (int i = 0; i != n; i++) {
+          if (firstVector[i] == 1) {
+            andSelected[andSel++] = i;
           }
         }
-        outV.isRepeating = false;
-      } else /* neither side is repeating */{
-        if (batch.selectedInUse) {
-          for (int j = 0; j != n; j++) {
-            int i = sel[j];
-            outputVector[i] = vector1[i] & vector2[i];
-            outV.isNull[i] = inputColVector1.isNull[i] && (vector2[i] == 1);
-          }
-        } else {
-          for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1[i] & vector2[i];
-            outV.isNull[i] = inputColVector1.isNull[i] && (vector2[i] == 1);
-          }
-        }
-        outV.isRepeating = false;
       }
-      outV.noNulls = false;
-    } else /* !inputColVector1.noNulls && !inputColVector2.noNulls */{
-      // either input 1 or input 2 may have nulls
-      if ((inputColVector1.isRepeating) && (inputColVector2.isRepeating)) {
-        // All must be selected otherwise size would be zero
-        // Repeating property will not change.
-        outV.isRepeating = true;
-        outputVector[0] = vector1[0] & vector2[0];
-        outV.isNull[0] = ((vector1[0] == 1) && inputColVector2.isNull[0])
-            || (inputColVector1.isNull[0] && (vector2[0] == 1))
-            || (inputColVector1.isNull[0] && inputColVector2.isNull[0]);
-      } else if (inputColVector1.isRepeating && !inputColVector2.isRepeating) {
-        if (batch.selectedInUse) {
-          for (int j = 0; j != n; j++) {
-            int i = sel[j];
-            outputVector[i] = vector1Value & vector2[i];
-            outV.isNull[i] = ((vector1[0] == 1) && inputColVector2.isNull[i])
-                || (inputColVector1.isNull[0] && (vector2[i] == 1))
-                || (inputColVector1.isNull[0] && inputColVector2.isNull[i]);
-          }
-        } else {
-          for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1Value & vector2[i];
-            outV.isNull[i] = ((vector1[0] == 1) && inputColVector2.isNull[i])
-                || (inputColVector1.isNull[0] && (vector2[i] == 1))
-                || (inputColVector1.isNull[0] && inputColVector2.isNull[i]);
+    } else  {
+
+      /*
+       * Can be nulls -- so all true rows and null rows go in andSel/andSelected.
+       * Remember nulls in our separate intermediateNulls array.
+       */
+      if (batch.selectedInUse) {
+        for (int j = 0; j != n; j++) {
+          int i = sel[j];
+          if (firstColVector.isNull[i]) {
+            intermediateNulls[i] = true;
+            andSelected[andSel++] = i;
+          } else if (firstVector[i] == 1) {
+            andSelected[andSel++] = i;
           }
         }
-        outV.isRepeating = false;
-      } else if (!inputColVector1.isRepeating && inputColVector2.isRepeating) {
-        if (batch.selectedInUse) {
-          for (int j = 0; j != n; j++) {
-            int i = sel[j];
-            outputVector[i] = vector1[i] & vector2Value;
-            outV.isNull[i] = ((vector1[i] == 1) && inputColVector2.isNull[0])
-                || (inputColVector1.isNull[i] && (vector2[0] == 1))
-                || (inputColVector1.isNull[i] && inputColVector2.isNull[0]);
-          }
-        } else {
-          for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1[i] & vector2Value;
-            outV.isNull[i] = ((vector1[i] == 1) && inputColVector2.isNull[0])
-                || (inputColVector1.isNull[i] && (vector2[0] == 1))
-                || (inputColVector1.isNull[i] && inputColVector2.isNull[0]);
+      } else {
+        for (int i = 0; i != n; i++) {
+          if (firstColVector.isNull[i]) {
+            intermediateNulls[i] = true;
+            andSelected[andSel++] = i;
+          } else if (firstVector[i] == 1) {
+            andSelected[andSel++] = i;
           }
         }
-        outV.isRepeating = false;
-      } else /* neither side is repeating */{
-        if (batch.selectedInUse) {
-          for (int j = 0; j != n; j++) {
-            int i = sel[j];
-            outputVector[i] = vector1[i] & vector2[i];
-            outV.isNull[i] = ((vector1[i] == 1) && inputColVector2.isNull[i])
-                || (inputColVector1.isNull[i] && (vector2[i] == 1))
-                || (inputColVector1.isNull[i] && inputColVector2.isNull[i]);
-          }
-        } else {
-          for (int i = 0; i != n; i++) {
-            outputVector[i] = vector1[i] & vector2[i];
-            outV.isNull[i] = ((vector1[i] == 1) && inputColVector2.isNull[i])
-                || (inputColVector1.isNull[i] && (vector2[i] == 1))
-                || (inputColVector1.isNull[i] && inputColVector2.isNull[i]);
-          }
-        }
-        outV.isRepeating = false;
       }
-      outV.noNulls = false;
+    }
+
+    /*
+     * Process child #2 and above.
+     */
+    int colNum = 1;
+    do {
+      if (!andRepeating && andSel == 0) {
+
+        /*
+         * Since andSel/andSelected represent currently true entries and there are none,
+         * then nothing is true (how philosophical!).
+         */
+        break;
+      }
+
+      if (childExpressions != null) {
+        int childExpressionIndex = mapToChildExpression[colNum];
+        if (childExpressionIndex != -1) {
+          if (andRepeating) {
+
+            /*
+             * We need to start with a full evaluate on all [selected] rows.
+             */
+            VectorExpression ve = childExpressions[childExpressionIndex];
+            Preconditions.checkState(ve.getOutputColumn() == colNums[colNum]);
+            ve.evaluate(batch);
+          } else {
+
+            /*
+             * Evaluate next child expression.
+             * But only evaluate the andSelected rows (i.e. current true or true with nulls rows).
+             */
+            boolean saveSelectedInUse = batch.selectedInUse;
+            int[] saveSelected = sel;
+            batch.selectedInUse = true;
+            batch.selected = andSelected;
+
+            VectorExpression ve = childExpressions[childExpressionIndex];
+            Preconditions.checkState(ve.getOutputColumn() == colNums[colNum]);
+            ve.evaluate(batch);
+
+            batch.selectedInUse = saveSelectedInUse;
+            batch.selected = saveSelected;
+          }
+        }
+      }
+
+      LongColumnVector nextColVector = (LongColumnVector) batch.cols[colNums[colNum]];
+      long[] nextVector = nextColVector.vector;
+
+      if (andRepeating) {
+
+        /*
+         * The andRepeating flag means the whole batch is repeating true possibly with
+         * some repeating nulls.
+         */
+        if (nextColVector.isRepeating) {
+
+          /*
+           * Current child column is repeating so stay in repeating mode.
+           */
+          if (nextColVector.noNulls || !nextColVector.isNull[0]) {
+            if (nextVector[0] == 0) {
+              // When the entire child column is repeating false, we are done for AND.
+              outV.isRepeating = true;
+              outputVector[0] = 0;
+              return;
+            } else {
+              // Current column is repeating true.
+            }
+          } else {
+            Preconditions.checkState(nextColVector.isNull[0]);
+
+            // At least one repeating null column.
+            andRepeatingIsNull = true;
+          }
+          // Continue with andRepeating as true.
+        } else {
+
+          /*
+           * Switch away from andRepeating/andRepeatingIsNull and now represent individual rows in
+           * andSel/andSelected.
+           */
+          if (nextColVector.noNulls) {
+
+            /*
+             * Current child column has no nulls.
+             */
+
+            Preconditions.checkState(andSel == 0);
+            andRepeating = false;
+  
+            if (andRepeatingIsNull) {
+  
+              /*
+               * Since andRepeatingIsNull is true, we always set intermediateNulls when building
+               * andSel/andSelected when the next row is true.
+               */
+              if (batch.selectedInUse) {
+                for (int j = 0; j != n; j++) {
+                  int i = sel[j];
+                  if (nextVector[i] == 1) {
+                    intermediateNulls[i] = true;
+                    andSelected[andSel++] = i;
+                  }
+                }
+              } else {
+                for (int i = 0; i != n; i++) {
+                  if (nextVector[i] == 1) {
+                    intermediateNulls[i] = true;
+                    andSelected[andSel++] = i;
+                  }
+                }
+              }
+              andRepeatingIsNull = false;
+            } else {
+  
+              /*
+               * Previous rounds were all true with no null child columns.  Just build
+               * andSel/andSelected when the next row is true.
+               */
+              if (batch.selectedInUse) {
+                for (int j = 0; j != n; j++) {
+                  int i = sel[j];
+                  if (nextVector[i] == 1) {
+                    andSelected[andSel++] = i;
+                  }
+                }
+              } else {
+                for (int i = 0; i != n; i++) {
+                  if (nextVector[i] == 1) {
+                    andSelected[andSel++] = i;
+                  }
+                }
+              }
+            }
+          } else {
+
+            /*
+             * Current child column can have nulls.
+             */
+
+            Preconditions.checkState(andSel == 0);
+            andRepeating = false;
+
+            if (andRepeatingIsNull) {
+
+              /*
+               * Since andRepeatingIsNull is true, we always set intermediateNulls when building
+               * andSel/andSelected when the next row is null or true...
+               */
+              if (batch.selectedInUse) {
+                for (int j = 0; j != n; j++) {
+                  int i = sel[j];
+                  if (nextColVector.isNull[i] || nextVector[i] == 1) {
+                    intermediateNulls[i] = true;
+                    andSelected[andSel++] = i;
+                  }
+                }
+              } else {
+                for (int i = 0; i != n; i++) {
+                  if (nextColVector.isNull[i] || nextVector[i] == 1) {
+                    intermediateNulls[i] = true;
+                    andSelected[andSel++] = i;
+                  }
+                }
+              }
+              andRepeatingIsNull = false;
+            } else {
+
+              /*
+               * Previous rounds were all true with no null child columns.  Build
+               * andSel/andSelected when the next row is true; also build when next is null
+               * and set intermediateNulls to true, too.
+               */
+              if (batch.selectedInUse) {
+                for (int j = 0; j != n; j++) {
+                  int i = sel[j];
+                  if (nextColVector.isNull[i]) {
+                    intermediateNulls[i] = true;
+                    andSelected[andSel++] = i;
+                  } else if (nextVector[i] == 1) {
+                    andSelected[andSel++] = i;
+                  }
+                }
+              } else {
+                for (int i = 0; i != n; i++) {
+                  if (nextColVector.isNull[i]) {
+                    intermediateNulls[i] = true;
+                    andSelected[andSel++] = i;
+                  } else if (nextVector[i] == 1) {
+                    andSelected[andSel++] = i;
+                  }
+                }
+              }
+            }
+          }
+        }
+      } else {
+
+        /*
+         * Continue in row mode: the andSel variable and andSelected member array contains the
+         * rows that are some combination of true and null.
+         */
+        if (nextColVector.isRepeating) {
+
+          /*
+           * Current child column is repeating which affects all rows.
+           */
+          if (nextColVector.noNulls || !nextColVector.isNull[0]) {
+
+            if (nextVector[0] == 0) {
+              // When the entire child column is repeating false, we are done for AND.
+              outV.isRepeating = true;
+              outputVector[0] = 0;
+              return;
+            } else {
+              // Child column is all true. Keep current andSel/andSelected rows.
+            }
+          } else {
+            Preconditions.checkState(nextColVector.isNull[0]);
+
+            // Column is repeating null -- need to mark all current rows in andSel/andSelected
+            // as null.
+            for (int j = 0; j < andSel; j++) {
+              int i = andSelected[j];
+              intermediateNulls[i] = true;
+            }
+          }
+        } else if (nextColVector.noNulls) {
+
+          /*
+           * Current child column has no nulls.
+           */
+
+          /*
+           * Rebuild andSel/andSelected to keep true rows.
+           */
+          int newSel = 0;
+          for (int j = 0; j < andSel; j++) {
+            int i = andSelected[j];
+            if (nextVector[i] == 1) {
+              andSelected[newSel++] = i;
+            }
+          }
+          andSel = newSel;
+        } else {
+
+          /*
+           * Current child column can have nulls.
+           */
+
+          /*
+           * Rebuild andSel/andSelected to keep true rows or null rows.
+           */
+          int newSel = 0;
+          for (int j = 0; j < andSel; j++) {
+            int i = andSelected[j];
+            if (nextColVector.isNull[i]) {
+              // At least one null.
+              intermediateNulls[i] = true;
+              andSelected[newSel++] = i;
+            } else if (nextVector[i] == 1) {
+              andSelected[newSel++] = i;
+            }
+          }
+          andSel = newSel;
+        }
+      }
+    } while (++colNum < colNums.length);
+
+    /*
+     * Produce final result.
+     */
+    if (andRepeating) {
+      outV.isRepeating = true;
+      if (andRepeatingIsNull) {
+        // The appearance of a null makes the repeated result null.
+        outV.noNulls = false;
+        outV.isNull[0] = true;
+      } else {
+        // All columns are repeating true.
+        outputVector[0] = 1;
+      }
+    } else if (andSel == 0) {
+      // No rows had true.
+      outV.isRepeating = true;
+      outputVector[0] = 0;
+    } else {
+      // Ok, rows were some combination of true and null throughout.
+      int andIndex = 0;
+      if (batch.selectedInUse) {
+        /*
+         * The batch selected array has all the rows we are projecting a boolean from.
+         * The andSelected array has a subset of the selected rows that have at least
+         * one true and may have some nulls. Now we need to decide if we are going to mark
+         * those rows as true, or null because there was at least one null.
+         *
+         * We use the andIndex to progress through the andSelected array and make a decision
+         * on how to fill out the boolean result.
+         *
+         * Since we reset the output column, we shouldn't have to set isNull false for true
+         * entries.
+         */
+        for (int j = 0; j != n; j++) {
+          int i = sel[j];
+          if (andIndex < andSel && andSelected[andIndex] == i) {
+            // We haven't processed all the andSelected entries and the row index is in
+            // andSelected, so make a result decision for true or null.
+            if (intermediateNulls[i]) {
+              outV.noNulls = false;
+              outV.isNull[i] = true;
+            } else {
+              outputVector[i] = 1;
+            }
+            andIndex++;
+          } else {
+            // The row is not in the andSelected array.  Result is false.
+            outputVector[i] = 0;
+          }
+        }
+        Preconditions.checkState(andIndex == andSel);
+      } else {
+        /*
+         * The andSelected array has a subset of the selected rows that have at least
+         * one true and may have some nulls. Now we need to decide if we are going to mark
+         * those rows as true, or null because there was at least one null.
+         *
+         * Prefill the result as all false.  Then decide about the andSelected entries.
+         */
+        Arrays.fill(outputVector, 0, n, 0);
+        for (int j = 0; j < andSel; j++) {
+          int i = andSelected[j];
+          if (intermediateNulls[i]) {
+            outV.noNulls = false;
+            outV.isNull[i] = true;
+          } else {
+            outputVector[i] = 1;
+          }
+        }
+      }
     }
   }
 
@@ -291,22 +556,6 @@ public class ColAndCol extends VectorExpression {
   @Override
   public String getOutputType() {
     return "boolean";
-  }
-
-  public int getColNum1() {
-    return colNum1;
-  }
-
-  public void setColNum1(int colNum1) {
-    this.colNum1 = colNum1;
-  }
-
-  public int getColNum2() {
-    return colNum2;
-  }
-
-  public void setColNum2(int colNum2) {
-    this.colNum2 = colNum2;
   }
 
   public void setOutputColumn(int outputColumn) {

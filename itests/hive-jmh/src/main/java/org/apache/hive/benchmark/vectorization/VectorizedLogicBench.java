@@ -55,7 +55,7 @@ public class VectorizedLogicBench {
     public void setup() {
       rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanLongColumnVector(),
           getBooleanLongColumnVector());
-      expression = new ColAndCol(0, 1, 2);
+      expression = new ColAndCol(new int[] {0, 1}, 2);
     }
   }
 
@@ -64,7 +64,7 @@ public class VectorizedLogicBench {
     public void setup() {
       rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanLongColumnVector(),
           getBooleanRepeatingLongColumnVector());
-      expression = new ColAndCol(0, 1, 2);
+      expression = new ColAndCol(new int[] {0, 1}, 2);
     }
   }
 
@@ -73,7 +73,7 @@ public class VectorizedLogicBench {
     public void setup() {
       rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanRepeatingLongColumnVector(),
           getBooleanLongColumnVector());
-      expression = new ColAndCol(0, 1, 2);
+      expression = new ColAndCol(new int[] {0, 1}, 2);
     }
   }
 
@@ -82,7 +82,7 @@ public class VectorizedLogicBench {
     public void setup() {
       rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanLongColumnVector(),
           getBooleanLongColumnVector());
-      expression = new ColOrCol(0, 1, 2);
+      expression = new ColOrCol(new int[] {0, 1}, 2);
     }
   }
 
@@ -91,7 +91,7 @@ public class VectorizedLogicBench {
     public void setup() {
       rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanLongColumnVector(),
           getBooleanRepeatingLongColumnVector());
-      expression = new ColOrCol(0, 1, 2);
+      expression = new ColOrCol(new int[] {0, 1}, 2);
     }
   }
 
@@ -100,7 +100,7 @@ public class VectorizedLogicBench {
     public void setup() {
       rowBatch = buildRowBatch(new LongColumnVector(), 2, getBooleanRepeatingLongColumnVector(),
           getBooleanLongColumnVector());
-      expression = new ColOrCol(0, 1, 2);
+      expression = new ColOrCol(new int[] {0, 1}, 2);
     }
   }
 
