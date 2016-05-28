@@ -2688,6 +2688,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             }
 
             Path destPath = new Path(destf, srcP.getName());
+            String srcGroup = srcFile.getGroup();
             if (!needToCopy && !isSrcLocal) {
               for (int counter = 1; !destFs.rename(srcP,destPath); counter++) {
                 destPath = new Path(destf, name + ("_copy_" + counter) + filetype);
@@ -2697,7 +2698,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             }
 
             if (inheritPerms) {
-              HdfsUtils.setFullFileStatus(conf, fullDestStatus, destFs, destPath, false);
+              HdfsUtils.setFullFileStatus(conf, fullDestStatus, srcGroup, destFs, destPath, false);
             }
             if (null != newFiles) {
               newFiles.add(destPath);
@@ -2871,10 +2872,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
                 public Void call() throws Exception {
                   SessionState.setCurrentSessionState(parentSession);
                   Path destPath = new Path(destf, status.getPath().getName());
+                  String group = status.getGroup();
                   try {
                     if(destFs.rename(status.getPath(), destf)) {
                       if (inheritPerms) {
-                        HdfsUtils.setFullFileStatus(conf, desiredStatus, destFs, destPath, false);
+                        HdfsUtils.setFullFileStatus(conf, desiredStatus, group, destFs, destPath, false);
                       }
                     } else {
                       throw new IOException("rename for src path: " + status.getPath() + " to dest path:"
