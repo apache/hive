@@ -4232,10 +4232,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       for (Path location : getLocations(db, table, partSpec)) {
         FileSystem fs = location.getFileSystem(conf);
         HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(conf, fs, location);
+        FileStatus targetStatus = fs.getFileStatus(location);
+        String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
         fs.delete(location, true);
         fs.mkdirs(location);
         try {
-          HdfsUtils.setFullFileStatus(conf, status, fs, location, false);
+          HdfsUtils.setFullFileStatus(conf, status, targetGroup, fs, location, false);
         } catch (Exception e) {
           LOG.warn("Error setting permissions of " + location, e);
         }
