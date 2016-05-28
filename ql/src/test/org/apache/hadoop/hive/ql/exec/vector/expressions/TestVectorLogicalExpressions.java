@@ -40,7 +40,7 @@ public class TestVectorLogicalExpressions {
   @Test
   public void testLongColOrLongCol() {
     VectorizedRowBatch batch = getBatchThreeBooleanCols();
-    ColOrCol expr = new ColOrCol(0, 1, 2);
+    ColOrCol expr = new ColOrCol(new int[] {0, 1}, 2);
     LongColumnVector outCol = (LongColumnVector) batch.cols[2];
     expr.evaluate(batch);
     // verify
@@ -96,7 +96,7 @@ public class TestVectorLogicalExpressions {
   @Test
   public void testLongColAndLongCol() {
     VectorizedRowBatch batch = getBatchThreeBooleanCols();
-    ColAndCol expr = new ColAndCol(0, 1, 2);
+    ColAndCol expr = new ColAndCol(new int[] {0, 1}, 2);
     LongColumnVector outCol = (LongColumnVector) batch.cols[2];
     expr.evaluate(batch);
 
