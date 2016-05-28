@@ -1784,7 +1784,12 @@ public class VectorizationContext {
         return getConstantVectorExpression(doubleValue, returnType, Mode.PROJECTION);
     }
     if (isIntFamily(inputType)) {
-      return createVectorExpression(CastLongToDouble.class, childExpr, Mode.PROJECTION, returnType);
+      if (udf.equals(UDFToFloat.class)) {
+        // In order to convert from integer to float correctly, we need to apply the float cast not the double cast (HIVE-13338).
+        return createVectorExpression(CastLongToFloatViaLongToDouble.class, childExpr, Mode.PROJECTION, returnType);
+      } else {
+        return createVectorExpression(CastLongToDouble.class, childExpr, Mode.PROJECTION, returnType);
+      }
     } else if (inputType.equals("timestamp")) {
       return createVectorExpression(CastTimestampToDouble.class, childExpr, Mode.PROJECTION,
           returnType);
