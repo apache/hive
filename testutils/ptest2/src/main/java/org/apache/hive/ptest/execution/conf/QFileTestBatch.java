@@ -29,10 +29,11 @@ public class QFileTestBatch implements TestBatch {
   private final String driver;
   private final String queryFilesProperty;
   private final String name;
+  private final String moduleName;
   private final Set<String> tests;
   private final boolean isParallel;
   public QFileTestBatch(String testCasePropertyName, String driver, 
-      String queryFilesProperty, Set<String> tests, boolean isParallel) {
+      String queryFilesProperty, Set<String> tests, boolean isParallel, String moduleName) {
     this.testCasePropertyName = testCasePropertyName;
     this.driver = driver;
     this.queryFilesProperty = queryFilesProperty;
@@ -44,6 +45,7 @@ public class QFileTestBatch implements TestBatch {
     }
     this.name = name;
     this.isParallel = isParallel;
+    this.moduleName = moduleName;
   }
   public String getDriver() {
     return driver;
@@ -66,12 +68,18 @@ public class QFileTestBatch implements TestBatch {
   public String toString() {
     return "QFileTestBatch [driver=" + driver + ", queryFilesProperty="
         + queryFilesProperty + ", name=" + name + ", tests=" + tests
-        + ", isParallel=" + isParallel + "]";
+        + ", isParallel=" + isParallel + ", moduleName=" + moduleName + "]";
   }
   @Override
   public boolean isParallel() {
     return isParallel;
   }
+
+  @Override
+  public String getTestModule() {
+    return moduleName;
+  }
+
   @Override
   public int hashCode() {
     final int prime = 31;

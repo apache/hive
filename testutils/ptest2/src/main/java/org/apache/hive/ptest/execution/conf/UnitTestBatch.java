@@ -51,6 +51,12 @@ public class UnitTestBatch implements TestBatch {
   public boolean isParallel() {
     return isParallel;
   }
+
+  @Override
+  public String getTestModule() {
+    return null;
+  }
+
   @Override
   public int hashCode() {
     final int prime = 31;
