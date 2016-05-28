@@ -50,9 +50,6 @@ public class TestParser {
   private static final Splitter TEST_SPLITTER = Splitter.onPattern("[, ]")
     .trimResults().omitEmptyStrings();
 
-  private static final String QTEST_MODULE_NAME = "qtest";
-  private static final String QTEST_SPARK_MODULE_NAME = "qtest-spark";
-
   private final Context context;
   private final String testCasePropertyName;
   private final File sourceDirectory;
@@ -180,20 +177,17 @@ public class TestParser {
         logger.info("Exlcuding test " + driver + " " + test);
       } else if(isolated.contains(test)) {
         logger.info("Executing isolated test " + driver + " " + test);
-        testBatches.add(new QFileTestBatch(testCasePropertyName, driver, queryFilesProperty,
-            Sets.newHashSet(test), isParallel, getModuleName(driver)));
+        testBatches.add(new QFileTestBatch(testCasePropertyName, driver, queryFilesProperty, Sets.newHashSet(test), isParallel));
       } else {
         if(testBatch.size() >= batchSize) {
-          testBatches.add(new QFileTestBatch(testCasePropertyName, driver, queryFilesProperty,
-              Sets.newHashSet(testBatch), isParallel, getModuleName(driver)));
+          testBatches.add(new QFileTestBatch(testCasePropertyName, driver, queryFilesProperty, Sets.newHashSet(testBatch), isParallel));
           testBatch = Lists.newArrayList();
         }
         testBatch.add(test);
       }
     }
     if(!testBatch.isEmpty()) {
-      testBatches.add(new QFileTestBatch(testCasePropertyName, driver, queryFilesProperty,
-          Sets.newHashSet(testBatch), isParallel, getModuleName(driver)));
+      testBatches.add(new QFileTestBatch(testCasePropertyName, driver, queryFilesProperty, Sets.newHashSet(testBatch), isParallel));
     }
     return testBatches;
   }
@@ -263,14 +257,6 @@ public class TestParser {
     }
     tests.removeAll(toRemove);
     tests.addAll(toAdd);
-  }
-
-  private String getModuleName(String driverName) {
-    if (driverName.toLowerCase().contains("spark")) {
-      return QTEST_SPARK_MODULE_NAME;
-    } else {
-      return QTEST_MODULE_NAME;
-    }
   }
 
   public Supplier<List<TestBatch>> parse() {

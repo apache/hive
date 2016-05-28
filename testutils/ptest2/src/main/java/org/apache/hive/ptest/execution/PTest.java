@@ -164,7 +164,6 @@ public class PTest {
     Map<String, Long> elapsedTimes = Maps.newTreeMap();
     try {
       mLogger.info("Running tests with " + mConfiguration);
-      mLogger.info("Running tests with configuration context=[{}]", mConfiguration.getContext());
       for(Phase phase : mPhases) {
         String msg = "Executing " + phase.getClass().getName();
         mLogger.info(msg);

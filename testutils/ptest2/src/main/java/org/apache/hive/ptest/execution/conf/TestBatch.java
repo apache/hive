@@ -28,5 +28,4 @@ public interface TestBatch {
 
   public boolean isParallel();
 
-  public String getTestModule();
 }
