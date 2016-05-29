@@ -59,6 +59,10 @@ public class LazyDate extends LazyPrimitive<LazyDateObjectInspector, DateWritabl
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     String s = null;
+    if (!LazyUtils.isDateMaybe(bytes.getData(), start, length)) {
+      isNull = true;
+      return;
+    }
     try {
       s = Text.decode(bytes.getData(), start, length);
       data.set(Date.valueOf(s));

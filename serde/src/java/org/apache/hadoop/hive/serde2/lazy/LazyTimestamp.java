@@ -59,6 +59,10 @@ public class LazyTimestamp extends LazyPrimitive<LazyTimestampObjectInspector, T
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     String s = null;
+    if (!LazyUtils.isDateMaybe(bytes.getData(), start, length)) {
+      isNull = true;
+      return;
+    }
     try {
       s = new String(bytes.getData(), start, length, "US-ASCII");
     } catch (UnsupportedEncodingException e) {

@@ -15,16 +15,19 @@ package org.apache.hive.benchmark.serde;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyByte;
+import org.apache.hadoop.hive.serde2.lazy.LazyDate;
 import org.apache.hadoop.hive.serde2.lazy.LazyDouble;
 import org.apache.hadoop.hive.serde2.lazy.LazyFloat;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.lazy.LazyShort;
+import org.apache.hadoop.hive.serde2.lazy.LazyTimestamp;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyPrimitiveObjectInspectorFactory;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -53,15 +56,14 @@ public class LazySimpleSerDeBench {
    * $ java -cp target/benchmarks.jar org.apache.hive.benchmark.serde.LazySimpleSerDeBench
    * <p/>
    */
+  public static final int DEFAULT_ITER_TIME = 1000000;
+  public static final int DEFAULT_DATA_SIZE = 4096;
 
   @BenchmarkMode(Mode.AverageTime)
   @Fork(1)
   @State(Scope.Thread)
   @OutputTimeUnit(TimeUnit.NANOSECONDS)
   public static abstract class AbstractDeserializer {
-    public static final int DEFAULT_ITER_TIME = 1000000;
-
-    public static final int DEFAULT_DATA_SIZE = 4096;
 
     public int[] offsets = new int[DEFAULT_DATA_SIZE];
     public int[] sizes = new int[DEFAULT_DATA_SIZE];
@@ -435,6 +437,171 @@ public class LazySimpleSerDeBench {
 
     public GoodLazyDouble() {
       super(Integer.MAX_VALUE);
+    }
+
+    @Override
+    public void bench() {
+      for (int i = 0; i < DEFAULT_ITER_TIME; i++) {
+        obj.init(ref, offsets[i % sizes.length], sizes[i % sizes.length]);
+      }
+    }
+  }
+
+  @BenchmarkMode(Mode.AverageTime)
+  @Fork(1)
+  @State(Scope.Thread)
+  @OutputTimeUnit(TimeUnit.NANOSECONDS)
+  public static class GoodLazyDate {
+
+    final LazyDate obj = new LazyDate(
+        LazyPrimitiveObjectInspectorFactory.LAZY_DATE_OBJECT_INSPECTOR);
+
+    public int[] offsets = new int[DEFAULT_DATA_SIZE];
+    public int[] sizes = new int[DEFAULT_DATA_SIZE];
+    protected final ByteArrayRef ref = new ByteArrayRef();
+
+    @Setup
+    public void setup() {
+      sizes = new int[DEFAULT_DATA_SIZE];
+      offsets = new int[sizes.length];
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      Random r = new Random();
+      int len = 0;
+      final long base = -320000000L*1000L; // 1959
+      for (int i = 0; i < DEFAULT_DATA_SIZE; i++) {
+        // -ve dates are also valid dates - the dates are within 1959 to 2027
+        Date dt = new Date(base + (Math.abs(r.nextLong()) % (Integer.MAX_VALUE*1000L)));
+        byte[] ds = dt.toString().getBytes();
+        sizes[i] = ds.length;
+        offsets[i] = len;
+        len += ds.length;
+        try {
+          bos.write(ds);
+        } catch (IOException e) {
+          e.printStackTrace();
+          throw new RuntimeException(e);
+        }
+      }
+      ref.setData(bos.toByteArray());
+    }
+
+    @Benchmark
+    @Warmup(iterations = 2, time = 2, timeUnit = TimeUnit.MILLISECONDS)
+    @Measurement(iterations = 2, time = 2, timeUnit = TimeUnit.MILLISECONDS)
+    public void bench() {
+      for (int i = 0; i < DEFAULT_ITER_TIME; i++) {
+        obj.init(ref, offsets[i % sizes.length], sizes[i % sizes.length]);
+      }
+    }
+  }
+
+  public static class RandomLazyDate extends RandomDataInitializer {
+
+    final LazyDate obj = new LazyDate(
+        LazyPrimitiveObjectInspectorFactory.LAZY_DATE_OBJECT_INSPECTOR);
+
+    public RandomLazyDate() {
+      super(4);
+    }
+
+
+    @Override
+    public void bench() {
+      for (int i = 0; i < DEFAULT_ITER_TIME; i++) {
+        obj.init(ref, offsets[i % sizes.length], sizes[i % sizes.length]);
+      }
+    }
+  }
+
+  public static class WorstLazyDate extends RandomDataInitializer {
+
+    final LazyDate obj = new LazyDate(
+        LazyPrimitiveObjectInspectorFactory.LAZY_DATE_OBJECT_INSPECTOR);
+
+    public WorstLazyDate() {
+      super(8);
+    }
+
+    @Override
+    public void bench() {
+      for (int i = 0; i < DEFAULT_ITER_TIME; i++) {
+        obj.init(ref, offsets[i % sizes.length], sizes[i % sizes.length]);
+      }
+    }
+  }
+  
+  @BenchmarkMode(Mode.AverageTime)
+  @Fork(1)
+  @State(Scope.Thread)
+  @OutputTimeUnit(TimeUnit.NANOSECONDS)
+  public static class GoodLazyTimestamp {
+
+    final LazyTimestamp obj = new LazyTimestamp(
+        LazyPrimitiveObjectInspectorFactory.LAZY_TIMESTAMP_OBJECT_INSPECTOR);
+
+    public int[] offsets = new int[DEFAULT_DATA_SIZE];
+    public int[] sizes = new int[DEFAULT_DATA_SIZE];
+    protected final ByteArrayRef ref = new ByteArrayRef();
+
+    @Setup
+    public void setup() {
+      sizes = new int[DEFAULT_DATA_SIZE];
+      offsets = new int[sizes.length];
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      Random r = new Random();
+      int len = 0;
+      final long base = -320000000L * 1000L; // 1959
+      for (int i = 0; i < DEFAULT_DATA_SIZE; i++) {
+        // -ve dates are also valid Timestamps - dates are within 1959 to 2027
+        Date dt = new Date(base + (Math.abs(r.nextLong()) % (Integer.MAX_VALUE * 1000L)));
+        byte[] ds = String.format("%s 00:00:01", dt.toString()).getBytes();
+        sizes[i] = ds.length;
+        offsets[i] = len;
+        len += ds.length;
+        try {
+          bos.write(ds);
+        } catch (IOException e) {
+          e.printStackTrace();
+          throw new RuntimeException(e);
+        }
+      }
+      ref.setData(bos.toByteArray());
+    }
+
+    @Benchmark
+    @Warmup(iterations = 2, time = 2, timeUnit = TimeUnit.MILLISECONDS)
+    @Measurement(iterations = 2, time = 2, timeUnit = TimeUnit.MILLISECONDS)
+    public void bench() {
+      for (int i = 0; i < DEFAULT_ITER_TIME; i++) {
+        obj.init(ref, offsets[i % sizes.length], sizes[i % sizes.length]);
+      }
+    }
+  }
+
+  public static class RandomLazyTimestamp extends RandomDataInitializer {
+
+    final LazyTimestamp obj = new LazyTimestamp(
+        LazyPrimitiveObjectInspectorFactory.LAZY_TIMESTAMP_OBJECT_INSPECTOR);
+
+    public RandomLazyTimestamp() {
+      super(4);
+    }
+
+    @Override
+    public void bench() {
+      for (int i = 0; i < DEFAULT_ITER_TIME; i++) {
+        obj.init(ref, offsets[i % sizes.length], sizes[i % sizes.length]);
+      }
+    }
+  }
+
+  public static class WorstLazyTimestamp extends RandomDataInitializer {
+
+    final LazyTimestamp obj = new LazyTimestamp(
+        LazyPrimitiveObjectInspectorFactory.LAZY_TIMESTAMP_OBJECT_INSPECTOR);
+
+    public WorstLazyTimestamp() {
+      super(8);
     }
 
     @Override
