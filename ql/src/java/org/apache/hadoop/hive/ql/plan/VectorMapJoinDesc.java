@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+
 /**
  * VectorGroupByDesc.
  *
@@ -51,7 +54,29 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
     INT,
     LONG,
     STRING,
-    MULTI_KEY
+    MULTI_KEY;
+
+    public PrimitiveTypeInfo getPrimitiveTypeInfo() {
+      switch (this) {
+      case BOOLEAN:
+        return TypeInfoFactory.booleanTypeInfo;
+      case BYTE:
+        return TypeInfoFactory.byteTypeInfo;
+      case INT:
+        return TypeInfoFactory.intTypeInfo;
+      case LONG:
+        return TypeInfoFactory.longTypeInfo;
+      case NONE:
+        return TypeInfoFactory.voidTypeInfo;
+      case SHORT:
+        return TypeInfoFactory.shortTypeInfo;
+      case STRING:
+        return TypeInfoFactory.stringTypeInfo;
+      case MULTI_KEY:
+      default:
+        return null;
+      }
+    }
   }
 
   private HashTableImplementationType hashTableImplementationType;

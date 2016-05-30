@@ -259,7 +259,7 @@ public abstract class VectorMapJoinFastLongHashTable
     super(initialCapacity, loadFactor, writeBuffersSize);
     this.isOuterJoin = isOuterJoin;
     this.hashTableKeyType = hashTableKeyType;
-    PrimitiveTypeInfo[] primitiveTypeInfos = { TypeInfoFactory.longTypeInfo };
+    PrimitiveTypeInfo[] primitiveTypeInfos = { hashTableKeyType.getPrimitiveTypeInfo() };
     keyBinarySortableDeserializeRead = new BinarySortableDeserializeRead(primitiveTypeInfos);
     allocateBucketArray();
     useMinMax = minMaxEnabled;
