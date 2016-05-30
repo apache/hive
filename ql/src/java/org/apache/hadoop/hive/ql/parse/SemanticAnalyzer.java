@@ -78,7 +78,6 @@ import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
-import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -129,7 +128,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverterPostProc;
 import org.apache.hadoop.hive.ql.optimizer.lineage.Generator;
-import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec.SpecType;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
@@ -183,7 +181,6 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
-import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
@@ -7589,7 +7586,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     Operator result = genReduceSinkPlan(
         input, partCols, sortCols, order.toString(), nullOrder.toString(),
-        numReducers, Operation.NOT_ACID);
+        numReducers, Operation.NOT_ACID, true);
     if (result.getParentOperators().size() == 1 &&
         result.getParentOperators().get(0) instanceof ReduceSinkOperator) {
       ((ReduceSinkOperator) result.getParentOperators().get(0))
@@ -7598,21 +7595,41 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return result;
   }
 
+  private Operator genReduceSinkPlan(Operator<?> input,
+          ArrayList<ExprNodeDesc> partitionCols, ArrayList<ExprNodeDesc> sortCols,
+          String sortOrder, String nullOrder, int numReducers, AcidUtils.Operation acidOp)
+                  throws SemanticException {
+    return genReduceSinkPlan(input, partitionCols, sortCols, sortOrder, nullOrder, numReducers,
+            acidOp, false);
+  }
+
   @SuppressWarnings("nls")
   private Operator genReduceSinkPlan(Operator<?> input,
       ArrayList<ExprNodeDesc> partitionCols, ArrayList<ExprNodeDesc> sortCols,
-      String sortOrder, String nullOrder, int numReducers, AcidUtils.Operation acidOp)
-              throws SemanticException {
+      String sortOrder, String nullOrder, int numReducers, AcidUtils.Operation acidOp,
+      boolean pullConstants) throws SemanticException {
 
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
 
     Operator dummy = Operator.createDummy();
     dummy.setParentOperators(Arrays.asList(input));
 
+    ArrayList<ExprNodeDesc> newSortCols = new ArrayList<ExprNodeDesc>();
+    StringBuilder newSortOrder = new StringBuilder();
+    StringBuilder newNullOrder = new StringBuilder();
     ArrayList<ExprNodeDesc> sortColsBack = new ArrayList<ExprNodeDesc>();
-    for (ExprNodeDesc sortCol : sortCols) {
-      sortColsBack.add(ExprNodeDescUtils.backtrack(sortCol, dummy, input));
+    for (int i = 0; i < sortCols.size(); i++) {
+      ExprNodeDesc sortCol = sortCols.get(i);
+      // If we are not pulling constants, OR
+      // we are pulling constants but this is not a constant
+      if (!pullConstants || !(sortCol instanceof ExprNodeConstantDesc)) {
+        newSortCols.add(sortCol);
+        newSortOrder.append(sortOrder.charAt(i));
+        newNullOrder.append(nullOrder.charAt(i));
+        sortColsBack.add(ExprNodeDescUtils.backtrack(sortCol, dummy, input));
+      }
     }
+
     // For the generation of the values expression just get the inputs
     // signature and generate field expressions for those
     RowResolver rsRR = new RowResolver();
@@ -7620,6 +7637,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<ExprNodeDesc> valueCols = new ArrayList<ExprNodeDesc>();
     ArrayList<ExprNodeDesc> valueColsBack = new ArrayList<ExprNodeDesc>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
+    ArrayList<ExprNodeDesc> constantCols = new ArrayList<ExprNodeDesc>();
 
     ArrayList<ColumnInfo> columnInfos = inputRR.getColumnInfos();
 
@@ -7632,6 +7650,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // backtrack can be null when input is script operator
       ExprNodeDesc valueBack = ExprNodeDescUtils.backtrack(value, dummy, input);
+      if (pullConstants && valueBack instanceof ExprNodeConstantDesc) {
+        // ignore, it will be generated by SEL op
+        index[i] = Integer.MAX_VALUE;
+        constantCols.add(valueBack);
+        continue;
+      }
       int kindex = valueBack == null ? -1 : ExprNodeDescUtils.indexOf(valueBack, sortColsBack);
       if (kindex >= 0) {
         index[i] = kindex;
@@ -7668,8 +7692,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     dummy.setParentOperators(null);
 
-    ReduceSinkDesc rsdesc = PlanUtils.getReduceSinkDesc(sortCols, valueCols, outputColumns,
-        false, -1, partitionCols, sortOrder, nullOrder, numReducers, acidOp);
+    ReduceSinkDesc rsdesc = PlanUtils.getReduceSinkDesc(newSortCols, valueCols, outputColumns,
+        false, -1, partitionCols, newSortOrder.toString(), newNullOrder.toString(),
+        numReducers, acidOp);
     Operator interim = putOpInsertMap(OperatorFactory.getAndMakeChild(rsdesc,
         new RowSchema(rsRR.getColumnInfos()), input), rsRR);
 
@@ -7688,23 +7713,29 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<String> selOutputCols = new ArrayList<String>();
     Map<String, ExprNodeDesc> selColExprMap = new HashMap<String, ExprNodeDesc>();
 
+    Iterator<ExprNodeDesc> constants = constantCols.iterator();
     for (int i = 0; i < index.length; i++) {
       ColumnInfo prev = columnInfos.get(i);
       String[] nm = inputRR.reverseLookup(prev.getInternalName());
       String[] nm2 = inputRR.getAlternateMappings(prev.getInternalName());
       ColumnInfo info = new ColumnInfo(prev);
 
-      String field;
-      if (index[i] >= 0) {
-        field = Utilities.ReduceField.KEY + "." + keyColNames.get(index[i]);
+      ExprNodeDesc desc;
+      if (index[i] == Integer.MAX_VALUE) {
+        desc = constants.next();
       } else {
-        field = Utilities.ReduceField.VALUE + "." + valueColNames.get(-index[i] - 1);
+        String field;
+        if (index[i] >= 0) {
+          field = Utilities.ReduceField.KEY + "." + keyColNames.get(index[i]);
+        } else {
+          field = Utilities.ReduceField.VALUE + "." + valueColNames.get(-index[i] - 1);
+        }
+        desc = new ExprNodeColumnDesc(info.getType(),
+                field, info.getTabAlias(), info.getIsVirtualCol());
       }
-      String internalName = getColumnInternalName(i);
-      ExprNodeColumnDesc desc = new ExprNodeColumnDesc(info.getType(),
-          field, info.getTabAlias(), info.getIsVirtualCol());
       selCols.add(desc);
 
+      String internalName = getColumnInternalName(i);
       info.setInternalName(internalName);
       selectRR.put(nm[0], nm[1], info);
       if (nm2 != null) {
