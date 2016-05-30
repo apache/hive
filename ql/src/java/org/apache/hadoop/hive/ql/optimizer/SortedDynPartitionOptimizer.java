@@ -57,7 +57,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -193,8 +192,16 @@ public class SortedDynPartitionOptimizer extends Transform {
         sortPositions = Arrays.asList(0);
         sortOrder = Arrays.asList(1); // 1 means asc, could really use enum here in the thrift if
       } else {
-        sortPositions = getSortPositions(destTable.getSortCols(), destTable.getCols());
-        sortOrder = getSortOrders(destTable.getSortCols(), destTable.getCols());
+        if (!destTable.getSortCols().isEmpty()) {
+          // Sort columns specified by table
+          sortPositions = getSortPositions(destTable.getSortCols(), destTable.getCols());
+          sortOrder = getSortOrders(destTable.getSortCols(), destTable.getCols());
+        } else {
+          // Infer sort columns from operator tree
+          sortPositions = Lists.newArrayList();
+          sortOrder = Lists.newArrayList();
+          inferSortPositions(fsParent, sortPositions, sortOrder);
+        }
       }
       List<Integer> sortNullOrder = new ArrayList<Integer>();
       for (int order : sortOrder) {
@@ -378,6 +385,41 @@ public class SortedDynPartitionOptimizer extends Transform {
         }
       }
       return posns;
+    }
+
+    // Try to infer possible sort columns in the query
+    // i.e. the sequence must be pRS-SEL*-fsParent
+    // Returns true if columns could be inferred, false otherwise
+    private void inferSortPositions(Operator<? extends OperatorDesc> fsParent,
+            List<Integer> sortPositions, List<Integer> sortOrder) throws SemanticException {
+      // If it is not a SEL operator, we bail out
+      if (!(fsParent instanceof SelectOperator)) {
+        return;
+      }
+      SelectOperator pSel = (SelectOperator) fsParent;
+      Operator<? extends OperatorDesc> parent = pSel;
+      while (!(parent instanceof ReduceSinkOperator)) {
+        if (parent.getNumParent() != 1 ||
+                !(parent instanceof SelectOperator)) {
+          return;
+        }
+        parent = parent.getParentOperators().get(0);
+      }
+      // Backtrack SEL columns to pRS
+      List<ExprNodeDesc> selColsInPRS =
+              ExprNodeDescUtils.backtrack(pSel.getConf().getColList(), pSel, parent);
+      ReduceSinkOperator pRS = (ReduceSinkOperator) parent;
+      for (int i = 0; i < pRS.getConf().getKeyCols().size(); i++) {
+        ExprNodeDesc col = pRS.getConf().getKeyCols().get(i);
+        int pos = selColsInPRS.indexOf(col);
+        if (pos == -1) {
+          sortPositions.clear();
+          sortOrder.clear();
+          return;
+        }
+        sortPositions.add(pos);
+        sortOrder.add(pRS.getConf().getOrder().charAt(i) == '+' ? 1 : 0); // 1 asc, 0 desc
+      }
     }
 
     public ReduceSinkOperator getReduceSinkOp(List<Integer> partitionPositions,
