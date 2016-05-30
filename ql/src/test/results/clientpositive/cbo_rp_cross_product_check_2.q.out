@@ -80,10 +80,10 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: key, value, key0, value0
-                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 5000 Data size: 106120 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 5000 Data size: 106120 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -174,10 +174,10 @@ STAGE PLANS:
                       0 
                       1 
                     outputColumnNames: key, value, key0, value0, key1, value1
-                    Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5500 Data size: 116432 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 5500 Data size: 116432 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -314,10 +314,10 @@ STAGE PLANS:
                 0 
                 1 
               outputColumnNames: key, value, key0
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2500 Data size: 52560 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2500 Data size: 52560 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -380,21 +380,21 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: key
-                Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 100 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: key (type: string)
                   outputColumnNames: key
-                  Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 100 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: key (type: string)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 100 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 100 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:
@@ -402,7 +402,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: key
-          Statistics: Num rows: 5 Data size: 47 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 50 Data size: 730 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -441,10 +441,10 @@ STAGE PLANS:
                 0 
                 1 
               outputColumnNames: key, value, key0
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 25000 Data size: 655600 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 25000 Data size: 655600 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -543,10 +543,10 @@ STAGE PLANS:
                 0 
                 1 
               outputColumnNames: key, key0
-              Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1250 Data size: 26280 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1250 Data size: 26280 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -579,10 +579,10 @@ STAGE PLANS:
                 0 
                 1 
               outputColumnNames: key, key0
-              Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1250 Data size: 26280 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1250 Data size: 26280 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -611,10 +611,10 @@ STAGE PLANS:
             0 
             1 
           outputColumnNames: key, key0
-          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1250 Data size: 26280 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1250 Data size: 26280 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

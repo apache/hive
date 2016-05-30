@@ -50,10 +50,10 @@ STAGE PLANS:
             1 
             2 
           outputColumnNames: _col0
-          Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 125000000 Data size: 2453000000 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 125000000 Data size: 2453000000 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -322,10 +322,10 @@ STAGE PLANS:
             0 
             1 
           outputColumnNames: _col0
-          Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 137500 Data size: 3059050 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 137500 Data size: 3059050 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -389,10 +389,10 @@ STAGE PLANS:
             1 
             2 
           outputColumnNames: _col0
-          Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 125000000 Data size: 2453000000 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 125000000 Data size: 2453000000 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
