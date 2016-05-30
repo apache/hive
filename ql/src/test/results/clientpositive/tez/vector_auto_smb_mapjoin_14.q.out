@@ -64,7 +64,7 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 vectorized
-      File Output Operator [FS_14]
+      File Output Operator [FS_22]
         Group By Operator [GBY_21] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
         <-Map 1 [SIMPLE_EDGE]
@@ -134,11 +134,11 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 3 vectorized
-      File Output Operator [FS_19]
-        Group By Operator [GBY_29] (rows=1 width=8)
+      File Output Operator [FS_31]
+        Group By Operator [GBY_30] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
         <-Reducer 2 [SIMPLE_EDGE] vectorized
-          SHUFFLE [RS_16]
+          SHUFFLE [RS_29]
             Group By Operator [GBY_28] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
               Select Operator [SEL_27] (rows=5 width=93)
@@ -365,7 +365,7 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 vectorized
-      File Output Operator [FS_14]
+      File Output Operator [FS_22]
         Group By Operator [GBY_21] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
         <-Map 1 [SIMPLE_EDGE]
@@ -444,7 +444,7 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 vectorized
-      File Output Operator [FS_14]
+      File Output Operator [FS_22]
         Group By Operator [GBY_21] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
         <-Map 1 [SIMPLE_EDGE]
@@ -547,7 +547,7 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 vectorized
-      File Output Operator [FS_14]
+      File Output Operator [FS_22]
         Group By Operator [GBY_21] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
         <-Map 1 [SIMPLE_EDGE]
@@ -640,7 +640,7 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 vectorized
-      File Output Operator [FS_14]
+      File Output Operator [FS_22]
         Group By Operator [GBY_21] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
         <-Map 1 [SIMPLE_EDGE]
@@ -710,7 +710,7 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 3 vectorized
-      File Output Operator [FS_14]
+      File Output Operator [FS_29]
         Group By Operator [GBY_28] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
         <-Reducer 2 [SIMPLE_EDGE]
@@ -781,7 +781,7 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 vectorized
-      File Output Operator [FS_14]
+      File Output Operator [FS_22]
         Group By Operator [GBY_21] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
         <-Map 1 [SIMPLE_EDGE]
@@ -852,7 +852,7 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 vectorized
-      File Output Operator [FS_18]
+      File Output Operator [FS_32]
         Group By Operator [GBY_31] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
         <-Map 1 [SIMPLE_EDGE]
@@ -945,7 +945,7 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 vectorized
-      File Output Operator [FS_14]
+      File Output Operator [FS_22]
         Group By Operator [GBY_21] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
         <-Map 1 [SIMPLE_EDGE]

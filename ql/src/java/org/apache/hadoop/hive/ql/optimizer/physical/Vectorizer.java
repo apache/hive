@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Pattern;
 
+import org.apache.calcite.util.Pair;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,6 +97,8 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc.ProcessingMode;
+import org.apache.hadoop.hive.ql.plan.VectorPartitionConversion;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
@@ -1540,76 +1543,131 @@ public class Vectorizer implements PhysicalPlanResolver {
       LOG.info("Pruning grouping set id not supported in vector mode");
       return false;
     }
+    if (desc.getMode() != GroupByDesc.Mode.HASH && desc.isDistinct()) {
+      LOG.info("DISTINCT not supported in vector mode");
+      return false;
+    }
     boolean ret = validateExprNodeDesc(desc.getKeys());
     if (!ret) {
-      LOG.info("Cannot vectorize groupby key expression");
+      LOG.info("Cannot vectorize groupby key expression " + desc.getKeys().toString());
       return false;
     }
 
-    if (!isReduce) {
+    /**
+     *
+     * GROUP BY DEFINITIONS:
+     *
+     * GroupByDesc.Mode enumeration:
+     *
+     *    The different modes of a GROUP BY operator.
+     *
+     *    These descriptions are hopefully less cryptic than the comments for GroupByDesc.Mode.
+     *
+     *        COMPLETE       Aggregates original rows into full aggregation row(s).
+     *
+     *                       If the key length is 0, this is also called Global aggregation and
+     *                       1 output row is produced.
+     *
+     *                       When the key length is > 0, the original rows come in ALREADY GROUPED.
+     *
+     *                       An example for key length > 0 is a GROUP BY being applied to the
+     *                       ALREADY GROUPED rows coming from an upstream JOIN operator.  Or,
+     *                       ALREADY GROUPED rows coming from upstream MERGEPARTIAL GROUP BY
+     *                       operator.
+     *
+     *        PARTIAL1       The first of 2 (or more) phases that aggregates ALREADY GROUPED
+     *                       original rows into partial aggregations.
+     *
+     *                       Subsequent phases PARTIAL2 (optional) and MERGEPARTIAL will merge
+     *                       the partial aggregations and output full aggregations.
+     *
+     *        PARTIAL2       Accept ALREADY GROUPED partial aggregations and merge them into another
+     *                       partial aggregation.  Output the merged partial aggregations.
+     *
+     *                       (Haven't seen this one used)
+     *
+     *        PARTIALS       (Behaves for non-distinct the same as PARTIAL2; and behaves for
+     *                       distinct the same as PARTIAL1.)
+     *
+     *        FINAL          Accept ALREADY GROUPED original rows and aggregate them into
+     *                       full aggregations.
+     *
+     *                       Example is a GROUP BY being applied to rows from a sorted table, where
+     *                       the group key is the table sort key (or a prefix).
+     *
+     *        HASH           Accept UNORDERED original rows and aggregate them into a memory table.
+     *                       Output the partial aggregations on closeOp (or low memory).
+     *
+     *                       Similar to PARTIAL1 except original rows are UNORDERED.
+     *
+     *                       Commonly used in both Mapper and Reducer nodes.  Always followed by
+     *                       a Reducer with MERGEPARTIAL GROUP BY.
+     *
+     *        MERGEPARTIAL   Always first operator of a Reducer.  Data is grouped by reduce-shuffle.
+     *
+     *                       (Behaves for non-distinct aggregations the same as FINAL; and behaves
+     *                       for distinct aggregations the same as COMPLETE.)
+     *
+     *                       The output is full aggregation(s).
+     *
+     *                       Used in Reducers after a stage with a HASH GROUP BY operator.
+     *
+     *
+     *  VectorGroupByDesc.ProcessingMode for VectorGroupByOperator:
+     *
+     *     GLOBAL         No key.  All rows --> 1 full aggregation on end of input
+     *
+     *     HASH           Rows aggregated in to hash table on group key -->
+     *                        1 partial aggregation per key (normally, unless there is spilling)
+     *
+     *     MERGE_PARTIAL  As first operator in a REDUCER, partial aggregations come grouped from
+     *                    reduce-shuffle -->
+     *                        aggregate the partial aggregations and emit full aggregation on
+     *                        endGroup / closeOp
+     *
+     *     STREAMING      Rows come from PARENT operator ALREADY GROUPED -->
+     *                        aggregate the rows and emit full aggregation on key change / closeOp
+     *
+     *     NOTE: Hash can spill partial result rows prematurely if it runs low on memory.
+     *     NOTE: Streaming has to compare keys where MergePartial gets an endGroup call.
+     *
+     *
+     *  DECIDER: Which VectorGroupByDesc.ProcessingMode for VectorGroupByOperator?
+     *
+     *     Decides using GroupByDesc.Mode and whether there are keys with the
+     *     VectorGroupByDesc.groupByDescModeToVectorProcessingMode method.
+     *
+     *         Mode.COMPLETE      --> (numKeys == 0 ? ProcessingMode.GLOBAL : ProcessingMode.STREAMING)
+     *
+     *         Mode.HASH          --> ProcessingMode.HASH
+     *
+     *         Mode.MERGEPARTIAL  --> (numKeys == 0 ? ProcessingMode.GLOBAL : ProcessingMode.MERGE_PARTIAL)
+     *
+     *         Mode.PARTIAL1,
+     *         Mode.PARTIAL2,
+     *         Mode.PARTIALS,
+     *         Mode.FINAL        --> ProcessingMode.STREAMING
+     *
+     */
+    boolean hasKeys = (desc.getKeys().size() > 0);
 
-      // MapWork
+    ProcessingMode processingMode =
+        VectorGroupByDesc.groupByDescModeToVectorProcessingMode(desc.getMode(), hasKeys);
 
-      ret = validateHashAggregationDesc(desc.getAggregators());
-      if (!ret) {
-        return false;
-      }
-    } else {
-
-      // ReduceWork
-
-      boolean isComplete = desc.getMode() == GroupByDesc.Mode.COMPLETE;
-      if (desc.getMode() != GroupByDesc.Mode.HASH) {
-
-        // Reduce Merge-Partial GROUP BY.
-
-        // A merge-partial GROUP BY is fed by grouping by keys from reduce-shuffle.  It is the
-        // first (or root) operator for its reduce task.
-        // TODO: Technically, we should also handle FINAL, PARTIAL1, PARTIAL2 and PARTIALS
-        //       that are not hash or complete, but aren't merge-partial, somehow.
-
-        if (desc.isDistinct()) {
-          LOG.info("Vectorized Reduce MergePartial GROUP BY does not support DISTINCT");
-          return false;
-        }
-
-        boolean hasKeys = (desc.getKeys().size() > 0);
-
-        // Do we support merge-partial aggregation AND the output is primitive?
-        ret = validateReduceMergePartialAggregationDesc(desc.getAggregators(), hasKeys);
-        if (!ret) {
-          return false;
-        }
-
-        if (hasKeys) {
-          if (op.getParentOperators().size() > 0 && !isComplete) {
-            LOG.info("Vectorized Reduce MergePartial GROUP BY keys can only handle a key group when it is fed by reduce-shuffle");
-            return false;
-          }
-
-          LOG.info("Vectorized Reduce MergePartial GROUP BY will process key groups");
-
-          // Primitive output validation above means we can output VectorizedRowBatch to the
-          // children operators.
-          vectorDesc.setVectorOutput(true);
-        } else {
-          LOG.info("Vectorized Reduce MergePartial GROUP BY will do global aggregation");
-        }
-        if (!isComplete) {
-          vectorDesc.setIsReduceMergePartial(true);
-        } else {
-          vectorDesc.setIsReduceStreaming(true);
-        }
-      } else {
-
-        // Reduce Hash GROUP BY or global aggregation.
-
-        ret = validateHashAggregationDesc(desc.getAggregators());
-        if (!ret) {
-          return false;
-        }
-      }
+    Pair<Boolean,Boolean> retPair =
+        validateAggregationDescs(desc.getAggregators(), processingMode, hasKeys);
+    if (!retPair.left) {
+      return false;
     }
+
+    // If all the aggregation outputs are primitive, we can output VectorizedRowBatch.
+    // Otherwise, we the rest of the operator tree will be row mode.
+    vectorDesc.setVectorOutput(retPair.right);
+
+    vectorDesc.setProcessingMode(processingMode);
+
+    LOG.info("Vector GROUP BY operator will use processing mode " + processingMode.name() +
+        ", isVectorOutput " + vectorDesc.isVectorOutput());
 
     return true;
   }
@@ -1633,23 +1691,19 @@ public class Vectorizer implements PhysicalPlanResolver {
     return true;
   }
 
-
-  private boolean validateHashAggregationDesc(List<AggregationDesc> descs) {
-    return validateAggregationDesc(descs, /* isReduceMergePartial */ false, false);
-  }
-
-  private boolean validateReduceMergePartialAggregationDesc(List<AggregationDesc> descs, boolean hasKeys) {
-    return validateAggregationDesc(descs, /* isReduceMergePartial */ true, hasKeys);
-  }
-
-  private boolean validateAggregationDesc(List<AggregationDesc> descs, boolean isReduceMergePartial, boolean hasKeys) {
+  private Pair<Boolean,Boolean> validateAggregationDescs(List<AggregationDesc> descs,
+      ProcessingMode processingMode, boolean hasKeys) {
+    boolean outputIsPrimitive = true;
     for (AggregationDesc d : descs) {
-      boolean ret = validateAggregationDesc(d, isReduceMergePartial, hasKeys);
-      if (!ret) {
-        return false;
+      Pair<Boolean,Boolean>  retPair = validateAggregationDesc(d, processingMode, hasKeys);
+      if (!retPair.left) {
+        return retPair;
+      }
+      if (!retPair.right) {
+        outputIsPrimitive = false;
       }
     }
-    return true;
+    return new Pair<Boolean, Boolean>(true, outputIsPrimitive);
   }
 
   private boolean validateExprNodeDescRecursive(ExprNodeDesc desc, VectorExpressionDescriptor.Mode mode) {
@@ -1787,38 +1841,45 @@ public class Vectorizer implements PhysicalPlanResolver {
     return (outputObjInspector.getCategory() == ObjectInspector.Category.PRIMITIVE);
   }
 
-  private boolean validateAggregationDesc(AggregationDesc aggDesc, boolean isReduceMergePartial,
-          boolean hasKeys) {
+  private Pair<Boolean,Boolean> validateAggregationDesc(AggregationDesc aggDesc, ProcessingMode processingMode,
+      boolean hasKeys) {
 
     String udfName = aggDesc.getGenericUDAFName().toLowerCase();
     if (!supportedAggregationUdfs.contains(udfName)) {
       LOG.info("Cannot vectorize groupby aggregate expression: UDF " + udfName + " not supported");
-      return false;
+      return new Pair<Boolean,Boolean>(false, false);
     }
     if (aggDesc.getParameters() != null && !validateExprNodeDesc(aggDesc.getParameters())) {
       LOG.info("Cannot vectorize groupby aggregate expression: UDF parameters not supported");
-      return false;
+      return new Pair<Boolean,Boolean>(false, false);
     }
 
     // See if we can vectorize the aggregation.
     VectorizationContext vc = new ValidatorVectorizationContext();
     VectorAggregateExpression vectorAggrExpr;
     try {
-        vectorAggrExpr = vc.getAggregatorExpression(aggDesc, isReduceMergePartial);
+        vectorAggrExpr = vc.getAggregatorExpression(aggDesc);
     } catch (Exception e) {
       // We should have already attempted to vectorize in validateAggregationDesc.
       if (LOG.isDebugEnabled()) {
         LOG.debug("Vectorization of aggreation should have succeeded ", e);
       }
-      return false;
+      return new Pair<Boolean,Boolean>(false, false);
+    }
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Aggregation " + aggDesc.getExprString() + " --> " +
+          " vector expression " + vectorAggrExpr.toString());
     }
 
-    if (isReduceMergePartial && hasKeys && !validateAggregationIsPrimitive(vectorAggrExpr)) {
+    boolean outputIsPrimitive = validateAggregationIsPrimitive(vectorAggrExpr);
+    if (processingMode == ProcessingMode.MERGE_PARTIAL &&
+        hasKeys &&
+        !outputIsPrimitive) {
       LOG.info("Vectorized Reduce MergePartial GROUP BY keys can only handle aggregate outputs that are primitive types");
-      return false;
+      return new Pair<Boolean,Boolean>(false, false);
     }
 
-    return true;
+    return new Pair<Boolean,Boolean>(true, outputIsPrimitive);
   }
 
   private boolean validateDataType(String type, VectorExpressionDescriptor.Mode mode) {

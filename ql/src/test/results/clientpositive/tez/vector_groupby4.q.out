@@ -1,0 +1,137 @@
+PREHOOK: query: CREATE TABLE srcorc STORED AS ORC AS SELECT * FROM src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcorc
+POSTHOOK: query: CREATE TABLE srcorc STORED AS ORC AS SELECT * FROM src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcorc
+POSTHOOK: Lineage: srcorc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcorc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE dest1(c1 STRING) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+CREATE TABLE dest1(c1 STRING) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest1
+PREHOOK: query: EXPLAIN
+FROM srcorc
+INSERT OVERWRITE TABLE dest1 SELECT substr(srcorc.key,1,1) GROUP BY substr(srcorc.key,1,1)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM srcorc
+INSERT OVERWRITE TABLE dest1 SELECT substr(srcorc.key,1,1) GROUP BY substr(srcorc.key,1,1)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcorc
+                  Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: substr(key, 1, 1) (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: rand() (type: double)
+                      Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: partial1
+                outputColumnNames: _col0
+                Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: final
+                outputColumnNames: _col0
+                Statistics: Num rows: 250 Data size: 44000 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 250 Data size: 44000 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.dest1
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.dest1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+PREHOOK: query: FROM srcorc
+INSERT OVERWRITE TABLE dest1 SELECT substr(srcorc.key,1,1) GROUP BY substr(srcorc.key,1,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcorc
+PREHOOK: Output: default@dest1
+POSTHOOK: query: FROM srcorc
+INSERT OVERWRITE TABLE dest1 SELECT substr(srcorc.key,1,1) GROUP BY substr(srcorc.key,1,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcorc
+POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.c1 EXPRESSION [(srcorc)srcorc.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+#### A masked pattern was here ####
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9

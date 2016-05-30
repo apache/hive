@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc.ProcessingMode;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -51,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 
 /**
  * Vectorized GROUP BY operator implementation. Consumes the vectorized input and
@@ -542,18 +544,17 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
         if (numEntriesHashTable > sumBatchSize * minReductionHashAggr) {
           flush(true);
 
-          changeToUnsortedStreamingMode();
+          changeToStreamingMode();
         }
       }
     }
   }
 
   /**
-   * Unsorted streaming processing mode. Each input VectorizedRowBatch may have
-   * a mix of different keys (hence unsorted).  Intermediate values are flushed
-   * each time key changes.
+   * Streaming processing mode on ALREADY GROUPED data. Each input VectorizedRowBatch may
+   * have a mix of different keys.  Intermediate values are flushed each time key changes.
    */
-  private class ProcessingModeUnsortedStreaming extends ProcessingModeBase {
+  private class ProcessingModeStreaming extends ProcessingModeBase {
 
     /**
      * The aggregation buffers used in streaming mode
@@ -675,7 +676,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
    *      writeGroupRow does this and finally increments outputBatch.size.
    *
    */
-  private class ProcessingModeReduceMergePartialKeys extends ProcessingModeBase {
+  private class ProcessingModeReduceMergePartial extends ProcessingModeBase {
 
     private boolean inGroup;
     private boolean first;
@@ -761,8 +762,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
     aggregators = new VectorAggregateExpression[aggrDesc.size()];
     for (int i = 0; i < aggrDesc.size(); ++i) {
       AggregationDesc aggDesc = aggrDesc.get(i);
-      aggregators[i] =
-          vContext.getAggregatorExpression(aggDesc, desc.getVectorDesc().isReduceMergePartial());
+      aggregators[i] = vContext.getAggregatorExpression(aggDesc);
     }
 
     isVectorOutput = desc.getVectorDesc().isVectorOutput();
@@ -810,12 +810,10 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
         objectInspectors.add(aggregators[i].getOutputObjectInspector());
       }
 
-      if (outputKeyLength > 0 && !conf.getVectorDesc().isReduceMergePartial()) {
-        // These data structures are only used by the non Reduce Merge-Partial Keys processing modes.
-        keyWrappersBatch = VectorHashKeyWrapperBatch.compileKeyWrapperBatch(keyExpressions);
-        aggregationBatchInfo = new VectorAggregationBufferBatch();
-        aggregationBatchInfo.compileAggregationBatchInfo(aggregators);
-      }
+      keyWrappersBatch = VectorHashKeyWrapperBatch.compileKeyWrapperBatch(keyExpressions);
+      aggregationBatchInfo = new VectorAggregationBufferBatch();
+      aggregationBatchInfo.compileAggregationBatchInfo(aggregators);
+
       LOG.info("VectorGroupByOperator is vector output {}", isVectorOutput);
       outputObjInspector = ObjectInspectorFactory.getStandardStructObjectInspector(
           outputFieldNames, objectInspectors);
@@ -835,29 +833,35 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
 
     forwardCache = new Object[outputKeyLength + aggregators.length];
 
-    if (outputKeyLength == 0) {
-      // Hash and MergePartial global aggregation are both handled here.
+    switch (conf.getVectorDesc().getProcessingMode()) {
+    case GLOBAL:
+      Preconditions.checkState(outputKeyLength == 0);
       processingMode = this.new ProcessingModeGlobalAggregate();
-    } else if (conf.getVectorDesc().isReduceMergePartial()) {
-      // Sorted GroupBy of vector batches where an individual batch has the same group key (e.g. reduce).
-      processingMode = this.new ProcessingModeReduceMergePartialKeys();
-    } else if (conf.getVectorDesc().isReduceStreaming()) {
-      processingMode = this.new ProcessingModeUnsortedStreaming();
-    } else {
-      // We start in hash mode and may dynamically switch to unsorted stream mode.
+      break;
+    case HASH:
       processingMode = this.new ProcessingModeHashAggregate();
+      break;
+    case MERGE_PARTIAL:
+      processingMode = this.new ProcessingModeReduceMergePartial();
+      break;
+    case STREAMING:
+      processingMode = this.new ProcessingModeStreaming();
+      break;
+    default:
+      throw new RuntimeException("Unsupported vector GROUP BY processing mode " +
+          conf.getVectorDesc().getProcessingMode().name());
     }
     processingMode.initialize(hconf);
   }
 
   /**
-   * changes the processing mode to unsorted streaming
+   * changes the processing mode to streaming
    * This is done at the request of the hash agg mode, if the number of keys
    * exceeds the minReductionHashAggr factor
    * @throws HiveException
    */
-  private void changeToUnsortedStreamingMode() throws HiveException {
-    processingMode = this.new ProcessingModeUnsortedStreaming();
+  private void changeToStreamingMode() throws HiveException {
+    processingMode = this.new ProcessingModeStreaming();
     processingMode.initialize(null);
     LOG.trace("switched to streaming mode");
   }
