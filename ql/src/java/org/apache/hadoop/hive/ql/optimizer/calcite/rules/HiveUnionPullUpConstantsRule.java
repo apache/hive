@@ -131,7 +131,9 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
       relBuilder.project(Pair.left(newChildExprs), Pair.right(newChildExprs));
     }
     relBuilder.union(union.all, union.getInputs().size());
+    // Create top Project fixing nullability of fields
     relBuilder.project(topChildExprs, topChildExprsFields);
+    relBuilder.convert(union.getRowType(), false);
 
     call.transformTo(relBuilder.build());
   }

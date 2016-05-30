@@ -154,7 +154,9 @@ public class HiveSortLimitPullUpConstantsRule extends RelOptRule {
             relBuilder.fields(RelCollations.of(fieldCollations));
     relBuilder.sortLimit(sort.offset == null ? -1 : RexLiteral.intValue(sort.offset),
             sort.fetch == null ? -1 : RexLiteral.intValue(sort.fetch), sortFields);
+    // Create top Project fixing nullability of fields
     relBuilder.project(topChildExprs, topChildExprsFields);
+    relBuilder.convert(sort.getRowType(), false);
 
     call.transformTo(parent.copy(parent.getTraitSet(), ImmutableList.of(relBuilder.build())));
   }
