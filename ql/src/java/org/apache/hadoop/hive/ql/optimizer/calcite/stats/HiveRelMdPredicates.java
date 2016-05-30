@@ -18,13 +18,17 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Project;
+import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdPredicates;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
@@ -35,6 +39,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexPermuteInputsShuttle;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.ImmutableBitSet;
@@ -124,6 +129,51 @@ public class HiveRelMdPredicates extends RelMdPredicates {
       }
     }
     return RelOptPredicateList.of(projectPullUpPredicates);
+  }
+
+  /**
+   * Infers predicates for a Union.
+   */
+  @Override
+  public RelOptPredicateList getPredicates(Union union, RelMetadataQuery mq) {
+    RexBuilder rB = union.getCluster().getRexBuilder();
+
+    Map<String, RexNode> finalPreds = new LinkedHashMap<>();
+    Map<String, RexNode> finalResidualPreds = new LinkedHashMap<>();
+    for (int i = 0; i < union.getInputs().size(); i++) {
+      RelNode input = union.getInputs().get(i);
+      RelOptPredicateList info = mq.getPulledUpPredicates(input);
+      if (info.pulledUpPredicates.isEmpty()) {
+        return RelOptPredicateList.EMPTY;
+      }
+      Map<String, RexNode> preds = new LinkedHashMap<>();
+      for (RexNode pred : info.pulledUpPredicates) {
+        final String predString = pred.toString();
+        if (i == 0) {
+          preds.put(predString, pred);
+          continue;
+        }
+        if (finalPreds.containsKey(predString)) {
+          preds.put(predString, pred);
+        } else {
+          finalResidualPreds.put(predString, pred);
+        }
+      }
+      // Add those that are not part of the final set to residual
+      for (Entry<String, RexNode> e : finalPreds.entrySet()) {
+        if (!preds.containsKey(e.getKey())) {
+          finalResidualPreds.put(e.getKey(), e.getValue());
+        }
+      }
+      finalPreds = preds;
+    }
+
+    List<RexNode> preds = new ArrayList<>(finalPreds.values());
+    RexNode disjPred = RexUtil.composeDisjunction(rB, finalResidualPreds.values(), true);
+    if (disjPred != null) {
+      preds.add(disjPred);
+    }
+    return RelOptPredicateList.of(preds);
   }
 
 }

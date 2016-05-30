@@ -26,6 +26,7 @@ import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -34,6 +35,7 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
+import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
@@ -96,10 +98,11 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
     }
 
     // Create expressions for Project operators before and after the Union
-    List<Pair<RexNode, String>> newChildExprs = new ArrayList<>();
     List<RelDataTypeField> fields = union.getRowType().getFieldList();
     List<RexNode> topChildExprs = new ArrayList<>();
     List<String> topChildExprsFields = new ArrayList<>();
+    List<RexNode> refs = new ArrayList<>();
+    ImmutableBitSet.Builder refsIndexBuilder = ImmutableBitSet.builder();
     for (int i = 0; i < count ; i++) {
       RexNode expr = rexBuilder.makeInputRef(union, i);
       RelDataTypeField field = fields.get(i);
@@ -107,27 +110,37 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
         topChildExprs.add(constants.get(expr));
         topChildExprsFields.add(field.getName());
       } else {
-        newChildExprs.add(Pair.<RexNode,String>of(expr, field.getName()));
         topChildExprs.add(expr);
         topChildExprsFields.add(field.getName());
+        refs.add(expr);
+        refsIndexBuilder.set(i);
       }
     }
-
-    if (newChildExprs.isEmpty()) {
-      // At least a single item in project is required.
-      newChildExprs.add(Pair.<RexNode,String>of(
-              topChildExprs.get(0), topChildExprsFields.get(0)));
-    }
+    ImmutableBitSet refsIndex = refsIndexBuilder.build();
 
     // Update top Project positions
     final Mappings.TargetMapping mapping =
-            RelOptUtil.permutation(Pair.left(newChildExprs), union.getInput(0).getRowType()).inverse();
+            RelOptUtil.permutation(refs, union.getInput(0).getRowType()).inverse();
     topChildExprs = ImmutableList.copyOf(RexUtil.apply(mapping, topChildExprs));
 
     // Create new Project-Union-Project sequences
     final RelBuilder relBuilder = call.builder();
     for (int i = 0; i < union.getInputs().size() ; i++) {
-      relBuilder.push(union.getInput(i));
+      RelNode input = union.getInput(i);
+      List<Pair<RexNode, String>> newChildExprs = new ArrayList<>();
+      for (int j = 0; j < refsIndex.cardinality(); j++ ) {
+        int pos = refsIndex.nth(j);
+        newChildExprs.add(
+                Pair.<RexNode, String>of(rexBuilder.makeInputRef(input, pos),
+                        input.getRowType().getFieldList().get(pos).getName()));
+      }
+      if (newChildExprs.isEmpty()) {
+        // At least a single item in project is required.
+        newChildExprs.add(Pair.<RexNode,String>of(
+                topChildExprs.get(0), topChildExprsFields.get(0)));
+      }
+      // Add the input with project on top
+      relBuilder.push(input);
       relBuilder.project(Pair.left(newChildExprs), Pair.right(newChildExprs));
     }
     relBuilder.union(union.all, union.getInputs().size());
