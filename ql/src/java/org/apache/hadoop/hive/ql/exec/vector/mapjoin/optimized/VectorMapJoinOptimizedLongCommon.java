@@ -161,7 +161,7 @@ public class VectorMapJoinOptimizedLongCommon {
     min = Long.MAX_VALUE;
     max = Long.MIN_VALUE;
     this.hashTableKeyType = hashTableKeyType;
-    // PrimitiveTypeInfo[] primitiveTypeInfos = { TypeInfoFactory.longTypeInfo };
+    // PrimitiveTypeInfo[] primitiveTypeInfos = { hashTableKeyType.getPrimitiveTypeInfo() };
     // keyBinarySortableDeserializeRead = new BinarySortableDeserializeRead(primitiveTypeInfos);
     keyBinarySortableSerializeWrite = new BinarySortableSerializeWrite(1);
     output = new Output();
