@@ -60,14 +60,6 @@ public class DecimalColumnVector extends ColumnVector {
     }
   }
 
-  // Fill the column vector with nulls
-  public void fillWithNulls() {
-    noNulls = false;
-    isRepeating = true;
-    vector[0] = null;
-    isNull[0] = true;
-  }
-
   @Override
   public void flatten(boolean selectedInUse, int[] sel, int size) {
     // TODO Auto-generated method stub
@@ -140,17 +132,19 @@ public class DecimalColumnVector extends ColumnVector {
 
   @Override
   public void ensureSize(int size, boolean preserveData) {
-    if (size > vector.length) {
-      super.ensureSize(size, preserveData);
-      HiveDecimalWritable[] oldArray = vector;
-      vector = new HiveDecimalWritable[size];
-      if (preserveData) {
-        // we copy all of the values to avoid creating more objects
-        System.arraycopy(oldArray, 0, vector, 0 , oldArray.length);
-        for(int i= oldArray.length; i < vector.length; ++i) {
-          vector[i] = new HiveDecimalWritable(HiveDecimal.ZERO);
-        }
-      }
+    super.ensureSize(size, preserveData);
+    if (size <= vector.length) return; // We assume the existing vector is always valid.
+    HiveDecimalWritable[] oldArray = vector;
+    vector = new HiveDecimalWritable[size];
+    int initPos = 0;
+    if (preserveData) {
+      // we copy all of the values to avoid creating more objects
+      // TODO: it might be cheaper to always preserve data or reset existing objects
+      initPos = oldArray.length;
+      System.arraycopy(oldArray, 0, vector, 0 , oldArray.length);
+    }
+    for (int i = initPos; i < vector.length; ++i) {
+      vector[i] = new HiveDecimalWritable(HiveDecimal.ZERO);
     }
   }
 }
