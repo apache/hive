@@ -91,7 +91,9 @@ import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.TaskLocationHint;
 import org.apache.tez.dag.api.TaskSpecBuilder;
+import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.Vertex;
+import org.apache.tez.mapreduce.grouper.TezSplitGrouper;
 import org.apache.tez.runtime.api.Event;
 import org.apache.tez.runtime.api.events.InputConfigureVertexTasksEvent;
 import org.apache.tez.runtime.api.impl.EventMetaData;
@@ -205,6 +207,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE, "llap");
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS, true);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS, true);
+    conf.setBoolean(TezSplitGrouper.TEZ_GROUPING_NODE_LOCAL_ONLY, true);
     // Tez/LLAP requires RPC query plan
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_RPC_QUERY_PLAN, true);
 
