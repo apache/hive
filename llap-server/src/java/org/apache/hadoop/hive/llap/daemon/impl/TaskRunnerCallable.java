@@ -124,7 +124,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
                      ConfParams confParams, LlapDaemonExecutorMetrics metrics,
                      KilledTaskHandler killedTaskHandler,
                      FragmentCompletionHandler fragmentCompleteHandler,
-                     HadoopShim tezHadoopShim, TezTaskAttemptID attemptId) {
+                     HadoopShim tezHadoopShim, TezTaskAttemptID attemptId,
+                     SignableVertexSpec vertex) {
     this.request = request;
     this.fragmentInfo = fragmentInfo;
     this.conf = conf;
@@ -135,8 +136,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     this.memoryAvailable = memoryAvailable;
     this.confParams = confParams;
     this.jobToken = TokenCache.getSessionToken(credentials);
-    // TODO: support binary spec here or above
-    this.vertex = request.getWorkSpec().getVertex();
+    this.vertex = vertex;
     this.taskSpec = Converters.getTaskSpecfromProto(
         vertex, request.getFragmentNumber(), request.getAttemptNumber(), attemptId);
     this.amReporter = amReporter;
@@ -389,7 +389,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   }
 
   public TaskRunnerCallback getCallback() {
-    return new TaskRunnerCallback(request, this);
+    return new TaskRunnerCallback(request, vertex, this);
   }
 
   public SubmitWorkRequestProto getRequest() {
@@ -399,11 +399,13 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   final class TaskRunnerCallback implements FutureCallback<TaskRunner2Result> {
 
     private final SubmitWorkRequestProto request;
+    private final SignableVertexSpec vertex;
     private final TaskRunnerCallable taskRunnerCallable;
 
-    TaskRunnerCallback(SubmitWorkRequestProto request,
+    TaskRunnerCallback(SubmitWorkRequestProto request, SignableVertexSpec vertex,
         TaskRunnerCallable taskRunnerCallable) {
       this.request = request;
+      this.vertex = vertex;
       this.taskRunnerCallable = taskRunnerCallable;
     }
 
@@ -463,7 +465,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
 
     @Override
     public void onFailure(Throwable t) {
-      LOG.error("TezTaskRunner execution failed for : " + getTaskIdentifierString(request), t);
+      LOG.error("TezTaskRunner execution failed for : "
+          + getTaskIdentifierString(request, vertex), t);
       isCompleted.set(true);
       fragmentCompletionHanler.fragmentComplete(fragmentInfo);
       // TODO HIVE-10236 Report a fatal error over the umbilical
@@ -494,10 +497,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   }
 
   public static String getTaskIdentifierString(
-      SubmitWorkRequestProto request) {
+      SubmitWorkRequestProto request, SignableVertexSpec vertex) {
     StringBuilder sb = new StringBuilder();
-    // TODO: also support the binary version
-    SignableVertexSpec vertex = request.getWorkSpec().getVertex();
     sb.append("AppId=").append(vertex.getVertexIdentifier().getApplicationIdString())
         .append(", containerId=").append(request.getContainerIdString())
         .append(", Dag=").append(vertex.getDagName())

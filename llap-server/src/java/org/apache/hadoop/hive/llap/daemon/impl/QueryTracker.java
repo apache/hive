@@ -20,7 +20,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
@@ -31,6 +30,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.daemon.impl.LlapTokenChecker.LlapTokenInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateProto;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
@@ -119,7 +119,7 @@ public class QueryTracker extends AbstractService {
   QueryFragmentInfo registerFragment(QueryIdentifier queryIdentifier, String appIdString,
       String dagName, int dagIdentifier, String vertexName, int fragmentNumber, int attemptNumber,
       String user, SignableVertexSpec vertex, Token<JobTokenIdentifier> appToken,
-      String fragmentIdString) throws IOException {
+      String fragmentIdString, LlapTokenInfo tokenInfo) throws IOException {
     ReadWriteLock dagLock = getDagLock(queryIdentifier);
     dagLock.readLock().lock();
     try {
@@ -132,16 +132,18 @@ public class QueryTracker extends AbstractService {
       }
       // TODO: for now, we get the secure username out of UGI... after signing, we can take it
       //       out of the request provided that it's signed.
-      Pair<String, String> tokenInfo = LlapTokenChecker.getTokenInfo(clusterId);
+      if (tokenInfo == null) {
+        tokenInfo = LlapTokenChecker.getTokenInfo(clusterId);
+      }
       boolean isExistingQueryInfo = true;
       QueryInfo queryInfo = queryInfoMap.get(queryIdentifier);
       if (queryInfo == null) {
-        String tokenUser = tokenInfo.getLeft(), tokenAppId = tokenInfo.getRight();
         if (UserGroupInformation.isSecurityEnabled()) {
-          Preconditions.checkNotNull(tokenUser);
+          Preconditions.checkNotNull(tokenInfo.userName);
         }
         queryInfo = new QueryInfo(queryIdentifier, appIdString, dagName, dagIdentifier, user,
-           getSourceCompletionMap(queryIdentifier), localDirsBase, localFs, tokenUser, tokenAppId);
+            getSourceCompletionMap(queryIdentifier), localDirsBase, localFs,
+            tokenInfo.userName, tokenInfo.appId);
         QueryInfo old = queryInfoMap.putIfAbsent(queryIdentifier, queryInfo);
         if (old != null) {
           queryInfo = old;

@@ -628,9 +628,9 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
         String state = reason == null ? "FAILED" : reason.name();
         boolean removed = preemptionQueue.remove(taskWrapper);
         if (removed && isInfoEnabled) {
-          LOG.info(TaskRunnerCallable
-              .getTaskIdentifierString(taskWrapper.getTaskRunnerCallable().getRequest())
-              + " request " + state + "! Removed from preemption list.");
+          TaskRunnerCallable trc = taskWrapper.getTaskRunnerCallable();
+          LOG.info(TaskRunnerCallable.getTaskIdentifierString(trc.getRequest(),
+              trc.getVertexSpec()) + " request " + state + "! Removed from preemption list.");
         }
         if (metrics != null) {
           metrics.setExecutorNumPreemptableRequests(preemptionQueue.size());

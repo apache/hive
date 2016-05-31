@@ -2716,6 +2716,12 @@ public class HiveConf extends Configuration {
     LLAP_MANAGEMENT_ACL("hive.llap.management.acl", "*", "The ACL for LLAP daemon management."),
     LLAP_MANAGEMENT_ACL_DENY("hive.llap.management.acl.blocked", "",
         "The deny ACL for LLAP daemon management."),
+    LLAP_REMOTE_TOKEN_REQUIRES_SIGNING("hive.llap.remote.token.requires.signing", "true",
+        new StringSet("false", "except_llap_owner", "true"),
+        "Whether the token returned from LLAP management API should require fragment signing.\n" +
+        "True by default; can be disabled to allow CLI to get tokens from LLAP in a secure\n" +
+        "cluster by setting it to true or 'except_llap_owner' (the latter returns such tokens\n" +
+        "to everyone except the user LLAP cluster is authenticating under)."),
 
     // Hadoop DelegationTokenManager default is 1 week.
     LLAP_DELEGATION_TOKEN_LIFETIME("hive.llap.daemon.delegation.token.lifetime", "14d",
@@ -2725,11 +2731,6 @@ public class HiveConf extends Configuration {
         "RPC port for LLAP daemon management service."),
     LLAP_WEB_AUTO_AUTH("hive.llap.auto.auth", false,
         "Whether or not to set Hadoop configs to enable auth in LLAP web app."),
-    LLAP_CREATE_TOKEN_LOCALLY("hive.llap.create.token.locally", "hs2",
-        new StringSet("true", "hs2", "false"),
-        "Whether to create LLAP tokens locally, saving directly to ZooKeeper SecretManager.\n" +
-        "Requires one to have access to ZK paths; in other words, this should only be used in\n" +
-        "HiveServer2. By default, the value is 'hs2', which means exactly that."),
 
     LLAP_DAEMON_RPC_NUM_HANDLERS("hive.llap.daemon.rpc.num.handlers", 5,
       "Number of RPC handlers for LLAP daemon.", "llap.daemon.rpc.num.handlers"),

@@ -48,8 +48,8 @@ import org.slf4j.LoggerFactory;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ServiceException;
 
-public class LlapTokenClientFactory {
-  private static final Logger LOG = LoggerFactory.getLogger(LlapTokenClientFactory.class);
+public class LlapTokenClient {
+  private static final Logger LOG = LoggerFactory.getLogger(LlapTokenClient.class);
 
   private final LlapRegistryService registry;
   private final SocketFactory socketFactory;
@@ -57,8 +57,10 @@ public class LlapTokenClientFactory {
   private final Configuration conf;
   private ServiceInstanceSet activeInstances;
   private Collection<ServiceInstance> lastKnownInstances;
+  private LlapManagementProtocolClientImpl client;
+  private ServiceInstance clientInstance;
 
-  public LlapTokenClientFactory(Configuration conf) {
+  public LlapTokenClient(Configuration conf) {
     this.conf = conf;
     registry = new LlapRegistryService(false);
     registry.init(conf);
@@ -67,76 +69,62 @@ public class LlapTokenClientFactory {
         16000, 2000l, TimeUnit.MILLISECONDS);
   }
 
-  public interface Client {
-    Token<LlapTokenIdentifier> getDelegationToken(String appId) throws IOException;
+  public Token<LlapTokenIdentifier> getDelegationToken(String appId) throws IOException {
+    if (!UserGroupInformation.isSecurityEnabled()) return null;
+    Iterator<ServiceInstance> llaps = null;
+    if (clientInstance == null) {
+      assert client == null;
+      llaps = getLlapServices(false).iterator();
+      clientInstance = llaps.next();
+    }
+
+    ByteString tokenBytes = null;
+    boolean hasRefreshed = false;
+    while (true) {
+      try {
+        tokenBytes = getTokenBytes(appId);
+        break;
+      } catch (IOException | ServiceException ex) {
+        LOG.error("Cannot get a token, trying a different instance", ex);
+        client = null;
+        clientInstance = null;
+      }
+      if (llaps == null || !llaps.hasNext()) {
+        if (hasRefreshed) { // Only refresh once.
+          throw new RuntimeException("Cannot find any LLAPs to get the token from");
+        }
+        llaps = getLlapServices(true).iterator();
+        hasRefreshed = true;
+      }
+      clientInstance = llaps.next();
+    }
+
+    Token<LlapTokenIdentifier> token = extractToken(tokenBytes);
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Obtained a LLAP delegation token from " + clientInstance + ": " + token);
+    }
+    return token;
   }
 
-  public Client createClient() {
-    return new ClientImpl(); // Client is separate from factory mostly for thread-safety reasons.
+  private Token<LlapTokenIdentifier> extractToken(ByteString tokenBytes) throws IOException {
+    Token<LlapTokenIdentifier> token = new Token<>();
+    DataInputByteBuffer in = new DataInputByteBuffer();
+    in.reset(tokenBytes.asReadOnlyByteBuffer());
+    token.readFields(in);
+    return token;
   }
 
-  private class ClientImpl implements Client {
-    private LlapManagementProtocolClientImpl client;
-    private ServiceInstance clientInstance;
-
-    @Override
-    public Token<LlapTokenIdentifier> getDelegationToken(String appId) throws IOException {
-      if (!UserGroupInformation.isSecurityEnabled()) return null;
-      Iterator<ServiceInstance> llaps = null;
-      if (clientInstance == null) {
-        assert client == null;
-        llaps = getLlapServices(false).iterator();
-        clientInstance = llaps.next();
-      }
-
-      ByteString tokenBytes = null;
-      boolean hasRefreshed = false;
-      while (true) {
-        try {
-          tokenBytes = getTokenBytes(appId);
-          break;
-        } catch (IOException | ServiceException ex) {
-          LOG.error("Cannot get a token, trying a different instance", ex);
-          client = null;
-          clientInstance = null;
-        }
-        if (llaps == null || !llaps.hasNext()) {
-          if (hasRefreshed) { // Only refresh once.
-            throw new RuntimeException("Cannot find any LLAPs to get the token from");
-          }
-          llaps = getLlapServices(true).iterator();
-          hasRefreshed = true;
-        }
-        clientInstance = llaps.next();
-      }
-
-      Token<LlapTokenIdentifier> token = extractToken(tokenBytes);
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Obtained a LLAP delegation token from " + clientInstance + ": " + token);
-      }
-      return token;
+  private ByteString getTokenBytes(final String appId) throws IOException, ServiceException {
+    assert clientInstance != null;
+    if (client == null) {
+      client = new LlapManagementProtocolClientImpl(conf, clientInstance.getHost(),
+          clientInstance.getManagementPort(), retryPolicy, socketFactory);
     }
-
-    private Token<LlapTokenIdentifier> extractToken(ByteString tokenBytes) throws IOException {
-      Token<LlapTokenIdentifier> token = new Token<>();
-      DataInputByteBuffer in = new DataInputByteBuffer();
-      in.reset(tokenBytes.asReadOnlyByteBuffer());
-      token.readFields(in);
-      return token;
+    GetTokenRequestProto.Builder req = GetTokenRequestProto.newBuilder();
+    if (!StringUtils.isBlank(appId)) {
+      req.setAppId(appId);
     }
-
-    private ByteString getTokenBytes(final String appId) throws IOException, ServiceException {
-      assert clientInstance != null;
-      if (client == null) {
-        client = new LlapManagementProtocolClientImpl(conf, clientInstance.getHost(),
-            clientInstance.getManagementPort(), retryPolicy, socketFactory);
-      }
-      GetTokenRequestProto.Builder req = GetTokenRequestProto.newBuilder();
-      if (!StringUtils.isBlank(appId)) {
-        req.setAppId(appId);
-      }
-      return client.getDelegationToken(null, req.build()).getToken();
-    }
+    return client.getDelegationToken(null, req.build()).getToken();
   }
 
   /** Synchronized - LLAP registry and instance set are not thread safe. */

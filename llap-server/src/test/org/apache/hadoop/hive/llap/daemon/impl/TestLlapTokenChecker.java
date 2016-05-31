@@ -65,7 +65,7 @@ public class TestLlapTokenChecker {
   private List<LlapTokenIdentifier> createTokens(String... args) {
     List<LlapTokenIdentifier> tokens = new ArrayList<>();
     for (int i = 0; i < args.length; i += 2) {
-      tokens.add(new LlapTokenIdentifier(null, null, new Text(args[i]), "c", args[i + 1]));
+      tokens.add(new LlapTokenIdentifier(null, null, new Text(args[i]), "c", args[i + 1], false));
     }
     return tokens;
   }
@@ -89,8 +89,8 @@ public class TestLlapTokenChecker {
     }
   }
 
-  private void check(Pair<String, String> p, String user, String appId) {
-    assertEquals(user, p.getLeft());
-    assertEquals(appId, p.getRight());
+  private void check(LlapTokenChecker.LlapTokenInfo p, String user, String appId) {
+    assertEquals(user, p.userName);
+    assertEquals(appId, p.appId);
   }
 }
