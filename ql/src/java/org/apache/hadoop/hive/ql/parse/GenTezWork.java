@@ -168,7 +168,8 @@ public class GenTezWork implements NodeProcessor {
           getParentFromStack(context.currentMergeJoinOperator, stack);
       // Set the big table position. Both the reduce work and merge join operator
       // should be set with the same value.
-      int pos = context.currentMergeJoinOperator.getTagForOperator(parentOp);
+//      int pos = context.currentMergeJoinOperator.getTagForOperator(parentOp);
+      int pos = context.currentMergeJoinOperator.getConf().getBigTablePosition();
       work.setTag(pos);
       context.currentMergeJoinOperator.getConf().setBigTablePosition(pos);
       tezWork.setVertexType(work, VertexType.MULTI_INPUT_UNINITIALIZED_EDGES);
