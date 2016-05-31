@@ -446,7 +446,6 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       if (posBigTable != lastPos
           && (fetchInputAtClose.contains(lastPos)) && (fetchDone[lastPos] == false)) {
         // Do the join. It does fetching of next row groups itself.
-        LOG.debug("Calling joinOneGroup once again");
         ret = joinOneGroup();
       }
 
