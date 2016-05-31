@@ -56,10 +56,10 @@ public class ReaderImpl extends org.apache.orc.impl.ReaderImpl
   //serialized footer - Keeping this around for use by getFileMetaInfo()
   // will help avoid cpu cycles spend in deserializing at cost of increased
   // memory footprint.
-  private final ByteBuffer footerByteBuffer;
+  private ByteBuffer footerByteBuffer;
   // Same for metastore cache - maintains the same background buffer, but includes postscript.
   // This will only be set if the file footer/metadata was read from disk.
-  private final ByteBuffer footerMetaAndPsBuffer;
+  private ByteBuffer footerMetaAndPsBuffer;
 
   @Override
   public ObjectInspector getObjectInspector() {
@@ -89,18 +89,15 @@ public class ReaderImpl extends org.apache.orc.impl.ReaderImpl
     FileMetadata fileMetadata = options.getFileMetadata();
     if (fileMetadata != null) {
       this.inspector =  OrcStruct.createObjectInspector(0, fileMetadata.getTypes());
-      this.footerByteBuffer = null; // not cached and not needed here
-      this.footerMetaAndPsBuffer = null;
     } else {
       FileMetaInfo footerMetaData;
       if (options.getFileMetaInfo() != null) {
         footerMetaData = options.getFileMetaInfo();
-        this.footerMetaAndPsBuffer = null;
       } else {
         footerMetaData = extractMetaInfoFromFooter(fileSystem, path,
             options.getMaxLength());
-        this.footerMetaAndPsBuffer = footerMetaData.footerMetaAndPsBuffer;
       }
+      this.footerMetaAndPsBuffer = footerMetaData.footerMetaAndPsBuffer;
       MetaInfoObjExtractor rInfo =
           new MetaInfoObjExtractor(footerMetaData.compressionType,
                                    footerMetaData.bufferSize,

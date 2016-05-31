@@ -345,6 +345,7 @@ public class ReaderImpl implements Reader {
             options.getMaxLength());
         this.footerMetaAndPsBuffer = footerMetaData.footerMetaAndPsBuffer;
       }
+      options.fileMetaInfo(footerMetaData);
       MetaInfoObjExtractor rInfo =
           new MetaInfoObjExtractor(footerMetaData.compressionType,
                                    footerMetaData.bufferSize,

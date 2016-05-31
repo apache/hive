@@ -467,7 +467,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       }
       try {
         OrcFile.createReader(file.getPath(),
-            OrcFile.readerOptions(conf).filesystem(fs));
+            OrcFile.readerOptions(conf).filesystem(fs).maxLength(file.getLen()));
       } catch (IOException e) {
         return false;
       }
@@ -1391,7 +1391,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     private Reader createOrcReader() throws IOException {
       return OrcFile.createReader(file.getPath(),
-          OrcFile.readerOptions(context.conf).filesystem(fs));
+          OrcFile.readerOptions(context.conf).filesystem(fs).maxLength(file.getLen()));
     }
 
     private long computeProjectionSize(List<OrcProto.Type> types,
