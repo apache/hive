@@ -221,10 +221,10 @@ INSERT OVERWRITE TABLE e2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
   Stage-1 depends on stages: Stage-2
-  Stage-4 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-2
@@ -251,6 +251,24 @@ STAGE PLANS:
             Reduce Operator Tree:
               Forward
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  keys: KEY._col0 (type: string)
+                  mode: complete
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.e2
                 Filter Operator
                   predicate: (KEY._col0 > 450) (type: boolean)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
@@ -272,37 +290,6 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.e1
-                Group By Operator
-                  aggregations: count()
-                  keys: KEY._col0 (type: string)
-                  mode: complete
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.e2
-
-  Stage: Stage-0
-    Move Operator
-      tables:
-          replace: true
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e1
-
-  Stage: Stage-3
-    Stats-Aggr Operator
 
   Stage: Stage-1
     Move Operator
@@ -313,6 +300,19 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.e2
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e1
 
   Stage: Stage-4
     Stats-Aggr Operator
