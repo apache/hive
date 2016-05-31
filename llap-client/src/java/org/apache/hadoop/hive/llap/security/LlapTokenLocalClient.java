@@ -22,7 +22,6 @@ import java.io.IOException;
 
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.security.token.Token;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,20 +31,21 @@ public class LlapTokenLocalClient {
   private final SecretManager secretManager;
 
   public LlapTokenLocalClient(Configuration conf, String clusterId) {
+    // TODO: create this centrally in HS2 case
     secretManager = SecretManager.createSecretManager(conf, clusterId);
   }
 
-  public Token<LlapTokenIdentifier> createToken(String appId, String user) throws IOException {
+  public Token<LlapTokenIdentifier> createToken(
+      String appId, String user, boolean isSignatureRequired) throws IOException {
     try {
-      Token<LlapTokenIdentifier> token = secretManager.createLlapToken(appId, user);
+      Token<LlapTokenIdentifier> token = secretManager.createLlapToken(
+          appId, user, isSignatureRequired);
       if (LOG.isInfoEnabled()) {
         LOG.info("Created a LLAP delegation token locally: " + token);
       }
       return token;
     } catch (Exception ex) {
-      throw new IOException("Failed to create LLAP token locally. You might need to set "
-          + ConfVars.LLAP_CREATE_TOKEN_LOCALLY.varname
-          + " to false, or make sure you can access secure ZK paths.", ex);
+      throw (ex instanceof IOException) ? (IOException)ex : new IOException(ex);
     }
   }
 

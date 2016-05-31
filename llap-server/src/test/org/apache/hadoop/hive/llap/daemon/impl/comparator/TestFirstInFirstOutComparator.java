@@ -53,37 +53,6 @@ public class TestFirstInFirstOutComparator {
   private static Configuration conf;
   private static Credentials cred = new Credentials();
 
-  private static class MockRequest extends TaskRunnerCallable {
-    private int workTime;
-    private boolean canFinish;
-
-    public MockRequest(SubmitWorkRequestProto requestProto,
-        boolean canFinish, int workTime) {
-      super(requestProto, mock(QueryFragmentInfo.class), conf,
-          new ExecutionContextImpl("localhost"), null, cred, 0, null, null, null,
-          mock(KilledTaskHandler.class), mock(
-          FragmentCompletionHandler.class), new DefaultHadoopShim(), null);
-      this.workTime = workTime;
-      this.canFinish = canFinish;
-    }
-
-    @Override
-    protected TaskRunner2Result callInternal() {
-      System.out.println(super.getRequestId() + " is executing..");
-      try {
-        Thread.sleep(workTime);
-      } catch (InterruptedException e) {
-        return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, null, false);
-      }
-      return new TaskRunner2Result(EndReason.SUCCESS, null, null, false);
-    }
-
-    @Override
-    public boolean canFinish() {
-      return canFinish;
-    }
-  }
-
   @Before
   public void setup() {
     conf = new Configuration();

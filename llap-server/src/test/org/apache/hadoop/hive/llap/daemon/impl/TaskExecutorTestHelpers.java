@@ -150,7 +150,8 @@ public class TaskExecutorTestHelpers {
           new ExecutionContextImpl("localhost"), null, new Credentials(), 0, mock(AMReporter.class), null, mock(
               LlapDaemonExecutorMetrics.class),
           mock(KilledTaskHandler.class), mock(
-              FragmentCompletionHandler.class), new DefaultHadoopShim(), null);
+              FragmentCompletionHandler.class), new DefaultHadoopShim(), null,
+              requestProto.getWorkSpec().getVertex());
       this.workTime = workTime;
       this.canFinish = canFinish;
     }

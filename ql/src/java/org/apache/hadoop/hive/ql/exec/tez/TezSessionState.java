@@ -54,7 +54,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.impl.LlapProtocolClientImpl;
-import org.apache.hadoop.hive.llap.security.LlapTokenClientFactory;
+import org.apache.hadoop.hive.llap.security.LlapTokenClient;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.security.LlapTokenLocalClient;
 import org.apache.hadoop.hive.llap.tez.LlapProtocolClientProxy;
@@ -355,10 +355,12 @@ public class TezSessionState {
       String user, final Configuration conf) throws IOException {
     // TODO: parts of this should be moved out of TezSession to reuse the clients, but there's
     //       no good place for that right now (HIVE-13698).
-    boolean useLocalTokenClient = isUsingLocalClient(conf);
+    SessionState session = SessionState.get();
+    boolean isInHs2 = session != null && session.isHiveServerQuery();
     Token<LlapTokenIdentifier> token = null;
     // For Tez, we don't use appId to distinguish the tokens.
-    if (useLocalTokenClient) {
+    if (isInHs2) {
+      // We are in HS2, get the token locally.
       String clusterName = LlapUtil.generateClusterName(conf);
       // This assumes that the LLAP cluster and session are both running under HS2 user.
       final String clusterId = DaemonId.createClusterString(user, clusterName);
@@ -368,30 +370,18 @@ public class TezSessionState {
           public LlapTokenLocalClient call() throws Exception {
             return new LlapTokenLocalClient(conf, clusterId);
           }
-        }).createToken(null, null);
+        }).createToken(null, null, false); // Signature is not required for Tez.
       } catch (ExecutionException e) {
         throw new IOException(e);
       }
     } else {
-      token = new LlapTokenClientFactory(conf).createClient().getDelegationToken(null);
+      // We are not in HS2; always create a new client for now.
+      token = new LlapTokenClient(conf).getDelegationToken(null);
     }
     if (LOG.isInfoEnabled()) {
       LOG.info("Obtained a LLAP token: " + token);
     }
     return token;
-  }
-
-  private static boolean isUsingLocalClient(Configuration conf) {
-    String mode = HiveConf.getVar(conf, ConfVars.LLAP_CREATE_TOKEN_LOCALLY).toLowerCase();
-    boolean isHs2Only = "hs2".equals(mode);
-    // We are initialized on first use inside TezSessionState::openInternal; assume the session
-    // should be available.
-    if (!isHs2Only) return "true".equals(mode);
-    SessionState session = SessionState.get();
-    if (session == null && LOG.isInfoEnabled()) {
-      LOG.warn("There's no session to check if we are in HS2");
-    }
-    return session != null && session.isHiveServerQuery();
   }
 
   private TezClient startSessionAndContainers(TezClient session, HiveConf conf,

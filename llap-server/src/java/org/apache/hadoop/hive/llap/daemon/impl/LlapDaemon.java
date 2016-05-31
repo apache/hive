@@ -248,7 +248,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
     this.containerRunner = new ContainerRunnerImpl(daemonConf, numExecutors, waitQueueSize,
         enablePreemption, localDirs, this.shufflePort, srvAddress, executorMemoryBytes, metrics,
-        amReporter, executorClassLoader, daemonId.getClusterString());
+        amReporter, executorClassLoader, daemonId);
     addIfService(containerRunner);
 
     // Not adding the registry as a service, since we need to control when it is initialized - conf used to pickup properties.
