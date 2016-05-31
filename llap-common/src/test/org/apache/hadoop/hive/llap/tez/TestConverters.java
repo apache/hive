@@ -42,7 +42,7 @@ import org.junit.Test;
 
 public class TestConverters {
 
-  @Test(timeout = 5000)
+  @Test(timeout = 10000)
   public void testTaskSpecToFragmentSpec() {
     ByteBuffer procBb = ByteBuffer.allocate(4);
     procBb.putInt(0, 200);
@@ -98,7 +98,7 @@ public class TestConverters {
 
   }
 
-  @Test (timeout = 5000)
+  @Test (timeout = 10000)
   public void testFragmentSpecToTaskSpec() {
 
     ByteBuffer procBb = ByteBuffer.allocate(4);
@@ -142,7 +142,7 @@ public class TestConverters {
 
     SignableVertexSpec vertexProto = builder.build();
 
-    TaskSpec taskSpec = Converters.getTaskSpecfromProto(vertexProto, 0, 0, null);
+    TaskSpec taskSpec = Converters.getTaskSpecfromProto(vertexProto, 0, 0, tezTaskAttemptId);
 
     assertEquals("dagName", taskSpec.getDAGName());
     assertEquals("vertexName", taskSpec.getVertexName());
