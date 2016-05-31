@@ -109,15 +109,18 @@ public class LlapOutputFormatService {
     LOG.info("Starting LlapOutputFormatService");
 
     int portFromConf = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT);
+    int sendBufferSize = HiveConf.getIntVar(conf,
+        HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_SEND_BUFFER_SIZE);
     eventLoopGroup = new NioEventLoopGroup(1);
     serverBootstrap = new ServerBootstrap();
     serverBootstrap.group(eventLoopGroup);
     serverBootstrap.channel(NioServerSocketChannel.class);
-    serverBootstrap.childHandler(new LlapOutputFormatServiceChannelHandler());
+    serverBootstrap.childHandler(new LlapOutputFormatServiceChannelHandler(sendBufferSize));
     try {
       listeningChannelFuture = serverBootstrap.bind(portFromConf).sync();
       this.port = ((InetSocketAddress) listeningChannelFuture.channel().localAddress()).getPort();
-      LOG.info("LlapOutputFormatService: Binding to port " + this.port);
+      LOG.info("LlapOutputFormatService: Binding to port: {} with send buffer size: {} ", this.port,
+          sendBufferSize);
     } catch (InterruptedException err) {
       throw new IOException("LlapOutputFormatService: Error binding to port " + portFromConf, err);
     }
@@ -154,6 +157,11 @@ public class LlapOutputFormatService {
   }
 
   protected class LlapOutputFormatServiceHandler extends SimpleChannelInboundHandler<String> {
+    private final int sendBufferSize;
+    public LlapOutputFormatServiceHandler(final int sendBufferSize) {
+      this.sendBufferSize = sendBufferSize;
+    }
+
     @Override
     public void channelRead0(ChannelHandlerContext ctx, String msg) {
       String id = msg;
@@ -162,9 +170,8 @@ public class LlapOutputFormatService {
 
     private void registerReader(ChannelHandlerContext ctx, String id) {
       synchronized(INSTANCE) {
-        LOG.debug("registering socket for: "+id);
-        int bufSize = 128 * 1024; // configable?
-        OutputStream stream = new ChannelOutputStream(ctx, id, bufSize);
+        LOG.debug("registering socket for: " + id);
+        OutputStream stream = new ChannelOutputStream(ctx, id, sendBufferSize);
         LlapRecordWriter writer = new LlapRecordWriter(stream);
         writers.put(id, writer);
 
@@ -198,13 +205,18 @@ public class LlapOutputFormatService {
   }
 
   protected class LlapOutputFormatServiceChannelHandler extends ChannelInitializer<SocketChannel> {
+    private final int sendBufferSize;
+    public LlapOutputFormatServiceChannelHandler(final int sendBufferSize) {
+      this.sendBufferSize = sendBufferSize;
+    }
+
     @Override
     public void initChannel(SocketChannel ch) throws Exception {
       ch.pipeline().addLast(
           new DelimiterBasedFrameDecoder(MAX_QUERY_ID_LENGTH, Delimiters.nulDelimiter()),
           new StringDecoder(),
           new StringEncoder(),
-          new LlapOutputFormatServiceHandler());
+          new LlapOutputFormatServiceHandler(sendBufferSize));
     }
   }
 }
