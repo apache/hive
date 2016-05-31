@@ -29,8 +29,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -53,6 +51,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
@@ -60,14 +59,27 @@ import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.yammer.metrics.core.MetricsRegistry;
 
@@ -549,6 +561,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
         keyMapping.columnName, keyMapping.isComparable(),
         tsMapping == null ? null : tsMapping.columnName);
     List<IndexSearchCondition> conditions = new ArrayList<IndexSearchCondition>();
+    ExprNodeGenericFuncDesc pushedPredicate = null;
     ExprNodeGenericFuncDesc residualPredicate =
         (ExprNodeGenericFuncDesc)analyzer.analyzePredicate(predicate, conditions);
 
@@ -562,21 +575,107 @@ public class HBaseStorageHandler extends DefaultStorageHandler
         // 1. key < 20                        (size = 1)
         // 2. key = 20                        (size = 1)
         // 3. key < 20 and key > 10           (size = 2)
-        return null;
+        // Add to residual
+        residualPredicate =
+                extractResidualCondition(analyzer, searchConditions, residualPredicate);
+        continue;
       }
       if (scSize == 2 &&
-          (searchConditions.get(0).getComparisonOp()
-              .equals("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual") ||
-              searchConditions.get(1).getComparisonOp()
-                  .equals("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual"))) {
+          (searchConditions.get(0).getComparisonOp().equals(GenericUDFOPEqual.class.getName()) ||
+              searchConditions.get(1).getComparisonOp().equals(GenericUDFOPEqual.class.getName()))) {
         // If one of the predicates is =, then any other predicate with it is illegal.
-        return null;
+        // Add to residual
+        residualPredicate =
+                extractResidualCondition(analyzer, searchConditions, residualPredicate);
+        continue;
       }
+      boolean sameType = sameTypeIndexSearchConditions(searchConditions);
+      if (!sameType) {
+        // If type for column and constant are different, we currently do not support pushing them
+        residualPredicate =
+                extractResidualCondition(analyzer, searchConditions, residualPredicate);
+        continue;
+      }
+      TypeInfo typeInfo = searchConditions.get(0).getColumnDesc().getTypeInfo();
+      if (typeInfo.getCategory() == Category.PRIMITIVE && PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
+              ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory()) == PrimitiveGrouping.NUMERIC_GROUP) {
+        // If the predicate is on a numeric column, and it specifies an
+        // open range e.g. key < 20 , we do not support conversion, as negative
+        // values are lexicographically stored after positive values and thus they
+        // would be returned.
+        if (scSize == 2) {
+          boolean lowerBound = false;
+          boolean upperBound = false;
+          if (searchConditions.get(0).getComparisonOp().equals(GenericUDFOPEqualOrLessThan.class.getName()) ||
+                searchConditions.get(0).getComparisonOp().equals(GenericUDFOPLessThan.class.getName())) {
+            lowerBound = true;
+          } else {
+            upperBound = true;
+          }
+          if (searchConditions.get(1).getComparisonOp().equals(GenericUDFOPEqualOrGreaterThan.class.getName()) ||
+                searchConditions.get(1).getComparisonOp().equals(GenericUDFOPGreaterThan.class.getName())) {
+            upperBound = true;
+          } else {
+            lowerBound = true;
+          }
+          if (!upperBound || !lowerBound) {
+            // Not valid range, add to residual
+            residualPredicate =
+                    extractResidualCondition(analyzer, searchConditions, residualPredicate);
+            continue;
+          }
+        } else {
+          // scSize == 1
+          if (!searchConditions.get(0).getComparisonOp().equals(GenericUDFOPEqual.class.getName())) {
+            // Not valid range, add to residual
+            residualPredicate =
+                    extractResidualCondition(analyzer, searchConditions, residualPredicate);
+            continue;
+          }
+        }
+      }
+
+      // This one can be pushed
+      pushedPredicate =
+              extractStorageHandlerCondition(analyzer, searchConditions, pushedPredicate);
     }
 
     DecomposedPredicate decomposedPredicate = new DecomposedPredicate();
-    decomposedPredicate.pushedPredicate = analyzer.translateSearchConditions(conditions);
+    decomposedPredicate.pushedPredicate = pushedPredicate;
     decomposedPredicate.residualPredicate = residualPredicate;
     return decomposedPredicate;
+  }
+
+  private static ExprNodeGenericFuncDesc extractStorageHandlerCondition(IndexPredicateAnalyzer analyzer,
+          List<IndexSearchCondition> searchConditions, ExprNodeGenericFuncDesc inputExpr) {
+    if (inputExpr == null) {
+      return analyzer.translateSearchConditions(searchConditions);
+    }
+    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
+    children.add(analyzer.translateSearchConditions(searchConditions));
+    children.add(inputExpr);
+    return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+            FunctionRegistry.getGenericUDFForAnd(), children);
+  }
+
+  private static ExprNodeGenericFuncDesc extractResidualCondition(IndexPredicateAnalyzer analyzer,
+          List<IndexSearchCondition> searchConditions, ExprNodeGenericFuncDesc inputExpr) {
+    if (inputExpr == null) {
+      return analyzer.translateOriginalConditions(searchConditions);
+    }
+    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
+    children.add(analyzer.translateOriginalConditions(searchConditions));
+    children.add(inputExpr);
+    return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+            FunctionRegistry.getGenericUDFForAnd(), children);
+  }
+
+  private static boolean sameTypeIndexSearchConditions(List<IndexSearchCondition> searchConditions) {
+    for (IndexSearchCondition isc : searchConditions) {
+      if (!isc.getColumnDesc().getTypeInfo().equals(isc.getConstantDesc().getTypeInfo())) {
+        return false;
+      }
+    }
+    return true;
   }
 }

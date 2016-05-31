@@ -18,12 +18,12 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import java.io.Serializable;
+
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.JobConf;
-
-import java.io.Serializable;
 
 /**
  * HiveStoragePredicateHandler is an optional companion to {@link
