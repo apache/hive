@@ -77,7 +77,7 @@ public class UDFLike extends UDF {
       if (n == '_') {
         sb.append(".");
       } else if (n == '%') {
-        sb.append(".*");
+        sb.append(".*?");
       } else {
         sb.append(Pattern.quote(Character.toString(n)));
       }
