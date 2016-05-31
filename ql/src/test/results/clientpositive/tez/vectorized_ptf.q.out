@@ -2117,7 +2117,7 @@ STAGE PLANS:
                   0 p_partkey (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
-                Position of Big Table: 0
+                Position of Big Table: 1
                 Statistics: Num rows: 28 Data size: 17646 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col12 (type: int), _col13 (type: string), _col14 (type: string), _col15 (type: string), _col16 (type: string), _col17 (type: int), _col18 (type: string), _col19 (type: double), _col20 (type: string)
