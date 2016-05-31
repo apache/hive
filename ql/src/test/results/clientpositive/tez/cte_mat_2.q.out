@@ -22,9 +22,9 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_10]
-        Select Operator [SEL_9] (rows=275 width=10)
+        Select Operator [SEL_9] (rows=62500 width=22)
           Output:["_col0"]
-          Merge Join Operator [MERGEJOIN_13] (rows=275 width=10)
+          Merge Join Operator [MERGEJOIN_13] (rows=62500 width=22)
             Conds:(Inner)
           <-Map 1 [SIMPLE_EDGE]
             SHUFFLE [RS_6]

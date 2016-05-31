@@ -23,15 +23,15 @@ Stage-0
     Stage-1
       Reducer 7
       File Output Operator [FS_59]
-        Limit [LIM_58] (rows=1 width=8)
+        Limit [LIM_58] (rows=1 width=17)
           Number of rows:100
-          Select Operator [SEL_57] (rows=1 width=8)
+          Select Operator [SEL_57] (rows=1 width=17)
             Output:["_col0"]
           <-Reducer 6 [SIMPLE_EDGE]
             SHUFFLE [RS_56]
-              Select Operator [SEL_55] (rows=1 width=8)
+              Select Operator [SEL_55] (rows=1 width=17)
                 Output:["_col0"]
-                Merge Join Operator [MERGEJOIN_92] (rows=1 width=8)
+                Merge Join Operator [MERGEJOIN_92] (rows=1 width=17)
                   Conds:(Inner),Output:["_col0","_col1"]
                 <-Reducer 15 [SIMPLE_EDGE]
                   SHUFFLE [RS_53]
