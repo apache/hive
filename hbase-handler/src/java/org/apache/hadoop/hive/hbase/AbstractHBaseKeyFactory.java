@@ -18,15 +18,15 @@
 
 package org.apache.hadoop.hive.hbase;
 
+import java.io.IOException;
+import java.util.Properties;
+
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.mapred.JobConf;
-
-import java.io.IOException;
-import java.util.Properties;
 
 public abstract class AbstractHBaseKeyFactory implements HBaseKeyFactory {
 

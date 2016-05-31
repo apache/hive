@@ -278,13 +278,15 @@ public class IndexPredicateAnalyzer {
     List<ExprNodeDesc> list = new ArrayList<ExprNodeDesc>();
     list.add(expr1);
     list.add(expr2);
-    expr = new ExprNodeGenericFuncDesc(expr.getTypeInfo(), expr.getGenericUDF(), list);
+    ExprNodeGenericFuncDesc indexExpr =
+            new ExprNodeGenericFuncDesc(expr.getTypeInfo(), expr.getGenericUDF(), list);
 
     searchConditions.add(
       new IndexSearchCondition(
         columnDesc,
         udfName,
         constantDesc,
+        indexExpr,
         expr,
         fields));
 
@@ -311,12 +313,40 @@ public class IndexPredicateAnalyzer {
     ExprNodeGenericFuncDesc expr = null;
     for (IndexSearchCondition searchCondition : searchConditions) {
       if (expr == null) {
-        expr = searchCondition.getComparisonExpr();
+        expr = searchCondition.getIndexExpr();
         continue;
       }
       List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
       children.add(expr);
-      children.add(searchCondition.getComparisonExpr());
+      children.add(searchCondition.getIndexExpr());
+      expr = new ExprNodeGenericFuncDesc(
+        TypeInfoFactory.booleanTypeInfo,
+        FunctionRegistry.getGenericUDFForAnd(),
+        children);
+    }
+    return expr;
+  }
+
+  /**
+   * Translates original conditions back to ExprNodeDesc form (as
+   * a left-deep conjunction).
+   *
+   * @param searchConditions (typically produced by analyzePredicate)
+   *
+   * @return ExprNodeGenericFuncDesc form of search conditions
+   */
+  public ExprNodeGenericFuncDesc translateOriginalConditions(
+    List<IndexSearchCondition> searchConditions) {
+
+    ExprNodeGenericFuncDesc expr = null;
+    for (IndexSearchCondition searchCondition : searchConditions) {
+      if (expr == null) {
+        expr = searchCondition.getOriginalExpr();
+        continue;
+      }
+      List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
+      children.add(expr);
+      children.add(searchCondition.getOriginalExpr());
       expr = new ExprNodeGenericFuncDesc(
         TypeInfoFactory.booleanTypeInfo,
         FunctionRegistry.getGenericUDFForAnd(),

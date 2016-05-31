@@ -60,7 +60,7 @@ public class PushdownTuple {
     } catch (ClassCastException cce) {
       log.info(StringUtils.stringifyException(cce));
       throw new SerDeException(" Column type mismatch in where clause "
-          + sc.getComparisonExpr().getExprString() + " found type "
+          + sc.getIndexExpr().getExprString() + " found type "
           + sc.getConstantDesc().getTypeString() + " instead of "
           + sc.getColumnDesc().getTypeString());
     } catch (HiveException e) {
