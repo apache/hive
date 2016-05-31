@@ -1271,5 +1271,11 @@
         </skip.spark.files>
       </properties>
     </profile>
+    <profile>
+      <id>itests</id>
+      <modules>
+        <module>itests</module>
+      </modules>
+    </profile>
   </profiles>
 </project>
