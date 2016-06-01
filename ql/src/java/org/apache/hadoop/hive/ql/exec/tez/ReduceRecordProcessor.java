@@ -83,7 +83,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
 
   private byte bigTablePosition = 0;
 
-  private boolean abort;
+
   private int nRows = 0;
 
   public ReduceRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
@@ -262,9 +262,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     // run the operator pipeline
     while (sources[bigTablePosition].pushRecord()) {
       if (nRows++ == CHECK_INTERRUPTION_AFTER_ROWS) {
-        if (abort && Thread.interrupted()) {
-          throw new HiveException("Processing thread interrupted");
-        }
+        checkAbortCondition();
         nRows = 0;
       }
     }
@@ -273,7 +271,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
   @Override
   public void abort() {
     // this will stop run() from pushing records
-    abort = true;
+    super.abort();
 
     // this will abort initializeOp()
     if (reducer != null) {

@@ -58,6 +58,7 @@ public abstract class RecordProcessor  {
 
   public static final Logger l4j = LoggerFactory.getLogger(RecordProcessor.class);
 
+  protected volatile boolean abort = false;
 
   // used to log memory usage periodically
   protected boolean isLogInfoEnabled = false;
@@ -108,8 +109,6 @@ public abstract class RecordProcessor  {
    */
   abstract void run() throws Exception;
 
-  abstract void abort();
-
   abstract void close();
 
   protected void createOutputMap() {
@@ -146,6 +145,18 @@ public abstract class RecordProcessor  {
       return mergeWorkList;
     } else {
       return null;
+    }
+  }
+
+  void abort() {
+    this.abort = true;
+  }
+
+  protected void checkAbortCondition() throws InterruptedException {
+    if (abort || Thread.currentThread().isInterrupted()) {
+      // Not cleaning the interrupt status.
+      boolean interruptState = Thread.currentThread().isInterrupted();
+      throw new InterruptedException("Processing thread aborted. Interrupt state: " + interruptState);
     }
   }
 }

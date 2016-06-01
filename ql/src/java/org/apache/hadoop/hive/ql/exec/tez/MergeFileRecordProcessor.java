@@ -62,7 +62,6 @@ public class MergeFileRecordProcessor extends RecordProcessor {
   private String cacheKey;
   private MergeFileWork mfWork;
   MRInputLegacy mrInput = null;
-  private boolean abort = false;
   private final Object[] row = new Object[2];
   ObjectCache cache;
 
@@ -158,7 +157,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
 
   @Override
   void abort() {
-    abort = true;
+    super.abort();
   }
 
   @Override
