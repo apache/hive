@@ -646,6 +646,7 @@ public class HiveSessionImpl implements HiveSession {
         hiveHist.closeStream();
       }
       try {
+        sessionState.resetThreadName();
         sessionState.close();
       } finally {
         sessionState = null;
@@ -655,6 +656,7 @@ public class HiveSessionImpl implements HiveSession {
     } finally {
       if (sessionState != null) {
         try {
+          sessionState.resetThreadName();
           sessionState.close();
         } catch (Throwable t) {
           LOG.warn("Error closing session", t);
