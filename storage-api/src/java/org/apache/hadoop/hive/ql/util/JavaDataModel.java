@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.util;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -257,7 +255,7 @@ public enum JavaDataModel {
     private static final JavaDataModel MODEL_FOR_SYSTEM = getModelForSystem();
   }
 
-  @VisibleForTesting
+  //@VisibleForTesting
   static JavaDataModel getModelForSystem() {
     String props = null;
     try {

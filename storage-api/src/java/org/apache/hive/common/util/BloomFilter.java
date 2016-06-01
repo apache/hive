@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 /**
  * BloomFilter is a probabilistic data structure for set membership check. BloomFilters are
  * highly space efficient when compared to using a HashSet. Because of the probabilistic nature of
@@ -54,6 +52,12 @@ public class BloomFilter {
 
   public BloomFilter(long expectedEntries) {
     this(expectedEntries, DEFAULT_FPP);
+  }
+
+  static void checkArgument(boolean expression, String message) {
+    if (!expression) {
+      throw new IllegalArgumentException(message);
+    }
   }
 
   public BloomFilter(long expectedEntries, double fpp) {

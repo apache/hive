@@ -38,7 +38,7 @@
   </properties>
 
   <dependencies>
-    <!-- compile inter-project -->
+    <!-- inter-project -->
     <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
@@ -48,7 +48,7 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
       <version>${hadoop.version}</version>
-      <optional>true</optional>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>com.google.guava</groupId>
@@ -95,7 +95,20 @@
           <artifactId>jetty-util</artifactId>
         </exclusion>
       </exclusions>
-   </dependency>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+
+    <!-- test inter-project -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
