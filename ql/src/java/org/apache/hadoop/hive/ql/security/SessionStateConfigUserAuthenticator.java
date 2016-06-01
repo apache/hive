@@ -71,9 +71,4 @@ public class SessionStateConfigUserAuthenticator implements HiveAuthenticationPr
     this.sessionState = sessionState;
   }
 
-  @Override
-  public String getUserIpAddress() {
-    return this.sessionState.getUserIpAddress();
-  }
-
 }

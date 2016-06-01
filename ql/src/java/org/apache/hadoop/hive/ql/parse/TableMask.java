@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.QueryContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,14 +45,17 @@ public class TableMask {
   private UnparseTranslator translator;
   private boolean enable;
   private boolean needsRewrite;
-  private QueryContext queryContext;
+  private HiveAuthzContext queryContext;
 
   public TableMask(SemanticAnalyzer analyzer, HiveConf conf) throws SemanticException {
     try {
       authorizer = SessionState.get().getAuthorizerV2();
       String cmdString = analyzer.ctx.getCmd();
-      QueryContext.Builder ctxBuilder = new QueryContext.Builder();
+      SessionState ss = SessionState.get();
+      HiveAuthzContext.Builder ctxBuilder = new HiveAuthzContext.Builder();
       ctxBuilder.setCommandString(cmdString);
+      ctxBuilder.setUserIpAddress(ss.getUserIpAddress());
+      ctxBuilder.setForwardedAddresses(ss.getForwardedAddresses());
       queryContext = ctxBuilder.build();
       if (authorizer != null && needTransform()) {
         enable = true;
