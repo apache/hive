@@ -92,6 +92,8 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
   private static final String IPC_OUTPUTFORMAT = "llapoutputformat";
   private final static String ROOT_NAMESPACE = "llap";
   private final static String USER_SCOPE_PATH_PREFIX = "user-";
+  private static final String DISABLE_MESSAGE =
+      "Set " + ConfVars.LLAP_VALIDATE_ACLS.varname + " to false to disable ACL validation";
 
   private final Configuration conf;
   private final CuratorFramework zooKeeperClient;
@@ -331,7 +333,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     List<ACL> acls = zooKeeperClient.getACL().forPath(pathToCheck);
     if (acls == null || acls.isEmpty()) {
       // Can there be no ACLs? There's some access (to get ACLs), so assume it means free for all.
-      throw new SecurityException("No ACLs on "  + pathToCheck);
+      throw new SecurityException("No ACLs on "  + pathToCheck + ". " + DISABLE_MESSAGE);
     }
     // This could be brittle.
     assert userNameFromPrincipal != null;
@@ -340,7 +342,8 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
       if ((acl.getPerms() & ~ZooDefs.Perms.READ) == 0 || currentUser.equals(acl.getId())) {
         continue; // Read permission/no permissions, or the expected user.
       }
-      throw new SecurityException("The ACL " + acl + " is unnacceptable for " + pathToCheck);
+      throw new SecurityException("The ACL " + acl + " is unnacceptable for " + pathToCheck
+          + ". " + DISABLE_MESSAGE);
     }
   }
 
