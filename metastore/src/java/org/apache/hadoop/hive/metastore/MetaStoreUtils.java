@@ -86,6 +86,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
 
 import javax.annotation.Nullable;
@@ -1631,7 +1632,7 @@ public class MetaStoreUtils {
       Pattern partitionValidationPattern) throws MetaException {
 
     String invalidPartitionVal =
-        getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern);
+        HiveStringUtils.getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern);
     if (invalidPartitionVal != null) {
       throw new MetaException("Partition value '" + invalidPartitionVal +
           "' contains a character " + "not matched by whitelist pattern '" +
@@ -1642,7 +1643,7 @@ public class MetaStoreUtils {
 
   public static boolean partitionNameHasValidCharacters(List<String> partVals,
       Pattern partitionValidationPattern) {
-    return getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern) == null;
+    return HiveStringUtils.getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern) == null;
   }
 
   /**
@@ -1691,21 +1692,6 @@ public class MetaStoreUtils {
     return ShimLoader.getHadoopThriftAuthBridge().getHadoopSaslProperties(conf);
   }
 
-
-  public static String getPartitionValWithInvalidCharacter(List<String> partVals,
-      Pattern partitionValidationPattern) {
-    if (partitionValidationPattern == null) {
-      return null;
-    }
-
-    for (String partVal : partVals) {
-      if (!partitionValidationPattern.matcher(partVal).matches()) {
-        return partVal;
-      }
-    }
-
-    return null;
-  }
 
   public static String ARCHIVING_LEVEL = "archiving_level";
   public static int getArchivingLevel(Partition part) throws MetaException {
