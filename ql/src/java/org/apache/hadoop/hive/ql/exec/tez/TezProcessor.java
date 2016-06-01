@@ -192,7 +192,11 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       }
       if (originalThrowable != null) {
         LOG.error(StringUtils.stringifyException(originalThrowable));
-        throw new RuntimeException(originalThrowable);
+        if (originalThrowable instanceof InterruptedException) {
+          throw (InterruptedException) originalThrowable;
+        } else {
+          throw new RuntimeException(originalThrowable);
+        }
       }
     }
   }

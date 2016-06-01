@@ -28,7 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configuration;
@@ -71,7 +74,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected List<Operator<? extends OperatorDesc>> childOperators;
   protected List<Operator<? extends OperatorDesc>> parentOperators;
   protected String operatorId;
-  protected AtomicBoolean abortOp;
+  protected final AtomicBoolean abortOp;
   private transient ExecMapperContext execContext;
   private transient boolean rootInitializeCalled = false;
   protected final transient Collection<Future<?>> asyncInitOperations = new HashSet<>();
@@ -390,24 +393,62 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     Object[] os = new Object[fs.size()];
     int i = 0;
     Throwable asyncEx = null;
+
+    // Wait for all futures to complete. Check for an abort while waiting for each future. If any of the futures is cancelled / aborted - cancel all subsequent futures.
+
+    boolean cancelAll = false;
     for (Future<?> f : fs) {
-      if (abortOp.get() || asyncEx != null) {
-        // We were aborted, interrupted or one of the operations failed; terminate all.
-        f.cancel(true);
+      // If aborted - break out of the loop, and cancel all subsequent futures.
+      if (cancelAll) {
+        break;
+      }
+      if (abortOp.get()) {
+        cancelAll = true;
+        break;
       } else {
-        try {
-          os[i++] = f.get();
-        } catch (CancellationException ex) {
-          asyncEx = new InterruptedException("Future was canceled");
-        } catch (Throwable t) {
-          f.cancel(true);
-          asyncEx = t;
+        // Wait for the current future.
+        while (true) {
+          if (abortOp.get()) {
+            cancelAll = true;
+            break;
+          } else {
+            try {
+              // Await future result with a timeout to check the abort field occasionally.
+              // It's possible that the interrupt which comes in along with an abort, is suppressed
+              // by some other operator.
+              Object futureResult = f.get(200l, TimeUnit.MILLISECONDS);
+              os[i++] = futureResult;
+              break;
+            } catch (TimeoutException e) {
+              // Expected if the operation takes time. Continue the loop, and wait for op completion.
+            } catch (InterruptedException | CancellationException e) {
+              asyncEx = e;
+              cancelAll = true;
+              break;
+            } catch (ExecutionException e) {
+              if (e.getCause() == null) {
+                asyncEx = e;
+              } else {
+                asyncEx = e.getCause();
+              }
+              cancelAll = true;
+              break;
+            }
+          }
         }
+
       }
     }
-    if (asyncEx != null) {
-      throw new HiveException("Async initialization failed", asyncEx);
+
+    if (cancelAll || asyncEx != null) {
+      for (Future<?> f : fs) {
+        // It's ok to send a cancel to an already completed future. Is a no-op
+        f.cancel(true);
+      }
+      throw new HiveException("Async Initialization failed. abortRequested=" + abortOp.get(), asyncEx);
     }
+
+
     completeInitializationOp(os);
   }
 

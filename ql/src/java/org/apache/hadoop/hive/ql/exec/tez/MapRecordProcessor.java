@@ -85,7 +85,6 @@ public class MapRecordProcessor extends RecordProcessor {
   MRInputLegacy legacyMRInput;
   MultiMRInput mainWorkMultiMRInput;
   private final ExecMapperContext execContext;
-  private boolean abort;
   private MapWork mapWork;
   List<MapWork> mergeWorkList;
   List<String> cacheKeys;
@@ -360,18 +359,17 @@ public class MapRecordProcessor extends RecordProcessor {
   void run() throws Exception {
     while (sources[position].pushRecord()) {
       if (nRows++ == CHECK_INTERRUPTION_AFTER_ROWS) {
-        if (abort && Thread.interrupted()) {
-          throw new HiveException("Processing thread interrupted");
-        }
+        checkAbortCondition();
         nRows = 0;
       }
     }
   }
 
+
   @Override
   public void abort() {
     // this will stop run() from pushing records
-    abort = true;
+    super.abort();
 
     // this will abort initializeOp()
     if (mapOp != null) {
