@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -102,13 +102,13 @@ public class LockRequestBuilder {
   // level of locking.  To do this we put all locks components in trie based
   // on dbname, tablename, partition name and handle the promotion as new
   // requests come in.  This structure depends on the fact that null is a
-  // valid key in a HashMap.  So a database lock will map to (dbname, null,
+  // valid key in a LinkedHashMap.  So a database lock will map to (dbname, null,
   // null).
   private static class LockTrie {
     Map<String, TableTrie> trie;
 
     LockTrie() {
-      trie = new HashMap<String, TableTrie>();
+      trie = new LinkedHashMap<String, TableTrie>();
     }
 
     public void add(LockComponent comp) {
@@ -156,10 +156,10 @@ public class LockRequestBuilder {
       }
     }
 
-    private static class TableTrie extends HashMap<String, PartTrie> {
+    private static class TableTrie extends LinkedHashMap<String, PartTrie> {
     }
 
-    private static class PartTrie extends HashMap<String, LockComponent> {
+    private static class PartTrie extends LinkedHashMap<String, LockComponent> {
     }
 
 
