@@ -960,16 +960,25 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
           long now = getDbTime(dbConn);
           s = "insert into HIVE_LOCKS " +
-            " (hl_lock_ext_id, hl_lock_int_id, hl_txnid, hl_db, hl_table, " +
-            "hl_partition, hl_lock_state, hl_lock_type, hl_last_heartbeat, hl_user, hl_host)" +
-            " values (" + extLockId + ", " +
-            +intLockId + "," + txnid + ", '" +
-            dbName + "', " + (tblName == null ? "null" : "'" + tblName + "'")
-            + ", " + (partName == null ? "null" : "'" + partName + "'") +
-            ", '" + LOCK_WAITING + "', " + "'" + lockChar + "', " +
+            "(hl_lock_ext_id, hl_lock_int_id, hl_txnid, " +
+            "hl_db, " +
+            "hl_table, " +
+            "hl_partition, " +
+            "hl_lock_state, hl_lock_type, " +
+            "hl_last_heartbeat, " +
+            "hl_user, " +
+            "hl_host, " +
+            "hl_agent_info) values(" +
+            extLockId + ", " + intLockId + "," + txnid + ", " +
+            quoteString(dbName) + ", " +
+            valueOrNullLiteral(tblName) + ", " +
+            valueOrNullLiteral(partName) + ", " +
+            quoteChar(LOCK_WAITING) + ", " + quoteChar(lockChar) + ", " +
             //for locks associated with a txn, we always heartbeat txn and timeout based on that
-            (isValidTxn(txnid) ? 0 : now) + ", '" +
-            rqst.getUser() + "', '" + rqst.getHostname() + "')";
+            (isValidTxn(txnid) ? 0 : now) + ", " +
+            valueOrNullLiteral(rqst.getUser()) + ", " +
+            valueOrNullLiteral(rqst.getHostname()) + ", " +
+            valueOrNullLiteral(rqst.getAgentInfo()) + ")";
           LOG.debug("Going to execute update <" + s + ">");
           stmt.executeUpdate(s);
         }
@@ -1175,7 +1184,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         String s = "select hl_lock_ext_id, hl_txnid, hl_db, hl_table, hl_partition, hl_lock_state, " +
           "hl_lock_type, hl_last_heartbeat, hl_acquired_at, hl_user, hl_host, hl_lock_int_id," +
-          "hl_blockedby_ext_id, hl_blockedby_int_id from HIVE_LOCKS";
+          "hl_blockedby_ext_id, hl_blockedby_int_id, hl_agent_info from HIVE_LOCKS";
 
         // Some filters may have been specified in the SHOW LOCKS statement. Add them to the query.
         String dbName = rqst.getDbname();
@@ -1240,6 +1249,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           if(!rs.wasNull()) {
             e.setBlockedByIntId(id);
           }
+          e.setAgentInfo(rs.getString(15));
           sortedList.add(new LockInfoExt(e));
         }
         LOG.debug("Going to rollback");
@@ -3185,6 +3195,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.error(msg);
         throw new MetaException(msg);
     }
+  }
+  /**
+   * Useful for building SQL strings
+   * @param value may be {@code null}
+   */
+  private static String valueOrNullLiteral(String value) {
+    return value == null ? "null" : quoteString(value);
   }
   static String quoteString(String input) {
     return "'" + input + "'";
