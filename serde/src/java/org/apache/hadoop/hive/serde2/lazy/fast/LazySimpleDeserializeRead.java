@@ -270,6 +270,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
       }
       break;
     case BYTE:
+      if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
+        return true;
+      }
       try {
         currentByte = LazyByte.parseByte(bytes, fieldStart, fieldLength, 10);
       } catch (NumberFormatException e) {
@@ -278,6 +281,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
       }
       break;
     case SHORT:
+      if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
+        return true;
+      }
       try {
         currentShort = LazyShort.parseShort(bytes, fieldStart, fieldLength, 10);
       } catch (NumberFormatException e) {
@@ -286,6 +292,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
       }
       break;
     case INT:
+      if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
+        return true;
+      }
       try {
         currentInt = LazyInteger.parseInt(bytes, fieldStart, fieldLength, 10);
       } catch (NumberFormatException e) {
@@ -294,6 +303,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
       }
       break;
     case LONG:
+      if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
+        return true;
+      }
       try {
         currentLong = LazyLong.parseLong(bytes, fieldStart, fieldLength, 10);
       } catch (NumberFormatException e) {
@@ -303,6 +315,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
       break;
     case FLOAT:
       {
+        if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
+          return true;
+        }
         String byteData = null;
         try {
           byteData = Text.decode(bytes, fieldStart, fieldLength);
@@ -319,6 +334,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
       break;
     case DOUBLE:
       {
+        if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
+          return true;
+        }
         String byteData = null;
         try {
           byteData = Text.decode(bytes, fieldStart, fieldLength);
@@ -363,6 +381,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
       break;
     case DATE:
       {
+        if (fieldLength == 0) {
+          return true;
+        }
         String s = null;
         try {
           s = Text.decode(bytes, fieldStart, fieldLength);
@@ -375,6 +396,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
       break;
     case TIMESTAMP:
       {
+        if (fieldLength == 0) {
+          return true;
+        }
         String s = null;
         try {
           s = new String(bytes, fieldStart, fieldLength, "US-ASCII");
@@ -425,6 +449,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
       break;
     case DECIMAL:
       {
+        if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
+          return true;
+        }
         String byteData = null;
         try {
           byteData = Text.decode(bytes, fieldStart, fieldLength);
