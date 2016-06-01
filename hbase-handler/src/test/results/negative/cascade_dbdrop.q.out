@@ -50,5 +50,5 @@ POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:hbasedb
 POSTHOOK: Output: database:hbasedb
 POSTHOOK: Output: hbasedb@hbase_table_0
-Command failed with exit code = 1
+#### A masked pattern was here ####
 Query returned non-zero code: 1, cause: null
