@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.QueryContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
@@ -80,8 +80,9 @@ class CommandUtil {
   static void authorizeCommandThrowEx(SessionState ss, HiveOperationType type,
       List<String> command) throws HiveAuthzPluginException, HiveAccessControlException {
     HivePrivilegeObject commandObj = HivePrivilegeObject.createHivePrivilegeObject(command);
-    QueryContext.Builder ctxBuilder = new QueryContext.Builder();
+    HiveAuthzContext.Builder ctxBuilder = new HiveAuthzContext.Builder();
     ctxBuilder.setCommandString(Joiner.on(' ').join(command));
+    ctxBuilder.setUserIpAddress(ss.getUserIpAddress());
     ctxBuilder.setForwardedAddresses(ss.getForwardedAddresses());
     ss.getAuthorizerV2().checkPrivileges(type, Arrays.asList(commandObj), null, ctxBuilder.build());
   }

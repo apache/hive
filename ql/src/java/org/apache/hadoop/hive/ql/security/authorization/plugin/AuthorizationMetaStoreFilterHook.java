@@ -73,7 +73,8 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
 
   private List<HivePrivilegeObject> getFilteredObjects(List<HivePrivilegeObject> listObjs) throws MetaException {
     SessionState ss = SessionState.get();
-    QueryContext.Builder authzContextBuilder = new QueryContext.Builder();
+    HiveAuthzContext.Builder authzContextBuilder = new HiveAuthzContext.Builder();
+    authzContextBuilder.setUserIpAddress(ss.getUserIpAddress());
     authzContextBuilder.setForwardedAddresses(ss.getForwardedAddresses());
     try {
       return ss.getAuthorizerV2().filterListCmdObjects(listObjs, authzContextBuilder.build());

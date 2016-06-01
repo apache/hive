@@ -29,11 +29,26 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
  */
 @LimitedPrivate(value = { "Apache Argus (incubating)" })
 @Evolving
-public final class QueryContext {
+public final class HiveAuthzContext {
 
   public static class Builder {
     private String commandString;
     private List<String> forwardedAddresses;
+    private String userIpAddress;
+
+    /**
+     * Get user's ip address. This is set only if the authorization api is
+     * invoked from a HiveServer2 instance in standalone mode.
+     *
+     * @return ip address
+     */
+    public String getUserIpAddress() {
+      return userIpAddress;
+    }
+
+    public void setUserIpAddress(String userIpAddress) {
+      this.userIpAddress = userIpAddress;
+    }
 
     public String getCommandString() {
       return commandString;
@@ -49,17 +64,23 @@ public final class QueryContext {
       this.forwardedAddresses = forwardedAddresses;
     }
 
-    public QueryContext build(){
-      return new QueryContext(this);
+    public HiveAuthzContext build(){
+      return new HiveAuthzContext(this);
     }
   }
 
+  private final String userIpAddress;
   private final String commandString;
   private final List<String> forwardedAddresses;
 
-  private QueryContext(Builder builder) {
+  private HiveAuthzContext(Builder builder) {
+    this.userIpAddress = builder.userIpAddress;
     this.commandString = builder.commandString;
     this.forwardedAddresses = builder.forwardedAddresses;
+  }
+
+  public String getIpAddress() {
+    return userIpAddress;
   }
 
   public String getCommandString() {

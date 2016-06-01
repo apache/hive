@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationValidator;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.QueryContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext.CLIENT_TYPE;
@@ -65,7 +65,7 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
 
   @Override
   public void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputHObjs,
-      List<HivePrivilegeObject> outputHObjs, QueryContext context)
+      List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context)
       throws HiveAuthzPluginException, HiveAccessControlException {
 
     if (LOG.isDebugEnabled()) {
@@ -141,7 +141,7 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
 
   @Override
   public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
-      QueryContext context) {
+      HiveAuthzContext context) {
     if (LOG.isDebugEnabled()) {
       String msg = "Obtained following objects in  filterListCmdObjects " + listObjs + " for user "
           + authenticator.getUserName() + ". Context Info: " + context;
@@ -156,7 +156,7 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
   }
 
   @Override
-  public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(QueryContext context,
+  public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(HiveAuthzContext context,
       List<HivePrivilegeObject> privObjs) throws SemanticException {
     return null;
   }
