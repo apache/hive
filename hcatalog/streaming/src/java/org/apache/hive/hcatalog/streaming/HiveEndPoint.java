@@ -97,21 +97,48 @@ public class HiveEndPoint {
 
 
   /**
+   * @deprecated Use {@link #newConnection(boolean, String)}
+   */
+  public StreamingConnection newConnection(final boolean createPartIfNotExists)
+    throws ConnectionError, InvalidPartition, InvalidTable, PartitionCreationFailed
+    , ImpersonationFailed , InterruptedException {
+    return newConnection(createPartIfNotExists, null, null, null);
+  }
+  /**
+   * @deprecated Use {@link #newConnection(boolean, HiveConf, String)}
+   */
+  public StreamingConnection newConnection(final boolean createPartIfNotExists, HiveConf conf)
+    throws ConnectionError, InvalidPartition, InvalidTable, PartitionCreationFailed
+    , ImpersonationFailed , InterruptedException {
+    return newConnection(createPartIfNotExists, conf, null, null);
+  }
+  /**
+   * @deprecated Use {@link #newConnection(boolean, HiveConf, UserGroupInformation, String)}
+   */
+  public StreamingConnection newConnection(final boolean createPartIfNotExists, final HiveConf conf,
+                                           final UserGroupInformation authenticatedUser)
+    throws ConnectionError, InvalidPartition,
+    InvalidTable, PartitionCreationFailed, ImpersonationFailed , InterruptedException {
+    return newConnection(createPartIfNotExists, conf, authenticatedUser, null);
+  }
+  /**
    * Acquire a new connection to MetaStore for streaming
    * @param createPartIfNotExists If true, the partition specified in the endpoint
    *                              will be auto created if it does not exist
+   * @param agentInfo should uniquely identify the process/entity that is using this batch.  This
+   *                  should be something that can be correlated with calling application log files
+   *                  and/or monitoring consoles.
    * @return
    * @throws ConnectionError if problem connecting
    * @throws InvalidPartition  if specified partition is not valid (createPartIfNotExists = false)
    * @throws ImpersonationFailed  if not able to impersonate 'proxyUser'
-   * @throws IOException  if there was an I/O error when acquiring connection
    * @throws PartitionCreationFailed if failed to create partition
    * @throws InterruptedException
    */
-  public StreamingConnection newConnection(final boolean createPartIfNotExists)
-          throws ConnectionError, InvalidPartition, InvalidTable, PartitionCreationFailed
-          , ImpersonationFailed , InterruptedException {
-    return newConnection(createPartIfNotExists, null, null);
+  public StreamingConnection newConnection(final boolean createPartIfNotExists, String agentInfo)
+    throws ConnectionError, InvalidPartition, InvalidTable, PartitionCreationFailed
+    , ImpersonationFailed , InterruptedException {
+    return newConnection(createPartIfNotExists, null, null, agentInfo);
   }
 
   /**
@@ -119,18 +146,20 @@ public class HiveEndPoint {
    * @param createPartIfNotExists If true, the partition specified in the endpoint
    *                              will be auto created if it does not exist
    * @param conf HiveConf object, set it to null if not using advanced hive settings.
+   * @param agentInfo should uniquely identify the process/entity that is using this batch.  This
+   *                  should be something that can be correlated with calling application log files
+   *                  and/or monitoring consoles.
    * @return
    * @throws ConnectionError if problem connecting
    * @throws InvalidPartition  if specified partition is not valid (createPartIfNotExists = false)
    * @throws ImpersonationFailed  if not able to impersonate 'proxyUser'
-   * @throws IOException  if there was an I/O error when acquiring connection
    * @throws PartitionCreationFailed if failed to create partition
    * @throws InterruptedException
    */
-  public StreamingConnection newConnection(final boolean createPartIfNotExists, HiveConf conf)
+  public StreamingConnection newConnection(final boolean createPartIfNotExists, HiveConf conf, String agentInfo)
           throws ConnectionError, InvalidPartition, InvalidTable, PartitionCreationFailed
           , ImpersonationFailed , InterruptedException {
-    return newConnection(createPartIfNotExists, conf, null);
+    return newConnection(createPartIfNotExists, conf, null, agentInfo);
   }
 
   /**
@@ -144,21 +173,23 @@ public class HiveEndPoint {
    * @param conf               HiveConf object to be used for the connection. Can be null.
    * @param authenticatedUser  UserGroupInformation object obtained from successful authentication.
    *                           Uses non-secure mode if this argument is null.
+   * @param agentInfo should uniquely identify the process/entity that is using this batch.  This
+   *                  should be something that can be correlated with calling application log files
+   *                  and/or monitoring consoles.
    * @return
    * @throws ConnectionError if there is a connection problem
    * @throws InvalidPartition  if specified partition is not valid (createPartIfNotExists = false)
    * @throws ImpersonationFailed  if not able to impersonate 'username'
-   * @throws IOException  if there was an I/O error when acquiring connection
    * @throws PartitionCreationFailed if failed to create partition
    * @throws InterruptedException
    */
   public StreamingConnection newConnection(final boolean createPartIfNotExists, final HiveConf conf,
-                                            final UserGroupInformation authenticatedUser)
+                                           final UserGroupInformation authenticatedUser, final String agentInfo)
           throws ConnectionError, InvalidPartition,
                InvalidTable, PartitionCreationFailed, ImpersonationFailed , InterruptedException {
 
     if( authenticatedUser==null ) {
-      return newConnectionImpl(authenticatedUser, createPartIfNotExists, conf);
+      return newConnectionImpl(authenticatedUser, createPartIfNotExists, conf, agentInfo);
     }
 
     try {
@@ -168,7 +199,7 @@ public class HiveEndPoint {
                 public StreamingConnection run()
                         throws ConnectionError, InvalidPartition, InvalidTable
                         , PartitionCreationFailed {
-                  return newConnectionImpl(authenticatedUser, createPartIfNotExists, conf);
+                  return newConnectionImpl(authenticatedUser, createPartIfNotExists, conf, agentInfo);
                 }
              }
       );
@@ -178,10 +209,10 @@ public class HiveEndPoint {
   }
 
   private StreamingConnection newConnectionImpl(UserGroupInformation ugi,
-                                               boolean createPartIfNotExists, HiveConf conf)
+                                               boolean createPartIfNotExists, HiveConf conf, String agentInfo)
           throws ConnectionError, InvalidPartition, InvalidTable
           , PartitionCreationFailed {
-    return new ConnectionImpl(this, ugi, conf, createPartIfNotExists);
+    return new ConnectionImpl(this, ugi, conf, createPartIfNotExists, agentInfo);
   }
 
   private static UserGroupInformation getUserGroupInfo(String user)
@@ -250,6 +281,7 @@ public class HiveEndPoint {
     private final UserGroupInformation ugi;
     private final String username;
     private final boolean secureMode;
+    private final String agentInfo;
 
     /**
      * @param endPoint end point to connect to
@@ -262,11 +294,12 @@ public class HiveEndPoint {
      * @throws PartitionCreationFailed if createPart=true and not able to create partition
      */
     private ConnectionImpl(HiveEndPoint endPoint, UserGroupInformation ugi,
-                           HiveConf conf, boolean createPart)
+                           HiveConf conf, boolean createPart, String agentInfo)
             throws ConnectionError, InvalidPartition, InvalidTable
                    , PartitionCreationFailed {
       this.endPt = endPoint;
       this.ugi = ugi;
+      this.agentInfo = agentInfo;
       this.username = ugi==null ? System.getProperty("user.name") : ugi.getShortUserName();
       if (conf==null) {
         conf = HiveEndPoint.createHiveConf(this.getClass(), endPoint.metaStoreUri);
@@ -397,7 +430,7 @@ public class HiveEndPoint {
                                                   RecordWriter recordWriter)
             throws StreamingException, TransactionBatchUnAvailable, InterruptedException {
       return new TransactionBatchImpl(username, ugi, endPt, numTransactions, msClient
-              , recordWriter);
+              , recordWriter, agentInfo);
     }
 
 
@@ -530,6 +563,7 @@ public class HiveEndPoint {
      * file backing this batch any more.  This guards important public methods
      */
     private volatile boolean isClosed = false;
+    private final String agentInfo;
 
     /**
      * Represents a batch of transactions acquired from MetaStore
@@ -537,8 +571,9 @@ public class HiveEndPoint {
      * @throws StreamingException if failed to create new RecordUpdater for batch
      * @throws TransactionBatchUnAvailable if failed to acquire a new Transaction batch
      */
-    private TransactionBatchImpl(final String user, UserGroupInformation ugi, HiveEndPoint endPt
-              , final int numTxns, final IMetaStoreClient msClient, RecordWriter recordWriter)
+    private TransactionBatchImpl(final String user, UserGroupInformation ugi, HiveEndPoint endPt,
+              final int numTxns, final IMetaStoreClient msClient, RecordWriter recordWriter, 
+              String agentInfo)
             throws StreamingException, TransactionBatchUnAvailable, InterruptedException {
       boolean success = false;
       try {
@@ -554,6 +589,7 @@ public class HiveEndPoint {
         this.endPt = endPt;
         this.msClient = msClient;
         this.recordWriter = recordWriter;
+        this.agentInfo = agentInfo;
 
         txnIds = openTxnImpl(msClient, user, numTxns, ugi);
 
@@ -628,7 +664,7 @@ public class HiveEndPoint {
                 " current batch for end point : " + endPt);
       ++currentTxnIndex;
       state = TxnState.OPEN;
-      lockRequest = createLockRequest(endPt, partNameForLock, username, getCurrentTxnId());
+      lockRequest = createLockRequest(endPt, partNameForLock, username, getCurrentTxnId(), agentInfo);
       try {
         LockResponse res = msClient.lock(lockRequest);
         if (res.getState() != LockState.ACQUIRED) {
@@ -957,8 +993,9 @@ public class HiveEndPoint {
     }
 
     private static LockRequest createLockRequest(final HiveEndPoint hiveEndPoint,
-            String partNameForLock, String user, long txnId)  {
-      LockRequestBuilder rqstBuilder = new LockRequestBuilder();
+            String partNameForLock, String user, long txnId, String agentInfo)  {
+      LockRequestBuilder rqstBuilder = agentInfo == null ?
+        new LockRequestBuilder() : new LockRequestBuilder(agentInfo);
       rqstBuilder.setUser(user);
       rqstBuilder.setTransactionId(txnId);
 

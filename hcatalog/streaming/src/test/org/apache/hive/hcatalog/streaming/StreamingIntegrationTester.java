@@ -276,7 +276,7 @@ public class StreamingIntegrationTester {
     public void run() {
       StreamingConnection conn = null;
       try {
-        conn = endPoint.newConnection(true);
+        conn = endPoint.newConnection(true, "UT_" + Thread.currentThread().getName());
         RecordWriter writer = new DelimitedInputWriter(cols, ",", endPoint);
 
         for (int i = 0; i < batches; i++) {

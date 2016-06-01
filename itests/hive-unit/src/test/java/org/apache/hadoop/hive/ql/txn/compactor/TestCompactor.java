@@ -412,7 +412,7 @@ public class TestCompactor {
     * and starts it's own CliSessionState and then closes it, which removes it from ThreadLoacal;
     * thus the session
     * created in this class is gone after this; I fixed it in HiveEndPoint*/
-    StreamingConnection connection = endPt.newConnection(true);
+    StreamingConnection connection = endPt.newConnection(true, "UT_" + Thread.currentThread().getName());
 
     TransactionBatch txnBatch =  connection.fetchTransactionBatch(2, writer);
     txnBatch.beginNextTransaction();
@@ -611,7 +611,7 @@ public class TestCompactor {
 
     HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
     DelimitedInputWriter writer = new DelimitedInputWriter(new String[] {"a","b"},",", endPt);
-    StreamingConnection connection = endPt.newConnection(false);
+    StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
     try {
       // Write a couple of batches
       for (int i = 0; i < 2; i++) {
@@ -673,7 +673,7 @@ public class TestCompactor {
 
     HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
     DelimitedInputWriter writer = new DelimitedInputWriter(new String[] {"a","b"},",", endPt);
-    StreamingConnection connection = endPt.newConnection(false);
+    StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
     try {
       // Write a couple of batches
       for (int i = 0; i < 2; i++) {
@@ -713,6 +713,7 @@ public class TestCompactor {
 
   @Test
   public void minorCompactAfterAbort() throws Exception {
+    String agentInfo = "UT_" + Thread.currentThread().getName();
     String dbName = "default";
     String tblName = "cws";
     List<String> colNames = Arrays.asList("a", "b");
@@ -725,7 +726,7 @@ public class TestCompactor {
 
     HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
     DelimitedInputWriter writer = new DelimitedInputWriter(new String[] {"a","b"},",", endPt);
-    StreamingConnection connection = endPt.newConnection(false);
+    StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
     try {
       // Write a couple of batches
       for (int i = 0; i < 2; i++) {
@@ -790,7 +791,7 @@ public class TestCompactor {
 
     HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
     DelimitedInputWriter writer = new DelimitedInputWriter(new String[] {"a","b"},",", endPt);
-    StreamingConnection connection = endPt.newConnection(false);
+    StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
     try {
       // Write a couple of batches
       for (int i = 0; i < 2; i++) {

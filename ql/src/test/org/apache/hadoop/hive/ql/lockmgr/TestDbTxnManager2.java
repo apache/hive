@@ -1364,4 +1364,16 @@ public class TestDbTxnManager2 {
     ShowLocksResponse rsp = ((DbLockManager)txnMgr.getLockManager()).getLocks(rqst);
     return rsp.getLocks();
   }
+  
+  @Test
+  public void testShowLocksAgentInfo() throws Exception {
+    CommandProcessorResponse cpr = driver.run("create table if not exists XYZ (a int, b int)");
+    checkCmdOnDriver(cpr);
+    checkCmdOnDriver(driver.compileAndRespond("select a from XYZ where b = 8"));
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "XYZ");
+    List<ShowLocksResponseElement> locks = getLocks(txnMgr);
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "XYZ", null, locks.get(0));
+    Assert.assertEquals("Wrong AgentInfo", driver.getPlan().getQueryId(), locks.get(0).getAgentInfo());
+  }
 }

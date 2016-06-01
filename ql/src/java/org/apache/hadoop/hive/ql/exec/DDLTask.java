@@ -2532,6 +2532,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     os.writeBytes("User");
     os.write(separator);
     os.writeBytes("Hostname");
+    os.write(separator);
+    os.writeBytes("Agent Info");
     os.write(terminator);
 
     List<ShowLocksResponseElement> locks = rsp.getLocks();
@@ -2570,6 +2572,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         os.writeBytes(lock.getUser());
         os.write(separator);
         os.writeBytes(lock.getHostname());
+        os.write(separator);
+        os.writeBytes(lock.getAgentInfo() == null ? "NULL" : lock.getAgentInfo());
         os.write(separator);
         os.write(terminator);
       }
