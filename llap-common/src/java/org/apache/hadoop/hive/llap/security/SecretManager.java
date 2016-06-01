@@ -21,8 +21,13 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.security.PrivilegedAction;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.curator.ensemble.fixed.FixedEnsembleProvider;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.RetryOneTime;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -34,22 +39,39 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.delegation.DelegationKey;
 import org.apache.hadoop.security.token.delegation.ZKDelegationTokenSecretManager;
 import org.apache.hadoop.security.token.delegation.web.DelegationTokenManager;
+import org.apache.zookeeper.data.ACL;
+import org.apache.zookeeper.data.Id;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdentifier>
   implements SigningSecretManager {
   private static final Logger LOG = LoggerFactory.getLogger(SecretManager.class);
+  private static final String DISABLE_MESSAGE =
+      "Set " + ConfVars.LLAP_VALIDATE_ACLS.varname + " to false to disable ACL validation";
+  private final Configuration conf;
   private final String clusterId;
 
   public SecretManager(Configuration conf, String clusterId) {
     super(conf);
     this.clusterId = clusterId;
-    checkForZKDTSMBug(conf);
+    checkForZKDTSMBug();
+    this.conf = conf;
+    checkForZKDTSMBug();
+  }
+
+  @Override
+  public void startThreads() throws IOException {
+    super.startThreads();
+    if (!HiveConf.getBoolVar(conf, ConfVars.LLAP_VALIDATE_ACLS)
+      || !UserGroupInformation.isSecurityEnabled()) return;
+    String path = conf.get(ZK_DTSM_ZNODE_WORKING_PATH, null);
+    if (path == null) throw new AssertionError("Path was not set in config");
+    checkRootAcls(conf, path, UserGroupInformation.getCurrentUser().getShortUserName());
   }
 
   // Workaround for HADOOP-12659 - remove when Hadoop 2.7.X is no longer supported.
-  private void checkForZKDTSMBug(Configuration conf) {
+  private void checkForZKDTSMBug() {
     // There's a bug in ZKDelegationTokenSecretManager ctor where seconds are not converted to ms.
     long expectedRenewTimeSec = conf.getLong(DelegationTokenManager.RENEW_INTERVAL, -1);
     LOG.info("Checking for tokenRenewInterval bug: " + expectedRenewTimeSec);
@@ -198,5 +220,50 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
       LOG.info("Created LLAP token {}", token);
     }
     return token;
+  }
+
+  private static void checkRootAcls(Configuration conf, String path, String user) {
+    int stime = conf.getInt(ZK_DTSM_ZK_SESSION_TIMEOUT, ZK_DTSM_ZK_SESSION_TIMEOUT_DEFAULT),
+        ctime = conf.getInt(ZK_DTSM_ZK_CONNECTION_TIMEOUT, ZK_DTSM_ZK_CONNECTION_TIMEOUT_DEFAULT);
+    CuratorFramework zkClient = CuratorFrameworkFactory.builder().namespace(null)
+        .retryPolicy(new RetryOneTime(10)).sessionTimeoutMs(stime).connectionTimeoutMs(ctime)
+        .ensembleProvider(new FixedEnsembleProvider(conf.get(ZK_DTSM_ZK_CONNECTION_STRING)))
+        .build();
+    // Hardcoded from a private field in ZKDelegationTokenSecretManager.
+    // We need to check the path under what it sets for namespace, since the namespace is
+    // created with world ACLs.
+    String nsPath = "/" + path + "/ZKDTSMRoot";
+    Id currentUser = new Id("sasl", user);
+    try {
+      zkClient.start();
+      List<String> children = zkClient.getChildren().forPath(nsPath);
+      for (String child : children) {
+        String childPath = nsPath + "/" + child;
+        checkAcls(zkClient, currentUser, childPath);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    } finally {
+      zkClient.close();
+    }
+  }
+
+  private static void checkAcls(CuratorFramework zkClient, Id user, String path) {
+    List<ACL> acls = null;
+    try {
+      acls = zkClient.getACL().forPath(path);
+    } catch (Exception ex) {
+      throw new RuntimeException("Error during the ACL check. " + DISABLE_MESSAGE, ex);
+    }
+    if (acls == null || acls.isEmpty()) {
+      // There's some access (to get ACLs), so assume it means free for all.
+      throw new SecurityException("No ACLs on "  + path + ". " + DISABLE_MESSAGE);
+    }
+    for (ACL acl : acls) {
+      if (!user.equals(acl.getId())) {
+        throw new SecurityException("The ACL " + acl + " is unnacceptable for " + path
+            + "; only " + user + " is allowed. " + DISABLE_MESSAGE);
+      }
+    }
   }
 }
