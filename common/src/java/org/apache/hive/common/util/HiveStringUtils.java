@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
@@ -1031,5 +1032,20 @@ public class HiveStringUtils {
       }
     }
     return false;
+  }
+
+  public static String getPartitionValWithInvalidCharacter(List<String> partVals,
+      Pattern partitionValidationPattern) {
+    if (partitionValidationPattern == null) {
+      return null;
+    }
+  
+    for (String partVal : partVals) {
+      if (!partitionValidationPattern.matcher(partVal).matches()) {
+        return partVal;
+      }
+    }
+  
+    return null;
   }
 }
