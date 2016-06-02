@@ -4382,7 +4382,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         fs.delete(location, true);
         fs.mkdirs(location);
         try {
-          shim.setFullFileStatus(conf, fullFileStatus, fs, location, true);
+          shim.setFullFileStatus(conf, fullFileStatus, null, fs, location, true);
         } catch (Exception e) {
           LOG.warn("Error setting permissions of " + location, e);
         }

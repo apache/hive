@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -2496,10 +2497,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
     final boolean inheritPerms = HiveConf.getBoolVar(conf,
         HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
     final List<Future<ObjectPair<Path, Path>>> futures = new LinkedList<>();
-    final ExecutorService pool = Executors.newFixedThreadPool(
-        conf.getIntVar(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT),
-        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MoveDir-Thread-%d").build());
-
+    final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ?
+        Executors.newFixedThreadPool(conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Move-Thread-%d").build()) : null;
     for (FileStatus src : srcs) {
       FileStatus[] files;
       if (src.isDirectory()) {
@@ -2513,8 +2513,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         files = new FileStatus[] {src};
       }
 
-      for (FileStatus srcFile : files) {
-
+      final SessionState parentSession = SessionState.get();
+      for (final FileStatus srcFile : files) {
         final Path srcP = srcFile.getPath();
         final boolean needToCopy = needToCopy(srcP, destf, srcFs, destFs);
         // Strip off the file type, if any so we don't make:
@@ -2530,10 +2530,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
           name = itemName;
           filetype = "";
         }
-        futures.add(pool.submit(new Callable<ObjectPair<Path, Path>>() {
-          @Override
-          public ObjectPair<Path, Path> call() throws Exception {
-            Path destPath = new Path(destf, srcP.getName());
+
+        final String srcGroup = srcFile.getGroup();
+        if (null == pool) {
+          Path destPath = new Path(destf, srcP.getName());
+          try {
             if (!needToCopy && !isSrcLocal) {
               for (int counter = 1; !destFs.rename(srcP,destPath); counter++) {
                 destPath = new Path(destf, name + ("_copy_" + counter) + filetype);
@@ -2541,28 +2542,59 @@ private void constructOneLBLocationMap(FileStatus fSta,
             } else {
               destPath = mvFile(conf, srcP, destPath, isSrcLocal, srcFs, destFs, name, filetype);
             }
-
-            if (inheritPerms) {
-              ShimLoader.getHadoopShims().setFullFileStatus(conf, fullDestStatus, destFs, destf, false);
-            }
             if (null != newFiles) {
               newFiles.add(destPath);
             }
-            return ObjectPair.create(srcP, destPath);
+          } catch (IOException ioe) {
+            LOG.error(String.format("Failed to move: {}", ioe.getMessage()));
+            throw new HiveException(ioe.getCause());
           }
-        }));
+        } else {
+          futures.add(pool.submit(new Callable<ObjectPair<Path, Path>>() {
+            @Override
+            public ObjectPair<Path, Path> call() throws Exception {
+              SessionState.setCurrentSessionState(parentSession);
+              Path destPath = new Path(destf, srcP.getName());
+              if (!needToCopy && !isSrcLocal) {
+                for (int counter = 1; !destFs.rename(srcP,destPath); counter++) {
+                  destPath = new Path(destf, name + ("_copy_" + counter) + filetype);
+                }
+              } else {
+                destPath = mvFile(conf, srcP, destPath, isSrcLocal, srcFs, destFs, name, filetype);
+              }
+
+              if (inheritPerms) {
+                ShimLoader.getHadoopShims().setFullFileStatus(conf, fullDestStatus, srcGroup, destFs, destPath, false);
+              }
+              if (null != newFiles) {
+                newFiles.add(destPath);
+              }
+              return ObjectPair.create(srcP, destPath);
+            }
+          }));
+        }
       }
     }
-    pool.shutdown();
-    for (Future<ObjectPair<Path, Path>> future : futures) {
-      try {
-        ObjectPair<Path, Path> pair = future.get();
-        LOG.debug(String.format("Moved src: {}", pair.getFirst().toString(), ", to dest: {}",
-                pair.getSecond().toString()));
-      } catch (Exception e) {
-        LOG.error("Failed to move: {}", e);
-        pool.shutdownNow();
-        throw new HiveException(e.getCause());
+    if (null == pool) {
+      if (inheritPerms) {
+        try {
+          ShimLoader.getHadoopShims().setFullFileStatus(conf, fullDestStatus, null, destFs, destf, true);
+        } catch (IOException e) {
+          LOG.error(String.format("Failed to move: {}", e.getMessage()));
+          throw new HiveException(e.getCause());
+        }
+      }
+    } else {
+      pool.shutdown();
+      for (Future<ObjectPair<Path, Path>> future : futures) {
+        try {
+          ObjectPair<Path, Path> pair = future.get();
+          LOG.debug(String.format("Moved src: {}", pair.getFirst().toString(), ", to dest: {}", pair.getSecond().toString()));
+        } catch (Exception e) {
+          LOG.error(String.format("Failed to move: {}", e.getMessage()));
+          pool.shutdownNow();
+          throw new HiveException(e.getCause());
+        }
       }
     }
   }
@@ -2728,7 +2760,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         destFs.copyFromLocalFile(srcf, destf);
         if (inheritPerms) {
           try {
-            ShimLoader.getHadoopShims().setFullFileStatus(conf, destStatus, destFs, destf, true);
+            ShimLoader.getHadoopShims().setFullFileStatus(conf, destStatus, null, destFs, destf, true);
           } catch (IOException e) {
             LOG.warn("Error setting permission of file " + destf + ": "+ e.getMessage(), e);
           }
@@ -2747,48 +2779,58 @@ private void constructOneLBLocationMap(FileStatus fSta,
             FileStatus[] srcs = destFs.listStatus(srcf, FileUtils.HIDDEN_FILES_PATH_FILTER);
 
             List<Future<Void>> futures = new LinkedList<>();
-            final ExecutorService pool = Executors.newFixedThreadPool(
-                conf.getIntVar(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT),
-                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MoveDir-Thread-%d").build());
+            final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ?
+                Executors.newFixedThreadPool(conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
+                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Move-Thread-%d").build()) : null;
             /* Move files one by one because source is a subdirectory of destination */
-            for (final FileStatus status : srcs) {
-              futures.add(pool.submit(new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                  SessionState.setCurrentSessionState(parentSession);
-                  Path destPath = new Path(destf, status.getPath().getName());
-                  try {
-                    if(destFs.rename(status.getPath(), destf)) {
+            for (final FileStatus srcStatus : srcs) {
+
+              if (null == pool) {
+                if(!destFs.rename(srcStatus.getPath(), destf)) {
+                  throw new IOException("rename for src path: " + srcStatus.getPath() + " to dest:"
+                      + destf + " returned false");
+                }
+              } else {
+                futures.add(pool.submit(new Callable<Void>() {
+                  @Override
+                  public Void call() throws Exception {
+                    SessionState.setCurrentSessionState(parentSession);
+                    final Path destPath = new Path(destf, srcStatus.getPath().getName());
+                    final String group = srcStatus.getGroup();
+                    if(destFs.rename(srcStatus.getPath(), destf)) {
                       if (inheritPerms) {
-                        ShimLoader.getHadoopShims().setFullFileStatus(conf, desiredStatus, destFs, destPath, false);
+                        ShimLoader.getHadoopShims().setFullFileStatus(conf, desiredStatus, null, destFs, destPath, false);
                       }
                     } else {
-                      throw new IOException("rename for src path: " + status.getPath() + " to dest path:"
+                      throw new IOException("rename for src path: " + srcStatus.getPath() + " to dest path:"
                           + destPath + " returned false");
                     }
-                  } catch (IOException ioe) {
-                    LOG.error(String.format("Failed to rename/set permissions. Src path: {} Dest path: {}", status.getPath(), destPath));
-                    throw ioe;
+                    return null;
                   }
-                  return null;
-                }
-              }));
+                }));
+              }
             }
-            pool.shutdown();
-            for (Future<Void> future : futures) {
-              try {
-                future.get();
-              } catch (Exception e) {
-                LOG.debug(e.getMessage());
-                pool.shutdownNow();
-                throw new HiveException(e.getCause());
+            if (null == pool) {
+              if (inheritPerms) {
+                ShimLoader.getHadoopShims().setFullFileStatus(conf, desiredStatus, null, destFs, destf, true);
+              }
+            } else {
+              pool.shutdown();
+              for (Future<Void> future : futures) {
+                try {
+                  future.get();
+                } catch (Exception e) {
+                  LOG.debug(e.getMessage());
+                  pool.shutdownNow();
+                  throw new HiveException(e.getCause());
+                }
               }
             }
             return true;
           } else {
             if (destFs.rename(srcf, destf)) {
               if (inheritPerms) {
-                ShimLoader.getHadoopShims().setFullFileStatus(conf, destStatus, destFs, destf, true);
+                ShimLoader.getHadoopShims().setFullFileStatus(conf, destStatus, null, destFs, destf, true);
               }
               return true;
             }
@@ -3049,6 +3091,52 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (IOException e) {
       throw new HiveException(e.getMessage(), e);
     }
+  }
+
+  /**
+   * Trashes or deletes all files under a directory. Leaves the directory as is.
+   * @param fs FileSystem to use
+   * @param f path of directory
+   * @param conf hive configuration
+   * @param forceDelete whether to force delete files if trashing does not succeed
+   * @return true if deletion successful
+   * @throws IOException
+   */
+  private boolean trashFilesUnderDir(final FileSystem fs, Path f, final Configuration conf)
+      throws IOException {
+    FileStatus[] statuses = fs.listStatus(f, FileUtils.HIDDEN_FILES_PATH_FILTER);
+    boolean result = true;
+    final List<Future<Boolean>> futures = new LinkedList<>();
+    final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ?
+        Executors.newFixedThreadPool(conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Delete-Thread-%d").build()) : null;
+    final SessionState parentSession = SessionState.get();
+    for (final FileStatus status : statuses) {
+      if (null == pool) {
+        result &= FileUtils.moveToTrash(fs, status.getPath(), conf);
+      } else {
+        futures.add(pool.submit(new Callable<Boolean>() {
+          @Override
+          public Boolean call() throws Exception {
+            SessionState.setCurrentSessionState(parentSession);
+            return FileUtils.moveToTrash(fs, status.getPath(), conf);
+          }
+        }));
+      }
+    }
+    if (null != pool) {
+      pool.shutdown();
+      for (Future<Boolean> future : futures) {
+        try {
+          result &= future.get();
+        } catch (InterruptedException | ExecutionException e) {
+          LOG.error("Failed to delete: ",e);
+          pool.shutdownNow();
+          throw new IOException(e);
+        }
+      }
+    }
+    return result;
   }
 
   public static boolean isHadoop1() {

@@ -741,7 +741,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
-  public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus,
+  public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus, String targetGroup,
     FileSystem fs, Path target, boolean recursive) throws IOException {
     String group = sourceStatus.getFileStatus().getGroup();
     //use FsShell to change group, permissions, and extended ACL's recursively
@@ -794,7 +794,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       }
     } else {
       if (group != null && !group.isEmpty()) {
-        fs.setOwner(target, null, group);
+        if (targetGroup == null || !group.equals(targetGroup)) {
+          fs.setOwner(target, null, group);
+        }
       }
       if (aclEnabled) {
         if (null != aclEntries) {
