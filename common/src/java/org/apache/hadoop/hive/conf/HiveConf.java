@@ -2663,7 +2663,7 @@ public class HiveConf extends Configuration {
         "cases of file overwrites. This is supported on HDFS."),
     LLAP_ORC_ENABLE_TIME_COUNTERS("hive.llap.io.orc.time.counters", true,
         "Whether to enable time counters for LLAP IO layer (time spent in HDFS, etc.)"),
-    LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", true,
+    LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", false,
         "Whether or not to allow the planner to run vertices in the AM."),
     LLAP_AUTO_ENFORCE_TREE("hive.llap.auto.enforce.tree", true,
         "Enforce that all parents are in llap, before considering vertex"),
