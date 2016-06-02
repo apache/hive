@@ -42,7 +42,7 @@ public class LocalCommand {
   public LocalCommand(Logger logger, OutputPolicy outputPolicy, String command) throws IOException {
     this.commandId = localCommandCounter.incrementAndGet();
     this.logger = logger;
-    logger.info("Starting LocalCommandId={}: {}" + commandId, command);
+    logger.info("Starting LocalCommandId={}: {}", commandId, command);
     stopwatch.start();
     process = new ProcessBuilder().command(new String[] {"bash", "-c", command}).redirectErrorStream(true).start();
     streamReader = new StreamReader(outputPolicy, process.getInputStream());
