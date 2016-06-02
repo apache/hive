@@ -2527,7 +2527,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         // If we do a rename for a non-local file, we will be transfering the original
         // file permissions from source to the destination. Else, in case of mvFile() where we
         // copy from source to destination, we will inherit the destination's parent group ownership.
-        final String srcGroup = srcFile.getGroup();
+        final String srcGroup = isRenameAllowed ? srcFile.getGroup() :
+          fullDestStatus.getFileStatus().getGroup();
         if (null == pool) {
           try {
             Path destPath = mvFile(conf, srcFs, srcP, destFs, destf, isSrcLocal, isRenameAllowed);
