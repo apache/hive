@@ -344,7 +344,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       joinOneGroup();
       dataInCache = false;
       for (byte pos = 0; pos < order.length; pos++) {
-        if (this.candidateStorage[pos].hasRows()) {
+        if (this.candidateStorage[pos] != null && this.candidateStorage[pos].hasRows()) {
           dataInCache = true;
           break;
         }
