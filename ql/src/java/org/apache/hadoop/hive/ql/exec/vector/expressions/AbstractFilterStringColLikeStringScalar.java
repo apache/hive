@@ -60,7 +60,7 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
    * @param pattern
    * @return
    */
-  private Checker createChecker(String pattern) {
+  Checker createChecker(String pattern) {
     for (CheckerFactory checkerFactory : getCheckerFactories()) {
       Checker checker = checkerFactory.tryCreate(pattern);
       if (checker != null) {
