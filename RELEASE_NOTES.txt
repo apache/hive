@@ -440,6 +440,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13870] - Decimal vector is not resized correctly
     * [HIVE-13876] - Vectorization: Port HIVE-11544 to LazySimpleDeserializeRead
     * [HIVE-13885] - Hive session close is not resetting thread name
+    * [HIVE-13927] - Adding missing header to Java files
 
 
 
@@ -557,6 +558,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13783] - Display a secondary prompt on beeline for multi-line statements
     * [HIVE-13789] - Repeatedly checking configuration in TextRecordWriter/Reader hurts performance
     * [HIVE-13799] - Optimize TableScanRule::checkBucketedTable
+    * [HIVE-13902] - [Refactor] Minimize metastore jar dependencies on task nodes
 
 
 
