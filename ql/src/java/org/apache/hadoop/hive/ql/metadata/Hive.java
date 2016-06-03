@@ -1760,7 +1760,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           partNames.add(p.getName());
         }
         metaStoreClient.addDynamicPartitions(txnId, tbl.getDbName(), tbl.getTableName(),
-          partNames, operation.toDataOperationType());
+          partNames, AcidUtils.toDataOperationType(operation));
       }
       return partitionsMap;
     } catch (IOException e) {
