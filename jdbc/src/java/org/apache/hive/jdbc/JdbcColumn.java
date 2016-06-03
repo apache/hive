@@ -174,7 +174,7 @@ public class JdbcColumn {
       return serdeConstants.DECIMAL_TYPE_NAME;
     } else if ("binary".equalsIgnoreCase(type)) {
       return serdeConstants.BINARY_TYPE_NAME;
-    } else if ("void".equalsIgnoreCase(type)) {
+    } else if ("void".equalsIgnoreCase(type) || "null".equalsIgnoreCase(type)) {
       return serdeConstants.VOID_TYPE_NAME;
     } else if (type.equalsIgnoreCase("map")) {
       return serdeConstants.MAP_TYPE_NAME;
