@@ -18,44 +18,29 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hive.common.util.DateParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
-import org.apache.hadoop.io.Text;
-import org.apache.hive.common.util.DateUtils;
+import java.sql.Date;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.text.ParseException;
-
-public class VectorUDFDateString extends StringUnaryUDF {
+/**
+ * Vectorized version of TO_DATE(STRING)
+ * As TO_DATE() now returns DATE type, this should be the same behavior as the DATE cast operator.
+ */
+public class VectorUDFDateString extends CastStringToDate {
   private static final long serialVersionUID = 1L;
 
-  private static final Logger LOG = LoggerFactory.getLogger(
-      VectorUDFDateString.class.getName());
+  public VectorUDFDateString() {
 
-  public VectorUDFDateString(int colNum, int outputColumn) {
-    super(colNum, outputColumn, new StringUnaryUDF.IUDFUnaryString() {
-      Text t = new Text();
-      final transient SimpleDateFormat formatter = DateUtils.getDateFormat();
-
-      @Override
-      public Text evaluate(Text s) {
-        if (s == null) {
-          return null;
-        }
-        try {
-          Date date = formatter.parse(s.toString());
-          t.set(formatter.format(date));
-          return t;
-        } catch (ParseException e) {
-          return null;
-        }
-      }
-    });
   }
 
-  public VectorUDFDateString() {
-    super();
+  public VectorUDFDateString(int inputColumn, int outputColumn) {
+    super(inputColumn, outputColumn);
   }
 }

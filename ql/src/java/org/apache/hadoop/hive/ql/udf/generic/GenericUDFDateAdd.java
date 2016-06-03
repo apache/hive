@@ -17,11 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.sql.Date;
 import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -43,8 +40,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TimestampConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hive.common.util.DateParser;
 
 /**
  * UDFDateAdd.
@@ -67,13 +64,14 @@ import org.apache.hadoop.io.IntWritable;
         + "  '2009-07-31'")
 @VectorizedExpressions({VectorUDFDateAddColScalar.class, VectorUDFDateAddScalarCol.class, VectorUDFDateAddColCol.class})
 public class GenericUDFDateAdd extends GenericUDF {
-  private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+  private transient final DateParser dateParser = new DateParser();
+  private transient final Date dateVal = new Date(0);
   private transient Converter dateConverter;
   private transient Converter daysConverter;
   private transient PrimitiveCategory inputType1;
   private transient PrimitiveCategory inputType2;
-  private final Calendar calendar = Calendar.getInstance();
-  private final Text output = new Text();
+  private final DateWritable output = new DateWritable();
+  protected int signModifier = 1;  // 1 for addition, -1 for subtraction
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -93,7 +91,7 @@ public class GenericUDFDateAdd extends GenericUDF {
     }
 
     inputType1 = ((PrimitiveObjectInspector) arguments[0]).getPrimitiveCategory();
-    ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
     switch (inputType1) {
     case STRING:
     case VARCHAR:
@@ -165,32 +163,32 @@ public class GenericUDFDateAdd extends GenericUDF {
       return null;
     }
 
+    // Convert the first param into a DateWritable value
     switch (inputType1) {
     case STRING:
       String dateString = dateConverter.convert(arguments[0].get()).toString();
-      try {
-        calendar.setTime(formatter.parse(dateString.toString()));
-      } catch (ParseException e) {
+      if (dateParser.parseDate(dateString, dateVal)) {
+        output.set(dateVal);
+      } else {
         return null;
       }
       break;
     case TIMESTAMP:
       Timestamp ts = ((TimestampWritable) dateConverter.convert(arguments[0].get()))
         .getTimestamp();
-      calendar.setTime(ts);
+      output.set(DateWritable.millisToDays(ts.getTime()));
       break;
     case DATE:
       DateWritable dw = (DateWritable) dateConverter.convert(arguments[0].get());
-      calendar.setTime(dw.get());
+      output.set(dw.getDays());
       break;
     default:
       throw new UDFArgumentException(
         "DATE_ADD() only takes STRING/TIMESTAMP/DATEWRITABLE types, got " + inputType1);
     }
 
-    calendar.add(Calendar.DAY_OF_MONTH, toBeAdded);
-    Date newDate = calendar.getTime();
-    output.set(formatter.format(newDate));
+    int newDays = output.getDays() + (signModifier * toBeAdded);
+    output.set(newDays);
     return output;
   }
 

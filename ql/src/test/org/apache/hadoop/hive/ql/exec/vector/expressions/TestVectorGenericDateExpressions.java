@@ -28,7 +28,8 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -37,6 +38,7 @@ import java.util.List;
 import java.util.Random;
 
 public class TestVectorGenericDateExpressions {
+  private Charset utf8 = StandardCharsets.UTF_8;
   private int size = 200;
   private Random random = new Random();
   private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -88,12 +90,8 @@ public class TestVectorGenericDateExpressions {
   }
 
   private byte[] toString(long date) {
-    try {
-      String formatted = formatter.format(new Date(DateWritable.daysToMillis((int) date)));
-      return formatted.getBytes("UTF-8");
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    String formatted = formatter.format(new Date(DateWritable.daysToMillis((int) date)));
+    return formatted.getBytes(utf8);
   }
 
   private void validateDateAdd(VectorizedRowBatch batch, VectorExpression.Type colType1, long scalar2,
@@ -106,20 +104,20 @@ public class TestVectorGenericDateExpressions {
     }
     udf.setInputTypes(colType1, VectorExpression.Type.OTHER);
     udf.evaluate(batch);
-    BytesColumnVector output = (BytesColumnVector) batch.cols[1];
+    LongColumnVector output = (LongColumnVector) batch.cols[1];
 
     try {
       for (int i = 0; i < size; i++) {
         String expected;
         if (isPositive) {
-          expected = new String(toString(date1.vector[i] + scalar2), "UTF-8");
+          expected = new String(toString(date1.vector[i] + scalar2), utf8);
         } else {
-          expected = new String(toString(date1.vector[i] - scalar2), "UTF-8");
+          expected = new String(toString(date1.vector[i] - scalar2), utf8);
         }
         if (date1.isNull[i]) {
           Assert.assertTrue(output.isNull[i]);
         } else {
-          String actual = new String(output.vector[i], output.start[i], output.start[i] + output.length[i], "UTF-8");
+          String actual = new String(toString(output.vector[i]));
           Assert.assertEquals("expectedLen:" + expected.length() + " actualLen:" + actual.length(), expected, actual);
         }
       }
@@ -149,7 +147,7 @@ public class TestVectorGenericDateExpressions {
     LongColumnVector date1 = newRandomLongColumnVector(10000, size);
     ColumnVector col1 = castTo(date1, colType1);
     long scalar2 = newRandom(1000);
-    BytesColumnVector output = new BytesColumnVector(size);
+    LongColumnVector output = new LongColumnVector(size);
 
     VectorizedRowBatch batch = new VectorizedRowBatch(2, size);
     batch.cols[0] = col1;
@@ -169,13 +167,9 @@ public class TestVectorGenericDateExpressions {
     udf.setInputTypes(VectorExpression.Type.STRING, VectorExpression.Type.TIMESTAMP);
     VectorizedRowBatch batch = new VectorizedRowBatch(2, 1);
     batch.cols[0] = new BytesColumnVector(1);
-    batch.cols[1] = new BytesColumnVector(1);
+    batch.cols[1] = new LongColumnVector(1);
     BytesColumnVector bcv = (BytesColumnVector) batch.cols[0];
-    byte[] bytes = new byte[0];
-    try {
-      bytes = "error".getBytes("UTF-8");
-    } catch (UnsupportedEncodingException e) {
-    }
+    byte[] bytes = "error".getBytes(utf8);
     bcv.vector[0] = bytes;
     bcv.start[0] = 0;
     bcv.length[0] = bytes.length;
@@ -192,13 +186,9 @@ public class TestVectorGenericDateExpressions {
     udf.setInputTypes(VectorExpression.Type.STRING, VectorExpression.Type.TIMESTAMP);
     VectorizedRowBatch batch = new VectorizedRowBatch(2, 1);
     batch.cols[0] = new BytesColumnVector(1);
-    batch.cols[1] = new BytesColumnVector(1);
+    batch.cols[1] = new LongColumnVector(1);
     BytesColumnVector bcv = (BytesColumnVector) batch.cols[0];
-    byte[] bytes = new byte[0];
-    try {
-      bytes = "error".getBytes("UTF-8");
-    } catch (UnsupportedEncodingException e) {
-    }
+    byte[] bytes = "error".getBytes(utf8);
     bcv.vector[0] = bytes;
     bcv.start[0] = 0;
     bcv.length[0] = bytes.length;
@@ -245,20 +235,19 @@ public class TestVectorGenericDateExpressions {
     udf.setInputTypes(colType1, VectorExpression.Type.OTHER);
     udf.evaluate(batch);
 
-    BytesColumnVector output = (BytesColumnVector) batch.cols[1];
+    LongColumnVector output = (LongColumnVector) batch.cols[1];
     try {
       for (int i = 0; i < date2.vector.length; i++) {
         String expected;
         if (isPositive) {
-          expected = new String(toString(scalar1 + date2.vector[i]), "UTF-8");
+          expected = new String(toString(scalar1 + date2.vector[i]), utf8);
         } else {
-          expected = new String(toString(scalar1 - date2.vector[i]), "UTF-8");
+          expected = new String(toString(scalar1 - date2.vector[i]), utf8);
         }
         if (date2.isNull[i]) {
           Assert.assertTrue(output.isNull[i]);
         } else {
-          Assert.assertEquals(expected,
-              new String(output.vector[i], output.start[i], output.start[i] + output.length[i], "UTF-8"));
+          Assert.assertEquals(expected, new String(toString(output.vector[i])));
         }
       }
     } catch (Exception e) {
@@ -270,7 +259,7 @@ public class TestVectorGenericDateExpressions {
     LongColumnVector date2 = newRandomLongColumnVector(10000, size);
     long scalar1 = newRandom(1000);
 
-    BytesColumnVector output = new BytesColumnVector(size);
+    LongColumnVector output = new LongColumnVector(size);
 
     VectorizedRowBatch batch = new VectorizedRowBatch(2, size);
     batch.cols[0] = date2;
@@ -286,15 +275,11 @@ public class TestVectorGenericDateExpressions {
     for (VectorExpression.Type scalarType1 : dateTimestampStringTypes)
       testDateAddScalarCol(scalarType1, true);
 
-    VectorExpression udf = null;
-    try {
-      udf = new VectorUDFDateAddScalarCol("error".getBytes("UTF-8"), 0, 1);
-    } catch (UnsupportedEncodingException e) {
-    }
+    VectorExpression udf = new VectorUDFDateAddScalarCol("error".getBytes(utf8), 0, 1);
     udf.setInputTypes(VectorExpression.Type.STRING, VectorExpression.Type.TIMESTAMP);
     VectorizedRowBatch batch = new VectorizedRowBatch(2, 1);
     batch.cols[0] = new LongColumnVector(1);
-    batch.cols[1] = new BytesColumnVector(1);
+    batch.cols[1] = new LongColumnVector(1);
     udf.evaluate(batch);
     Assert.assertEquals(batch.cols[1].isNull[0], true);
   }
@@ -304,15 +289,11 @@ public class TestVectorGenericDateExpressions {
     for (VectorExpression.Type scalarType1 : dateTimestampStringTypes)
       testDateAddScalarCol(scalarType1, false);
 
-    VectorExpression udf = null;
-    try {
-      udf = new VectorUDFDateSubScalarCol("error".getBytes("UTF-8"), 0, 1);
-    } catch (UnsupportedEncodingException e) {
-    }
+    VectorExpression udf = new VectorUDFDateSubScalarCol("error".getBytes(utf8), 0, 1);
     udf.setInputTypes(VectorExpression.Type.STRING, VectorExpression.Type.TIMESTAMP);
     VectorizedRowBatch batch = new VectorizedRowBatch(2, 1);
     batch.cols[0] = new LongColumnVector(1);
-    batch.cols[1] = new BytesColumnVector(1);
+    batch.cols[1] = new LongColumnVector(1);
     udf.evaluate(batch);
     Assert.assertEquals(batch.cols[1].isNull[0], true);
   }
@@ -328,20 +309,19 @@ public class TestVectorGenericDateExpressions {
     }
     udf.setInputTypes(colType1, VectorExpression.Type.OTHER);
     udf.evaluate(batch);
-    BytesColumnVector output = (BytesColumnVector) batch.cols[2];
+    LongColumnVector output = (LongColumnVector) batch.cols[2];
     try {
       for (int i = 0; i < date2.vector.length; i++) {
         String expected;
         if (isPositive) {
-          expected = new String(toString(date1.vector[i] + date2.vector[i]), "UTF-8");
+          expected = new String(toString(date1.vector[i] + date2.vector[i]), utf8);
         } else {
-          expected = new String(toString(date1.vector[i] - date2.vector[i]), "UTF-8");
+          expected = new String(toString(date1.vector[i] - date2.vector[i]), utf8);
         }
         if (date1.isNull[i] || date2.isNull[i]) {
           Assert.assertTrue(output.isNull[i]);
         } else {
-          Assert.assertEquals(expected,
-              new String(output.vector[i], output.start[i], output.start[i] + output.length[i], "UTF-8"));
+          Assert.assertEquals(expected, new String(toString(output.vector[i])));
         }
       }
     } catch (Exception e) {
@@ -354,7 +334,7 @@ public class TestVectorGenericDateExpressions {
     LongColumnVector days2 = newRandomLongColumnVector(1000, size);
     ColumnVector col1 = castTo(date1, colType1);
 
-    BytesColumnVector output = new BytesColumnVector(size);
+    LongColumnVector output = new LongColumnVector(size);
 
     VectorizedRowBatch batch = new VectorizedRowBatch(3, size);
     batch.cols[0] = col1;
@@ -378,16 +358,12 @@ public class TestVectorGenericDateExpressions {
     VectorExpression udf = new VectorUDFDateAddColCol(0, 1, 2);
     VectorizedRowBatch batch = new VectorizedRowBatch(3, 1);
     BytesColumnVector bcv;
-    byte[] bytes = new byte[0];
-    try {
-      bytes = "error".getBytes("UTF-8");
-    } catch (UnsupportedEncodingException e) {
-    }
+    byte[] bytes = "error".getBytes(utf8);
 
     udf.setInputTypes(VectorExpression.Type.STRING, VectorExpression.Type.TIMESTAMP);
     batch.cols[0] = new BytesColumnVector(1);
     batch.cols[1] = new LongColumnVector(1);
-    batch.cols[2] = new BytesColumnVector(1);
+    batch.cols[2] = new LongColumnVector(1);
     bcv = (BytesColumnVector) batch.cols[0];
     bcv.vector[0] = bytes;
     bcv.start[0] = 0;
@@ -404,16 +380,12 @@ public class TestVectorGenericDateExpressions {
     VectorExpression udf = new VectorUDFDateSubColCol(0, 1, 2);
     VectorizedRowBatch batch = new VectorizedRowBatch(3, 1);
     BytesColumnVector bcv;
-    byte[] bytes = new byte[0];
-    try {
-      bytes = "error".getBytes("UTF-8");
-    } catch (UnsupportedEncodingException e) {
-    }
+    byte[] bytes = "error".getBytes(utf8);
 
     udf.setInputTypes(VectorExpression.Type.STRING, VectorExpression.Type.TIMESTAMP);
     batch.cols[0] = new BytesColumnVector(1);
     batch.cols[1] = new LongColumnVector(1);
-    batch.cols[2] = new BytesColumnVector(1);
+    batch.cols[2] = new LongColumnVector(1);
     bcv = (BytesColumnVector) batch.cols[0];
     bcv.vector[0] = bytes;
     bcv.start[0] = 0;
@@ -469,11 +441,7 @@ public class TestVectorGenericDateExpressions {
     }
 
     VectorExpression udf;
-    byte[] bytes = new byte[0];
-    try {
-      bytes = "error".getBytes("UTF-8");
-    } catch (UnsupportedEncodingException e) {
-    }
+    byte[] bytes = "error".getBytes(utf8);
     VectorizedRowBatch batch = new VectorizedRowBatch(2, 1);
 
     udf = new VectorUDFDateDiffScalarCol(new Timestamp(0), 0, 1);
@@ -540,11 +508,7 @@ public class TestVectorGenericDateExpressions {
       }
     }
     VectorExpression udf;
-    byte[] bytes = new byte[0];
-    try {
-      bytes = "error".getBytes("UTF-8");
-    } catch (UnsupportedEncodingException e) {
-    }
+    byte[] bytes = "error".getBytes(utf8);
     VectorizedRowBatch batch = new VectorizedRowBatch(2, 1);
 
     udf = new VectorUDFDateDiffColScalar(0, 0, 1);
@@ -609,11 +573,7 @@ public class TestVectorGenericDateExpressions {
     VectorExpression udf = new VectorUDFDateDiffColCol(0, 1, 2);
     VectorizedRowBatch batch = new VectorizedRowBatch(3, 1);
     BytesColumnVector bcv;
-    byte[] bytes = new byte[0];
-    try {
-      bytes = "error".getBytes("UTF-8");
-    } catch (UnsupportedEncodingException e) {
-    }
+    byte[] bytes = "error".getBytes(utf8);
 
     udf.setInputTypes(VectorExpression.Type.STRING, VectorExpression.Type.TIMESTAMP);
     batch.cols[0] = new BytesColumnVector(1);
@@ -650,18 +610,14 @@ public class TestVectorGenericDateExpressions {
 
     udf.setInputTypes(colType);
     udf.evaluate(batch);
-    BytesColumnVector output = (BytesColumnVector) batch.cols[1];
+    LongColumnVector output = (LongColumnVector) batch.cols[1];
 
     for (int i = 0; i < size; i++) {
       String actual;
       if (output.isNull[i]) {
         actual = null;
       } else {
-        try {
-          actual = new String(output.vector[i], output.start[i], output.length[i], "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-          throw new RuntimeException(e);
-        }
+        actual = new String(toString(output.vector[i]));
       }
       if (date.isNull[i]) {
         Assert.assertTrue(output.isNull[i]);
@@ -676,7 +632,7 @@ public class TestVectorGenericDateExpressions {
   public void testDate() {
     for (VectorExpression.Type colType : dateTimestampStringTypes) {
       LongColumnVector date = newRandomLongColumnVector(10000, size);
-      BytesColumnVector output = new BytesColumnVector(size);
+      LongColumnVector output = new LongColumnVector(size);
 
       VectorizedRowBatch batch = new VectorizedRowBatch(2, size);
       batch.cols[0] = castTo(date, colType);
@@ -692,13 +648,9 @@ public class TestVectorGenericDateExpressions {
     udf.setInputTypes(VectorExpression.Type.STRING);
     VectorizedRowBatch batch = new VectorizedRowBatch(2, 1);
     batch.cols[0] = new BytesColumnVector(1);
-    batch.cols[1] = new BytesColumnVector(1);
+    batch.cols[1] = new LongColumnVector(1);
     BytesColumnVector bcv = (BytesColumnVector) batch.cols[0];
-    byte[] bytes = new byte[0];
-    try {
-      bytes = "error".getBytes("UTF-8");
-    } catch (UnsupportedEncodingException e) {
-    }
+    byte[] bytes = "error".getBytes(utf8);
     bcv.vector[0] = bytes;
     bcv.start[0] = 0;
     bcv.length[0] = bytes.length;
@@ -755,11 +707,7 @@ public class TestVectorGenericDateExpressions {
     batch.cols[0] = new BytesColumnVector(1);
     batch.cols[1] = new LongColumnVector(1);
     BytesColumnVector bcv = (BytesColumnVector) batch.cols[0];
-    byte[] bytes = new byte[0];
-    try {
-      bytes = "error".getBytes("UTF-8");
-    } catch (UnsupportedEncodingException e) {
-    }
+    byte[] bytes = "error".getBytes(utf8);
     bcv.vector[0] = bytes;
     bcv.start[0] = 0;
     bcv.length[0] = bytes.length;

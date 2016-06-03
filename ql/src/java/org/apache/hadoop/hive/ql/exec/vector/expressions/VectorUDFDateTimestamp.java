@@ -27,11 +27,12 @@ import java.io.UnsupportedEncodingException;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 
-public class VectorUDFDateTimestamp extends TimestampToStringUnaryUDF {
+/**
+ * Vectorized version of TO_DATE(timestamp).
+ * As TO_DATE() now returns DATE type, this should be the same behavior as the DATE cast operator.
+ */
+public class VectorUDFDateTimestamp extends CastTimestampToDate {
   private static final long serialVersionUID = 1L;
-
-  private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private transient Date date = new Date(0);
 
   public VectorUDFDateTimestamp() {
     super();
@@ -39,36 +40,5 @@ public class VectorUDFDateTimestamp extends TimestampToStringUnaryUDF {
 
   public VectorUDFDateTimestamp(int inputColumn, int outputColumn) {
     super(inputColumn, outputColumn);
-  }
-
-  @Override
-  protected void func(BytesColumnVector outV, TimestampColumnVector inV, int i) {
-    switch (inputTypes[0]) {
-      case TIMESTAMP:
-        date.setTime(inV.getTime(i));
-        break;
-
-      default:
-        throw new Error("Unsupported input type " + inputTypes[0].name());
-    }
-    try {
-      byte[] bytes = formatter.format(date).getBytes("UTF-8");
-      outV.setRef(i, bytes, 0, bytes.length);
-    } catch (UnsupportedEncodingException e) {
-      outV.vector[i] = null;
-      outV.isNull[i] = true;
-    }
-  }
-
-  @Override
-  public VectorExpressionDescriptor.Descriptor getDescriptor() {
-    VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();
-    b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
-        .setNumArguments(1)
-        .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.TIMESTAMP)
-        .setInputExpressionTypes(
-            VectorExpressionDescriptor.InputExpressionType.COLUMN);
-    return b.build();
   }
 }

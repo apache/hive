@@ -23,9 +23,9 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hive.common.util.DateParser;
 
-import java.util.Date;
-import java.text.SimpleDateFormat;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Casts a string vector to a date vector.
@@ -36,7 +36,7 @@ public class CastStringToDate extends VectorExpression {
   private int inputColumn;
   private int outputColumn;
   private transient java.sql.Date sqlDate = new java.sql.Date(0);
-  private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+  private transient DateParser dateParser = new DateParser();
 
   public CastStringToDate() {
 
@@ -115,15 +115,15 @@ public class CastStringToDate extends VectorExpression {
   }
 
   private void evaluate(LongColumnVector outV, BytesColumnVector inV, int i) {
-    try {
-      Date utilDate = formatter.parse(new String(inV.vector[i], inV.start[i], inV.length[i], "UTF-8"));
-      sqlDate.setTime(utilDate.getTime());
+    String dateString = new String(inV.vector[i], inV.start[i], inV.length[i], StandardCharsets.UTF_8);
+    if (dateParser.parseDate(dateString, sqlDate)) {
       outV.vector[i] = DateWritable.dateToDays(sqlDate);
-    } catch (Exception e) {
-      outV.vector[i] = 1;
-      outV.isNull[i] = true;
-      outV.noNulls = false;
+      return;
     }
+
+    outV.vector[i] = 1;
+    outV.isNull[i] = true;
+    outV.noNulls = false;
   }
 
   @Override

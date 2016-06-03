@@ -17,10 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.sql.Date;
 import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -40,7 +38,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TimestampConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.io.Text;
+import org.apache.hive.common.util.DateParser;
 
 /**
  * UDFDate.
@@ -53,13 +51,14 @@ import org.apache.hadoop.io.Text;
         + "  '2009-07-30'")
 @VectorizedExpressions({VectorUDFDateString.class, VectorUDFDateLong.class, VectorUDFDateTimestamp.class})
 public class GenericUDFDate extends GenericUDF {
-  private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private transient TimestampConverter timestampConverter;
   private transient Converter textConverter;
   private transient Converter dateWritableConverter;
   private transient PrimitiveCategory inputType;
   private transient PrimitiveObjectInspector argumentOI;
-  private final Text output = new Text();
+  private transient DateParser dateParser = new DateParser();
+  private transient final DateWritable output = new DateWritable();
+  private transient final Date date = new Date(0);
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -73,7 +72,7 @@ public class GenericUDFDate extends GenericUDF {
     }
     argumentOI = (PrimitiveObjectInspector) arguments[0];
     inputType = argumentOI.getPrimitiveCategory();
-    ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
     switch (inputType) {
     case VOID:
       break;
@@ -109,23 +108,21 @@ public class GenericUDFDate extends GenericUDF {
     case VOID:
       throw new UDFArgumentException("TO_DATE() received non-null object of VOID type");
     case STRING:
-      Date date;
       String dateString = textConverter.convert(arguments[0].get()).toString();
-      try {
-        date = formatter.parse(dateString);
-      } catch (ParseException e) {
+      if (dateParser.parseDate(dateString, date)) {
+        output.set(date);
+      } else {
         return null;
       }
-      output.set(formatter.format(date));
       break;
     case TIMESTAMP:
       Timestamp ts = ((TimestampWritable) timestampConverter.convert(arguments[0].get()))
           .getTimestamp();
-      output.set(formatter.format(ts));
+      output.set(DateWritable.millisToDays(ts.getTime()));
       break;
     case DATE:
       DateWritable dw = (DateWritable) dateWritableConverter.convert(arguments[0].get());
-      output.set(formatter.format(dw.get()));
+      output.set(dw);
       break;
     default:
       throw new UDFArgumentException(
