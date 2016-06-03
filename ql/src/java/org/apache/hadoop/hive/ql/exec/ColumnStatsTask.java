@@ -328,6 +328,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
 
     List<ColumnStatistics> stats = new ArrayList<ColumnStatistics>();
     InspectableObject packedRow;
+    Table tbl = db.getTable(currentDb, tableName);
     while ((packedRow = ftOp.getNextRow()) != null) {
       if (packedRow.oi.getCategory() != ObjectInspector.Category.STRUCT) {
         throw new HiveException("Unexpected object type encountered while unpacking row");
@@ -338,7 +339,6 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
       List<? extends StructField> fields = soi.getAllStructFieldRefs();
       List<Object> list = soi.getStructFieldsDataAsList(packedRow.o);
 
-      Table tbl = db.getTable(currentDb,tableName);
       List<FieldSchema> partColSchema = tbl.getPartCols();
       // Partition columns are appended at end, we only care about stats column
       int numOfStatCols = isTblLevel ? fields.size() : fields.size() - partColSchema.size();
