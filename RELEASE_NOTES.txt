@@ -436,6 +436,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13858] - LLAP: A preempted task can end up waiting on completeInitialization if some part of the executing code suppressed the interrupt
     * [HIVE-13859] - mask() UDF not retaining day and month field values
     * [HIVE-13861] - Fix up nullability issue that might be created by pull up constants rules
+    * [HIVE-13862] - org.apache.hadoop.hive.metastore.MetaStoreDirectSql.getNumPartitionsViaSqlFilter falls back to ORM 
     * [HIVE-13863] - Improve AnnotateWithStatistics with support for cartesian product
     * [HIVE-13867] - restore HiveAuthorizer interface changes
     * [HIVE-13870] - Decimal vector is not resized correctly
