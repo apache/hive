@@ -26,12 +26,9 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hive.common.util.DateParser;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
+import java.sql.Date;
 
 public class VectorUDFDateAddColScalar extends VectorExpression {
   private static final long serialVersionUID = 1L;
@@ -40,9 +37,9 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
   private int outputColumn;
   private int numDays;
   protected boolean isPositive = true;
-  private transient final Calendar calendar = Calendar.getInstance();
-  private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private transient final Text text = new Text();
+  private transient final DateParser dateParser = new DateParser();
+  private transient final Date date = new Date(0);
 
   public VectorUDFDateAddColScalar(int colNum, long numDays, int outputColumn) {
     super();
@@ -62,7 +59,7 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumn];
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
     ColumnVector inputCol = batch.cols[this.colNum];
     /* every line below this is identical for evaluateLong & evaluateString */
     final int n = inputCol.isRepeating ? 1 : batch.size;
@@ -85,14 +82,10 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
             for(int j=0; j < n; j++) {
               int i = sel[j];
               outV.vector[i] = evaluateDate(inputCol, i);
-              outV.start[i] = 0;
-              outV.length[i] = outV.vector[i].length;
             }
           } else {
             for(int i = 0; i < n; i++) {
               outV.vector[i] = evaluateDate(inputCol, i);
-              outV.start[i] = 0;
-              outV.length[i] = outV.vector[i].length;
             }
           }
         } else {
@@ -105,8 +98,6 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
               outV.isNull[i] = inputCol.isNull[i];
               if (!inputCol.isNull[i]) {
                 outV.vector[i] = evaluateDate(inputCol, i);
-                outV.start[i] = 0;
-                outV.length[i] = outV.vector[i].length;
               }
             }
           } else {
@@ -114,8 +105,6 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
               outV.isNull[i] = inputCol.isNull[i];
               if (!inputCol.isNull[i]) {
                 outV.vector[i] = evaluateDate(inputCol, i);
-                outV.start[i] = 0;
-                outV.length[i] = outV.vector[i].length;
               }
             }
           }
@@ -129,14 +118,10 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
             for(int j=0; j < n; j++) {
               int i = sel[j];
               outV.vector[i] = evaluateTimestamp(inputCol, i);
-              outV.start[i] = 0;
-              outV.length[i] = outV.vector[i].length;
             }
           } else {
             for(int i = 0; i < n; i++) {
               outV.vector[i] = evaluateTimestamp(inputCol, i);
-              outV.start[i] = 0;
-              outV.length[i] = outV.vector[i].length;
             }
           }
         } else {
@@ -149,8 +134,6 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
               outV.isNull[i] = inputCol.isNull[i];
               if (!inputCol.isNull[i]) {
                 outV.vector[i] = evaluateTimestamp(inputCol, i);
-                outV.start[i] = 0;
-                outV.length[i] = outV.vector[i].length;
               }
             }
           } else {
@@ -158,8 +141,6 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
               outV.isNull[i] = inputCol.isNull[i];
               if (!inputCol.isNull[i]) {
                 outV.vector[i] = evaluateTimestamp(inputCol, i);
-                outV.start[i] = 0;
-                outV.length[i] = outV.vector[i].length;
               }
             }
           }
@@ -208,52 +189,45 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
     }
   }
 
-  protected byte[] evaluateTimestamp(ColumnVector columnVector, int index) {
+  protected long evaluateTimestamp(ColumnVector columnVector, int index) {
     TimestampColumnVector tcv = (TimestampColumnVector) columnVector;
-    calendar.setTimeInMillis(tcv.getTime(index));
+    // Convert to date value (in days)
+    long days = DateWritable.millisToDays(tcv.getTime(index));
     if (isPositive) {
-      calendar.add(Calendar.DATE, numDays);
+      days += numDays;
     } else {
-      calendar.add(Calendar.DATE, -numDays);
+      days -= numDays;
     }
-    Date newDate = calendar.getTime();
-    text.set(formatter.format(newDate));
-    return Arrays.copyOf(text.getBytes(), text.getLength());
+    return days;
   }
 
-  protected byte[] evaluateDate(ColumnVector columnVector, int index) {
+  protected long evaluateDate(ColumnVector columnVector, int index) {
     LongColumnVector lcv = (LongColumnVector) columnVector;
+    long days = lcv.vector[index];
     if (isPositive) {
-      calendar.setTimeInMillis(DateWritable.daysToMillis((int) lcv.vector[index] + numDays));
+      days += numDays;
     } else {
-      calendar.setTimeInMillis(DateWritable.daysToMillis((int) lcv.vector[index] - numDays));
+      days -= numDays;
     }
-    Date newDate = calendar.getTime();
-    text.set(formatter.format(newDate));
-    return Arrays.copyOf(text.getBytes(), text.getLength());
+    return days;
   }
 
-  protected void evaluateString(ColumnVector columnVector, BytesColumnVector outputVector, int i) {
+  protected void evaluateString(ColumnVector columnVector, LongColumnVector outputVector, int i) {
     BytesColumnVector bcv = (BytesColumnVector) columnVector;
     text.set(bcv.vector[i], bcv.start[i], bcv.length[i]);
-    try {
-      calendar.setTime(formatter.parse(text.toString()));
-    } catch (ParseException e) {
+    boolean parsed = dateParser.parseDate(text.toString(), date);
+    if (!parsed) {
+      outputVector.noNulls = false;
       outputVector.isNull[i] = true;
+      return;
     }
+    long days = DateWritable.millisToDays(date.getTime());
     if (isPositive) {
-      calendar.add(Calendar.DATE, numDays);
+      days += numDays;
     } else {
-      calendar.add(Calendar.DATE, -numDays);
+      days -= numDays;
     }
-    Date newDate = calendar.getTime();
-    text.set(formatter.format(newDate));
-
-    byte[] bytes = text.getBytes();
-    int size = text.getLength();
-    outputVector.vector[i] = Arrays.copyOf(bytes, size);
-    outputVector.start[i] = 0;
-    outputVector.length[i] = size;
+    outputVector.vector[i] = days;
   }
 
   @Override
@@ -263,7 +237,7 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
 
   @Override
   public String getOutputType() {
-    return "string";
+    return "date";
   }
 
   public int getColNum() {

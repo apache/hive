@@ -440,7 +440,7 @@ public class TestVectorDateExpressions {
       VectorUDFDateString udf = new VectorUDFDateString(0, 1);
       VectorizedRowBatch batch = new VectorizedRowBatch(2, batchSize);
       BytesColumnVector in = new BytesColumnVector(batchSize);
-      BytesColumnVector out = new BytesColumnVector(batchSize);
+      LongColumnVector out = new LongColumnVector(batchSize);
       batch.cols[0] = in;
       batch.cols[1] = out;
       for (int i = 0; i < batchSize; i++) {
