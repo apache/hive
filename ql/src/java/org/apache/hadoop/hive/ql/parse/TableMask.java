@@ -107,7 +107,7 @@ public class TableMask {
         String colName = privObject.getColumns().get(index);
         if (!expr.equals(colName)) {
           // CAST(expr AS COLTYPE) AS COLNAME
-          sb.append("CAST(" + expr + " AS " + colTypes.get(index) + ") AS " + colName);
+          sb.append("CAST(" + expr + " AS " + colTypes.get(index) + ") AS `" + colName + "`");
         } else {
           sb.append(expr);
         }
@@ -123,7 +123,7 @@ public class TableMask {
         sb.append(expr);
       }
     }
-    sb.append(" FROM " + privObject.getObjectName());
+    sb.append(" FROM `" + privObject.getDbname() + "`.`" + privObject.getObjectName() + "`");
     sb.append(" " + maskAndFilterInfo.additionalTabInfo);
     String filter = privObject.getRowFilterExpression();
     if (filter != null) {
