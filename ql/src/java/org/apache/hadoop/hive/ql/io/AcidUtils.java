@@ -219,17 +219,27 @@ public class AcidUtils {
   }
 
   public enum Operation {
-    NOT_ACID(DataOperationType.UNSET),
-    INSERT(DataOperationType.INSERT),
-    UPDATE(DataOperationType.UPDATE),
-    DELETE(DataOperationType.DELETE);
-    
-    private final DataOperationType dop;
-    private Operation(DataOperationType dop) {
-      this.dop = dop;
-    }
-    public DataOperationType toDataOperationType() {
-      return dop;
+    NOT_ACID, INSERT, UPDATE, DELETE;
+  }
+
+  /**
+   * Logically this should have been defined in Operation but that causes a dependency
+   * on metastore package from exec jar (from the cluster) which is not allowed.
+   * This method should only be called from client side where metastore.* classes are present.
+   * Not following this will not be caught by unit tests since they have all the jar loaded.
+   */
+  public static DataOperationType toDataOperationType(Operation op) {
+    switch (op) {
+      case NOT_ACID:
+        return DataOperationType.UNSET;
+      case INSERT:
+        return DataOperationType.INSERT;
+      case UPDATE:
+        return DataOperationType.UPDATE;
+      case DELETE:
+        return DataOperationType.DELETE;
+      default:
+        throw new IllegalArgumentException("Unexpected Operation: " + op);
     }
   }
 
