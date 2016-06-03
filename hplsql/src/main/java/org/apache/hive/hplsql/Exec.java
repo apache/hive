@@ -850,34 +850,38 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    * Include statements from .hplsqlrc and hplsql rc files
    */
   void includeRcFile() {
-    if (includeFile(Conf.DOT_HPLSQLRC)) {
+    if (includeFile(Conf.DOT_HPLSQLRC, false)) {
       dotHplsqlrcExists = true;
     }
     else {
-      if (includeFile(Conf.HPLSQLRC)) {
+      if (includeFile(Conf.HPLSQLRC, false)) {
         hplsqlrcExists = true;
       }
     }
     if (udfRun) {
-      includeFile(Conf.HPLSQL_LOCALS_SQL);
+      includeFile(Conf.HPLSQL_LOCALS_SQL, true);
     }
   }
   
   /**
    * Include statements from a file
    */
-  boolean includeFile(String file) {
+  boolean includeFile(String file, boolean showError) {
     try {
       String content = FileUtils.readFileToString(new java.io.File(file), "UTF-8");
       if (content != null && !content.isEmpty()) {
         if (trace) {
-          trace(null, "INLCUDE CONTENT " + file + " (non-empty)");
+          trace(null, "INCLUDE CONTENT " + file + " (non-empty)");
         }
         new Exec(this).include(content);
         return true;
       }
     } 
-    catch (Exception e) {} 
+    catch (Exception e) {
+      if (showError) {
+        error(null, "INCLUDE file error: " + e.getMessage());
+      }
+    } 
     return false;
   }
   
@@ -1368,6 +1372,11 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   }
   
   @Override 
+  public Integer visitCreate_table_options_db2_item(HplsqlParser.Create_table_options_db2_itemContext ctx) { 
+    return 0; 
+  }
+  
+  @Override 
   public Integer visitCreate_table_options_mysql_item(HplsqlParser.Create_table_options_mysql_itemContext ctx) { 
     return exec.stmt.createTableMysqlOptions(ctx); 
   }
@@ -1412,11 +1421,11 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   @Override 
   public Integer visitCreate_package_stmt(HplsqlParser.Create_package_stmtContext ctx) { 
     String name = ctx.ident(0).getText().toUpperCase();
-    currentPackageDecl = new Package(name, exec);    
-    packages.put(name, currentPackageDecl);
+    exec.currentPackageDecl = new Package(name, exec);    
+    exec.packages.put(name, exec.currentPackageDecl);
     trace(ctx, "CREATE PACKAGE");
-    currentPackageDecl.createSpecification(ctx);
-    currentPackageDecl = null;
+    exec.currentPackageDecl.createSpecification(ctx);
+    exec.currentPackageDecl = null;
     return 0; 
   }
 
@@ -1426,15 +1435,15 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   @Override 
   public Integer visitCreate_package_body_stmt(HplsqlParser.Create_package_body_stmtContext ctx) { 
     String name = ctx.ident(0).getText().toUpperCase();
-    currentPackageDecl = packages.get(name);
-    if (currentPackageDecl == null) {
-      currentPackageDecl = new Package(name, exec);
-      currentPackageDecl.setAllMembersPublic(true);
-      packages.put(name, currentPackageDecl);
+    exec.currentPackageDecl = exec.packages.get(name);
+    if (exec.currentPackageDecl == null) {
+      exec.currentPackageDecl = new Package(name, exec);
+      exec.currentPackageDecl.setAllMembersPublic(true);
+      exec.packages.put(name, exec.currentPackageDecl);
     }
     trace(ctx, "CREATE PACKAGE BODY");
-    currentPackageDecl.createBody(ctx);
-    currentPackageDecl = null;
+    exec.currentPackageDecl.createBody(ctx);
+    exec.currentPackageDecl = null;
     return 0; 
   }
 
@@ -2458,6 +2467,18 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     if (!info) {
       return;
     }
+    if (ctx != null) {
+      System.err.println("Ln:" + ctx.getStart().getLine() + " " + message);
+    }
+    else {
+      System.err.println(message);
+    }
+  }
+
+  /**
+   * Error message
+   */
+  public void error(ParserRuleContext ctx, String message) {
     if (ctx != null) {
       System.err.println("Ln:" + ctx.getStart().getLine() + " " + message);
     }

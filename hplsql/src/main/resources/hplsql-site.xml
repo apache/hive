@@ -62,7 +62,7 @@
 </property>
 <property>
   <name>hplsql.dual.table</name>
-  <value>default.dual</value>
+  <value></value>
   <description>Single row, single column table for internal operations</description>
 </property>
 <property>

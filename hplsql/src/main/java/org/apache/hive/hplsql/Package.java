@@ -133,7 +133,7 @@ public class Package {
   }
   
   /**
-   * Execute rocedure
+   * Execute procedure
    */
   public boolean execProc(String name, HplsqlParser.Expr_func_paramsContext ctx, boolean traceNotExists) {
     Create_procedure_stmtContext p = proc.get(name.toUpperCase());

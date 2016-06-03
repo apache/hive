@@ -78,12 +78,12 @@ public class Ftp implements Runnable {
     ftp = openConnection(ctx);
     if (ftp != null) {
       Timer timer = new Timer();
-      long start = timer.start();
+      timer.start();
       if (info) {
         info(ctx, "Retrieving directory listing");
       }
       retrieveFileList(dir);
-      long elapsed = timer.stop();
+      timer.stop();
       if (info) {
         info(ctx, "Files to copy: " + Utils.formatSizeInBytes(ftpSizeInBytes) + ", " + Utils.formatCnt(fileCnt, "file") + ", " + Utils.formatCnt(dirCnt, "subdirectory", "subdirectories") + " scanned (" + timer.format() + ")");
       }
@@ -99,7 +99,7 @@ public class Ftp implements Runnable {
    */
   void copyFiles(HplsqlParser.Copy_from_ftp_stmtContext ctx) {
     Timer timer = new Timer();
-    long start = timer.start();
+    timer.start();
     if (fileCnt > 1 && sessions > 1) {
       if (sessions > fileCnt) {
         sessions = fileCnt;
@@ -254,7 +254,12 @@ public class Ftp implements Runnable {
         if (file.isFile()) {
           if (filePattern == null || Pattern.matches(filePattern, name)) {
             if (dir != null && !dir.isEmpty()) {
-              name = dir + "/" + name;
+              if (dir.endsWith("/")) {
+                name = dir + name;
+              }
+              else {
+                name = dir + "/" + name;
+              }
             }
             if (!newOnly || !isTargetExists(name)) {
               fileCnt++;
@@ -275,7 +280,12 @@ public class Ftp implements Runnable {
         for (FTPFile d : dirs) {
           String sd = d.getName();
           if (dir != null && !dir.isEmpty()) {
-            sd = dir + "/" + sd;
+            if (dir.endsWith("/")) {
+              sd = dir + sd;
+            }
+            else {
+              sd = dir + "/" + sd;
+            }
           }
           retrieveFileList(sd);
         }
@@ -292,7 +302,7 @@ public class Ftp implements Runnable {
   FTPClient openConnection(HplsqlParser.Copy_from_ftp_stmtContext ctx) {
 	  FTPClient ftp = new FTPClient();
 	  Timer timer = new Timer();
-	  long start = timer.start();
+	  timer.start();
 	  try {
 	    ftp.connect(host);
 	    ftp.enterLocalPassiveMode();
@@ -304,7 +314,7 @@ public class Ftp implements Runnable {
 	      exec.signal(Signal.Type.SQLEXCEPTION, "Cannot login to FTP server: " + host);
 	      return null;
 	    }
-	    long elapsed = timer.stop();
+	    timer.stop();
 	    if (info) {
 	      info(ctx, "Connected to ftp: " + host + " (" + timer.format() + ")");
 	    }
@@ -339,8 +349,20 @@ public class Ftp implements Runnable {
    * Get the target file relative path and name
    */
   String getTargetFileName(String file) {
-    int len = dir.length();
-    return targetDir + file.substring(len);
+    String outFile = file;
+    // Remove source dir from file
+    if (dir != null) {
+      if (targetDir != null) {
+        outFile = targetDir + file.substring(dir.length()); 
+      }
+      else {
+        outFile = file.substring(dir.length());
+      }
+    }
+    else if (targetDir != null) {
+      outFile = targetDir + "/" + file;
+    }
+    return outFile;
   }
   
   /**
@@ -348,6 +370,8 @@ public class Ftp implements Runnable {
    */
   void initOptions(HplsqlParser.Copy_from_ftp_stmtContext ctx) {
     host = evalPop(ctx.expr()).toString();
+    user = "anonymous";
+    pwd = "";
     int cnt = ctx.copy_ftp_option().size();
     for (int i = 0; i < cnt; i++) {
       HplsqlParser.Copy_ftp_optionContext option = ctx.copy_ftp_option(i);

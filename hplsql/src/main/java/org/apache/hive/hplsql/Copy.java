@@ -274,14 +274,19 @@ public class Copy {
   public Integer runFromLocal(HplsqlParser.Copy_from_local_stmtContext ctx) { 
     trace(ctx, "COPY FROM LOCAL");
     initFileOptions(ctx.copy_file_option());
-    HashMap<String, Pair<String, Long>> src = new HashMap<String, Pair<String, Long>>();  
-    int cnt = ctx.copy_source().size();
-    for (int i = 0; i < cnt; i++) {
-      createLocalFileList(src, evalPop(ctx.copy_source(i)).toString(), null);
-    }
+    HashMap<String, Pair<String, Long>> srcFiles = new HashMap<String, Pair<String, Long>>();  
+    String src = evalPop(ctx.copy_source(0)).toString();
     String dest = evalPop(ctx.copy_target()).toString();
+    int srcItems = ctx.copy_source().size();
+    for (int i = 0; i < srcItems; i++) {
+      createLocalFileList(srcFiles, evalPop(ctx.copy_source(i)).toString(), null);
+    }
     if (info) {
-      info(ctx, "Files to copy: " + src.size() + " (" + Utils.formatSizeInBytes(srcSizeInBytes) + ")");
+      info(ctx, "Files to copy: " + srcFiles.size() + " (" + Utils.formatSizeInBytes(srcSizeInBytes) + ")");
+    }
+    if (srcFiles.size() == 0) {
+      exec.setHostCode(2);
+      return 2;
     }
     timer.start();
     File file = new File();
@@ -292,10 +297,10 @@ public class Copy {
     try {
       fs = file.createFs();
       boolean multi = false;
-      if (src.size() > 1) {
+      if (srcFiles.size() > 1) {
         multi = true;
       }
-      for (Map.Entry<String, Pair<String, Long>> i : src.entrySet()) {
+      for (Map.Entry<String, Pair<String, Long>> i : srcFiles.entrySet()) {
         try {
           Path s = new Path(i.getKey());           
           Path d = null;
@@ -305,11 +310,18 @@ public class Copy {
               d = new Path(dest, s.getName());
             }
             else {
-              d = new Path(dest, relativePath + java.io.File.separator + s.getName()); 
+              d = new Path(dest, relativePath + Path.SEPARATOR + s.getName()); 
             }
           }
           else {
-            d = new Path(dest);
+            // Path to file is specified (can be relative), so treat target as a file name (hadoop fs -put behavior)
+            if (srcItems == 1 && i.getKey().endsWith(src)) {
+              d = new Path(dest);
+            }
+            // Source directory is specified, so treat the target as a directory 
+            else {
+              d = new Path(dest + Path.SEPARATOR + s.getName());
+            }
           }
           fs.copyFromLocalFile(delete, overwrite, s, d);
           succeed++;

@@ -133,6 +133,10 @@ public class Stmt {
     exec.append(sql, evalPop(ctx.table_name()).toString(), ctx.T_TABLE().getSymbol(), ctx.table_name().getStart());
     Token last = ctx.table_name().getStop();
     if (ctx.create_table_preoptions() != null) {
+      String preopt = evalPop(ctx.create_table_preoptions()).toString();
+      if (preopt != null) {
+        sql.append(" " + preopt);
+      }
       last = ctx.create_table_preoptions().stop;
     }
     sql.append(createTableDefinition(ctx.create_table_definition(), last));
@@ -167,9 +171,12 @@ public class Stmt {
       }
       exec.append(sql, ctx.T_CLOSE_P().getText(), last, ctx.T_CLOSE_P().getSymbol());
     }
+    // CREATE TABLE AS SELECT statement
     else {
       exec.append(sql, evalPop(ctx.select_stmt()).toString(), last, ctx.select_stmt().getStart());
-      exec.append(sql, ctx.T_CLOSE_P().getText(), ctx.select_stmt().stop, ctx.T_CLOSE_P().getSymbol());
+      if (ctx.T_CLOSE_P() != null) {
+        exec.append(sql, ctx.T_CLOSE_P().getText(), ctx.select_stmt().stop, ctx.T_CLOSE_P().getSymbol());
+      }
     }
     HplsqlParser.Create_table_optionsContext options = ctx.create_table_options();
     if (options != null) {
@@ -187,6 +194,9 @@ public class Stmt {
   public Integer createTableHiveOptions(HplsqlParser.Create_table_options_hive_itemContext ctx) {
     if (ctx.create_table_hive_row_format() != null) {
       createTableHiveRowFormat(ctx.create_table_hive_row_format());
+    }
+    else if (ctx.T_STORED() != null) {
+      evalString(exec.getText(ctx));
     }
     return 0; 
   }
@@ -575,7 +585,7 @@ public class Stmt {
       file = evalPop(ctx.expr()).toString();
     }    
     trace(ctx, "INCLUDE " + file);
-    exec.includeFile(file);
+    exec.includeFile(file, true);
     return 0; 
   }
   
@@ -793,7 +803,7 @@ public class Stmt {
       return 1;
     }
     exec.setSqlSuccess();
-    exec.closeQuery(query, exec.conf.defaultConnection);
+    exec.closeQuery(query, conn);
     return 0; 
   }
   

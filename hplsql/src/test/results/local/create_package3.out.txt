@@ -1,0 +1,5 @@
+Ln:1 INCLUDE src/test/queries/local/create_package3_include.sql
+INCLUDE CONTENT src/test/queries/local/create_package3_include.sql (non-empty)
+EXEC PACKAGE PROCEDURE A.test
+Ln:9 PRINT
+"test ok"

@@ -147,10 +147,10 @@ public class Select {
     }
     catch (SQLException e) {
       exec.signal(query);
-      exec.closeQuery(query, exec.conf.defaultConnection);
+      exec.closeQuery(query, conn);
       return 1;
     }
-    exec.closeQuery(query, exec.conf.defaultConnection);
+    exec.closeQuery(query, conn);
     return 0; 
   }  
 

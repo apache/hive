@@ -1,0 +1,13 @@
+Ln:1 CREATE FUNCTION get_count
+Ln:11 PRINT
+EXEC FUNCTION get_count
+Ln:4 DECLARE cnt INT = 0
+Ln:5 SELECT
+Ln:5 SELECT COUNT(*) FROM src
+ WHERE value RLIKE '^[+-]?[0-9]*[.]?[0-9]*$'
+Ln:5 SELECT completed successfully
+Ln:5 SELECT INTO statement executed
+Ln:5 COLUMN: _c0, bigint
+Ln:5 SET cnt = 0
+Ln:7 RETURN
+0

@@ -176,8 +176,16 @@ public class Var {
 	  else if (type == Type.STRING) {
 	    cast(val.toString());
 	  }
+	  else if (type == Type.BIGINT) {
+	    if (val.type == Type.STRING) {
+	      value = Long.parseLong((String)val.value);
+	    }
+    }
 	  else if (type == Type.DECIMAL) {
-	    if (val.type == Type.BIGINT) {
+	    if (val.type == Type.STRING) {
+        value = new BigDecimal((String)val.value);
+      }
+	    else if (val.type == Type.BIGINT) {
 	      value = BigDecimal.valueOf(val.longValue());
 	    }
 	    else if (val.type == Type.DOUBLE) {
@@ -185,7 +193,10 @@ public class Var {
 	    }
 	  }
 	  else if (type == Type.DOUBLE) {
-	    if (val.type == Type.BIGINT || val.type == Type.DECIMAL) {
+	    if (val.type == Type.STRING) {
+        value = new Double((String)val.value);
+      }
+	    else if (val.type == Type.BIGINT || val.type == Type.DECIMAL) {
         value = Double.valueOf(val.doubleValue());
       }
 	  }

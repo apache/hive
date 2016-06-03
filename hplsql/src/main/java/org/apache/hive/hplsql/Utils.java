@@ -257,7 +257,10 @@ public class Utils {
    */
   public static String formatSizeInBytes(long bytes, String postfix) {
     String out; 
-    if (bytes < 1024) {
+    if (bytes == 1) {
+      out = bytes + " byte";
+    }
+    else if (bytes < 1024) {
       out = bytes + " bytes";
     }
     else if (bytes < 1024 * 1024) {

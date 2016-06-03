@@ -219,7 +219,7 @@ declare_temporary_table_item :     // DECLARE TEMPORARY TABLE statement
      ;
      
 create_table_stmt :
-       T_CREATE T_TABLE (T_IF T_NOT T_EXISTS)? table_name create_table_preoptions? create_table_definition
+       T_CREATE T_TABLE (T_IF T_NOT T_EXISTS)? table_name create_table_preoptions? create_table_definition 
      ;
      
 create_local_temp_table_stmt :
@@ -264,10 +264,15 @@ create_table_fk_action :
      ;
 
 create_table_preoptions :
-       (T_COMMA create_table_preoptions_item)+
+      create_table_preoptions_item+
+     ;
+
+create_table_preoptions_item :
+        T_COMMA create_table_preoptions_td_item
+      | create_table_options_hive_item
      ;     
      
-create_table_preoptions_item :
+create_table_preoptions_td_item :
        T_NO? (T_LOG | T_FALLBACK)
      ;
      
@@ -295,12 +300,13 @@ create_table_options_ora_item :
      ;
 
 create_table_options_db2_item :
-       T_IN ident
+       T_INDEX? T_IN ident
      | T_WITH T_REPLACE
      | T_DISTRIBUTE T_BY T_HASH T_OPEN_P ident (T_COMMA ident)* T_CLOSE_P
-     | T_LOGGED 
-     | T_NOT T_LOGGED
+     | T_NOT? T_LOGGED 
+     | T_COMPRESS (T_YES | T_NO)
      | T_DEFINITION T_ONLY
+     | T_WITH T_RESTRICT T_ON T_DROP
      ;
      
 create_table_options_td_item :
@@ -310,6 +316,7 @@ create_table_options_td_item :
     
 create_table_options_hive_item :
        create_table_hive_row_format
+     | T_STORED T_AS ident
      ;
      
 create_table_hive_row_format :
@@ -404,9 +411,9 @@ dtype_attr :
      | T_NOT? (T_CASESPECIFIC | T_CS)
      ;
 
-dtype_default :         // Default clause in variable declaration
+dtype_default :         
        T_COLON? T_EQUAL expr
-     | T_DEFAULT expr
+     | T_WITH? T_DEFAULT expr?
      ;
  
 create_database_stmt :
@@ -463,8 +470,8 @@ create_routine_params :
      | T_OPEN_P create_routine_param_item (T_COMMA create_routine_param_item)* T_CLOSE_P
      | {!_input.LT(1).getText().equalsIgnoreCase("IS") &&
         !_input.LT(1).getText().equalsIgnoreCase("AS") &&
-		!(_input.LT(1).getText().equalsIgnoreCase("DYNAMIC") && _input.LT(2).getText().equalsIgnoreCase("RESULT"))
-		}? 
+        !(_input.LT(1).getText().equalsIgnoreCase("DYNAMIC") && _input.LT(2).getText().equalsIgnoreCase("RESULT"))
+        }? 
        create_routine_param_item (T_COMMA create_routine_param_item)* 
      ;
      
@@ -623,7 +630,7 @@ copy_stmt :             // COPY statement
      ;
      
 copy_source :
-       (ident | expr | L_FILE)
+       (file_name | expr) 
      ;
 
 copy_target :
@@ -647,13 +654,13 @@ copy_ftp_option :
        T_USER expr
      | T_PWD expr
      | T_DIR (file_name | expr) 
-	 | T_FILES expr
-	 | T_NEW
-	 | T_OVERWRITE
-	 | T_SUBDIR
-	 | T_SESSIONS expr
-	 | T_TO T_LOCAL? (file_name | expr)
-	 ;
+     | T_FILES expr
+     | T_NEW
+     | T_OVERWRITE
+     | T_SUBDIR
+     | T_SESSIONS expr
+     | T_TO T_LOCAL? (file_name | expr)
+ ;
      
 commit_stmt :           // COMMIT statement
        T_COMMIT T_WORK?
@@ -945,11 +952,11 @@ merge_action :
 delete_stmt :                             
        T_DELETE T_FROM? table_name delete_alias? (where_clause | T_ALL)?
      ;
-	
+
 delete_alias :
        {!_input.LT(1).getText().equalsIgnoreCase("ALL")}?
        T_AS? ident
-	 ;
+     ;
  
 describe_stmt :
        (T_DESCRIBE | T_DESC) T_TABLE? table_name 
@@ -1255,7 +1262,8 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_COLLECT
      | T_COLLECTION  
      | T_COLUMN
-     | T_COMMENT     
+     | T_COMMENT  
+     | T_COMPRESS     
      | T_CONSTANT     
      | T_COPY
      | T_COMMIT
@@ -1493,6 +1501,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_STEP    
      | T_STDEV     
      | T_STORAGE
+     | T_STORED
      | T_STRING   
      | T_SUBDIR	 
      | T_SUBSTRING
@@ -1536,6 +1545,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_WORK
      | T_XACT_ABORT
      | T_XML
+     | T_YES
      ;
 
 // Lexer rules
@@ -1584,6 +1594,7 @@ T_COLUMN          : C O L U M N ;
 T_COMMENT         : C O M M E N T;
 T_CONSTANT        : C O N S T A N T ;
 T_COMMIT          : C O M M I T ; 
+T_COMPRESS        : C O M P R E S S ;
 T_CONCAT          : C O N C A T;
 T_CONDITION       : C O N D I T I O N ;
 T_CONSTRAINT      : C O N S T R A I N T ; 
@@ -1809,6 +1820,7 @@ T_STATS           : S T A T S ;
 T_STATISTICS      : S T A T I S T I C S ;
 T_STEP            : S T E P ; 
 T_STORAGE         : S T O R A G E ; 
+T_STORED          : S T O R E D ;
 T_STRING          : S T R I N G ;
 T_SUBDIR          : S U B D I R ; 
 T_SUBSTRING       : S U B S T R I N G ; 
@@ -1850,6 +1862,7 @@ T_WITHOUT         : W I T H O U T ;
 T_WORK            : W O R K ;
 T_XACT_ABORT      : X A C T '_' A B O R T ;
 T_XML             : X M L ;
+T_YES             : Y E S ; 
 
 // Functions with specific syntax
 T_ACTIVITY_COUNT       : A C T I V I T Y '_' C O U N T ;

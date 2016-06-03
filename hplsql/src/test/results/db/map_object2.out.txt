@@ -1,0 +1,11 @@
+Ln:1 MAP OBJECT version AS hive.VERSION AT mysqlconn
+Ln:3 SELECT
+Ln:3 select count(*) from hive.VERSION
+Ln:3 SELECT completed successfully
+Ln:3 Standalone SELECT executed: 1 columns in the result set
+1
+Ln:5 SELECT
+Ln:5 select count(*) from src
+Ln:5 SELECT completed successfully
+Ln:5 Standalone SELECT executed: 1 columns in the result set
+500
