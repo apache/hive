@@ -72,6 +72,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13807] - Extend metadata provider to pull up predicates through Union
     * [HIVE-13808] - Use constant expressions to backtrack when we create ReduceSink
     * [HIVE-13852] - NPE in TaskLocationHints during LLAP GetSplits request
+    * [HIVE-13905] - optimize ColumnStatsTask::constructColumnStatsFromPackedRows to have lesser number of getTable calls
 
 
 
@@ -440,6 +441,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13870] - Decimal vector is not resized correctly
     * [HIVE-13876] - Vectorization: Port HIVE-11544 to LazySimpleDeserializeRead
     * [HIVE-13885] - Hive session close is not resetting thread name
+    * [HIVE-13912] - DbTxnManager.commitTxn(): ORA-00918: column ambiguously defined
     * [HIVE-13927] - Adding missing header to Java files
 
 
@@ -599,6 +601,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13097] - [Umbrella] Changes dependent on Tez 0.8.3
     * [HIVE-13188] - Allow users of RetryingThriftClient to close transport
     * [HIVE-13234] - Remove dead ODBC driver from Hive
+    * [HIVE-13281] - Update some default configs for LLAP - disable default uber enabled
     * [HIVE-13385] - [Cleanup] Streamline Beeline instantiation
     * [HIVE-13393] - Beeline: Print help message for the --incremental option
     * [HIVE-13431] - Improvements to LLAPTaskReporter
