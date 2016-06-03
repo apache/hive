@@ -2082,7 +2082,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", "",
         "Bind host on which to run the HiveServer2 Thrift service."),
     HIVE_SERVER2_PARALLEL_COMPILATION("hive.driver.parallel.compilation", false, "Whether to\n" +
-        "enable parallel compilation of the queries between sessions and within the same session on HiveServer2. The default is false."),
+        "enable parallel compilation between sessions on HiveServer2. The default is false."),
     HIVE_SERVER2_COMPILE_LOCK_TIMEOUT("hive.server2.compile.lock.timeout", "0s",
         new TimeValidator(TimeUnit.SECONDS),
         "Number of seconds a request will wait to acquire the compile lock before giving up. " +

@@ -144,7 +144,7 @@ public abstract class Operation {
     } catch (HiveSQLException sqlException) {
       LOG.error("Error getting task status for " + opHandle.toString(), sqlException);
     }
-    return new OperationStatus(state, taskStatus, operationStart, operationComplete, hasResultSet, operationException);
+    return new OperationStatus(state, taskStatus, operationStart, operationComplete, operationException);
   }
 
   public boolean hasResultSet() {

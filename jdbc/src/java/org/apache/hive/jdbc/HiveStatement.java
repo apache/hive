@@ -248,10 +248,10 @@ public class HiveStatement implements java.sql.Statement {
   @Override
   public boolean execute(String sql) throws SQLException {
     runAsyncOnServer(sql);
-    TGetOperationStatusResp status = waitForOperationToComplete();
+    waitForOperationToComplete();
 
     // The query should be completed by now
-    if (!status.isHasResultSet()) {
+    if (!stmtHandle.isHasResultSet()) {
       return false;
     }
     resultSet =  new HiveQueryResultSet.Builder(this).setClient(client).setSessionHandle(sessHandle)
@@ -299,7 +299,7 @@ public class HiveStatement implements java.sql.Statement {
      * Run asynchronously whenever possible
      * Currently only a SQLOperation can be run asynchronously,
      * in a background operation thread
-     * Compilation can run asynchronously or synchronously and execution run asynchronously
+     * Compilation is synchronous and execution is asynchronous
      */
     execReq.setRunAsync(true);
     execReq.setConfOverlay(sessConf);
@@ -318,9 +318,9 @@ public class HiveStatement implements java.sql.Statement {
     }
   }
 
-  TGetOperationStatusResp waitForOperationToComplete() throws SQLException {
+  void waitForOperationToComplete() throws SQLException {
     TGetOperationStatusReq statusReq = new TGetOperationStatusReq(stmtHandle);
-    TGetOperationStatusResp statusResp = null;
+    TGetOperationStatusResp statusResp;
 
     // Poll on the operation status, till the operation is complete
     while (!isOperationComplete) {
@@ -363,8 +363,6 @@ public class HiveStatement implements java.sql.Statement {
         throw new SQLException(e.toString(), "08S01", e);
       }
     }
-
-    return statusResp;
   }
 
   private void checkConnection(String action) throws SQLException {

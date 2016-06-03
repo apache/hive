@@ -1037,12 +1037,8 @@ struct TGetOperationStatusResp {
 
   // When was the operation started
   7: optional i64 operationStarted
-
   // When was the operation completed
   8: optional i64 operationCompleted
-
-  // If the operation has the result
-  9: optional bool hasResultSet
 
 }
 

@@ -50,7 +50,6 @@ import java.util.concurrent.TimeoutException;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -137,66 +136,6 @@ public class TestJdbcWithMiniHS2 {
   }
 
   @Test
-  public void testParallelCompilation() throws Exception {
-    final String tableName = "testParallelCompilation";
-    hs2Conn = getConnection();
-    Statement stmt = hs2Conn.createStatement();
-
-    // create table
-    stmt.execute("DROP TABLE IF EXISTS " + tableName);
-    stmt.execute("CREATE TABLE " + tableName
-        + " (under_col INT COMMENT 'the under column', value STRING) COMMENT ' test table'");
-
-    // load data
-    stmt.execute("load data local inpath '"
-        + kvDataFilePath.toString() + "' into table " + tableName);
-
-    ResultSet res = stmt.executeQuery("SELECT * FROM " + tableName);
-    assertTrue(res.next());
-    res.close();
-
-    stmt.execute("SET hive.driver.parallel.compilation=true");
-    stmt.execute("SET hive.server2.async.exec.async.compile=true");
-
-    stmt.close();
-
-    startConcurrencyTest(hs2Conn, tableName, 10);
-    Connection conn2 = getConnection();
-    startConcurrencyTest(conn2, tableName, 10);
-    conn2.close();
-  }
-
-  @Test
-  public void testParallelCompilation2() throws Exception {
-    final String tableName = "testParallelCompilation2";
-    hs2Conn = getConnection();
-    Statement stmt = hs2Conn.createStatement();
-
-    // create table
-    stmt.execute("DROP TABLE IF EXISTS " + tableName);
-    stmt.execute("CREATE TABLE " + tableName
-        + " (under_col INT COMMENT 'the under column', value STRING) COMMENT ' test table'");
-
-    // load data
-    stmt.execute("load data local inpath '"
-        + kvDataFilePath.toString() + "' into table " + tableName);
-
-    ResultSet res = stmt.executeQuery("SELECT * FROM " + tableName);
-    assertTrue(res.next());
-    res.close();
-
-    stmt.execute("SET hive.driver.parallel.compilation=false");
-    stmt.execute("SET hive.server2.async.exec.async.compile=true");
-
-    stmt.close();
-
-    startConcurrencyTest(hs2Conn, tableName, 10);
-    Connection conn2 = getConnection();
-    startConcurrencyTest(conn2, tableName, 10);
-    conn2.close();
-  }
-
-  @Test
   public void testConcurrentStatements() throws Exception {
     String tableName = "testConcurrentStatements";
     Statement stmt = hs2Conn.createStatement();
@@ -215,13 +154,9 @@ public class TestJdbcWithMiniHS2 {
     res.close();
     stmt.close();
 
-    startConcurrencyTest(hs2Conn, tableName, 300);
-  }
-
-  private static void startConcurrencyTest(Connection conn, String tableName, int numTasks) {
     // Start concurrent testing
     int POOL_SIZE = 100;
-    int TASK_COUNT = numTasks;
+    int TASK_COUNT = 300;
 
     SynchronousQueue<Runnable> executorQueue = new SynchronousQueue<Runnable>();
     ExecutorService workers = new ThreadPoolExecutor(1, POOL_SIZE, 20, TimeUnit.SECONDS, executorQueue);
@@ -229,7 +164,7 @@ public class TestJdbcWithMiniHS2 {
     int i = 0;
     while(i < TASK_COUNT) {
       try {
-        Future<Boolean> future = workers.submit(new JDBCTask(conn, i, tableName));
+        Future<Boolean> future = workers.submit(new JDBCTask(hs2Conn, i, tableName));
         list.add(future);
         i++;
       } catch (RejectedExecutionException ree) {
