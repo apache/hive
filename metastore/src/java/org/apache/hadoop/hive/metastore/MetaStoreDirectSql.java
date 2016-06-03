@@ -852,6 +852,7 @@ class MetaStoreDirectSql {
 
     long start = doTrace ? System.nanoTime() : 0;
     Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    query.setUnique(true);
     int sqlResult = extractSqlInt(query.executeWithArray(params));
     long queryTime = doTrace ? System.nanoTime() : 0;
     timingTrace(doTrace, queryText, start, queryTime);
