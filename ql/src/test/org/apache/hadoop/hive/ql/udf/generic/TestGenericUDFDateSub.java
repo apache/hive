@@ -44,7 +44,7 @@ public class TestGenericUDFDateSub extends TestCase {
     DeferredObject valueObj1 = new DeferredJavaObject(new Text("2009-07-20 04:17:52"));
     DeferredObject valueObj2 = new DeferredJavaObject(new Integer("2"));
     DeferredObject[] args = {valueObj1, valueObj2};
-    Text output = (Text) udf.evaluate(args);
+    DateWritable output = (DateWritable) udf.evaluate(args);
 
     assertEquals("date_sub() test for STRING failed ", "2009-07-18", output.toString());
 
@@ -70,7 +70,7 @@ public class TestGenericUDFDateSub extends TestCase {
         20, 4, 17, 52, 0)));
     DeferredObject valueObj2 = new DeferredJavaObject(new Integer("3"));
     DeferredObject[] args = {valueObj1, valueObj2};
-    Text output = (Text) udf.evaluate(args);
+    DateWritable output = (DateWritable) udf.evaluate(args);
 
     assertEquals("date_sub() test for TIMESTAMP failed ", "2009-07-17", output.toString());
 
@@ -96,7 +96,7 @@ public class TestGenericUDFDateSub extends TestCase {
     DeferredObject valueObj1 = new DeferredJavaObject(new DateWritable(new Date(109, 06, 20)));
     DeferredObject valueObj2 = new DeferredJavaObject(new Integer("4"));
     DeferredObject[] args = {valueObj1, valueObj2};
-    Text output = (Text) udf.evaluate(args);
+    DateWritable output = (DateWritable) udf.evaluate(args);
 
     assertEquals("date_sub() test for DATEWRITABLE failed ", "2009-07-16", output.toString());
 
@@ -121,7 +121,7 @@ public class TestGenericUDFDateSub extends TestCase {
     DeferredObject valueObj1 = new DeferredJavaObject(new DateWritable(new Date(109, 06, 20)));
     DeferredObject valueObj2 = new DeferredJavaObject(new Byte("4"));
     DeferredObject[] args = {valueObj1, valueObj2};
-    Text output = (Text) udf.evaluate(args);
+    DateWritable output = (DateWritable) udf.evaluate(args);
 
     assertEquals("date_add() test for BYTE failed ", "2009-07-16", output.toString());
   }
@@ -136,7 +136,7 @@ public class TestGenericUDFDateSub extends TestCase {
     DeferredObject valueObj1 = new DeferredJavaObject(new DateWritable(new Date(109, 06, 20)));
     DeferredObject valueObj2 = new DeferredJavaObject(new Short("4"));
     DeferredObject[] args = {valueObj1, valueObj2};
-    Text output = (Text) udf.evaluate(args);
+    DateWritable output = (DateWritable) udf.evaluate(args);
 
     assertEquals("date_add() test for SHORT failed ", "2009-07-16", output.toString());
   }

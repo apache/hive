@@ -28,7 +28,7 @@ CREATE TABLE ttest2 (
 
 explain SELECT
   A2.id1, A2.sts,A2.at1,
-    CASE WHEN FLAG = 'A_INS' THEN date_add('2015-11-20', 1) ELSE '2015-11-20' END dt1
+    CASE WHEN FLAG = 'A_INS' THEN cast(date_add('2015-11-20', 1) as string) ELSE '2015-11-20' END dt1
         ,A2.dt2
         ,A2.khash
         ,A2.rhash
@@ -120,7 +120,7 @@ set hive.optimize.ppd=true;
 
 explain SELECT
   A2.id1, A2.sts,A2.at1,
-    CASE WHEN FLAG = 'A_INS' THEN date_add('2015-11-20', 1) ELSE '2015-11-20' END dt1
+    CASE WHEN FLAG = 'A_INS' THEN cast(date_add('2015-11-20', 1) as string) ELSE '2015-11-20' END dt1
         ,A2.dt2
         ,A2.khash
         ,A2.rhash
@@ -212,7 +212,7 @@ set hive.optimize.ppd=true;
 
 explain SELECT
   A2.id1, A2.sts,A2.at1,
-    CASE WHEN FLAG = 'A_INS' THEN date_add('2015-11-20', 1) ELSE '2015-11-20' END dt1
+    CASE WHEN FLAG = 'A_INS' THEN cast(date_add('2015-11-20', 1) as string) ELSE '2015-11-20' END dt1
         ,A2.dt2
         ,A2.khash
         ,A2.rhash
@@ -302,7 +302,7 @@ set hive.cbo.enable=false;
 set hive.optimize.ppd=false;
 explain SELECT
   A2.id1, A2.sts,A2.at1,
-    CASE WHEN FLAG = 'A_INS' THEN date_add('2015-11-20', 1) ELSE '2015-11-20' END dt1
+    CASE WHEN FLAG = 'A_INS' THEN cast(date_add('2015-11-20', 1) as string) ELSE '2015-11-20' END dt1
         ,A2.dt2
         ,A2.khash
         ,A2.rhash
@@ -392,7 +392,7 @@ set hive.cbo.enable=true;
 set hive.optimize.ppd=false;
 explain SELECT
   A2.id1, A2.sts,A2.at1,
-    CASE WHEN FLAG = 'A_INS' THEN date_add('2015-11-20', 1) ELSE '2015-11-20' END dt1
+    CASE WHEN FLAG = 'A_INS' THEN cast(date_add('2015-11-20', 1) as string) ELSE '2015-11-20' END dt1
         ,A2.dt2
         ,A2.khash
         ,A2.rhash
