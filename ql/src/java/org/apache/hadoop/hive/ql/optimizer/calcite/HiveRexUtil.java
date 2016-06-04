@@ -106,6 +106,26 @@ public class HiveRexUtil {
       return simplify(rexBuilder,
           rexBuilder.makeCall(op(negateKind2), ((RexCall) a).getOperands()));
     }
+    if (a.getKind() == SqlKind.AND) {
+      // NOT distributivity for AND
+      final List<RexNode> newOperands = new ArrayList<>();
+      for (RexNode operand : ((RexCall) a).getOperands()) {
+        newOperands.add(simplify(rexBuilder,
+            rexBuilder.makeCall(SqlStdOperatorTable.NOT, operand)));
+      }
+      return simplify(rexBuilder,
+          rexBuilder.makeCall(SqlStdOperatorTable.OR, newOperands));
+    }
+    if (a.getKind() == SqlKind.OR) {
+      // NOT distributivity for OR
+      final List<RexNode> newOperands = new ArrayList<>();
+      for (RexNode operand : ((RexCall) a).getOperands()) {
+        newOperands.add(simplify(rexBuilder,
+            rexBuilder.makeCall(SqlStdOperatorTable.NOT, operand)));
+      }
+      return simplify(rexBuilder,
+          rexBuilder.makeCall(SqlStdOperatorTable.AND, newOperands));
+    }
     return call;
   }
 
