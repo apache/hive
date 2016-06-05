@@ -111,7 +111,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient int maxPartitions;
   protected transient ListBucketingCtx lbCtx;
   protected transient boolean isSkewedStoredAsSubDirectories;
-  protected transient boolean statsCollectRawDataSize;
   protected transient boolean[] statsFromRecordWriter;
   protected transient boolean isCollectRWStats;
   private transient FSPaths prevFsp;
@@ -360,7 +359,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
       isCompressed = conf.getCompressed();
       parent = Utilities.toTempPath(conf.getDirName());
-      statsCollectRawDataSize = conf.isStatsCollectRawDataSize();
       statsFromRecordWriter = new boolean[numFiles];
       serializer = (Serializer) conf.getTableInfo().getDeserializerClass().newInstance();
       serializer.initialize(hconf, conf.getTableInfo().getProperties());
@@ -732,11 +730,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // of gathering stats
       isCollectRWStats = areAllTrue(statsFromRecordWriter);
       if (conf.isGatherStats() && !isCollectRWStats) {
-        if (statsCollectRawDataSize) {
-          SerDeStats stats = serializer.getSerDeStats();
-          if (stats != null) {
-            fpaths.stat.addToStat(StatsSetupConst.RAW_DATA_SIZE, stats.getRawDataSize());
-          }
+        SerDeStats stats = serializer.getSerDeStats();
+        if (stats != null) {
+          fpaths.stat.addToStat(StatsSetupConst.RAW_DATA_SIZE, stats.getRawDataSize());
         }
         fpaths.stat.addToStat(StatsSetupConst.ROW_COUNT, 1);
       }

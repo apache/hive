@@ -6972,10 +6972,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     fileSinkDesc.setLbCtx(lbCtx);
 
-    // set it in plan instead of runtime in FileSinkOperator
-    fileSinkDesc.setStatsCollectRawDataSize(HiveConf.getBoolVar(conf,
-        HiveConf.ConfVars.HIVE_STATS_COLLECT_RAWDATASIZE));
-
     // set the stats publishing/aggregating key prefix
     // the same as directory name. The directory name
     // can be changed in the optimizer but the key should not be changed
