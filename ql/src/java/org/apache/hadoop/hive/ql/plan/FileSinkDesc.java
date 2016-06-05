@@ -88,8 +88,6 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   private ListBucketingCtx lbCtx;
   private String statsTmpDir;
 
-  private boolean statsCollectRawDataSize;
-
   // Record what type of write this is.  Default is non-ACID (ie old style).
   private AcidUtils.Operation writeType = AcidUtils.Operation.NOT_ACID;
   private long txnId = 0;  // transaction id for this operation
@@ -153,7 +151,6 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     ret.setParentDir(parentDir);
     ret.setLinkedFileSinkDesc(linkedFileSinkDesc);
     ret.setStatsReliable(statsReliable);
-    ret.setStatsCollectRawDataSize(statsCollectRawDataSize);
     ret.setDpSortState(dpSortState);
     ret.setWriteType(writeType);
     ret.setTransactionId(txnId);
@@ -414,14 +411,6 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   public void setLinkedFileSinkDesc(List<FileSinkDesc> linkedFileSinkDesc) {
     this.linkedFileSinkDesc = linkedFileSinkDesc;
-  }
-
-  public boolean isStatsCollectRawDataSize() {
-    return statsCollectRawDataSize;
-  }
-
-  public void setStatsCollectRawDataSize(boolean statsCollectRawDataSize) {
-    this.statsCollectRawDataSize = statsCollectRawDataSize;
   }
 
   public boolean isRemovedReduceSinkBucketSort() {

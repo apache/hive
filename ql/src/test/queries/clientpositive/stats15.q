@@ -1,5 +1,4 @@
 set datanucleus.cache.collections=false;
-set hive.stats.collect.rawdatasize=false;
 
 create table stats_src like src;
 insert overwrite table stats_src select * from src;

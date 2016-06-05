@@ -45,7 +45,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	500                 
-	rawDataSize         	0                   
+	rawDataSize         	5312                
 	totalSize           	5812                
 #### A masked pattern was here ####
 	 	 
@@ -183,7 +183,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	500                 
-	rawDataSize         	0                   
+	rawDataSize         	5312                
 	totalSize           	5812                
 #### A masked pattern was here ####
 	 	 
@@ -223,7 +223,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	500                 
-	rawDataSize         	0                   
+	rawDataSize         	5312                
 	totalSize           	5812                
 #### A masked pattern was here ####
 	 	 

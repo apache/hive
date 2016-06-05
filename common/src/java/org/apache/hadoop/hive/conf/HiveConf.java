@@ -1537,8 +1537,6 @@ public class HiveConf extends Configuration {
         "The Java class (implementing the StatsAggregator interface) that is used by default if hive.stats.dbclass is custom type."),
     HIVE_STATS_ATOMIC("hive.stats.atomic", false,
         "whether to update metastore stats only if all stats are available"),
-    HIVE_STATS_COLLECT_RAWDATASIZE("hive.stats.collect.rawdatasize", true,
-        "should the raw data size be collected when analyzing tables"),
     CLIENT_STATS_COUNTERS("hive.client.stats.counters", "",
         "Subset of counters that should be of interest for hive.client.stats.publishers (when one wants to limit their publishing). \n" +
         "Non-display names should be used"),

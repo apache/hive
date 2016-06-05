@@ -88,9 +88,7 @@ public class VirtualColumn implements Serializable {
 
   public static List<VirtualColumn> getStatsRegistry(Configuration conf) {
     List<VirtualColumn> l = new ArrayList<VirtualColumn>();
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_RAWDATASIZE)) {
-      l.add(RAWDATASIZE);
-    }
+    l.add(RAWDATASIZE);
     return l;
   }
 
