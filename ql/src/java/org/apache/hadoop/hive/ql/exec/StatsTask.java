@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -167,7 +168,10 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         // work.getTableSpecs() != null means analyze command
         // work.getLoadTableDesc().getReplace() is true means insert overwrite command 
         // work.getLoadFileDesc().getDestinationCreateTable().isEmpty() means CTAS etc.
-        if (work.getTableSpecs() != null
+        // acidTable will not have accurate stats unless it is set through analyze command.
+        if (work.getTableSpecs() == null && AcidUtils.isAcidTable(table)) {
+          StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
+        } else if (work.getTableSpecs() != null
             || (work.getLoadTableDesc() != null && work.getLoadTableDesc().getReplace())
             || (work.getLoadFileDesc() != null && !work.getLoadFileDesc()
                 .getDestinationCreateTable().isEmpty())) {
@@ -215,7 +219,9 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           //
           org.apache.hadoop.hive.metastore.api.Partition tPart = partn.getTPartition();
           Map<String, String> parameters = tPart.getParameters();
-          if (work.getTableSpecs() != null
+          if (work.getTableSpecs() == null && AcidUtils.isAcidTable(table)) {
+            StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
+          } else if (work.getTableSpecs() != null
               || (work.getLoadTableDesc() != null && work.getLoadTableDesc().getReplace())
               || (work.getLoadFileDesc() != null && !work.getLoadFileDesc()
                   .getDestinationCreateTable().isEmpty())) {
