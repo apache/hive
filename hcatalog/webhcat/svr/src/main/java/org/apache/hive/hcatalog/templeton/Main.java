@@ -34,6 +34,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hdfs.web.AuthFilter;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.client.PseudoAuthenticator;
 import org.apache.hadoop.security.authentication.server.PseudoAuthenticationHandler;
@@ -211,6 +212,14 @@ public class Main {
     root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/version/*", 
              FilterMapping.REQUEST);
 
+    if (conf.getBoolean(AppConfig.XSRF_FILTER_ENABLED, false)){
+      root.addFilter(makeXSRFFilter(), "/" + SERVLET_PATH + "/*",
+             FilterMapping.REQUEST);
+      LOG.debug("XSRF filter enabled");
+    } else {
+      LOG.warn("XSRF filter disabled");
+    }
+
     // Connect Jersey
     ServletHolder h = new ServletHolder(new ServletContainer(makeJerseyConfig()));
     root.addServlet(h, "/" + SERVLET_PATH + "/*");
@@ -221,6 +230,21 @@ public class Main {
     server.start();
     this.server = server;
     return server;
+  }
+
+  public FilterHolder makeXSRFFilter() {
+    String customHeader = null; // The header to look for. We use "X-XSRF-HEADER" if this is null.
+    String methodsToIgnore = null; // Methods to not filter. By default: "GET,OPTIONS,HEAD,TRACE" if null.
+    FilterHolder fHolder = new FilterHolder(Utils.getXSRFFilter());
+    if (customHeader != null){
+      fHolder.setInitParameter(Utils.XSRF_CUSTOM_HEADER_PARAM, customHeader);
+    }
+    if (methodsToIgnore != null){
+      fHolder.setInitParameter(Utils.XSRF_CUSTOM_METHODS_TO_IGNORE_PARAM, methodsToIgnore);
+    }
+    FilterHolder xsrfFilter = fHolder;
+
+    return xsrfFilter;
   }
 
   // Configure the AuthFilter with the Kerberos params iff security

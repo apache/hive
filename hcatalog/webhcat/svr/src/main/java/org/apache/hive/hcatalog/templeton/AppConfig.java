@@ -168,6 +168,7 @@ public class AppConfig extends Configuration {
    */
   public static final String HIVE_EXTRA_FILES = "templeton.hive.extra.files";
 
+  public static final String XSRF_FILTER_ENABLED = "templeton.xsrf.filter.enabled";
 
   private static final Logger LOG = LoggerFactory.getLogger(AppConfig.class);
 

@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.service.auth.HiveAuthFactory;
@@ -39,6 +40,7 @@ import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServlet;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
+import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -129,6 +131,15 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       final ServletContextHandler context = new ServletContextHandler(
           ServletContextHandler.SESSIONS);
       context.setContextPath("/");
+      if (hiveConf.getBoolean(ConfVars.HIVE_SERVER2_XSRF_FILTER_ENABLED.varname, false)){
+        // context.addFilter(Utils.getXSRFFilterHolder(null, null), "/" ,
+        //    FilterMapping.REQUEST);
+        // Filtering does not work here currently, doing filter in ThriftHttpServlet
+        LOG.debug("XSRF filter enabled");
+      } else {
+        LOG.warn("XSRF filter disabled");
+      }
+
       String httpPath = getHttpPath(hiveConf
           .getVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH));
       httpServer.setHandler(context);

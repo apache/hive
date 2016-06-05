@@ -354,6 +354,10 @@ public class HiveConnection implements java.sql.Connection {
     }
     // Add the request interceptor to the client builder
     httpClientBuilder.addInterceptorFirst(requestInterceptor);
+
+    // Add an interceptor to add in an XSRF header
+    httpClientBuilder.addInterceptorLast(new XsrfHttpRequestInterceptor());
+
     // Configure http client for SSL
     if (useSsl) {
       String useTwoWaySSL = sessConfMap.get(JdbcConnectionParams.USE_TWO_WAY_SSL);
