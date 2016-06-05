@@ -24,6 +24,41 @@ POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@acidtest1
 POSTHOOK: Lineage: acidtest1.c1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: acidtest1.c2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: desc formatted acidtest1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@acidtest1
+POSTHOOK: query: desc formatted acidtest1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@acidtest1
+# col_name            	data_type           	comment             
+	 	 
+c1                  	int                 	                    
+c2                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	3                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	101663              
+	transactional       	true                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	3                   	 
+Bucket Columns:     	[c1]                	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: explain
 select cast (c1 as string) from acidtest1 limit 10
 PREHOOK: type: QUERY
@@ -40,17 +75,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acidtest1
-            Statistics: Num rows: 9173 Data size: 101613 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 25415 Data size: 101663 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: UDFToString(c1) (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 9173 Data size: 101613 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 25415 Data size: 101663 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 10
-                Statistics: Num rows: 10 Data size: 110 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 10 Data size: 110 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

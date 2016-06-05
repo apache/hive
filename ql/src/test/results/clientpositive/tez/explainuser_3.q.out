@@ -31,13 +31,13 @@ Stage-0
     Stage-1
       Reducer 2 vectorized
       File Output Operator [FS_8]
-        Select Operator [SEL_7] (rows=10 width=170)
+        Select Operator [SEL_7] (rows=16 width=106)
           Output:["_col0","_col1"]
         <-Map 1 [SIMPLE_EDGE] vectorized
           SHUFFLE [RS_6]
-            Select Operator [SEL_5] (rows=10 width=170)
+            Select Operator [SEL_5] (rows=16 width=106)
               Output:["_col0","_col1"]
-              TableScan [TS_0] (rows=10 width=170)
+              TableScan [TS_0] (rows=16 width=106)
                 default@acid_vectorized,acid_vectorized, ACID table,Tbl:COMPLETE,Col:NONE,Output:["a","b"]
 
 PREHOOK: query: explain select key, value
