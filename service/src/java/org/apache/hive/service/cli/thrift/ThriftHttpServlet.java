@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.delegation.web.DelegationTokenAuthenticator;
 import org.apache.hive.service.CookieSigner;
@@ -128,6 +129,13 @@ public class ThriftHttpServlet extends TServlet {
     boolean requireNewCookie = false;
 
     try {
+      if (hiveConf.getBoolean(ConfVars.HIVE_SERVER2_XSRF_FILTER_ENABLED.varname,false)){
+        boolean continueProcessing = Utils.doXsrfFilter(request,response,null,null);
+        if (!continueProcessing){
+          LOG.warn("Request did not have valid XSRF header, rejecting.");
+          return;
+        }
+      }
       // If the cookie based authentication is already enabled, parse the
       // request and validate the request cookies.
       if (isCookieAuthEnabled) {
