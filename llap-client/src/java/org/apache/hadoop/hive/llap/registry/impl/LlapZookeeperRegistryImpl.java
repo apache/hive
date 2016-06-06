@@ -128,6 +128,29 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     hostname = localhost;
   }
 
+  /**
+   * ACLProvider for providing appropriate ACLs to CuratorFrameworkFactory
+   */
+  private final ACLProvider zooKeeperAclProvider = new ACLProvider() {
+
+    @Override
+    public List<ACL> getDefaultAcl() {
+      // We always return something from getAclForPath so this should not happen.
+      LOG.warn("getDefaultAcl was called");
+      return Lists.newArrayList(ZooDefs.Ids.OPEN_ACL_UNSAFE);
+    }
+
+    @Override
+    public List<ACL> getAclForPath(String path) {
+      if (!UserGroupInformation.isSecurityEnabled() || path == null
+          || !path.contains(userPathPrefix)) {
+        // No security or the path is below the user path - full access.
+        return Lists.newArrayList(ZooDefs.Ids.OPEN_ACL_UNSAFE);
+      }
+      return createSecureAcls();
+    }
+  };
+
   public LlapZookeeperRegistryImpl(String instanceName, Configuration conf) {
     this.conf = new Configuration(conf);
     this.conf.addResource(YarnConfiguration.YARN_SITE_CONFIGURATION_FILE);
@@ -378,7 +401,6 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
       zooKeeperClient.setACL().withACL(acls).forPath(currentPath);
     }
   }
-
 
   @Override
   public void unregister() throws IOException {
