@@ -24,6 +24,41 @@ POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@acidtest1
 POSTHOOK: Lineage: acidtest1.c1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: acidtest1.c2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: desc formatted acidtest1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@acidtest1
+POSTHOOK: query: desc formatted acidtest1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@acidtest1
+# col_name            	data_type           	comment             
+	 	 
+c1                  	int                 	                    
+c2                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	3                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	100540              
+	transactional       	true                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	3                   	 
+Bucket Columns:     	[c1]                	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: explain
 select cast (c1 as string) from acidtest1 limit 10
 PREHOOK: type: QUERY
@@ -38,11 +73,11 @@ Stage-0
     Stage-1
       Map 1
       File Output Operator [FS_3]
-        Limit [LIM_2] (rows=10 width=10)
+        Limit [LIM_2] (rows=10 width=4)
           Number of rows:10
-          Select Operator [SEL_1] (rows=9173 width=10)
+          Select Operator [SEL_1] (rows=25135 width=4)
             Output:["_col0"]
-            TableScan [TS_0] (rows=9173 width=10)
+            TableScan [TS_0] (rows=25135 width=4)
               default@acidtest1,acidtest1, ACID table,Tbl:COMPLETE,Col:NONE,Output:["c1"]
 
 PREHOOK: query: select cast (c1 as string) from acidtest1 limit 10
