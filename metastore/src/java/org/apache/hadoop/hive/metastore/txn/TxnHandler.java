@@ -631,7 +631,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
            */
           rs = stmt.executeQuery
             (sqlGenerator.addLimitClause(1, "committed.ws_txnid, committed.ws_commit_id, committed.ws_database," +
-              "committed.ws_table, committed.ws_partition, cur.ws_commit_id " +
+              "committed.ws_table, committed.ws_partition, cur.ws_commit_id cur_ws_commit_id " +
               "from WRITE_SET committed INNER JOIN WRITE_SET cur " +
               "ON committed.ws_database=cur.ws_database and committed.ws_table=cur.ws_table " +
               //For partitioned table we always track writes at partition level (never at table)
@@ -3382,6 +3382,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
      * to the first 5 rows.  The mechanism to do that differs in different DB.
      * Make {@code noSelectsqlQuery} to be "a,b from T" and this method will return the
      * appropriately modified row limiting query.
+     *
+     * Note that if {@code noSelectsqlQuery} contains a join, you must make sure that
+     * all columns are unique for Oracle.
      */
     private String addLimitClause(int numRows, String noSelectsqlQuery) throws MetaException {
       switch (dbProduct) {
