@@ -58,6 +58,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13511] - Run clidriver tests from within the qtest dir for the precommit tests
     * [HIVE-13520] - Don't allow any test to run for longer than 60minutes in the ptest setup
     * [HIVE-13541] - Pass view's ColumnAccessInfo to HiveAuthorizer
+    * [HIVE-13564] - Deprecate HIVE_STATS_COLLECT_RAWDATASIZE
     * [HIVE-13565] - thrift change
     * [HIVE-13566] - Auto-gather column stats - phase 1
     * [HIVE-13620] - Merge llap branch work to master
@@ -69,10 +70,14 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13758] - "Create table like" command should initialize the basic stats for the table
     * [HIVE-13786] - Fix the unit test failure org.apache.hive.service.cli.session.TestHiveSessionImpl.testLeakOperationHandle
     * [HIVE-13794] - HIVE_RPC_QUERY_PLAN should always be set when generating LLAP splits
+    * [HIVE-13806] - Extension to folding NOT expressions in CBO
     * [HIVE-13807] - Extend metadata provider to pull up predicates through Union
     * [HIVE-13808] - Use constant expressions to backtrack when we create ReduceSink
+    * [HIVE-13838] - Set basic stats as inaccurate for all ACID tables
     * [HIVE-13852] - NPE in TaskLocationHints during LLAP GetSplits request
     * [HIVE-13905] - optimize ColumnStatsTask::constructColumnStatsFromPackedRows to have lesser number of getTable calls
+    * [HIVE-13910] - [Ranger-Hive] select from a table is not working if used as <dbname.tablename>
+    * [HIVE-13922] - Optimize the code path that analyzes/updates col stats
 
 
 
@@ -445,6 +450,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13912] - DbTxnManager.commitTxn(): ORA-00918: column ambiguously defined
     * [HIVE-13924] - (Vectorization) Error evaluating ((bool0 and (not bool1)) or (bool1 and (not bool0)))
     * [HIVE-13927] - Adding missing header to Java files
+    * [HIVE-13929] - org.apache.hadoop.hive.metastore.api.DataOperationType class not found error when a job is submitted by hive
 
 
 
@@ -563,6 +569,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13789] - Repeatedly checking configuration in TextRecordWriter/Reader hurts performance
     * [HIVE-13799] - Optimize TableScanRule::checkBucketedTable
     * [HIVE-13902] - [Refactor] Minimize metastore jar dependencies on task nodes
+    * [HIVE-13933] - Add an option to turn off parallel file moves
 
 
 
