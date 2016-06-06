@@ -512,8 +512,19 @@ public class HiveSchemaTool {
       }
     } catch (HiveMetaException e) {
       System.err.println(e);
+      if (e.getCause() != null) {
+        Throwable t = e.getCause();
+        System.err.println("Underlying cause: "
+            + t.getClass().getName() + " : "
+            + t.getMessage());
+        if (e.getCause() instanceof SQLException) {
+          System.err.println("SQL Error code: " + ((SQLException)t).getErrorCode());
+        }
+      }
       if (line.hasOption("verbose")) {
         e.printStackTrace();
+      } else {
+        System.err.println("Use --verbose for detailed stacktrace.");
       }
       System.err.println("*** schemaTool failed ***");
       System.exit(1);
