@@ -41,7 +41,6 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -78,7 +77,7 @@ public class HiveRelFactories {
           new HiveSetOpFactoryImpl();
 
   public static final RelBuilderFactory HIVE_BUILDER =
-      RelBuilder.proto(
+      HiveRelBuilder.proto(
           Contexts.of(HIVE_PROJECT_FACTORY,
               HIVE_FILTER_FACTORY,
               HIVE_JOIN_FACTORY,
