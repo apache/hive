@@ -145,11 +145,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
         // No security or the path is below the user path - full access.
         return Lists.newArrayList(ZooDefs.Ids.OPEN_ACL_UNSAFE);
       }
-      // Read all to the world
-      List<ACL> nodeAcls = new ArrayList<ACL>(ZooDefs.Ids.READ_ACL_UNSAFE);
-      // Create/Delete/Write/Admin to creator
-      nodeAcls.addAll(ZooDefs.Ids.CREATOR_ALL_ACL);
-      return nodeAcls;
+      return createSecureAcls();
     }
   };
 
@@ -186,6 +182,14 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     this.instances = null;
     this.stateChangeListeners = new HashSet<>();
     LOG.info("Llap Zookeeper Registry is enabled with registryid: " + instanceName);
+  }
+
+  private static List<ACL> createSecureAcls() {
+    // Read all to the world
+    List<ACL> nodeAcls = new ArrayList<ACL>(ZooDefs.Ids.READ_ACL_UNSAFE);
+    // Create/Delete/Write/Admin to creator
+    nodeAcls.addAll(ZooDefs.Ids.CREATOR_ALL_ACL);
+    return nodeAcls;
   }
 
   /**
@@ -299,7 +303,11 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
 
       znodePath = znode.getActualPath();
       if (HiveConf.getBoolVar(conf, ConfVars.LLAP_VALIDATE_ACLS)) {
-        checkAcls();
+        try {
+          checkAndSetAcls();
+        } catch (Exception ex) {
+          throw new IOException("Error validating or setting ACLs. " + DISABLE_MESSAGE, ex);
+        }
       }
       // Set a watch on the znode
       if (zooKeeperClient.checkExists().forPath(znodePath) == null) {
@@ -321,7 +329,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     return uniq.toString();
   }
 
-  private void checkAcls() throws Exception {
+  private void checkAndSetAcls() throws Exception {
     if (!UserGroupInformation.isSecurityEnabled()) return;
     String pathToCheck = znodePath;
     // We are trying to check ACLs on the "workers" directory, which noone except us should be
@@ -333,7 +341,9 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     List<ACL> acls = zooKeeperClient.getACL().forPath(pathToCheck);
     if (acls == null || acls.isEmpty()) {
       // Can there be no ACLs? There's some access (to get ACLs), so assume it means free for all.
-      throw new SecurityException("No ACLs on "  + pathToCheck + ". " + DISABLE_MESSAGE);
+      LOG.warn("No ACLs on "  + pathToCheck + "; setting up ACLs. " + DISABLE_MESSAGE);
+      setUpAcls(pathToCheck);
+      return;
     }
     // This could be brittle.
     assert userNameFromPrincipal != null;
@@ -342,10 +352,29 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
       if ((acl.getPerms() & ~ZooDefs.Perms.READ) == 0 || currentUser.equals(acl.getId())) {
         continue; // Read permission/no permissions, or the expected user.
       }
-      throw new SecurityException("The ACL " + acl + " is unnacceptable for " + pathToCheck
-          + ". " + DISABLE_MESSAGE);
+      LOG.warn("The ACL " + acl + " is unnacceptable for " + pathToCheck
+        + "; setting up ACLs. " + DISABLE_MESSAGE);
+      setUpAcls(pathToCheck);
+      return;
     }
   }
+
+  private void setUpAcls(String path) throws Exception {
+    List<ACL> acls = createSecureAcls();
+    LinkedList<String> paths = new LinkedList<>();
+    paths.add(path);
+    while (!paths.isEmpty()) {
+      String currentPath = paths.poll();
+      List<String> children = zooKeeperClient.getChildren().forPath(currentPath);
+      if (children != null) {
+        for (String child : children) {
+          paths.add(currentPath + "/" + child);
+        }
+      }
+      zooKeeperClient.setACL().withACL(acls).forPath(currentPath);
+    }
+  }
+
 
   @Override
   public void unregister() throws IOException {
