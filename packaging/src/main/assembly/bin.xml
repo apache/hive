@@ -398,6 +398,11 @@
       <destName>llap-cli-log4j2.properties.template</destName>
     </file>
     <file>
+      <source>${project.parent.basedir}/common/src/main/resources/parquet-logging.properties</source>
+      <outputDirectory>conf</outputDirectory>
+      <destName>parquet-logging.properties</destName>
+    </file>
+    <file>
       <source>${project.parent.basedir}/hcatalog/README.txt</source>
       <outputDirectory>hcatalog/share/doc/hcatalog</outputDirectory>
     </file>
