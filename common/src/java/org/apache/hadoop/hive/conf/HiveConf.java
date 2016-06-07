@@ -2944,8 +2944,12 @@ public class HiveConf extends Configuration {
         "Comma separated list of configuration options which should not be read by normal user like passwords"),
     HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
         "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
-        "Comma separated list of variables which are used internally and should not be configurable.");
+        "Comma separated list of variables which are used internally and should not be configurable."),
 
+    HIVE_QUERY_TIMEOUT_SECONDS("hive.query.timeout.seconds", "0s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Timeout for Running Query in seconds. A nonpositive value means infinite. " +
+        "If the query timeout is also set by thrift API call, the smaller one will be taken.");
 
     public final String varname;
     private final String altName;
