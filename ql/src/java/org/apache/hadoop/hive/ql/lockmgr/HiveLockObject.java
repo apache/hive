@@ -18,11 +18,10 @@
 
 package org.apache.hadoop.hive.ql.lockmgr;
 
-import java.util.Arrays;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -290,9 +289,8 @@ public class HiveLockObject {
     }
 
     HiveLockObject tgt = (HiveLockObject) o;
-    return Arrays.equals(pathNames, tgt.pathNames) &&
-        data == null ? tgt.getData() == null :
-        tgt.getData() != null && data.equals(tgt.getData());
+    return StringUtils.equals(this.getName(), tgt.getName()) &&
+        (data == null ? tgt.getData() == null : data.equals(tgt.getData()));
   }
 
   @Override
