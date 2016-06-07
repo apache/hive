@@ -85,7 +85,7 @@ public class UDFMonth extends UDF {
       return null;
     }
 
-    calendar.setTime(d.get());
+    calendar.setTime(d.get(false));  // Time doesn't matter.
     result.set(1 + calendar.get(Calendar.MONTH));
     return result;
   }

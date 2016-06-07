@@ -84,7 +84,7 @@ public class UDFWeekOfYear extends UDF {
       return null;
     }
 
-    calendar.setTime(d.get());
+    calendar.setTime(d.get(false));  // Time doesn't matter.
     result.set(calendar.get(Calendar.WEEK_OF_YEAR));
     return result;
   }

@@ -1331,7 +1331,7 @@ public abstract class BaseSemanticAnalyzer {
       Object colValue, String originalColSpec) throws SemanticException {
     Date value;
     if (colValue instanceof DateWritable) {
-      value = ((DateWritable) colValue).get();
+      value = ((DateWritable) colValue).get(false); // Time doesn't matter.
     } else if (colValue instanceof Date) {
       value = (Date) colValue;
     } else {
