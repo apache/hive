@@ -327,7 +327,8 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       try {
         TypeCheckCtx tcCtx = new TypeCheckCtx(parentQueryRR);
         String str = BaseSemanticAnalyzer.unescapeIdentifier(node.getChild(1).getText());
-        ExprNodeDesc idDesc = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, str);
+        ExprNodeDesc idDesc = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo,
+                str.toLowerCase());
          ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc)
              defaultExprProcessor.process(node, stack, tcCtx, (Object) null, idDesc);
          if ( colDesc != null ) {
