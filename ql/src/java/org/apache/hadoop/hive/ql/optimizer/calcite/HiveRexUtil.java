@@ -134,24 +134,17 @@ public class HiveRexUtil {
     final List<RexNode> operands = call.getOperands();
     final List<RexNode> newOperands = new ArrayList<>();
     final Set<String> values = new HashSet<>();
-    boolean constainsNullableCase = false;
     for (int i = 0; i < operands.size(); i++) {
       RexNode operand = operands.get(i);
       if (RexUtil.isCasePredicate(call, i)) {
         if (operand.isAlwaysTrue()) {
           // Predicate is always TRUE. Make value the ELSE and quit.
           newOperands.add(operands.get(i + 1));
-          if (operand.getType().isNullable()) {
-            constainsNullableCase = true;
-          }
           break;
         } else if (operand.isAlwaysFalse() || RexUtil.isNull(operand)) {
           // Predicate is always FALSE or NULL. Skip predicate and value.
           ++i;
           continue;
-        }
-        if (operand.getType().isNullable()) {
-          constainsNullableCase = true;
         }
       } else {
         if (unknownAsFalse && RexUtil.isNull(operand)) {
@@ -167,19 +160,52 @@ public class HiveRexUtil {
       return rexBuilder.makeCast(call.getType(), newOperands.get(newOperands.size() - 1));
     }
   trueFalse:
-    if (call.getType().getSqlTypeName() == SqlTypeName.BOOLEAN &&
-            (!constainsNullableCase || unknownAsFalse)) {
+    if (call.getType().getSqlTypeName() == SqlTypeName.BOOLEAN) {
       // Optimize CASE where every branch returns constant true or constant
-      // false:
+      // false.
+      final List<Pair<RexNode, RexNode>> pairs =
+          casePairs(rexBuilder, newOperands);
+      // 1) Possible simplification if unknown is treated as false:
+      //   CASE
+      //   WHEN p1 THEN TRUE
+      //   WHEN p2 THEN TRUE
+      //   ELSE FALSE
+      //   END
+      // can be rewritten to: (p1 or p2)
+      if (unknownAsFalse) {
+        final List<RexNode> terms = new ArrayList<>();
+        int pos = 0;
+        for (; pos < pairs.size(); pos++) {
+          // True block
+          Pair<RexNode, RexNode> pair = pairs.get(pos);
+          if (!pair.getValue().isAlwaysTrue()) {
+            break;
+          }
+          terms.add(pair.getKey());
+        }
+        for (; pos < pairs.size(); pos++) {
+          // False block
+          Pair<RexNode, RexNode> pair = pairs.get(pos);
+          if (!pair.getValue().isAlwaysFalse() && !RexUtil.isNull(pair.getValue())) {
+            break;
+          }
+        }
+        if (pos == pairs.size()) {
+          return RexUtil.composeDisjunction(rexBuilder, terms, false);
+        }
+      }
+      // 2) Another simplification
       //   CASE
       //   WHEN p1 THEN TRUE
       //   WHEN p2 THEN FALSE
       //   WHEN p3 THEN TRUE
       //   ELSE FALSE
       //   END
-      final List<Pair<RexNode, RexNode>> pairs =
-          casePairs(rexBuilder, newOperands);
+      // if p1...pn cannot be nullable
       for (Ord<Pair<RexNode, RexNode>> pair : Ord.zip(pairs)) {
+        if (pair.e.getKey().getType().isNullable()) {
+          break trueFalse;
+        }
         if (!pair.e.getValue().isAlwaysTrue()
             && !pair.e.getValue().isAlwaysFalse()
             && (!unknownAsFalse || !RexUtil.isNull(pair.e.getValue()))) {
