@@ -110,6 +110,12 @@ public class SQLOperation extends ExecuteStatementOperation {
     // TODO: call setRemoteUser in ExecuteStatementOperation or higher.
     super(parentSession, statement, confOverlay, runInBackground);
     this.queryTimeout = queryTimeout;
+    long timeout = HiveConf.getTimeVar(parentSession.getHiveConf(),
+        HiveConf.ConfVars.HIVE_QUERY_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+    if (timeout > 0 && (queryTimeout <= 0 || timeout < queryTimeout)) {
+      this.queryTimeout = timeout;
+    }
+
     setupSessionIO(parentSession.getSessionState());
     try {
       sqlOpDisplay = new SQLOperationDisplay(this);

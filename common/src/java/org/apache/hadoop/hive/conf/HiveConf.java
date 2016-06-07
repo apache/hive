@@ -2157,7 +2157,11 @@ public class HiveConf extends Configuration {
             "Comma-separated list of supported blobstore schemes."),
 
     HIVE_BLOBSTORE_USE_BLOBSTORE_AS_SCRATCHDIR("hive.blobstore.use.blobstore.as.scratchdir", false,
-            "Enable the use of scratch directories directly on blob storage systems (it may cause performance penalties).");
+            "Enable the use of scratch directories directly on blob storage systems (it may cause performance penalties)."),
+
+    HIVE_QUERY_TIMEOUT_SECONDS("hive.query.timeout.seconds", "0s",
+        "Timeout for Running Query in seconds. A nonpositive value means infinite. " +
+        "If the query timeout is also set by thrift API call, the smaller one will be taken.");
 
     public final String varname;
     private final String defaultExpr;
