@@ -293,6 +293,9 @@ for j in $SERVICE_LIST ; do
   fi
 done
 
+# to initialize logging for all services
+export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Djava.util.logging.config.file=$bin/../conf/parquet-logging.properties "
+
 if [ "$TORUN" = "" ] ; then
   echo "Service $SERVICE not found"
   echo "Available Services: $SERVICE_LIST"
