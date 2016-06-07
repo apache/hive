@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.serde2.io;
 import com.google.code.tempusfugit.concurrency.annotations.*;
 import com.google.code.tempusfugit.concurrency.*;
 import org.junit.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.*;
 import java.io.*;
@@ -28,6 +30,8 @@ import java.sql.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.LinkedList;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -36,6 +40,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class TestDateWritable {
+  private static final Logger LOG = LoggerFactory.getLogger(TestDateWritable.class);
 
   @Rule public ConcurrentRule concurrentRule = new ConcurrentRule();
   @Rule public RepeatingRule repeatingRule = new RepeatingRule();
@@ -160,24 +165,34 @@ public class TestDateWritable {
     return dateStrings[(int) (Math.random() * 365)];
   }
 
-  public static class DateTestCallable implements Callable<String> {
-    public DateTestCallable() {
+  public static class DateTestCallable implements Callable<Void> {
+    private LinkedList<DtMismatch> bad;
+    private String tz;
+
+    public DateTestCallable(LinkedList<DtMismatch> bad, String tz) {
+      this.bad = bad;
+      this.tz = tz;
     }
 
     @Override
-    public String call() throws Exception {
+    public Void call() throws Exception {
+      SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
       // Iterate through each day of the year, make sure Date/DateWritable match
-      Date originalDate = Date.valueOf("2014-01-01");
+      Date originalDate = Date.valueOf("1900-01-01");
       Calendar cal = Calendar.getInstance();
       cal.setTimeInMillis(originalDate.getTime());
-      for (int idx = 0; idx < 365; ++idx) {
+      for (int idx = 0; idx < 365*200; ++idx) {
         originalDate = new Date(cal.getTimeInMillis());
         // Make sure originalDate is at midnight in the local time zone,
         // since DateWritable will generate dates at that time.
         originalDate = Date.valueOf(originalDate.toString());
         DateWritable dateWritable = new DateWritable(originalDate);
-        if (!originalDate.equals(dateWritable.get())) {
-          return originalDate.toString();
+        Date actual = dateWritable.get(false);
+        if (!originalDate.equals(actual)) {
+          String originalStr = sdf.format(originalDate);
+          String actualStr = sdf.format(actual);
+          if (originalStr.substring(0, 10).equals(actualStr.substring(0, 10))) continue;
+          bad.add(new DtMismatch(originalStr, actualStr, tz));
         }
         cal.add(Calendar.DAY_OF_YEAR, 1);
       }
@@ -186,34 +201,37 @@ public class TestDateWritable {
     }
   }
 
-  @Test
-  public void testDaylightSavingsTime() throws InterruptedException, ExecutionException {
-    String[] timeZones = {
-        "GMT",
-        "UTC",
-        "America/Godthab",
-        "America/Los_Angeles",
-        "Asia/Jerusalem",
-        "Australia/Melbourne",
-        "Europe/London",
-        // time zones with half hour boundaries
-        "America/St_Johns",
-        "Asia/Tehran",
-    };
+  private static class DtMismatch {
+    String expected, found, tz;
+    public DtMismatch(String originalStr, String actualStr, String tz) {
+      this.expected = originalStr;
+      this.found = actualStr;
+      this.tz = tz;
+    }
+  }
 
-    for (String timeZone: timeZones) {
+  @Test
+  public void testDaylightSavingsTime() throws Exception {
+    LinkedList<DtMismatch> bad = new LinkedList<>();
+
+    for (String timeZone: TimeZone.getAvailableIDs()) {
       TimeZone previousDefault = TimeZone.getDefault();
       TimeZone.setDefault(TimeZone.getTimeZone(timeZone));
       assertEquals("Default timezone should now be " + timeZone,
           timeZone, TimeZone.getDefault().getID());
       ExecutorService threadPool = Executors.newFixedThreadPool(1);
       try {
-        Future<String> future = threadPool.submit(new DateTestCallable());
-        String result = future.get();
-        assertNull("Failed at timezone " + timeZone + ", date " + result, result);
+        // TODO: pointless
+        threadPool.submit(new DateTestCallable(bad, timeZone)).get();
       } finally {
         threadPool.shutdown(); TimeZone.setDefault(previousDefault);
       }
     }
+    StringBuilder errors = new StringBuilder("\nDATE MISMATCH:\n");
+    for (DtMismatch dm : bad) {
+      errors.append("E ").append(dm.tz).append(": ").append(dm.expected).append(" != ").append(dm.found).append("\n");
+    }
+    LOG.error(errors.toString());
+    if (!bad.isEmpty()) throw new Exception(bad.size() + " mismatches, see logs");
   }
 }

@@ -88,7 +88,7 @@ public class UDFYear extends UDF {
       return null;
     }
 
-    calendar.setTime(d.get());
+    calendar.setTime(d.get(false));  // Time doesn't matter.
     result.set(calendar.get(Calendar.YEAR));
     return result;
   }
