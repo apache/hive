@@ -262,13 +262,6 @@ public class ColumnValue {
     return null;
   }
 
-  private static Date getDateValue(TStringValue tStringValue) {
-    if (tStringValue.isSetValue()) {
-      return Date.valueOf(tStringValue.getValue());
-    }
-    return null;
-  }
-
   private static Timestamp getTimestampValue(TStringValue tStringValue) {
     if (tStringValue.isSetValue()) {
       return Timestamp.valueOf(tStringValue.getValue());
