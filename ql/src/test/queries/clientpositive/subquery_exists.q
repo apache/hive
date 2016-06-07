@@ -46,3 +46,15 @@ from (select *
           where b.value = a.value  and a.key = b.key and a.value > 'val_9')
      ) a
 ;
+
+-- upper case in subq
+explain
+select *
+from src b
+where exists
+  (select a.key
+  from src a
+  where b.VALUE = a.VALUE
+  )
+;
+
