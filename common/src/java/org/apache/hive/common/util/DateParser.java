@@ -8,8 +8,13 @@ import java.text.SimpleDateFormat;
  * Date parser class for Hive.
  */
 public class DateParser {
-  SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  ParsePosition pos = new ParsePosition(0);
+  private final SimpleDateFormat formatter;
+  private final ParsePosition pos;
+  public DateParser() {
+    formatter = new SimpleDateFormat("yyyy-MM-dd");
+    // TODO: ideally, we should set formatter.setLenient(false);
+    pos = new ParsePosition(0);
+  }
 
   public Date parseDate(String strValue) {
     Date result = new Date(0);
