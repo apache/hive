@@ -908,3 +908,327 @@ POSTHOOK: Input: default@over10k
 258	true	65568	13.57	65568
 258	true	65579	47.52	65579
 258	true	65603	2.61	65603
+PREHOOK: query: select bo, rank() over (partition by i order by bo nulls first, b nulls last range between unbounded preceding and unbounded following) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select bo, rank() over (partition by i order by bo nulls first, b nulls last range between unbounded preceding and unbounded following) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+false	1
+false	2
+false	3
+false	4
+false	5
+false	6
+false	7
+false	8
+false	9
+false	10
+false	11
+false	11
+false	13
+false	14
+false	15
+false	16
+false	17
+false	18
+false	19
+false	20
+false	20
+false	22
+true	23
+true	24
+true	25
+true	26
+true	27
+true	28
+true	29
+true	30
+true	31
+true	32
+true	33
+true	34
+true	35
+true	36
+true	37
+true	37
+true	39
+true	40
+true	41
+true	42
+true	43
+true	44
+true	45
+false	1
+false	2
+false	3
+false	4
+false	5
+false	5
+false	5
+false	8
+false	9
+false	10
+false	11
+false	12
+false	13
+false	14
+false	15
+false	16
+false	17
+true	18
+true	19
+true	20
+true	21
+true	22
+true	23
+true	24
+true	25
+true	26
+true	27
+true	27
+true	29
+true	30
+true	31
+true	32
+true	33
+true	34
+true	35
+false	1
+false	2
+false	3
+false	4
+false	4
+false	6
+false	7
+false	8
+false	9
+false	10
+false	11
+false	12
+false	13
+false	14
+false	15
+false	16
+false	17
+false	18
+true	19
+true	20
+PREHOOK: query: select CAST(s as CHAR(12)), rank() over (partition by i order by CAST(s as CHAR(12)) nulls last range between unbounded preceding and unbounded following) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select CAST(s as CHAR(12)), rank() over (partition by i order by CAST(s as CHAR(12)) nulls last range between unbounded preceding and unbounded following) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+alice ichabo	1
+alice robins	2
+bob robinson	3
+calvin thomp	4
+david johnso	5
+david laerte	6
+david nixon 	7
+david nixon 	7
+ethan johnso	9
+ethan ovid  	10
+ethan underh	11
+fred miller 	12
+fred miller 	12
+gabriella ga	14
+gabriella un	15
+holly white 	16
+irene johnso	17
+katie elliso	18
+luke allen  	19
+mike quirini	20
+mike white  	21
+nick davidso	22
+oscar allen 	23
+oscar garcia	24
+oscar ichabo	25
+oscar ovid  	26
+oscar steinb	27
+priscilla ga	28
+priscilla wh	29
+priscilla xy	30
+priscilla yo	31
+rachel brown	32
+rachel ichab	33
+rachel xylop	34
+sarah thomps	35
+sarah thomps	35
+tom johnson 	37
+tom steinbec	38
+ulysses polk	39
+victor johns	40
+wendy polk  	41
+xavier david	42
+yuri ellison	43
+zach allen  	44
+zach hernand	45
+alice elliso	1
+bob carson  	2
+calvin brown	3
+david xyloph	4
+ethan white 	5
+fred johnson	6
+fred van bur	7
+gabriella ic	8
+holly laerte	9
+holly quirin	10
+jessica hern	11
+katie robins	12
+katie thomps	13
+luke nixon  	14
+mike garcia 	15
+mike hernand	16
+nick carson 	17
+nick davidso	18
+oscar carson	19
+oscar robins	20
+priscilla wh	21
+sarah falkne	22
+sarah ichabo	23
+ulysses falk	24
+victor xylop	25
+wendy garcia	26
+wendy van bu	27
+xavier under	28
+yuri garcia 	29
+yuri quirini	30
+yuri white  	31
+zach falkner	32
+zach ichabod	33
+zach nixon  	34
+zach ovid   	35
+alice ichabo	1
+alice king  	2
+alice robins	3
+calvin allen	4
+gabriella jo	5
+gabriella ni	6
+holly falkne	7
+holly hernan	8
+holly thomps	9
+katie nixon 	10
+luke brown  	11
+luke davidso	12
+luke white  	13
+mike brown  	14
+nick quirini	15
+oscar white 	16
+priscilla xy	17
+quinn garcia	18
+quinn laerte	19
+rachel young	20
+PREHOOK: query: select CAST(s as VARCHAR(12)), rank() over (partition by i order by CAST(s as VARCHAR(12)) nulls last range between unbounded preceding and unbounded following) from over10k limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select CAST(s as VARCHAR(12)), rank() over (partition by i order by CAST(s as VARCHAR(12)) nulls last range between unbounded preceding and unbounded following) from over10k limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+alice ichabo	1
+alice robins	2
+bob robinson	3
+calvin thomp	4
+david johnso	5
+david laerte	6
+david nixon	7
+david nixon	7
+ethan johnso	9
+ethan ovid	10
+ethan underh	11
+fred miller	12
+fred miller	12
+gabriella ga	14
+gabriella un	15
+holly white	16
+irene johnso	17
+katie elliso	18
+luke allen	19
+mike quirini	20
+mike white	21
+nick davidso	22
+oscar allen	23
+oscar garcia	24
+oscar ichabo	25
+oscar ovid	26
+oscar steinb	27
+priscilla ga	28
+priscilla wh	29
+priscilla xy	30
+priscilla yo	31
+rachel brown	32
+rachel ichab	33
+rachel xylop	34
+sarah thomps	35
+sarah thomps	35
+tom johnson	37
+tom steinbec	38
+ulysses polk	39
+victor johns	40
+wendy polk	41
+xavier david	42
+yuri ellison	43
+zach allen	44
+zach hernand	45
+alice elliso	1
+bob carson	2
+calvin brown	3
+david xyloph	4
+ethan white	5
+fred johnson	6
+fred van bur	7
+gabriella ic	8
+holly laerte	9
+holly quirin	10
+jessica hern	11
+katie robins	12
+katie thomps	13
+luke nixon	14
+mike garcia	15
+mike hernand	16
+nick carson	17
+nick davidso	18
+oscar carson	19
+oscar robins	20
+priscilla wh	21
+sarah falkne	22
+sarah ichabo	23
+ulysses falk	24
+victor xylop	25
+wendy garcia	26
+wendy van bu	27
+xavier under	28
+yuri garcia	29
+yuri quirini	30
+yuri white	31
+zach falkner	32
+zach ichabod	33
+zach nixon	34
+zach ovid	35
+alice ichabo	1
+alice king	2
+alice robins	3
+calvin allen	4
+gabriella jo	5
+gabriella ni	6
+holly falkne	7
+holly hernan	8
+holly thomps	9
+katie nixon	10
+luke brown	11
+luke davidso	12
+luke white	13
+mike brown	14
+nick quirini	15
+oscar white	16
+priscilla xy	17
+quinn garcia	18
+quinn laerte	19
+rachel young	20
