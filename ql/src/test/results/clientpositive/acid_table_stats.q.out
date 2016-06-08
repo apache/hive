@@ -256,7 +256,7 @@ Database:           	default
 Table:              	acid                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"},\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	208000              
