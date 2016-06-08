@@ -278,7 +278,8 @@ public class HiveStatement implements java.sql.Statement {
    */
   public boolean executeAsync(String sql) throws SQLException {
     runAsyncOnServer(sql);
-    if (!stmtHandle.isHasResultSet()) {
+    TGetOperationStatusResp status = waitForResultSetStatus();
+    if (!status.isHasResultSet()) {
       return false;
     }
     resultSet =
@@ -316,6 +317,27 @@ public class HiveStatement implements java.sql.Statement {
       isExecuteStatementFailed = true;
       throw new SQLException(ex.toString(), "08S01", ex);
     }
+  }
+
+  /**
+   * Poll the result set status by checking if isSetHasResultSet is set
+   * @return
+   * @throws SQLException
+   */
+  private TGetOperationStatusResp waitForResultSetStatus() throws SQLException {
+    TGetOperationStatusReq statusReq = new TGetOperationStatusReq(stmtHandle);
+    TGetOperationStatusResp statusResp = null;
+
+    while(statusResp == null || !statusResp.isSetHasResultSet()) {
+      try {
+        statusResp = client.GetOperationStatus(statusReq);
+      } catch (TException e) {
+        isLogBeingGenerated = false;
+        throw new SQLException(e.toString(), "08S01", e);
+      }
+    }
+
+    return statusResp;
   }
 
   TGetOperationStatusResp waitForOperationToComplete() throws SQLException {
