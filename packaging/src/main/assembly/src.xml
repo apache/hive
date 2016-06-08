@@ -79,6 +79,7 @@
         <include>metastore/**/*</include>
         <include>llap-common/**/*</include>
         <include>llap-client/**/*</include>
+        <include>llap-ext-client/**/*</include>
         <include>llap-tez/**/*</include>
         <include>llap-server/**/*</include>
         <include>lib/**/*</include>
@@ -89,6 +90,7 @@
         <include>pom.xml</include>
         <include>ql/**/*</include>
         <include>serde/**/*</include>
+        <include>service-rpc/**/*</include>
         <include>service/**/*</include>
         <include>shims/**/*</include>
         <include>spark-client/**/*</include>
