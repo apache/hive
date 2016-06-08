@@ -629,4 +629,6 @@ public interface HadoopShims {
    */
   long getFileId(FileSystem fs, String path) throws IOException;
 
+  /** Clones the UGI and the Subject. */
+  UserGroupInformation cloneUgi(UserGroupInformation baseUgi) throws IOException;
 }

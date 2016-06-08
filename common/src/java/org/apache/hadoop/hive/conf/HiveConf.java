@@ -2702,6 +2702,12 @@ public class HiveConf extends Configuration {
     LLAP_ZKSM_KERBEROS_KEYTAB_FILE("hive.llap.zk.sm.keytab.file", "",
         "The path to the Kerberos Keytab file containing the principal to use to talk to\n" +
         "ZooKeeper for ZooKeeper SecretManager."),
+    LLAP_FS_KERBEROS_PRINCIPAL("hive.llap.task.principal", "",
+        "The name of the principal to use to run tasks. By default, the clients are required\n" +
+        "to provide tokens to access HDFS/etc."),
+    LLAP_FS_KERBEROS_KEYTAB_FILE("hive.llap.task.keytab.file", "",
+        "The path to the Kerberos Keytab file containing the principal to use to run tasks.\n" +
+        "By default, the clients are required to provide tokens to access HDFS/etc."),
     LLAP_ZKSM_ZK_CONNECTION_STRING("hive.llap.zk.sm.connectionString", "",
         "ZooKeeper connection string for ZooKeeper SecretManager."),
     LLAP_ZK_REGISTRY_USER("hive.llap.zk.registry.user", "",

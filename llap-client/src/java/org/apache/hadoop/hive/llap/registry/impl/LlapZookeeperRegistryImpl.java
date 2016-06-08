@@ -503,6 +503,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     @Override
     public Map<String, ServiceInstance> getAll() {
       Map<String, ServiceInstance> instances = new LinkedHashMap<>();
+      // TODO: we could refresh instanceCache here on previous failure
       for (ChildData childData : instancesCache.getCurrentData()) {
         if (childData != null) {
           byte[] data = childData.getData();

@@ -21,6 +21,7 @@ import java.io.DataInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -35,6 +36,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import javax.security.auth.Subject;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -1251,5 +1254,46 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public long getFileId(FileSystem fs, String path) throws IOException {
     return ensureDfs(fs).getClient().getFileInfo(path).getFileId();
+  }
+
+
+  private final static java.lang.reflect.Method getSubjectMethod;
+  private final static java.lang.reflect.Constructor<UserGroupInformation> ugiCtor;
+  private final static String ugiCloneError;
+  static {
+    Class<UserGroupInformation> clazz = UserGroupInformation.class;
+    java.lang.reflect.Method method = null;
+    java.lang.reflect.Constructor<UserGroupInformation> ctor;
+    String error = null;
+    try {
+      method = clazz.getMethod("getSubject");
+      method.setAccessible(true);
+      ctor = clazz.getConstructor(Subject.class);
+      ctor.setAccessible(true);
+    } catch (Throwable t) {
+      error = t.getMessage();
+      method = null;
+      ctor = null;
+      LOG.error("Cannot create UGI reflection methods", t);
+    }
+    getSubjectMethod = method;
+    ugiCtor = ctor;
+    ugiCloneError = error;
+  }
+
+  @Override
+  public UserGroupInformation cloneUgi(UserGroupInformation baseUgi) throws IOException {
+    // Based on UserGroupInformation::createProxyUser.
+    // TODO: use a proper method after we can depend on HADOOP-13081.
+    if (getSubjectMethod == null) {
+      throw new IOException("The UGI method was not found: " + ugiCloneError);
+    }
+    Subject subject = new Subject();
+    try {
+      subject.getPrincipals().addAll(((Subject)getSubjectMethod.invoke(baseUgi)).getPrincipals());
+      return ugiCtor.newInstance(subject);
+    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+      throw new IOException(e);
+    }
   }
 }

@@ -33,6 +33,7 @@ import javax.management.ObjectName;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.common.UgiFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
@@ -54,6 +55,7 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
+import org.apache.hadoop.hive.llap.security.LlapUgiFactoryFactory;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.UDF;
@@ -246,9 +248,15 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     this.server = new LlapProtocolServerImpl(
         numHandlers, this, srvAddress, mngAddress, srvPort, mngPort, daemonId);
 
+    UgiFactory fsUgiFactory = null;
+    try {
+      fsUgiFactory = LlapUgiFactoryFactory.createFsUgiFactory(daemonConf);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
     this.containerRunner = new ContainerRunnerImpl(daemonConf, numExecutors, waitQueueSize,
         enablePreemption, localDirs, this.shufflePort, srvAddress, executorMemoryBytes, metrics,
-        amReporter, executorClassLoader, daemonId);
+        amReporter, executorClassLoader, daemonId, fsUgiFactory);
     addIfService(containerRunner);
 
     // Not adding the registry as a service, since we need to control when it is initialized - conf used to pickup properties.

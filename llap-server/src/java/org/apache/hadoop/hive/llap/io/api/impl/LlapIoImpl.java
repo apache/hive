@@ -70,10 +70,10 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
 
   private final ColumnVectorProducer cvp;
   private final ListeningExecutorService executor;
-  private LlapDaemonCacheMetrics cacheMetrics;
-  private LlapDaemonIOMetrics ioMetrics;
+  private final LlapDaemonCacheMetrics cacheMetrics;
+  private final LlapDaemonIOMetrics ioMetrics;
   private ObjectName buddyAllocatorMXBean;
-  private Allocator allocator;
+  private final Allocator allocator;
 
   private LlapIoImpl(Configuration conf) throws IOException {
     String ioMode = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MODE);
