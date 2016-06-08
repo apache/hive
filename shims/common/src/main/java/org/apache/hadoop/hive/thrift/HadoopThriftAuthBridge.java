@@ -179,9 +179,9 @@ public abstract class HadoopThriftAuthBridge {
 
     public TTransport createClientTransport(
         String principalConfig, String host,
-        String methodStr, String tokenStrForm, TTransport underlyingTransport,
-        Map<String, String> saslProps) throws IOException {
-      AuthMethod method = AuthMethod.valueOf(AuthMethod.class, methodStr);
+        String methodStr, String tokenStrForm, final TTransport underlyingTransport,
+        final Map<String, String> saslProps) throws IOException {
+      final AuthMethod method = AuthMethod.valueOf(AuthMethod.class, methodStr);
 
       TTransport saslTransport = null;
       switch (method) {
@@ -198,21 +198,27 @@ public abstract class HadoopThriftAuthBridge {
 
       case KERBEROS:
         String serverPrincipal = SecurityUtil.getServerPrincipal(principalConfig, host);
-        String names[] = SaslRpcServer.splitKerberosName(serverPrincipal);
+        final String names[] = SaslRpcServer.splitKerberosName(serverPrincipal);
         if (names.length != 3) {
           throw new IOException(
               "Kerberos principal name does NOT have the expected hostname part: "
                   + serverPrincipal);
         }
         try {
-          saslTransport = new TSaslClientTransport(
-              method.getMechanismName(),
-              null,
-              names[0], names[1],
-              saslProps, null,
-              underlyingTransport);
-          return new TUGIAssumingTransport(saslTransport, UserGroupInformation.getCurrentUser());
-        } catch (SaslException se) {
+          return UserGroupInformation.getCurrentUser().doAs(
+              new PrivilegedExceptionAction<TUGIAssumingTransport>() {
+                @Override
+                public TUGIAssumingTransport run() throws IOException {
+                  TTransport saslTransport = new TSaslClientTransport(
+                    method.getMechanismName(),
+                    null,
+                    names[0], names[1],
+                    saslProps, null,
+                    underlyingTransport);
+                  return new TUGIAssumingTransport(saslTransport, UserGroupInformation.getCurrentUser());
+                }
+              });
+        } catch (InterruptedException | SaslException se) {
           throw new IOException("Could not instantiate SASL transport", se);
         }
 
