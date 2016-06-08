@@ -556,12 +556,7 @@ public class Registry {
     // and the current thread may not be able to resolve the UDF. Test for this condition
     // and if necessary load the JARs in this thread.
     if (isNative && info != null && info.isPersistent()) {
-      try {
-        info.getFunctionClass();
-      } catch (Exception e) {
-        return registerToSessionRegistry(qualifiedName, info);
-      }
-      return info;
+      return registerToSessionRegistry(qualifiedName, info);
     }
     if (info != null || !isNative) {
       return info; // We have the UDF, or we are in the session registry (or both).
