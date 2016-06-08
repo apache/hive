@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.UgiFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
@@ -97,12 +98,13 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   private final HadoopShim tezHadoopShim;
   private final LlapSignerImpl signer;
   private final String clusterId;
+  private final UgiFactory fsUgiFactory;
 
   public ContainerRunnerImpl(Configuration conf, int numExecutors, int waitQueueSize,
       boolean enablePreemption, String[] localDirsBase, AtomicReference<Integer> localShufflePort,
       AtomicReference<InetSocketAddress> localAddress,
       long totalMemoryAvailableBytes, LlapDaemonExecutorMetrics metrics,
-      AMReporter amReporter, ClassLoader classLoader, DaemonId daemonId) {
+      AMReporter amReporter, ClassLoader classLoader, DaemonId daemonId, UgiFactory fsUgiFactory) {
     super("ContainerRunnerImpl");
     this.conf = conf;
     Preconditions.checkState(numExecutors > 0,
@@ -112,6 +114,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     this.amReporter = amReporter;
     this.signer = UserGroupInformation.isSecurityEnabled()
         ? new LlapSignerImpl(conf, daemonId) : null;
+    this.fsUgiFactory = fsUgiFactory;
 
     this.clusterId = daemonId.getClusterString();
     this.queryTracker = new QueryTracker(conf, localDirsBase, clusterId);
@@ -230,10 +233,11 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       // Used for re-localization, to add the user specified configuration (conf_pb_binary_stream)
 
       Configuration callableConf = new Configuration(getConfig());
+      UserGroupInformation taskUgi = fsUgiFactory == null ? null : fsUgiFactory.createUgi();
       TaskRunnerCallable callable = new TaskRunnerCallable(request, fragmentInfo, callableConf,
           new LlapExecutionContext(localAddress.get().getHostName(), queryTracker), env,
           credentials, memoryPerExecutor, amReporter, confParams, metrics, killedTaskHandler,
-          this, tezHadoopShim, attemptId, vertex);
+          this, tezHadoopShim, attemptId, vertex, taskUgi);
       submissionState = executorService.schedule(callable);
 
       if (LOG.isInfoEnabled()) {
@@ -289,7 +293,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       queryTracker.registerDagQueryId(
           new QueryIdentifier(source.getContext().getApplicationId().toString(),
               source.getContext().getDagIdentifier()),
-          HiveConf.getVar(source.getConf(), HiveConf.ConfVars.HIVEQUERYID));
+          HiveConf.getVar(source.getConf(), HiveConf.ConfVars.HIVEQUERYID));;
     }
   }
 

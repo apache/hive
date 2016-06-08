@@ -114,6 +114,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private final AtomicBoolean isCompleted = new AtomicBoolean(false);
   private final AtomicBoolean killInvoked = new AtomicBoolean(false);
   private final SignableVertexSpec vertex;
+  private UserGroupInformation taskUgi;
 
   @VisibleForTesting
   public TaskRunnerCallable(SubmitWorkRequestProto request, QueryFragmentInfo fragmentInfo,
@@ -125,7 +126,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
                      KilledTaskHandler killedTaskHandler,
                      FragmentCompletionHandler fragmentCompleteHandler,
                      HadoopShim tezHadoopShim, TezTaskAttemptID attemptId,
-                     SignableVertexSpec vertex) {
+                     SignableVertexSpec vertex, UserGroupInformation taskUgi) {
     this.request = request;
     this.fragmentInfo = fragmentInfo;
     this.conf = conf;
@@ -152,6 +153,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     this.killedTaskHandler = killedTaskHandler;
     this.fragmentCompletionHanler = fragmentCompleteHandler;
     this.tezHadoopShim = tezHadoopShim;
+    this.taskUgi = taskUgi;
   }
 
   public long getStartTime() {
@@ -188,7 +190,9 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
 
     // TODO Consolidate this code with TezChild.
     runtimeWatch.start();
-    UserGroupInformation taskUgi = UserGroupInformation.createRemoteUser(vertex.getUser());
+    if (taskUgi == null) {
+      taskUgi = UserGroupInformation.createRemoteUser(vertex.getUser());
+    }
     taskUgi.addCredentials(credentials);
 
     Map<String, ByteBuffer> serviceConsumerMetadata = new HashMap<>();
