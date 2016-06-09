@@ -599,7 +599,7 @@ public class PTFTranslator {
     if (!OI.getCategory().equals(Category.PRIMITIVE)) {
       throw new SemanticException(
           String.format(
-              "Value Boundary expression must be of primitve type. Found: %s",
+              "Value Boundary expression must be of primitive type. Found: %s",
               OI.getTypeName()));
     }
 
@@ -608,6 +608,7 @@ public class PTFTranslator {
 
     switch (pC)
     {
+    case BOOLEAN:
     case BYTE:
     case DOUBLE:
     case FLOAT:
@@ -618,10 +619,12 @@ public class PTFTranslator {
     case TIMESTAMP:
     case DATE:
     case STRING:
+    case VARCHAR:
+    case CHAR:
       break;
     default:
       throw new SemanticException(
-          String.format("Primitve type %s not supported in Value Boundary expression",
+          String.format("Primitive type %s not supported in Value Boundary expression",
               pC));
     }
 
