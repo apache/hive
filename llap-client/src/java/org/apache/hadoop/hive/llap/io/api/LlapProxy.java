@@ -17,14 +17,13 @@
  */
 package org.apache.hadoop.hive.llap.io.api;
 
-import java.io.IOException;
 import java.lang.reflect.Constructor;
-
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 
 @SuppressWarnings("rawtypes")
 public class LlapProxy {
-  private final static String IMPL_CLASS = "org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl";
+  private final static String IO_IMPL_CLASS = "org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl";
 
   // Llap server depends on Hive execution, so the reverse cannot be true. We create the I/O
   // singleton once (on daemon startup); the said singleton serves as the IO interface.
@@ -48,23 +47,18 @@ public class LlapProxy {
     if (io != null) {
       return; // already initialized
     }
-
-    try {
-      io = createIoImpl(conf);
-    } catch (IOException e) {
-      throw new RuntimeException("Cannot initialize local server", e);
-    }
+    io = createInstance(IO_IMPL_CLASS, conf);
   }
 
-  private static LlapIo createIoImpl(Configuration conf) throws IOException {
+  private static <T> T createInstance(String className, Configuration conf) {
     try {
       @SuppressWarnings("unchecked")
-      Class<? extends LlapIo> clazz = (Class<? extends LlapIo>)Class.forName(IMPL_CLASS);
-      Constructor<? extends LlapIo> ctor = clazz.getDeclaredConstructor(Configuration.class);
+      Class<? extends T> clazz = (Class<? extends T>)Class.forName(className);
+      Constructor<? extends T> ctor = clazz.getDeclaredConstructor(Configuration.class);
       ctor.setAccessible(true);
       return ctor.newInstance(conf);
     } catch (Exception e) {
-      throw new RuntimeException("Failed to create impl class", e);
+      throw new RuntimeException("Failed to create " + className, e);
     }
   }
 

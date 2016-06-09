@@ -21,18 +21,22 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.delegation.DelegationKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
 public class LlapSignerImpl implements LlapSigner {
+  private static final Logger LOG = LoggerFactory.getLogger(LlapSignerImpl.class);
+
   private final SigningSecretManager secretManager;
 
-  public LlapSignerImpl(Configuration conf, DaemonId daemonId) {
+  public LlapSignerImpl(Configuration conf, String clusterId) {
     // TODO: create this centrally in HS2 case
-    secretManager = SecretManager.createSecretManager(conf, daemonId.getClusterString());
+    assert UserGroupInformation.isSecurityEnabled();
+    secretManager = SecretManager.createSecretManager(conf, clusterId);
   }
 
   @VisibleForTesting
@@ -44,7 +48,7 @@ public class LlapSignerImpl implements LlapSigner {
   public SignedMessage serializeAndSign(Signable message) throws IOException {
     SignedMessage result = new SignedMessage();
     DelegationKey key = secretManager.getCurrentKey();
-    message.setSignInfo(key.getKeyId(), UserGroupInformation.getCurrentUser().getUserName());
+    message.setSignInfo(key.getKeyId());
     result.message = message.serialize();
     result.signature = secretManager.signWithKey(result.message, key);
     return result;
@@ -56,5 +60,14 @@ public class LlapSignerImpl implements LlapSigner {
     byte[] expectedSignature = secretManager.signWithKey(message, keyId);
     if (Arrays.equals(signature, expectedSignature)) return;
     throw new SecurityException("Message signature does not match");
+  }
+
+  @Override
+  public void close() {
+    try {
+      secretManager.close();
+    } catch (Exception ex) {
+      LOG.error("Error closing the signer", ex);
+    }
   }
 }

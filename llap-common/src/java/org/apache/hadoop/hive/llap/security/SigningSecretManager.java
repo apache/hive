@@ -23,4 +23,5 @@ public interface SigningSecretManager {
   DelegationKey getCurrentKey();
   byte[] signWithKey(byte[] message, DelegationKey key);
   byte[] signWithKey(byte[] message, int keyId) throws SecurityException;
+  void close();
 }

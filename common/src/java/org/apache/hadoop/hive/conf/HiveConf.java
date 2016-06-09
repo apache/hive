@@ -2888,6 +2888,11 @@ public class HiveConf extends Configuration {
     LLAP_ENABLE_GRACE_JOIN_IN_LLAP("hive.llap.enable.grace.join.in.llap", false,
         "Override if grace join should be allowed to run in llap."),
 
+    LLAP_HS2_ENABLE_COORDINATOR("hive.llap.hs2.coordinator.enabled", true,
+        "Whether to create the LLAP coordinator; since execution engine and container vs llap\n" +
+        "settings are both coming from job configs, we don't know at start whether this should\n" +
+        "be created. Default true."),
+
     SPARK_CLIENT_FUTURE_TIMEOUT("hive.spark.client.future.timeout",
       "60s", new TimeValidator(TimeUnit.SECONDS),
       "Timeout for requests from Hive client to remote Spark driver."),

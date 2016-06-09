@@ -599,7 +599,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
     builder.setCredentialsBinary(ByteString.copyFrom(credentialsBinary));
     builder.setWorkSpec(VertexOrBinary.newBuilder().setVertex(Converters.convertTaskSpecToProto(
-        taskSpec, appAttemptId, getTokenIdentifier(), null, user)).build());
+        taskSpec, appAttemptId, getTokenIdentifier(), user)).build());
     // Don't call builder.setWorkSpecSignature() - Tez doesn't sign fragments
     builder.setFragmentRuntimeInfo(fragmentRuntimeInfo);
     return builder.build();

@@ -51,12 +51,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.DaemonId;
-import org.apache.hadoop.hive.llap.LlapUtil;
+import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 import org.apache.hadoop.hive.llap.impl.LlapProtocolClientImpl;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.security.LlapTokenClient;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
-import org.apache.hadoop.hive.llap.security.LlapTokenLocalClient;
 import org.apache.hadoop.hive.llap.tez.LlapProtocolClientProxy;
 import org.apache.hadoop.hive.llap.tezplugins.LlapContainerLauncher;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTaskCommunicator;
@@ -84,11 +83,6 @@ import org.apache.tez.serviceplugins.api.TaskCommunicatorDescriptor;
 import org.apache.tez.serviceplugins.api.TaskSchedulerDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
 
 /**
  * Holds session state related to Tez
@@ -338,19 +332,6 @@ public class TezSessionState {
     }
   }
 
-  // Only cache ZK connections (ie local clients); these are presumed to be used in HS2.
-  // TODO: temporary before HIVE-13698.
-  private static final Cache<String, LlapTokenLocalClient> localClientCache = CacheBuilder
-      .newBuilder().expireAfterAccess(10, TimeUnit.MINUTES)
-      .removalListener(new RemovalListener<String, LlapTokenLocalClient>() {
-        @Override
-        public void onRemoval(RemovalNotification<String, LlapTokenLocalClient> notification) {
-          if (notification.getValue() != null) {
-            notification.getValue().close();
-          }
-        }
-      }).build();
-
   private static Token<LlapTokenIdentifier> getLlapToken(
       String user, final Configuration conf) throws IOException {
     // TODO: parts of this should be moved out of TezSession to reuse the clients, but there's
@@ -359,21 +340,17 @@ public class TezSessionState {
     boolean isInHs2 = session != null && session.isHiveServerQuery();
     Token<LlapTokenIdentifier> token = null;
     // For Tez, we don't use appId to distinguish the tokens.
+
+    LlapCoordinator coordinator = null;
     if (isInHs2) {
       // We are in HS2, get the token locally.
-      String clusterName = LlapUtil.generateClusterName(conf);
-      // This assumes that the LLAP cluster and session are both running under HS2 user.
-      final String clusterId = DaemonId.createClusterString(user, clusterName);
-      try {
-        token = localClientCache.get(clusterId, new Callable<LlapTokenLocalClient>() {
-          @Override
-          public LlapTokenLocalClient call() throws Exception {
-            return new LlapTokenLocalClient(conf, clusterId);
-          }
-        }).createToken(null, null, false); // Signature is not required for Tez.
-      } catch (ExecutionException e) {
-        throw new IOException(e);
+      // TODO: coordinator should be passed in; HIVE-13698. Must be initialized for now.
+      coordinator = LlapCoordinator.getInstance();
+      if (coordinator == null) {
+        throw new IOException("LLAP coordinator not initialized; cannot get LLAP tokens");
       }
+      // Signing is not required for Tez.
+      token = coordinator.getLocalTokenClient(conf, user).createToken(null, null, false);
     } else {
       // We are not in HS2; always create a new client for now.
       token = new LlapTokenClient(conf).getDelegationToken(null);

@@ -77,7 +77,7 @@ public class TestConverters {
         new TaskSpec(tezTaskAttemptId, "dagName", "vertexName", 10, processorDescriptor,
             inputSpecList, outputSpecList, null);
 
-    SignableVertexSpec vertexProto = Converters.convertTaskSpecToProto(taskSpec, 0, "", null, "");
+    SignableVertexSpec vertexProto = Converters.convertTaskSpecToProto(taskSpec, 0, "", "").build();
 
     assertEquals("dagName", vertexProto.getDagName());
     assertEquals("vertexName", vertexProto.getVertexName());

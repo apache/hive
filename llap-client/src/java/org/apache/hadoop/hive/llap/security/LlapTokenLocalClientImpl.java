@@ -26,15 +26,16 @@ import org.apache.hadoop.security.token.Token;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LlapTokenLocalClient {
-  private static final Logger LOG = LoggerFactory.getLogger(LlapTokenLocalClient.class);
+public class LlapTokenLocalClientImpl implements LlapTokenLocalClient {
+  private static final Logger LOG = LoggerFactory.getLogger(LlapTokenLocalClientImpl.class);
   private final SecretManager secretManager;
 
-  public LlapTokenLocalClient(Configuration conf, String clusterId) {
+  public LlapTokenLocalClientImpl(Configuration conf, String clusterId) {
     // TODO: create this centrally in HS2 case
     secretManager = SecretManager.createSecretManager(conf, clusterId);
   }
 
+  @Override
   public Token<LlapTokenIdentifier> createToken(
       String appId, String user, boolean isSignatureRequired) throws IOException {
     try {
@@ -49,6 +50,7 @@ public class LlapTokenLocalClient {
     }
   }
 
+  @Override
   public void close() {
     try {
       secretManager.stopThreads();

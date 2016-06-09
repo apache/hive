@@ -27,7 +27,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Preconditions;
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import org.apache.commons.collections4.ListUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexIdentifier;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.llap.tez.LlapProtocolClientProxy;
@@ -43,12 +45,9 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.ipc.ProtocolSignature;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.service.AbstractService;
-import org.apache.hadoop.yarn.api.records.ContainerId;
-import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.records.TezTaskAttemptID;
-import org.apache.tez.runtime.api.Event;
 import org.apache.tez.runtime.api.impl.EventType;
 import org.apache.tez.runtime.api.impl.TezEvent;
 import org.apache.tez.runtime.api.impl.TezHeartbeatRequest;
@@ -139,14 +138,23 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
 
   /**
    * Submit the work for actual execution.
-   * @param submitWorkRequestProto
+   * @throws InvalidProtocolBufferException 
    */
-  public void submitWork(final SubmitWorkRequestProto submitWorkRequestProto, String llapHost, int llapPort, List<TezEvent> tezEvents) {
+  public void submitWork(
+      SubmitWorkRequestProto request, String llapHost, int llapPort, List<TezEvent> tezEvents) {
     // Register the pending events to be sent for this spec.
-    SignableVertexSpec vertex = submitWorkRequestProto.getWorkSpec().getVertex();
+    VertexOrBinary vob = request.getWorkSpec();
+    assert vob.hasVertexBinary() != vob.hasVertex();
+    SignableVertexSpec vertex = null;
+    try {
+      vertex = vob.hasVertex() ? vob.getVertex()
+          : SignableVertexSpec.parseFrom(vob.getVertexBinary());
+    } catch (InvalidProtocolBufferException e) {
+      throw new RuntimeException(e);
+    }
     VertexIdentifier vId = vertex.getVertexIdentifier();
     TezTaskAttemptID attemptId = Converters.createTaskAttemptId(
-        vId, submitWorkRequestProto.getFragmentNumber(), submitWorkRequestProto.getAttemptNumber());
+        vId, request.getFragmentNumber(), request.getAttemptNumber());
     final String fragmentId = attemptId.toString();
 
     PendingEventData pendingEventData = new PendingEventData(
@@ -159,7 +167,7 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
         connectionTimeout, connectionTimeout, TimeUnit.MILLISECONDS);
 
     // Send out the actual SubmitWorkRequest
-    communicator.sendSubmitWork(submitWorkRequestProto, llapHost, llapPort,
+    communicator.sendSubmitWork(request, llapHost, llapPort,
         new LlapProtocolClientProxy.ExecuteRequestCallback<LlapDaemonProtocolProtos.SubmitWorkResponseProto>() {
 
           @Override

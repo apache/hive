@@ -28,31 +28,30 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.JobTokenSecretManager;
-import org.apache.tez.runtime.api.impl.TaskSpec;
 
 public class SubmitWorkInfo implements Writable {
 
-  private TaskSpec taskSpec;
   private ApplicationId fakeAppId;
   private long creationTime;
+  private byte[] vertexSpec, vertexSpecSignature;
 
   // This is used to communicate over the LlapUmbilicalProtocol. Not related to tokens used to
   // talk to LLAP daemons itself via the securit work.
   private Token<JobTokenIdentifier> token;
+  private int vertexParallelism;
 
-  public SubmitWorkInfo(TaskSpec taskSpec, ApplicationId fakeAppId, long creationTime) {
-    this.taskSpec = taskSpec;
+  public SubmitWorkInfo(ApplicationId fakeAppId, long creationTime,
+      int vertexParallelism, byte[] vertexSpec, byte[] vertexSpecSignature) {
     this.fakeAppId = fakeAppId;
     this.token = createJobToken();
     this.creationTime = creationTime;
+    this.vertexSpec = vertexSpec;
+    this.vertexSpecSignature = vertexSpecSignature;
+    this.vertexParallelism = vertexParallelism;
   }
 
   // Empty constructor for writable etc.
   public SubmitWorkInfo() {
-  }
-
-  public TaskSpec getTaskSpec() {
-    return taskSpec;
   }
 
   public ApplicationId getFakeAppId() {
@@ -73,23 +72,44 @@ public class SubmitWorkInfo implements Writable {
 
   @Override
   public void write(DataOutput out) throws IOException {
-    taskSpec.write(out);
     out.writeLong(fakeAppId.getClusterTimestamp());
     out.writeInt(fakeAppId.getId());
     token.write(out);
     out.writeLong(creationTime);
+    out.writeInt(vertexParallelism);
+    if (vertexSpec != null) {
+      out.writeInt(vertexSpec.length);
+      out.write(vertexSpec);
+    } else {
+      out.writeInt(0);
+    }
+    if (vertexSpecSignature != null) {
+      out.writeInt(vertexSpecSignature.length);
+      out.write(vertexSpecSignature);
+    } else {
+      out.writeInt(0);
+    }
   }
 
   @Override
   public void readFields(DataInput in) throws IOException {
-    taskSpec = new TaskSpec();
-    taskSpec.readFields(in);
     long appIdTs = in.readLong();
     int appIdId = in.readInt();
     fakeAppId = ApplicationId.newInstance(appIdTs, appIdId);
     token = new Token<>();
     token.readFields(in);
     creationTime = in.readLong();
+    vertexParallelism = in.readInt();
+    int vertexSpecBytes = in.readInt();
+    if (vertexSpecBytes > 0) {
+      vertexSpec = new byte[vertexSpecBytes];
+      in.readFully(vertexSpec);
+    }
+    int vertexSpecSignBytes = in.readInt();
+    if (vertexSpecSignBytes > 0) {
+      vertexSpecSignature = new byte[vertexSpecSignBytes];
+      in.readFully(vertexSpecSignature);
+    }
   }
 
   public static byte[] toBytes(SubmitWorkInfo submitWorkInfo) throws IOException {
@@ -115,5 +135,17 @@ public class SubmitWorkInfo implements Writable {
         new JobTokenSecretManager());
     sessionToken.setService(identifier.getJobId());
     return sessionToken;
+  }
+
+  public byte[] getVertexBinary() {
+    return vertexSpec;
+  }
+
+  public byte[] getVertexSignature() {
+    return vertexSpecSignature;
+  }
+
+  public int getVertexParallelism() {
+    return vertexParallelism;
   }
 }
