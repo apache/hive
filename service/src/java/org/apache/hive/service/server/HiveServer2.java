@@ -50,6 +50,8 @@ import org.apache.hadoop.hive.common.cli.CommonCliOptions;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
@@ -132,6 +134,14 @@ public class HiveServer2 extends CompositeService {
       hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST.varname, getServerHost());
     } catch (Throwable t) {
       throw new Error("Unable to intitialize HiveServer2", t);
+    }
+    if (HiveConf.getBoolVar(hiveConf, ConfVars.LLAP_HS2_ENABLE_COORDINATOR)) {
+      // See method comment.
+      try {
+        LlapCoordinator.initializeInstance(hiveConf);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
     // Setup web UI
     try {

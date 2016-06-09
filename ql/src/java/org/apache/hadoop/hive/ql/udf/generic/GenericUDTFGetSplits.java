@@ -28,7 +28,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
@@ -49,6 +48,12 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.llap.Schema;
 import org.apache.hadoop.hive.llap.FieldDesc;
 import org.apache.hadoop.hive.llap.TypeDesc;
+import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
+import org.apache.hadoop.hive.llap.security.LlapSigner;
+import org.apache.hadoop.hive.llap.security.LlapSigner.Signable;
+import org.apache.hadoop.hive.llap.security.LlapSigner.SignedMessage;
+import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
@@ -61,7 +66,6 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.exec.tez.HiveSplitGenerator;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
@@ -91,7 +95,6 @@ import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.TaskLocationHint;
 import org.apache.tez.dag.api.TaskSpecBuilder;
-import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.mapreduce.grouper.TezSplitGrouper;
 import org.apache.tez.runtime.api.Event;
@@ -112,10 +115,7 @@ import com.google.common.base.Preconditions;
     + "Returns an array of length int serialized splits for the referenced tables string.")
 @UDFType(deterministic = false)
 public class GenericUDTFGetSplits extends GenericUDTF {
-
   private static final Logger LOG = LoggerFactory.getLogger(GenericUDTFGetSplits.class);
-
-  private static final String LLAP_INTERNAL_INPUT_FORMAT_NAME = "org.apache.hadoop.hive.llap.LlapInputFormat";
 
   protected transient StringObjectInspector stringOI;
   protected transient IntObjectInspector intOI;
@@ -307,10 +307,10 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       Preconditions.checkState(HiveConf.getBoolVar(wxConf,
               HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS));
       HiveSplitGenerator splitGenerator = new HiveSplitGenerator(wxConf, mapWork);
+      // TODO: these need to be signed, or at least the splits inside.
       List<Event> eventList = splitGenerator.initialize();
 
       InputSplit[] result = new InputSplit[eventList.size() - 1];
-      DataOutputBuffer dob = new DataOutputBuffer();
 
       InputConfigureVertexTasksEvent configureEvent
         = (InputConfigureVertexTasksEvent) eventList.get(0);
@@ -324,19 +324,35 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         LOG.debug("NumSplits=" + result.length);
       }
 
-      ApplicationId fakeApplicationId
-        = ApplicationId.newInstance(Math.abs(new Random().nextInt()), 0);
+      LlapCoordinator coordinator = LlapCoordinator.getInstance();
+      if (coordinator == null) {
+        throw new IOException("LLAP coordinator is not initialized; must be running in HS2 with "
+            + ConfVars.LLAP_HS2_ENABLE_COORDINATOR.varname + " enabled");
+      }
 
+      // See the discussion in the implementation as to why we generate app ID.
+      ApplicationId fakeApplicationId = coordinator.createExtClientAppId();
+
+      // This assumes LLAP cluster owner is always the HS2 user.
       String llapUser = UserGroupInformation.getLoginUser().getShortUserName();
-      LOG.info("Number of splits: " + (eventList.size() - 1));
-      for (int i = 0; i < eventList.size() - 1; i++) {
+      LlapSigner signer = UserGroupInformation.isSecurityEnabled()
+          ? coordinator.getLlapSigner(job) : null;
 
-        TaskSpec taskSpec =
-          new TaskSpecBuilder().constructTaskSpec(dag, vertexName,
+      LOG.info("Number of splits: " + (eventList.size() - 1));
+      SignedMessage signedSvs = null;
+      DataOutputBuffer dob = new DataOutputBuffer();
+      for (int i = 0; i < eventList.size() - 1; i++) {
+        TaskSpec taskSpec = new TaskSpecBuilder().constructTaskSpec(dag, vertexName,
               eventList.size() - 1, fakeApplicationId, i);
 
-        SubmitWorkInfo submitWorkInfo =
-          new SubmitWorkInfo(taskSpec, fakeApplicationId, System.currentTimeMillis());
+        if (i == 0) {
+          // Despite the differences in TaskSpec, the vertex spec should be the same.
+          signedSvs = createSignedVertexSpec(signer, taskSpec, fakeApplicationId);
+        }
+
+        SubmitWorkInfo submitWorkInfo = new SubmitWorkInfo(fakeApplicationId,
+            System.currentTimeMillis(), taskSpec.getVertexParallelism(), signedSvs.message,
+            signedSvs.signature);
         EventMetaData sourceMetaData =
           new EventMetaData(EventMetaData.EventProducerConsumerType.INPUT, vertexName,
               "NULL_VERTEX", null);
@@ -370,6 +386,40 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     } catch (Exception e) {
       throw new IOException(e);
     }
+  }
+
+  private SignedMessage createSignedVertexSpec(LlapSigner signer, TaskSpec taskSpec,
+      ApplicationId fakeApplicationId) throws IOException {
+    // We put the query user, not LLAP user, in the message (and the token later?)
+    String user = SessionState.getUserFromAuthenticator();
+    if (user == null) {
+      user = UserGroupInformation.getCurrentUser().getUserName();
+      LOG.warn("Cannot determine the session user; using " + user + " instead");
+    }
+    final SignableVertexSpec.Builder svsb = Converters.convertTaskSpecToProto(
+        taskSpec, 0, fakeApplicationId.toString(), user);
+    if (signer == null) {
+      SignedMessage result = new SignedMessage();
+      result.message = serializeVertexSpec(svsb);
+      return result;
+    }
+    return signer.serializeAndSign(new Signable() {
+      @Override
+      public void setSignInfo(int masterKeyId) {
+        svsb.setSignatureKeyId(masterKeyId);
+      }
+
+      @Override
+      public byte[] serialize() throws IOException {
+        return serializeVertexSpec(svsb);
+      }
+    });
+  }
+
+  private static byte[] serializeVertexSpec(SignableVertexSpec.Builder svsb) throws IOException {
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    svsb.build().writeTo(os);
+    return os.toByteArray();
   }
 
   /**

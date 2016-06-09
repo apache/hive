@@ -812,6 +812,7 @@
                   <include>org.apache.hive:hive-common</include>
                   <include>org.apache.hive:hive-exec</include>
                   <include>org.apache.hive:hive-serde</include>
+                  <include>org.apache.hive:hive-llap-common</include>
                   <include>org.apache.hive:hive-llap-client</include>
                   <include>org.apache.hive:hive-metastore</include>
                   <include>org.apache.hive:hive-service-rpc</include>

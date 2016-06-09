@@ -20,24 +20,11 @@ package org.apache.hadoop.hive.llap.security;
 
 import java.io.IOException;
 
-public interface LlapSigner {
-  /** An object signable by a signer. */
-  public interface Signable {
-    /** Called by the signer to record key information as part of the message to be signed. */
-    void setSignInfo(int masterKeyId);
-    /** Called by the signer to get the serialized representation of the message to be signed. */
-    byte[] serialize() throws IOException;
-  }
+import org.apache.hadoop.security.token.Token;
 
-  /** Message with the signature. */
-  public static final class SignedMessage {
-    public byte[] message, signature;
-  }
-
-  /** Serializes and signs the message. */
-  SignedMessage serializeAndSign(Signable message) throws IOException;
-
-  void checkSignature(byte[] message, byte[] signature, int keyId);
+public interface LlapTokenLocalClient {
+  Token<LlapTokenIdentifier> createToken(
+      String appId, String user, boolean isSignatureRequired) throws IOException;
 
   void close();
 }

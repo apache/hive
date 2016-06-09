@@ -127,7 +127,7 @@ public class TestLlapSignerImpl {
     }
 
     @Override
-    public void setSignInfo(int masterKeyId, String user) {
+    public void setSignInfo(int masterKeyId) {
       this.masterKeyId = masterKeyId;
     }
 
@@ -195,6 +195,11 @@ public class TestLlapSignerImpl {
     @Override
     public AbstractDelegationTokenIdentifier createIdentifier() {
       throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void close() {
+      stopThreads();
     }
   }
 }

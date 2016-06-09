@@ -113,7 +113,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     this.localShufflePort = localShufflePort;
     this.amReporter = amReporter;
     this.signer = UserGroupInformation.isSecurityEnabled()
-        ? new LlapSignerImpl(conf, daemonId) : null;
+        ? new LlapSignerImpl(conf, daemonId.getClusterString()) : null;
     this.fsUgiFactory = fsUgiFactory;
 
     this.clusterId = daemonId.getClusterString();

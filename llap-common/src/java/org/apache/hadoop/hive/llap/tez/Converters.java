@@ -114,8 +114,8 @@ public class Converters {
     return idBuilder.build();
   }
 
-  public static SignableVertexSpec convertTaskSpecToProto(TaskSpec taskSpec,
-      int appAttemptId, String tokenIdentifier, Integer signatureKeyId, String user) {
+  public static SignableVertexSpec.Builder convertTaskSpecToProto(TaskSpec taskSpec,
+      int appAttemptId, String tokenIdentifier, String user) {
     TezTaskAttemptID tId = taskSpec.getTaskAttemptID();
 
     SignableVertexSpec.Builder builder = SignableVertexSpec.newBuilder();
@@ -125,9 +125,6 @@ public class Converters {
     builder.setVertexParallelism(taskSpec.getVertexParallelism());
     builder.setTokenIdentifier(tokenIdentifier);
     builder.setUser(user);
-    if (signatureKeyId != null) {
-      builder.setSignatureKeyId(signatureKeyId);
-    }
 
     if (taskSpec.getProcessorDescriptor() != null) {
       builder.setProcessorDescriptor(
@@ -152,7 +149,7 @@ public class Converters {
 
       }
     }
-    return builder.build();
+    return builder;
   }
 
   private static ProcessorDescriptor convertProcessorDescriptorFromProto(
