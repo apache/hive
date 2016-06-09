@@ -31,6 +31,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
@@ -249,19 +250,36 @@ public class OrcRecordUpdater implements RecordUpdater {
       flushLengths = null;
     }
     OrcFile.WriterOptions writerOptions = null;
-    if (options instanceof OrcOptions) {
-      writerOptions = ((OrcOptions) options).getOrcOptions();
-    }
-    if (writerOptions == null) {
-      writerOptions = OrcFile.writerOptions(options.getTableProperties(),
-          options.getConfiguration());
+    // If writing delta dirs, we need to make a clone of original options, to avoid polluting it for
+    // the base writer
+    if (options.isWritingBase()) {
+      if (options instanceof OrcOptions) {
+        writerOptions = ((OrcOptions) options).getOrcOptions();
+      }
+      if (writerOptions == null) {
+        writerOptions = OrcFile.writerOptions(options.getTableProperties(),
+            options.getConfiguration());
+      }
+    } else {  // delta writer
+      AcidOutputFormat.Options optionsCloneForDelta = options.clone();
+      if (optionsCloneForDelta instanceof OrcOptions) {
+        writerOptions = ((OrcOptions) optionsCloneForDelta).getOrcOptions();
+      }
+      if (writerOptions == null) {
+        writerOptions = OrcFile.writerOptions(optionsCloneForDelta.getTableProperties(),
+            optionsCloneForDelta.getConfiguration());
+      }
+
+      // get buffer size and stripe size for base writer
+      int baseBufferSizeValue = writerOptions.getBufferSize();
+      long baseStripeSizeValue = writerOptions.getStripeSize();
+      // overwrite buffer size and stripe size for delta writer, based on BASE_DELTA_RATIO
+      int ratio = HiveConf.getIntVar(options.getConfiguration(), HiveConf.ConfVars.HIVE_ORC_BASE_DELTA_RATIO);
+      writerOptions.bufferSize(baseBufferSizeValue / ratio);
+      writerOptions.stripeSize(baseStripeSizeValue / ratio);
+      writerOptions.blockPadding(false);
     }
     writerOptions.fileSystem(fs).callback(indexBuilder);
-    if (!options.isWritingBase()) {
-      writerOptions.blockPadding(false);
-      writerOptions.bufferSize(DELTA_BUFFER_SIZE);
-      writerOptions.stripeSize(DELTA_STRIPE_SIZE);
-    }
     rowInspector = (StructObjectInspector)options.getInspector();
     writerOptions.inspector(createEventSchema(findRecId(options.getInspector(),
         options.getRecordIdColumn())));
