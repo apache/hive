@@ -1266,7 +1266,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     java.lang.reflect.Constructor<UserGroupInformation> ctor;
     String error = null;
     try {
-      method = clazz.getMethod("getSubject");
+      method = clazz.getDeclaredMethod("getSubject");
       method.setAccessible(true);
       ctor = clazz.getConstructor(Subject.class);
       ctor.setAccessible(true);
