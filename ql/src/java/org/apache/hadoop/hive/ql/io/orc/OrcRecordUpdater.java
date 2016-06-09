@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.apache.orc.impl.AcidStats;
 import org.apache.orc.impl.OrcAcidUtils;
+import org.apache.orc.OrcConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -204,19 +205,38 @@ public class OrcRecordUpdater implements RecordUpdater {
       flushLengths = null;
     }
     OrcFile.WriterOptions writerOptions = null;
-    if (options instanceof OrcOptions) {
-      writerOptions = ((OrcOptions) options).getOrcOptions();
-    }
-    if (writerOptions == null) {
-      writerOptions = OrcFile.writerOptions(options.getTableProperties(),
-          options.getConfiguration());
+    // If writing delta dirs, we need to make a clone of original options, to avoid polluting it for
+    // the base writer
+    if (options.isWritingBase()) {
+      if (options instanceof OrcOptions) {
+        writerOptions = ((OrcOptions) options).getOrcOptions();
+      }
+      if (writerOptions == null) {
+        writerOptions = OrcFile.writerOptions(options.getTableProperties(),
+            options.getConfiguration());
+      }
+    } else {  // delta writer
+      AcidOutputFormat.Options optionsCloneForDelta = options.clone();
+
+      if (optionsCloneForDelta instanceof OrcOptions) {
+        writerOptions = ((OrcOptions) optionsCloneForDelta).getOrcOptions();
+      }
+      if (writerOptions == null) {
+        writerOptions = OrcFile.writerOptions(optionsCloneForDelta.getTableProperties(),
+            optionsCloneForDelta.getConfiguration());
+      }
+
+      // get buffer size and stripe size for base writer
+      int baseBufferSizeValue = writerOptions.getBufferSize();
+      long baseStripeSizeValue = writerOptions.getStripeSize();
+
+      // overwrite buffer size and stripe size for delta writer, based on BASE_DELTA_RATIO
+      int ratio = (int) OrcConf.BASE_DELTA_RATIO.getLong(options.getConfiguration());
+      writerOptions.bufferSize(baseBufferSizeValue / ratio);
+      writerOptions.stripeSize(baseStripeSizeValue / ratio);
+      writerOptions.blockPadding(false);
     }
     writerOptions.fileSystem(fs).callback(indexBuilder);
-    if (!options.isWritingBase()) {
-      writerOptions.blockPadding(false);
-      writerOptions.bufferSize(DELTA_BUFFER_SIZE);
-      writerOptions.stripeSize(DELTA_STRIPE_SIZE);
-    }
     rowInspector = (StructObjectInspector)options.getInspector();
     writerOptions.inspector(createEventSchema(findRecId(options.getInspector(),
         options.getRecordIdColumn())));
