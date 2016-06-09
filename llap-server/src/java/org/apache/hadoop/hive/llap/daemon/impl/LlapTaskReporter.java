@@ -81,6 +81,7 @@ public class LlapTaskReporter implements TaskReporterInterface {
   private final AtomicLong requestCounter;
   private final String containerIdStr;
   private final String fragmentFullId;
+  private final TezEvent initialEvent;
 
   private final ListeningExecutorService heartbeatExecutor;
 
@@ -89,7 +90,7 @@ public class LlapTaskReporter implements TaskReporterInterface {
 
   public LlapTaskReporter(LlapTaskUmbilicalProtocol umbilical, long amPollInterval,
                       long sendCounterInterval, int maxEventsToGet, AtomicLong requestCounter,
-      String containerIdStr, final String fragFullId) {
+      String containerIdStr, final String fragFullId, TezEvent initialEvent) {
     this.umbilical = umbilical;
     this.pollInterval = amPollInterval;
     this.sendCounterInterval = sendCounterInterval;
@@ -97,6 +98,7 @@ public class LlapTaskReporter implements TaskReporterInterface {
     this.requestCounter = requestCounter;
     this.containerIdStr = containerIdStr;
     this.fragmentFullId = fragFullId;
+    this.initialEvent = initialEvent;
     ExecutorService executor = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder()
         .setDaemon(true).setNameFormat("TaskHeartbeatThread").build());
     heartbeatExecutor = MoreExecutors.listeningDecorator(executor);
@@ -112,7 +114,7 @@ public class LlapTaskReporter implements TaskReporterInterface {
     FragmentCountersMap.registerCountersForFragment(fragmentFullId, tezCounters);
     LOG.info("Registered counters for fragment: {} vertexName: {}", fragmentFullId, task.getVertexName());
     currentCallable = new HeartbeatCallable(task, umbilical, pollInterval, sendCounterInterval,
-        maxEventsToGet, requestCounter, containerIdStr);
+        maxEventsToGet, requestCounter, containerIdStr, initialEvent);
     ListenableFuture<Boolean> future = heartbeatExecutor.submit(currentCallable);
     Futures.addCallback(future, new HeartbeatCallback(errorReporter));
   }
@@ -170,16 +172,18 @@ public class LlapTaskReporter implements TaskReporterInterface {
      * Tracks the last non-OOB heartbeat number at which counters were sent to the AM. 
      */
     private int prevCounterSendHeartbeatNum = 0;
+    private TezEvent initialEvent;
 
-    public HeartbeatCallable(RuntimeTask task,
-                             LlapTaskUmbilicalProtocol umbilical, long amPollInterval, long sendCounterInterval,
-                             int maxEventsToGet, AtomicLong requestCounter, String containerIdStr) {
+    public HeartbeatCallable(RuntimeTask task, LlapTaskUmbilicalProtocol umbilical,
+        long amPollInterval, long sendCounterInterval, int maxEventsToGet,
+        AtomicLong requestCounter, String containerIdStr, TezEvent initialEvent) {
 
       this.pollInterval = amPollInterval;
       this.sendCounterInterval = sendCounterInterval;
       this.maxEventsToGet = maxEventsToGet;
       this.requestCounter = requestCounter;
       this.containerIdStr = containerIdStr;
+      this.initialEvent = initialEvent;
 
       this.task = task;
       this.umbilical = umbilical;
@@ -299,6 +303,7 @@ public class LlapTaskReporter implements TaskReporterInterface {
       } else {
         task.setNextFromEventId(response.getNextFromEventId());
         task.setNextPreRoutedEventId(response.getNextPreRoutedEventId());
+        List<TezEvent> taskEvents = null;
         if (response.getEvents() != null && !response.getEvents().isEmpty()) {
           if (LOG.isDebugEnabled()) {
             LOG.debug("Routing events from heartbeat response to task" + ", currentTaskAttemptId="
@@ -308,7 +313,21 @@ public class LlapTaskReporter implements TaskReporterInterface {
           }
           // This should ideally happen in a separate thread
           numEventsReceived = response.getEvents().size();
-          task.handleEvents(response.getEvents());
+          taskEvents = response.getEvents();
+        }
+        if (initialEvent != null) {
+          // We currently only give the initial event to the task on the first heartbeat. Given
+          // that the split is ready, it seems pointless to wait, but that's how Tez works.
+          List<TezEvent> oldEvents = taskEvents;
+          taskEvents = new ArrayList<>(1 + (taskEvents == null ? 0 : taskEvents.size()));
+          taskEvents.add(initialEvent);
+          initialEvent = null;
+          if (oldEvents != null) {
+            taskEvents.addAll(oldEvents);
+          }
+        }
+        if (taskEvents != null) {
+          task.handleEvents(taskEvents);
         }
       }
       return new ResponseWrapper(false, numEventsReceived);

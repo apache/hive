@@ -99,6 +99,20 @@ message QueryIdentifierProto {
   optional int32 dag_identifier = 2;
 }
 
+/**
+ * Tez API implementation derives an enum value from instanceof on the event, then uses that enum
+ * in a giant switch statement to re-implement virtual functions. In addition the event classes
+ * are final and serialization is a mix of writables and protobuf. As a result, it is impossible
+ * three times over to add anything there. So, we'd do our own "inspired" serialization.
+ * Eventually we'll move away from events for API.
+ */
+message NotTezEvent {
+  required bytes input_event_proto_bytes = 1;
+  required string vertex_name = 2;
+  required string dest_input_name = 3;
+  optional int32 key_id = 4;
+}
+
 message SubmitWorkRequestProto {
   optional VertexOrBinary work_spec = 1;
   optional bytes work_spec_signature = 2;
@@ -115,6 +129,10 @@ message SubmitWorkRequestProto {
 
   // Not supported/honored for external clients right now.
   optional FragmentRuntimeInfo fragment_runtime_info = 9;
+
+  // Serialized (and signed) NotTezEvent; used only for external clients for now.
+  optional bytes initial_event_bytes = 10;
+  optional bytes initial_event_signature = 11; 
 }
 
 

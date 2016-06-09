@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.common.UgiFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
+import org.apache.hadoop.hive.llap.NotTezEventHelper;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.llap.daemon.impl.LlapTokenChecker.LlapTokenInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GroupInputSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
@@ -70,11 +72,13 @@ import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.hadoop.shim.HadoopShim;
 import org.apache.tez.hadoop.shim.HadoopShimsLoader;
 import org.apache.tez.runtime.api.impl.ExecutionContextImpl;
+import org.apache.tez.runtime.api.impl.TezEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 public class ContainerRunnerImpl extends CompositeService implements ContainerRunner, FragmentCompletionHandler, QueryFailedHandler {
 
@@ -167,21 +171,9 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
   @Override
   public SubmitWorkResponseProto submitWork(SubmitWorkRequestProto request) throws IOException {
-    VertexOrBinary vob = request.getWorkSpec();
-    SignableVertexSpec vertex = vob.hasVertex() ? vob.getVertex() : null;
-    ByteString vertexBinary = vob.hasVertexBinary() ? vob.getVertexBinary() : null;
-    if (vertex != null && vertexBinary != null) {
-      throw new IOException(
-          "Vertex and vertexBinary in VertexOrBinary cannot be set at the same time");
-    }
-    if (vertexBinary != null) {
-      vertex = SignableVertexSpec.parseFrom(vob.getVertexBinary());
-    }
-
     LlapTokenInfo tokenInfo = LlapTokenChecker.getTokenInfo(clusterId);
-    if (tokenInfo.isSigningRequired) {
-      checkSignature(vertex, vertexBinary, request, tokenInfo.userName);
-    }
+    SignableVertexSpec vertex = extractVertexSpec(request, tokenInfo);
+    TezEvent initialEvent = extractInitialEvent(request, tokenInfo);
 
     if (LOG.isInfoEnabled()) {
       LOG.info("Queueing container for execution: " + stringifySubmitRequest(request, vertex));
@@ -237,7 +229,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       TaskRunnerCallable callable = new TaskRunnerCallable(request, fragmentInfo, callableConf,
           new LlapExecutionContext(localAddress.get().getHostName(), queryTracker), env,
           credentials, memoryPerExecutor, amReporter, confParams, metrics, killedTaskHandler,
-          this, tezHadoopShim, attemptId, vertex, taskUgi);
+          this, tezHadoopShim, attemptId, vertex, initialEvent, taskUgi);
       submissionState = executorService.schedule(callable);
 
       if (LOG.isInfoEnabled()) {
@@ -260,6 +252,41 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
     responseBuilder.setSubmissionState(SubmissionStateProto.valueOf(submissionState.name()));
     return responseBuilder.build();
+  }
+
+  private SignableVertexSpec extractVertexSpec(SubmitWorkRequestProto request,
+      LlapTokenInfo tokenInfo) throws InvalidProtocolBufferException, IOException {
+    VertexOrBinary vob = request.getWorkSpec();
+    SignableVertexSpec vertex = vob.hasVertex() ? vob.getVertex() : null;
+    ByteString vertexBinary = vob.hasVertexBinary() ? vob.getVertexBinary() : null;
+    if (vertexBinary != null) {
+      if (vertex != null) {
+        throw new IOException(
+          "Vertex and vertexBinary in VertexOrBinary cannot be set at the same time");
+      }
+      vertex = SignableVertexSpec.parseFrom(vob.getVertexBinary());
+    }
+
+    if (tokenInfo.isSigningRequired) {
+      checkSignature(vertex, vertexBinary, request, tokenInfo.userName);
+    }
+    return vertex;
+  }
+
+  private TezEvent extractInitialEvent(SubmitWorkRequestProto request, LlapTokenInfo tokenInfo)
+      throws InvalidProtocolBufferException {
+    if (!request.hasInitialEventBytes()) return null;
+    ByteString initialEventByteString = request.getInitialEventBytes();
+    byte[] initialEventBytes = initialEventByteString.toByteArray();
+    NotTezEvent initialEvent = NotTezEvent.parseFrom(initialEventBytes);
+    if (tokenInfo.isSigningRequired) {
+      if (!request.hasInitialEventSignature()) {
+        throw new SecurityException("Unsigned initial event is not allowed");
+      }
+      byte[] signatureBytes = request.getInitialEventSignature().toByteArray();
+      signer.checkSignature(initialEventBytes, signatureBytes, initialEvent.getKeyId());
+    }
+    return NotTezEventHelper.toTezEvent(initialEvent);
   }
 
   private void checkSignature(SignableVertexSpec vertex, ByteString vertexBinary,

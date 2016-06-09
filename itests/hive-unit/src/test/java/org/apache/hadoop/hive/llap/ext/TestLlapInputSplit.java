@@ -59,13 +59,8 @@ public class TestLlapInputSplit {
     colDescs.add(new FieldDesc("col2", new TypeDesc(TypeDesc.Type.INT)));
     Schema schema = new Schema(colDescs);
 
-    LlapInputSplit split1 = new LlapInputSplit(
-        splitNum,
-        planBytes,
-        fragmentBytes,
-        locations,
-        schema,
-        "hive");
+    LlapInputSplit split1 = new LlapInputSplit(splitNum, planBytes, fragmentBytes, null,
+        locations, schema, "hive");
     ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
     DataOutputStream dataOut = new DataOutputStream(byteOutStream);
     split1.write(dataOut);

@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.collect.Lists;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.apache.commons.collections4.ListUtils;
@@ -140,8 +141,7 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
    * Submit the work for actual execution.
    * @throws InvalidProtocolBufferException 
    */
-  public void submitWork(
-      SubmitWorkRequestProto request, String llapHost, int llapPort, List<TezEvent> tezEvents) {
+  public void submitWork(SubmitWorkRequestProto request, String llapHost, int llapPort) {
     // Register the pending events to be sent for this spec.
     VertexOrBinary vob = request.getWorkSpec();
     assert vob.hasVertexBinary() != vob.hasVertex();
@@ -157,10 +157,8 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
         vId, request.getFragmentNumber(), request.getAttemptNumber());
     final String fragmentId = attemptId.toString();
 
-    PendingEventData pendingEventData = new PendingEventData(
-        new TaskHeartbeatInfo(fragmentId, llapHost, llapPort),
-        tezEvents);
-    pendingEvents.putIfAbsent(fragmentId, pendingEventData);
+    pendingEvents.putIfAbsent(fragmentId, new PendingEventData(
+        new TaskHeartbeatInfo(fragmentId, llapHost, llapPort), Lists.<TezEvent>newArrayList()));
 
     // Setup timer task to check for hearbeat timeouts
     timer.scheduleAtFixedRate(new HeartbeatCheckTask(),

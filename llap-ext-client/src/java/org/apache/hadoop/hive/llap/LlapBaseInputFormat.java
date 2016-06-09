@@ -136,19 +136,11 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     llapClient.init(job);
     llapClient.start();
 
-    // TODO# vertex in this
-    SubmitWorkRequestProto submitWorkRequestProto =
-      constructSubmitWorkRequestProto(submitWorkInfo, llapSplit.getSplitNum(),
-          llapClient.getAddress(), submitWorkInfo.getToken());
-
-    TezEvent tezEvent = new TezEvent();
-    DataInputBuffer dib = new DataInputBuffer();
-    dib.reset(llapSplit.getFragmentBytes(), 0, llapSplit.getFragmentBytes().length);
-    tezEvent.readFields(dib);
-    List<TezEvent> tezEventList = Lists.newArrayList();
-    tezEventList.add(tezEvent);
-
-    llapClient.submitWork(submitWorkRequestProto, host, llapSubmitPort, tezEventList);
+    SubmitWorkRequestProto submitWorkRequestProto = constructSubmitWorkRequestProto(
+        submitWorkInfo, llapSplit.getSplitNum(), llapClient.getAddress(),
+        submitWorkInfo.getToken(), llapSplit.getFragmentBytes(),
+        llapSplit.getFragmentBytesSignature());
+    llapClient.submitWork(submitWorkRequestProto, host, llapSubmitPort);
 
     String id = HiveConf.getVar(job, HiveConf.ConfVars.HIVEQUERYID) + "_" + llapSplit.getSplitNum();
 
@@ -278,12 +270,9 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     return null;
   }
 
-  private SubmitWorkRequestProto constructSubmitWorkRequestProto(
-      SubmitWorkInfo submitWorkInfo,
-      int taskNum,
-      InetSocketAddress address,
-      Token<JobTokenIdentifier> token) throws
-        IOException {
+  private SubmitWorkRequestProto constructSubmitWorkRequestProto(SubmitWorkInfo submitWorkInfo,
+      int taskNum, InetSocketAddress address, Token<JobTokenIdentifier> token,
+      byte[] fragmentBytes, byte[] fragmentBytesSignature) throws IOException {
     ApplicationId appId = submitWorkInfo.getFakeAppId();
 
     // This works, assuming the executor is running within YARN.
@@ -323,7 +312,10 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     builder.setAmPort(address.getPort());
     builder.setCredentialsBinary(ByteString.copyFrom(credentialsBinary));
     builder.setFragmentRuntimeInfo(runtimeInfo.build());
-
+    builder.setInitialEventBytes(ByteString.copyFrom(fragmentBytes));
+    if (fragmentBytesSignature != null) {
+      builder.setInitialEventSignature(ByteString.copyFrom(fragmentBytesSignature));
+    }
     return builder.build();
   }
 
@@ -354,8 +346,6 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
     @Override
     public void heartbeat(TezHeartbeatRequest request) {
-      // TODO: why is this ignored?
-      TezTaskAttemptID taskAttemptId = request.getCurrentTaskAttemptID();
       List<TezEvent> inEvents = request.getEvents();
       for (TezEvent tezEvent : ListUtils.emptyIfNull(inEvents)) {
         EventType eventType = tezEvent.getEventType();
