@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapInputSplit;
 import org.apache.hadoop.hive.llap.LlapOutputFormat;
+import org.apache.hadoop.hive.llap.NotTezEventHelper;
 import org.apache.hadoop.hive.llap.SubmitWorkInfo;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.llap.Schema;
@@ -93,15 +94,17 @@ import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.tez.dag.api.DAG;
+import org.apache.tez.dag.api.InputDescriptor;
+import org.apache.tez.dag.api.InputInitializerDescriptor;
+import org.apache.tez.dag.api.RootInputLeafOutput;
 import org.apache.tez.dag.api.TaskLocationHint;
 import org.apache.tez.dag.api.TaskSpecBuilder;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.mapreduce.grouper.TezSplitGrouper;
 import org.apache.tez.runtime.api.Event;
 import org.apache.tez.runtime.api.events.InputConfigureVertexTasksEvent;
-import org.apache.tez.runtime.api.impl.EventMetaData;
+import org.apache.tez.runtime.api.events.InputDataInformationEvent;
 import org.apache.tez.runtime.api.impl.TaskSpec;
-import org.apache.tez.runtime.api.impl.TezEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -289,6 +292,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     // bunch of things get setup in the context based on conf but we need only the MR tmp directory
     // for the following method.
     JobConf wxConf = utils.initializeVertexConf(job, ctx, mapWork);
+    // TODO: should we also whitelist input formats here? from mapred.input.format.class
     Path scratchDir = utils.createTezDir(ctx.getMRScratchDir(), job);
     FileSystem fs = scratchDir.getFileSystem(job);
     try {
@@ -307,7 +311,6 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       Preconditions.checkState(HiveConf.getBoolVar(wxConf,
               HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS));
       HiveSplitGenerator splitGenerator = new HiveSplitGenerator(wxConf, mapWork);
-      // TODO: these need to be signed, or at least the splits inside.
       List<Event> eventList = splitGenerator.initialize();
 
       InputSplit[] result = new InputSplit[eventList.size() - 1];
@@ -320,8 +323,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       Preconditions.checkState(hints.size() == eventList.size() - 1);
 
       if (LOG.isDebugEnabled()) {
-        LOG.debug("NumEvents=" + eventList.size());
-        LOG.debug("NumSplits=" + result.length);
+        LOG.debug("NumEvents=" + eventList.size() + ", NumSplits=" + result.length);
       }
 
       LlapCoordinator coordinator = LlapCoordinator.getInstance();
@@ -345,6 +347,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         TaskSpec taskSpec = new TaskSpecBuilder().constructTaskSpec(dag, vertexName,
               eventList.size() - 1, fakeApplicationId, i);
 
+        // 1. Generate the vertex/submit information.
         if (i == 0) {
           // Despite the differences in TaskSpec, the vertex spec should be the same.
           signedSvs = createSignedVertexSpec(signer, taskSpec, fakeApplicationId);
@@ -353,38 +356,52 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         SubmitWorkInfo submitWorkInfo = new SubmitWorkInfo(fakeApplicationId,
             System.currentTimeMillis(), taskSpec.getVertexParallelism(), signedSvs.message,
             signedSvs.signature);
-        EventMetaData sourceMetaData =
-          new EventMetaData(EventMetaData.EventProducerConsumerType.INPUT, vertexName,
-              "NULL_VERTEX", null);
-        EventMetaData destinationMetaInfo = new TaskSpecBuilder().getDestingationMetaData(wx);
-
-        // Creating the TezEvent here itself, since it's easy to serialize.
-        Event event = eventList.get(i + 1);
-        TaskLocationHint hint = hints.get(i);
-        Set<String> hosts = hint.getHosts();
-        if (hosts.size() != 1) {
-          LOG.warn("Bad # of locations: " + hosts.size());
-        }
-        SplitLocationInfo[] locations = new SplitLocationInfo[hosts.size()];
-
-        int j = 0;
-        for (String host : hosts) {
-          locations[j++] = new SplitLocationInfo(host, false);
-        }
-        TezEvent tezEvent = new TezEvent(event, sourceMetaData, System.currentTimeMillis());
-        tezEvent.setDestinationInfo(destinationMetaInfo);
-
-        bos.reset();
-        dob.reset();
-        tezEvent.write(dob);
-
         byte[] submitWorkBytes = SubmitWorkInfo.toBytes(submitWorkInfo);
 
-        result[i] = new LlapInputSplit(i, submitWorkBytes, dob.getData(), locations, schema, llapUser);
-      }
+        // 2. Generate input event.
+        SignedMessage eventBytes = makeEventBytes(
+            wx, vertexName, eventList.get(i + 1), dob, signer);
+
+        // 3. Make location hints.
+        SplitLocationInfo[] locations = makeLocationHints(hints.get(i));
+
+        result[i] = new LlapInputSplit(i, submitWorkBytes, eventBytes.message,
+            eventBytes.signature, locations, schema, llapUser);
+       }
       return result;
     } catch (Exception e) {
       throw new IOException(e);
+    }
+  }
+
+  private SplitLocationInfo[] makeLocationHints(TaskLocationHint hint) {
+    Set<String> hosts = hint.getHosts();
+    if (hosts.size() != 1) {
+      LOG.warn("Bad # of locations: " + hosts.size());
+    }
+    SplitLocationInfo[] locations = new SplitLocationInfo[hosts.size()];
+    int j = 0;
+    for (String host : hosts) {
+      locations[j++] = new SplitLocationInfo(host, false);
+    }
+    return locations;
+  }
+
+  private SignedMessage makeEventBytes(Vertex wx, String vertexName,
+      Event event, DataOutputBuffer dob, LlapSigner signer) throws IOException {
+    assert event instanceof InputDataInformationEvent;
+    List<RootInputLeafOutput<InputDescriptor, InputInitializerDescriptor>> inputs =
+        TaskSpecBuilder.getVertexInputs(wx);
+    Preconditions.checkState(inputs.size() == 1);
+
+    Signable signableNte = NotTezEventHelper.createSignableNotTezEvent(
+        (InputDataInformationEvent)event, vertexName, inputs.get(0).getName());
+    if (signer != null) {
+      return signer.serializeAndSign(signableNte);
+    } else {
+      SignedMessage sm = new SignedMessage();
+      sm.message = signableNte.serialize();
+      return sm;
     }
   }
 

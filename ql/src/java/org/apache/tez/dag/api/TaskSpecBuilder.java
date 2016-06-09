@@ -63,15 +63,8 @@ public class TaskSpecBuilder {
     return new TaskSpec(taskAttemptId, dag.getName(), vertexName, numSplits, processorDescriptor, inputSpecs, outputSpecs, null);
   }
 
-  public EventMetaData getDestingationMetaData(Vertex vertex) {
-    List<RootInputLeafOutput<InputDescriptor, InputInitializerDescriptor>> inputs =
-        vertex.getInputs();
-    Preconditions.checkState(inputs.size() == 1);
-    String inputName = inputs.get(0).getName();
-    EventMetaData destMeta =
-        new EventMetaData(EventMetaData.EventProducerConsumerType.INPUT, vertex.getName(),
-            inputName, null);
-    return destMeta;
+  public static List<RootInputLeafOutput<
+    InputDescriptor, InputInitializerDescriptor>> getVertexInputs(Vertex wx) {
+    return wx.getInputs();
   }
-
 }

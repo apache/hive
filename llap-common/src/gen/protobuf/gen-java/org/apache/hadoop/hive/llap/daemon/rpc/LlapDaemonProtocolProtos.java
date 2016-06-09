@@ -8978,6 +8978,905 @@ public final class LlapDaemonProtocolProtos {
     // @@protoc_insertion_point(class_scope:QueryIdentifierProto)
   }
 
+  public interface NotTezEventOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // required bytes input_event_proto_bytes = 1;
+    /**
+     * <code>required bytes input_event_proto_bytes = 1;</code>
+     */
+    boolean hasInputEventProtoBytes();
+    /**
+     * <code>required bytes input_event_proto_bytes = 1;</code>
+     */
+    com.google.protobuf.ByteString getInputEventProtoBytes();
+
+    // required string vertex_name = 2;
+    /**
+     * <code>required string vertex_name = 2;</code>
+     */
+    boolean hasVertexName();
+    /**
+     * <code>required string vertex_name = 2;</code>
+     */
+    java.lang.String getVertexName();
+    /**
+     * <code>required string vertex_name = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getVertexNameBytes();
+
+    // required string dest_input_name = 3;
+    /**
+     * <code>required string dest_input_name = 3;</code>
+     */
+    boolean hasDestInputName();
+    /**
+     * <code>required string dest_input_name = 3;</code>
+     */
+    java.lang.String getDestInputName();
+    /**
+     * <code>required string dest_input_name = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getDestInputNameBytes();
+
+    // optional int32 key_id = 4;
+    /**
+     * <code>optional int32 key_id = 4;</code>
+     */
+    boolean hasKeyId();
+    /**
+     * <code>optional int32 key_id = 4;</code>
+     */
+    int getKeyId();
+  }
+  /**
+   * Protobuf type {@code NotTezEvent}
+   *
+   * <pre>
+   **
+   * Tez API implementation derives an enum value from instanceof on the event, then uses that enum
+   * in a giant switch statement to re-implement virtual functions. In addition the event classes
+   * are final and serialization is a mix of writables and protobuf. As a result, it is impossible
+   * three times over to add anything there. So, we'd do our own "inspired" serialization.
+   * Eventually we'll move away from events for API.
+   * </pre>
+   */
+  public static final class NotTezEvent extends
+      com.google.protobuf.GeneratedMessage
+      implements NotTezEventOrBuilder {
+    // Use NotTezEvent.newBuilder() to construct.
+    private NotTezEvent(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private NotTezEvent(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final NotTezEvent defaultInstance;
+    public static NotTezEvent getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public NotTezEvent getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private NotTezEvent(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              inputEventProtoBytes_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              vertexName_ = input.readBytes();
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              destInputName_ = input.readBytes();
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000008;
+              keyId_ = input.readInt32();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_NotTezEvent_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_NotTezEvent_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent.class, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<NotTezEvent> PARSER =
+        new com.google.protobuf.AbstractParser<NotTezEvent>() {
+      public NotTezEvent parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new NotTezEvent(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<NotTezEvent> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // required bytes input_event_proto_bytes = 1;
+    public static final int INPUT_EVENT_PROTO_BYTES_FIELD_NUMBER = 1;
+    private com.google.protobuf.ByteString inputEventProtoBytes_;
+    /**
+     * <code>required bytes input_event_proto_bytes = 1;</code>
+     */
+    public boolean hasInputEventProtoBytes() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required bytes input_event_proto_bytes = 1;</code>
+     */
+    public com.google.protobuf.ByteString getInputEventProtoBytes() {
+      return inputEventProtoBytes_;
+    }
+
+    // required string vertex_name = 2;
+    public static final int VERTEX_NAME_FIELD_NUMBER = 2;
+    private java.lang.Object vertexName_;
+    /**
+     * <code>required string vertex_name = 2;</code>
+     */
+    public boolean hasVertexName() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required string vertex_name = 2;</code>
+     */
+    public java.lang.String getVertexName() {
+      java.lang.Object ref = vertexName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          vertexName_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string vertex_name = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getVertexNameBytes() {
+      java.lang.Object ref = vertexName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        vertexName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // required string dest_input_name = 3;
+    public static final int DEST_INPUT_NAME_FIELD_NUMBER = 3;
+    private java.lang.Object destInputName_;
+    /**
+     * <code>required string dest_input_name = 3;</code>
+     */
+    public boolean hasDestInputName() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>required string dest_input_name = 3;</code>
+     */
+    public java.lang.String getDestInputName() {
+      java.lang.Object ref = destInputName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          destInputName_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string dest_input_name = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getDestInputNameBytes() {
+      java.lang.Object ref = destInputName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        destInputName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional int32 key_id = 4;
+    public static final int KEY_ID_FIELD_NUMBER = 4;
+    private int keyId_;
+    /**
+     * <code>optional int32 key_id = 4;</code>
+     */
+    public boolean hasKeyId() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional int32 key_id = 4;</code>
+     */
+    public int getKeyId() {
+      return keyId_;
+    }
+
+    private void initFields() {
+      inputEventProtoBytes_ = com.google.protobuf.ByteString.EMPTY;
+      vertexName_ = "";
+      destInputName_ = "";
+      keyId_ = 0;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasInputEventProtoBytes()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasVertexName()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasDestInputName()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, inputEventProtoBytes_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getVertexNameBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, getDestInputNameBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeInt32(4, keyId_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, inputEventProtoBytes_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getVertexNameBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getDestInputNameBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(4, keyId_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent)) {
+        return super.equals(obj);
+      }
+      org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent other = (org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent) obj;
+
+      boolean result = true;
+      result = result && (hasInputEventProtoBytes() == other.hasInputEventProtoBytes());
+      if (hasInputEventProtoBytes()) {
+        result = result && getInputEventProtoBytes()
+            .equals(other.getInputEventProtoBytes());
+      }
+      result = result && (hasVertexName() == other.hasVertexName());
+      if (hasVertexName()) {
+        result = result && getVertexName()
+            .equals(other.getVertexName());
+      }
+      result = result && (hasDestInputName() == other.hasDestInputName());
+      if (hasDestInputName()) {
+        result = result && getDestInputName()
+            .equals(other.getDestInputName());
+      }
+      result = result && (hasKeyId() == other.hasKeyId());
+      if (hasKeyId()) {
+        result = result && (getKeyId()
+            == other.getKeyId());
+      }
+      result = result &&
+          getUnknownFields().equals(other.getUnknownFields());
+      return result;
+    }
+
+    private int memoizedHashCode = 0;
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasInputEventProtoBytes()) {
+        hash = (37 * hash) + INPUT_EVENT_PROTO_BYTES_FIELD_NUMBER;
+        hash = (53 * hash) + getInputEventProtoBytes().hashCode();
+      }
+      if (hasVertexName()) {
+        hash = (37 * hash) + VERTEX_NAME_FIELD_NUMBER;
+        hash = (53 * hash) + getVertexName().hashCode();
+      }
+      if (hasDestInputName()) {
+        hash = (37 * hash) + DEST_INPUT_NAME_FIELD_NUMBER;
+        hash = (53 * hash) + getDestInputName().hashCode();
+      }
+      if (hasKeyId()) {
+        hash = (37 * hash) + KEY_ID_FIELD_NUMBER;
+        hash = (53 * hash) + getKeyId();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code NotTezEvent}
+     *
+     * <pre>
+     **
+     * Tez API implementation derives an enum value from instanceof on the event, then uses that enum
+     * in a giant switch statement to re-implement virtual functions. In addition the event classes
+     * are final and serialization is a mix of writables and protobuf. As a result, it is impossible
+     * three times over to add anything there. So, we'd do our own "inspired" serialization.
+     * Eventually we'll move away from events for API.
+     * </pre>
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEventOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_NotTezEvent_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_NotTezEvent_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent.class, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        inputEventProtoBytes_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        vertexName_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        destInputName_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
+        keyId_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.internal_static_NotTezEvent_descriptor;
+      }
+
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent build() {
+        org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent buildPartial() {
+        org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent result = new org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.inputEventProtoBytes_ = inputEventProtoBytes_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.vertexName_ = vertexName_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.destInputName_ = destInputName_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.keyId_ = keyId_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent) {
+          return mergeFrom((org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent other) {
+        if (other == org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent.getDefaultInstance()) return this;
+        if (other.hasInputEventProtoBytes()) {
+          setInputEventProtoBytes(other.getInputEventProtoBytes());
+        }
+        if (other.hasVertexName()) {
+          bitField0_ |= 0x00000002;
+          vertexName_ = other.vertexName_;
+          onChanged();
+        }
+        if (other.hasDestInputName()) {
+          bitField0_ |= 0x00000004;
+          destInputName_ = other.destInputName_;
+          onChanged();
+        }
+        if (other.hasKeyId()) {
+          setKeyId(other.getKeyId());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasInputEventProtoBytes()) {
+          
+          return false;
+        }
+        if (!hasVertexName()) {
+          
+          return false;
+        }
+        if (!hasDestInputName()) {
+          
+          return false;
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.NotTezEvent) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // required bytes input_event_proto_bytes = 1;
+      private com.google.protobuf.ByteString inputEventProtoBytes_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>required bytes input_event_proto_bytes = 1;</code>
+       */
+      public boolean hasInputEventProtoBytes() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required bytes input_event_proto_bytes = 1;</code>
+       */
+      public com.google.protobuf.ByteString getInputEventProtoBytes() {
+        return inputEventProtoBytes_;
+      }
+      /**
+       * <code>required bytes input_event_proto_bytes = 1;</code>
+       */
+      public Builder setInputEventProtoBytes(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        inputEventProtoBytes_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required bytes input_event_proto_bytes = 1;</code>
+       */
+      public Builder clearInputEventProtoBytes() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        inputEventProtoBytes_ = getDefaultInstance().getInputEventProtoBytes();
+        onChanged();
+        return this;
+      }
+
+      // required string vertex_name = 2;
+      private java.lang.Object vertexName_ = "";
+      /**
+       * <code>required string vertex_name = 2;</code>
+       */
+      public boolean hasVertexName() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required string vertex_name = 2;</code>
+       */
+      public java.lang.String getVertexName() {
+        java.lang.Object ref = vertexName_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          vertexName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string vertex_name = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getVertexNameBytes() {
+        java.lang.Object ref = vertexName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          vertexName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string vertex_name = 2;</code>
+       */
+      public Builder setVertexName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        vertexName_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string vertex_name = 2;</code>
+       */
+      public Builder clearVertexName() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        vertexName_ = getDefaultInstance().getVertexName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string vertex_name = 2;</code>
+       */
+      public Builder setVertexNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        vertexName_ = value;
+        onChanged();
+        return this;
+      }
+
+      // required string dest_input_name = 3;
+      private java.lang.Object destInputName_ = "";
+      /**
+       * <code>required string dest_input_name = 3;</code>
+       */
+      public boolean hasDestInputName() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required string dest_input_name = 3;</code>
+       */
+      public java.lang.String getDestInputName() {
+        java.lang.Object ref = destInputName_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          destInputName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string dest_input_name = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getDestInputNameBytes() {
+        java.lang.Object ref = destInputName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          destInputName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string dest_input_name = 3;</code>
+       */
+      public Builder setDestInputName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        destInputName_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string dest_input_name = 3;</code>
+       */
+      public Builder clearDestInputName() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        destInputName_ = getDefaultInstance().getDestInputName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string dest_input_name = 3;</code>
+       */
+      public Builder setDestInputNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        destInputName_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional int32 key_id = 4;
+      private int keyId_ ;
+      /**
+       * <code>optional int32 key_id = 4;</code>
+       */
+      public boolean hasKeyId() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional int32 key_id = 4;</code>
+       */
+      public int getKeyId() {
+        return keyId_;
+      }
+      /**
+       * <code>optional int32 key_id = 4;</code>
+       */
+      public Builder setKeyId(int value) {
+        bitField0_ |= 0x00000008;
+        keyId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 key_id = 4;</code>
+       */
+      public Builder clearKeyId() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        keyId_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:NotTezEvent)
+    }
+
+    static {
+      defaultInstance = new NotTezEvent(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:NotTezEvent)
+  }
+
   public interface SubmitWorkRequestProtoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -9108,6 +10007,34 @@ public final class LlapDaemonProtocolProtos {
      * </pre>
      */
     org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfoOrBuilder getFragmentRuntimeInfoOrBuilder();
+
+    // optional bytes initial_event_bytes = 10;
+    /**
+     * <code>optional bytes initial_event_bytes = 10;</code>
+     *
+     * <pre>
+     * Serialized (and signed) NotTezEvent; used only for external clients for now.
+     * </pre>
+     */
+    boolean hasInitialEventBytes();
+    /**
+     * <code>optional bytes initial_event_bytes = 10;</code>
+     *
+     * <pre>
+     * Serialized (and signed) NotTezEvent; used only for external clients for now.
+     * </pre>
+     */
+    com.google.protobuf.ByteString getInitialEventBytes();
+
+    // optional bytes initial_event_signature = 11;
+    /**
+     * <code>optional bytes initial_event_signature = 11;</code>
+     */
+    boolean hasInitialEventSignature();
+    /**
+     * <code>optional bytes initial_event_signature = 11;</code>
+     */
+    com.google.protobuf.ByteString getInitialEventSignature();
   }
   /**
    * Protobuf type {@code SubmitWorkRequestProto}
@@ -9219,6 +10146,16 @@ public final class LlapDaemonProtocolProtos {
                 fragmentRuntimeInfo_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000100;
+              break;
+            }
+            case 82: {
+              bitField0_ |= 0x00000200;
+              initialEventBytes_ = input.readBytes();
+              break;
+            }
+            case 90: {
+              bitField0_ |= 0x00000400;
+              initialEventSignature_ = input.readBytes();
               break;
             }
           }
@@ -9491,6 +10428,46 @@ public final class LlapDaemonProtocolProtos {
       return fragmentRuntimeInfo_;
     }
 
+    // optional bytes initial_event_bytes = 10;
+    public static final int INITIAL_EVENT_BYTES_FIELD_NUMBER = 10;
+    private com.google.protobuf.ByteString initialEventBytes_;
+    /**
+     * <code>optional bytes initial_event_bytes = 10;</code>
+     *
+     * <pre>
+     * Serialized (and signed) NotTezEvent; used only for external clients for now.
+     * </pre>
+     */
+    public boolean hasInitialEventBytes() {
+      return ((bitField0_ & 0x00000200) == 0x00000200);
+    }
+    /**
+     * <code>optional bytes initial_event_bytes = 10;</code>
+     *
+     * <pre>
+     * Serialized (and signed) NotTezEvent; used only for external clients for now.
+     * </pre>
+     */
+    public com.google.protobuf.ByteString getInitialEventBytes() {
+      return initialEventBytes_;
+    }
+
+    // optional bytes initial_event_signature = 11;
+    public static final int INITIAL_EVENT_SIGNATURE_FIELD_NUMBER = 11;
+    private com.google.protobuf.ByteString initialEventSignature_;
+    /**
+     * <code>optional bytes initial_event_signature = 11;</code>
+     */
+    public boolean hasInitialEventSignature() {
+      return ((bitField0_ & 0x00000400) == 0x00000400);
+    }
+    /**
+     * <code>optional bytes initial_event_signature = 11;</code>
+     */
+    public com.google.protobuf.ByteString getInitialEventSignature() {
+      return initialEventSignature_;
+    }
+
     private void initFields() {
       workSpec_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary.getDefaultInstance();
       workSpecSignature_ = com.google.protobuf.ByteString.EMPTY;
@@ -9501,6 +10478,8 @@ public final class LlapDaemonProtocolProtos {
       amPort_ = 0;
       credentialsBinary_ = com.google.protobuf.ByteString.EMPTY;
       fragmentRuntimeInfo_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo.getDefaultInstance();
+      initialEventBytes_ = com.google.protobuf.ByteString.EMPTY;
+      initialEventSignature_ = com.google.protobuf.ByteString.EMPTY;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -9540,6 +10519,12 @@ public final class LlapDaemonProtocolProtos {
       }
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
         output.writeMessage(9, fragmentRuntimeInfo_);
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        output.writeBytes(10, initialEventBytes_);
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        output.writeBytes(11, initialEventSignature_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -9585,6 +10570,14 @@ public final class LlapDaemonProtocolProtos {
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(9, fragmentRuntimeInfo_);
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(10, initialEventBytes_);
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(11, initialEventSignature_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -9654,6 +10647,16 @@ public final class LlapDaemonProtocolProtos {
         result = result && getFragmentRuntimeInfo()
             .equals(other.getFragmentRuntimeInfo());
       }
+      result = result && (hasInitialEventBytes() == other.hasInitialEventBytes());
+      if (hasInitialEventBytes()) {
+        result = result && getInitialEventBytes()
+            .equals(other.getInitialEventBytes());
+      }
+      result = result && (hasInitialEventSignature() == other.hasInitialEventSignature());
+      if (hasInitialEventSignature()) {
+        result = result && getInitialEventSignature()
+            .equals(other.getInitialEventSignature());
+      }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
       return result;
@@ -9702,6 +10705,14 @@ public final class LlapDaemonProtocolProtos {
       if (hasFragmentRuntimeInfo()) {
         hash = (37 * hash) + FRAGMENT_RUNTIME_INFO_FIELD_NUMBER;
         hash = (53 * hash) + getFragmentRuntimeInfo().hashCode();
+      }
+      if (hasInitialEventBytes()) {
+        hash = (37 * hash) + INITIAL_EVENT_BYTES_FIELD_NUMBER;
+        hash = (53 * hash) + getInitialEventBytes().hashCode();
+      }
+      if (hasInitialEventSignature()) {
+        hash = (37 * hash) + INITIAL_EVENT_SIGNATURE_FIELD_NUMBER;
+        hash = (53 * hash) + getInitialEventSignature().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -9840,6 +10851,10 @@ public final class LlapDaemonProtocolProtos {
           fragmentRuntimeInfoBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000100);
+        initialEventBytes_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000200);
+        initialEventSignature_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000400);
         return this;
       }
 
@@ -9912,6 +10927,14 @@ public final class LlapDaemonProtocolProtos {
         } else {
           result.fragmentRuntimeInfo_ = fragmentRuntimeInfoBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+          to_bitField0_ |= 0x00000200;
+        }
+        result.initialEventBytes_ = initialEventBytes_;
+        if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
+          to_bitField0_ |= 0x00000400;
+        }
+        result.initialEventSignature_ = initialEventSignature_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -9958,6 +10981,12 @@ public final class LlapDaemonProtocolProtos {
         }
         if (other.hasFragmentRuntimeInfo()) {
           mergeFragmentRuntimeInfo(other.getFragmentRuntimeInfo());
+        }
+        if (other.hasInitialEventBytes()) {
+          setInitialEventBytes(other.getInitialEventBytes());
+        }
+        if (other.hasInitialEventSignature()) {
+          setInitialEventSignature(other.getInitialEventSignature());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -10589,6 +11618,94 @@ public final class LlapDaemonProtocolProtos {
           fragmentRuntimeInfo_ = null;
         }
         return fragmentRuntimeInfoBuilder_;
+      }
+
+      // optional bytes initial_event_bytes = 10;
+      private com.google.protobuf.ByteString initialEventBytes_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>optional bytes initial_event_bytes = 10;</code>
+       *
+       * <pre>
+       * Serialized (and signed) NotTezEvent; used only for external clients for now.
+       * </pre>
+       */
+      public boolean hasInitialEventBytes() {
+        return ((bitField0_ & 0x00000200) == 0x00000200);
+      }
+      /**
+       * <code>optional bytes initial_event_bytes = 10;</code>
+       *
+       * <pre>
+       * Serialized (and signed) NotTezEvent; used only for external clients for now.
+       * </pre>
+       */
+      public com.google.protobuf.ByteString getInitialEventBytes() {
+        return initialEventBytes_;
+      }
+      /**
+       * <code>optional bytes initial_event_bytes = 10;</code>
+       *
+       * <pre>
+       * Serialized (and signed) NotTezEvent; used only for external clients for now.
+       * </pre>
+       */
+      public Builder setInitialEventBytes(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000200;
+        initialEventBytes_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bytes initial_event_bytes = 10;</code>
+       *
+       * <pre>
+       * Serialized (and signed) NotTezEvent; used only for external clients for now.
+       * </pre>
+       */
+      public Builder clearInitialEventBytes() {
+        bitField0_ = (bitField0_ & ~0x00000200);
+        initialEventBytes_ = getDefaultInstance().getInitialEventBytes();
+        onChanged();
+        return this;
+      }
+
+      // optional bytes initial_event_signature = 11;
+      private com.google.protobuf.ByteString initialEventSignature_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>optional bytes initial_event_signature = 11;</code>
+       */
+      public boolean hasInitialEventSignature() {
+        return ((bitField0_ & 0x00000400) == 0x00000400);
+      }
+      /**
+       * <code>optional bytes initial_event_signature = 11;</code>
+       */
+      public com.google.protobuf.ByteString getInitialEventSignature() {
+        return initialEventSignature_;
+      }
+      /**
+       * <code>optional bytes initial_event_signature = 11;</code>
+       */
+      public Builder setInitialEventSignature(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000400;
+        initialEventSignature_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bytes initial_event_signature = 11;</code>
+       */
+      public Builder clearInitialEventSignature() {
+        bitField0_ = (bitField0_ & ~0x00000400);
+        initialEventSignature_ = getDefaultInstance().getInitialEventSignature();
+        onChanged();
+        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:SubmitWorkRequestProto)
@@ -16047,6 +17164,11 @@ public final class LlapDaemonProtocolProtos {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_QueryIdentifierProto_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_NotTezEvent_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_NotTezEvent_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_SubmitWorkRequestProto_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -16137,46 +17259,50 @@ public final class LlapDaemonProtocolProtos {
       "\030\004 \001(\003\022 \n\030first_attempt_start_time\030\005 \001(\003",
       "\022\"\n\032current_attempt_start_time\030\006 \001(\003\"F\n\024" +
       "QueryIdentifierProto\022\026\n\016app_identifier\030\001" +
-      " \001(\t\022\026\n\016dag_identifier\030\002 \001(\005\"\232\002\n\026SubmitW" +
-      "orkRequestProto\022\"\n\twork_spec\030\001 \001(\0132\017.Ver" +
-      "texOrBinary\022\033\n\023work_spec_signature\030\002 \001(\014" +
-      "\022\027\n\017fragment_number\030\003 \001(\005\022\026\n\016attempt_num" +
-      "ber\030\004 \001(\005\022\033\n\023container_id_string\030\005 \001(\t\022\017" +
-      "\n\007am_host\030\006 \001(\t\022\017\n\007am_port\030\007 \001(\005\022\032\n\022cred" +
-      "entials_binary\030\010 \001(\014\0223\n\025fragment_runtime" +
-      "_info\030\t \001(\0132\024.FragmentRuntimeInfo\"J\n\027Sub",
-      "mitWorkResponseProto\022/\n\020submission_state" +
-      "\030\001 \001(\0162\025.SubmissionStateProto\"\205\001\n\036Source" +
-      "StateUpdatedRequestProto\022/\n\020query_identi" +
-      "fier\030\001 \001(\0132\025.QueryIdentifierProto\022\020\n\010src" +
-      "_name\030\002 \001(\t\022 \n\005state\030\003 \001(\0162\021.SourceState" +
-      "Proto\"!\n\037SourceStateUpdatedResponseProto" +
-      "\"w\n\031QueryCompleteRequestProto\022\020\n\010query_i" +
-      "d\030\001 \001(\t\022/\n\020query_identifier\030\002 \001(\0132\025.Quer" +
-      "yIdentifierProto\022\027\n\014delete_delay\030\004 \001(\003:\001" +
-      "0\"\034\n\032QueryCompleteResponseProto\"t\n\035Termi",
-      "nateFragmentRequestProto\022/\n\020query_identi" +
-      "fier\030\001 \001(\0132\025.QueryIdentifierProto\022\"\n\032fra" +
-      "gment_identifier_string\030\002 \001(\t\" \n\036Termina" +
-      "teFragmentResponseProto\"&\n\024GetTokenReque" +
-      "stProto\022\016\n\006app_id\030\001 \001(\t\"&\n\025GetTokenRespo" +
-      "nseProto\022\r\n\005token\030\001 \001(\014*2\n\020SourceStatePr" +
-      "oto\022\017\n\013S_SUCCEEDED\020\001\022\r\n\tS_RUNNING\020\002*E\n\024S" +
-      "ubmissionStateProto\022\014\n\010ACCEPTED\020\001\022\014\n\010REJ" +
-      "ECTED\020\002\022\021\n\rEVICTED_OTHER\020\0032\316\002\n\022LlapDaemo" +
-      "nProtocol\022?\n\nsubmitWork\022\027.SubmitWorkRequ",
-      "estProto\032\030.SubmitWorkResponseProto\022W\n\022so" +
-      "urceStateUpdated\022\037.SourceStateUpdatedReq" +
-      "uestProto\032 .SourceStateUpdatedResponsePr" +
-      "oto\022H\n\rqueryComplete\022\032.QueryCompleteRequ" +
-      "estProto\032\033.QueryCompleteResponseProto\022T\n" +
-      "\021terminateFragment\022\036.TerminateFragmentRe" +
-      "questProto\032\037.TerminateFragmentResponsePr" +
-      "oto2]\n\026LlapManagementProtocol\022C\n\022getDele" +
-      "gationToken\022\025.GetTokenRequestProto\032\026.Get" +
-      "TokenResponseProtoBH\n&org.apache.hadoop.",
-      "hive.llap.daemon.rpcB\030LlapDaemonProtocol" +
-      "Protos\210\001\001\240\001\001"
+      " \001(\t\022\026\n\016dag_identifier\030\002 \001(\005\"l\n\013NotTezEv" +
+      "ent\022\037\n\027input_event_proto_bytes\030\001 \002(\014\022\023\n\013" +
+      "vertex_name\030\002 \002(\t\022\027\n\017dest_input_name\030\003 \002" +
+      "(\t\022\016\n\006key_id\030\004 \001(\005\"\330\002\n\026SubmitWorkRequest" +
+      "Proto\022\"\n\twork_spec\030\001 \001(\0132\017.VertexOrBinar" +
+      "y\022\033\n\023work_spec_signature\030\002 \001(\014\022\027\n\017fragme" +
+      "nt_number\030\003 \001(\005\022\026\n\016attempt_number\030\004 \001(\005\022" +
+      "\033\n\023container_id_string\030\005 \001(\t\022\017\n\007am_host\030",
+      "\006 \001(\t\022\017\n\007am_port\030\007 \001(\005\022\032\n\022credentials_bi" +
+      "nary\030\010 \001(\014\0223\n\025fragment_runtime_info\030\t \001(" +
+      "\0132\024.FragmentRuntimeInfo\022\033\n\023initial_event" +
+      "_bytes\030\n \001(\014\022\037\n\027initial_event_signature\030" +
+      "\013 \001(\014\"J\n\027SubmitWorkResponseProto\022/\n\020subm" +
+      "ission_state\030\001 \001(\0162\025.SubmissionStateProt" +
+      "o\"\205\001\n\036SourceStateUpdatedRequestProto\022/\n\020" +
+      "query_identifier\030\001 \001(\0132\025.QueryIdentifier" +
+      "Proto\022\020\n\010src_name\030\002 \001(\t\022 \n\005state\030\003 \001(\0162\021" +
+      ".SourceStateProto\"!\n\037SourceStateUpdatedR",
+      "esponseProto\"w\n\031QueryCompleteRequestProt" +
+      "o\022\020\n\010query_id\030\001 \001(\t\022/\n\020query_identifier\030" +
+      "\002 \001(\0132\025.QueryIdentifierProto\022\027\n\014delete_d" +
+      "elay\030\004 \001(\003:\0010\"\034\n\032QueryCompleteResponsePr" +
+      "oto\"t\n\035TerminateFragmentRequestProto\022/\n\020" +
+      "query_identifier\030\001 \001(\0132\025.QueryIdentifier" +
+      "Proto\022\"\n\032fragment_identifier_string\030\002 \001(" +
+      "\t\" \n\036TerminateFragmentResponseProto\"&\n\024G" +
+      "etTokenRequestProto\022\016\n\006app_id\030\001 \001(\t\"&\n\025G" +
+      "etTokenResponseProto\022\r\n\005token\030\001 \001(\014*2\n\020S",
+      "ourceStateProto\022\017\n\013S_SUCCEEDED\020\001\022\r\n\tS_RU" +
+      "NNING\020\002*E\n\024SubmissionStateProto\022\014\n\010ACCEP" +
+      "TED\020\001\022\014\n\010REJECTED\020\002\022\021\n\rEVICTED_OTHER\020\0032\316" +
+      "\002\n\022LlapDaemonProtocol\022?\n\nsubmitWork\022\027.Su" +
+      "bmitWorkRequestProto\032\030.SubmitWorkRespons" +
+      "eProto\022W\n\022sourceStateUpdated\022\037.SourceSta" +
+      "teUpdatedRequestProto\032 .SourceStateUpdat" +
+      "edResponseProto\022H\n\rqueryComplete\022\032.Query" +
+      "CompleteRequestProto\032\033.QueryCompleteResp" +
+      "onseProto\022T\n\021terminateFragment\022\036.Termina",
+      "teFragmentRequestProto\032\037.TerminateFragme" +
+      "ntResponseProto2]\n\026LlapManagementProtoco" +
+      "l\022C\n\022getDelegationToken\022\025.GetTokenReques" +
+      "tProto\032\026.GetTokenResponseProtoBH\n&org.ap" +
+      "ache.hadoop.hive.llap.daemon.rpcB\030LlapDa" +
+      "emonProtocolProtos\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -16237,62 +17363,68 @@ public final class LlapDaemonProtocolProtos {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_QueryIdentifierProto_descriptor,
               new java.lang.String[] { "AppIdentifier", "DagIdentifier", });
-          internal_static_SubmitWorkRequestProto_descriptor =
+          internal_static_NotTezEvent_descriptor =
             getDescriptor().getMessageTypes().get(9);
+          internal_static_NotTezEvent_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_NotTezEvent_descriptor,
+              new java.lang.String[] { "InputEventProtoBytes", "VertexName", "DestInputName", "KeyId", });
+          internal_static_SubmitWorkRequestProto_descriptor =
+            getDescriptor().getMessageTypes().get(10);
           internal_static_SubmitWorkRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_SubmitWorkRequestProto_descriptor,
-              new java.lang.String[] { "WorkSpec", "WorkSpecSignature", "FragmentNumber", "AttemptNumber", "ContainerIdString", "AmHost", "AmPort", "CredentialsBinary", "FragmentRuntimeInfo", });
+              new java.lang.String[] { "WorkSpec", "WorkSpecSignature", "FragmentNumber", "AttemptNumber", "ContainerIdString", "AmHost", "AmPort", "CredentialsBinary", "FragmentRuntimeInfo", "InitialEventBytes", "InitialEventSignature", });
           internal_static_SubmitWorkResponseProto_descriptor =
-            getDescriptor().getMessageTypes().get(10);
+            getDescriptor().getMessageTypes().get(11);
           internal_static_SubmitWorkResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_SubmitWorkResponseProto_descriptor,
               new java.lang.String[] { "SubmissionState", });
           internal_static_SourceStateUpdatedRequestProto_descriptor =
-            getDescriptor().getMessageTypes().get(11);
+            getDescriptor().getMessageTypes().get(12);
           internal_static_SourceStateUpdatedRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_SourceStateUpdatedRequestProto_descriptor,
               new java.lang.String[] { "QueryIdentifier", "SrcName", "State", });
           internal_static_SourceStateUpdatedResponseProto_descriptor =
-            getDescriptor().getMessageTypes().get(12);
+            getDescriptor().getMessageTypes().get(13);
           internal_static_SourceStateUpdatedResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_SourceStateUpdatedResponseProto_descriptor,
               new java.lang.String[] { });
           internal_static_QueryCompleteRequestProto_descriptor =
-            getDescriptor().getMessageTypes().get(13);
+            getDescriptor().getMessageTypes().get(14);
           internal_static_QueryCompleteRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_QueryCompleteRequestProto_descriptor,
               new java.lang.String[] { "QueryId", "QueryIdentifier", "DeleteDelay", });
           internal_static_QueryCompleteResponseProto_descriptor =
-            getDescriptor().getMessageTypes().get(14);
+            getDescriptor().getMessageTypes().get(15);
           internal_static_QueryCompleteResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_QueryCompleteResponseProto_descriptor,
               new java.lang.String[] { });
           internal_static_TerminateFragmentRequestProto_descriptor =
-            getDescriptor().getMessageTypes().get(15);
+            getDescriptor().getMessageTypes().get(16);
           internal_static_TerminateFragmentRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_TerminateFragmentRequestProto_descriptor,
               new java.lang.String[] { "QueryIdentifier", "FragmentIdentifierString", });
           internal_static_TerminateFragmentResponseProto_descriptor =
-            getDescriptor().getMessageTypes().get(16);
+            getDescriptor().getMessageTypes().get(17);
           internal_static_TerminateFragmentResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_TerminateFragmentResponseProto_descriptor,
               new java.lang.String[] { });
           internal_static_GetTokenRequestProto_descriptor =
-            getDescriptor().getMessageTypes().get(17);
+            getDescriptor().getMessageTypes().get(18);
           internal_static_GetTokenRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_GetTokenRequestProto_descriptor,
               new java.lang.String[] { "AppId", });
           internal_static_GetTokenResponseProto_descriptor =
-            getDescriptor().getMessageTypes().get(18);
+            getDescriptor().getMessageTypes().get(19);
           internal_static_GetTokenResponseProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_GetTokenResponseProto_descriptor,

@@ -58,6 +58,7 @@ import org.apache.tez.dag.records.TezVertexID;
 import org.apache.tez.hadoop.shim.HadoopShim;
 import org.apache.tez.runtime.api.ExecutionContext;
 import org.apache.tez.runtime.api.impl.TaskSpec;
+import org.apache.tez.runtime.api.impl.TezEvent;
 import org.apache.tez.runtime.common.objectregistry.ObjectRegistryImpl;
 import org.apache.tez.runtime.internals.api.TaskReporterInterface;
 import org.apache.tez.runtime.library.input.UnorderedKVInput;
@@ -114,19 +115,17 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private final AtomicBoolean isCompleted = new AtomicBoolean(false);
   private final AtomicBoolean killInvoked = new AtomicBoolean(false);
   private final SignableVertexSpec vertex;
+  private final TezEvent initialEvent;
   private UserGroupInformation taskUgi;
 
   @VisibleForTesting
   public TaskRunnerCallable(SubmitWorkRequestProto request, QueryFragmentInfo fragmentInfo,
-                     Configuration conf,
-                     ExecutionContext executionContext, Map<String, String> envMap,
-                     Credentials credentials,
-                     long memoryAvailable, AMReporter amReporter,
-                     ConfParams confParams, LlapDaemonExecutorMetrics metrics,
-                     KilledTaskHandler killedTaskHandler,
-                     FragmentCompletionHandler fragmentCompleteHandler,
-                     HadoopShim tezHadoopShim, TezTaskAttemptID attemptId,
-                     SignableVertexSpec vertex, UserGroupInformation taskUgi) {
+      Configuration conf, ExecutionContext executionContext, Map<String, String> envMap,
+      Credentials credentials, long memoryAvailable, AMReporter amReporter, ConfParams confParams,
+      LlapDaemonExecutorMetrics metrics, KilledTaskHandler killedTaskHandler,
+      FragmentCompletionHandler fragmentCompleteHandler, HadoopShim tezHadoopShim,
+      TezTaskAttemptID attemptId, SignableVertexSpec vertex, TezEvent initialEvent,
+      UserGroupInformation taskUgi) {
     this.request = request;
     this.fragmentInfo = fragmentInfo;
     this.conf = conf;
@@ -153,6 +152,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     this.killedTaskHandler = killedTaskHandler;
     this.fragmentCompletionHanler = fragmentCompleteHandler;
     this.tezHadoopShim = tezHadoopShim;
+    this.initialEvent = initialEvent;
     this.taskUgi = taskUgi;
   }
 
@@ -227,7 +227,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
         confParams.amMaxEventsPerHeartbeat,
         new AtomicLong(0),
         request.getContainerIdString(),
-        fragFullId);
+        fragFullId,
+        initialEvent);
 
     String attemptId = fragmentInfo.getFragmentIdentifierString();
     IOContextMap.setThreadAttemptId(attemptId);
