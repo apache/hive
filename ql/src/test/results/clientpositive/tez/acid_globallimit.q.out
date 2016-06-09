@@ -45,7 +45,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	100540              
+	totalSize           	101147              
 	transactional       	true                
 #### A masked pattern was here ####
 	 	 
@@ -75,9 +75,9 @@ Stage-0
       File Output Operator [FS_3]
         Limit [LIM_2] (rows=10 width=4)
           Number of rows:10
-          Select Operator [SEL_1] (rows=25135 width=4)
+          Select Operator [SEL_1] (rows=25286 width=4)
             Output:["_col0"]
-            TableScan [TS_0] (rows=25135 width=4)
+            TableScan [TS_0] (rows=25286 width=4)
               default@acidtest1,acidtest1, ACID table,Tbl:COMPLETE,Col:NONE,Output:["c1"]
 
 PREHOOK: query: select cast (c1 as string) from acidtest1 limit 10

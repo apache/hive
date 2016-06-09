@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
@@ -197,6 +198,8 @@ public class TestOrcRecordUpdater {
     }
     Properties tblProps = new Properties();
     tblProps.setProperty("orc.compress", "SNAPPY");
+    tblProps.setProperty("orc.compress.size", "8192");
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_ORC_BASE_DELTA_RATIO, 4);
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
         .filesystem(fs)
         .bucket(10)
@@ -223,6 +226,7 @@ public class TestOrcRecordUpdater {
     System.out.flush();
     String outDump = new String(myOut.toByteArray());
     assertEquals(true, outDump.contains("Compression: SNAPPY"));
+    assertEquals(true, outDump.contains("Compression size: 2048"));
     System.setOut(origOut);
     updater.close(false);
   }

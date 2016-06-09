@@ -40,6 +40,8 @@ public enum OrcConf {
           " number of rows n index entry represents.)"),
   BUFFER_SIZE("orc.compress.size", "hive.exec.orc.default.buffer.size",
       256 * 1024, "Define the default ORC buffer size, in bytes."),
+  BASE_DELTA_RATIO("orc.base.delta.ratio", "hive.exec.orc.base.delta.ratio", 8,
+      "The ratio of base writer and delta writer in terms of STRIPE_SIZE and BUFFER_SIZE."),
   BLOCK_PADDING("orc.block.padding", "hive.exec.orc.default.block.padding",
       true,
       "Define whether stripes should be padded to the HDFS block boundaries."),

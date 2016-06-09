@@ -1206,6 +1206,8 @@ public class HiveConf extends Configuration {
         "to use dictionary or not will be retained thereafter."),
     HIVE_ORC_DEFAULT_BUFFER_SIZE("hive.exec.orc.default.buffer.size", 256 * 1024,
         "Define the default ORC buffer size, in bytes."),
+    HIVE_ORC_BASE_DELTA_RATIO("hive.exec.orc.base.delta.ratio", 8, "The ratio of base writer and\n" +
+        "delta writer in terms of STRIPE_SIZE and BUFFER_SIZE."),
     HIVE_ORC_DEFAULT_BLOCK_PADDING("hive.exec.orc.default.block.padding", true,
         "Define the default block padding, which pads stripes to the HDFS block boundaries."),
     HIVE_ORC_BLOCK_PADDING_TOLERANCE("hive.exec.orc.block.padding.tolerance", 0.05f,
