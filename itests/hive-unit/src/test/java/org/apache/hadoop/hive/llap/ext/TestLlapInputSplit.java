@@ -21,12 +21,8 @@ package org.apache.hadoop.hive.llap.ext;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
-import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
-
-import org.apache.hadoop.io.Text;
 
 import org.apache.hadoop.hive.llap.LlapInputSplit;
 import org.apache.hadoop.hive.llap.Schema;
@@ -34,12 +30,7 @@ import org.apache.hadoop.hive.llap.FieldDesc;
 import org.apache.hadoop.hive.llap.TypeDesc;
 
 import org.apache.hadoop.mapred.SplitLocationInfo;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import static org.junit.Assert.*;
 
 public class TestLlapInputSplit {
@@ -59,8 +50,9 @@ public class TestLlapInputSplit {
     colDescs.add(new FieldDesc("col2", new TypeDesc(TypeDesc.Type.INT)));
     Schema schema = new Schema(colDescs);
 
+    byte[] tokenBytes = new byte[] { 1 };
     LlapInputSplit split1 = new LlapInputSplit(splitNum, planBytes, fragmentBytes, null,
-        locations, schema, "hive");
+        locations, schema, "hive", tokenBytes);
     ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
     DataOutputStream dataOut = new DataOutputStream(byteOutStream);
     split1.write(dataOut);
@@ -75,13 +67,12 @@ public class TestLlapInputSplit {
     checkLlapSplits(split1, split2);
   }
 
-  static void checkLlapSplits(
-      LlapInputSplit split1,
-      LlapInputSplit split2) throws Exception {
+  static void checkLlapSplits(LlapInputSplit split1, LlapInputSplit split2) throws Exception {
 
     assertEquals(split1.getSplitNum(), split2.getSplitNum());
     assertArrayEquals(split1.getPlanBytes(), split2.getPlanBytes());
     assertArrayEquals(split1.getFragmentBytes(), split2.getFragmentBytes());
+    assertArrayEquals(split1.getTokenBytes(), split2.getTokenBytes());
     SplitLocationInfo[] locationInfo1 = split1.getLocationInfo();
     SplitLocationInfo[] locationInfo2 = split2.getLocationInfo();
     for (int idx = 0; idx < locationInfo1.length; ++idx) {

@@ -16,6 +16,7 @@
  */
 package org.apache.hadoop.hive.llap;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -44,8 +45,10 @@ import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient.LlapTaskU
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
+import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.io.DataInputBuffer;
+import org.apache.hadoop.io.DataInputByteBuffer;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -127,12 +130,21 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     LOG.info("Found service instance for host " + host + " with rpc port " + llapSubmitPort
         + " and outputformat port " + serviceInstance.getOutputFormatPort());
 
+    byte[] llapTokenBytes = llapSplit.getTokenBytes();
+    Token<LlapTokenIdentifier> llapToken = null;
+    if (llapTokenBytes != null) {
+      DataInputBuffer in = new DataInputBuffer();
+      in.reset(llapTokenBytes, 0, llapTokenBytes.length);
+      llapToken = new Token<LlapTokenIdentifier>();
+      llapToken.readFields(in);
+    }
+
     LlapRecordReaderTaskUmbilicalExternalResponder umbilicalResponder =
         new LlapRecordReaderTaskUmbilicalExternalResponder();
     // TODO: close this
     LlapTaskUmbilicalExternalClient llapClient =
       new LlapTaskUmbilicalExternalClient(job, submitWorkInfo.getTokenIdentifier(),
-          submitWorkInfo.getToken(), umbilicalResponder);
+          submitWorkInfo.getToken(), umbilicalResponder, llapToken);
     llapClient.init(job);
     llapClient.start();
 
