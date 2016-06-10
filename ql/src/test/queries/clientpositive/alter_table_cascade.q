@@ -1,4 +1,3 @@
-set hive.metastore.disallow.incompatible.col.type.changes=false;
 SET hive.exec.dynamic.partition = true;
 SET hive.exec.dynamic.partition.mode = nonstrict;
 

@@ -230,7 +230,7 @@ public class TestGenericUDFOPPlus extends AbstractTestGenericUDFOPNumeric {
 
     verifyReturnType(new GenericUDFOPPlus(), "float", "float", "float");
     verifyReturnType(new GenericUDFOPPlus(), "float", "double", "double");
-    verifyReturnType(new GenericUDFOPPlus(), "float", "decimal(10,2)", "float");
+    verifyReturnType(new GenericUDFOPPlus(), "float", "decimal(10,2)", "double");
 
     verifyReturnType(new GenericUDFOPPlus(), "double", "double", "double");
     verifyReturnType(new GenericUDFOPPlus(), "double", "decimal(10,2)", "double");
@@ -252,7 +252,7 @@ public class TestGenericUDFOPPlus extends AbstractTestGenericUDFOPNumeric {
 
     verifyReturnType(new GenericUDFOPPlus(), "float", "float", "float");
     verifyReturnType(new GenericUDFOPPlus(), "float", "double", "double");
-    verifyReturnType(new GenericUDFOPPlus(), "float", "decimal(10,2)", "float");
+    verifyReturnType(new GenericUDFOPPlus(), "float", "decimal(10,2)", "double");
 
     verifyReturnType(new GenericUDFOPPlus(), "double", "double", "double");
     verifyReturnType(new GenericUDFOPPlus(), "double", "decimal(10,2)", "double");

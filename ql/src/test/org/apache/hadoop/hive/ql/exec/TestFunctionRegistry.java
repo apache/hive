@@ -23,10 +23,12 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -40,7 +42,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-import org.junit.Assert;
 
 public class TestFunctionRegistry extends TestCase {
 
@@ -84,10 +85,9 @@ public class TestFunctionRegistry extends TestCase {
 
   public void testImplicitConversion() {
     implicit(TypeInfoFactory.intTypeInfo, TypeInfoFactory.decimalTypeInfo, true);
-    implicit(TypeInfoFactory.longTypeInfo, TypeInfoFactory.decimalTypeInfo, true);
-    implicit(TypeInfoFactory.floatTypeInfo, TypeInfoFactory.decimalTypeInfo, false);
-    implicit(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.decimalTypeInfo, false);
-    implicit(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.decimalTypeInfo, false);
+    implicit(TypeInfoFactory.floatTypeInfo, TypeInfoFactory.decimalTypeInfo, true);
+    implicit(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.decimalTypeInfo, true);
+    implicit(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.decimalTypeInfo, true);
     implicit(TypeInfoFactory.dateTypeInfo, TypeInfoFactory.decimalTypeInfo, false);
     implicit(TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.decimalTypeInfo, false);
     implicit(varchar10, TypeInfoFactory.stringTypeInfo, true);
@@ -185,16 +185,16 @@ public class TestFunctionRegistry extends TestCase {
   public void testGetMethodInternal() {
 
     verify(TestUDF.class, "same", TypeInfoFactory.intTypeInfo, TypeInfoFactory.intTypeInfo,
-           HiveDecimalWritable.class, HiveDecimalWritable.class, false);
+           DoubleWritable.class, DoubleWritable.class, false);
 
     verify(TestUDF.class, "same", TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.doubleTypeInfo,
            DoubleWritable.class, DoubleWritable.class, false);
 
     verify(TestUDF.class, "same", TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.decimalTypeInfo,
-           DoubleWritable.class, DoubleWritable.class, false);
+           HiveDecimalWritable.class, HiveDecimalWritable.class, false);
 
     verify(TestUDF.class, "same", TypeInfoFactory.decimalTypeInfo, TypeInfoFactory.doubleTypeInfo,
-           DoubleWritable.class, DoubleWritable.class, false);
+           HiveDecimalWritable.class, HiveDecimalWritable.class, false);
 
     verify(TestUDF.class, "same", TypeInfoFactory.decimalTypeInfo, TypeInfoFactory.decimalTypeInfo,
            HiveDecimalWritable.class, HiveDecimalWritable.class, false);
@@ -226,7 +226,7 @@ public class TestFunctionRegistry extends TestCase {
     common(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.decimalTypeInfo,
            TypeInfoFactory.stringTypeInfo);
     common(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.decimalTypeInfo,
-           TypeInfoFactory.doubleTypeInfo);
+           TypeInfoFactory.decimalTypeInfo);
     common(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.stringTypeInfo,
            TypeInfoFactory.stringTypeInfo);
 
@@ -246,9 +246,9 @@ public class TestFunctionRegistry extends TestCase {
     comparison(TypeInfoFactory.intTypeInfo, TypeInfoFactory.decimalTypeInfo,
                TypeInfoFactory.decimalTypeInfo);
     comparison(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.decimalTypeInfo,
-               TypeInfoFactory.doubleTypeInfo);
+               TypeInfoFactory.decimalTypeInfo);
     comparison(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.decimalTypeInfo,
-               TypeInfoFactory.doubleTypeInfo);
+               TypeInfoFactory.decimalTypeInfo);
     comparison(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.stringTypeInfo,
                TypeInfoFactory.doubleTypeInfo);
 
@@ -330,9 +330,9 @@ public class TestFunctionRegistry extends TestCase {
     unionAll(TypeInfoFactory.intTypeInfo, TypeInfoFactory.decimalTypeInfo,
         TypeInfoFactory.decimalTypeInfo);
     unionAll(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.decimalTypeInfo,
-        TypeInfoFactory.stringTypeInfo);
+        TypeInfoFactory.decimalTypeInfo);
     unionAll(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.decimalTypeInfo,
-        TypeInfoFactory.doubleTypeInfo);
+        TypeInfoFactory.decimalTypeInfo);
     unionAll(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.stringTypeInfo,
         TypeInfoFactory.stringTypeInfo);
 

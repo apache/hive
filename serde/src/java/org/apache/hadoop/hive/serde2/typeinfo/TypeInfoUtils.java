@@ -68,9 +68,9 @@ public final class TypeInfoUtils {
     registerNumericType(PrimitiveCategory.SHORT, 2);
     registerNumericType(PrimitiveCategory.INT, 3);
     registerNumericType(PrimitiveCategory.LONG, 4);
-    registerNumericType(PrimitiveCategory.DECIMAL, 5);
-    registerNumericType(PrimitiveCategory.FLOAT, 6);
-    registerNumericType(PrimitiveCategory.DOUBLE, 7);
+    registerNumericType(PrimitiveCategory.FLOAT, 5);
+    registerNumericType(PrimitiveCategory.DOUBLE, 6);
+    registerNumericType(PrimitiveCategory.DECIMAL, 7);
     registerNumericType(PrimitiveCategory.STRING, 8);
   }
 
@@ -885,7 +885,10 @@ public final class TypeInfoUtils {
     if (fromPg == PrimitiveGrouping.STRING_GROUP && to == PrimitiveCategory.DOUBLE) {
       return true;
     }
-
+    // Allow implicit String to Decimal conversion
+    if (fromPg == PrimitiveGrouping.STRING_GROUP && to == PrimitiveCategory.DECIMAL) {
+      return true;
+    }
     // Void can be converted to any type
     if (from == PrimitiveCategory.VOID) {
       return true;
