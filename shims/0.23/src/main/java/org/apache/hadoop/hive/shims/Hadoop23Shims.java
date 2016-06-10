@@ -1268,7 +1268,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     try {
       method = clazz.getDeclaredMethod("getSubject");
       method.setAccessible(true);
-      ctor = clazz.getConstructor(Subject.class);
+      ctor = clazz.getDeclaredConstructor(Subject.class);
       ctor.setAccessible(true);
     } catch (Throwable t) {
       error = t.getMessage();
