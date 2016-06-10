@@ -906,6 +906,10 @@ public final class PlanUtils {
     // prevent instantiation
   }
 
+  public static ReadEntity addInput(Set<ReadEntity> inputs, ReadEntity newInput) {
+    return addInput(inputs,newInput,false);
+  }
+
   // Add the input 'newInput' to the set of inputs for the query.
   // The input may or may not be already present.
   // The ReadEntity also contains the parents from it is derived (only populated
@@ -923,13 +927,16 @@ public final class PlanUtils {
   //
   // If the ReadEntity is already present and another ReadEntity with same name is
   // added, then the isDirect flag is updated to be the OR of values of both.
-  public static ReadEntity addInput(Set<ReadEntity> inputs, ReadEntity newInput) {
+  // mergeIsDirectFlag, need to merge isDirect flag even newInput does not have parent
+  public static ReadEntity addInput(Set<ReadEntity> inputs, ReadEntity newInput, boolean mergeIsDirectFlag) {
     // If the input is already present, make sure the new parent is added to the input.
     if (inputs.contains(newInput)) {
       for (ReadEntity input : inputs) {
         if (input.equals(newInput)) {
           if ((newInput.getParents() != null) && (!newInput.getParents().isEmpty())) {
             input.getParents().addAll(newInput.getParents());
+            input.setDirect(input.isDirect() || newInput.isDirect());
+          } else if (mergeIsDirectFlag) {
             input.setDirect(input.isDirect() || newInput.isDirect());
           }
           return input;
