@@ -37,6 +37,8 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.metadata.CheckResult.PartitionResult;
+import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
+import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.thrift.TException;
 
 /**
@@ -196,8 +198,10 @@ public class HiveMetaStoreChecker {
 
     if (table.isPartitioned()) {
       if (partitions == null || partitions.isEmpty()) {
+        PrunedPartitionList prunedPartList =
+        PartitionPruner.prune(table, null, conf, toString(), null);
         // no partitions specified, let's get all
-        parts = hive.getPartitions(table);
+        parts.addAll(prunedPartList.getPartitions());
       } else {
         // we're interested in specific partitions,
         // don't check for any others
