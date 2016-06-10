@@ -231,7 +231,8 @@ public class TestJdbcWithMiniKdc {
       // Expected error
       e.printStackTrace();
       assertTrue(e.getMessage().contains("Failed to validate proxy privilege"));
-      assertTrue(e.getCause().getCause().getMessage().contains("is not allowed to impersonate"));
+      assertTrue(e.getCause().getCause().getCause().getMessage()
+              .contains("is not allowed to impersonate"));
     }
   }
 
