@@ -148,16 +148,6 @@ public class HiveConnection implements java.sql.Connection {
       fetchSize = Integer.parseInt(sessConfMap.get(JdbcConnectionParams.FETCH_SIZE));
     }
 
-    if (isEmbeddedMode) {
-      EmbeddedThriftBinaryCLIService embeddedClient = new EmbeddedThriftBinaryCLIService();
-      embeddedClient.init(null);
-      client = embeddedClient;
-    } else {
-      // open the client transport
-      openTransport();
-      // set up the client
-      client = new TCLIService.Client(new TBinaryProtocol(transport));
-    }
     // add supported protocols
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V1);
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V2);
@@ -168,35 +158,34 @@ public class HiveConnection implements java.sql.Connection {
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V7);
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8);
 
-    // open client session
-    openSession();
+    if (isEmbeddedMode) {
+      EmbeddedThriftBinaryCLIService embeddedClient = new EmbeddedThriftBinaryCLIService();
+      embeddedClient.init(null);
+      client = embeddedClient;
 
-    // Wrap the client with a thread-safe proxy to serialize the RPC calls
-    client = newSynchronizedClient(client);
-  }
-
-  private void openTransport() throws SQLException {
-    int maxRetries = 1;
-    try {
-      String strRetries = sessConfMap.get(JdbcConnectionParams.RETRIES);
-      if (StringUtils.isNotBlank(strRetries)) {
-        maxRetries = Integer.parseInt(strRetries);
+      // open client session
+      openSession();
+    } else {
+      int maxRetries = 1;
+      try {
+        String strRetries = sessConfMap.get(JdbcConnectionParams.RETRIES);
+        if (StringUtils.isNotBlank(strRetries)) {
+          maxRetries = Integer.parseInt(strRetries);
+        }
+      } catch(NumberFormatException e) { // Ignore the exception
       }
-    } catch(NumberFormatException e) { // Ignore the exception
-    }
 
-    for (int numRetries = 0;;) {
+      for (int numRetries = 0;;) {
         try {
-          assumeSubject =
-              JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT.equals(sessConfMap
-                  .get(JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE));
-          transport = isHttpTransportMode() ? createHttpTransport() : createBinaryTransport();
-          if (!transport.isOpen()) {
-            transport.open();
-            logZkDiscoveryMessage("Connected to " + connParams.getHost() + ":" + connParams.getPort());
-          }
+          // open the client transport
+          openTransport();
+          // set up the client
+          client = new TCLIService.Client(new TBinaryProtocol(transport));
+          // open client session
+          openSession();
+
           break;
-        } catch (TTransportException e) {
+        } catch (Exception e) {
           LOG.warn("Failed to connect to " + connParams.getHost() + ":" + connParams.getPort());
           String errMsg = null;
           String warnMsg = "Could not open client transport with JDBC Uri: " + jdbcUriString + ": ";
@@ -221,7 +210,22 @@ public class HiveConnection implements java.sql.Connection {
             LOG.warn(warnMsg + e.getMessage() + " Retrying " + numRetries + " of " + maxRetries);
           }
         }
+      }
     }
+
+    // Wrap the client with a thread-safe proxy to serialize the RPC calls
+    client = newSynchronizedClient(client);
+  }
+
+  private void openTransport() throws Exception {
+      assumeSubject =
+          JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT.equals(sessConfMap
+              .get(JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE));
+      transport = isHttpTransportMode() ? createHttpTransport() : createBinaryTransport();
+      if (!transport.isOpen()) {
+        transport.open();
+        logZkDiscoveryMessage("Connected to " + connParams.getHost() + ":" + connParams.getPort());
+      }
   }
 
   public String getConnectedUrl() {
@@ -248,26 +252,7 @@ public class HiveConnection implements java.sql.Connection {
     boolean useSsl = isSslConnection();
     // Create an http client from the configs
     httpClient = getHttpClient(useSsl);
-    try {
-      transport = new THttpClient(getServerHttpUrl(useSsl), httpClient);
-      // We'll call an open/close here to send a test HTTP message to the server. Any
-      // TTransportException caused by trying to connect to a non-available peer are thrown here.
-      // Bubbling them up the call hierarchy so that a retry can happen in openTransport,
-      // if dynamic service discovery is configured.
-      TCLIService.Iface client = new TCLIService.Client(new TBinaryProtocol(transport));
-      TOpenSessionResp openResp = client.OpenSession(new TOpenSessionReq());
-      if (openResp != null) {
-        client.CloseSession(new TCloseSessionReq(openResp.getSessionHandle()));
-      }
-    }
-    catch (TException e) {
-      LOG.info("JDBC Connection Parameters used : useSSL = " + useSsl + " , httpPath  = " +
-        sessConfMap.get(JdbcConnectionParams.HTTP_PATH) + " Authentication type = " +
-        sessConfMap.get(JdbcConnectionParams.AUTH_TYPE));
-      String msg =  "Could not create http connection to " +
-          jdbcUriString + ". " + e.getMessage();
-      throw new TTransportException(msg, e);
-    }
+    transport = new THttpClient(getServerHttpUrl(useSsl), httpClient);
     return transport;
   }
 
