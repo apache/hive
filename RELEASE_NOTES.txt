@@ -78,6 +78,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13905] - optimize ColumnStatsTask::constructColumnStatsFromPackedRows to have lesser number of getTable calls
     * [HIVE-13910] - [Ranger-Hive] select from a table is not working if used as <dbname.tablename>
     * [HIVE-13922] - Optimize the code path that analyzes/updates col stats
+    * [HIVE-13942] - Correctness of CASE folding in the presence of NULL values
 
 
 
@@ -315,7 +316,6 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13373] - Use most specific type for numerical constants
     * [HIVE-13378] - LLAP help formatter is too narrow
     * [HIVE-13379] - HIVE-12851 args do not work (slider-keytab-dir, etc.)
-    * [HIVE-13380] - Decimal should have lower precedence than double in type hierachy
     * [HIVE-13381] - Timestamp & date should have precedence in type hierarchy than string group
     * [HIVE-13388] - Fix inconsistent content due to Thrift changes
     * [HIVE-13390] - HiveServer2: Add more test to ZK service discovery using MiniHS2
@@ -373,6 +373,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13552] - Templeton job does not write out log files on InterruptedException
     * [HIVE-13553] - CTE with upperCase alias throws exception
     * [HIVE-13561] - HiveServer2 is leaking ClassLoaders when add jar / temporary functions are used
+    * [HIVE-13563] - Hive Streaming does not honor orc.compress.size and orc.stripe.size table properties
     * [HIVE-13568] - Add UDFs to support column-masking
     * [HIVE-13570] - Some queries with Union all fail when CBO is off
     * [HIVE-13572] - Redundant setting full file status in Hive::copyFiles
@@ -382,6 +383,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13596] - HS2 should be able to get UDFs on demand from metastore
     * [HIVE-13597] - revert HIVE-12892
     * [HIVE-13598] - Describe extended table should show the primary keys/foreign keys associated with the table
+    * [HIVE-13599] - LLAP: Incorrect handling of the preemption queue on finishable state updates
     * [HIVE-13602] - TPCH q16 return wrong result when CBO is on
     * [HIVE-13608] - We should provide better error message while constraints with duplicate names are created
     * [HIVE-13609] - Fix UDTFs to allow local fetch task to fetch rows forwarded by GenericUDTF.close()
@@ -398,6 +400,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13656] - need to set direct memory limit higher in LlapServiceDriver for certain edge case configurations
     * [HIVE-13657] - Spark driver stderr logs should appear in hive client logs
     * [HIVE-13659] - An empty where condition leads to vectorization exceptions instead of throwing a compile time error
+    * [HIVE-13660] - Vectorizing IN expression with list of columns throws java.lang.ClassCastException ExprNodeColumnDesc cannot be cast to ExprNodeConstantDesc
     * [HIVE-13669] - LLAP: io.enabled config is ignored on the server side
     * [HIVE-13671] - Add PerfLogger to log4j2.properties logger
     * [HIVE-13676] - Tests failing because metastore doesn't come up
@@ -436,6 +439,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13844] - Invalid index handler in org.apache.hadoop.hive.ql.index.HiveIndex class
     * [HIVE-13845] - Delete beeline/pom.xml.orig
     * [HIVE-13849] - Wrong plan for hive.optimize.sort.dynamic.partition=true
+    * [HIVE-13853] - Add X-XSRF-Header filter to HS2 HTTP mode and WebHCat
     * [HIVE-13856] - Fetching transaction batches during ACID streaming against Hive Metastore using Oracle DB fails
     * [HIVE-13857] - insert overwrite select from some table fails throwing org.apache.hadoop.security.AccessControlException - II
     * [HIVE-13858] - LLAP: A preempted task can end up waiting on completeInitialization if some part of the executing code suppressed the interrupt
@@ -447,10 +451,20 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13870] - Decimal vector is not resized correctly
     * [HIVE-13876] - Vectorization: Port HIVE-11544 to LazySimpleDeserializeRead
     * [HIVE-13885] - Hive session close is not resetting thread name
+    * [HIVE-13904] - Ignore case when retrieving ColumnInfo from RowResolver
+    * [HIVE-13909] - upgrade ACLs in LLAP registry when the cluster is upgraded to secure
+    * [HIVE-13911] - load inpath fails throwing org.apache.hadoop.security.AccessControlException
     * [HIVE-13912] - DbTxnManager.commitTxn(): ORA-00918: column ambiguously defined
     * [HIVE-13924] - (Vectorization) Error evaluating ((bool0 and (not bool1)) or (bool1 and (not bool0)))
     * [HIVE-13927] - Adding missing header to Java files
     * [HIVE-13929] - org.apache.hadoop.hive.metastore.api.DataOperationType class not found error when a job is submitted by hive
+    * [HIVE-13941] - Improve errors returned from SchemaTool
+    * [HIVE-13948] - Incorrect timezone handling in Writable results in wrong dates in queries
+    * [HIVE-13953] - Issues in HiveLockObject equals method
+    * [HIVE-13954] - Parquet logs should go to STDERR
+    * [HIVE-13955] - Include service-rpc and llap-ext-client in packaging files
+    * [HIVE-13972] - Resolve class dependency issue introduced by HIVE-13354
+    * [HIVE-13973] - Extend support for other primitive types in windowing expressions
 
 
 
@@ -529,6 +543,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13206] - Create a test-sources.jar when -Psources profile is invoked
     * [HIVE-13222] - Move rc-file-v0.rc used on TestRCFile.java to src/test/resources
     * [HIVE-13226] - Improve tez print summary to print query execution breakdown
+    * [HIVE-13248] - Change date_add/date_sub/to_date functions to return Date type rather than String
     * [HIVE-13249] - Hard upper bound on number of open transactions
     * [HIVE-13295] - Improvement to LDAP search queries in HS2 LDAP Authenticator
     * [HIVE-13319] - Propagate external handles in task display
