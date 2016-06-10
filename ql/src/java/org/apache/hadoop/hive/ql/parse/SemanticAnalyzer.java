@@ -281,6 +281,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // derived from the alias V3:V2:V1:T
   private final Map<String, ReadEntity> viewAliasToInput;
 
+  //need merge isDirect flag to input even if the newInput does not have a parent
+  private boolean mergeIsDirect;
+
   // flag for no scan during analyze ... compute statistics
   protected boolean noscan;
 
@@ -340,6 +343,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     aliasToCTEs = new HashMap<String, ASTNode>();
     globalLimitCtx = new GlobalLimitCtx();
     viewAliasToInput = new HashMap<String, ReadEntity>();
+    mergeIsDirect = true;
     noscan = partialscan = false;
   }
 
@@ -348,6 +352,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     super.reset(true);
     if(clearPartsCache) {
       prunedPartitions.clear();
+
+      //When init(true) combine with genResolvedParseTree, it will generate Resolved Parse tree from syntax tree
+      //ReadEntity created under these conditions should be all relevant to the syntax tree even the ones without parents
+      //set mergeIsDirect to true here.
+      mergeIsDirect = true;
+    } else {
+      mergeIsDirect = false;
     }
     loadTableWork.clear();
     loadFileWork.clear();
@@ -1545,7 +1556,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           ReadEntity viewInput = new ReadEntity(tab, parentInput);
           viewInput = PlanUtils.addInput(inputs, viewInput);
           aliasToViewInfo.put(alias, new ObjectPair<String, ReadEntity>(fullViewName, viewInput));
-          viewAliasToInput.put(getAliasId(alias, qb), viewInput);
+          String aliasId = getAliasId(alias, qb);
+          if (aliasId != null) {
+            aliasId = aliasId.replace(SemanticAnalyzer.SUBQUERY_TAG_1, "")
+              .replace(SemanticAnalyzer.SUBQUERY_TAG_2, "");
+          }
+          viewAliasToInput.put(aliasId, viewInput); 
           continue;
         }
 
@@ -1596,7 +1612,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         ReadEntity parentViewInfo = PlanUtils.getParentViewInfo(getAliasId(alias, qb), viewAliasToInput);
         PlanUtils.addInput(inputs,
-            new ReadEntity(tab, parentViewInfo, parentViewInfo == null));
+            new ReadEntity(tab, parentViewInfo, parentViewInfo == null),mergeIsDirect);
       }
 
       LOG.info("Get metadata for subqueries");

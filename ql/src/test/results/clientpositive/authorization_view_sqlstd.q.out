@@ -123,6 +123,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@vt1
 #### A masked pattern was here ####
+PREHOOK: query: select * from vt1 union all select * from vt1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@vt1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from vt1 union all select * from vt1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@vt1
+#### A masked pattern was here ####
 PREHOOK: query: grant all on table vt2 to user user2
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@vt2

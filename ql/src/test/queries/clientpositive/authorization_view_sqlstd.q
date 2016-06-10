@@ -38,6 +38,8 @@ select * from vt1;
 -- even if view is within a sub query
 select * from (select * from vt1) a;
 
+select * from vt1 union all select * from vt1;
+
 set user.name=user1;
 
 grant all on table vt2 to user user2;
