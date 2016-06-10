@@ -54,6 +54,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableV
 import org.apache.hadoop.hive.llap.security.LlapSigner;
 import org.apache.hadoop.hive.llap.security.LlapSigner.Signable;
 import org.apache.hadoop.hive.llap.security.LlapSigner.SignedMessage;
+import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
+import org.apache.hadoop.hive.llap.security.LlapTokenLocalClient;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Context;
@@ -90,6 +92,7 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SplitLocationInfo;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
@@ -251,7 +254,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       try {
         HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE, originalMode);
         cpr = driver.run(ctas, false);
-      } catch(CommandNeedRetryException e) {
+      } catch (CommandNeedRetryException e) {
         throw new HiveException(e);
       }
 
@@ -337,20 +340,40 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
       // This assumes LLAP cluster owner is always the HS2 user.
       String llapUser = UserGroupInformation.getLoginUser().getShortUserName();
-      LlapSigner signer = UserGroupInformation.isSecurityEnabled()
-          ? coordinator.getLlapSigner(job) : null;
+
+      String queryUser = null;
+      byte[] tokenBytes = null;
+      LlapSigner signer = null;
+      if (UserGroupInformation.isSecurityEnabled()) {
+        signer = coordinator.getLlapSigner(job);
+ 
+        // 1. Generate the token for query user (applies to all splits).
+        queryUser = SessionState.getUserFromAuthenticator();
+        if (queryUser == null) {
+          queryUser = UserGroupInformation.getCurrentUser().getUserName();
+          LOG.warn("Cannot determine the session user; using " + queryUser + " instead");
+        }
+        LlapTokenLocalClient tokenClient = coordinator.getLocalTokenClient(job, llapUser);
+        // We put the query user, not LLAP user, into the message and token.
+        Token<LlapTokenIdentifier> token = tokenClient.createToken(
+            fakeApplicationId.toString(), queryUser, true);
+        bos.reset();
+        token.write(dos);
+        tokenBytes = bos.toByteArray();
+      } else {
+        queryUser = UserGroupInformation.getCurrentUser().getUserName();
+      }
 
       LOG.info("Number of splits: " + (eventList.size() - 1));
       SignedMessage signedSvs = null;
-      DataOutputBuffer dob = new DataOutputBuffer();
       for (int i = 0; i < eventList.size() - 1; i++) {
         TaskSpec taskSpec = new TaskSpecBuilder().constructTaskSpec(dag, vertexName,
               eventList.size() - 1, fakeApplicationId, i);
 
-        // 1. Generate the vertex/submit information.
+        // 2. Generate the vertex/submit information for all events.
         if (i == 0) {
           // Despite the differences in TaskSpec, the vertex spec should be the same.
-          signedSvs = createSignedVertexSpec(signer, taskSpec, fakeApplicationId);
+          signedSvs = createSignedVertexSpec(signer, taskSpec, fakeApplicationId, queryUser);
         }
 
         SubmitWorkInfo submitWorkInfo = new SubmitWorkInfo(fakeApplicationId,
@@ -358,15 +381,14 @@ public class GenericUDTFGetSplits extends GenericUDTF {
             signedSvs.signature);
         byte[] submitWorkBytes = SubmitWorkInfo.toBytes(submitWorkInfo);
 
-        // 2. Generate input event.
-        SignedMessage eventBytes = makeEventBytes(
-            wx, vertexName, eventList.get(i + 1), dob, signer);
+        // 3. Generate input event.
+        SignedMessage eventBytes = makeEventBytes(wx, vertexName, eventList.get(i + 1), signer);
 
-        // 3. Make location hints.
+        // 4. Make location hints.
         SplitLocationInfo[] locations = makeLocationHints(hints.get(i));
 
         result[i] = new LlapInputSplit(i, submitWorkBytes, eventBytes.message,
-            eventBytes.signature, locations, schema, llapUser);
+            eventBytes.signature, locations, schema, llapUser, tokenBytes);
        }
       return result;
     } catch (Exception e) {
@@ -388,7 +410,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   }
 
   private SignedMessage makeEventBytes(Vertex wx, String vertexName,
-      Event event, DataOutputBuffer dob, LlapSigner signer) throws IOException {
+      Event event, LlapSigner signer) throws IOException {
     assert event instanceof InputDataInformationEvent;
     List<RootInputLeafOutput<InputDescriptor, InputInitializerDescriptor>> inputs =
         TaskSpecBuilder.getVertexInputs(wx);
@@ -406,15 +428,10 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   }
 
   private SignedMessage createSignedVertexSpec(LlapSigner signer, TaskSpec taskSpec,
-      ApplicationId fakeApplicationId) throws IOException {
-    // We put the query user, not LLAP user, in the message (and the token later?)
-    String user = SessionState.getUserFromAuthenticator();
-    if (user == null) {
-      user = UserGroupInformation.getCurrentUser().getUserName();
-      LOG.warn("Cannot determine the session user; using " + user + " instead");
-    }
+      ApplicationId fakeApplicationId, String queryUser) throws IOException {
+
     final SignableVertexSpec.Builder svsb = Converters.convertTaskSpecToProto(
-        taskSpec, 0, fakeApplicationId.toString(), user);
+        taskSpec, 0, fakeApplicationId.toString(), queryUser);
     if (signer == null) {
       SignedMessage result = new SignedMessage();
       result.message = serializeVertexSpec(svsb);

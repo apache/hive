@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWor
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexIdentifier;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
+import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.llap.tez.LlapProtocolClientProxy;
 import org.apache.hadoop.hive.llap.tezplugins.helpers.LlapTaskUmbilicalServer;
@@ -100,7 +101,8 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
   }
 
   public LlapTaskUmbilicalExternalClient(Configuration conf, String tokenIdentifier,
-      Token<JobTokenIdentifier> sessionToken, LlapTaskUmbilicalExternalResponder responder) {
+      Token<JobTokenIdentifier> sessionToken, LlapTaskUmbilicalExternalResponder responder,
+      Token<LlapTokenIdentifier> llapToken) {
     super(LlapTaskUmbilicalExternalClient.class.getName());
     this.conf = conf;
     this.umbilical = new LlapTaskUmbilicalExternalImpl();
@@ -110,8 +112,8 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService {
     this.timer = new ScheduledThreadPoolExecutor(1);
     this.connectionTimeout = 3 * HiveConf.getTimeVar(conf,
         HiveConf.ConfVars.LLAP_DAEMON_AM_LIVENESS_CONNECTION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-    // No support for the LLAP token yet. Add support for configurable threads, however 1 should always be enough.
-    this.communicator = new LlapProtocolClientProxy(1, conf, null);
+    // Add support for configurable threads, however 1 should always be enough.
+    this.communicator = new LlapProtocolClientProxy(1, conf, llapToken);
     this.communicator.init(conf);
   }
 
