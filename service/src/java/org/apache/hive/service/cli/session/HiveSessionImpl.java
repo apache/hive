@@ -109,6 +109,7 @@ public class HiveSessionImpl implements HiveSession {
 
   private volatile long lastAccessTime;
   private volatile long lastIdleTime;
+  private volatile int pendingCount = 0;
 
   public HiveSessionImpl(TProtocolVersion protocol, String username, String password,
       HiveConf serverhiveConf, String ipAddress) {
@@ -302,6 +303,8 @@ public class HiveSessionImpl implements HiveSession {
       lastAccessTime = System.currentTimeMillis();
     }
     Hive.set(sessionHive);
+    pendingCount++;
+    lastIdleTime = 0;
   }
 
   /**
@@ -321,10 +324,11 @@ public class HiveSessionImpl implements HiveSession {
     if (userAccess) {
       lastAccessTime = System.currentTimeMillis();
     }
-    if (opHandleSet.isEmpty()) {
+    pendingCount--;
+    // lastIdleTime is only set by the last one
+    // who calls release with empty opHandleSet.
+    if (pendingCount == 0 && opHandleSet.isEmpty()) {
       lastIdleTime = System.currentTimeMillis();
-    } else {
-      lastIdleTime = 0;
     }
   }
 
