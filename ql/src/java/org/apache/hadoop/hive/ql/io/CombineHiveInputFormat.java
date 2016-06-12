@@ -29,10 +29,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -108,7 +110,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
             LOG.debug("The path [" + paths[i + start] +
                 "] is being parked for HiveInputFormat.getSplits");
           }
-          nonCombinablePathIndices.add(i);
+          nonCombinablePathIndices.add(i + start);
         }
       }
       return nonCombinablePathIndices;
@@ -451,6 +453,35 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   }
 
   /**
+   * Gets all the path indices that should not be combined
+   */
+  @VisibleForTesting
+  public Set<Integer> getNonCombinablePathIndices(JobConf job, Path[] paths, int numThreads)
+      throws ExecutionException, InterruptedException {
+    LOG.info("Total number of paths: " + paths.length +
+        ", launching " + numThreads + " threads to check non-combinable ones.");
+    int numPathPerThread = (int) Math.ceil((double) paths.length / numThreads);
+
+    ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+    List<Future<Set<Integer>>> futureList = new ArrayList<Future<Set<Integer>>>(numThreads);
+    try {
+      for (int i = 0; i < numThreads; i++) {
+        int start = i * numPathPerThread;
+        int length = i != numThreads - 1 ? numPathPerThread : paths.length - start;
+        futureList.add(executor.submit(
+            new CheckNonCombinablePathCallable(paths, start, length, job)));
+      }
+      Set<Integer> nonCombinablePathIndices = new HashSet<Integer>();
+      for (Future<Set<Integer>> future : futureList) {
+        nonCombinablePathIndices.addAll(future.get());
+      }
+      return nonCombinablePathIndices;
+    } finally {
+      executor.shutdownNow();
+    }
+  }
+
+  /**
    * Create Hive splits based on CombineFileSplit.
    */
   @Override
@@ -468,27 +499,13 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
     int numThreads = Math.min(MAX_CHECK_NONCOMBINABLE_THREAD_NUM,
         (int) Math.ceil((double) paths.length / DEFAULT_NUM_PATH_PER_THREAD));
-    int numPathPerThread = (int) Math.ceil((double) paths.length / numThreads);
 
     // This check is necessary because for Spark branch, the result array from
     // getInputPaths() above could be empty, and therefore numThreads could be 0.
     // In that case, Executors.newFixedThreadPool will fail.
     if (numThreads > 0) {
-      LOG.info("Total number of paths: " + paths.length +
-          ", launching " + numThreads + " threads to check non-combinable ones.");
-      ExecutorService executor = Executors.newFixedThreadPool(numThreads);
-      List<Future<Set<Integer>>> futureList = new ArrayList<Future<Set<Integer>>>(numThreads);
       try {
-        for (int i = 0; i < numThreads; i++) {
-          int start = i * numPathPerThread;
-          int length = i != numThreads - 1 ? numPathPerThread : paths.length - start;
-          futureList.add(executor.submit(
-              new CheckNonCombinablePathCallable(paths, start, length, job)));
-        }
-        Set<Integer> nonCombinablePathIndices = new HashSet<Integer>();
-        for (Future<Set<Integer>> future : futureList) {
-          nonCombinablePathIndices.addAll(future.get());
-        }
+        Set<Integer> nonCombinablePathIndices = getNonCombinablePathIndices(job, paths, numThreads);
         for (int i = 0; i < paths.length; i++) {
           if (nonCombinablePathIndices.contains(i)) {
             nonCombinablePaths.add(paths[i]);
@@ -500,8 +517,6 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         LOG.error("Error checking non-combinable path", e);
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
         throw new IOException(e);
-      } finally {
-        executor.shutdownNow();
       }
     }
 
