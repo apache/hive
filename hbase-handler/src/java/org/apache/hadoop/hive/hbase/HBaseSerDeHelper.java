@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.hbase;
 
 import static org.apache.hadoop.hive.hbase.HBaseSerDeParameters.AVRO_SERIALIZATION_TYPE;
+import static org.apache.hadoop.hive.hbase.HBaseSerDeParameters.PROTOBUF_SERIALIZATION_TYPE;
 
 import java.io.IOException;
 import java.net.URI;
@@ -38,6 +39,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
+import org.apache.hadoop.hive.hbase.struct.ProtoBufHBaseValueFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.avro.AvroObjectInspectorGenerator;
@@ -451,6 +453,20 @@ public class HBaseSerDeHelper {
       } else {
         generateAvroStructFromSchema(schemaLiteral, sb);
       }
+    } else if (serType.equalsIgnoreCase(PROTOBUF_SERIALIZATION_TYPE)) {
+      if (serClassName == null) {
+          throw new SerDeException("Unknown " + serdeConstants.SERIALIZATION_CLASS
+            + " found for column family [" + colMap.familyName + "]");
+      }
+
+      Class<?> serClass;
+        try {
+          serClass = JavaUtils.loadClass(serClassName);
+        } catch (ClassNotFoundException e) {
+          throw new SerDeException("Error obtaining descriptor for " + serClassName, e);
+        }
+
+        ProtoBufHBaseValueFactory.generateProtoBufStructFromClass(serClass, sb);
     } else {
       throw new SerDeException("Unknown " + HBaseSerDe.SERIALIZATION_TYPE
           + " found for column family [" + colMap.familyName + "]");

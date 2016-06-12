@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.hbase.struct.AvroHBaseValueFactory;
 import org.apache.hadoop.hive.hbase.struct.DefaultHBaseValueFactory;
 import org.apache.hadoop.hive.hbase.struct.HBaseValueFactory;
+import org.apache.hadoop.hive.hbase.struct.ProtoBufHBaseValueFactory;
 import org.apache.hadoop.hive.hbase.struct.StructHBaseValueFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -49,6 +50,7 @@ public class HBaseSerDeParameters {
 
   public static final String AVRO_SERIALIZATION_TYPE = "avro";
   public static final String STRUCT_SERIALIZATION_TYPE = "struct";
+  public static final String PROTOBUF_SERIALIZATION_TYPE = "protobuf";
 
   private final LazySerDeParameters serdeParams;
 
@@ -238,6 +240,11 @@ public class HBaseSerDeParameters {
 
           Class<?> structValueClass = loadClass(structValueClassName, job);
           valueFactories.add(new StructHBaseValueFactory(i, structValueClass));
+        } else if (PROTOBUF_SERIALIZATION_TYPE.equals(serType)) {
+          String valueClassName = getProtobufValueClass(conf, tbl, columnMappings.getColumnsMapping()[i]);
+          Class<?> protobufValueClass = loadClass(valueClassName, job);
+          ProtoBufHBaseValueFactory factory = new ProtoBufHBaseValueFactory(i, protobufValueClass);
+          valueFactories.add(factory);
         } else {
           valueFactories.add(new DefaultHBaseValueFactory(i));
         }
@@ -247,6 +254,34 @@ public class HBaseSerDeParameters {
     }
 
     return valueFactories;
+  }
+
+  private String getProtobufValueClass(Configuration conf, Properties tbl, ColumnMapping colMap) {
+    String serClass = null;
+
+    if (colMap.getQualifierName() == null) {
+      // only a column family
+
+      if (colMap.getQualifierPrefix() != null) {
+        serClass = tbl.getProperty(colMap.getFamilyName() + "." + colMap.getQualifierPrefix() + "."
+            + serdeConstants.SERIALIZATION_CLASS);
+      } else {
+        serClass = tbl.getProperty(colMap.getFamilyName() + "." + serdeConstants.SERIALIZATION_CLASS);
+      }
+    } else if (!colMap.isHbaseRowKey()) {
+      // not an hbase row key. This should either be a prefix or an
+      // individual qualifier
+      String qualifierName = colMap.getQualifierName();
+
+      if (colMap.getQualifierName().endsWith("*")) {
+        qualifierName = colMap.getQualifierName().substring(0, colMap.getQualifierName().length() - 1);
+      }
+
+      serClass = tbl
+          .getProperty(colMap.getFamilyName() + "." + qualifierName + "." + serdeConstants.SERIALIZATION_CLASS);
+    }
+
+    return serClass;
   }
 
   /**
