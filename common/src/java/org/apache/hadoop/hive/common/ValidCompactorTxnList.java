@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore.txn;
+package org.apache.hadoop.hive.common;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
@@ -105,7 +105,7 @@ public class ValidCompactorTxnList extends ValidReadTxnList {
   }
 
   @VisibleForTesting
-  long getMinOpenTxn() {
+  public long getMinOpenTxn() {
     return minOpenTxn;
   }
 }

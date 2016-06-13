@@ -26,8 +26,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StringableMap;
+import org.apache.hadoop.hive.common.ValidCompactorTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -132,6 +132,10 @@ public class CompactorMR {
       overrideTblProps(job, t.getParameters(), ci.properties);
     }
     setColumnTypes(job, sd.getCols());
+    //with feature on, multiple tasks may get into conflict creating/using TMP_LOCATION and if we were
+    //to generate the target dir in the Map task, there is no easy way to pass it to OutputCommitter
+    //to do the final move
+    job.setBoolean("mapreduce.map.speculative", false);
     return job;
   }
 
@@ -622,7 +626,7 @@ public class CompactorMR {
         AcidInputFormat<WritableComparable, V> aif =
         instantiate(AcidInputFormat.class, jobConf.get(INPUT_FORMAT_CLASS_NAME));
       ValidTxnList txnList =
-        new ValidReadTxnList(jobConf.get(ValidTxnList.VALID_TXNS_KEY));
+        new ValidCompactorTxnList(jobConf.get(ValidTxnList.VALID_TXNS_KEY));
 
       boolean isMajor = jobConf.getBoolean(IS_MAJOR, false);
       AcidInputFormat.RawReader<V> reader =
