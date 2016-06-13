@@ -2565,8 +2565,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return false;
     }
 
-    String fullF1 = getQualifiedPathWithoutSchemeAndAuthority(srcf, srcFs);
-    String fullF2 = getQualifiedPathWithoutSchemeAndAuthority(destf, destFs);
+    String fullF1 = getQualifiedPathWithoutSchemeAndAuthority(srcf, srcFs) + Path.SEPARATOR;
+    String fullF2 = getQualifiedPathWithoutSchemeAndAuthority(destf, destFs) + Path.SEPARATOR;
 
     boolean isInTest = Boolean.valueOf(HiveConf.getBoolVar(srcFs.getConf(), ConfVars.HIVE_IN_TEST));
     // In the automation, the data warehouse is the local file system based.
@@ -2600,6 +2600,33 @@ private void constructOneLBLocationMap(FileStatus fSta,
     Path currentWorkingDir = fs.getWorkingDirectory();
     Path path = srcf.makeQualified(srcf.toUri(), currentWorkingDir);
     return ShimLoader.getHadoopShims().getPathWithoutSchemeAndAuthority(path).toString();
+  }
+
+  // Clears the dest dir when src is sub-dir of dest.
+  public static void clearDestForSubDirSrc(final HiveConf conf, Path dest,
+      Path src, boolean isSrcLocal) throws IOException {
+    FileSystem destFS = dest.getFileSystem(conf);
+    FileSystem srcFS = src.getFileSystem(conf);
+    if (isSubDir(src, dest, srcFS, destFS, isSrcLocal)) {
+      final Path fullSrcPath = new Path(
+          getQualifiedPathWithoutSchemeAndAuthority(src, srcFS));
+      final Path fullDestPath = new Path(
+          getQualifiedPathWithoutSchemeAndAuthority(dest, destFS));
+      if (fullSrcPath.equals(fullDestPath)) {
+        return;
+      }
+      Path parent = fullSrcPath;
+      while (!parent.getParent().equals(fullDestPath)) {
+        parent = parent.getParent();
+      }
+      FileStatus[] existingFiles = destFS.listStatus(
+          dest, FileUtils.HIDDEN_FILES_PATH_FILTER);
+      for (FileStatus fileStatus : existingFiles) {
+        if (!fileStatus.getPath().getName().equals(parent.getName())) {
+          destFS.delete(fileStatus.getPath(), true);
+        }
+      }
+    }
   }
 
   //it is assumed that parent directory of the destf should already exist when this
