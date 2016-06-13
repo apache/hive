@@ -2651,7 +2651,16 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     private void handleDirectSqlError(Exception ex) throws MetaException, NoSuchObjectException {
-      LOG.warn("Direct SQL failed" + (allowJdo ? ", falling back to ORM" : ""), ex);
+      String message = null;
+      try {
+        message = generateShorterMessage(ex);
+      } catch (Throwable t) {
+        message = ex.toString() + "; error building a better message: " + t.getMessage();
+      }
+      LOG.warn(message); // Don't log the exception, people just get confused.
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Full DirectSQL callstack for debugging (note: this is not an error)", ex);
+      }
       if (!allowJdo) {
         if (ex instanceof MetaException) {
           throw (MetaException)ex;
@@ -2679,6 +2688,42 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       doUseDirectSql = false;
+    }
+
+    private String generateShorterMessage(Exception ex) {
+      StringBuilder message = new StringBuilder(
+          "Falling back to ORM path due to direct SQL failure (this is not an error): ");
+      Throwable t = ex;
+      StackTraceElement[] prevStack = null;
+      while (t != null) {
+        message.append(t.getMessage());
+        StackTraceElement[] stack = t.getStackTrace();
+        int uniqueFrames = stack.length - 1;
+        if (prevStack != null) {
+          int n = prevStack.length - 1;
+          while (uniqueFrames >= 0 && n >= 0 && stack[uniqueFrames].equals(prevStack[n])) {
+            uniqueFrames--; n--;
+          }
+        }
+        for (int i = 0; i <= uniqueFrames; ++i) {
+          StackTraceElement ste = stack[i];
+          message.append(" at ").append(ste);
+          if (ste.getMethodName() != null && ste.getMethodName().contains("getSqlResult")
+              && (ste.getFileName() == null || ste.getFileName().contains("ObjectStore"))) {
+            break;
+          }
+        }
+        prevStack = stack;
+        t = t.getCause();
+        if (t != null) {
+          message.append(";\n Caused by: ");
+        }
+      }
+      return message.toString();
+    }
+
+    public void disableDirectSql() {
+      this.doUseDirectSql = false;
     }
 
     private T commit() {
