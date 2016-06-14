@@ -516,8 +516,8 @@ public class VectorizationContext {
    * Given a udf and its children, return the common type to which the children's type should be
    * cast.
    */
-  private TypeInfo getCommonTypeForChildExpressions(GenericUDF genericUdf, List<ExprNodeDesc> children,
-      TypeInfo returnType) {
+  private TypeInfo getCommonTypeForChildExpressions(GenericUDF genericUdf,
+      List<ExprNodeDesc> children, TypeInfo returnType) throws HiveException {
     TypeInfo commonType;
     if (genericUdf instanceof GenericUDFBaseCompare) {
 
@@ -529,9 +529,20 @@ public class VectorizationContext {
         commonType = returnType;
       }
     } else if (genericUdf instanceof GenericUDFIn) {
-
-      // Cast to the type of the first child
-      return children.get(0).getTypeInfo();
+      TypeInfo colTi = children.get(0).getTypeInfo();
+      if (colTi.getCategory() != Category.PRIMITIVE) {
+        return colTi; // Handled later, only struct will be supported.
+      }
+      TypeInfo opTi = GenericUDFUtils.deriveInType(children);
+      if (opTi == null || opTi.getCategory() != Category.PRIMITIVE) {
+        throw new HiveException("Cannot vectorize IN() - common type is " + opTi);
+      }
+      if (((PrimitiveTypeInfo)colTi).getPrimitiveCategory() !=
+          ((PrimitiveTypeInfo)opTi).getPrimitiveCategory()) {
+        throw new HiveException("Cannot vectorize IN() - casting a column is not supported. "
+            + "Column type is " + colTi + " but the common type is " + opTi);
+      }
+      return colTi;
     } else {
       // The children type should be converted to return type
       commonType = returnType;
@@ -628,6 +639,7 @@ public class VectorizationContext {
     }
     PrimitiveTypeInfo ptinfo = (PrimitiveTypeInfo) inputTypeInfo;
     int precision = getPrecisionForType(ptinfo);
+    // TODO: precision and scale would be practically invalid for string conversion (38,38)
     int scale = HiveDecimalUtils.getScaleForType(ptinfo);
     return new DecimalTypeInfo(precision, scale);
   }
@@ -1502,8 +1514,8 @@ public class VectorizationContext {
   /**
    * Create a filter or boolean-valued expression for column IN ( <list-of-constants> )
    */
-  private VectorExpression getInExpression(List<ExprNodeDesc> childExpr, Mode mode, TypeInfo returnType)
-      throws HiveException {
+  private VectorExpression getInExpression(List<ExprNodeDesc> childExpr,
+      VectorExpressionDescriptor.Mode mode, TypeInfo returnType) throws HiveException {
     ExprNodeDesc colExpr = childExpr.get(0);
     List<ExprNodeDesc> inChildren = childExpr.subList(1, childExpr.size());
 
@@ -1511,7 +1523,7 @@ public class VectorizationContext {
     colType = VectorizationContext.mapTypeNameSynonyms(colType);
     TypeInfo colTypeInfo = TypeInfoUtils.getTypeInfoFromTypeString(colType);
     Category category = colTypeInfo.getCategory();
-    if (category == Category.STRUCT){
+    if (category == Category.STRUCT) {
       return getStructInExpression(childExpr, colExpr, colTypeInfo, inChildren, mode, returnType);
     } else if (category != Category.PRIMITIVE) {
       return null;
@@ -1539,6 +1551,8 @@ public class VectorizationContext {
 
     // determine class
     Class<?> cl = null;
+    // TODO: the below assumes that all the arguments to IN are of the same type;
+    //       non-vectorized validates that explicitly during UDF init.
     if (isIntFamily(colType)) {
       cl = (mode == Mode.FILTER ? FilterLongColumnInList.class : LongColumnInList.class);
       long[] inVals = new long[childrenForInList.size()];
