@@ -72,18 +72,19 @@ public class LlapProtocolServerImpl extends AbstractService
   private final int srvPort, mngPort;
   private RPC.Server server, mngServer;
   private final AtomicReference<InetSocketAddress> srvAddress, mngAddress;
-  private SecretManager zkSecretManager;
+  private final SecretManager secretManager;
   private String clusterUser = null;
   private boolean isRestrictedToClusterUser = false;
   private final DaemonId daemonId;
   private TokenRequiresSigning isSigningRequiredConfig = TokenRequiresSigning.TRUE;
 
-  public LlapProtocolServerImpl(int numHandlers, ContainerRunner containerRunner,
-      AtomicReference<InetSocketAddress> srvAddress, AtomicReference<InetSocketAddress> mngAddress,
-      int srvPort, int mngPort, DaemonId daemonId) {
+  public LlapProtocolServerImpl(SecretManager secretManager, int numHandlers,
+      ContainerRunner containerRunner, AtomicReference<InetSocketAddress> srvAddress,
+      AtomicReference<InetSocketAddress> mngAddress, int srvPort, int mngPort, DaemonId daemonId) {
     super("LlapDaemonProtocolServerImpl");
     this.numHandlers = numHandlers;
     this.containerRunner = containerRunner;
+    this.secretManager = secretManager;
     this.srvAddress = srvAddress;
     this.srvPort = srvPort;
     this.mngAddress = mngAddress;
@@ -156,8 +157,6 @@ public class LlapProtocolServerImpl extends AbstractService
     }
     String llapPrincipal = HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_PRINCIPAL),
         llapKeytab = HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_KEYTAB_FILE);
-    zkSecretManager = SecretManager.createSecretManager(
-        conf, llapPrincipal, llapKeytab, daemonId.getClusterString());
 
     // Start the protocol server after properly authenticating with daemon keytab.
     UserGroupInformation daemonUgi = null;
@@ -269,8 +268,8 @@ public class LlapProtocolServerImpl extends AbstractService
         .setBindAddress(addr.getHostName())
         .setPort(addr.getPort())
         .setNumHandlers(numHandlers);
-    if (zkSecretManager != null) {
-      builder = builder.setSecretManager(zkSecretManager);
+    if (secretManager != null) {
+      builder = builder.setSecretManager(secretManager);
     }
     RPC.Server server = builder.build();
     if (isSecurityEnabled) {
@@ -283,7 +282,7 @@ public class LlapProtocolServerImpl extends AbstractService
   @Override
   public GetTokenResponseProto getDelegationToken(RpcController controller,
       GetTokenRequestProto request) throws ServiceException {
-    if (zkSecretManager == null) {
+    if (secretManager == null) {
       throw new ServiceException("Operation not supported on unsecure cluster");
     }
     UserGroupInformation callingUser = null;
@@ -292,7 +291,7 @@ public class LlapProtocolServerImpl extends AbstractService
       callingUser = UserGroupInformation.getCurrentUser();
       // Determine if the user would need to sign fragments.
       boolean isSigningRequired = determineIfSigningIsRequired(callingUser);
-      token = zkSecretManager.createLlapToken(
+      token = secretManager.createLlapToken(
           request.hasAppId() ? request.getAppId() : null, null, isSigningRequired);
     } catch (IOException e) {
       throw new ServiceException(e);

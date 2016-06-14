@@ -34,9 +34,6 @@ import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 
 import com.google.common.base.Preconditions;
 
-/**
- *
- */
 public class LlapOutputFormat<K extends Writable, V extends Writable>
   implements OutputFormat<K, V> {
 

@@ -27,34 +27,20 @@ import java.net.Socket;
 
 import java.io.OutputStream;
 import java.io.InputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
-import junit.framework.TestCase;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.io.RCFile.Reader;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.RecordWriter;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapBaseRecordReader.ReaderEvent;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.LlapOutputSocketInitMessage;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
-
 
 public class TestLlapOutputFormat {
 
@@ -68,7 +54,7 @@ public class TestLlapOutputFormat {
     Configuration conf = new Configuration();
     // Pick random avail port
     HiveConf.setIntVar(conf, HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT, 0);
-    LlapOutputFormatService.initializeAndStart(conf);
+    LlapOutputFormatService.initializeAndStart(conf, null);
     service = LlapOutputFormatService.get();
     LlapProxy.setDaemon(true);
     LOG.debug("Output service up");
@@ -86,7 +72,7 @@ public class TestLlapOutputFormat {
     JobConf job = new JobConf();
 
     for (int k = 0; k < 5; ++k) {
-      String id = "foobar"+k;
+      String id = "foobar" + k;
       job.set(LlapOutputFormat.LLAP_OF_ID_KEY, id);
       LlapOutputFormat format = new LlapOutputFormat();
 
@@ -95,9 +81,10 @@ public class TestLlapOutputFormat {
 
       LOG.debug("Socket connected");
 
-      socket.getOutputStream().write(id.getBytes());
-      socket.getOutputStream().write(0);
-      socket.getOutputStream().flush();
+      OutputStream socketStream = socket.getOutputStream();
+      LlapOutputSocketInitMessage.newBuilder()
+        .setFragmentId(id).build().writeDelimitedTo(socketStream);
+      socketStream.flush();
 
       Thread.sleep(3000);
 
@@ -131,7 +118,38 @@ public class TestLlapOutputFormat {
 
       reader.close();
 
-      Assert.assertEquals(count,10);
+      Assert.assertEquals(10, count);
+    }
+  }
+
+
+  @Test
+  public void testBadClientMessage() throws Exception {
+    JobConf job = new JobConf();
+    String id = "foobar";
+    job.set(LlapOutputFormat.LLAP_OF_ID_KEY, id);
+    LlapOutputFormat format = new LlapOutputFormat();
+
+    Socket socket = new Socket("localhost", service.getPort());
+
+    LOG.debug("Socket connected");
+
+    OutputStream socketStream = socket.getOutputStream();
+    LlapOutputSocketInitMessage.newBuilder()
+      .setFragmentId(id).build().writeDelimitedTo(socketStream);
+    LlapOutputSocketInitMessage.newBuilder()
+      .setFragmentId(id).build().writeDelimitedTo(socketStream);
+    socketStream.flush();
+
+    Thread.sleep(3000);
+
+    LOG.debug("Data written");
+
+    try {
+      format.getRecordWriter(null, job, null, null);
+      Assert.fail("Didn't throw");
+    } catch (IOException ex) {
+      // Expected.
     }
   }
 }

@@ -41,13 +41,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.LlapInputSplit;
-import org.apache.hadoop.hive.llap.LlapOutputFormat;
-import org.apache.hadoop.hive.llap.NotTezEventHelper;
-import org.apache.hadoop.hive.llap.SubmitWorkInfo;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.llap.Schema;
 import org.apache.hadoop.hive.llap.FieldDesc;
+import org.apache.hadoop.hive.llap.LlapInputSplit;
+import org.apache.hadoop.hive.llap.NotTezEventHelper;
+import org.apache.hadoop.hive.llap.Schema;
+import org.apache.hadoop.hive.llap.SubmitWorkInfo;
 import org.apache.hadoop.hive.llap.TypeDesc;
 import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
@@ -57,6 +55,7 @@ import org.apache.hadoop.hive.llap.security.LlapSigner.SignedMessage;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.security.LlapTokenLocalClient;
 import org.apache.hadoop.hive.llap.tez.Converters;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
@@ -71,6 +70,7 @@ import org.apache.hadoop.hive.ql.exec.tez.HiveSplitGenerator;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -81,13 +81,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.io.DataOutputBuffer;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SplitLocationInfo;
@@ -115,7 +114,7 @@ import com.google.common.base.Preconditions;
 
 /**
  * GenericUDTFGetSplits.
- *
+ * 
  */
 @Description(name = "get_splits", value = "_FUNC_(string,int) - "
     + "Returns an array of length int serialized splits for the referenced tables string.")
@@ -131,7 +130,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
   @Override
   public StructObjectInspector initialize(ObjectInspector[] arguments)
-    throws UDFArgumentException {
+      throws UDFArgumentException {
 
     LOG.debug("initializing GenericUDFGetSplits");
 
@@ -142,14 +141,15 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     LOG.debug("Initialized conf, jc and metastore connection");
 
     if (arguments.length != 2) {
-      throw new UDFArgumentLengthException("The function GET_SPLITS accepts 2 arguments.");
+      throw new UDFArgumentLengthException(
+          "The function GET_SPLITS accepts 2 arguments.");
     } else if (!(arguments[0] instanceof StringObjectInspector)) {
-      LOG.error("Got "+arguments[0].getTypeName()+" instead of string.");
+      LOG.error("Got " + arguments[0].getTypeName() + " instead of string.");
       throw new UDFArgumentTypeException(0, "\""
           + "string\" is expected at function GET_SPLITS, " + "but \""
           + arguments[0].getTypeName() + "\" is found");
     } else if (!(arguments[1] instanceof IntObjectInspector)) {
-      LOG.error("Got "+arguments[1].getTypeName()+" instead of int.");
+      LOG.error("Got " + arguments[1].getTypeName() + " instead of int.");
       throw new UDFArgumentTypeException(1, "\""
           + "int\" is expected at function GET_SPLITS, " + "but \""
           + arguments[1].getTypeName() + "\" is found");
@@ -159,9 +159,10 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     intOI = (IntObjectInspector) arguments[1];
 
     List<String> names = Arrays.asList("split");
-    List<ObjectInspector> fieldOIs = Arrays.<ObjectInspector>asList(
-      PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector);
-    StructObjectInspector outputOI = ObjectInspectorFactory.getStandardStructObjectInspector(names, fieldOIs);
+    List<ObjectInspector> fieldOIs = Arrays
+        .<ObjectInspector> asList(PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector);
+    StructObjectInspector outputOI = ObjectInspectorFactory
+        .getStandardStructObjectInspector(names, fieldOIs);
 
     LOG.debug("done initializing GenericUDFGetSplits");
     return outputOI;
@@ -190,7 +191,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     Schema schema = fragment.schema;
 
     try {
-      for (InputSplit s: getSplits(jc, num, tezWork, schema)) {
+      for (InputSplit s : getSplits(jc, num, tezWork, schema)) {
         Object[] os = new Object[1];
         bos.reset();
         s.write(dos);
@@ -198,24 +199,26 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         os[0] = frozen;
         forward(os);
       }
-    } catch(Exception e) {
+    } catch (Exception e) {
       throw new HiveException(e);
     }
   }
 
-  public PlanFragment createPlanFragment(String query, int num) throws HiveException {
+  public PlanFragment createPlanFragment(String query, int num)
+      throws HiveException {
 
     HiveConf conf = new HiveConf(SessionState.get().getConf());
     HiveConf.setVar(conf, ConfVars.HIVEFETCHTASKCONVERSION, "none");
-    HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT, "Llap");
+    HiveConf.setVar(conf, ConfVars.HIVEQUERYRESULTFILEFORMAT, PlanUtils.LLAP_OUTPUT_FORMAT_KEY);
 
-    String originalMode = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE);
-    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE, "llap");
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS, true);
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS, true);
+    String originalMode = HiveConf.getVar(conf,
+        ConfVars.HIVE_EXECUTION_MODE);
+    HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, "llap");
+    HiveConf.setBoolVar(conf, ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS, true);
+    HiveConf.setBoolVar(conf, ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS, true);
     conf.setBoolean(TezSplitGrouper.TEZ_GROUPING_NODE_LOCAL_ONLY, true);
     // Tez/LLAP requires RPC query plan
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_RPC_QUERY_PLAN, true);
+    HiveConf.setBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN, true);
 
     try {
       jc = DagUtils.getInstance().createConfiguration(conf);
@@ -224,14 +227,9 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     }
 
     Driver driver = new Driver(conf);
-    CommandProcessorResponse cpr;
-
-    LOG.info("setting fetch.task.conversion to none and query file format to \""
-        + LlapOutputFormat.class.getName()+"\"");
-
-    cpr = driver.compileAndRespond(query);
-    if(cpr.getResponseCode() != 0) {
-      throw new HiveException("Failed to compile query: "+cpr.getException());
+    CommandProcessorResponse cpr = driver.compileAndRespond(query);
+    if (cpr.getResponseCode() != 0) {
+      throw new HiveException("Failed to compile query: " + cpr.getException());
     }
 
     QueryPlan plan = driver.getPlan();
@@ -248,11 +246,11 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
       String tableName = "table_"+UUID.randomUUID().toString().replaceAll("[^A-Za-z0-9 ]", "");
 
-      String ctas = "create temporary table "+tableName+" as "+query;
-      LOG.info("CTAS: "+ctas);
+      String ctas = "create temporary table " + tableName + " as " + query;
+      LOG.info("Materializing the query for LLAPIF; CTAS: " + ctas);
 
       try {
-        HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE, originalMode);
+        HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, originalMode);
         cpr = driver.run(ctas, false);
       } catch (CommandNeedRetryException e) {
         throw new HiveException(e);
@@ -262,7 +260,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         throw new HiveException("Failed to create temp table: " + cpr.getException());
       }
 
-      HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE, "llap");
+      HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, "llap");
       query = "select * from " + tableName;
       cpr = driver.compileAndRespond(query);
       if(cpr.getResponseCode() != 0) {
@@ -310,9 +308,9 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
       // we have the dag now proceed to get the splits:
       Preconditions.checkState(HiveConf.getBoolVar(wxConf,
-              HiveConf.ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS));
+              ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS));
       Preconditions.checkState(HiveConf.getBoolVar(wxConf,
-              HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS));
+              ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS));
       HiveSplitGenerator splitGenerator = new HiveSplitGenerator(wxConf, mapWork);
       List<Event> eventList = splitGenerator.initialize();
 
@@ -457,9 +455,9 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   }
 
   /**
-   * Returns a local resource representing a jar. This resource will be used to execute the plan on
-   * the cluster.
-   *
+   * Returns a local resource representing a jar. This resource will be used to
+   * execute the plan on the cluster.
+   * 
    * @param localJarPath
    *          Local path to the jar to be localized.
    * @return LocalResource corresponding to the localized hive exec resource.
@@ -470,9 +468,9 @@ public class GenericUDTFGetSplits extends GenericUDTF {
    * @throws URISyntaxException
    *           when current jar location cannot be determined.
    */
-  private LocalResource createJarLocalResource(String localJarPath, DagUtils utils,
-      Configuration conf)
-    throws IOException, LoginException, IllegalArgumentException, FileNotFoundException {
+  private LocalResource createJarLocalResource(String localJarPath,
+      DagUtils utils, Configuration conf) throws IOException, LoginException,
+      IllegalArgumentException, FileNotFoundException {
     FileStatus destDirStatus = utils.getHiveJarDirectory(conf);
     assert destDirStatus != null;
     Path destDirPath = destDirStatus.getPath();
@@ -482,19 +480,24 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
     String destFileName = localFile.getName();
 
-    // Now, try to find the file based on SHA and name. Currently we require exact name match.
-    // We could also allow cutting off versions and other stuff provided that SHA matches...
+    // Now, try to find the file based on SHA and name. Currently we require
+    // exact name match.
+    // We could also allow cutting off versions and other stuff provided that
+    // SHA matches...
     destFileName = FilenameUtils.removeExtension(destFileName) + "-" + sha
-      + FilenameUtils.EXTENSION_SEPARATOR + FilenameUtils.getExtension(destFileName);
+        + FilenameUtils.EXTENSION_SEPARATOR
+        + FilenameUtils.getExtension(destFileName);
 
-    // TODO: if this method is ever called on more than one jar, getting the dir and the
+    // TODO: if this method is ever called on more than one jar, getting the dir
+    // and the
     // list need to be refactored out to be done only once.
     Path destFile = new Path(destDirPath.toString() + "/" + destFileName);
-    return utils.localizeResource(localFile, destFile, LocalResourceType.FILE, conf);
+    return utils.localizeResource(localFile, destFile, LocalResourceType.FILE,
+        conf);
   }
 
-  private String getSha(Path localFile, Configuration conf)
-    throws IOException, IllegalArgumentException {
+  private String getSha(Path localFile, Configuration conf) throws IOException,
+      IllegalArgumentException {
     InputStream is = null;
     try {
       FileSystem localFs = FileSystem.getLocal(conf);
@@ -510,57 +513,60 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   private TypeDesc convertTypeString(String typeString) throws HiveException {
     TypeDesc typeDesc;
     TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeString);
-    Preconditions.checkState(typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE,
+    Preconditions.checkState(
+        typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE,
         "Unsupported non-primitive type " + typeString);
 
     switch (((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory()) {
-      case BOOLEAN:
-        typeDesc = new TypeDesc(TypeDesc.Type.BOOLEAN);
-        break;
-      case BYTE:
-        typeDesc = new TypeDesc(TypeDesc.Type.TINYINT);
-        break;
-      case SHORT:
-        typeDesc = new TypeDesc(TypeDesc.Type.SMALLINT);
-        break;
-      case INT:
-        typeDesc = new TypeDesc(TypeDesc.Type.INT);
-        break;
-      case LONG:
-        typeDesc = new TypeDesc(TypeDesc.Type.BIGINT);
-        break;
-      case FLOAT:
-        typeDesc = new TypeDesc(TypeDesc.Type.FLOAT);
-        break;
-      case DOUBLE:
-        typeDesc = new TypeDesc(TypeDesc.Type.DOUBLE);
-        break;
-      case STRING:
-        typeDesc = new TypeDesc(TypeDesc.Type.STRING);
-        break;
-      case CHAR:
-        CharTypeInfo charTypeInfo = (CharTypeInfo) typeInfo;
-        typeDesc = new TypeDesc(TypeDesc.Type.CHAR, charTypeInfo.getLength());
-        break;
-      case VARCHAR:
-        VarcharTypeInfo varcharTypeInfo = (VarcharTypeInfo) typeInfo;
-        typeDesc = new TypeDesc(TypeDesc.Type.VARCHAR, varcharTypeInfo.getLength());
-        break;
-      case DATE:
-        typeDesc = new TypeDesc(TypeDesc.Type.DATE);
-        break;
-      case TIMESTAMP:
-        typeDesc = new TypeDesc(TypeDesc.Type.TIMESTAMP);
-        break;
-      case BINARY:
-        typeDesc = new TypeDesc(TypeDesc.Type.BINARY);
-        break;
-      case DECIMAL:
-        DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
-        typeDesc = new TypeDesc(TypeDesc.Type.DECIMAL, decimalTypeInfo.getPrecision(), decimalTypeInfo.getScale());
-        break;
-      default:
-        throw new HiveException("Unsupported type " + typeString);
+    case BOOLEAN:
+      typeDesc = new TypeDesc(TypeDesc.Type.BOOLEAN);
+      break;
+    case BYTE:
+      typeDesc = new TypeDesc(TypeDesc.Type.TINYINT);
+      break;
+    case SHORT:
+      typeDesc = new TypeDesc(TypeDesc.Type.SMALLINT);
+      break;
+    case INT:
+      typeDesc = new TypeDesc(TypeDesc.Type.INT);
+      break;
+    case LONG:
+      typeDesc = new TypeDesc(TypeDesc.Type.BIGINT);
+      break;
+    case FLOAT:
+      typeDesc = new TypeDesc(TypeDesc.Type.FLOAT);
+      break;
+    case DOUBLE:
+      typeDesc = new TypeDesc(TypeDesc.Type.DOUBLE);
+      break;
+    case STRING:
+      typeDesc = new TypeDesc(TypeDesc.Type.STRING);
+      break;
+    case CHAR:
+      CharTypeInfo charTypeInfo = (CharTypeInfo) typeInfo;
+      typeDesc = new TypeDesc(TypeDesc.Type.CHAR, charTypeInfo.getLength());
+      break;
+    case VARCHAR:
+      VarcharTypeInfo varcharTypeInfo = (VarcharTypeInfo) typeInfo;
+      typeDesc = new TypeDesc(TypeDesc.Type.VARCHAR,
+          varcharTypeInfo.getLength());
+      break;
+    case DATE:
+      typeDesc = new TypeDesc(TypeDesc.Type.DATE);
+      break;
+    case TIMESTAMP:
+      typeDesc = new TypeDesc(TypeDesc.Type.TIMESTAMP);
+      break;
+    case BINARY:
+      typeDesc = new TypeDesc(TypeDesc.Type.BINARY);
+      break;
+    case DECIMAL:
+      DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
+      typeDesc = new TypeDesc(TypeDesc.Type.DECIMAL,
+          decimalTypeInfo.getPrecision(), decimalTypeInfo.getScale());
+      break;
+    default:
+      throw new HiveException("Unsupported type " + typeString);
     }
 
     return typeDesc;

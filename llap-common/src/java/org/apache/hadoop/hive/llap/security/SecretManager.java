@@ -44,6 +44,8 @@ import org.apache.zookeeper.data.Id;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.protobuf.ByteString;
+
 public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdentifier>
   implements SigningSecretManager {
   private static final Logger LOG = LoggerFactory.getLogger(SecretManager.class);
@@ -271,5 +273,14 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
             + "; only " + user + " is allowed. " + DISABLE_MESSAGE);
       }
     }
+  }
+
+  /** Verifies the token available as serialized bytes. */
+  public void verifyToken(byte[] tokenBytes) throws IOException {
+    if (!UserGroupInformation.isSecurityEnabled()) return;
+    if (tokenBytes == null) throw new SecurityException("Token required for authentication");
+    Token<LlapTokenIdentifier> token = new Token<>();
+    token.readFields(new DataInputStream(new ByteArrayInputStream(tokenBytes)));
+    verifyToken(token.decodeIdentifier(), token.getPassword());
   }
 }

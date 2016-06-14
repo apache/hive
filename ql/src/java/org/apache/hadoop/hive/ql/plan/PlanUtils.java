@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -93,6 +94,8 @@ public final class PlanUtils {
   public static enum ExpressionTypes {
     FIELD, JEXL
   };
+  public static final String LLAP_OUTPUT_FORMAT_KEY = "Llap";
+  private static final String LLAP_OF_SH_CLASS = "org.apache.hadoop.hive.llap.LlapStorageHandler";
 
   public static synchronized long getCountForMapJoinDumpFilePrefix() {
     return countForMapJoinDumpFilePrefix++;
@@ -230,7 +233,7 @@ public final class PlanUtils {
 
     return getTableDesc(serdeClass, separatorCode, columns, columnTypes,
         lastColumnTakesRestOfTheLine, useDelimitedJSON, "TextFile");
- }
+  }
 
   public static TableDesc getTableDesc(
       Class<? extends Deserializer> serdeClass, String separatorCode,
@@ -272,12 +275,10 @@ public final class PlanUtils {
       inputFormat = RCFileInputFormat.class;
       outputFormat = RCFileOutputFormat.class;
       assert serdeClass == ColumnarSerDe.class;
-    } else if ("Llap".equalsIgnoreCase(fileFormat)) {
+    } else if (LLAP_OUTPUT_FORMAT_KEY.equalsIgnoreCase(fileFormat)) {
       inputFormat = TextInputFormat.class;
       outputFormat = LlapOutputFormat.class;
-      properties.setProperty(
-          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
-          "org.apache.hadoop.hive.llap.LlapStorageHandler");
+      properties.setProperty(hive_metastoreConstants.META_TABLE_STORAGE, LLAP_OF_SH_CLASS);
     } else { // use TextFile by default
       inputFormat = TextInputFormat.class;
       outputFormat = IgnoreKeyTextOutputFormat.class;

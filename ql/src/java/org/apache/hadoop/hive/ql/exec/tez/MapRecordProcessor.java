@@ -35,6 +35,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.AbstractMapOperator;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.llap.LlapOutputFormat;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
@@ -94,11 +95,9 @@ public class MapRecordProcessor extends RecordProcessor {
   public MapRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
     super(jconf, context);
     String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
-    if (LlapProxy.isDaemon()) { // do not cache plan
-      String id = queryId + "_" + context.getTaskIndex();
-      l4j.info("LLAP_OF_ID: "+id);
-      jconf.set(LlapOutputFormat.LLAP_OF_ID_KEY, id);
-      cache = new org.apache.hadoop.hive.ql.exec.mr.ObjectCache();
+    if (LlapProxy.isDaemon()) {
+      cache = new org.apache.hadoop.hive.ql.exec.mr.ObjectCache(); // do not cache plan
+      setLlapOfFragmentId(context);
     } else {
       cache = ObjectCacheFactory.getCache(jconf, queryId);
     }
@@ -106,6 +105,15 @@ public class MapRecordProcessor extends RecordProcessor {
     execContext.setJc(jconf);
     cacheKeys = new ArrayList<String>();
     nRows = 0;
+  }
+
+  private void setLlapOfFragmentId(final ProcessorContext context) {
+    // TODO: could we do this only if the OF is actually used?
+    String attemptId = Converters.createTaskAttemptId(context).toString();
+    if (l4j.isDebugEnabled()) {
+      l4j.debug("Setting the LLAP fragment ID for OF to " + attemptId);
+    }
+    jconf.set(LlapOutputFormat.LLAP_OF_ID_KEY, attemptId);
   }
 
   @Override

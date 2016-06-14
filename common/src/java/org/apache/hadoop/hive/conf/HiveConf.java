@@ -2883,6 +2883,10 @@ public class HiveConf extends Configuration {
         "protocol or ZK paths), similar to how ssh refuses a key with bad access permissions."),
     LLAP_DAEMON_OUTPUT_SERVICE_PORT("hive.llap.daemon.output.service.port", 15003,
         "LLAP daemon output service port"),
+    LLAP_DAEMON_OUTPUT_STREAM_TIMEOUT("hive.llap.daemon.output.stream.timeout", "120s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "The timeout for the client to connect to LLAP output service and start the fragment\n" +
+        "output after sending the fragment. The fragment will fail if its output is not claimed."),
     LLAP_DAEMON_OUTPUT_SERVICE_SEND_BUFFER_SIZE("hive.llap.daemon.output.service.send.buffer.size",
         128 * 1024, "Send buffer size to be used by LLAP daemon output service"),
     LLAP_ENABLE_GRACE_JOIN_IN_LLAP("hive.llap.enable.grace.join.in.llap", false,
