@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.io.merge.MergeFileTask;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -214,10 +215,17 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       List<HiveLock> locks = lockMgr.getLocks(lockObj.getObj(), false, true);
       for (HiveLock lock : locks) {
         if (lock.getHiveLockMode() == lockObj.getMode()) {
-          LOG.info("about to release lock for output: " + output.toString() +
-              " lock: " + lock.getHiveLockObject().getName());
-          lockMgr.unlock(lock);
-          ctx.getHiveLocks().remove(lock);
+          if (ctx.getHiveLocks().remove(lock)) {
+            LOG.info("about to release lock for output: " + output.toString() +
+                " lock: " + lock.getHiveLockObject().getName());
+            try {
+              lockMgr.unlock(lock);
+            } catch (LockException le) {
+              // should be OK since the lock is ephemeral and will eventually be deleted
+              // when the query finishes and zookeeper session is closed.
+              LOG.warn("Could not release lock " + lock.getHiveLockObject().getName());
+            }
+          }
         }
       }
     }
