@@ -31,6 +31,7 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -2076,7 +2077,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       if (tbl.isView()) {
         String createTab_stmt = "CREATE VIEW `" + tableName + "` AS " + tbl.getViewExpandedText();
-        outStream.writeBytes(createTab_stmt.toString());
+        outStream.write(createTab_stmt.getBytes(StandardCharsets.UTF_8));
         return 0;
       }
 
@@ -2225,7 +2226,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       createTab_stmt.add(TBL_PROPERTIES, tbl_properties);
 
-      outStream.writeBytes(createTab_stmt.render());
+      outStream.write(createTab_stmt.render().getBytes(StandardCharsets.UTF_8));
     } catch (IOException e) {
       LOG.info("show create table: " + stringifyException(e));
       return 1;
@@ -2288,14 +2289,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       if (showIndexes.isFormatted()) {
         // column headers
-        outStream.writeBytes(MetaDataFormatUtils.getIndexColumnsHeader());
+        outStream.write(MetaDataFormatUtils.getIndexColumnsHeader().getBytes(StandardCharsets.UTF_8));
         outStream.write(terminator);
         outStream.write(terminator);
       }
 
       for (Index index : indexes)
       {
-        outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(index));
+        outStream.write(MetaDataFormatUtils.getAllColumnsInformation(index).getBytes(StandardCharsets.UTF_8));
       }
     } catch (FileNotFoundException e) {
       LOG.info("show indexes: " + stringifyException(e));

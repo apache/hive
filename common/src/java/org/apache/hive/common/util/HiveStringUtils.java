@@ -43,11 +43,13 @@ import java.util.regex.Pattern;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 
+import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
+import org.apache.commons.lang3.text.translate.EntityArrays;
+import org.apache.commons.lang3.text.translate.LookupTranslator;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.util.StringUtils;
 
 /**
  * HiveStringUtils
@@ -65,6 +67,14 @@ public class HiveStringUtils {
   public static final int SHUTDOWN_HOOK_PRIORITY = 0;
 
   private static final DecimalFormat decimalFormat;
+
+  private static final CharSequenceTranslator ESCAPE_JAVA =
+      new LookupTranslator(
+        new String[][] {
+          {"\"", "\\\""},
+          {"\\", "\\\\"},
+      }).with(
+        new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE()));
 
   /**
    * Maintain a String pool to reduce memory.
@@ -601,6 +611,17 @@ public class HiveStringUtils {
     }
     return result.toString();
   }
+
+  /**
+   * Escape non-unicode characters. StringEscapeUtil.escapeJava() will escape
+   * unicode characters as well but in some cases it's not desired.
+   *
+   * @param str Original string
+   * @return Escaped string
+   */
+  public static String escapeJava(String str) {
+    return ESCAPE_JAVA.translate(str);
+}
 
   /**
    * Unescape commas in the string using the default escape char
