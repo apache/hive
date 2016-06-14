@@ -57,7 +57,6 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
   public SecretManager(Configuration conf, String clusterId) {
     super(conf);
     this.clusterId = clusterId;
-    checkForZKDTSMBug();
     this.conf = conf;
     checkForZKDTSMBug();
   }
