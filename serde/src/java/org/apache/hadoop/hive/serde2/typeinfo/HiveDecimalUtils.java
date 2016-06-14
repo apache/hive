@@ -77,7 +77,7 @@ public class HiveDecimalUtils {
     case VOID:
       return 1;
     default:
-      return HiveDecimal.MAX_PRECISION;
+      return HiveDecimal.SYSTEM_DEFAULT_PRECISION;
     }
   }
 
@@ -100,7 +100,7 @@ public class HiveDecimalUtils {
     case VOID:
       return 0;
     default:
-      return HiveDecimal.MAX_SCALE;
+      return HiveDecimal.SYSTEM_DEFAULT_SCALE;
     }
   }
 

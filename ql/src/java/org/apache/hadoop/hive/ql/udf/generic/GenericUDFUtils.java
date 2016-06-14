@@ -23,14 +23,17 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.IdentityConverter;
@@ -168,17 +171,7 @@ public final class GenericUDFUtils {
         return false;
       }
 
-      /**
-       * TODO: Hack fix until HIVE-5848 is addressed. non-exact type shouldn't be promoted
-       * to exact type, as FunctionRegistry.getCommonClass() might do. This corrects
-       * that.
-       */
-      if (commonTypeInfo instanceof DecimalTypeInfo) {
-        if ((!FunctionRegistry.isExactNumericType((PrimitiveTypeInfo) oiTypeInfo)) ||
-            (!FunctionRegistry.isExactNumericType((PrimitiveTypeInfo) rTypeInfo))) {
-          commonTypeInfo = TypeInfoFactory.doubleTypeInfo;
-        }
-      }
+      commonTypeInfo = updateCommonTypeForDecimal(commonTypeInfo, oiTypeInfo, rTypeInfo);
 
       returnObjectInspector = TypeInfoUtils
           .getStandardWritableObjectInspectorFromTypeInfo(commonTypeInfo);
@@ -237,6 +230,43 @@ public final class GenericUDFUtils {
       return converted;
     }
 
+  }
+
+  protected static TypeInfo updateCommonTypeForDecimal(
+      TypeInfo commonTypeInfo, TypeInfo ti, TypeInfo returnType) {
+    /**
+     * TODO: Hack fix until HIVE-5848 is addressed. non-exact type shouldn't be promoted
+     * to exact type, as FunctionRegistry.getCommonClass() might do. This corrects
+     * that.
+     */
+    if (commonTypeInfo instanceof DecimalTypeInfo) {
+      if ((!FunctionRegistry.isExactNumericType((PrimitiveTypeInfo)ti)) ||
+          (!FunctionRegistry.isExactNumericType((PrimitiveTypeInfo)returnType))) {
+        return TypeInfoFactory.doubleTypeInfo;
+      }
+    }
+    return commonTypeInfo;
+  }
+
+  // Based on update() above.
+  public static TypeInfo deriveInType(List<ExprNodeDesc> children) {
+    TypeInfo returnType = null;
+    for (ExprNodeDesc node : children) {
+      TypeInfo ti = node.getTypeInfo();
+      if (ti.getCategory() == Category.PRIMITIVE
+        && ((PrimitiveTypeInfo)ti).getPrimitiveCategory() == PrimitiveCategory.VOID) {
+        continue;
+      }
+      if (returnType == null) {
+        returnType = ti;
+        continue;
+      }
+      if (returnType == ti) continue;
+      TypeInfo commonTypeInfo = FunctionRegistry.getCommonClass(returnType, ti);
+      if (commonTypeInfo == null) return null;
+      returnType = updateCommonTypeForDecimal(commonTypeInfo, ti, returnType);
+    }
+    return returnType;
   }
 
   /**
