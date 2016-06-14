@@ -39,6 +39,7 @@ import org.apache.tez.dag.records.TezDAGID;
 import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.dag.records.TezTaskID;
 import org.apache.tez.dag.records.TezVertexID;
+import org.apache.tez.runtime.api.TaskContext;
 import org.apache.tez.runtime.api.impl.GroupInputSpec;
 import org.apache.tez.runtime.api.impl.InputSpec;
 import org.apache.tez.runtime.api.impl.OutputSpec;
@@ -103,6 +104,18 @@ public class Converters {
             attemptNum);
   }
 
+  public static TezTaskAttemptID createTaskAttemptId(TaskContext ctx) {
+    // Come ride the API roller-coaster #2! The best part is that ctx has TezTaskAttemptID inside.
+    return TezTaskAttemptID.getInstance(
+            TezTaskID.getInstance(
+                TezVertexID.getInstance(
+                    TezDAGID.getInstance(
+                        ctx.getApplicationId(),
+                    ctx.getDagIdentifier()),
+                ctx.getTaskVertexIndex()),
+            ctx.getTaskIndex()),
+        ctx.getTaskAttemptNumber());
+  }
   public static VertexIdentifier createVertexIdentifier(
       TezTaskAttemptID taId, int appAttemptId) {
     VertexIdentifier.Builder idBuilder = VertexIdentifier.newBuilder();

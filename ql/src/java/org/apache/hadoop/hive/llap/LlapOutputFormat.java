@@ -35,9 +35,6 @@ import org.apache.hadoop.hive.ql.io.StreamingOutputFormat;
 
 import com.google.common.base.Preconditions;
 
-/**
- *
- */
 public class LlapOutputFormat<K extends Writable, V extends Writable>
   implements OutputFormat<K, V>, StreamingOutputFormat {
 

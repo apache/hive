@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.security.LlapUgiFactoryFactory;
+import org.apache.hadoop.hive.llap.security.SecretManager;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.UDF;
@@ -88,6 +89,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   public static final String LLAP_HADOOP_METRICS2_PROPERTIES_FILE = "hadoop-metrics2-llapdaemon.properties";
   public static final String HADOOP_METRICS2_PROPERTIES_FILE = "hadoop-metrics2.properties";
   private final Configuration shuffleHandlerConf;
+  private final SecretManager secretManager;
   private final LlapProtocolServerImpl server;
   private final ContainerRunnerImpl containerRunner;
   private final AMReporter amReporter;
@@ -245,7 +247,12 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
     this.amReporter = new AMReporter(srvAddress, new QueryFailedHandlerProxy(), daemonConf);
 
-    this.server = new LlapProtocolServerImpl(
+    SecretManager sm = null;
+    if (UserGroupInformation.isSecurityEnabled()) {
+      sm = SecretManager.createSecretManager(daemonConf, daemonId.getClusterString());
+    }
+    this.secretManager = sm;
+    this.server = new LlapProtocolServerImpl(secretManager,
         numHandlers, this, srvAddress, mngAddress, srvPort, mngPort, daemonId);
 
     UgiFactory fsUgiFactory = null;
@@ -348,7 +355,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     this.shufflePort.set(ShuffleHandler.get().getPort());
     getConfig()
         .setInt(ConfVars.LLAP_DAEMON_YARN_SHUFFLE_PORT.varname, ShuffleHandler.get().getPort());
-    LlapOutputFormatService.initializeAndStart(getConfig());
+    LlapOutputFormatService.initializeAndStart(getConfig(), secretManager);
     super.serviceStart();
 
     // Setup the actual ports in the configuration.

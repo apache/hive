@@ -180,6 +180,12 @@ message GetTokenResponseProto {
   optional bytes token = 1;
 }
 
+// The message sent by external client to claim the output from the output socket.
+message LlapOutputSocketInitMessage {
+  required string fragment_id = 1;
+  optional bytes token = 2;
+}
+
 service LlapDaemonProtocol {
   rpc submitWork(SubmitWorkRequestProto) returns (SubmitWorkResponseProto);
   rpc sourceStateUpdated(SourceStateUpdatedRequestProto) returns (SourceStateUpdatedResponseProto);

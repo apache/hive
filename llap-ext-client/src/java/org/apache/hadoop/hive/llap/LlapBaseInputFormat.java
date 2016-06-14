@@ -16,10 +16,10 @@
  */
 package org.apache.hadoop.hive.llap;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -37,6 +37,7 @@ import org.apache.commons.collections4.ListUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapBaseRecordReader.ReaderEvent;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.LlapOutputSocketInitMessage;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
@@ -48,7 +49,6 @@ import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.io.DataInputBuffer;
-import org.apache.hadoop.io.DataInputByteBuffer;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -70,13 +70,11 @@ import org.apache.tez.common.security.TokenCache;
 import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.runtime.api.events.TaskAttemptFailedEvent;
 import org.apache.tez.runtime.api.impl.EventType;
-import org.apache.tez.runtime.api.impl.TaskSpec;
 import org.apache.tez.runtime.api.impl.TezEvent;
 import org.apache.tez.runtime.api.impl.TezHeartbeatRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
 
 
@@ -114,6 +112,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   public LlapBaseInputFormat() {}
 
 
+  @SuppressWarnings("unchecked")
   @Override
   public RecordReader<NullWritable, V> getRecordReader(InputSplit split, JobConf job, Reporter reporter) throws IOException {
 
@@ -148,24 +147,28 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     llapClient.init(job);
     llapClient.start();
 
-    SubmitWorkRequestProto submitWorkRequestProto = constructSubmitWorkRequestProto(
+    SubmitWorkRequestProto request = constructSubmitWorkRequestProto(
         submitWorkInfo, llapSplit.getSplitNum(), llapClient.getAddress(),
         submitWorkInfo.getToken(), llapSplit.getFragmentBytes(),
         llapSplit.getFragmentBytesSignature());
-    llapClient.submitWork(submitWorkRequestProto, host, llapSubmitPort);
+    llapClient.submitWork(request, host, llapSubmitPort);
 
-    String id = HiveConf.getVar(job, HiveConf.ConfVars.HIVEQUERYID) + "_" + llapSplit.getSplitNum();
-
-    // TODO: security for output channel
     Socket socket = new Socket(host, serviceInstance.getOutputFormatPort());
 
     LOG.debug("Socket connected");
+    SignableVertexSpec vertex = SignableVertexSpec.parseFrom(submitWorkInfo.getVertexBinary());
+    String fragmentId = Converters.createTaskAttemptId(vertex.getVertexIdentifier(),
+        request.getFragmentNumber(), request.getAttemptNumber()).toString();
+    OutputStream socketStream = socket.getOutputStream();
+    LlapOutputSocketInitMessage.Builder builder =
+        LlapOutputSocketInitMessage.newBuilder().setFragmentId(fragmentId);
+    if (llapSplit.getTokenBytes() != null) {
+      builder.setToken(ByteString.copyFrom(llapSplit.getTokenBytes()));
+    }
+    builder.build().writeDelimitedTo(socketStream);
+    socketStream.flush();
 
-    socket.getOutputStream().write(id.getBytes());
-    socket.getOutputStream().write(0);
-    socket.getOutputStream().flush();
-
-    LOG.info("Registered id: " + id);
+    LOG.info("Registered id: " + fragmentId);
 
     @SuppressWarnings("rawtypes")
     LlapBaseRecordReader recordReader = new LlapBaseRecordReader(
@@ -291,7 +294,6 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     String user = System.getenv(ApplicationConstants.Environment.USER.name());
     LOG.info("Setting user in submitWorkRequest to: " + user);
 
-    // TODO: this is bogus. What does LLAP use this for?
     ContainerId containerId =
         ContainerId.newInstance(ApplicationAttemptId.newInstance(appId, 0), taskNum);
 
