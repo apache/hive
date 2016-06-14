@@ -59,10 +59,12 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.ipc.ProtocolSignature;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.ipc.RemoteException;
+import org.apache.hadoop.ipc.RetriableException;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.security.token.SecretManager.InvalidToken;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.LocalResource;
@@ -80,6 +82,8 @@ import org.apache.tez.runtime.api.impl.TaskSpec;
 import org.apache.tez.runtime.api.impl.TezHeartbeatRequest;
 import org.apache.tez.runtime.api.impl.TezHeartbeatResponse;
 import org.apache.tez.serviceplugins.api.ContainerEndReason;
+import org.apache.tez.serviceplugins.api.ServicePluginError;
+import org.apache.tez.serviceplugins.api.ServicePluginErrorDefaults;
 import org.apache.tez.serviceplugins.api.TaskAttemptEndReason;
 import org.apache.tez.serviceplugins.api.TaskCommunicatorContext;
 import org.slf4j.Logger;
@@ -145,6 +149,24 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     sourceStateTracker = new SourceStateTracker(getContext(), this);
   }
 
+  private static final String LLAP_TOKEN_NAME = LlapTokenIdentifier.KIND_NAME.toString();
+  private void processSendError(Throwable t) {
+    Throwable cause = t;
+    while (cause != null) {
+      if (cause instanceof RetriableException) return;
+      if (((cause instanceof InvalidToken && cause.getMessage() != null)
+          || (cause instanceof RemoteException && cause.getCause() == null
+              && cause.getMessage() != null && cause.getMessage().contains("InvalidToken")))
+          && cause.getMessage().contains(LLAP_TOKEN_NAME)) {
+        break;
+      }
+      cause = cause.getCause();
+    }
+    if (cause == null) return;
+    LOG.error("Reporting fatal error - LLAP token appears to be invalid.", t);
+    getContext().reportError(ServicePluginErrorDefaults.OTHER_FATAL, cause.getMessage(), null);
+  }
+
   @Override
   public void initialize() throws Exception {
     super.initialize();
@@ -205,6 +227,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
   }
 
+  @VisibleForTesting
   protected LlapProtocolClientProxy createLlapProtocolClientProxy(int numThreads, Configuration conf) {
     return new LlapProtocolClientProxy(numThreads, conf, token);
   }
@@ -302,6 +325,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
           @Override
           public void indicateError(Throwable t) {
+             Throwable originalError = t;
             if (t instanceof ServiceException) {
               ServiceException se = (ServiceException) t;
               t = se.getCause();
@@ -311,6 +335,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
               LOG.info(
                   "Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
                       containerId, t);
+              processSendError(originalError);
               getContext()
                   .taskFailed(taskSpec.getTaskAttemptID(), TaskFailureType.NON_FATAL, TaskAttemptEndReason.OTHER,
                       t.toString());
@@ -320,6 +345,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
                 LOG.info(
                     "Unable to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
                         containerId + ", Communication Error");
+                 processSendError(originalError);
                 getContext().taskKilled(taskSpec.getTaskAttemptID(),
                     TaskAttemptEndReason.COMMUNICATION_ERROR, "Communication Error");
               } else {
@@ -327,6 +353,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
                 LOG.info(
                     "Failed to run task: " + taskSpec.getTaskAttemptID() + " on containerId: " +
                         containerId, t);
+                 processSendError(originalError);
                 getContext()
                     .taskFailed(taskSpec.getTaskAttemptID(), TaskFailureType.NON_FATAL, TaskAttemptEndReason.OTHER,
                         t.getMessage());
@@ -373,6 +400,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
             public void indicateError(Throwable t) {
               LOG.warn("Failed to send terminate fragment request for {}",
                   taskAttemptId.toString());
+               processSendError(t);
             }
           });
     } else {
@@ -400,7 +428,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
             @Override
             public void indicateError(Throwable t) {
-              LOG.warn("Failed to indicate dag complete dagId={} to node {}", dagIdentifier, llapNodeId);
+              LOG.warn("Failed to indicate dag complete dagId={} to node {}",
+                  dagIdentifier, llapNodeId);
+              processSendError(t);
             }
           });
     }
@@ -433,9 +463,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
             // The assumption is that if there's a failure to communicate with the node - it will
             // eventually timeout - and no more tasks will be allocated on it.
 
-            LOG.error(
-                "Failed to send state update to node: {}, Killing all attempts running on node. Attempted StateUpdate={}",
-                nodeId, request, t);
+            LOG.error("Failed to send state update to node: {}, Killing all attempts running on "
+                + "node. Attempted StateUpdate={}", nodeId, request, t);
+            processSendError(t);
             BiMap<ContainerId, TezTaskAttemptID> biMap =
                 entityTracker.getContainerAttemptMapForNode(nodeId);
             if (biMap != null) {
