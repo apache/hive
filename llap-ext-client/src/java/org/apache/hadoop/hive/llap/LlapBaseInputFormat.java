@@ -99,9 +99,6 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
   public final String SPLIT_QUERY = "select get_splits(\"%s\",%d)";
 
-  private Connection con;
-  private Statement stmt;
-
   public LlapBaseInputFormat(String url, String user, String pwd, String query) {
     this.url = url;
     this.user = user;
@@ -172,7 +169,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
     @SuppressWarnings("rawtypes")
     LlapBaseRecordReader recordReader = new LlapBaseRecordReader(
-        socket.getInputStream(), llapSplit.getSchema(), Text.class, job);
+        socket.getInputStream(), llapSplit.getSchema(), Text.class, job, llapClient);
     umbilicalResponder.setRecordReader(recordReader);
     return recordReader;
   }
@@ -196,11 +193,12 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
       throw new IOException(e);
     }
 
-    try {
-      con = DriverManager.getConnection(url,user,pwd);
-      stmt = con.createStatement();
-      String sql = String.format(SPLIT_QUERY, query, numSplits);
+    String sql = String.format(SPLIT_QUERY, query, numSplits);
+    try (
+      Connection con = DriverManager.getConnection(url,user,pwd);
+      Statement stmt = con.createStatement();
       ResultSet res = stmt.executeQuery(sql);
+    ) {
       while (res.next()) {
         // deserialize split
         DataInput in = new DataInputStream(res.getBinaryStream(1));
@@ -208,21 +206,10 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
         is.readFields(in);
         ins.add(is);
       }
-
-      res.close();
-      stmt.close();
     } catch (Exception e) {
       throw new IOException(e);
     }
     return ins.toArray(new InputSplit[ins.size()]);
-  }
-
-  public void close() {
-    try {
-      con.close();
-    } catch (Exception e) {
-      // ignore
-    }
   }
 
   private ServiceInstance getServiceInstance(JobConf job, LlapInputSplit llapSplit) throws IOException {

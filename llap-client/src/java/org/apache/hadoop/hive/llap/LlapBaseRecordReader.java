@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.llap;
 
+import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,14 +53,16 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
   protected Thread readerThread = null;
   protected final LinkedBlockingQueue<ReaderEvent> readerEvents = new LinkedBlockingQueue<ReaderEvent>();
   protected final long timeout;
+  protected final Closeable client;
 
-  public LlapBaseRecordReader(InputStream in, Schema schema, Class<V> clazz, JobConf job) {
+  public LlapBaseRecordReader(InputStream in, Schema schema, Class<V> clazz, JobConf job, Closeable client) {
     din = new DataInputStream(in);
     this.schema = schema;
     this.clazz = clazz;
     this.readerThread = Thread.currentThread();
     this.timeout = 3 * HiveConf.getTimeVar(job,
         HiveConf.ConfVars.LLAP_DAEMON_AM_LIVENESS_CONNECTION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+    this.client = client;
   }
 
   public Schema getSchema() {
@@ -68,7 +71,26 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
 
   @Override
   public void close() throws IOException {
-    din.close();
+    Exception caughtException = null;
+    try {
+      din.close();
+    } catch (Exception err) {
+      LOG.error("Error closing input stream:" + err.getMessage(), err);
+      caughtException = err;
+    }
+
+    if (client != null) {
+      try {
+        client.close();
+      } catch (Exception err) {
+        LOG.error("Error closing client:" + err.getMessage(), err);
+        caughtException = (caughtException == null ? err : caughtException);
+      }
+    }
+
+    if (caughtException != null) {
+      throw new IOException("Exception during close: " + caughtException.getMessage(), caughtException);
+    }
   }
 
   @Override
