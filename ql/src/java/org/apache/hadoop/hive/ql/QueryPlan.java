@@ -107,7 +107,7 @@ public class QueryPlan implements Serializable {
   private QueryProperties queryProperties;
 
   private transient Long queryStartTime;
-  private String operationName;
+  private HiveOperation operation;
 
   public QueryPlan() {
     this.reducerTimeStatsPerJobList = new ArrayList<ReducerTimeStatsPerJob>();
@@ -149,7 +149,7 @@ public class QueryPlan implements Serializable {
     query.putToQueryAttributes("queryString", this.queryString);
     queryProperties = sem.getQueryProperties();
     queryStartTime = startTime;
-    this.operationName = operationName;
+    this.operation = operation;
     this.resultSchema = resultSchema;
   }
 
@@ -809,6 +809,6 @@ public class QueryPlan implements Serializable {
   }
 
   public String getOperationName() {
-    return operationName;
+    return operation == null ? null : operation.getOperationName();
   }
 }
