@@ -252,10 +252,9 @@ public class CompactorMR {
       }
     }
 
-    if (parsedDeltas.size() == 0) {
-      // Seriously, no deltas?  Can't compact that.
-      LOG.error(  "No delta files found to compact in " + sd.getLocation());
-      //couldn't someone want to run a Major compaction to convert old table to ACID?
+    if (parsedDeltas.size() == 0 && dir.getOriginalFiles() == null) {
+      // Skip compaction if there's no delta files AND there's no original files
+      LOG.error("No delta files or original files found to compact in " + sd.getLocation());
       return;
     }
 
