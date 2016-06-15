@@ -397,7 +397,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       }
       try {
         OrcFile.createReader(file.getPath(),
-            OrcFile.readerOptions(conf).filesystem(fs));
+            OrcFile.readerOptions(conf).filesystem(fs).maxLength(file.getLen()));
       } catch (IOException e) {
         return false;
       }
@@ -1002,7 +1002,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     private void populateAndCacheStripeDetails() throws IOException {
       Reader orcReader = OrcFile.createReader(file.getPath(),
-          OrcFile.readerOptions(context.conf).filesystem(fs));
+          OrcFile.readerOptions(context.conf).filesystem(fs).maxLength(file.getLen()));
       if (fileInfo != null) {
         stripes = fileInfo.stripeInfos;
         fileMetaInfo = fileInfo.fileMetaInfo;
