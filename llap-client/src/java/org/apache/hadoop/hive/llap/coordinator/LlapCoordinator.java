@@ -23,6 +23,7 @@ import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -76,6 +77,8 @@ public class LlapCoordinator {
 
   private HiveConf hiveConf;
   private String clusterUser;
+  private long startTime;
+  private final AtomicInteger appIdCounter = new AtomicInteger(0);
 
   LlapCoordinator() {
   }
@@ -85,6 +88,11 @@ public class LlapCoordinator {
     // HS2 init without the knowledge of LLAP usage (or lack thereof) in the cluster.
     this.hiveConf = hiveConf;
     this.clusterUser = UserGroupInformation.getCurrentUser().getShortUserName();
+    // TODO: if two HS2s start at exactly the same time, which could happen during a coordinated
+    //       restart, they could start generating the same IDs. Should we store the startTime
+    //       somewhere like ZK? Try to randomize it a bit for now...
+    long randomBits = (long)(new Random().nextInt()) << 32;
+    this.startTime = Math.abs((System.currentTimeMillis() & (long)Integer.MAX_VALUE) | randomBits);
   }
 
   public LlapSigner getLlapSigner(final Configuration jobConf) {
@@ -105,14 +113,11 @@ public class LlapCoordinator {
   }
 
   public ApplicationId createExtClientAppId() {
-    // TODO: moved from UDTF; need JIRA to generate this properly (no dups, etc.)...
-    return ApplicationId.newInstance(Math.abs(new Random().nextInt()), 0);
     // Note that we cannot allow users to provide app ID, since providing somebody else's appId
     // would give one LLAP token (and splits) for that app ID. If we could verify it somehow
     // (YARN token? nothing we can do in an UDF), we could get it from client already running on
     // YARN. As such, the clients running on YARN will have two app IDs to be aware of.
-    // TODO: Perhaps they can give us their app id as an argument to the UDF, and we'd just append
-    // a unique string here, for easier tracking?
+    return ApplicationId.newInstance(startTime, appIdCounter.incrementAndGet());
   }
 
   public LlapTokenLocalClient getLocalTokenClient(

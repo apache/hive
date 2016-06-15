@@ -334,7 +334,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       }
 
       // See the discussion in the implementation as to why we generate app ID.
-      ApplicationId fakeApplicationId = coordinator.createExtClientAppId();
+      ApplicationId applicationId = coordinator.createExtClientAppId();
 
       // This assumes LLAP cluster owner is always the HS2 user.
       String llapUser = UserGroupInformation.getLoginUser().getShortUserName();
@@ -354,7 +354,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         LlapTokenLocalClient tokenClient = coordinator.getLocalTokenClient(job, llapUser);
         // We put the query user, not LLAP user, into the message and token.
         Token<LlapTokenIdentifier> token = tokenClient.createToken(
-            fakeApplicationId.toString(), queryUser, true);
+            applicationId.toString(), queryUser, true);
         bos.reset();
         token.write(dos);
         tokenBytes = bos.toByteArray();
@@ -366,15 +366,15 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       SignedMessage signedSvs = null;
       for (int i = 0; i < eventList.size() - 1; i++) {
         TaskSpec taskSpec = new TaskSpecBuilder().constructTaskSpec(dag, vertexName,
-              eventList.size() - 1, fakeApplicationId, i);
+              eventList.size() - 1, applicationId, i);
 
         // 2. Generate the vertex/submit information for all events.
         if (i == 0) {
           // Despite the differences in TaskSpec, the vertex spec should be the same.
-          signedSvs = createSignedVertexSpec(signer, taskSpec, fakeApplicationId, queryUser);
+          signedSvs = createSignedVertexSpec(signer, taskSpec, applicationId, queryUser);
         }
 
-        SubmitWorkInfo submitWorkInfo = new SubmitWorkInfo(fakeApplicationId,
+        SubmitWorkInfo submitWorkInfo = new SubmitWorkInfo(applicationId,
             System.currentTimeMillis(), taskSpec.getVertexParallelism(), signedSvs.message,
             signedSvs.signature);
         byte[] submitWorkBytes = SubmitWorkInfo.toBytes(submitWorkInfo);
@@ -426,10 +426,10 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   }
 
   private SignedMessage createSignedVertexSpec(LlapSigner signer, TaskSpec taskSpec,
-      ApplicationId fakeApplicationId, String queryUser) throws IOException {
+      ApplicationId applicationId, String queryUser) throws IOException {
 
     final SignableVertexSpec.Builder svsb = Converters.convertTaskSpecToProto(
-        taskSpec, 0, fakeApplicationId.toString(), queryUser);
+        taskSpec, 0, applicationId.toString(), queryUser);
     if (signer == null) {
       SignedMessage result = new SignedMessage();
       result.message = serializeVertexSpec(svsb);
