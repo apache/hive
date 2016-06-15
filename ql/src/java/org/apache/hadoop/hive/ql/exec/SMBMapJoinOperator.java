@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.PriorityQueue;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -188,6 +189,12 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       FetchWork fetchWork = entry.getValue();
 
       JobConf jobClone = new JobConf(hconf);
+      if (UserGroupInformation.isSecurityEnabled()) {
+        String hadoopAuthToken = System.getenv(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION);
+        if(hadoopAuthToken != null){
+          jobClone.set("mapreduce.job.credentials.binary", hadoopAuthToken);
+        }
+      }
 
       TableScanOperator ts = (TableScanOperator)aliasToWork.get(alias);
       // push down projections
