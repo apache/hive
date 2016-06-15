@@ -40,6 +40,7 @@ public class ChannelOutputStream extends OutputStream {
   private ByteBuf buf;
   private byte[] singleByte = new byte[1];
   private boolean closed = false;
+  private final Object channelWritabilityMonitor;
 
   private ChannelFutureListener listener = new ChannelFutureListener() {
     @Override
@@ -52,11 +53,12 @@ public class ChannelOutputStream extends OutputStream {
     }
   };
 
-  public ChannelOutputStream(ChannelHandlerContext chc, String id, int bufSize) {
+  public ChannelOutputStream(ChannelHandlerContext chc, String id, int bufSize, final Object monitor) {
     this.chc = chc;
     this.id = id;
     this.bufSize = bufSize;
     this.buf = chc.alloc().buffer(bufSize);
+    this.channelWritabilityMonitor = monitor;
   }
 
   @Override
@@ -124,8 +126,21 @@ public class ChannelOutputStream extends OutputStream {
       throw new IOException("Already closed: " + id);
     }
 
-    chc.write(buf.copy()).addListener(listener);
+    chc.writeAndFlush(buf.copy()).addListener(listener);
     buf.clear();
+
+    // if underlying channel is not writable (perhaps because of slow consumer) wait for
+    // notification about writable state change
+    synchronized (channelWritabilityMonitor) {
+      // to prevent spurious wake up
+      while (!chc.channel().isWritable()) {
+        try {
+          channelWritabilityMonitor.wait();
+        } catch (InterruptedException e) {
+          throw new IOException("Interrupted when waiting for channel writability state change", e);
+        }
+      }
+    }
   }
 
   private void writeInternal(byte[] b, int off, int len) throws IOException {
