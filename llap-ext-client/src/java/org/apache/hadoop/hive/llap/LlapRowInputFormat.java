@@ -35,9 +35,9 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
-
 public class LlapRowInputFormat implements InputFormat<NullWritable, Row> {
-  LlapBaseInputFormat<Text> baseInputFormat = new LlapBaseInputFormat<Text>();
+
+  private LlapBaseInputFormat<Text> baseInputFormat = new LlapBaseInputFormat<Text>();
 
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
