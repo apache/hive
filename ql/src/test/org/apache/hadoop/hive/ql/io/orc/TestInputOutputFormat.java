@@ -509,6 +509,27 @@ public class TestInputOutputFormat {
         }
       }
     }
+
+    k = 0;
+    conf.set("hive.orc.cache.stripe.details.size", "-1");
+    for (int c : counts) {
+      for (int s : sizes) {
+        final FileSystem fs = generateMockFiles(c, s);
+        for (int n : numSplits) {
+          final OrcInputFormat.Context context = new OrcInputFormat.Context(
+              conf, n);
+          OrcInputFormat.FileGenerator gen = new OrcInputFormat.FileGenerator(
+              context, fs, new MockPath(fs, "mock:/a/b"));
+          final SplitStrategy splitStrategy = gen.call();
+          assertTrue(
+              String.format(
+                  "Split strategy for %d files x %d size for %d splits", c, s,
+                  n),
+              splitStrategy.getClass().getSimpleName()
+                  .equals(strategyResults[k++]));
+        }
+      }
+    }
   }
 
   @Test
