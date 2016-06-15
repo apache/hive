@@ -90,6 +90,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.beeline.cli.CliOptionsProcessor;
+import org.apache.thrift.transport.TTransportException;
 
 /**
  * A console SQL shell with command completion.
@@ -1682,6 +1683,10 @@ public class BeeLine implements Closeable {
   void handleSQLException(SQLException e) {
     if (e instanceof SQLWarning && !(getOpts().getShowWarnings())) {
       return;
+    }
+
+    if (e.getCause() instanceof TTransportException) {
+      error(loc("hs2-unavailable"));
     }
 
     error(loc(e instanceof SQLWarning ? "Warning" : "Error",
