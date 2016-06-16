@@ -21,9 +21,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +40,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -40,6 +49,8 @@ import org.apache.hadoop.hive.ql.metadata.CheckResult.PartitionResult;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.thrift.TException;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * Verify that the information in the metastore matches what is on the
@@ -290,9 +301,10 @@ public class HiveMetaStoreChecker {
    *          Result object
    * @throws IOException
    *           Thrown if we fail at fetching listings from the fs.
+   * @throws HiveException 
    */
   void findUnknownPartitions(Table table, Set<Path> partPaths,
-      CheckResult result) throws IOException {
+      CheckResult result) throws IOException, HiveException {
 
     Path tablePath = table.getPath();
     // now check the table folder and see if we find anything
@@ -357,28 +369,88 @@ public class HiveMetaStoreChecker {
    *          This set will contain the leaf paths at the end.
    * @throws IOException
    *           Thrown if we can't get lists from the fs.
+   * @throws HiveException 
    */
 
-  private void getAllLeafDirs(Path basePath, Set<Path> allDirs)
-      throws IOException {
-    getAllLeafDirs(basePath, allDirs, basePath.getFileSystem(conf));
+  private void getAllLeafDirs(Path basePath, Set<Path> allDirs) throws IOException, HiveException {
+    ConcurrentLinkedQueue<Path> basePaths = new ConcurrentLinkedQueue<>();
+    basePaths.add(basePath);
+    // we only use the keySet of ConcurrentHashMap
+    Map<Path, Object> dirSet = new ConcurrentHashMap<>();
+    // Here we just reuse the THREAD_COUNT configuration for
+    // HIVE_MOVE_FILES_THREAD_COUNT
+    final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ? Executors
+        .newFixedThreadPool(conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
+            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MSCK-GetPaths-%d").build())
+            : null;
+    if (pool == null) {
+      LOG.debug("Not-using threaded version of MSCK-GetPaths");
+    } else {
+      LOG.debug("Using threaded version of MSCK-GetPaths with number of threads "
+          + ((ThreadPoolExecutor) pool).getPoolSize());
+    }
+    getAllLeafDirs(pool, basePaths, dirSet, basePath.getFileSystem(conf));
+    pool.shutdown();
+    allDirs.addAll(dirSet.keySet());
   }
 
-  private void getAllLeafDirs(Path basePath, Set<Path> allDirs, FileSystem fs)
-      throws IOException {
+  // process the basePaths in parallel and then the next level of basePaths
+  private void getAllLeafDirs(final ExecutorService pool, final ConcurrentLinkedQueue<Path> basePaths,
+      final Map<Path, Object> allDirs, final FileSystem fs) throws IOException, HiveException {
+    final ConcurrentLinkedQueue<Path> nextLevel = new ConcurrentLinkedQueue<>();
+    if (null == pool) {
+      for (final Path path : basePaths) {
+        FileStatus[] statuses = fs.listStatus(path, FileUtils.HIDDEN_FILES_PATH_FILTER);
+        boolean directoryFound = false;
+        for (FileStatus status : statuses) {
+          if (status.isDir()) {
+            directoryFound = true;
+            nextLevel.add(status.getPath());
+          }
+        }
 
-    FileStatus[] statuses = fs.listStatus(basePath, FileUtils.HIDDEN_FILES_PATH_FILTER);
-    boolean directoryFound=false;
-
-    for (FileStatus status : statuses) {
-      if (status.isDir()) {
-        directoryFound = true;
-        getAllLeafDirs(status.getPath(), allDirs, fs);
+        if (!directoryFound) {
+          allDirs.put(path, null);
+        }
+        if (!nextLevel.isEmpty()) {
+          getAllLeafDirs(pool, nextLevel, allDirs, fs);
+        }
       }
-    }
+    } else {
+      final List<Future<Void>> futures = new LinkedList<>();
+      for (final Path path : basePaths) {
+        futures.add(pool.submit(new Callable<Void>() {
+          @Override
+          public Void call() throws Exception {
+            FileStatus[] statuses = fs.listStatus(path, FileUtils.HIDDEN_FILES_PATH_FILTER);
+            boolean directoryFound = false;
 
-    if(!directoryFound){
-      allDirs.add(basePath);
+            for (FileStatus status : statuses) {
+              if (status.isDir()) {
+                directoryFound = true;
+                nextLevel.add(status.getPath());
+              }
+            }
+
+            if (!directoryFound) {
+              allDirs.put(path, null);
+            }
+            return null;
+          }
+        }));
+      }
+      for (Future<Void> future : futures) {
+        try {
+          future.get();
+        } catch (Exception e) {
+          LOG.error(e.getMessage());
+          pool.shutdownNow();
+          throw new HiveException(e.getCause());
+        }
+      }
+      if (!nextLevel.isEmpty()) {
+        getAllLeafDirs(pool, nextLevel, allDirs, fs);
+      }
     }
   }
 
