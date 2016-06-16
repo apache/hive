@@ -79,6 +79,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13910] - [Ranger-Hive] select from a table is not working if used as <dbname.tablename>
     * [HIVE-13922] - Optimize the code path that analyzes/updates col stats
     * [HIVE-13942] - Correctness of CASE folding in the presence of NULL values
+    * [HIVE-13984] - Use multi-threaded approach to listing files for msck
 
 
 
@@ -135,7 +136,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-12608] - Parquet Schema Evolution doesn't work when a column is dropped from array<struct<>>
     * [HIVE-12612] - beeline always exits with 0 status when reading query from standard input
     * [HIVE-12616] - NullPointerException when spark session is reused to run a mapjoin
-    * [HIVE-12619] - Switching the field order within an array of structs causes the query to fail
+    * [HIVE-12619] - (Parquet) Switching the field order within an array of structs causes the query to fail
     * [HIVE-12620] - Misc improvement to Acid module
     * [HIVE-12635] - Hive should return the latest hbase cell timestamp as the row timestamp value
     * [HIVE-12643] - For self describing InputFormat don't replicate schema information in partitions
@@ -433,6 +434,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13826] - Make VectorUDFAdaptor work for GenericUDFBetween when used as FILTER
     * [HIVE-13831] - Error pushing predicates to HBase storage handler
     * [HIVE-13832] - Add missing license header to files
+    * [HIVE-13833] - Add an initial delay when starting the heartbeat
     * [HIVE-13837] - current_timestamp() output format is different in some cases
     * [HIVE-13840] - Orc split generation is reading file footers twice
     * [HIVE-13841] - Orc split generation returns different strategies with cache enabled vs disabled
@@ -451,6 +453,7 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13870] - Decimal vector is not resized correctly
     * [HIVE-13876] - Vectorization: Port HIVE-11544 to LazySimpleDeserializeRead
     * [HIVE-13885] - Hive session close is not resetting thread name
+    * [HIVE-13903] - getFunctionInfo is downloading jar on every call
     * [HIVE-13904] - Ignore case when retrieving ColumnInfo from RowResolver
     * [HIVE-13909] - upgrade ACLs in LLAP registry when the cluster is upgraded to secure
     * [HIVE-13911] - load inpath fails throwing org.apache.hadoop.security.AccessControlException
@@ -463,8 +466,15 @@ Release Notes - Hive - Version 2.1.0
     * [HIVE-13953] - Issues in HiveLockObject equals method
     * [HIVE-13954] - Parquet logs should go to STDERR
     * [HIVE-13955] - Include service-rpc and llap-ext-client in packaging files
+    * [HIVE-13957] - vectorized IN is inconsistent with non-vectorized (at least for decimal in (string))
+    * [HIVE-13959] - MoveTask should only release its query associated locks
+    * [HIVE-13961] - ACID: Major compaction fails to include the original bucket files if there's no delta directory
     * [HIVE-13972] - Resolve class dependency issue introduced by HIVE-13354
     * [HIVE-13973] - Extend support for other primitive types in windowing expressions
+    * [HIVE-14006] - Hive query with UNION ALL fails with ArrayIndexOutOfBoundsException
+    * [HIVE-14008] - Duplicate line in LLAP SecretManager
+    * [HIVE-14010] - parquet-logging.properties from HIVE_CONF_DIR should be used when available
+    * [HIVE-14020] - Hive MS restart failed during EU with ORA-00922 error as part of DB schema upgrade
 
 
 
