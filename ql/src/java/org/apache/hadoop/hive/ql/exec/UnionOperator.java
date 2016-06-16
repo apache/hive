@@ -139,7 +139,7 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
     StructObjectInspector soi = parentObjInspectors[tag];
     List<? extends StructField> fields = parentFields[tag];
 
-    if (needsTransform[tag]) {
+    if (needsTransform[tag] && outputRow.size() > 0) {
       for (int c = 0; c < fields.size(); c++) {
         outputRow.set(c, columnTypeResolvers[c].convertIfNecessary(soi
             .getStructFieldData(row, fields.get(c)), fields.get(c)
