@@ -41,6 +41,8 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
 
 /**
@@ -96,6 +98,11 @@ public class LimitPushdownOptimizer extends Transform {
         ".*" +
         LimitOperator.getOperatorName() + "%"),
         new TopNReducer());
+    opRules.put(new RuleRegExp("R2",
+        ReduceSinkOperator.getOperatorName() + "%" +
+        ".*" +
+        ReduceSinkOperator.getOperatorName() + "%"),
+        new TopNPropagator());
 
     LimitPushdownContext context = new LimitPushdownContext(pctx.getConf());
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, context);
@@ -141,6 +148,82 @@ public class LimitPushdownOptimizer extends Transform {
       }
       return true;
     }
+  }
+
+  private static class TopNPropagator implements NodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack,
+        NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
+      ReduceSinkOperator cRS = (ReduceSinkOperator) nd;
+      if (cRS.getConf().getTopN() == -1) {
+        // No limit, nothing to propagate, we just bail out
+        return false;
+      }
+      ReduceSinkOperator pRS = null;
+      for (int i = stack.size() - 2 ; i >= 0; i--) {
+        Operator<?> operator = (Operator<?>) stack.get(i);
+        if (operator.getNumChild() != 1) {
+          return false; // multi-GBY single-RS (TODO)
+        }
+        if (operator instanceof ReduceSinkOperator) {
+          pRS = (ReduceSinkOperator) operator;
+          break;
+        }
+        if (!operator.acceptLimitPushdown()) {
+          return false;
+        }
+      }
+      if (pRS != null) {
+        if (OperatorUtils.findOperators(pRS, GroupByOperator.class).size() > 1){
+          // Not safe to continue for RS-GBY-GBY-LIM kind of pipelines. See HIVE-10607 for more.
+          return false;
+        }
+        if (!checkKeys(cRS.getConf().getKeyCols(), pRS.getConf().getKeyCols(), cRS, pRS)) {
+          // Keys are not the same; bail out
+          return false;
+        }
+        // Copy order
+        pRS.getConf().setOrder(cRS.getConf().getOrder().substring(
+                0, pRS.getConf().getOrder().length()));
+        pRS.getConf().setNullOrder(cRS.getConf().getNullOrder().substring(
+                0, pRS.getConf().getNullOrder().length()));
+        // Copy limit
+        pRS.getConf().setTopN(cRS.getConf().getTopN());
+        pRS.getConf().setTopNMemoryUsage(cRS.getConf().getTopNMemoryUsage());
+        if (pRS.getNumChild() == 1 && pRS.getChildren().get(0) instanceof GroupByOperator) {
+          pRS.getConf().setMapGroupBy(true);
+        }
+      }
+      return true;
+    }
+  }
+
+  private static boolean checkKeys(List<ExprNodeDesc> cKeys, List<ExprNodeDesc> pKeys,
+      ReduceSinkOperator cRS, ReduceSinkOperator pRS) throws SemanticException {
+    if (cKeys == null || cKeys.isEmpty()) {
+      if (pKeys != null && !pKeys.isEmpty()) {
+        return false;
+      }
+      return true;
+    }
+    if (pKeys == null || pKeys.isEmpty()) {
+      return false;
+    }
+    if (cKeys.size() < pKeys.size()) {
+      return false;
+    }
+    for (int i = 0; i < pKeys.size(); i++) {
+      ExprNodeDesc expr = ExprNodeDescUtils.backtrack(cKeys.get(i), cRS, pRS);
+      if (expr == null) {
+        // cKey is not present in parent
+        return false;
+      }
+      if (!expr.isSame(pKeys.get(i))) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private static class LimitPushdownContext implements NodeProcessorCtx {

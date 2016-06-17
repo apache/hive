@@ -60,6 +60,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: array<string>)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: bigint)
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -140,6 +141,7 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col0 (type: map<string,string>)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
               value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
