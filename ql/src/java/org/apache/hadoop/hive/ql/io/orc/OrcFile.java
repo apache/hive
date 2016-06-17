@@ -194,14 +194,14 @@ public final class OrcFile {
   public static class ReaderOptions {
     private final Configuration conf;
     private FileSystem filesystem;
-    private ReaderImpl.FileMetaInfo fileMetaInfo;
     private long maxLength = Long.MAX_VALUE;
+    private OrcTail orcTail;
 
     public ReaderOptions(Configuration conf) {
       this.conf = conf;
     }
-    ReaderOptions fileMetaInfo(ReaderImpl.FileMetaInfo info) {
-      fileMetaInfo = info;
+    ReaderOptions orcTail(OrcTail orcTail) {
+      this.orcTail = orcTail;
       return this;
     }
 
@@ -223,8 +223,8 @@ public final class OrcFile {
       return filesystem;
     }
 
-    ReaderImpl.FileMetaInfo getFileMetaInfo() {
-      return fileMetaInfo;
+    OrcTail getOrcTail() {
+      return orcTail;
     }
 
     long getMaxLength() {

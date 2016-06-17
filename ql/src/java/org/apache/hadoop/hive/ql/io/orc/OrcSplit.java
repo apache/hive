@@ -39,13 +39,14 @@ import org.apache.hadoop.mapred.FileSplit;
  *
  */
 public class OrcSplit extends FileSplit {
-  private ReaderImpl.FileMetaInfo fileMetaInfo;
+  private OrcTail orcTail;
   private boolean hasFooter;
   private boolean isOriginal;
   private boolean hasBase;
   private final List<AcidInputFormat.DeltaMetaData> deltas = new ArrayList<>();
   private OrcFile.WriterVersion writerVersion;
   private long projColsUncompressedSize;
+  private long fileLen;
 
   static final int BASE_FLAG = 4;
   static final int ORIGINAL_FLAG = 2;
@@ -59,15 +60,17 @@ public class OrcSplit extends FileSplit {
   }
 
   public OrcSplit(Path path, long offset, long length, String[] hosts,
-      ReaderImpl.FileMetaInfo fileMetaInfo, boolean isOriginal, boolean hasBase,
-      List<AcidInputFormat.DeltaMetaData> deltas, long projectedDataSize) {
+      OrcTail orcTail, boolean isOriginal, boolean hasBase,
+      List<AcidInputFormat.DeltaMetaData> deltas, long projectedDataSize, long fileLen) {
     super(path, offset, length, hosts);
-    this.fileMetaInfo = fileMetaInfo;
-    hasFooter = this.fileMetaInfo != null;
+    this.orcTail = orcTail;
+    hasFooter = this.orcTail != null;
     this.isOriginal = isOriginal;
     this.hasBase = hasBase;
     this.deltas.addAll(deltas);
     this.projColsUncompressedSize = projectedDataSize;
+    // setting file length to Long.MAX_VALUE will let orc reader read file length from file system
+    this.fileLen = fileLen <= 0 ? Long.MAX_VALUE : fileLen;
   }
 
   @Override
@@ -84,21 +87,13 @@ public class OrcSplit extends FileSplit {
       delta.write(out);
     }
     if (hasFooter) {
-      // serialize FileMetaInfo fields
-      Text.writeString(out, fileMetaInfo.compressionType);
-      WritableUtils.writeVInt(out, fileMetaInfo.bufferSize);
-      WritableUtils.writeVInt(out, fileMetaInfo.metadataSize);
-
-      // serialize FileMetaInfo field footer
-      ByteBuffer footerBuff = fileMetaInfo.footerBuffer;
-      footerBuff.reset();
-
-      // write length of buffer
-      WritableUtils.writeVInt(out, footerBuff.limit() - footerBuff.position());
-      out.write(footerBuff.array(), footerBuff.position(),
-          footerBuff.limit() - footerBuff.position());
-      WritableUtils.writeVInt(out, fileMetaInfo.writerVersion.getId());
+      OrcProto.FileTail fileTail = orcTail.getMinimalFileTail();
+      byte[] tailBuffer = fileTail.toByteArray();
+      int tailLen = tailBuffer.length;
+      WritableUtils.writeVInt(out, tailLen);
+      out.write(tailBuffer);
     }
+    out.writeLong(fileLen);
   }
 
   @Override
@@ -119,25 +114,13 @@ public class OrcSplit extends FileSplit {
       deltas.add(dmd);
     }
     if (hasFooter) {
-      // deserialize FileMetaInfo fields
-      String compressionType = Text.readString(in);
-      int bufferSize = WritableUtils.readVInt(in);
-      int metadataSize = WritableUtils.readVInt(in);
-
-      // deserialize FileMetaInfo field footer
-      int footerBuffSize = WritableUtils.readVInt(in);
-      ByteBuffer footerBuff = ByteBuffer.allocate(footerBuffSize);
-      in.readFully(footerBuff.array(), 0, footerBuffSize);
-      OrcFile.WriterVersion writerVersion =
-          ReaderImpl.getWriterVersion(WritableUtils.readVInt(in));
-
-      fileMetaInfo = new ReaderImpl.FileMetaInfo(compressionType, bufferSize,
-          metadataSize, footerBuff, writerVersion);
+      int tailLen = WritableUtils.readVInt(in);
+      byte[] tailBuffer = new byte[tailLen];
+      in.readFully(tailBuffer);
+      OrcProto.FileTail fileTail = OrcProto.FileTail.parseFrom(tailBuffer);
+      orcTail = new OrcTail(fileTail, null);
     }
-  }
-
-  ReaderImpl.FileMetaInfo getFileMetaInfo(){
-    return fileMetaInfo;
+    fileLen = in.readLong();
   }
 
   public boolean hasFooter() {
@@ -167,5 +150,20 @@ public class OrcSplit extends FileSplit {
 
   public long getProjectedColumnsUncompressedSize() {
     return projColsUncompressedSize;
+  }
+
+  public long getFileLength() {
+    return fileLen;
+  }
+
+  public OrcTail getOrcTail() {
+    return orcTail;
+  }
+
+  @Override
+  public String toString() {
+    return "OrcSplit [" + getPath() + ", start=" + getStart() + ", length=" + getLength()
+            + ", isOriginal=" + isOriginal + ", fileLength=" + fileLen + ", hasFooter=" + hasFooter +
+            ", hasBase=" + hasBase + ", deltas=" + (deltas == null ? 0 : deltas.size()) + "]";
   }
 }

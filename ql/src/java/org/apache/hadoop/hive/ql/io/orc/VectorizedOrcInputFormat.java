@@ -168,8 +168,9 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     if(fSplit instanceof OrcSplit){
       OrcSplit orcSplit = (OrcSplit) fSplit;
       if (orcSplit.hasFooter()) {
-        opts.fileMetaInfo(orcSplit.getFileMetaInfo());
+        opts.orcTail(orcSplit.getOrcTail());
       }
+      opts.maxLength(orcSplit.getFileLength());
     }
     Reader reader = OrcFile.createReader(path, opts);
     return new VectorizedOrcRecordReader(reader, conf, fSplit);
