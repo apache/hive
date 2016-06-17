@@ -473,7 +473,8 @@ public class StatsRulesProcFactory {
         float columnFactor = dvs == 0 ? 0.5f : ((float)dvs / numRows) * values.get(i).size();
         factor *= columnFactor;
       }
-      return Math.round( (double)numRows * factor);
+      float inFactor = HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_IN_CLAUSE_FACTOR);
+      return Math.round( (double)numRows * factor * inFactor);
     }
 
     private long evaluateNotExpr(Statistics stats, ExprNodeDesc pred,
