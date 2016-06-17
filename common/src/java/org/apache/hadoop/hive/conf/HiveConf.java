@@ -1624,6 +1624,11 @@ public class HiveConf extends Configuration {
         "of rows and data size. Since files in tables/partitions are serialized (and optionally\n" +
         "compressed) the estimates of number of rows and data size cannot be reliably determined.\n" +
         "This factor is multiplied with the file size to account for serialization and compression."),
+    HIVE_STATS_IN_CLAUSE_FACTOR("hive.stats.filter.in.factor", (float) 1.0,
+        "Currently column distribution is assumed to be uniform. This can lead to overestimation/underestimation\n" +
+        "in the number of rows filtered by a certain operator, which in turn might lead to overprovision or\n" +
+        "underprovision of resources. This factor is applied to the cardinality estimation of IN clauses in\n" +
+        "filter operators."),
 
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false,
