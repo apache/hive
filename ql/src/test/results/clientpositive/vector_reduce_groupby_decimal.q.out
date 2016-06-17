@@ -54,6 +54,7 @@ STAGE PLANS:
                   sort order: ++++
                   Map-reduce partition columns: _col0 (type: int), _col1 (type: double), _col2 (type: decimal(20,10)), _col3 (type: decimal(23,14))
                   Statistics: Num rows: 6102 Data size: 1440072 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col4 (type: decimal(20,10))
       Execution mode: vectorized
       Reduce Operator Tree:

@@ -1899,6 +1899,7 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col0 (type: smallint)
                           Statistics: Num rows: 2503 Data size: 76841 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: bigint), _col3 (type: struct<count:bigint,sum:double,variance:double>), _col4 (type: bigint)
             Execution mode: vectorized
         Reducer 2 

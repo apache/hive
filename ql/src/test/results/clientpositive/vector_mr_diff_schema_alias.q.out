@@ -357,6 +357,7 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              TopN Hash Memory Usage: 0.1
               value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator

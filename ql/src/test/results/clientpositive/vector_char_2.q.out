@@ -86,6 +86,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: char(20))
                   Statistics: Num rows: 500 Data size: 99000 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: bigint), _col2 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -214,9 +215,10 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 99000 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: char(20))
-                  sort order: +
+                  sort order: -
                   Map-reduce partition columns: _col0 (type: char(20))
                   Statistics: Num rows: 500 Data size: 99000 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: bigint), _col2 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
