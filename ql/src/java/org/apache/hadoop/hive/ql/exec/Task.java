@@ -56,6 +56,14 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   private static final long serialVersionUID = 1L;
   public transient HashMap<String, Long> taskCounters;
   public transient TaskHandle taskHandle;
+  @Deprecated
+  protected transient boolean started;
+  @Deprecated
+  protected transient boolean initialize;
+  @Deprecated
+  protected transient boolean isdone;
+  @Deprecated
+  protected transient boolean queued;
   protected transient HiveConf conf;
   protected transient Hive db;
   protected transient LogHelper console;
@@ -123,6 +131,10 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   private Throwable exception;
 
   public Task() {
+    isdone = false;
+    started = false;
+    initialize = false;
+    queued = false;
     this.taskCounters = new HashMap<String, Long>();
     taskTag = Task.NO_TAG;
   }
@@ -133,6 +145,8 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
     this.queryPlan = queryPlan;
+    isdone = false;
+    started = false;
     setInitialized();
     this.conf = conf;
     try {
@@ -160,6 +174,26 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   private void setState(TaskState state) {
     this.taskState = state;
+    // Switch block below is needed to update the state of deprecated fields
+    // to maintain backward compatibility
+    // this should be removed in newer version of hive when the deprecated
+    // fields can be safely removed
+    switch (taskState) {
+        case RUNNING:
+            this.started = true;
+            break;
+        case INITIALIZED:
+            this.initialize = true;
+            break;
+        case QUEUED:
+            this.queued = true;
+            break;
+        case FINISHED:
+            this.isdone = true;
+            break;
+        default:
+            break;
+    }
     updateStatusInQueryDisplay();
   }
   /**
