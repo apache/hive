@@ -244,8 +244,10 @@ public class ColAndCol extends VectorExpression {
              */
             boolean saveSelectedInUse = batch.selectedInUse;
             int[] saveSelected = sel;
+            int saveSize = batch.size;
             batch.selectedInUse = true;
             batch.selected = andSelected;
+            batch.size = andSel;
 
             VectorExpression ve = childExpressions[childExpressionIndex];
             Preconditions.checkState(ve.getOutputColumn() == colNums[colNum]);
@@ -253,6 +255,7 @@ public class ColAndCol extends VectorExpression {
 
             batch.selectedInUse = saveSelectedInUse;
             batch.selected = saveSelected;
+            batch.size = saveSize;
           }
         }
       }
