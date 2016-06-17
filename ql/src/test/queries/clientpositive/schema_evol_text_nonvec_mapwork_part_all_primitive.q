@@ -481,32 +481,46 @@ select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date order
 drop table part_change_various_various_date;
 
 
-
 --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for Various --> Various: (STRING, CHAR, VARCHAR) --> BINARY
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for Same Type (CHAR, VARCHAR, DECIMAL) --> Different maxLength or precision/scale
 --
-CREATE TABLE part_change_various_various_binary(insert_num int, c1 STRING, c2 CHAR(25), c3 VARCHAR(25), b STRING) PARTITIONED BY(part INT);
+CREATE TABLE part_change_same_type_different_params(insert_num int, c1 CHAR(12), c2 CHAR(25), c3 VARCHAR(25), c4 VARCHAR(10), c5 DECIMAL(12,4), c6 DECIMAL(20,10), b STRING) PARTITIONED BY(part INT);
 
-insert into table part_change_various_various_binary partition(part=1)
-    values(1, 'binary', 'binary',  'binary', 'original'),
-          (2, 'binary', 'binary',  'binary', 'original'),
-          (3, 'binary', 'binary',  'binary', 'original'),
-          (4, 'binary', 'binary',  'binary', 'original');
+CREATE TABLE same_type1_a_txt(insert_num int, c1 CHAR(12), c2 CHAR(25), c3 VARCHAR(25), c4 VARCHAR(10), c5 DECIMAL(12,4), c6 DECIMAL(20,10), b STRING)
+row format delimited fields terminated by '|'
+stored as textfile;
+load data local inpath '../../data/files/same_type1_a.txt' overwrite into table same_type1_a_txt;
 
-select insert_num,part,c1,c2,c3,b from part_change_various_various_binary order by insert_num;
+select * from same_type1_a_txt;
+
+insert into table part_change_same_type_different_params partition(part=1) select * from same_type1_a_txt;
+
+select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params order by insert_num;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_various_various_binary replace columns (insert_num int, c1 BINARY, c2 BINARY, c3 BINARY, b STRING);
+alter table part_change_same_type_different_params replace columns (insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING);
 
-insert into table part_change_various_various_binary partition(part=2)
-    values (5, 'binary', 'binary', 'binary', 'new');
+CREATE TABLE same_type1_b_txt(insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
+row format delimited fields terminated by '|'
+stored as textfile;
+load data local inpath '../../data/files/same_type1_b.txt' overwrite into table same_type1_b_txt;
 
-insert into table part_change_various_various_binary partition(part=1)
-    values (6,-'binary', 'binary', 'binary', 'new');
+select * from same_type1_b_txt;
+
+insert into table part_change_same_type_different_params partition(part=1) select * from same_type1_b_txt;
+
+CREATE TABLE same_type1_c_txt(insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
+row format delimited fields terminated by '|'
+stored as textfile;
+load data local inpath '../../data/files/same_type1_c.txt' overwrite into table same_type1_c_txt;
+
+select * from same_type1_c_txt;
+
+insert into table part_change_same_type_different_params partition(part=2) select * from same_type1_c_txt;
 
 explain
-select insert_num,part,c1,c2,c3,b from part_change_various_various_binary order by insert_num;
+select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params order by insert_num;
 
-select insert_num,part,c1,c2,c3,b from part_change_various_various_binary order by insert_num;
+select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params order by insert_num;
 
-drop table part_change_various_various_binary;
+drop table part_change_same_type_different_params;
