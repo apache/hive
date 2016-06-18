@@ -561,6 +561,13 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         // Ignore.
       }
     }
+    if (metadataReader != null) {
+      try {
+        metadataReader.close();
+      } catch (IOException ex) {
+        // Ignore.
+      }
+    }
   }
 
   /**
@@ -857,6 +864,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     @Override
     public void close() throws IOException {
       orcDataReader.close();
+      if (metadataReader != null) {
+        metadataReader.close();
+      }
     }
 
     @Override
