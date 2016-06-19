@@ -121,10 +121,12 @@ public class MapRecordProcessor extends RecordProcessor {
       Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
     super.init(mrReporter, inputs, outputs);
+    checkAbortCondition();
 
 
     String key = processorContext.getTaskVertexName() + MAP_PLAN_KEY;
     cacheKeys.add(key);
+
 
     // create map and fetch operators
     mapWork = (MapWork) cache.retrieve(key, new Callable<Object>() {
@@ -133,6 +135,7 @@ public class MapRecordProcessor extends RecordProcessor {
           return Utilities.getMapWork(jconf);
         }
       });
+    // TODO HIVE-14042. Cleanup may be required if exiting early.
     Utilities.setMapWork(jconf, mapWork);
 
     String prefixes = jconf.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
@@ -147,6 +150,7 @@ public class MapRecordProcessor extends RecordProcessor {
         key = processorContext.getTaskVertexName() + prefix;
         cacheKeys.add(key);
 
+        checkAbortCondition();
         mergeWorkList.add(
             (MapWork) cache.retrieve(key,
                 new Callable<Object>() {
@@ -163,6 +167,7 @@ public class MapRecordProcessor extends RecordProcessor {
     ((TezContext) MapredContext.get()).setTezProcessorContext(processorContext);
 
     // Update JobConf using MRInput, info like filename comes via this
+    checkAbortCondition();
     legacyMRInput = getMRInput(inputs);
     if (legacyMRInput != null) {
       Configuration updatedConf = legacyMRInput.getConfigUpdates();
@@ -172,6 +177,7 @@ public class MapRecordProcessor extends RecordProcessor {
         }
       }
     }
+    checkAbortCondition();
 
     createOutputMap();
     // Start all the Outputs.
@@ -180,6 +186,7 @@ public class MapRecordProcessor extends RecordProcessor {
       outputEntry.getValue().start();
       ((TezKVOutputCollector) outMap.get(outputEntry.getKey())).initialize();
     }
+    checkAbortCondition();
 
     try {
 
@@ -189,6 +196,13 @@ public class MapRecordProcessor extends RecordProcessor {
       } else {
         mapOp = new MapOperator(runtimeCtx);
       }
+      // Not synchronizing creation of mapOp with an invocation. Check immediately
+      // after creation in case abort has been set.
+      // Relying on the regular flow to clean up the actual operator. i.e. If an exception is
+      // thrown, an attempt will be made to cleanup the op.
+      // If we are here - exit out via an exception. If we're in the middle of the opeartor.initialize
+      // call further down, we rely upon op.abort().
+      checkAbortCondition();
 
       mapOp.clearConnectedOperators();
       mapOp.setExecContext(execContext);
@@ -197,6 +211,9 @@ public class MapRecordProcessor extends RecordProcessor {
       if (mergeWorkList != null) {
         AbstractMapOperator mergeMapOp = null;
         for (BaseWork mergeWork : mergeWorkList) {
+          // TODO HIVE-14042. What is mergeWork, and why is it not part of the regular operator chain.
+          // The mergeMapOp.initialize call further down can block, and will not receive information
+          // about an abort request.
           MapWork mergeMapWork = (MapWork) mergeWork;
           if (mergeMapWork.getVectorMode()) {
             mergeMapOp = new VectorMapOperator(runtimeCtx);
@@ -264,17 +281,20 @@ public class MapRecordProcessor extends RecordProcessor {
       l4j.info("Main input name is " + mapWork.getName());
       jconf.set(Utilities.INPUT_NAME, mapWork.getName());
       mapOp.initialize(jconf, null);
+      checkAbortCondition();
       mapOp.setChildren(jconf);
       mapOp.passExecContext(execContext);
       l4j.info(mapOp.dump(0));
 
       mapOp.initializeLocalWork(jconf);
 
+      checkAbortCondition();
       initializeMapRecordSources();
       mapOp.initializeMapOperator(jconf);
       if ((mergeMapOpList != null) && mergeMapOpList.isEmpty() == false) {
         for (AbstractMapOperator mergeMapOp : mergeMapOpList) {
           jconf.set(Utilities.INPUT_NAME, mergeMapOp.getConf().getName());
+          // TODO HIVE-14042. abort handling: Handling of mergeMapOp
           mergeMapOp.initializeMapOperator(jconf);
         }
       }
@@ -287,6 +307,7 @@ public class MapRecordProcessor extends RecordProcessor {
       if (dummyOps != null) {
         for (Operator<? extends OperatorDesc> dummyOp : dummyOps){
           dummyOp.setExecContext(execContext);
+          // TODO HIVE-14042. Handling of dummyOps, and propagating abort information to them
           dummyOp.initialize(jconf, null);
         }
       }
@@ -301,6 +322,10 @@ public class MapRecordProcessor extends RecordProcessor {
         // will this be true here?
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
+      } else if (e instanceof InterruptedException) {
+        l4j.info("Hit an interrupt while initializing MapRecordProcessor. Message={}",
+            e.getMessage());
+        throw (InterruptedException) e;
       } else {
         throw new RuntimeException("Map operator initialization failed", e);
       }
@@ -376,12 +401,16 @@ public class MapRecordProcessor extends RecordProcessor {
 
   @Override
   public void abort() {
-    // this will stop run() from pushing records
+    // this will stop run() from pushing records, along with potentially
+    // blocking initialization.
     super.abort();
 
     // this will abort initializeOp()
     if (mapOp != null) {
+      l4j.info("Forwarding abort to mapOp: {} " + mapOp.getName());
       mapOp.abort();
+    } else {
+      l4j.info("mapOp not setup yet. abort not being forwarded");
     }
   }
 
@@ -447,6 +476,8 @@ public class MapRecordProcessor extends RecordProcessor {
         li.add(inp);
       }
     }
+    // TODO: HIVE-14042. Potential blocking call. MRInput handles this correctly even if an interrupt is swallowed.
+    // MultiMRInput may not. Fix once TEZ-3302 is resolved.
     processorContext.waitForAllInputsReady(li);
 
     l4j.info("The input names are: " + Arrays.toString(inputs.keySet().toArray()));

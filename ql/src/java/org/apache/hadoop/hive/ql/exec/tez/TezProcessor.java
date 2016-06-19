@@ -149,6 +149,14 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     }
 
     synchronized (this) {
+      // This check isn't absolutely mandatory, given the aborted check outside of the
+      // Processor creation.
+      if (aborted.get()) {
+        return;
+      }
+      // There should be no blocking operation in RecordProcessor creation,
+      // otherwise the abort operation will not register since they are synchronized on the same
+      // lock.
       if (isMap) {
         rproc = new MapRecordProcessor(jobConf, getContext());
       } else {
@@ -159,6 +167,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     if (!aborted.get()) {
       initializeAndRunProcessor(inputs, outputs);
     }
+    // TODO HIVE-14042. In case of an abort request, throw an InterruptedException
   }
 
   protected void initializeAndRunProcessor(Map<String, LogicalInput> inputs,
@@ -168,6 +177,10 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     try {
 
       MRTaskReporter mrReporter = new MRTaskReporter(getContext());
+      // Init and run are both potentially long, and blocking operations. Synchronization
+      // with the 'abort' operation will not work since if they end up blocking on a monitor
+      // which does not belong to the lock, the abort will end up getting blocked.
+      // Both of these method invocations need to handle the abort call on their own.
       rproc.init(mrReporter, inputs, outputs);
       rproc.run();
 
@@ -203,13 +216,17 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
 
   @Override
   public void abort() {
-    aborted.set(true);
     RecordProcessor rProcLocal;
     synchronized (this) {
+      LOG.info("Received abort");
+      aborted.set(true);
       rProcLocal = rproc;
     }
     if (rProcLocal != null) {
+      LOG.info("Forwarding abort to RecordProcessor");
       rProcLocal.abort();
+    } else {
+      LOG.info("RecordProcessor not yet setup. Abort will be ignored");
     }
   }
 

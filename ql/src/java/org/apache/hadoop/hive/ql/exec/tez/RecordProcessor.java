@@ -89,6 +89,8 @@ public abstract class RecordProcessor  {
     isLogInfoEnabled = l4j.isInfoEnabled();
     isLogTraceEnabled = l4j.isTraceEnabled();
 
+    checkAbortCondition();
+
     //log classpaths
     try {
       if (l4j.isDebugEnabled()) {
