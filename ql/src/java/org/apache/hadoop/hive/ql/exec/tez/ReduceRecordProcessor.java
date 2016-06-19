@@ -120,6 +120,8 @@ public class ReduceRecordProcessor  extends RecordProcessor{
 
     MapredContext.init(false, new JobConf(jconf));
     List<LogicalInput> shuffleInputs = getShuffleInputs(inputs);
+    // TODO HIVE-14042. Move to using a loop and a timed wait once TEZ-3302 is fixed.
+    checkAbortCondition();
     if (shuffleInputs != null) {
       l4j.info("Waiting for ShuffleInputs to become ready");
       processorContext.waitForAllInputsReady(new ArrayList<Input>(shuffleInputs));
@@ -132,6 +134,8 @@ public class ReduceRecordProcessor  extends RecordProcessor{
       for (BaseWork mergeWork : mergeWorkList) {
         ReduceWork mergeReduceWork = (ReduceWork) mergeWork;
         reducer = mergeReduceWork.getReducer();
+        // Check immediately after reducer is assigned, in cae the abort came in during
+        checkAbortCondition();
         DummyStoreOperator dummyStoreOp = getJoinParentOp(reducer);
         connectOps.put(mergeReduceWork.getTag(), dummyStoreOp);
         tagToReducerMap.put(mergeReduceWork.getTag(), mergeReduceWork);
@@ -139,6 +143,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
 
       ((TezContext) MapredContext.get()).setDummyOpsMap(connectOps);
     }
+    checkAbortCondition();
 
     bigTablePosition = (byte) reduceWork.getTag();
 
@@ -147,6 +152,8 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     ((TezContext) MapredContext.get()).setTezProcessorContext(processorContext);
     int numTags = reduceWork.getTagToValueDesc().size();
     reducer = reduceWork.getReducer();
+    // Check immediately after reducer is assigned, in cae the abort came in during
+    checkAbortCondition();
     if (numTags > 1) {
       sources = new ReduceRecordSource[numTags];
       mainWorkOIs = new ObjectInspector[numTags];
@@ -160,11 +167,15 @@ public class ReduceRecordProcessor  extends RecordProcessor{
       for (int i : tagToReducerMap.keySet()) {
         redWork = tagToReducerMap.get(i);
         reducer = redWork.getReducer();
+        // Check immediately after reducer is assigned, in cae the abort came in during
+        checkAbortCondition();
         initializeSourceForTag(redWork, i, mainWorkOIs, sources,
             redWork.getTagToValueDesc().get(0), redWork.getTagToInput().get(0));
         reducer.initializeLocalWork(jconf);
       }
       reducer = reduceWork.getReducer();
+      // Check immediately after reducer is assigned, in cae the abort came in during
+      checkAbortCondition();
       ((TezContext) MapredContext.get()).setRecordSources(sources);
       reducer.initialize(jconf, new ObjectInspector[] { mainWorkOIs[bigTablePosition] });
       for (int i : tagToReducerMap.keySet()) {
@@ -173,9 +184,12 @@ public class ReduceRecordProcessor  extends RecordProcessor{
         }
         redWork = tagToReducerMap.get(i);
         reducer = redWork.getReducer();
+        // Check immediately after reducer is assigned, in cae the abort came in during
+        checkAbortCondition();
         reducer.initialize(jconf, new ObjectInspector[] { mainWorkOIs[i] });
       }
     }
+    checkAbortCondition();
 
     reducer = reduceWork.getReducer();
     // initialize reduce operator tree
@@ -188,7 +202,9 @@ public class ReduceRecordProcessor  extends RecordProcessor{
       List<HashTableDummyOperator> dummyOps = redWork.getDummyOps();
       if (dummyOps != null) {
         for (HashTableDummyOperator dummyOp : dummyOps) {
+          // TODO HIVE-14042. Propagating abort to dummyOps.
           dummyOp.initialize(jconf, null);
+          checkAbortCondition();
         }
       }
 
@@ -201,6 +217,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
       createOutputMap();
       OperatorUtils.setChildrenCollector(children, outMap);
 
+      checkAbortCondition();
       reducer.setReporter(reporter);
       MapredContext.get().setReporter(reporter);
 
@@ -209,6 +226,10 @@ public class ReduceRecordProcessor  extends RecordProcessor{
       if (e instanceof OutOfMemoryError) {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
+      } else if (e instanceof InterruptedException) {
+        l4j.info("Hit an interrupt while initializing ReduceRecordProcessor. Message={}",
+            e.getMessage());
+        throw (InterruptedException) e;
       } else {
         throw new RuntimeException("Reduce operator initialization failed", e);
       }
@@ -223,6 +244,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
       if (redWork.getTagToValueDesc().get(tag) == null) {
         continue;
       }
+      checkAbortCondition();
       initializeSourceForTag(redWork, tag, ois, sources, redWork.getTagToValueDesc().get(tag),
           redWork.getTagToInput().get(tag));
     }
@@ -270,12 +292,15 @@ public class ReduceRecordProcessor  extends RecordProcessor{
 
   @Override
   public void abort() {
-    // this will stop run() from pushing records
+    // this will stop run() from pushing records, along with potentially
+    // blocking initialization.
     super.abort();
 
-    // this will abort initializeOp()
     if (reducer != null) {
+      l4j.info("Forwarding abort to reducer: {} " + reducer.getName());
       reducer.abort();
+    } else {
+      l4j.info("reducer not setup yet. abort not being forwarded");
     }
   }
 

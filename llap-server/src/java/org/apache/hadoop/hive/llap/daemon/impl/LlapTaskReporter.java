@@ -300,8 +300,8 @@ public class LlapTaskReporter implements TaskReporterInterface {
         task.setNextFromEventId(response.getNextFromEventId());
         task.setNextPreRoutedEventId(response.getNextPreRoutedEventId());
         if (response.getEvents() != null && !response.getEvents().isEmpty()) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Routing events from heartbeat response to task" + ", currentTaskAttemptId="
+          if (LOG.isInfoEnabled()) {
+            LOG.info("Routing events from heartbeat response to task" + ", currentTaskAttemptId="
                 + task.getTaskAttemptID() + ", eventCount=" + response.getEvents().size()
                 + " fromEventId=" + fromEventId
                 + " nextFromEventId=" + response.getNextFromEventId());
