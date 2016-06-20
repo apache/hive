@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -228,12 +229,14 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
             // then skip the rename.  If it does try it.  We could just blindly try the rename
             // and avoid the extra stat, but that would mask other errors.
             try {
-              FileStatus stat = fs.getFileStatus(outPaths[idx]);
+              if (outPaths[idx] != null) {
+                FileStatus stat = fs.getFileStatus(outPaths[idx]);
+              }
             } catch (FileNotFoundException fnfe) {
               needToRename = false;
             }
           }
-          if (needToRename && !fs.rename(outPaths[idx], finalPaths[idx])) {
+          if (needToRename && outPaths[idx] != null && !fs.rename(outPaths[idx], finalPaths[idx])) {
             throw new HiveException("Unable to rename output from: " +
                 outPaths[idx] + " to: " + finalPaths[idx]);
           }
@@ -1009,7 +1012,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     row_count.set(numRows);
     LOG.info(toString() + ": records written - " + numRows);
 
-    if (!bDynParts && !filesCreated) {
+    if (!bDynParts && !filesCreated && !"tez".equalsIgnoreCase(hconf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname))) {
       createBucketFiles(fsp);
     }
 

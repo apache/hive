@@ -104,7 +104,7 @@ analyze table orc_merge5b compute statistics noscan
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5b
 POSTHOOK: Output: default@orc_merge5b
-Found 3 items
+Found 2 items
 #### A masked pattern was here ####
 PREHOOK: query: select * from orc_merge5b
 PREHOOK: type: QUERY
@@ -271,7 +271,7 @@ POSTHOOK: query: analyze table orc_merge5b compute statistics noscan
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5b
 POSTHOOK: Output: default@orc_merge5b
-Found 3 items
+Found 2 items
 #### A masked pattern was here ####
 PREHOOK: query: select * from orc_merge5b
 PREHOOK: type: QUERY
