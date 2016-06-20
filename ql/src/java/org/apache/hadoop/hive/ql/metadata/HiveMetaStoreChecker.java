@@ -406,9 +406,7 @@ public class HiveMetaStoreChecker {
   private void checkPartitionDirs(Path basePath, Set<Path> allDirs, int maxDepth) throws IOException, HiveException {
     ConcurrentLinkedQueue<Path> basePaths = new ConcurrentLinkedQueue<>();
     basePaths.add(basePath);
-    // we only use the keySet of ConcurrentHashMap
-    // Neither the key nor the value can be null.
-    Map<Path, Object> dirSet = new ConcurrentHashMap<>();
+    Set<Path> dirSet = Collections.newSetFromMap(new ConcurrentHashMap<Path, Boolean>());    
     // Here we just reuse the THREAD_COUNT configuration for
     // HIVE_MOVE_FILES_THREAD_COUNT
     final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ? Executors
@@ -423,12 +421,12 @@ public class HiveMetaStoreChecker {
     }
     checkPartitionDirs(pool, basePaths, dirSet, basePath.getFileSystem(conf), maxDepth, maxDepth);
     pool.shutdown();
-    allDirs.addAll(dirSet.keySet());
+    allDirs.addAll(dirSet);
   }
 
   // process the basePaths in parallel and then the next level of basePaths
   private void checkPartitionDirs(final ExecutorService pool,
-      final ConcurrentLinkedQueue<Path> basePaths, final Map<Path, Object> allDirs,
+      final ConcurrentLinkedQueue<Path> basePaths, final Set<Path> allDirs,
       final FileSystem fs, final int depth, final int maxDepth) throws IOException, HiveException {
     final ConcurrentLinkedQueue<Path> nextLevel = new ConcurrentLinkedQueue<>();
     if (null == pool) {
@@ -464,9 +462,7 @@ public class HiveMetaStoreChecker {
             }
           }
         } else {
-          // true is just a boolean object place holder because neither the
-          // key nor the value can be null.
-          allDirs.put(path, true);
+          allDirs.add(path);
         }
       }
     } else {
@@ -510,9 +506,7 @@ public class HiveMetaStoreChecker {
                 }
               }
             } else {
-              // true is just a boolean object place holder because neither the
-              // key nor the value can be null.
-              allDirs.put(path, true);
+              allDirs.add(path);
             }
             return null;
           }
