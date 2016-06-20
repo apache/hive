@@ -70,7 +70,7 @@ public class TestBeelineArgParsing {
     @Override
     boolean dispatch(String command) {
       String connectCommand = "!connect";
-      String propertyCommand = "!property";
+      String propertyCommand = "!properties";
       if (command.startsWith(connectCommand)) {
         this.connectArgs = command.substring(connectCommand.length() + 1, command.length());
       } else if (command.startsWith(propertyCommand)) {
@@ -259,5 +259,17 @@ public class TestBeelineArgParsing {
     bl.close();
     String errContents = new String(Files.readAllBytes(Paths.get(errFile.toString())));
     Assert.assertTrue(errContents.contains(BeeLine.PASSWD_MASK));
+  }
+
+  /**
+   * Test property file parameter option.
+   */
+  @Test
+  public void testPropertyFile() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String args[] = new String[] {"--property-file", "props"};
+    Assert.assertEquals(0, bl.initArgs(args));
+    Assert.assertTrue(bl.properties.get(0).equals("props"));
+    bl.close();
   }
 }

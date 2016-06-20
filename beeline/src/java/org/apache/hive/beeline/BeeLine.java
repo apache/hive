@@ -152,6 +152,7 @@ public class BeeLine implements Closeable {
 
   private static final String HIVE_VAR_PREFIX = "--hivevar";
   private static final String HIVE_CONF_PREFIX = "--hiveconf";
+  private static final String PROP_FILE_PREFIX = "--property-file";
   static final String PASSWD_MASK = "[passwd stripped]";
 
   private final Map<Object, Object> formats = map(new Object[] {
@@ -376,6 +377,13 @@ public class BeeLine implements Closeable {
         .withArgName("property=value")
         .withLongOpt("hiveconf")
         .withDescription("Use value for given property")
+        .create());
+
+    // --property-file <file>
+    options.addOption(OptionBuilder
+        .hasArg()
+        .withLongOpt("property-file")
+        .withDescription("the file to read configuration properties from")
         .create());
   }
 
@@ -624,7 +632,8 @@ public class BeeLine implements Closeable {
 
     @Override
     protected void processOption(final String arg, final ListIterator iter) throws  ParseException {
-      if ((arg.startsWith("--")) && !(arg.equals(HIVE_VAR_PREFIX) || (arg.equals(HIVE_CONF_PREFIX)) || (arg.equals("--help")))) {
+      if ((arg.startsWith("--")) && !(arg.equals(HIVE_VAR_PREFIX) || (arg.equals(HIVE_CONF_PREFIX))
+          || (arg.equals("--help") || (arg.equals(PROP_FILE_PREFIX))))) {
         String stripped = arg.substring(2, arg.length());
         String[] parts = split(stripped, "=");
         debug(loc("setting-prop", Arrays.asList(parts)));
@@ -702,7 +711,6 @@ public class BeeLine implements Closeable {
 
   int initArgs(String[] args) {
     List<String> commands = Collections.emptyList();
-    List<String> files = Collections.emptyList();
 
     CommandLine cl;
     BeelineParser beelineParser;
@@ -773,9 +781,18 @@ public class BeeLine implements Closeable {
       dispatch(com);
     }
 
-    // now load properties files
-    for (Iterator<String> i = files.iterator(); i.hasNext();) {
-      dispatch("!properties " + i.next());
+    // load property file
+    String propertyFile = cl.getOptionValue("property-file");
+    if (propertyFile != null) {
+      try {
+        this.consoleReader = new ConsoleReader();
+      } catch (IOException e) {
+        handleException(e);
+      }
+      if (!dispatch("!properties " + propertyFile)) {
+        exit = true;
+        return 1;
+      }
     }
 
     int code = 0;
