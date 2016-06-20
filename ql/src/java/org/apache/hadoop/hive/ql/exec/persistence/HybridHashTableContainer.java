@@ -315,12 +315,12 @@ public class HybridHashTableContainer
           } else {
             LOG.info("Total available memory was: " + memoryThreshold);
             memoryThreshold += memFreed;
-            LOG.info("Total available memory is: " + memoryThreshold);
           }
         }
         writeBufferSize = (int)(memoryThreshold / numPartitions);
       }
     }
+    LOG.info("Total available memory is: " + memoryThreshold);
 
     // Round to power of 2 here, as is required by WriteBuffers
     writeBufferSize = Integer.bitCount(writeBufferSize) == 1 ?
@@ -341,7 +341,7 @@ public class HybridHashTableContainer
 
     hashPartitions = new HashPartition[numPartitions];
     int numPartitionsSpilledOnCreation = 0;
-    memoryUsed = 0;
+    memoryUsed = bloom1.sizeInBytes();
     int initialCapacity = Math.max(newKeyCount / numPartitions, threshold / numPartitions);
     // maxCapacity should be calculated based on a percentage of memoryThreshold, which is to divide
     // row size using long size
@@ -356,6 +356,7 @@ public class HybridHashTableContainer
         if (i == 0) { // We unconditionally create a hashmap for the first hash partition
           hashPartitions[i] = new HashPartition(initialCapacity, loadFactor, writeBufferSize,
               maxCapacity, true, spillLocalDirs);
+          LOG.info("Each new partition will require memory: " + hashPartitions[0].hashMap.memorySize());
         } else {
           // To check whether we have enough memory to allocate for another hash partition,
           // we need to get the size of the first hash partition to get an idea.
@@ -381,8 +382,10 @@ public class HybridHashTableContainer
         if (this.nwayConf != null && this.nwayConf.getNextSpillPartition() == numPartitions - 1) {
           this.nwayConf.setNextSpillPartition(i - 1);
         }
+        LOG.info("Hash partition " + i + " is spilled on creation.");
       } else {
         memoryUsed += hashPartitions[i].hashMap.memorySize();
+        LOG.info("Hash partition " + i + " is created in memory. Total memory usage so far: " + memoryUsed);
       }
     }
 
@@ -419,8 +422,8 @@ public class HybridHashTableContainer
    * Get the current memory usage by recalculating it.
    * @return current memory usage
    */
-  public long refreshMemoryUsed() {
-    long memUsed = 0;
+  private long refreshMemoryUsed() {
+    long memUsed = bloom1.sizeInBytes();
     for (HashPartition hp : hashPartitions) {
       if (hp.hashMap != null) {
         memUsed += hp.hashMap.memorySize();
@@ -544,6 +547,7 @@ public class HybridHashTableContainer
    * Check if the memory threshold is about to be reached.
    * Since all the write buffer will be lazily allocated in BytesBytesMultiHashMap, we need to
    * consider those as well.
+   * We also need to count in the next 1024 rows to be loaded.
    * @return true if memory is full, false if not
    */
   private boolean isMemoryFull() {
@@ -555,7 +559,8 @@ public class HybridHashTableContainer
       }
     }
 
-    return refreshMemoryUsed() + writeBufferSize * numPartitionsInMem >= memoryThreshold;
+    return refreshMemoryUsed() + this.memoryCheckFrequency * getTableRowSize() +
+        writeBufferSize * numPartitionsInMem >= memoryThreshold;
   }
 
   /**
@@ -636,6 +641,7 @@ public class HybridHashTableContainer
     partition.rowsOnDisk = inMemRowCount;
     totalInMemRowCount -= inMemRowCount;
     partition.hashMap.clear();
+    partition.hashMap = null;
     return memFreed;
   }
 
@@ -657,8 +663,9 @@ public class HybridHashTableContainer
     if (memoryThreshold < minNumParts * minWbSize) {
       LOG.warn("Available memory is not enough to create a HybridHashTableContainer!");
     }
-    if (memoryThreshold < dataSize) {
-      while (dataSize / numPartitions > memoryThreshold) {
+
+    if (memoryThreshold / 2 < dataSize) { // The divided-by-2 logic is consistent to MapJoinOperator.reloadHashTable
+      while (dataSize / numPartitions > memoryThreshold / 2) {
         numPartitions *= 2;
       }
     }
@@ -708,8 +715,10 @@ public class HybridHashTableContainer
 
   @Override
   public void clear() {
-    for (HashPartition hp : hashPartitions) {
+    for (int i = 0; i < hashPartitions.length; i++) {
+      HashPartition hp = hashPartitions[i];
       if (hp != null) {
+        LOG.info("Going to clear hash partition " + i);
         hp.clear();
       }
     }
