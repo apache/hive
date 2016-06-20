@@ -345,4 +345,23 @@ public class IntervalDayTimeColumnVector extends ColumnVector {
       buffer.append("null");
     }
   }
+
+  @Override
+  public void ensureSize(int size, boolean preserveData) {
+    super.ensureSize(size, preserveData);
+    if (size <= totalSeconds.length) return;
+    long[] oldTime = totalSeconds;
+    int[] oldNanos = nanos;
+    totalSeconds = new long[size];
+    nanos = new int[size];
+    if (preserveData) {
+      if (isRepeating) {
+        totalSeconds[0] = oldTime[0];
+        nanos[0] = oldNanos[0];
+      } else {
+        System.arraycopy(oldTime, 0, totalSeconds, 0, oldTime.length);
+        System.arraycopy(oldNanos, 0, nanos, 0, oldNanos.length);
+      }
+    }
+  }
 }
