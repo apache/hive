@@ -501,13 +501,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       final StringBuilder readColumnNamesBuffer) {
     String readColIds = readColumnsBuffer.toString();
     String readColNames = readColumnNamesBuffer.toString();
-    boolean readAllColumns = readColIds.isEmpty() ? true : false;
-    newjob.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, readAllColumns);
+    newjob.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
     newjob.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, readColIds);
     newjob.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, readColNames);
 
     if (LOG.isInfoEnabled()) {
-      LOG.info("{} = {}", ColumnProjectionUtils.READ_ALL_COLUMNS, readAllColumns);
       LOG.info("{} = {}", ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, readColIds);
       LOG.info("{} = {}", ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, readColNames);
     }
