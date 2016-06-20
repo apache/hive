@@ -376,6 +376,7 @@ public class HiveMetaStoreChecker {
     ConcurrentLinkedQueue<Path> basePaths = new ConcurrentLinkedQueue<>();
     basePaths.add(basePath);
     // we only use the keySet of ConcurrentHashMap
+    // Neither the key nor the value can be null.
     Map<Path, Object> dirSet = new ConcurrentHashMap<>();
     // Here we just reuse the THREAD_COUNT configuration for
     // HIVE_MOVE_FILES_THREAD_COUNT
@@ -410,7 +411,8 @@ public class HiveMetaStoreChecker {
         }
 
         if (!directoryFound) {
-          allDirs.put(path, null);
+          // true is just a boolean object place holder because neither the key nor the value can be null.
+          allDirs.put(path, true);
         }
         if (!nextLevel.isEmpty()) {
           getAllLeafDirs(pool, nextLevel, allDirs, fs);
@@ -433,7 +435,7 @@ public class HiveMetaStoreChecker {
             }
 
             if (!directoryFound) {
-              allDirs.put(path, null);
+              allDirs.put(path, true);
             }
             return null;
           }
