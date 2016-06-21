@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
+import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.split.SplitLocationProvider;
 import org.slf4j.Logger;
 
@@ -51,7 +53,21 @@ public class Utils {
       }
       splitLocationProvider = new HostAffinitySplitLocationProvider(locations);
     } else {
-      splitLocationProvider = null;
+      splitLocationProvider = new SplitLocationProvider() {
+        @Override
+        public String[] getLocations(InputSplit split) throws IOException {
+          if (split == null) {
+            return null;
+          }
+          String[] locations = split.getLocations();
+          if (locations != null && locations.length == 1) {
+            if ("localhost".equals(locations[0])) {
+              return ArrayUtils.EMPTY_STRING_ARRAY;
+            }
+          }
+          return locations;
+        }
+      };
     }
     return splitLocationProvider;
   }
