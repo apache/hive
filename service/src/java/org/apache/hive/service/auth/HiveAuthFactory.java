@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.DBTokenStore;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
+import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.ProxyUsers;
@@ -216,9 +217,18 @@ public class HiveAuthFactory {
     }
   }
 
+  public String getUserAuthMechanism() {
+	return saslServer == null ? null : saslServer.getUserAuthMechanism();
+  }
+
   public boolean isSASLWithKerberizedHadoop() {
     return "kerberos".equalsIgnoreCase(hadoopAuth)
         && !authTypeStr.equalsIgnoreCase(AuthTypes.NOSASL.getAuthName());
+  }
+
+  public boolean isSASLKerberosUser() {
+	return AuthMethod.KERBEROS.getMechanismName().equals(getUserAuthMechanism())
+	  || AuthMethod.TOKEN.getMechanismName().equals(getUserAuthMechanism());
   }
 
   // Perform kerberos login using the hadoop shim API if the configuration is available
