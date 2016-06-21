@@ -19,6 +19,7 @@
 package org.apache.hive.minikdc;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.sql.DriverManager;
@@ -28,17 +29,22 @@ import javax.security.sasl.AuthenticationException;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hive.jdbc.HiveConnection;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestJdbcNonKrbSASLWithMiniKdc extends TestJdbcWithMiniKdc{
+  public static final String SASL_NONKRB_USER1 = "nonkrbuser";
+  public static final String SASL_NONKRB_USER2 = "nonkrbuser@realm.com";
+  public static final String SASL_NONKRB_PWD = "mypwd";
 
   public static class CustomAuthenticator implements PasswdAuthenticationProvider {
     @Override
     public void Authenticate(String user, String password) throws AuthenticationException {
-      if (!("nonkrbuser".equals(user) && "mypwd".equals(password))) {
+      if (!(SASL_NONKRB_USER1.equals(user) && SASL_NONKRB_PWD.equals(password)) &&
+          !(SASL_NONKRB_USER2.equals(user) && SASL_NONKRB_PWD.equals(password))) {
         throw new AuthenticationException("Authentication failed");
       }
     }
@@ -63,8 +69,21 @@ public class TestJdbcNonKrbSASLWithMiniKdc extends TestJdbcWithMiniKdc{
    */
   @Test
   public void testNonKrbSASLAuth() throws Exception {
-    hs2Conn = DriverManager.getConnection(miniHS2.getBaseJdbcURL() + "default;user=nonkrbuser;password=mypwd");
-    verifyProperty(SESSION_USER_NAME, "nonkrbuser");
+    hs2Conn = DriverManager.getConnection(miniHS2.getBaseJdbcURL()
+        + "default;user=" + SASL_NONKRB_USER1 + ";password=" + SASL_NONKRB_PWD);
+    verifyProperty(SESSION_USER_NAME, SASL_NONKRB_USER1);
+    hs2Conn.close();
+  }
+
+  /***
+   * Test a nonkrb user could login the kerberized HS2 with authentication type SASL NONE
+   * @throws Exception
+   */
+  @Test
+  public void testNonKrbSASLFullNameAuth() throws Exception {
+    hs2Conn = DriverManager.getConnection(miniHS2.getBaseJdbcURL()
+        + "default;user=" + SASL_NONKRB_USER2 + ";password=" + SASL_NONKRB_PWD);
+    verifyProperty(SESSION_USER_NAME, SASL_NONKRB_USER1);
     hs2Conn.close();
   }
 
@@ -98,6 +117,32 @@ public class TestJdbcNonKrbSASLWithMiniKdc extends TestJdbcWithMiniKdc{
     } catch (SQLException e) {
       // expected error
       assertEquals("08S01", e.getSQLState().trim());
+    }
+  }
+
+  /***
+   * Negative test for token based authentication
+   * Verify that token is not applicable to non-Kerberos SASL user
+   * @throws Exception
+   */
+  @Test
+  public void testNoKrbSASLTokenAuthNeg() throws Exception {
+    hs2Conn = DriverManager.getConnection(miniHS2.getBaseJdbcURL()
+        + "default;user=" + SASL_NONKRB_USER1 + ";password=" + SASL_NONKRB_PWD);
+    verifyProperty(SESSION_USER_NAME, SASL_NONKRB_USER1);
+
+    try {
+      // retrieve token and store in the cache
+      String token = ((HiveConnection)hs2Conn).getDelegationToken(
+          MiniHiveKdc.HIVE_TEST_USER_1, MiniHiveKdc.HIVE_SERVICE_PRINCIPAL);
+
+      fail(SASL_NONKRB_USER1 + " shouldn't be allowed to retrieve token for " +
+          MiniHiveKdc.HIVE_TEST_USER_2);
+    } catch (SQLException e) {
+      // Expected error
+      assertTrue(e.getMessage().contains("Delegation token only supported over remote client with kerberos authentication"));
+    } finally {
+      hs2Conn.close();
     }
   }
 }

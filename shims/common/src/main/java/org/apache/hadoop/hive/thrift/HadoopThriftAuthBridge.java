@@ -433,6 +433,18 @@ public abstract class HadoopThriftAuthBridge {
       return remoteUser.get();
     }
 
+    private final static ThreadLocal<String> userAuthMechanism =
+        new ThreadLocal<String>() {
+
+      @Override
+      protected String initialValue() {
+        return AuthMethod.KERBEROS.getMechanismName();
+      }
+    };
+
+    public String getUserAuthMechanism() {
+      return userAuthMechanism.get();
+    }
     /** CallbackHandler for SASL DIGEST-MD5 mechanism */
     // This code is pretty much completely based on Hadoop's
     // SaslRpcServer.SaslDigestCallbackHandler - the only reason we could not
@@ -536,11 +548,21 @@ public abstract class HadoopThriftAuthBridge {
         TSaslServerTransport saslTrans = (TSaslServerTransport)trans;
         SaslServer saslServer = saslTrans.getSaslServer();
         String authId = saslServer.getAuthorizationID();
-        authenticationMethod.set(AuthenticationMethod.KERBEROS);
         LOG.debug("AUTH ID ======>" + authId);
         String endUser = authId;
 
-        if(saslServer.getMechanismName().equals("DIGEST-MD5")) {
+        Socket socket = ((TSocket)(saslTrans.getUnderlyingTransport())).getSocket();
+        remoteAddress.set(socket.getInetAddress());
+
+        String mechanismName = saslServer.getMechanismName();
+        userAuthMechanism.set(mechanismName);
+        if (AuthMethod.PLAIN.getMechanismName().equalsIgnoreCase(mechanismName)) {
+          remoteUser.set(endUser);
+          return wrapped.process(inProt, outProt);
+        }
+
+        authenticationMethod.set(AuthenticationMethod.KERBEROS);
+        if(AuthMethod.TOKEN.getMechanismName().equalsIgnoreCase(mechanismName)) {
           try {
             TokenIdentifier tokenId = SaslRpcServer.getIdentifier(authId,
                 secretManager);
@@ -550,8 +572,7 @@ public abstract class HadoopThriftAuthBridge {
             throw new TException(e.getMessage());
           }
         }
-        Socket socket = ((TSocket)(saslTrans.getUnderlyingTransport())).getSocket();
-        remoteAddress.set(socket.getInetAddress());
+
         UserGroupInformation clientUgi = null;
         try {
           if (useProxy) {
