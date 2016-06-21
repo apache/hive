@@ -34,10 +34,11 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmissionStateProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexIdentifier;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
@@ -155,9 +156,9 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
     } catch (InvalidProtocolBufferException e) {
       throw new RuntimeException(e);
     }
-    VertexIdentifier vId = vertex.getVertexIdentifier();
-    TezTaskAttemptID attemptId = Converters.createTaskAttemptId(
-        vId, request.getFragmentNumber(), request.getAttemptNumber());
+    QueryIdentifierProto queryIdentifierProto = vertex.getQueryIdentifier();
+    TezTaskAttemptID attemptId = Converters.createTaskAttemptId(queryIdentifierProto,
+        vertex.getVertexIndex(), request.getFragmentNumber(), request.getAttemptNumber());
     final String fragmentId = attemptId.toString();
 
     pendingEvents.putIfAbsent(fragmentId, new PendingEventData(
@@ -169,12 +170,12 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
 
     // Send out the actual SubmitWorkRequest
     communicator.sendSubmitWork(request, llapHost, llapPort,
-        new LlapProtocolClientProxy.ExecuteRequestCallback<LlapDaemonProtocolProtos.SubmitWorkResponseProto>() {
+        new LlapProtocolClientProxy.ExecuteRequestCallback<SubmitWorkResponseProto>() {
 
           @Override
-          public void setResponse(LlapDaemonProtocolProtos.SubmitWorkResponseProto response) {
+          public void setResponse(SubmitWorkResponseProto response) {
             if (response.hasSubmissionState()) {
-              if (response.getSubmissionState().equals(LlapDaemonProtocolProtos.SubmissionStateProto.REJECTED)) {
+              if (response.getSubmissionState().equals(SubmissionStateProto.REJECTED)) {
                 String msg = "Fragment: " + fragmentId + " rejected. Server Busy.";
                 LOG.info(msg);
                 if (responder != null) {

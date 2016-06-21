@@ -20,43 +20,23 @@ package org.apache.hadoop.hive.llap.daemon.impl.comparator;
 import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.createTaskWrapper;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.mock;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
-import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
 import org.apache.hadoop.hive.llap.daemon.impl.EvictingPriorityBlockingQueue;
-import org.apache.hadoop.hive.llap.daemon.impl.QueryFragmentInfo;
 import org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorService.TaskWrapper;
-import org.apache.hadoop.hive.llap.daemon.impl.TaskRunnerCallable;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EntityDescriptorProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexIdentifier;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
-import org.apache.hadoop.hive.llap.tez.Converters;
-import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.tez.dag.records.TezDAGID;
 import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.dag.records.TezTaskID;
 import org.apache.tez.dag.records.TezVertexID;
-import org.apache.tez.hadoop.shim.DefaultHadoopShim;
-import org.apache.tez.runtime.api.impl.ExecutionContextImpl;
-import org.apache.tez.runtime.task.EndReason;
-import org.apache.tez.runtime.task.TaskRunner2Result;
-import org.junit.Before;
 import org.junit.Test;
 
 public class TestFirstInFirstOutComparator {
-  private static Configuration conf;
-  private static Credentials cred = new Credentials();
-
-  @Before
-  public void setup() {
-    conf = new Configuration();
-  }
 
   private SubmitWorkRequestProto createRequest(int fragmentNumber, int numSelfAndUpstreamTasks, int dagStartTime,
                                                int attemptStartTime) {
@@ -80,7 +60,13 @@ public class TestFirstInFirstOutComparator {
             VertexOrBinary.newBuilder().setVertex(
             SignableVertexSpec
                 .newBuilder()
-                .setVertexIdentifier(Converters.createVertexIdentifier(taId, 0))
+                .setQueryIdentifier(
+                    QueryIdentifierProto.newBuilder()
+                        .setApplicationIdString(appId.toString())
+                        .setAppAttemptNumber(0)
+                        .setDagIndex(dagId.getId())
+                        .build())
+                .setVertexIndex(vId.getId())
                 .setDagName("MockDag")
                 .setVertexName("MockVertex")
                 .setUser("MockUser")

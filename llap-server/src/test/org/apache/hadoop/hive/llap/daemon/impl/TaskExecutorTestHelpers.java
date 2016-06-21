@@ -26,16 +26,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
-import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.tez.dag.records.TezDAGID;
-import org.apache.tez.dag.records.TezTaskAttemptID;
-import org.apache.tez.dag.records.TezTaskID;
 import org.apache.tez.dag.records.TezVertexID;
 import org.apache.tez.hadoop.shim.DefaultHadoopShim;
 import org.apache.tez.runtime.api.impl.ExecutionContextImpl;
@@ -97,8 +95,6 @@ public class TaskExecutorTestHelpers {
     ApplicationId appId = ApplicationId.newInstance(9999, 72);
     TezDAGID dagId = TezDAGID.getInstance(appId, 1);
     TezVertexID vId = TezVertexID.getInstance(dagId, 35);
-    TezTaskID tId = TezTaskID.getInstance(vId, 389);
-    TezTaskAttemptID taId = TezTaskAttemptID.getInstance(tId, fragmentNumber);
     return SubmitWorkRequestProto
         .newBuilder()
         .setAttemptNumber(0)
@@ -109,7 +105,13 @@ public class TaskExecutorTestHelpers {
                 .setDagName("MockDag")
                 .setUser("MockUser")
                 .setTokenIdentifier("MockToken_1")
-                .setVertexIdentifier(Converters.createVertexIdentifier(taId, 0))
+                .setQueryIdentifier(
+                    QueryIdentifierProto.newBuilder()
+                        .setApplicationIdString(appId.toString())
+                        .setAppAttemptNumber(0)
+                        .setDagIndex(dagId.getId())
+                        .build())
+                .setVertexIndex(vId.getId())
                 .setVertexName("MockVertex")
                 .setProcessorDescriptor(
                     LlapDaemonProtocolProtos.EntityDescriptorProto.newBuilder()

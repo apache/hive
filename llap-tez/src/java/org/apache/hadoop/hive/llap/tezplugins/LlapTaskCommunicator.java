@@ -70,10 +70,12 @@ import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.NodeId;
 import org.apache.tez.common.TezTaskUmbilicalProtocol;
+import org.apache.tez.common.TezUtils;
 import org.apache.tez.common.security.JobTokenSecretManager;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.TezUncheckedException;
+import org.apache.tez.dag.api.UserPayload;
 import org.apache.tez.dag.api.event.VertexStateUpdate;
 import org.apache.tez.dag.app.TezTaskCommunicatorImpl;
 import org.apache.tez.dag.records.TezTaskAttemptID;
@@ -82,7 +84,6 @@ import org.apache.tez.runtime.api.impl.TaskSpec;
 import org.apache.tez.runtime.api.impl.TezHeartbeatRequest;
 import org.apache.tez.runtime.api.impl.TezHeartbeatResponse;
 import org.apache.tez.serviceplugins.api.ContainerEndReason;
-import org.apache.tez.serviceplugins.api.ServicePluginError;
 import org.apache.tez.serviceplugins.api.ServicePluginErrorDefaults;
 import org.apache.tez.serviceplugins.api.TaskAttemptEndReason;
 import org.apache.tez.serviceplugins.api.TaskCommunicatorContext;
@@ -107,7 +108,6 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private long deleteDelayOnDagComplete;
   private final LlapTaskUmbilicalProtocol umbilical;
   private final Token<LlapTokenIdentifier> token;
-  private final int appAttemptId;
   private final String user;
 
   // These two structures track the list of known nodes, and the list of nodes which are sending in keep-alive heartbeats.
@@ -118,6 +118,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private final LlapRegistryService serviceRegistry;
 
   private volatile QueryIdentifierProto currentQueryIdentifierProto;
+  private volatile String currentHiveQueryId;
 
   public LlapTaskCommunicator(
       TaskCommunicatorContext taskCommunicatorContext) {
@@ -143,7 +144,6 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     // TODO Avoid reading this from the environment
     user = System.getenv(ApplicationConstants.Environment.USER.name());
-    appAttemptId = taskCommunicatorContext.getApplicationAttemptId().getAttemptId();
 
     credentialMap = new ConcurrentHashMap<>();
     sourceStateTracker = new SourceStateTracker(getContext(), this);
@@ -262,8 +262,18 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     super.registerRunningTaskAttempt(containerId, taskSpec, additionalResources, credentials,
         credentialsChanged, priority);
     int dagId = taskSpec.getTaskAttemptID().getTaskID().getVertexID().getDAGId().getId();
-    if (currentQueryIdentifierProto == null || (dagId != currentQueryIdentifierProto.getDagIdentifier())) {
-      resetCurrentDag(dagId);
+    if (currentQueryIdentifierProto == null || (dagId != currentQueryIdentifierProto.getDagIndex())) {
+      // TODO HiveQueryId extraction by parsing the Processor payload is ugly. This can be improved
+      // once TEZ-2672 is fixed.
+      String hiveQueryId;
+      try {
+        hiveQueryId = extractQueryId(taskSpec);
+      } catch (IOException e) {
+        throw new RuntimeException("Failed to extract query id from task spec: " + taskSpec, e);
+      }
+      Preconditions.checkNotNull(hiveQueryId, "Unexpected null query id");
+
+      resetCurrentDag(dagId, hiveQueryId);
     }
 
 
@@ -292,7 +302,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     SubmitWorkRequestProto requestProto;
 
     try {
-      requestProto = constructSubmitWorkRequest(containerId, taskSpec, fragmentRuntimeInfo);
+      requestProto = constructSubmitWorkRequest(containerId, taskSpec, fragmentRuntimeInfo, currentHiveQueryId);
     } catch (IOException e) {
       throw new RuntimeException("Failed to construct request", e);
     }
@@ -388,7 +398,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     // NodeId can be null if the task gets unregistered due to failure / being killed by the daemon itself
     if (nodeId != null) {
       TerminateFragmentRequestProto request =
-          TerminateFragmentRequestProto.newBuilder().setQueryIdentifier(currentQueryIdentifierProto)
+          TerminateFragmentRequestProto.newBuilder().setQueryIdentifier(
+              constructQueryIdentifierProto(
+                  taskAttemptId.getTaskID().getVertexID().getDAGId().getId()))
               .setFragmentIdentifierString(taskAttemptId.toString()).build();
       communicator.sendTerminateFragment(request, nodeId.getHostname(), nodeId.getPort(),
           new LlapProtocolClientProxy.ExecuteRequestCallback<TerminateFragmentResponseProto>() {
@@ -415,9 +427,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
   @Override
   public void dagComplete(final int dagIdentifier) {
+    QueryIdentifierProto queryIdentifierProto = constructQueryIdentifierProto(dagIdentifier);
     QueryCompleteRequestProto request = QueryCompleteRequestProto.newBuilder()
-        .setQueryIdentifier(constructQueryIdentifierProto(dagIdentifier))
-        .setDeleteDelay(deleteDelayOnDagComplete).build();
+        .setQueryIdentifier(queryIdentifierProto).setDeleteDelay(deleteDelayOnDagComplete).build();
     for (final LlapNodeId llapNodeId : nodesForQuery) {
       LOG.info("Sending dagComplete message for {}, to {}", dagIdentifier, llapNodeId);
       communicator.sendQueryComplete(request, llapNodeId.getHostname(), llapNodeId.getPort(),
@@ -597,19 +609,29 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
   }
 
-  private void resetCurrentDag(int newDagId) {
+  private void resetCurrentDag(int newDagId, String hiveQueryId) {
     // Working on the assumption that a single DAG runs at a time per AM.
+
     currentQueryIdentifierProto = constructQueryIdentifierProto(newDagId);
-    sourceStateTracker.resetState(newDagId);
+    currentHiveQueryId = hiveQueryId;
+    sourceStateTracker.resetState(currentQueryIdentifierProto);
     nodesForQuery.clear();
-    LOG.info("CurrentDagId set to: " + newDagId + ", name=" + getContext().getCurrentDagInfo().getName());
+    LOG.info("CurrentDagId set to: " + newDagId + ", name=" +
+        getContext().getCurrentDagInfo().getName() + ", queryId=" + hiveQueryId);
     // TODO Is it possible for heartbeats to come in from lost tasks - those should be told to die, which
     // is likely already happening.
   }
 
+  private String extractQueryId(TaskSpec taskSpec) throws IOException {
+    UserPayload processorPayload = taskSpec.getProcessorDescriptor().getUserPayload();
+    Configuration conf = TezUtils.createConfFromUserPayload(processorPayload);
+    return HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+  }
+
   private SubmitWorkRequestProto constructSubmitWorkRequest(ContainerId containerId,
                                                             TaskSpec taskSpec,
-                                                            FragmentRuntimeInfo fragmentRuntimeInfo) throws
+                                                            FragmentRuntimeInfo fragmentRuntimeInfo,
+                                                            String hiveQueryId) throws
       IOException {
     SubmitWorkRequestProto.Builder builder = SubmitWorkRequestProto.newBuilder();
     builder.setFragmentNumber(taskSpec.getTaskAttemptID().getTaskID().getId());
@@ -618,7 +640,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     builder.setAmHost(getAddress().getHostName());
     builder.setAmPort(getAddress().getPort());
 
-    Preconditions.checkState(currentQueryIdentifierProto.getDagIdentifier() ==
+    Preconditions.checkState(currentQueryIdentifierProto.getDagIndex() ==
         taskSpec.getTaskAttemptID().getTaskID().getVertexID().getDAGId().getId());
     ByteBuffer credentialsBinary = credentialMap.get(currentQueryIdentifierProto);
     if (credentialsBinary == null) {
@@ -628,8 +650,8 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       credentialsBinary = credentialsBinary.duplicate();
     }
     builder.setCredentialsBinary(ByteString.copyFrom(credentialsBinary));
-    builder.setWorkSpec(VertexOrBinary.newBuilder().setVertex(Converters.convertTaskSpecToProto(
-        taskSpec, appAttemptId, getTokenIdentifier(), user)).build());
+    builder.setWorkSpec(VertexOrBinary.newBuilder().setVertex(Converters.constructSignableVertexSpec(
+        taskSpec, currentQueryIdentifierProto, getTokenIdentifier(), user, hiveQueryId)).build());
     // Don't call builder.setWorkSpecSignature() - Tez doesn't sign fragments
     builder.setFragmentRuntimeInfo(fragmentRuntimeInfo);
     return builder.build();
@@ -843,7 +865,8 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
   private QueryIdentifierProto constructQueryIdentifierProto(int dagIdentifier) {
     return QueryIdentifierProto.newBuilder()
-        .setAppIdentifier(getContext().getCurrentAppIdentifier()).setDagIdentifier(dagIdentifier)
+        .setApplicationIdString(getContext().getCurrentAppIdentifier()).setDagIndex(dagIdentifier)
+        .setAppAttemptNumber(getContext().getApplicationAttemptId().getAttemptId())
         .build();
   }
 }

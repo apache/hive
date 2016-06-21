@@ -22,10 +22,10 @@ import com.google.protobuf.ByteString;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EntityDescriptorProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GroupInputSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UserPayloadProto;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexIdentifier;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.tez.common.TezCommonUtils;
 import org.apache.tez.dag.api.EntityDescriptor;
@@ -49,9 +49,9 @@ public class Converters {
 
   public static TaskSpec getTaskSpecfromProto(SignableVertexSpec vectorProto,
       int fragmentNum, int attemptNum, TezTaskAttemptID attemptId) {
-    VertexIdentifier vertexId = vectorProto.getVertexIdentifier();
     TezTaskAttemptID taskAttemptID = attemptId != null ? attemptId
-        : createTaskAttemptId(vertexId, fragmentNum, attemptNum);
+        : createTaskAttemptId(vectorProto.getQueryIdentifier(), vectorProto.getVertexIndex(),
+        fragmentNum, attemptNum);
 
     ProcessorDescriptor processorDescriptor = null;
     if (vectorProto.hasProcessorDescriptor()) {
@@ -90,16 +90,16 @@ public class Converters {
   }
 
   public static TezTaskAttemptID createTaskAttemptId(
-      VertexIdentifier vertexId, int fragmentNum, int attemptNum) {
+      QueryIdentifierProto queryIdProto, int vertexIndex, int fragmentNum, int attemptNum) {
     // Come ride the API roller-coaster!
     return TezTaskAttemptID.getInstance(
             TezTaskID.getInstance(
                 TezVertexID.getInstance(
                     TezDAGID.getInstance(
                         ConverterUtils.toApplicationId(
-                            vertexId.getApplicationIdString()),
-                        vertexId.getDagId()),
-                    vertexId.getVertexId()),
+                            queryIdProto.getApplicationIdString()),
+                        queryIdProto.getDagIndex()),
+                    vertexIndex),
                 fragmentNum),
             attemptNum);
   }
@@ -116,23 +116,18 @@ public class Converters {
             ctx.getTaskIndex()),
         ctx.getTaskAttemptNumber());
   }
-  public static VertexIdentifier createVertexIdentifier(
-      TezTaskAttemptID taId, int appAttemptId) {
-    VertexIdentifier.Builder idBuilder = VertexIdentifier.newBuilder();
-    idBuilder.setApplicationIdString(
-        taId.getTaskID().getVertexID().getDAGId().getApplicationId().toString());
-    idBuilder.setAppAttemptNumber(appAttemptId);
-    idBuilder.setDagId(taId.getTaskID().getVertexID().getDAGId().getId());
-    idBuilder.setVertexId(taId.getTaskID().getVertexID().getId());
-    return idBuilder.build();
-  }
 
-  public static SignableVertexSpec.Builder convertTaskSpecToProto(TaskSpec taskSpec,
-      int appAttemptId, String tokenIdentifier, String user) {
+  public static SignableVertexSpec.Builder constructSignableVertexSpec(TaskSpec taskSpec,
+                                                                       QueryIdentifierProto queryIdentifierProto,
+                                                                       String tokenIdentifier,
+                                                                       String user,
+                                                                       String hiveQueryIdString) {
     TezTaskAttemptID tId = taskSpec.getTaskAttemptID();
 
     SignableVertexSpec.Builder builder = SignableVertexSpec.newBuilder();
-    builder.setVertexIdentifier(createVertexIdentifier(tId, appAttemptId));
+    builder.setQueryIdentifier(queryIdentifierProto);
+    builder.setHiveQueryId(hiveQueryIdString);
+    builder.setVertexIndex(tId.getTaskID().getVertexID().getId());
     builder.setDagName(taskSpec.getDAGName());
     builder.setVertexName(taskSpec.getVertexName());
     builder.setVertexParallelism(taskSpec.getVertexParallelism());

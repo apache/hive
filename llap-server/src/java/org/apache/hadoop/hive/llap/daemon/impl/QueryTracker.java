@@ -117,9 +117,12 @@ public class QueryTracker extends AbstractService {
    * Register a new fragment for a specific query
    */
   QueryFragmentInfo registerFragment(QueryIdentifier queryIdentifier, String appIdString,
-      String dagName, int dagIdentifier, String vertexName, int fragmentNumber, int attemptNumber,
+      String dagName, String hiveQueryIdString, int dagIdentifier, String vertexName, int fragmentNumber, int attemptNumber,
       String user, SignableVertexSpec vertex, Token<JobTokenIdentifier> appToken,
       String fragmentIdString, LlapTokenInfo tokenInfo) throws IOException {
+    // QueryIdentifier is enough to uniquely identify a fragment. At the moment, it works off of appId and dag index.
+    // At a later point this could be changed to the Hive query identifier.
+    // Sending both over RPC is unnecessary overhead.
     ReadWriteLock dagLock = getDagLock(queryIdentifier);
     dagLock.readLock().lock();
     try {
@@ -156,6 +159,8 @@ public class QueryTracker extends AbstractService {
         LlapTokenChecker.checkPermissions(tokenInfo, queryInfo.getTokenUserName(),
             queryInfo.getTokenAppId(), queryInfo.getQueryIdentifier());
       }
+
+      queryIdentifierToHiveQueryId.putIfAbsent(queryIdentifier, hiveQueryIdString);
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("Registering request for {} with the ShuffleHandler", queryIdentifier);
@@ -286,11 +291,6 @@ public class QueryTracker extends AbstractService {
       dagMap = (old != null) ? old : dagMap;
     }
     return dagMap;
-  }
-
-  public void registerDagQueryId(QueryIdentifier queryIdentifier, String hiveQueryIdString) {
-    if (hiveQueryIdString == null) return;
-    queryIdentifierToHiveQueryId.putIfAbsent(queryIdentifier, hiveQueryIdString);
   }
 
   @Override

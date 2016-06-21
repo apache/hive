@@ -237,7 +237,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
         if (shouldRunTask) {
           taskRunner = new TezTaskRunner2(conf, taskUgi, fragmentInfo.getLocalDirs(),
               taskSpec,
-              vertex.getVertexIdentifier().getAppAttemptNumber(),
+              vertex.getQueryIdentifier().getAppAttemptNumber(),
               serviceConsumerMetadata, envMap, startedInputsMap, taskReporter, executor,
               objectRegistry,
               pid,
@@ -480,7 +480,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     }
 
     protected void logFragmentEnd(boolean success) {
-      HistoryLogger.logFragmentEnd(vertex.getVertexIdentifier().getApplicationIdString(),
+      HistoryLogger.logFragmentEnd(vertex.getQueryIdentifier().getApplicationIdString(),
           request.getContainerIdString(), executionContext.getHostName(), vertex.getDagName(),
           fragmentInfo.getQueryInfo().getDagIdentifier(), vertex.getVertexName(),
           request.getFragmentNumber(), request.getAttemptNumber(), taskRunnerCallable.threadName,
@@ -504,7 +504,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   public static String getTaskIdentifierString(
       SubmitWorkRequestProto request, SignableVertexSpec vertex) {
     StringBuilder sb = new StringBuilder();
-    sb.append("AppId=").append(vertex.getVertexIdentifier().getApplicationIdString())
+    sb.append("AppId=").append(vertex.getQueryIdentifier().getApplicationIdString())
         .append(", containerId=").append(request.getContainerIdString())
         .append(", Dag=").append(vertex.getDagName())
         .append(", Vertex=").append(vertex.getVertexName())
