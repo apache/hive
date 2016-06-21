@@ -45,6 +45,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -618,8 +619,47 @@ public class TestDbTxnManager2 {
     relLocks.add(new DbLockManager.DbHiveLock(locks.get(0).getLockid()));
     txnMgr.getLockManager().releaseLocks(relLocks);
   }
+  /**
+   * Check to make sure we acquire proper locks for queries involving acid and non-acid tables
+   */
+  @Test
+  public void checkExpectedLocks2() throws Exception {
+    checkCmdOnDriver(driver.run("drop table if exists tab_acid"));
+    checkCmdOnDriver(driver.run("drop table if exists tab_not_acid"));
+    checkCmdOnDriver(driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
+      "clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')"));
+    checkCmdOnDriver(driver.run("create table if not exists tab_not_acid (na int, nb int) partitioned by (np string) " +
+      "clustered by (na) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='false')"));
+    checkCmdOnDriver(driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')"));
+    checkCmdOnDriver(driver.run("insert into tab_not_acid partition(np) (na,nb,np) values(1,2,'blah'),(3,4,'doh')"));
+    txnMgr.openTxn("T1");
+    checkCmdOnDriver(driver.compileAndRespond("select * from tab_acid inner join tab_not_acid on a = na"));
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "T1");
+    List<ShowLocksResponseElement> locks = getLocks(txnMgr, true);
+    Assert.assertEquals("Unexpected lock count", 6, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks.get(0));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks.get(1));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks.get(2));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks.get(3));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks.get(4));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks.get(5));
 
-  private void checkLock(LockType expectedType, LockState expectedState, String expectedDb, String expectedTable, String expectedPartition, ShowLocksResponseElement actual) {
+    HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    txnMgr2.openTxn("T2");
+    checkCmdOnDriver(driver.compileAndRespond("insert into tab_not_acid partition(np='doh') values(5,6)"));
+    LockState ls = ((DbTxnManager)txnMgr2).acquireLocks(driver.getPlan(), ctx, "T2", false);
+    locks = getLocks(txnMgr2, true);
+    Assert.assertEquals("Unexpected lock count", 7, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks.get(0));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks.get(1));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks.get(2));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks.get(3));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks.get(4));
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks.get(5));
+    checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "tab_not_acid", "np=doh", locks.get(6));
+  }
+
+  public static void checkLock(LockType expectedType, LockState expectedState, String expectedDb, String expectedTable, String expectedPartition, ShowLocksResponseElement actual) {
     Assert.assertEquals(actual.toString(), expectedType, actual.getType());
     Assert.assertEquals(actual.toString(), expectedState,actual.getState());
     Assert.assertEquals(actual.toString(), normalizeCase(expectedDb), normalizeCase(actual.getDbname()));
@@ -726,18 +766,90 @@ public class TestDbTxnManager2 {
   private void checkCmdOnDriver(CommandProcessorResponse cpr) {
     Assert.assertTrue(cpr.toString(), cpr.getResponseCode() == 0);
   }
-  private String normalizeCase(String s) {
+  private static String normalizeCase(String s) {
     return s == null ? null : s.toLowerCase();
-  }
-  private List<ShowLocksResponseElement> getLocks() throws Exception {
-    return getLocks(this.txnMgr);
-  }
-  private List<ShowLocksResponseElement> getLocks(HiveTxnManager txnMgr) throws Exception {
-    ShowLocksResponse rsp = ((DbLockManager)txnMgr.getLockManager()).getLocks();
-    return rsp.getLocks();
   }
 
   /**
+   * @deprecated {@link #getLocks(boolean)}
+   */
+  private List<ShowLocksResponseElement> getLocks() throws Exception {
+    return getLocks(false);
+  }
+  private List<ShowLocksResponseElement> getLocks(boolean sorted) throws Exception {
+    return getLocks(this.txnMgr, sorted);
+  }
+  /**
+   * @deprecated {@link #getLocks(HiveTxnManager, boolean)}
+   */
+  private List<ShowLocksResponseElement> getLocks(HiveTxnManager txnMgr) throws Exception {
+    return getLocks(txnMgr, false);
+  }
+
+  /**
+   * for some reason sort order of locks changes across different branches...
+   */
+  private List<ShowLocksResponseElement> getLocks(HiveTxnManager txnMgr, boolean sorted) throws Exception {
+    ShowLocksResponse rsp = ((DbLockManager)txnMgr.getLockManager()).getLocks();
+    if(sorted) {
+      Collections.sort(rsp.getLocks(), new LockComparator());
+    }
+    return rsp.getLocks();
+  }
+  private static class LockComparator implements Comparator<ShowLocksResponseElement> {
+    @Override
+    public boolean equals(Object other) {
+      return other instanceof LockComparator;
+    }
+    //sort is not important except that it's consistent
+    @Override
+    public int compare(ShowLocksResponseElement p1, ShowLocksResponseElement p2) {
+      if(p1 == null && p2 == null) {
+        return 0;
+      }
+      if(p1 == null) {
+        return -1;
+      }
+      if(p2 == null) {
+        return 1;
+      }
+      int v = 0;
+      if((v = compare(p1.getDbname(), p2.getDbname())) != 0) {
+        return v;
+      }
+      if((v = compare(p1.getTablename(), p2.getTablename())) != 0) {
+        return v;
+      }
+      if((v = compare(p1.getPartname(), p2.getPartname())) != 0) {
+        return v;
+      }
+      if((v = p1.getType().getValue() - p2.getType().getValue()) != 0) {
+        return v;
+      }
+      if((v = p1.getState().getValue() - p2.getState().getValue()) != 0) {
+        return v;
+      }
+      //we should never get here (given current code)
+      if(p1.getLockid() == p2.getLockid()) {
+        return (int)(p1.getLockIdInternal() - p2.getLockIdInternal());
+      }
+      return (int)(p1.getLockid() - p2.getLockid());
+    }
+    private static int compare(String s1, String s2) {
+      if(s1 == null && s2 == null) {
+        return 0;
+      }
+      if(s1 == null) {
+        return -1;
+      }
+      if(s2 == null) {
+        return 1;
+      }
+      return s1.compareTo(s2);
+    }
+  }
+
+    /**
    * txns update same resource but do not overlap in time - no conflict
    */
   @Test
@@ -1320,8 +1432,14 @@ public class TestDbTxnManager2 {
     Assert.assertEquals(TxnDbUtil.queryToString("select * from COMPLETED_TXN_COMPONENTS"),
       1, TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_TXN_COMPONENTS where ctc_txnid=1 and ctc_table='tab1'"));
   }
+
+  /**
+   * ToDo: multi-insert into txn table and non-tx table should be prevented
+   */
   @Test
   public void testMultiInsert() throws Exception {
+    checkCmdOnDriver(driver.run("drop table if exists tab1"));
+    checkCmdOnDriver(driver.run("drop table if exists tab_not_acid"));
     CommandProcessorResponse cpr = driver.run("create table if not exists tab1 (a int, b int) partitioned by (p string) " +
       "clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     checkCmdOnDriver(cpr);

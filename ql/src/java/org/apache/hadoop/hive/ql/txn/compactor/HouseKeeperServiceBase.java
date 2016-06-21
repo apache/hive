@@ -48,7 +48,7 @@ public abstract class HouseKeeperServiceBase implements HouseKeeperService {
       private final AtomicInteger threadCounter = new AtomicInteger();
       @Override
       public Thread newThread(Runnable r) {
-        return new Thread(r, this.getClass().getName() + "-" + threadCounter.getAndIncrement());
+        return new Thread(r, HouseKeeperServiceBase.this.getClass().getName() + "-" + threadCounter.getAndIncrement());
       }
     });
 

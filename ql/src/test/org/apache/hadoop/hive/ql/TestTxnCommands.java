@@ -4,9 +4,15 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.orc.FileDump;
+import org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.AcidHouseKeeperService;
@@ -400,14 +406,31 @@ public class TestTxnCommands {
     hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 2, TimeUnit.MILLISECONDS);
     AcidHouseKeeperService houseKeeperService = new AcidHouseKeeperService();
     //this will abort the txn
-    houseKeeperService.start(hiveConf);
-    while(houseKeeperService.getIsAliveCounter() <= Integer.MIN_VALUE) {
-      Thread.sleep(100);//make sure it has run at least once
-    }
-    houseKeeperService.stop();
+    TestTxnCommands2.runHouseKeeperService(houseKeeperService, hiveConf);
     //this should fail because txn aborted due to timeout
     CommandProcessorResponse cpr = runStatementOnDriverNegative("delete from " + Table.ACIDTBL + " where a = 5");
     Assert.assertTrue("Actual: " + cpr.getErrorMessage(), cpr.getErrorMessage().contains("Transaction manager has aborted the transaction txnid:1"));
+    
+    //now test that we don't timeout locks we should not
+    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 10, TimeUnit.MINUTES);
+    runStatementOnDriver("start transaction");
+    runStatementOnDriver("select count(*) from " + Table.ACIDTBL + " where a = 17");
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowLocksResponse slr = txnHandler.showLocks(new ShowLocksRequest());
+    TestDbTxnManager2.checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", Table.ACIDTBL.name, null, slr.getLocks().get(0));
+    TestTxnCommands2.runHouseKeeperService(houseKeeperService, hiveConf);
+    slr = txnHandler.showLocks(new ShowLocksRequest());
+    TestDbTxnManager2.checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", Table.ACIDTBL.name, null, slr.getLocks().get(0));
+    Assert.assertEquals("Unexpected lock count", 1, slr.getLocks().size());
+
+    TestTxnCommands2.runHouseKeeperService(houseKeeperService, hiveConf);
+    slr = txnHandler.showLocks(new ShowLocksRequest());
+    TestDbTxnManager2.checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", Table.ACIDTBL.name, null, slr.getLocks().get(0));
+    Assert.assertEquals("Unexpected lock count", 1, slr.getLocks().size());
+
+    runStatementOnDriver("rollback");
+    slr = txnHandler.showLocks(new ShowLocksRequest());
+    Assert.assertEquals("Unexpected lock count", 0, slr.getLocks().size());
   }
 
   /**
