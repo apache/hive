@@ -138,6 +138,13 @@ public interface Reader {
   OrcFile.WriterVersion getWriterVersion();
 
   /**
+   * Get the file tail (footer + postscript)
+   *
+   * @return - file tail
+   */
+  OrcProto.FileTail getFileTail();
+
+  /**
    * Options for creating a RecordReader.
    */
   public static class Options {
@@ -354,7 +361,7 @@ public interface Reader {
   /**
    * @return Stripe statistics.
    */
-  List<StripeStatistics> getStripeStatistics();
+  List<StripeStatistics> getStripeStatistics() throws IOException;
 
   /**
    * @return File statistics, in original protobuf form.

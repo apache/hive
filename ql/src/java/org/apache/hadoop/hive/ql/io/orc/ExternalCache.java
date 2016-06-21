@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.FileInfo;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.FooterCache;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
@@ -44,7 +43,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
-import org.apache.orc.FileMetaInfo;
+import org.apache.orc.impl.OrcTail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,13 +73,12 @@ public class ExternalCache implements FooterCache {
   }
 
   @Override
-  public void put(Long fileId, FileStatus file, FileMetaInfo fileMetaInfo, Reader orcReader)
-      throws IOException {
-    localCache.put(fileId, file, fileMetaInfo, orcReader);
-    if (fileId != null) {
+  public void put(OrcInputFormat.FooterCacheKey key, OrcTail orcTail) throws IOException {
+    localCache.put(key.getPath(), orcTail);
+    if (key.getFileId() != null) {
       try {
-        externalCacheSrc.getCache(conf).putFileMetadata(Lists.newArrayList(fileId),
-            Lists.newArrayList(((ReaderImpl)orcReader).getSerializedFileFooter()));
+        externalCacheSrc.getCache(conf).putFileMetadata(Lists.newArrayList(key.getFileId()),
+            Lists.newArrayList(orcTail.getSerializedTail()));
       } catch (HiveException e) {
         throw new IOException(e);
       }
@@ -108,7 +106,7 @@ public class ExternalCache implements FooterCache {
 
   @Override
   public void getAndValidate(List<HdfsFileStatusWithId> files, boolean isOriginal,
-      FileInfo[] result, ByteBuffer[] ppdResult) throws IOException, HiveException {
+      OrcTail[] result, ByteBuffer[] ppdResult) throws IOException, HiveException {
     assert result.length == files.size();
     assert ppdResult == null || ppdResult.length == files.size();
     // First, check the local cache.
@@ -155,7 +153,7 @@ public class ExternalCache implements FooterCache {
   }
 
   private int getAndVerifyIndex(HashMap<Long, Integer> posMap,
-      List<HdfsFileStatusWithId> files, FileInfo[] result, Long fileId) {
+      List<HdfsFileStatusWithId> files, OrcTail[] result, Long fileId) {
     int ix = posMap.get(fileId);
     assert result[ix] == null;
     assert fileId != null && fileId.equals(files.get(ix).getFileId());
@@ -163,9 +161,9 @@ public class ExternalCache implements FooterCache {
   }
 
   private boolean processBbResult(
-      ByteBuffer bb, int ix, HdfsFileStatusWithId file, FileInfo[] result) throws IOException {
+      ByteBuffer bb, int ix, HdfsFileStatusWithId file, OrcTail[] result) throws IOException {
     if (bb == null) return true;
-    result[ix] = createFileInfoFromMs(file, bb);
+    result[ix] = createOrcTailFromMs(file, bb);
     if (result[ix] == null) {
       return false;
     }
@@ -175,12 +173,12 @@ public class ExternalCache implements FooterCache {
   }
 
   private void processPpdResult(MetadataPpdResult mpr, HdfsFileStatusWithId file,
-      int ix, FileInfo[] result, ByteBuffer[] ppdResult) throws IOException {
+      int ix, OrcTail[] result, ByteBuffer[] ppdResult) throws IOException {
     if (mpr == null) return; // This file is unknown to metastore.
 
     ppdResult[ix] = mpr.isSetIncludeBitset() ? mpr.bufferForIncludeBitset() : NO_SPLIT_AFTER_PPD;
     if (mpr.isSetMetadata()) {
-      result[ix] = createFileInfoFromMs(file, mpr.bufferForMetadata());
+      result[ix] = createOrcTailFromMs(file, mpr.bufferForMetadata());
       if (result[ix] != null) {
         localCache.put(file.getFileStatus().getPath(), result[ix]);
       }
@@ -188,7 +186,7 @@ public class ExternalCache implements FooterCache {
   }
 
   private List<Long> determineFileIdsToQuery(
-      List<HdfsFileStatusWithId> files, FileInfo[] result, HashMap<Long, Integer> posMap) {
+      List<HdfsFileStatusWithId> files, OrcTail[] result, HashMap<Long, Integer> posMap) {
     for (int i = 0; i < result.length; ++i) {
       if (result[i] != null) continue;
       HdfsFileStatusWithId file = files.get(i);
@@ -293,14 +291,16 @@ public class ExternalCache implements FooterCache {
     }
   }
 
-  private static FileInfo createFileInfoFromMs(
+  private static OrcTail createOrcTailFromMs(
       HdfsFileStatusWithId file, ByteBuffer bb) throws IOException {
     if (bb == null) return null;
     FileStatus fs = file.getFileStatus();
-    ReaderImpl.FooterInfo fi = null;
     ByteBuffer copy = bb.duplicate();
     try {
-      fi = ReaderImpl.extractMetaInfoFromFooter(copy, fs.getPath());
+      OrcTail orcTail = ReaderImpl.extractFileTail(copy, fs.getLen(), fs.getModificationTime());
+      // trigger lazy read of metadata to make sure serialized data is not corrupted and readable
+      orcTail.getStripeStatistics();
+      return orcTail;
     } catch (Exception ex) {
       byte[] data = new byte[bb.remaining()];
       System.arraycopy(bb.array(), bb.arrayOffset() + bb.position(), data, 0, data.length);
@@ -309,9 +309,6 @@ public class ExternalCache implements FooterCache {
       LOG.error(msg, ex);
       return null;
     }
-    return new FileInfo(fs.getModificationTime(), fs.getLen(), fi.getStripes(), fi.getMetadata(),
-        fi.getFooter().getTypesList(), fi.getFooter().getStatisticsList(), fi.getFileMetaInfo(),
-        fi.getFileMetaInfo().writerVersion, file.getFileId());
   }
 
   private static final class Baos extends ByteArrayOutputStream {

@@ -18940,6 +18940,875 @@ public final class OrcProto {
     // @@protoc_insertion_point(class_scope:orc.proto.PostScript)
   }
 
+  public interface FileTailOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional .orc.proto.PostScript postscript = 1;
+    /**
+     * <code>optional .orc.proto.PostScript postscript = 1;</code>
+     */
+    boolean hasPostscript();
+    /**
+     * <code>optional .orc.proto.PostScript postscript = 1;</code>
+     */
+    org.apache.orc.OrcProto.PostScript getPostscript();
+    /**
+     * <code>optional .orc.proto.PostScript postscript = 1;</code>
+     */
+    org.apache.orc.OrcProto.PostScriptOrBuilder getPostscriptOrBuilder();
+
+    // optional .orc.proto.Footer footer = 2;
+    /**
+     * <code>optional .orc.proto.Footer footer = 2;</code>
+     */
+    boolean hasFooter();
+    /**
+     * <code>optional .orc.proto.Footer footer = 2;</code>
+     */
+    org.apache.orc.OrcProto.Footer getFooter();
+    /**
+     * <code>optional .orc.proto.Footer footer = 2;</code>
+     */
+    org.apache.orc.OrcProto.FooterOrBuilder getFooterOrBuilder();
+
+    // optional uint64 fileLength = 3;
+    /**
+     * <code>optional uint64 fileLength = 3;</code>
+     */
+    boolean hasFileLength();
+    /**
+     * <code>optional uint64 fileLength = 3;</code>
+     */
+    long getFileLength();
+
+    // optional uint64 postscriptLength = 4;
+    /**
+     * <code>optional uint64 postscriptLength = 4;</code>
+     */
+    boolean hasPostscriptLength();
+    /**
+     * <code>optional uint64 postscriptLength = 4;</code>
+     */
+    long getPostscriptLength();
+  }
+  /**
+   * Protobuf type {@code orc.proto.FileTail}
+   *
+   * <pre>
+   * This gets serialized as part of OrcSplit, also used by footer cache.
+   * </pre>
+   */
+  public static final class FileTail extends
+      com.google.protobuf.GeneratedMessage
+      implements FileTailOrBuilder {
+    // Use FileTail.newBuilder() to construct.
+    private FileTail(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private FileTail(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final FileTail defaultInstance;
+    public static FileTail getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public FileTail getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private FileTail(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              org.apache.orc.OrcProto.PostScript.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                subBuilder = postscript_.toBuilder();
+              }
+              postscript_ = input.readMessage(org.apache.orc.OrcProto.PostScript.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(postscript_);
+                postscript_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000001;
+              break;
+            }
+            case 18: {
+              org.apache.orc.OrcProto.Footer.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000002) == 0x00000002)) {
+                subBuilder = footer_.toBuilder();
+              }
+              footer_ = input.readMessage(org.apache.orc.OrcProto.Footer.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(footer_);
+                footer_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000002;
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              fileLength_ = input.readUInt64();
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000008;
+              postscriptLength_ = input.readUInt64();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.orc.OrcProto.internal_static_orc_proto_FileTail_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.orc.OrcProto.internal_static_orc_proto_FileTail_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.orc.OrcProto.FileTail.class, org.apache.orc.OrcProto.FileTail.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<FileTail> PARSER =
+        new com.google.protobuf.AbstractParser<FileTail>() {
+      public FileTail parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new FileTail(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<FileTail> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional .orc.proto.PostScript postscript = 1;
+    public static final int POSTSCRIPT_FIELD_NUMBER = 1;
+    private org.apache.orc.OrcProto.PostScript postscript_;
+    /**
+     * <code>optional .orc.proto.PostScript postscript = 1;</code>
+     */
+    public boolean hasPostscript() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .orc.proto.PostScript postscript = 1;</code>
+     */
+    public org.apache.orc.OrcProto.PostScript getPostscript() {
+      return postscript_;
+    }
+    /**
+     * <code>optional .orc.proto.PostScript postscript = 1;</code>
+     */
+    public org.apache.orc.OrcProto.PostScriptOrBuilder getPostscriptOrBuilder() {
+      return postscript_;
+    }
+
+    // optional .orc.proto.Footer footer = 2;
+    public static final int FOOTER_FIELD_NUMBER = 2;
+    private org.apache.orc.OrcProto.Footer footer_;
+    /**
+     * <code>optional .orc.proto.Footer footer = 2;</code>
+     */
+    public boolean hasFooter() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional .orc.proto.Footer footer = 2;</code>
+     */
+    public org.apache.orc.OrcProto.Footer getFooter() {
+      return footer_;
+    }
+    /**
+     * <code>optional .orc.proto.Footer footer = 2;</code>
+     */
+    public org.apache.orc.OrcProto.FooterOrBuilder getFooterOrBuilder() {
+      return footer_;
+    }
+
+    // optional uint64 fileLength = 3;
+    public static final int FILELENGTH_FIELD_NUMBER = 3;
+    private long fileLength_;
+    /**
+     * <code>optional uint64 fileLength = 3;</code>
+     */
+    public boolean hasFileLength() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional uint64 fileLength = 3;</code>
+     */
+    public long getFileLength() {
+      return fileLength_;
+    }
+
+    // optional uint64 postscriptLength = 4;
+    public static final int POSTSCRIPTLENGTH_FIELD_NUMBER = 4;
+    private long postscriptLength_;
+    /**
+     * <code>optional uint64 postscriptLength = 4;</code>
+     */
+    public boolean hasPostscriptLength() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional uint64 postscriptLength = 4;</code>
+     */
+    public long getPostscriptLength() {
+      return postscriptLength_;
+    }
+
+    private void initFields() {
+      postscript_ = org.apache.orc.OrcProto.PostScript.getDefaultInstance();
+      footer_ = org.apache.orc.OrcProto.Footer.getDefaultInstance();
+      fileLength_ = 0L;
+      postscriptLength_ = 0L;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeMessage(1, postscript_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeMessage(2, footer_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeUInt64(3, fileLength_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeUInt64(4, postscriptLength_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, postscript_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, footer_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(3, fileLength_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(4, postscriptLength_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.orc.OrcProto.FileTail parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.orc.OrcProto.FileTail parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.orc.OrcProto.FileTail parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.orc.OrcProto.FileTail parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.orc.OrcProto.FileTail parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.orc.OrcProto.FileTail parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.orc.OrcProto.FileTail parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.orc.OrcProto.FileTail parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.orc.OrcProto.FileTail parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.orc.OrcProto.FileTail parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.orc.OrcProto.FileTail prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code orc.proto.FileTail}
+     *
+     * <pre>
+     * This gets serialized as part of OrcSplit, also used by footer cache.
+     * </pre>
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.orc.OrcProto.FileTailOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.orc.OrcProto.internal_static_orc_proto_FileTail_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.orc.OrcProto.internal_static_orc_proto_FileTail_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.orc.OrcProto.FileTail.class, org.apache.orc.OrcProto.FileTail.Builder.class);
+      }
+
+      // Construct using org.apache.orc.OrcProto.FileTail.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getPostscriptFieldBuilder();
+          getFooterFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (postscriptBuilder_ == null) {
+          postscript_ = org.apache.orc.OrcProto.PostScript.getDefaultInstance();
+        } else {
+          postscriptBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (footerBuilder_ == null) {
+          footer_ = org.apache.orc.OrcProto.Footer.getDefaultInstance();
+        } else {
+          footerBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        fileLength_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        postscriptLength_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.orc.OrcProto.internal_static_orc_proto_FileTail_descriptor;
+      }
+
+      public org.apache.orc.OrcProto.FileTail getDefaultInstanceForType() {
+        return org.apache.orc.OrcProto.FileTail.getDefaultInstance();
+      }
+
+      public org.apache.orc.OrcProto.FileTail build() {
+        org.apache.orc.OrcProto.FileTail result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.orc.OrcProto.FileTail buildPartial() {
+        org.apache.orc.OrcProto.FileTail result = new org.apache.orc.OrcProto.FileTail(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        if (postscriptBuilder_ == null) {
+          result.postscript_ = postscript_;
+        } else {
+          result.postscript_ = postscriptBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        if (footerBuilder_ == null) {
+          result.footer_ = footer_;
+        } else {
+          result.footer_ = footerBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.fileLength_ = fileLength_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.postscriptLength_ = postscriptLength_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.orc.OrcProto.FileTail) {
+          return mergeFrom((org.apache.orc.OrcProto.FileTail)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.orc.OrcProto.FileTail other) {
+        if (other == org.apache.orc.OrcProto.FileTail.getDefaultInstance()) return this;
+        if (other.hasPostscript()) {
+          mergePostscript(other.getPostscript());
+        }
+        if (other.hasFooter()) {
+          mergeFooter(other.getFooter());
+        }
+        if (other.hasFileLength()) {
+          setFileLength(other.getFileLength());
+        }
+        if (other.hasPostscriptLength()) {
+          setPostscriptLength(other.getPostscriptLength());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.orc.OrcProto.FileTail parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.orc.OrcProto.FileTail) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional .orc.proto.PostScript postscript = 1;
+      private org.apache.orc.OrcProto.PostScript postscript_ = org.apache.orc.OrcProto.PostScript.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.orc.OrcProto.PostScript, org.apache.orc.OrcProto.PostScript.Builder, org.apache.orc.OrcProto.PostScriptOrBuilder> postscriptBuilder_;
+      /**
+       * <code>optional .orc.proto.PostScript postscript = 1;</code>
+       */
+      public boolean hasPostscript() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .orc.proto.PostScript postscript = 1;</code>
+       */
+      public org.apache.orc.OrcProto.PostScript getPostscript() {
+        if (postscriptBuilder_ == null) {
+          return postscript_;
+        } else {
+          return postscriptBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .orc.proto.PostScript postscript = 1;</code>
+       */
+      public Builder setPostscript(org.apache.orc.OrcProto.PostScript value) {
+        if (postscriptBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          postscript_ = value;
+          onChanged();
+        } else {
+          postscriptBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .orc.proto.PostScript postscript = 1;</code>
+       */
+      public Builder setPostscript(
+          org.apache.orc.OrcProto.PostScript.Builder builderForValue) {
+        if (postscriptBuilder_ == null) {
+          postscript_ = builderForValue.build();
+          onChanged();
+        } else {
+          postscriptBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .orc.proto.PostScript postscript = 1;</code>
+       */
+      public Builder mergePostscript(org.apache.orc.OrcProto.PostScript value) {
+        if (postscriptBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+              postscript_ != org.apache.orc.OrcProto.PostScript.getDefaultInstance()) {
+            postscript_ =
+              org.apache.orc.OrcProto.PostScript.newBuilder(postscript_).mergeFrom(value).buildPartial();
+          } else {
+            postscript_ = value;
+          }
+          onChanged();
+        } else {
+          postscriptBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .orc.proto.PostScript postscript = 1;</code>
+       */
+      public Builder clearPostscript() {
+        if (postscriptBuilder_ == null) {
+          postscript_ = org.apache.orc.OrcProto.PostScript.getDefaultInstance();
+          onChanged();
+        } else {
+          postscriptBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+      /**
+       * <code>optional .orc.proto.PostScript postscript = 1;</code>
+       */
+      public org.apache.orc.OrcProto.PostScript.Builder getPostscriptBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getPostscriptFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .orc.proto.PostScript postscript = 1;</code>
+       */
+      public org.apache.orc.OrcProto.PostScriptOrBuilder getPostscriptOrBuilder() {
+        if (postscriptBuilder_ != null) {
+          return postscriptBuilder_.getMessageOrBuilder();
+        } else {
+          return postscript_;
+        }
+      }
+      /**
+       * <code>optional .orc.proto.PostScript postscript = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.orc.OrcProto.PostScript, org.apache.orc.OrcProto.PostScript.Builder, org.apache.orc.OrcProto.PostScriptOrBuilder> 
+          getPostscriptFieldBuilder() {
+        if (postscriptBuilder_ == null) {
+          postscriptBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.orc.OrcProto.PostScript, org.apache.orc.OrcProto.PostScript.Builder, org.apache.orc.OrcProto.PostScriptOrBuilder>(
+                  postscript_,
+                  getParentForChildren(),
+                  isClean());
+          postscript_ = null;
+        }
+        return postscriptBuilder_;
+      }
+
+      // optional .orc.proto.Footer footer = 2;
+      private org.apache.orc.OrcProto.Footer footer_ = org.apache.orc.OrcProto.Footer.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.orc.OrcProto.Footer, org.apache.orc.OrcProto.Footer.Builder, org.apache.orc.OrcProto.FooterOrBuilder> footerBuilder_;
+      /**
+       * <code>optional .orc.proto.Footer footer = 2;</code>
+       */
+      public boolean hasFooter() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional .orc.proto.Footer footer = 2;</code>
+       */
+      public org.apache.orc.OrcProto.Footer getFooter() {
+        if (footerBuilder_ == null) {
+          return footer_;
+        } else {
+          return footerBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .orc.proto.Footer footer = 2;</code>
+       */
+      public Builder setFooter(org.apache.orc.OrcProto.Footer value) {
+        if (footerBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          footer_ = value;
+          onChanged();
+        } else {
+          footerBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .orc.proto.Footer footer = 2;</code>
+       */
+      public Builder setFooter(
+          org.apache.orc.OrcProto.Footer.Builder builderForValue) {
+        if (footerBuilder_ == null) {
+          footer_ = builderForValue.build();
+          onChanged();
+        } else {
+          footerBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .orc.proto.Footer footer = 2;</code>
+       */
+      public Builder mergeFooter(org.apache.orc.OrcProto.Footer value) {
+        if (footerBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+              footer_ != org.apache.orc.OrcProto.Footer.getDefaultInstance()) {
+            footer_ =
+              org.apache.orc.OrcProto.Footer.newBuilder(footer_).mergeFrom(value).buildPartial();
+          } else {
+            footer_ = value;
+          }
+          onChanged();
+        } else {
+          footerBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .orc.proto.Footer footer = 2;</code>
+       */
+      public Builder clearFooter() {
+        if (footerBuilder_ == null) {
+          footer_ = org.apache.orc.OrcProto.Footer.getDefaultInstance();
+          onChanged();
+        } else {
+          footerBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      /**
+       * <code>optional .orc.proto.Footer footer = 2;</code>
+       */
+      public org.apache.orc.OrcProto.Footer.Builder getFooterBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getFooterFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .orc.proto.Footer footer = 2;</code>
+       */
+      public org.apache.orc.OrcProto.FooterOrBuilder getFooterOrBuilder() {
+        if (footerBuilder_ != null) {
+          return footerBuilder_.getMessageOrBuilder();
+        } else {
+          return footer_;
+        }
+      }
+      /**
+       * <code>optional .orc.proto.Footer footer = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.orc.OrcProto.Footer, org.apache.orc.OrcProto.Footer.Builder, org.apache.orc.OrcProto.FooterOrBuilder> 
+          getFooterFieldBuilder() {
+        if (footerBuilder_ == null) {
+          footerBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.orc.OrcProto.Footer, org.apache.orc.OrcProto.Footer.Builder, org.apache.orc.OrcProto.FooterOrBuilder>(
+                  footer_,
+                  getParentForChildren(),
+                  isClean());
+          footer_ = null;
+        }
+        return footerBuilder_;
+      }
+
+      // optional uint64 fileLength = 3;
+      private long fileLength_ ;
+      /**
+       * <code>optional uint64 fileLength = 3;</code>
+       */
+      public boolean hasFileLength() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional uint64 fileLength = 3;</code>
+       */
+      public long getFileLength() {
+        return fileLength_;
+      }
+      /**
+       * <code>optional uint64 fileLength = 3;</code>
+       */
+      public Builder setFileLength(long value) {
+        bitField0_ |= 0x00000004;
+        fileLength_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint64 fileLength = 3;</code>
+       */
+      public Builder clearFileLength() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        fileLength_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // optional uint64 postscriptLength = 4;
+      private long postscriptLength_ ;
+      /**
+       * <code>optional uint64 postscriptLength = 4;</code>
+       */
+      public boolean hasPostscriptLength() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional uint64 postscriptLength = 4;</code>
+       */
+      public long getPostscriptLength() {
+        return postscriptLength_;
+      }
+      /**
+       * <code>optional uint64 postscriptLength = 4;</code>
+       */
+      public Builder setPostscriptLength(long value) {
+        bitField0_ |= 0x00000008;
+        postscriptLength_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint64 postscriptLength = 4;</code>
+       */
+      public Builder clearPostscriptLength() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        postscriptLength_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:orc.proto.FileTail)
+    }
+
+    static {
+      defaultInstance = new FileTail(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:orc.proto.FileTail)
+  }
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_orc_proto_IntegerStatistics_descriptor;
   private static
@@ -19055,6 +19924,11 @@ public final class OrcProto {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_orc_proto_PostScript_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_orc_proto_FileTail_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_orc_proto_FileTail_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -19135,9 +20009,13 @@ public final class OrcProto {
       "ression\030\002 \001(\0162\032.orc.proto.CompressionKin" +
       "d\022\034\n\024compressionBlockSize\030\003 \001(\004\022\023\n\007versi",
       "on\030\004 \003(\rB\002\020\001\022\026\n\016metadataLength\030\005 \001(\004\022\025\n\r" +
-      "writerVersion\030\006 \001(\r\022\016\n\005magic\030\300> \001(\t*:\n\017C" +
-      "ompressionKind\022\010\n\004NONE\020\000\022\010\n\004ZLIB\020\001\022\n\n\006SN" +
-      "APPY\020\002\022\007\n\003LZO\020\003B\020\n\016org.apache.orc"
+      "writerVersion\030\006 \001(\r\022\016\n\005magic\030\300> \001(\t\"\206\001\n\010" +
+      "FileTail\022)\n\npostscript\030\001 \001(\0132\025.orc.proto" +
+      ".PostScript\022!\n\006footer\030\002 \001(\0132\021.orc.proto." +
+      "Footer\022\022\n\nfileLength\030\003 \001(\004\022\030\n\020postscript" +
+      "Length\030\004 \001(\004*:\n\017CompressionKind\022\010\n\004NONE\020" +
+      "\000\022\010\n\004ZLIB\020\001\022\n\n\006SNAPPY\020\002\022\007\n\003LZO\020\003B\020\n\016org." +
+      "apache.orc"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -19282,6 +20160,12 @@ public final class OrcProto {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_orc_proto_PostScript_descriptor,
               new java.lang.String[] { "FooterLength", "Compression", "CompressionBlockSize", "Version", "MetadataLength", "WriterVersion", "Magic", });
+          internal_static_orc_proto_FileTail_descriptor =
+            getDescriptor().getMessageTypes().get(23);
+          internal_static_orc_proto_FileTail_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_orc_proto_FileTail_descriptor,
+              new java.lang.String[] { "Postscript", "Footer", "FileLength", "PostscriptLength", });
           return null;
         }
       };

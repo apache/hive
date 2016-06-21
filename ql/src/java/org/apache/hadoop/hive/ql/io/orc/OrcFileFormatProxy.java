@@ -29,6 +29,8 @@ import org.apache.hadoop.hive.metastore.Metastore.SplitInfos;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.orc.OrcProto;
 import org.apache.orc.StripeInformation;
+import org.apache.orc.StripeStatistics;
+import org.apache.orc.impl.OrcTail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,15 +43,15 @@ public class OrcFileFormatProxy implements FileFormatProxy {
       SearchArgument sarg, ByteBuffer fileMetadata) throws IOException {
     // TODO: ideally we should store shortened representation of only the necessary fields
     //       in HBase; it will probably require custom SARG application code.
-    ReaderImpl.FooterInfo fi = ReaderImpl.extractMetaInfoFromFooter(fileMetadata, null);
-    OrcProto.Footer footer = fi.getFooter();
+    OrcTail orcTail = ReaderImpl.extractFileTail(fileMetadata);
+    OrcProto.Footer footer = orcTail.getFooter();
     int stripeCount = footer.getStripesCount();
     boolean[] result = OrcInputFormat.pickStripesViaTranslatedSarg(
-        sarg, fi.getFileMetaInfo().getWriterVersion(),
-        footer.getTypesList(), fi.getMetadata(), stripeCount);
+        sarg, orcTail.getWriterVersion(),
+        footer.getTypesList(), orcTail.getStripeStatistics(), stripeCount);
     // For ORC case, send the boundaries of the stripes so we don't have to send the footer.
     SplitInfos.Builder sb = SplitInfos.newBuilder();
-    List<StripeInformation> stripes = fi.getStripes();
+    List<StripeInformation> stripes = orcTail.getStripes();
     boolean isEliminated = true;
     for (int i = 0; i < result.length; ++i) {
       if (result != null && !result[i]) continue;
