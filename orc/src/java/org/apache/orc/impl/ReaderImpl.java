@@ -27,6 +27,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.orc.CompressionKind;
+import org.apache.orc.FileMetadata;
 import org.apache.orc.OrcFile;
 import org.apache.orc.OrcUtils;
 import org.apache.orc.Reader;
@@ -35,8 +38,6 @@ import org.apache.orc.TypeDescription;
 import org.apache.orc.ColumnStatistics;
 import org.apache.orc.CompressionCodec;
 import org.apache.orc.FileFormatException;
-import org.apache.orc.FileMetaInfo;
-import org.apache.orc.FileMetadata;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.StripeStatistics;
 import org.slf4j.Logger;
@@ -63,27 +64,25 @@ public class ReaderImpl implements Reader {
   private final long maxLength;
   protected final Path path;
   protected final org.apache.orc.CompressionKind compressionKind;
-  protected final CompressionCodec codec;
-  protected final int bufferSize;
-  private final List<OrcProto.StripeStatistics> stripeStats;
+  protected CompressionCodec codec;
+  protected int bufferSize;
+  protected OrcProto.Metadata metadata;
+  private List<OrcProto.StripeStatistics> stripeStats;
   private final int metadataSize;
   protected final List<OrcProto.Type> types;
-  private final TypeDescription schema;
+  private TypeDescription schema;
   private final List<OrcProto.UserMetadataItem> userMetadata;
   private final List<OrcProto.ColumnStatistics> fileStats;
   private final List<StripeInformation> stripes;
   protected final int rowIndexStride;
   private final long contentLength, numberOfRows;
 
-
   private long deserializedSize = -1;
   protected final Configuration conf;
   private final List<Integer> versionList;
   private final OrcFile.WriterVersion writerVersion;
 
-  // Same for metastore cache - maintains the same background buffer, but includes postscript.
-  // This will only be set if the file footer/metadata was read from disk.
-  private final ByteBuffer footerMetaAndPsBuffer;
+  protected OrcTail tail;
 
   public static class StripeInformationImpl
       implements StripeInformation {
@@ -207,6 +206,11 @@ public class ReaderImpl implements Reader {
   }
 
   @Override
+  public OrcProto.FileTail getFileTail() {
+    return tail.getFileTail();
+  }
+
+  @Override
   public int getRowIndexStride() {
     return rowIndexStride;
   }
@@ -256,6 +260,32 @@ public class ReaderImpl implements Reader {
       if (!Text.decode(header, 0 , magicLength).equals(OrcFile.MAGIC)) {
         throw new FileFormatException("Malformed ORC file " + path +
             ". Invalid postscript.");
+      }
+    }
+  }
+
+  /**
+   * Ensure this is an ORC file to prevent users from trying to read text
+   * files or RC files as ORC files.
+   * @param psLen the postscript length
+   * @param buffer the tail of the file
+   * @throws IOException
+   */
+  protected static void ensureOrcFooter(ByteBuffer buffer, int psLen) throws IOException {
+    int magicLength = OrcFile.MAGIC.length();
+    int fullLength = magicLength + 1;
+    if (psLen < fullLength || buffer.remaining() < fullLength) {
+      throw new FileFormatException("Malformed ORC file. Invalid postscript length " + psLen);
+    }
+
+    int offset = buffer.arrayOffset() + buffer.position() + buffer.limit() - fullLength;
+    byte[] array = buffer.array();
+    // now look for the magic string at the end of the postscript.
+    if (!Text.decode(array, offset, magicLength).equals(OrcFile.MAGIC)) {
+      // if it isn't there, this may be 0.11.0 version of the ORC file.
+      // Read the first 3 bytes from the buffer to check for the header
+      if (!Text.decode(buffer.array(), 0, magicLength).equals(OrcFile.MAGIC)) {
+        throw new FileFormatException("Malformed ORC file. Invalid postscript length " + psLen);
       }
     }
   }
@@ -316,7 +346,6 @@ public class ReaderImpl implements Reader {
     this.path = path;
     this.conf = options.getConfiguration();
     this.maxLength = options.getMaxLength();
-
     FileMetadata fileMetadata = options.getFileMetadata();
     if (fileMetadata != null) {
       this.compressionKind = fileMetadata.getCompressionKind();
@@ -334,38 +363,28 @@ public class ReaderImpl implements Reader {
       this.fileStats = fileMetadata.getFileStats();
       this.stripes = fileMetadata.getStripes();
       this.userMetadata = null; // not cached and not needed here
-      this.footerMetaAndPsBuffer = null;
     } else {
-      FileMetaInfo footerMetaData;
-      if (options.getFileMetaInfo() != null) {
-        footerMetaData = options.getFileMetaInfo();
-        this.footerMetaAndPsBuffer = null;
+      OrcTail orcTail = options.getOrcTail();
+      if (orcTail == null) {
+        tail = extractFileTail(fs, path, options.getMaxLength());
+        options.orcTail(tail);
       } else {
-        footerMetaData = extractMetaInfoFromFooter(fs, path,
-            options.getMaxLength());
-        this.footerMetaAndPsBuffer = footerMetaData.footerMetaAndPsBuffer;
+        tail = orcTail;
       }
-      options.fileMetaInfo(footerMetaData);
-      MetaInfoObjExtractor rInfo =
-          new MetaInfoObjExtractor(footerMetaData.compressionType,
-                                   footerMetaData.bufferSize,
-                                   footerMetaData.metadataSize,
-                                   footerMetaData.footerBuffer
-                                   );
-      this.compressionKind = rInfo.compressionKind;
-      this.codec = rInfo.codec;
-      this.bufferSize = rInfo.bufferSize;
-      this.metadataSize = rInfo.metadataSize;
-      this.stripeStats = rInfo.metadata.getStripeStatsList();
-      this.types = rInfo.footer.getTypesList();
-      this.rowIndexStride = rInfo.footer.getRowIndexStride();
-      this.contentLength = rInfo.footer.getContentLength();
-      this.numberOfRows = rInfo.footer.getNumberOfRows();
-      this.userMetadata = rInfo.footer.getMetadataList();
-      this.fileStats = rInfo.footer.getStatisticsList();
-      this.versionList = footerMetaData.versionList;
-      this.writerVersion = footerMetaData.writerVersion;
-      this.stripes = convertProtoStripesToStripes(rInfo.footer.getStripesList());
+      this.compressionKind = tail.getCompressionKind();
+      this.codec = tail.getCompressionCodec();
+      this.bufferSize = tail.getCompressionBufferSize();
+      this.metadataSize = tail.getMetadataSize();
+      this.versionList = tail.getPostScript().getVersionList();
+      this.types = tail.getFooter().getTypesList();
+      this.rowIndexStride = tail.getFooter().getRowIndexStride();
+      this.contentLength = tail.getFooter().getContentLength();
+      this.numberOfRows = tail.getFooter().getNumberOfRows();
+      this.userMetadata = tail.getFooter().getMetadataList();
+      this.fileStats = tail.getFooter().getStatisticsList();
+      this.writerVersion = tail.getWriterVersion();
+      this.stripes = tail.getStripes();
+      this.stripeStats = tail.getStripeStatisticsProto();
     }
     this.schema = OrcUtils.convertTypeFromProtobuf(this.types, 0);
   }
@@ -392,7 +411,7 @@ public class ReaderImpl implements Reader {
         Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)), footerSize, codec, bufferSize));
   }
 
-  private static OrcProto.Metadata extractMetadata(ByteBuffer bb, int metadataAbsPos,
+  public static OrcProto.Metadata extractMetadata(ByteBuffer bb, int metadataAbsPos,
       int metadataSize, CompressionCodec codec, int bufferSize) throws IOException {
     bb.position(metadataAbsPos);
     bb.limit(metadataAbsPos + metadataSize);
@@ -425,22 +444,55 @@ public class ReaderImpl implements Reader {
     return ps;
   }
 
-  private static FileMetaInfo extractMetaInfoFromFooter(FileSystem fs,
-                                                        Path path,
-                                                        long maxFileLength
-                                                        ) throws IOException {
+  public static OrcTail extractFileTail(ByteBuffer buffer)
+      throws IOException {
+    return extractFileTail(buffer, -1, -1);
+  }
+
+  public static OrcTail extractFileTail(ByteBuffer buffer, long fileLength, long modificationTime)
+      throws IOException {
+    int readSize = buffer.limit();
+    int psLen = buffer.get(readSize - 1) & 0xff;
+    int psOffset = readSize - 1 - psLen;
+    ensureOrcFooter(buffer, psLen);
+    byte[] psBuffer = new byte[psLen];
+    System.arraycopy(buffer.array(), psOffset, psBuffer, 0, psLen);
+    OrcProto.PostScript ps = OrcProto.PostScript.parseFrom(psBuffer);
+    int footerSize = (int) ps.getFooterLength();
+    CompressionCodec codec = WriterImpl
+        .createCodec(CompressionKind.valueOf(ps.getCompression().name()));
+    OrcProto.Footer footer = extractFooter(buffer,
+        (int) (buffer.position() + ps.getMetadataLength()),
+        footerSize, codec, (int) ps.getCompressionBlockSize());
+    OrcProto.FileTail.Builder fileTailBuilder = OrcProto.FileTail.newBuilder()
+        .setPostscriptLength(psLen)
+        .setPostscript(ps)
+        .setFooter(footer)
+        .setFileLength(fileLength);
+    // clear does not clear the contents but sets position to 0 and limit = capacity
+    buffer.clear();
+    return new OrcTail(fileTailBuilder.build(), buffer.slice(), modificationTime);
+  }
+
+  protected OrcTail extractFileTail(FileSystem fs, Path path,
+      long maxFileLength) throws IOException {
     FSDataInputStream file = fs.open(path);
-    ByteBuffer buffer = null, fullFooterBuffer = null;
-    OrcProto.PostScript ps = null;
-    OrcFile.WriterVersion writerVersion = null;
+    ByteBuffer buffer;
+    OrcProto.PostScript ps;
+    OrcProto.FileTail.Builder fileTailBuilder = OrcProto.FileTail.newBuilder();
+    long modificationTime;
     try {
       // figure out the size of the file using the option or filesystem
       long size;
       if (maxFileLength == Long.MAX_VALUE) {
-        size = fs.getFileStatus(path).getLen();
+        FileStatus fileStatus = fs.getFileStatus(path);
+        size = fileStatus.getLen();
+        modificationTime = fileStatus.getModificationTime();
       } else {
         size = maxFileLength;
+        modificationTime = -1;
       }
+      fileTailBuilder.setFileLength(size);
 
       //read last bytes into buffer to get PostScript
       int readSize = (int) Math.min(size, DIRECTORY_SIZE_GUESS);
@@ -456,13 +508,16 @@ public class ReaderImpl implements Reader {
       ensureOrcFooter(file, path, psLen, buffer);
       int psOffset = readSize - 1 - psLen;
       ps = extractPostScript(buffer, path, psLen, psOffset);
+      bufferSize = (int) ps.getCompressionBlockSize();
+      codec = WriterImpl.createCodec(CompressionKind.valueOf(ps.getCompression().name()));
+      fileTailBuilder.setPostscriptLength(psLen).setPostscript(ps);
 
       int footerSize = (int) ps.getFooterLength();
       int metadataSize = (int) ps.getMetadataLength();
-      writerVersion = extractWriterVersion(ps);
 
       //check if extra bytes need to be read
       int extra = Math.max(0, psLen + 1 + footerSize + metadataSize - readSize);
+      int tailSize = 1 + psLen + footerSize + metadataSize;
       if (extra > 0) {
         //more bytes need to be read, seek back to the right place and read extra bytes
         ByteBuffer extraBuf = ByteBuffer.allocate(extra + readSize);
@@ -473,17 +528,23 @@ public class ReaderImpl implements Reader {
         extraBuf.put(buffer);
         buffer = extraBuf;
         buffer.position(0);
-        fullFooterBuffer = buffer.slice();
-        buffer.limit(footerSize + metadataSize);
+        buffer.limit(tailSize);
+        readSize += extra;
+        psOffset = readSize - 1 - psLen;
       } else {
         //footer is already in the bytes in buffer, just adjust position, length
         buffer.position(psOffset - footerSize - metadataSize);
-        fullFooterBuffer = buffer.slice();
-        buffer.limit(psOffset);
+        buffer.limit(buffer.position() + tailSize);
       }
 
-      // remember position for later TODO: what later? this comment is useless
       buffer.mark();
+      int footerOffset = psOffset - footerSize;
+      buffer.position(footerOffset);
+      ByteBuffer footerBuffer = buffer.slice();
+      buffer.reset();
+      OrcProto.Footer footer = extractFooter(footerBuffer, 0, footerSize,
+          codec, bufferSize);
+      fileTailBuilder.setFooter(footer);
     } finally {
       try {
         file.close();
@@ -492,68 +553,15 @@ public class ReaderImpl implements Reader {
       }
     }
 
-    return new FileMetaInfo(
-        ps.getCompression().toString(),
-        (int) ps.getCompressionBlockSize(),
-        (int) ps.getMetadataLength(),
-        buffer,
-        ps.getVersionList(),
-        writerVersion,
-        fullFooterBuffer
-        );
-  }
-
-  protected static OrcFile.WriterVersion extractWriterVersion(OrcProto.PostScript ps) {
-    return (ps.hasWriterVersion()
-        ? getWriterVersion(ps.getWriterVersion()) : OrcFile.WriterVersion.ORIGINAL);
-  }
-
-  protected static List<StripeInformation> convertProtoStripesToStripes(
-      List<OrcProto.StripeInformation> stripes) {
-    List<StripeInformation> result = new ArrayList<StripeInformation>(stripes.size());
-    for (OrcProto.StripeInformation info : stripes) {
-      result.add(new StripeInformationImpl(info));
-    }
-    return result;
-  }
-
-  /**
-   * MetaInfoObjExtractor - has logic to create the values for the fields in ReaderImpl
-   *  from serialized fields.
-   * As the fields are final, the fields need to be initialized in the constructor and
-   *  can't be done in some helper function. So this helper class is used instead.
-   *
-   */
-  private static class MetaInfoObjExtractor{
-    final org.apache.orc.CompressionKind compressionKind;
-    final CompressionCodec codec;
-    final int bufferSize;
-    final int metadataSize;
-    final OrcProto.Metadata metadata;
-    final OrcProto.Footer footer;
-
-    MetaInfoObjExtractor(String codecStr, int bufferSize, int metadataSize, 
-        ByteBuffer footerBuffer) throws IOException {
-
-      this.compressionKind = org.apache.orc.CompressionKind.valueOf(codecStr.toUpperCase());
-      this.bufferSize = bufferSize;
-      this.codec = WriterImpl.createCodec(compressionKind);
-      this.metadataSize = metadataSize;
-
-      int position = footerBuffer.position();
-      int footerBufferSize = footerBuffer.limit() - footerBuffer.position() - metadataSize;
-
-      this.metadata = extractMetadata(footerBuffer, position, metadataSize, codec, bufferSize);
-      this.footer = extractFooter(
-          footerBuffer, position + metadataSize, footerBufferSize, codec, bufferSize);
-
-      footerBuffer.position(position);
-    }
+    ByteBuffer serializedTail = ByteBuffer.allocate(buffer.remaining());
+    serializedTail.put(buffer.slice());
+    serializedTail.rewind();
+    return new OrcTail(fileTailBuilder.build(), serializedTail, modificationTime);
   }
 
   @Override
   public ByteBuffer getSerializedFileFooter() {
-    return footerMetaAndPsBuffer;
+    return tail.getSerializedTail();
   }
 
   @Override
@@ -722,7 +730,11 @@ public class ReaderImpl implements Reader {
   }
 
   @Override
-  public List<StripeStatistics> getStripeStatistics() {
+  public List<StripeStatistics> getStripeStatistics() throws IOException {
+    if (stripeStats == null && metadata == null) {
+      metadata = extractMetadata(tail.getSerializedTail(), 0, metadataSize, codec, bufferSize);
+      stripeStats = metadata.getStripeStatsList();
+    }
     List<StripeStatistics> result = new ArrayList<>();
     for (OrcProto.StripeStatistics ss : stripeStats) {
       result.add(new StripeStatistics(ss.getColStatsList()));

@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.orc.FileMetadata;
 import org.apache.orc.impl.MemoryManager;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.OrcTail;
 
 /**
  * Contains factory methods to read or write ORC files.
@@ -70,6 +71,11 @@ public final class OrcFile extends org.apache.orc.OrcFile {
 
     public ReaderOptions fileMetadata(FileMetadata metadata) {
       super.fileMetadata(metadata);
+      return this;
+    }
+
+    public ReaderOptions orcTail(OrcTail orcTail) {
+      super.orcTail(orcTail);
       return this;
     }
   }

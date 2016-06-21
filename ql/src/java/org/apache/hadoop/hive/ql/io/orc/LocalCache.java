@@ -24,30 +24,29 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.FileInfo;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.FooterCache;
-import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
-import org.apache.orc.FileMetaInfo;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.orc.impl.OrcTail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-/** Local footer cache using Guava. Stores convoluted Java objects. */
-class LocalCache implements FooterCache {
+class LocalCache implements OrcInputFormat.FooterCache {
   private static final Logger LOG = LoggerFactory.getLogger(LocalCache.class);
-  private static boolean isDebugEnabled = LOG.isDebugEnabled();
+  private static final int DEFAULT_CACHE_INITIAL_CAPACITY = 1024;
+  private final Cache<Path, OrcTail> cache;
 
-  private final Cache<Path, FileInfo> cache;
-
-  public LocalCache(int numThreads, int cacheStripeDetailsSize) {
-    cache = CacheBuilder.newBuilder()
-      .concurrencyLevel(numThreads)
-      .initialCapacity(cacheStripeDetailsSize)
-      .maximumSize(cacheStripeDetailsSize)
-      .softValues()
-      .build();
+  LocalCache(int numThreads, int cacheStripeDetailsSize, boolean useSoftRef) {
+    CacheBuilder builder = CacheBuilder.newBuilder()
+        .initialCapacity(DEFAULT_CACHE_INITIAL_CAPACITY)
+        .concurrencyLevel(numThreads)
+        .maximumSize(cacheStripeDetailsSize);
+    if (useSoftRef) {
+      builder = builder.softValues();
+    }
+    cache = builder.build();
   }
 
   public void clear() {
@@ -55,49 +54,50 @@ class LocalCache implements FooterCache {
     cache.cleanUp();
   }
 
-  public void getAndValidate(List<HdfsFileStatusWithId> files, boolean isOriginal,
-      FileInfo[] result, ByteBuffer[] ppdResult) throws IOException {
+  public void put(Path path, OrcTail tail) {
+    cache.put(path, tail);
+  }
+
+  public OrcTail get(Path path) {
+    return cache.getIfPresent(path);
+  }
+
+  @Override
+  public void getAndValidate(final List<HadoopShims.HdfsFileStatusWithId> files,
+      final boolean isOriginal,
+      final OrcTail[] result, final ByteBuffer[] ppdResult)
+      throws IOException, HiveException {
     // TODO: should local cache also be by fileId? Preserve the original logic for now.
     assert result.length == files.size();
     int i = -1;
-    for (HdfsFileStatusWithId fileWithId : files) {
+    for (HadoopShims.HdfsFileStatusWithId fileWithId : files) {
       ++i;
       FileStatus file = fileWithId.getFileStatus();
       Path path = file.getPath();
-      Long fileId = fileWithId.getFileId();
-      FileInfo fileInfo = cache.getIfPresent(path);
-      if (isDebugEnabled) {
-        LOG.debug("Info " + (fileInfo == null ? "not " : "") + "cached for path: " + path);
+      OrcTail tail = cache.getIfPresent(path);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Serialized tail " + (tail == null ? "not " : "") + "cached for path: " + path);
       }
-      if (fileInfo == null) continue;
-      if ((fileId != null && fileInfo.fileId != null && fileId == fileInfo.fileId)
-          || (fileInfo.modificationTime == file.getModificationTime() &&
-          fileInfo.size == file.getLen())) {
-        result[i] = fileInfo;
+      if (tail == null) continue;
+      if (tail != null && file.getLen() == tail.getFileTail().getFileLength()
+          && file.getModificationTime() == tail.getFileModificationTime()) {
+        result[i] = tail;
         continue;
       }
       // Invalidate
       cache.invalidate(path);
-      if (isDebugEnabled) {
+      if (LOG.isDebugEnabled()) {
         LOG.debug("Meta-Info for : " + path + " changed. CachedModificationTime: "
-            + fileInfo.modificationTime + ", CurrentModificationTime: "
-            + file.getModificationTime() + ", CachedLength: " + fileInfo.size
+            + tail.getFileModificationTime() + ", CurrentModificationTime: "
+            + file.getModificationTime() + ", CachedLength: " + tail.getFileTail().getFileLength()
             + ", CurrentLength: " + file.getLen());
       }
     }
   }
 
-  public void put(Path path, FileInfo fileInfo) {
-    cache.put(path, fileInfo);
-  }
-
   @Override
-  public void put(Long fileId, FileStatus file, FileMetaInfo fileMetaInfo, Reader orcReader)
-      throws IOException {
-    cache.put(file.getPath(), new FileInfo(file.getModificationTime(), file.getLen(),
-        orcReader.getStripes(), orcReader.getStripeStatistics(), orcReader.getTypes(),
-        orcReader.getOrcProtoFileStatistics(), fileMetaInfo, orcReader.getWriterVersion(),
-        fileId));
+  public boolean hasPpd() {
+    return false;
   }
 
   @Override
@@ -106,7 +106,8 @@ class LocalCache implements FooterCache {
   }
 
   @Override
-  public boolean hasPpd() {
-    return false;
+  public void put(final OrcInputFormat.FooterCacheKey cacheKey, final OrcTail orcTail)
+      throws IOException {
+    put(cacheKey.getPath(), orcTail);
   }
 }

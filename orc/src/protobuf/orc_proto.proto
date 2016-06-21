@@ -220,3 +220,11 @@ message PostScript {
   // Leave this last in the record
   optional string magic = 8000;
 }
+
+// This gets serialized as part of OrcSplit, also used by footer cache.
+message FileTail {
+  optional PostScript postscript = 1;
+  optional Footer footer = 2;
+  optional uint64 fileLength = 3;
+  optional uint64 postscriptLength = 4;
+}

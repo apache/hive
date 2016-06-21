@@ -25,6 +25,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.orc.impl.MemoryManager;
+import org.apache.orc.impl.OrcTail;
 import org.apache.orc.impl.ReaderImpl;
 import org.apache.orc.impl.WriterImpl;
 
@@ -160,17 +161,15 @@ public class OrcFile {
   public static class ReaderOptions {
     private final Configuration conf;
     private FileSystem filesystem;
-    private FileMetaInfo fileMetaInfo; // TODO: this comes from some place.
     private long maxLength = Long.MAX_VALUE;
-    private FileMetadata fullFileMetadata; // Propagate from LLAP cache.
+    private OrcTail orcTail;
+    // TODO: We can generalize FileMetada interface. Make OrcTail implement FileMetadata interface
+    // and remove this class altogether. Both footer caching and llap caching just needs OrcTail.
+    // For now keeping this around to avoid complex surgery
+    private FileMetadata fileMetadata;
 
     public ReaderOptions(Configuration conf) {
       this.conf = conf;
-    }
-
-    public ReaderOptions fileMetaInfo(FileMetaInfo info) {
-      fileMetaInfo = info;
-      return this;
     }
 
     public ReaderOptions filesystem(FileSystem fs) {
@@ -183,8 +182,8 @@ public class OrcFile {
       return this;
     }
 
-    public ReaderOptions fileMetadata(FileMetadata metadata) {
-      this.fullFileMetadata = metadata;
+    public ReaderOptions orcTail(OrcTail tail) {
+      this.orcTail = tail;
       return this;
     }
 
@@ -196,16 +195,21 @@ public class OrcFile {
       return filesystem;
     }
 
-    public FileMetaInfo getFileMetaInfo() {
-      return fileMetaInfo;
-    }
-
     public long getMaxLength() {
       return maxLength;
     }
 
+    public OrcTail getOrcTail() {
+      return orcTail;
+    }
+
+    public ReaderOptions fileMetadata(final FileMetadata metadata) {
+      fileMetadata = metadata;
+      return this;
+    }
+
     public FileMetadata getFileMetadata() {
-      return fullFileMetadata;
+      return fileMetadata;
     }
   }
 
