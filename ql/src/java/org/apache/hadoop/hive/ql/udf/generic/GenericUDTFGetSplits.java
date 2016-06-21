@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.llap.Schema;
 import org.apache.hadoop.hive.llap.SubmitWorkInfo;
 import org.apache.hadoop.hive.llap.TypeDesc;
 import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.security.LlapSigner;
 import org.apache.hadoop.hive.llap.security.LlapSigner.Signable;
@@ -370,8 +371,14 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
         // 2. Generate the vertex/submit information for all events.
         if (i == 0) {
+          // The queryId could either be picked up from the current request being processed, or
+          // generated. The current request isn't exactly correct since the query is 'done' once we
+          // return the results. Generating a new one has the added benefit of working once this
+          // is moved out of a UDTF into a proper API.
+          // Setting this to the generated AppId which is unique.
           // Despite the differences in TaskSpec, the vertex spec should be the same.
-          signedSvs = createSignedVertexSpec(signer, taskSpec, applicationId, queryUser);
+          signedSvs = createSignedVertexSpec(signer, taskSpec, applicationId, queryUser,
+              applicationId.toString());
         }
 
         SubmitWorkInfo submitWorkInfo = new SubmitWorkInfo(applicationId,
@@ -426,10 +433,12 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   }
 
   private SignedMessage createSignedVertexSpec(LlapSigner signer, TaskSpec taskSpec,
-      ApplicationId applicationId, String queryUser) throws IOException {
-
-    final SignableVertexSpec.Builder svsb = Converters.convertTaskSpecToProto(
-        taskSpec, 0, applicationId.toString(), queryUser);
+      ApplicationId applicationId, String queryUser, String queryIdString) throws IOException {
+    QueryIdentifierProto queryIdentifierProto =
+        QueryIdentifierProto.newBuilder().setApplicationIdString(applicationId.toString())
+            .setDagIndex(taskSpec.getDagIdentifier()).setAppAttemptNumber(0).build();
+    final SignableVertexSpec.Builder svsb = Converters.constructSignableVertexSpec(
+        taskSpec, queryIdentifierProto, applicationId.toString(), queryUser, queryIdString);
     if (signer == null) {
       SignedMessage result = new SignedMessage();
       result.message = serializeVertexSpec(svsb);

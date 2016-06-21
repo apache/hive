@@ -44,8 +44,6 @@ public class SourceStateTracker {
   private final TaskCommunicatorContext taskCommunicatorContext;
   private final LlapTaskCommunicator taskCommunicator;
 
-  private final QueryIdentifierProto BASE_QUERY_IDENTIFIER;
-
   // Tracks vertices for which notifications have been registered
   private final Set<String> notificationRegisteredVertices = new HashSet<>();
 
@@ -58,19 +56,16 @@ public class SourceStateTracker {
                             LlapTaskCommunicator taskCommunicator) {
     this.taskCommunicatorContext = taskCommunicatorContext;
     this.taskCommunicator = taskCommunicator;
-    BASE_QUERY_IDENTIFIER = QueryIdentifierProto.newBuilder()
-        .setAppIdentifier(taskCommunicatorContext.getCurrentAppIdentifier()).build();
   }
 
   /**
    * To be invoked after each DAG completes.
    */
-  public synchronized void resetState(int newDagId) {
+  public synchronized void resetState(QueryIdentifierProto currentQueryIdentifierProto) {
     sourceInfoMap.clear();
     nodeInfoMap.clear();
     notificationRegisteredVertices.clear();
-    this.currentQueryIdentifier =
-        QueryIdentifierProto.newBuilder(BASE_QUERY_IDENTIFIER).setDagIdentifier(newDagId).build();
+    this.currentQueryIdentifier = currentQueryIdentifierProto;
   }
 
   /**

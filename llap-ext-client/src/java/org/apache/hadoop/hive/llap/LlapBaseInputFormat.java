@@ -154,8 +154,10 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
     LOG.debug("Socket connected");
     SignableVertexSpec vertex = SignableVertexSpec.parseFrom(submitWorkInfo.getVertexBinary());
-    String fragmentId = Converters.createTaskAttemptId(vertex.getVertexIdentifier(),
-        request.getFragmentNumber(), request.getAttemptNumber()).toString();
+
+    String fragmentId =
+        Converters.createTaskAttemptId(vertex.getQueryIdentifier(), vertex.getVertexIndex(),
+            request.getFragmentNumber(), request.getAttemptNumber()).toString();
     OutputStream socketStream = socket.getOutputStream();
     LlapOutputSocketInitMessage.Builder builder =
         LlapOutputSocketInitMessage.newBuilder().setFragmentId(fragmentId);

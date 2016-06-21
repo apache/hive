@@ -46,32 +46,27 @@ message GroupInputSpecProto {
   optional EntityDescriptorProto merged_input_descriptor = 3;
 }
 
-message VertexIdentifier {
-  optional string application_id_string = 1;
-  optional int32 app_attempt_number = 2;
-  optional int32 dag_id = 3;
-  optional int32 vertex_id = 4;
-}
-
 // The part of SubmitWork that can be signed 
 message SignableVertexSpec
 {
   optional string user = 1;
   optional int64 signatureKeyId = 2;
 
-  optional VertexIdentifier vertexIdentifier = 3;
+  optional QueryIdentifierProto query_identifier = 3;
+  optional string hive_query_id = 4;
   // Display names cannot be modified by the client for now. If needed, they should be sent to HS2 who will put them here.
-  optional string dag_name = 4;
-  optional string vertex_name = 5;
+  optional string dag_name = 5;
+  optional string vertex_name = 6;
+  optional int32 vertex_index = 7;
 
   // The core vertex stuff 
-  optional string token_identifier = 6;
-  optional EntityDescriptorProto processor_descriptor = 7;
-  repeated IOSpecProto input_specs = 8;
-  repeated IOSpecProto output_specs = 9;
-  repeated GroupInputSpecProto grouped_input_specs = 10;
+  optional string token_identifier = 8;
+  optional EntityDescriptorProto processor_descriptor = 9;
+  repeated IOSpecProto input_specs = 10;
+  repeated IOSpecProto output_specs = 11;
+  repeated GroupInputSpecProto grouped_input_specs = 12;
 
-  optional int32 vertex_parallelism = 11; // An internal field required for Tez.
+  optional int32 vertex_parallelism = 13; // An internal field required for Tez.
 }
 
 // Union
@@ -95,8 +90,9 @@ enum SourceStateProto {
 }
 
 message QueryIdentifierProto {
-  optional string app_identifier = 1;
-  optional int32 dag_identifier = 2;
+  optional string application_id_string = 1;
+  optional int32 dag_index= 2;
+  optional int32 app_attempt_number = 3;
 }
 
 /**
@@ -156,9 +152,8 @@ message SourceStateUpdatedResponseProto {
 }
 
 message QueryCompleteRequestProto {
-  optional string query_id = 1;
-  optional QueryIdentifierProto query_identifier = 2;
-  optional int64 delete_delay = 4 [default = 0];
+  optional QueryIdentifierProto query_identifier = 1;
+  optional int64 delete_delay = 2 [default = 0];
 }
 
 message QueryCompleteResponseProto {
