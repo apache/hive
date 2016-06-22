@@ -766,11 +766,6 @@ public class BeeLine implements Closeable {
       commands = Arrays.asList(cl.getOptionValues('e'));
     }
 
-    if (!commands.isEmpty() && getOpts().getScriptFile() != null) {
-      System.err.println("The '-e' and '-f' options cannot be specified simultaneously");
-      return 1;
-    }
-
     // TODO: temporary disable this for easier debugging
     /*
     if (url == null) {

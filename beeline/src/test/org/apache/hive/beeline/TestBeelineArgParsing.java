@@ -201,6 +201,16 @@ public class TestBeelineArgParsing {
   }
 
   /**
+   * Test beeline with -f and -e simultaneously
+   */
+  @Test
+  public void testCommandAndFileSimultaneously() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String args[] = new String[] {"-e", "myselect", "-f", "myscript"};
+    Assert.assertEquals(1, bl.initArgs(args));
+  }
+
+  /**
    * Displays the usage.
    */
   @Test
