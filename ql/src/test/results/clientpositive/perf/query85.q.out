@@ -73,10 +73,10 @@ Stage-0
                                     Select Operator [SEL_39] (rows=86969158 width=135)
                                       Output:["_col0","_col4","_col6","_col11","_col13","_col14","_col23"]
                                       Merge Join Operator [MERGEJOIN_107] (rows=86969158 width=135)
-                                        Conds:RS_36._col13, _col20, _col21=RS_37._col0, _col1, _col2(Inner),Output:["_col1","_col3","_col7","_col9","_col14","_col16","_col17"]
+                                        Conds:RS_36._col20, _col21, _col13=RS_37._col1, _col2, _col0(Inner),Output:["_col1","_col3","_col7","_col9","_col14","_col16","_col17"]
                                       <-Map 16 [SIMPLE_EDGE]
                                         SHUFFLE [RS_37]
-                                          PartitionCols:_col0, _col1, _col2
+                                          PartitionCols:_col1, _col2, _col0
                                           Select Operator [SEL_32] (rows=1583 width=204)
                                             Output:["_col0","_col1","_col2"]
                                             Filter Operator [FIL_101] (rows=1583 width=204)
@@ -85,7 +85,7 @@ Stage-0
                                                 default@customer_demographics,cd1,Tbl:COMPLETE,Col:NONE,Output:["cd_demo_sk","cd_marital_status","cd_education_status"]
                                       <-Reducer 7 [SIMPLE_EDGE]
                                         SHUFFLE [RS_36]
-                                          PartitionCols:_col13, _col20, _col21
+                                          PartitionCols:_col20, _col21, _col13
                                           Merge Join Operator [MERGEJOIN_106] (rows=79062870 width=135)
                                             Conds:RS_33._col0=RS_34._col9(Inner),Output:["_col1","_col3","_col7","_col9","_col13","_col14","_col16","_col17","_col20","_col21"]
                                           <-Map 6 [SIMPLE_EDGE]

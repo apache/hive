@@ -40,16 +40,18 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.util.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelColumnsAlignment;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 
@@ -58,7 +60,7 @@ public class PlanModifierForASTConv {
   private static final Logger LOG = LoggerFactory.getLogger(PlanModifierForASTConv.class);
 
 
-  public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema)
+  public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema, boolean alignColumns)
       throws CalciteSemanticException {
     RelNode newTopNode = rel;
     if (LOG.isDebugEnabled()) {
@@ -76,6 +78,15 @@ public class PlanModifierForASTConv {
     convertOpTree(newTopNode, (RelNode) null);
     if (LOG.isDebugEnabled()) {
       LOG.debug("Plan after nested convertOpTree\n " + RelOptUtil.toString(newTopNode));
+    }
+
+    if (alignColumns) {
+      HiveRelColumnsAlignment propagator = new HiveRelColumnsAlignment(
+          HiveRelFactories.HIVE_BUILDER.create(newTopNode.getCluster(), null));
+      newTopNode = propagator.align(newTopNode);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan after propagating order\n " + RelOptUtil.toString(newTopNode));
+      }
     }
 
     Pair<RelNode, RelNode> topSelparentPair = HiveCalciteUtil.getTopLevelSelect(newTopNode);

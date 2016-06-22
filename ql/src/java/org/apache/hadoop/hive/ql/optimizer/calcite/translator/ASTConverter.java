@@ -56,6 +56,7 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -90,9 +91,9 @@ public class ASTConverter {
     this.derivedTableCount = dtCounterInitVal;
   }
 
-  public static ASTNode convert(final RelNode relNode, List<FieldSchema> resultSchema)
+  public static ASTNode convert(final RelNode relNode, List<FieldSchema> resultSchema, boolean alignColumns)
       throws CalciteSemanticException {
-    RelNode root = PlanModifierForASTConv.convertOpTree(relNode, resultSchema);
+    RelNode root = PlanModifierForASTConv.convertOpTree(relNode, resultSchema, alignColumns);
     ASTConverter c = new ASTConverter(root, 0);
     return c.convert();
   }
@@ -142,10 +143,18 @@ public class ASTConverter {
         b = ASTBuilder.construct(HiveParser.TOK_GROUPBY, "TOK_GROUPBY");
       }
 
-      for (int i : groupBy.getGroupSet()) {
-        RexInputRef iRef = new RexInputRef(i, groupBy.getCluster().getTypeFactory()
-            .createSqlType(SqlTypeName.ANY));
+      HiveAggregate hiveAgg = (HiveAggregate) groupBy;
+      for (int pos : hiveAgg.getAggregateColumnsOrder()) {
+        RexInputRef iRef = new RexInputRef(groupBy.getGroupSet().nth(pos),
+            groupBy.getCluster().getTypeFactory().createSqlType(SqlTypeName.ANY));
         b.add(iRef.accept(new RexVisitor(schema)));
+      }
+      for (int pos = 0; pos < groupBy.getGroupCount(); pos++) {
+        if (!hiveAgg.getAggregateColumnsOrder().contains(pos)) {
+          RexInputRef iRef = new RexInputRef(groupBy.getGroupSet().nth(pos),
+              groupBy.getCluster().getTypeFactory().createSqlType(SqlTypeName.ANY));
+          b.add(iRef.accept(new RexVisitor(schema)));
+        }
       }
 
       //Grouping sets expressions

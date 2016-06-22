@@ -184,10 +184,12 @@ public class LimitPushdownOptimizer extends Transform {
           return false;
         }
         // Copy order
-        pRS.getConf().setOrder(cRS.getConf().getOrder().substring(
-                0, pRS.getConf().getOrder().length()));
-        pRS.getConf().setNullOrder(cRS.getConf().getNullOrder().substring(
-                0, pRS.getConf().getNullOrder().length()));
+        StringBuilder order = new StringBuilder(cRS.getConf().getOrder());
+        StringBuilder orderNull = new StringBuilder(cRS.getConf().getNullOrder());
+        order.append(pRS.getConf().getOrder().substring(order.length()));
+        orderNull.append(pRS.getConf().getNullOrder().substring(orderNull.length()));
+        pRS.getConf().setOrder(order.toString());
+        pRS.getConf().setNullOrder(orderNull.toString());
         // Copy limit
         pRS.getConf().setTopN(cRS.getConf().getTopN());
         pRS.getConf().setTopNMemoryUsage(cRS.getConf().getTopNMemoryUsage());
@@ -210,10 +212,10 @@ public class LimitPushdownOptimizer extends Transform {
     if (pKeys == null || pKeys.isEmpty()) {
       return false;
     }
-    if (cKeys.size() < pKeys.size()) {
+    if (cKeys.size() > pKeys.size()) {
       return false;
     }
-    for (int i = 0; i < pKeys.size(); i++) {
+    for (int i = 0; i < cKeys.size(); i++) {
       ExprNodeDesc expr = ExprNodeDescUtils.backtrack(cKeys.get(i), cRS, pRS);
       if (expr == null) {
         // cKey is not present in parent
