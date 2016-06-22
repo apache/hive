@@ -69,11 +69,11 @@ public class HivePointLookupOptimizerRule extends RelOptRule {
 
 
   // Minimum number of OR clauses needed to transform into IN clauses
-  private final int min;
+  private final int minNumORClauses;
 
-  public HivePointLookupOptimizerRule(int min) {
+  public HivePointLookupOptimizerRule(int minNumORClauses) {
     super(operand(Filter.class, any()));
-    this.min = min;
+    this.minNumORClauses = minNumORClauses;
   }
 
   public void onMatch(RelOptRuleCall call) {
@@ -84,7 +84,8 @@ public class HivePointLookupOptimizerRule extends RelOptRule {
     final RexNode condition = RexUtil.pullFactors(rexBuilder, filter.getCondition());
 
     // 1. We try to transform possible candidates
-    RexTransformIntoInClause transformIntoInClause = new RexTransformIntoInClause(rexBuilder, filter, min);
+    RexTransformIntoInClause transformIntoInClause = new RexTransformIntoInClause(rexBuilder, filter,
+            minNumORClauses);
     RexNode newCondition = transformIntoInClause.apply(condition);
 
     // 2. We merge IN expressions
@@ -109,12 +110,12 @@ public class HivePointLookupOptimizerRule extends RelOptRule {
   protected static class RexTransformIntoInClause extends RexShuttle {
     private final RexBuilder rexBuilder;
     private final Filter filterOp;
-    private final int min;
+    private final int minNumORClauses;
 
-    RexTransformIntoInClause(RexBuilder rexBuilder, Filter filterOp, int min) {
+    RexTransformIntoInClause(RexBuilder rexBuilder, Filter filterOp, int minNumORClauses) {
       this.filterOp = filterOp;
       this.rexBuilder = rexBuilder;
-      this.min = min;
+      this.minNumORClauses = minNumORClauses;
     }
 
     @Override public RexNode visitCall(RexCall call) {
@@ -128,9 +129,9 @@ public class HivePointLookupOptimizerRule extends RelOptRule {
             if (operand.getKind() == SqlKind.OR) {
               try {
                 newOperand = transformIntoInClauseCondition(rexBuilder,
-                        filterOp.getRowType(), operand, min);
+                        filterOp.getRowType(), operand, minNumORClauses);
                 if (newOperand == null) {
-                  return call;
+                  newOperand = operand;
                 }
               } catch (SemanticException e) {
                 LOG.error("Exception in HivePointLookupOptimizerRule", e);
@@ -146,7 +147,7 @@ public class HivePointLookupOptimizerRule extends RelOptRule {
         case OR:
           try {
             node = transformIntoInClauseCondition(rexBuilder,
-                    filterOp.getRowType(), call, min);
+                    filterOp.getRowType(), call, minNumORClauses);
             if (node == null) {
               return call;
             }
@@ -162,23 +163,19 @@ public class HivePointLookupOptimizerRule extends RelOptRule {
     }
 
     private static RexNode transformIntoInClauseCondition(RexBuilder rexBuilder, RelDataType inputSchema,
-            RexNode condition, int min) throws SemanticException {
+            RexNode condition, int minNumORClauses) throws SemanticException {
       assert condition.getKind() == SqlKind.OR;
 
       // 1. We extract the information necessary to create the predicate for the new
       //    filter
       ListMultimap<RexInputRef,RexLiteral> columnConstantsMap = ArrayListMultimap.create();
       ImmutableList<RexNode> operands = RexUtil.flattenOr(((RexCall) condition).getOperands());
-      if (operands.size() < min) {
+      if (operands.size() < minNumORClauses) {
         // We bail out
         return null;
       }
       for (int i = 0; i < operands.size(); i++) {
-        RexNode operand = operands.get(i);
-
-        final RexNode operandCNF = RexUtil.toCnf(rexBuilder, operand);
-        final List<RexNode> conjunctions = RelOptUtil.conjunctions(operandCNF);
-
+        final List<RexNode> conjunctions = RelOptUtil.conjunctions(operands.get(i));
         for (RexNode conjunction: conjunctions) {
           // 1.1. If it is not a RexCall, we bail out
           if (!(conjunction instanceof RexCall)) {

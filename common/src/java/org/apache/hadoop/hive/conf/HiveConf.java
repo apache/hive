@@ -990,6 +990,9 @@ public class HiveConf extends Configuration {
 
     // CBO related
     HIVE_CBO_ENABLED("hive.cbo.enable", true, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
+    HIVE_CBO_CNF_NODES_LIMIT("hive.cbo.cnf.maxnodes", -1, "When converting to conjunctive normal form (CNF), fail if" +
+        "the expression exceeds this threshold; the threshold is expressed in terms of number of nodes (leaves and" +
+        "interior nodes). -1 to not set up a threshold."),
     HIVE_CBO_RETPATH_HIVEOP("hive.cbo.returnpath.hiveop", false, "Flag to control calcite plan to hive operator conversion"),
     HIVE_CBO_EXTENDED_COST_MODEL("hive.cbo.costmodel.extended", false, "Flag to control enabling the extended cost model based on"
                                  + "CPU, IO and cardinality. Otherwise, the cost model is based on cardinality."),
