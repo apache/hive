@@ -32,8 +32,12 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.orc.CompressionCodec;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
@@ -77,8 +81,9 @@ public class OrcEncodedDataConsumer
     stripes[m.getStripeIx()] = m;
   }
 
-  private static ColumnVector createColumn(OrcProto.Type type,
-                                           int batchSize) {
+  private static ColumnVector createColumn(List<OrcProto.Type> types,
+      final int columnId, int batchSize) {
+    OrcProto.Type type = types.get(columnId);
     switch (type.getKind()) {
       case BOOLEAN:
       case BYTE:
@@ -100,6 +105,28 @@ public class OrcEncodedDataConsumer
       case DECIMAL:
         return new DecimalColumnVector(batchSize, type.getPrecision(),
             type.getScale());
+      case STRUCT: {
+        List<Integer> subtypeIdxs = type.getSubtypesList();
+        ColumnVector[] fieldVector = new ColumnVector[subtypeIdxs.size()];
+        for(int i=0; i < fieldVector.length; ++i) {
+          fieldVector[i] = createColumn(types, subtypeIdxs.get(i), batchSize);
+        }
+        return new StructColumnVector(batchSize, fieldVector);
+      }
+      case UNION: {
+        List<Integer> subtypeIdxs = type.getSubtypesList();
+        ColumnVector[] fieldVector = new ColumnVector[subtypeIdxs.size()];
+        for(int i=0; i < fieldVector.length; ++i) {
+          fieldVector[i] = createColumn(types, subtypeIdxs.get(i), batchSize);
+        }
+        return new UnionColumnVector(batchSize, fieldVector);
+      }
+      case LIST:
+        return new ListColumnVector(batchSize, createColumn(types, type.getSubtypes(0), batchSize));
+      case MAP:
+        return new MapColumnVector(batchSize,
+            createColumn(types, type.getSubtypes(0), batchSize),
+            createColumn(types, type.getSubtypes(1), batchSize));
       default:
         throw new IllegalArgumentException("LLAP does not support " +
             type.getKind());
@@ -151,9 +178,9 @@ public class OrcEncodedDataConsumer
         int[] columnMapping = batch.getColumnIxs();
         for (int idx = 0; idx < batch.getColumnIxs().length; idx++) {
           if (cvb.cols[idx] == null) {
-            // skip over the top level struct, but otherwise assume no complex
-            // types
-            cvb.cols[idx] = createColumn(types.get(columnMapping[idx]), batchSize);
+            // Orc store rows inside a root struct (hive writes it this way).
+            // When we populate column vectors we skip over the root struct.
+            cvb.cols[idx] = createColumn(types, columnMapping[idx], batchSize);
           }
           cvb.cols[idx].ensureSize(batchSize, false);
           columnReaders[idx].nextVector(cvb.cols[idx], null, batchSize);
