@@ -45,7 +45,7 @@ SELECT sum(hash(*))
 FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin;
 
 SELECT sum(hash(*))
-FROM hundredorc t1 JOIN hundredorc t2 ON t2.bin = t2.bin;
+FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin;
 
 EXPLAIN 
 SELECT count(*), bin
@@ -55,3 +55,9 @@ GROUP BY bin;
 SELECT count(*), bin
 FROM hundredorc
 GROUP BY bin;
+
+-- HIVE-14045: Involve a binary vector scratch column for small table result (Native Vector MapJoin).
+
+EXPLAIN
+SELECT t1.i, t1.bin, t2.bin
+FROM hundredorc t1 JOIN hundredorc t2 ON t1.i = t2.i;

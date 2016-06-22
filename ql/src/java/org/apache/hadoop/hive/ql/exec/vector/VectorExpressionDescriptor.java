@@ -75,6 +75,7 @@ public class VectorExpressionDescriptor {
     TIMESTAMP               (0x080),
     INTERVAL_YEAR_MONTH     (0x100),
     INTERVAL_DAY_TIME       (0x200),
+    BINARY                  (0x400),
     DATETIME_FAMILY         (DATE.value | TIMESTAMP.value),
     INTERVAL_FAMILY         (INTERVAL_YEAR_MONTH.value | INTERVAL_DAY_TIME.value),
     INT_INTERVAL_YEAR_MONTH     (INT_FAMILY.value | INTERVAL_YEAR_MONTH.value),
@@ -109,6 +110,8 @@ public class VectorExpressionDescriptor {
         return CHAR;
       } else if (VectorizationContext.varcharTypePattern.matcher(lower).matches()) {
         return VARCHAR;
+      } else if (lower.equals("binary")) {
+        return BINARY;
       } else if (VectorizationContext.decimalTypePattern.matcher(lower).matches()) {
         return DECIMAL;
       } else if (lower.equals("timestamp")) {
@@ -163,7 +166,8 @@ public class VectorExpressionDescriptor {
         return "Decimal";
       } else if (argType == STRING ||
                  argType == CHAR ||
-                 argType == VARCHAR) {
+                 argType == VARCHAR ||
+                 argType == BINARY) {
         return "String";
       } else {
         return "None";
