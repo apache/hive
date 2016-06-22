@@ -39,6 +39,7 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -175,6 +176,7 @@ public class TestBeeLineWithArgs {
 
     // Put the script content in a temp file
     File scriptFile = File.createTempFile(this.getClass().getSimpleName(), "temp");
+    System.out.println("script file is " + scriptFile.getAbsolutePath());
     scriptFile.deleteOnExit();
     PrintStream os = new PrintStream(new FileOutputStream(scriptFile));
     os.print(scriptText);
@@ -655,7 +657,7 @@ public class TestBeeLineWithArgs {
 
   @Test
   public void testEmbeddedBeelineConnection() throws Throwable{
-    String embeddedJdbcURL = BeeLine.BEELINE_DEFAULT_JDBC_URL+"/Default";
+    String embeddedJdbcURL = Utils.URL_PREFIX+"/Default";
     List<String> argList = getBaseArgs(embeddedJdbcURL);
 	  argList.add("--hivevar");
     argList.add("DUMMY_TBL=embedded_table");
@@ -770,7 +772,7 @@ public class TestBeeLineWithArgs {
 
   @Test
   public void testEmbeddedBeelineOutputs() throws Throwable{
-    String embeddedJdbcURL = BeeLine.BEELINE_DEFAULT_JDBC_URL+"/Default";
+    String embeddedJdbcURL = Utils.URL_PREFIX+"/Default";
     List<String> argList = getBaseArgs(embeddedJdbcURL);
     // Set to non-zk lock manager to avoid trying to connect to zookeeper
     final String SCRIPT_TEXT =
@@ -843,4 +845,22 @@ public class TestBeeLineWithArgs {
 
   }
 
+  /**
+   * Attempt to execute a simple script file with the usage of user & password variables in URL.
+   * Test for presence of an expected pattern
+   * in the output (stdout or stderr), fail if not found
+   * Print PASSED or FAILED
+   */
+  @Test
+  public void testConnectionWithURLParams() throws Throwable {
+    final String EXPECTED_PATTERN = " hivetest ";
+    List<String> argList = new ArrayList<String>();
+    argList.add("-d");
+    argList.add(BeeLine.BEELINE_DEFAULT_JDBC_DRIVER);
+    argList.add("-u");
+    argList.add(miniHS2.getBaseJdbcURL() + ";user=hivetest;password=hive");
+    String SCRIPT_TEXT = "select current_user();";
+
+    testScriptFile( SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+  }
 }
