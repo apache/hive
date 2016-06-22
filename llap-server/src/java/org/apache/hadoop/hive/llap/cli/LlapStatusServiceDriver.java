@@ -19,7 +19,10 @@
 package org.apache.hadoop.hive.llap.cli;
 
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -70,19 +73,29 @@ public class LlapStatusServiceDriver {
     conf = (ss != null) ? ss.getConf() : new HiveConf(SessionState.class);
   }
 
+  /**
+   * Parse command line options.
+   *
+   * @param args
+   * @return command line options.
+   */
+  public LlapStatusOptions parseOptions(String[] args) throws LlapStatusCliException {
 
-  public int run(String[] args) {
+    LlapStatusOptionsProcessor optionsProcessor = new LlapStatusOptionsProcessor();
+    LlapStatusOptions options;
+    try {
+      options = optionsProcessor.processOptions(args);
+      return options;
+    } catch (Exception e) {
+      LOG.info("Failed to parse arguments", e);
+      throw new LlapStatusCliException(ExitCode.INCORRECT_USAGE, "Incorrect usage");
+    }
+  }
+
+  public int run(LlapStatusOptions options) {
 
     SliderClient sliderClient = null;
     try {
-      LlapStatusOptionsProcessor optionsProcessor = new LlapStatusOptionsProcessor();
-      LlapStatusOptions options;
-      try {
-        options = optionsProcessor.processOptions(args);
-      } catch (Exception e) {
-        LOG.info("Failed to parse arguments", e);
-        return ExitCode.INCORRECT_USAGE.getInt();
-      }
 
       for (String f : LlapDaemonConfiguration.DAEMON_CONFIGS) {
         conf.addResource(f);
@@ -110,6 +123,9 @@ public class LlapStatusServiceDriver {
                 " This tool works with clusters deployed by Slider/YARN";
         LOG.info(message);
         return ExitCode.INCORRECT_USAGE.getInt();
+      }
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Using appName: {}", appName);
       }
 
       try {
@@ -157,7 +173,7 @@ public class LlapStatusServiceDriver {
         return ret.getInt();
       } else {
         try {
-          ret = populateAppStatusFromLlapRegistry(options, appStatusBuilder);
+          ret = populateAppStatusFromLlapRegistry(appName, appStatusBuilder);
         } catch (LlapStatusCliException e) {
           logError(e);
           return e.getExitCode().getInt();
@@ -382,16 +398,16 @@ public class LlapStatusServiceDriver {
 
   /**
    *
-   * @param options
+   * @param appName
    * @param appStatusBuilder
    * @return an ExitCode. An ExitCode other than ExitCode.SUCCESS implies future progress not possible
    * @throws LlapStatusCliException
    */
-  private ExitCode populateAppStatusFromLlapRegistry(LlapStatusOptions options, AppStatusBuilder appStatusBuilder) throws
+  private ExitCode populateAppStatusFromLlapRegistry(String appName, AppStatusBuilder appStatusBuilder) throws
       LlapStatusCliException {
     Configuration llapRegistryConf= new Configuration(conf);
     llapRegistryConf
-        .set(HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, "@" + options.getName());
+        .set(HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, "@" + appName);
     LlapRegistryService llapRegistry;
     try {
       llapRegistry = LlapRegistryService.getClient(llapRegistryConf);
@@ -836,12 +852,35 @@ public class LlapStatusServiceDriver {
 
   public static void main(String[] args) {
     LOG.info("LLAP status invoked with arguments = {}", args);
-    int ret;
+    int ret = ExitCode.SUCCESS.getInt();
+
+    LlapStatusServiceDriver statusServiceDriver = null;
+    LlapStatusOptions options = null;
     try {
-      LlapStatusServiceDriver statusServiceDriver = new LlapStatusServiceDriver();
-      ret = statusServiceDriver.run(args);
+      statusServiceDriver = new LlapStatusServiceDriver();
+      options = statusServiceDriver.parseOptions(args);
+    } catch (Throwable t) {
+      logError(t);
+      if (t instanceof LlapStatusCliException) {
+        LlapStatusCliException ce = (LlapStatusCliException) t;
+        ret = ce.getExitCode().getInt();
+      } else {
+        ret = ExitCode.INTERNAL_ERROR.getInt();
+      }
+    } finally {
+      LOG.info("LLAP status finished");
+    }
+    if (ret != 0 || options == null) { // Failure / help
+      System.exit(ret);
+    }
+
+    try {
+      ret = statusServiceDriver.run(options);
       if (ret == ExitCode.SUCCESS.getInt()) {
-        try (PrintWriter pw = new PrintWriter(System.out)) {
+        try (OutputStream os = options.getOutputFile() == null ? System.out :
+            new BufferedOutputStream(
+                new FileOutputStream(options.getOutputFile())); PrintWriter pw = new PrintWriter(
+            os)) {
           statusServiceDriver.outputJson(pw);
         }
       }
