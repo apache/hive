@@ -47,6 +47,7 @@ import org.apache.hadoop.util.StringUtils;
 import javax.sql.DataSource;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -2918,15 +2919,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (connPool != null) return;
 
     String driverUrl = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORECONNECTURLKEY);
-    String user = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME);
-    String passwd;
-    try {
-      passwd = ShimLoader.getHadoopShims().getPassword(conf,
-        HiveConf.ConfVars.METASTOREPWD.varname);
-    } catch (IOException err) {
-      throw new SQLException("Error getting metastore password", err);
-    }
-    String connectionPooler = HiveConf.getVar(conf,
+    String user = getMetastoreJdbcUser(conf);
+    String passwd = getMetastoreJdbcPasswd(conf);
+    String connectionPooler = conf.getVar(
       HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE).toLowerCase();
 
     if ("bonecp".equals(connectionPooler)) {
@@ -2947,8 +2942,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       // This doesn't get used, but it's still necessary, see
       // http://svn.apache.org/viewvc/commons/proper/dbcp/branches/DBCP_1_4_x_BRANCH/doc/ManualPoolingDataSourceExample.java?view=markup
       PoolableConnectionFactory poolConnFactory =
-        new PoolableConnectionFactory(connFactory, objectPool, null, null, false, true);
+          new PoolableConnectionFactory(connFactory, objectPool, null, null, false, true);
       connPool = new PoolingDataSource(objectPool);
+    } else if ("none".equals(connectionPooler)) {
+      LOG.info("Choosing not to pool JDBC connections");
+      connPool = new NoPoolConnectionPool(conf);
     } else {
       throw new RuntimeException("Unknown JDBC connection pooling " + connectionPooler);
     }
@@ -3417,4 +3415,118 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
     }
   }
+
+  private static String getMetastoreJdbcUser(HiveConf conf) {
+    return conf.getVar(HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME);
+  }
+
+  private static String getMetastoreJdbcPasswd(HiveConf conf) throws SQLException {
+    try {
+      return ShimLoader.getHadoopShims().getPassword(conf,
+          HiveConf.ConfVars.METASTOREPWD.varname);
+    } catch (IOException err) {
+      throw new SQLException("Error getting metastore password", err);
+    }
+  }
+
+  private static class NoPoolConnectionPool implements DataSource {
+    // Note that this depends on the fact that no-one in this class calls anything but
+    // getConnection.  If you want to use any of the Logger or wrap calls you'll have to
+    // implement them.
+    private final HiveConf conf;
+    private Driver driver;
+    private String connString;
+    private String user;
+    private String passwd;
+
+    public NoPoolConnectionPool(HiveConf conf) {
+      this.conf = conf;
+    }
+
+    @Override
+    public Connection getConnection() throws SQLException {
+      if (user == null) {
+        user = getMetastoreJdbcUser(conf);
+        passwd = getMetastoreJdbcPasswd(conf);
+      }
+      return getConnection(user, passwd);
+    }
+
+    @Override
+    public Connection getConnection(String username, String password) throws SQLException {
+      // Find the JDBC driver
+      if (driver == null) {
+        String driverName = conf.getVar(HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER);
+        if (driverName == null || driverName.equals("")) {
+          String msg = "JDBC driver for transaction db not set in configuration " +
+              "file, need to set " + HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER.varname;
+          LOG.error(msg);
+          throw new RuntimeException(msg);
+        }
+        try {
+          LOG.info("Going to load JDBC driver " + driverName);
+          driver = (Driver) Class.forName(driverName).newInstance();
+        } catch (InstantiationException e) {
+          throw new RuntimeException("Unable to instantiate driver " + driverName + ", " +
+              e.getMessage(), e);
+        } catch (IllegalAccessException e) {
+          throw new RuntimeException(
+              "Unable to access driver " + driverName + ", " + e.getMessage(),
+              e);
+        } catch (ClassNotFoundException e) {
+          throw new RuntimeException("Unable to find driver " + driverName + ", " + e.getMessage(),
+              e);
+        }
+        connString = conf.getVar(HiveConf.ConfVars.METASTORECONNECTURLKEY);
+      }
+
+      try {
+        LOG.info("Connecting to transaction db with connection string " + connString);
+        Properties connectionProps = new Properties();
+        connectionProps.setProperty("user", username);
+        connectionProps.setProperty("password", password);
+        Connection conn = driver.connect(connString, connectionProps);
+        conn.setAutoCommit(false);
+        return conn;
+      } catch (SQLException e) {
+        throw new RuntimeException("Unable to connect to transaction manager using " + connString
+            + ", " + e.getMessage(), e);
+      }
+    }
+
+    @Override
+    public PrintWriter getLogWriter() throws SQLException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setLogWriter(PrintWriter out) throws SQLException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setLoginTimeout(int seconds) throws SQLException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getLoginTimeout() throws SQLException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+      throw new UnsupportedOperationException();
+    }
+  };
 }
