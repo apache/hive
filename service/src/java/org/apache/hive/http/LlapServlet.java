@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.cli.LlapStatusOptionsProcessor;
 import org.apache.hadoop.hive.llap.cli.LlapStatusServiceDriver;
 
 @SuppressWarnings("serial")
@@ -97,7 +98,7 @@ public class LlapServlet extends HttpServlet {
 
         LOG.info("Retrieving info for cluster: " + clusterName);
         LlapStatusServiceDriver driver = new LlapStatusServiceDriver();
-        int ret = driver.run(new String[] { "-n", clusterName });
+        int ret = driver.run(new LlapStatusOptionsProcessor.LlapStatusOptions(clusterName));
         if (ret == LlapStatusServiceDriver.ExitCode.SUCCESS.getInt()) {
           driver.outputJson(writer);
         }
