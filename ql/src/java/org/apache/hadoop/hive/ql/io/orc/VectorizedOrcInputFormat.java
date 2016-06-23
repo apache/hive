@@ -59,7 +59,6 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     private final long length;
     private float progress = 0.0f;
     private VectorizedRowBatchCtx rbCtx;
-    private final boolean[] columnsToIncludeTruncated;
     private final Object[] partitionValues;
     private boolean addPartitionCols = true;
 
@@ -102,8 +101,6 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
 
       this.reader = file.rowsOptions(options);
 
-      columnsToIncludeTruncated = rbCtx.getColumnsToIncludeTruncated(conf);
-
       int partitionColumnCount = rbCtx.getPartitionColumnCount();
       if (partitionColumnCount > 0) {
         partitionValues = new Object[partitionColumnCount];
@@ -145,7 +142,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
 
     @Override
     public VectorizedRowBatch createValue() {
-      return rbCtx.createVectorizedRowBatch(columnsToIncludeTruncated);
+      return rbCtx.createVectorizedRowBatch();
     }
 
     @Override

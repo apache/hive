@@ -183,8 +183,8 @@ public class VectorExtractRow {
     final int projectionColumnNum = projectionColumnNums[logicalColumnIndex];
     ColumnVector colVector = batch.cols[projectionColumnNum];
     if (colVector == null) {
-      // In rare cases, the planner will not include columns for reading but other parts of
-      // execution will ask for but not use them..
+      // The planner will not include unneeded columns for reading but other parts of execution
+      // may ask for them..
       return null;
     }
     int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
