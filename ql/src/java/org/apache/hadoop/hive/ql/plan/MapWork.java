@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.ql.exec.Utilities;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -209,16 +211,26 @@ public class MapWork extends BaseWork {
     }
   }
 
-  public void deriveLlap(Configuration conf) {
+  public void deriveLlap(Configuration conf, boolean isExecDriver) {
     boolean hasLlap = false, hasNonLlap = false, hasAcid = false;
     // Assume the IO is enabled on the daemon by default. We cannot reasonably check it here.
-    boolean isLlapOn = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENABLED, llapMode),
-        canWrapAny = isLlapOn && HiveInputFormat.canWrapAnyForLlap(conf, this);
+    boolean isLlapOn = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENABLED, llapMode);
+    boolean canWrapAny = false, doCheckIfs = false;
+    if (isLlapOn) {
+      // We can wrap inputs if the execution is vectorized, or if we use a wrapper.
+      canWrapAny = Utilities.getUseVectorizedInputFileFormat(conf, this);
+      // ExecDriver has no plan path, so we cannot derive VRB stuff for the wrapper.
+      if (!canWrapAny && !isExecDriver) {
+        canWrapAny = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED);
+        doCheckIfs = true;
+      }
+    }
     boolean hasPathToPartInfo = (pathToPartitionInfo != null && !pathToPartitionInfo.isEmpty());
     if (canWrapAny && hasPathToPartInfo) {
       assert isLlapOn;
       for (PartitionDesc part : pathToPartitionInfo.values()) {
-        boolean isUsingLlapIo = HiveInputFormat.canWrapForLlap(part.getInputFileFormatClass());
+        boolean isUsingLlapIo = HiveInputFormat.canWrapForLlap(
+            part.getInputFileFormatClass(), doCheckIfs);
         if (isUsingLlapIo) {
           if (part.getTableDesc() != null &&
               AcidUtils.isTablePropertyTransactional(part.getTableDesc().getProperties())) {

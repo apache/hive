@@ -74,10 +74,14 @@ import org.apache.hadoop.hive.metastore.Metastore.SplitInfos;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Directory;
+import org.apache.hadoop.hive.ql.io.BatchToRowInputFormat;
+import org.apache.hadoop.hive.ql.io.BatchToRowReader;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -141,7 +145,7 @@ import com.google.protobuf.CodedInputStream;
 public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   InputFormatChecker, VectorizedInputFormatInterface, LlapWrappableInputFormatInterface,
   SelfDescribingInputFormatInterface, AcidInputFormat<NullWritable, OrcStruct>,
-  CombineHiveInputFormat.AvoidSplitCombination {
+  CombineHiveInputFormat.AvoidSplitCombination, BatchToRowInputFormat {
 
   static enum SplitStrategyKind {
     HYBRID,
@@ -2187,5 +2191,13 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   @VisibleForTesting
   protected ExternalFooterCachesByConf createExternalCaches() {
     return null; // The default ones are created in case of null; tests override this.
+  }
+
+
+  @Override
+  public BatchToRowReader<?, ?> getWrapper(
+      org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch> vrr,
+      VectorizedRowBatchCtx vrbCtx, List<Integer> includedCols) {
+    return new OrcOiBatchToRowReader(vrr, vrbCtx, includedCols);
   }
 }

@@ -5570,7 +5570,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -5620,7 +5620,7 @@ STAGE PLANS:
                             Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
                             Target Vertex: Map 1
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

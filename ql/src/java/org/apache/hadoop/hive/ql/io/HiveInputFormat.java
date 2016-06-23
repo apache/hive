@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import java.util.Arrays;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -207,6 +210,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
     boolean isSupported = inputFormat instanceof LlapWrappableInputFormatInterface;
     boolean isVectorized = Utilities.getUseVectorizedInputFileFormat(conf);
+    if (!isVectorized) {
+      // Pretend it's vectorized.
+      isVectorized = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED)
+          && (Utilities.getPlanPath(conf) != null);
+    }
     if (!isSupported || !isVectorized) {
       LOG.info("Not using llap for " + inputFormat + ": supported = " + isSupported
           + ", vectorized = " + isVectorized);
@@ -224,12 +232,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return castInputFormat(llapIo.getInputFormat(inputFormat));
   }
 
-  public static boolean canWrapAnyForLlap(Configuration conf, MapWork mapWork) {
-    return Utilities.getUseVectorizedInputFileFormat(conf, mapWork);
-  }
 
-  public static boolean canWrapForLlap(Class<? extends InputFormat> inputFormatClass) {
-    return LlapWrappableInputFormatInterface.class.isAssignableFrom(inputFormatClass);
+
+  public static boolean canWrapForLlap(Class<? extends InputFormat> clazz, boolean checkVector) {
+    return LlapWrappableInputFormatInterface.class.isAssignableFrom(clazz) &&
+        (!checkVector || BatchToRowInputFormat.class.isAssignableFrom(clazz));
   }
 
   @SuppressWarnings("unchecked")
