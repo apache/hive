@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HivePartitioner;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
+import org.apache.hadoop.hive.ql.io.StreamingOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -146,7 +147,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     Path taskOutputTempPath;
     Path[] outPaths;
     Path[] finalPaths;
-    RecordWriter[] outWriters;
+    RecordWriter[] outWriters; // TODO# this
     RecordUpdater[] updaters;
     Stat stat;
     int acidLastBucket = -1;
@@ -181,14 +182,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       } else {
         return new Path(tmpPath, taskId);
       }
-    }
-
-    public void setOutWriters(RecordWriter[] out) {
-      outWriters = out;
-    }
-
-    public RecordWriter[] getOutWriters() {
-      return outWriters;
     }
 
     public void closeWriters(boolean abort) throws HiveException {
@@ -1012,8 +1005,16 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     row_count.set(numRows);
     LOG.info(toString() + ": records written - " + numRows);
 
-    if (!bDynParts && !filesCreated && !"tez".equalsIgnoreCase(hconf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname))) {
-      createBucketFiles(fsp);
+    if (!bDynParts && !filesCreated) {
+      boolean skipFiles = "tez".equalsIgnoreCase(
+          HiveConf.getVar(hconf, ConfVars.HIVE_EXECUTION_ENGINE));
+      if (skipFiles) {
+        Class<?> clazz = conf.getTableInfo().getOutputFileFormatClass();
+        skipFiles = !StreamingOutputFormat.class.isAssignableFrom(clazz);
+      }
+      if (!skipFiles) {
+        createBucketFiles(fsp);
+      }
     }
 
     lastProgressReport = System.currentTimeMillis();
