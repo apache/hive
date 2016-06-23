@@ -35,17 +35,26 @@ insert overwrite table src_x2
 select value,"" where a.key > 50 AND a.key < 100
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
-  Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
-  Stage-2 depends on stages: Stage-0
-  Stage-3
+  Stage-0 is a root stage
+  Stage-2 is a root stage
+  Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
-  Stage-6 depends on stages: Stage-5
+  Stage-1 depends on stages: Stage-5, Stage-4, Stage-7
+  Stage-3 depends on stages: Stage-1
+  Stage-4
+  Stage-6
+  Stage-7 depends on stages: Stage-6
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-0
+      Alter Table Operator:
+        Alter Table
+          type: drop props
+          old name: default.src_x2
+          properties:
+            COLUMN_STATS_ACCURATE 
+
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -82,16 +91,16 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.hbase.HBaseSerDe
                       name: default.src_x2
 
-  Stage: Stage-7
+  Stage: Stage-8
     Conditional Operator
 
-  Stage: Stage-4
+  Stage: Stage-5
     Move Operator
       files:
           hdfs directory: true
 #### A masked pattern was here ####
 
-  Stage: Stage-0
+  Stage: Stage-1
     Move Operator
       tables:
           replace: true
@@ -101,22 +110,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src_x1
 
-  Stage: Stage-2
+  Stage: Stage-3
     Stats-Aggr Operator
 
-  Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.src_x1
-
-  Stage: Stage-5
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -129,6 +126,18 @@ STAGE PLANS:
                   name: default.src_x1
 
   Stage: Stage-6
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.src_x1
+
+  Stage: Stage-7
     Move Operator
       files:
           hdfs directory: true
