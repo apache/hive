@@ -2575,7 +2575,7 @@ public class HBaseStore implements RawStore {
   @Override
   public List<SQLPrimaryKey> getPrimaryKeys(String db_name, String tbl_name)
     throws MetaException {
-    // TODO Auto-generated method stub
+    // TODO: WTF?
     return null;
   }
 
@@ -2583,7 +2583,7 @@ public class HBaseStore implements RawStore {
   public List<SQLForeignKey> getForeignKeys(String parent_db_name,
     String parent_tbl_name, String foreign_db_name, String foreign_tbl_name)
     throws MetaException {
-    // TODO Auto-generated method stub
+    // TODO: WTF?
     return null;
   }
 
@@ -2591,24 +2591,24 @@ public class HBaseStore implements RawStore {
   public void createTableWithConstraints(Table tbl,
     List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys)
     throws InvalidObjectException, MetaException {
-    // TODO Auto-generated method stub
+    // TODO: WTF?
   }
 
   @Override
   public void dropConstraint(String dbName, String tableName,
     String constraintName) throws NoSuchObjectException {
-    // TODO Auto-generated method stub 
+    // TODO: WTF?
   }
 
   @Override
   public void addPrimaryKeys(List<SQLPrimaryKey> pks)
     throws InvalidObjectException, MetaException {
-    // TODO Auto-generated method stub
+    // TODO: WTF?
   }
 
   @Override
   public void addForeignKeys(List<SQLForeignKey> fks)
     throws InvalidObjectException, MetaException {
-    // TODO Auto-generated method stub
+    // TODO: WTF?
   }
 }
