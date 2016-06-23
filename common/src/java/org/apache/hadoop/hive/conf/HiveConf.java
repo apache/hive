@@ -2698,6 +2698,9 @@ public class HiveConf extends Configuration {
         -1f, "The customized fraction of JVM memory which Tez will reserve for the processor"),
     // The default is different on the client and server, so it's null here.
     LLAP_IO_ENABLED("hive.llap.io.enabled", null, "Whether the LLAP IO layer is enabled."),
+    LLAP_IO_NONVECTOR_WRAPPER_ENABLED("hive.llap.io.nonvector.wrapper.enabled", true,
+        "Whether the LLAP IO layer is enabled for non-vectorized queries that read inputs\n" +
+        "that can be vectorized"),
     LLAP_IO_MEMORY_MODE("hive.llap.io.memory.mode", "cache",
         new StringSet("cache", "none"),
         "LLAP IO memory usage; 'cache' (the default) uses data and metadata cache with a\n" +

@@ -19,6 +19,15 @@
 
 package org.apache.hadoop.hive.llap.io.api.impl;
 
+import org.apache.hadoop.hive.ql.io.BatchToRowInputFormat;
+
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+
+import com.google.common.base.Joiner;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -32,12 +41,15 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
-import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.counters.FragmentCountersMap;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -46,6 +58,7 @@ import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat.AvoidSplitCombination
 import org.apache.hadoop.hive.ql.io.LlapAwareSplit;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcOiBatchToRowReader;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
@@ -54,6 +67,8 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
@@ -68,16 +83,12 @@ import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-
 public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowBatch>,
     VectorizedInputFormatInterface, SelfDescribingInputFormatInterface,
     AvoidSplitCombination {
+  private static final String NONVECTOR_SETTING_MESSAGE = "disable "
+      + ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED.varname + " to work around this error";
+
   @SuppressWarnings("rawtypes")
   private final InputFormat sourceInputFormat;
   private final AvoidSplitCombination sourceASC;
@@ -106,20 +117,10 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     if (split instanceof LlapAwareSplit) {
       useLlapIo = ((LlapAwareSplit) split).canUseLlapIo();
     }
-
-    // validate for supported types. Until we fix HIVE-14089 we need this check.
-    if (useLlapIo) {
-      useLlapIo = Utilities.checkLlapIOSupportedTypes(job);
-    }
-
+    boolean isVectorized = Utilities.getUseVectorizedInputFileFormat(job);
     if (!useLlapIo) {
       LlapIoImpl.LOG.warn("Not using LLAP IO for an unsupported split: " + split);
       return sourceInputFormat.getRecordReader(split, job, reporter);
-    }
-    boolean isVectorMode = Utilities.getUseVectorizedInputFileFormat(job);
-    if (!isVectorMode) {
-      LlapIoImpl.LOG.error("No LLAP IO in non-vectorized mode");
-      throw new UnsupportedOperationException("No LLAP IO in non-vectorized mode");
     }
     FileSplit fileSplit = (FileSplit)split;
     reporter.setStatus(fileSplit.toString());
@@ -127,15 +128,22 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       List<Integer> includedCols = ColumnProjectionUtils.isReadAllColumns(job)
           ? null : ColumnProjectionUtils.getReadColumnIDs(job);
       LlapRecordReader rr = new LlapRecordReader(job, fileSplit, includedCols, hostName);
-
-      if (!rr.init()) {
-        return sourceInputFormat.getRecordReader(split, job, reporter);
+      if (isVectorized) return rr;
+      if (sourceInputFormat instanceof BatchToRowInputFormat) {
+        return bogusCast(((BatchToRowInputFormat)sourceInputFormat).getWrapper(
+            rr, rr.getVectorizedRowBatchCtx(), includedCols));
       }
-
-      return rr;
+      return sourceInputFormat.getRecordReader(split, job, reporter);
     } catch (Exception ex) {
       throw new IOException(ex);
     }
+  }
+
+  // Returning either a vectorized or non-vectorized reader from the same call requires breaking
+  // generics... this is how vectorization currently works.
+  @SuppressWarnings("unchecked")
+  private static <A, B, C, D> RecordReader<A, B> bogusCast(RecordReader<C, D> rr) {
+    return (RecordReader<A, B>)rr;
   }
 
   @Override
@@ -171,7 +179,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     private final boolean[] includedColumns;
     private final ReadPipeline rp;
 
-    public LlapRecordReader(JobConf job, FileSplit split, List<Integer> includedCols,
+public LlapRecordReader(JobConf job, FileSplit split, List<Integer> includedCols,
         String hostName) throws IOException, HiveException {
       this.jobConf = job;
       this.split = split;
@@ -196,7 +204,8 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       this.counters.setDesc(QueryFragmentCounters.Desc.MACHINE, hostName);
 
       MapWork mapWork = Utilities.getMapWork(job);
-      rbCtx = mapWork.getVectorizedRowBatchCtx();
+      VectorizedRowBatchCtx ctx = mapWork.getVectorizedRowBatchCtx();
+      rbCtx = ctx != null ? ctx : createFakeVrbCtx(mapWork);
 
       columnsToIncludeTruncated = rbCtx.getColumnsToIncludeTruncated(job);
 
@@ -283,6 +292,9 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       return true;
     }
 
+    public VectorizedRowBatchCtx getVectorizedRowBatchCtx() {
+      return rbCtx;
+    }
 
     private final class UncaughtErrorHandler implements FutureCallback<Void> {
       @Override
@@ -412,4 +424,54 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
   public boolean shouldSkipCombine(Path path, Configuration conf) throws IOException {
     return sourceASC == null ? false : sourceASC.shouldSkipCombine(path, conf);
   }
+
+  private static VectorizedRowBatchCtx createFakeVrbCtx(MapWork mapWork) throws HiveException {
+    // This is based on Vectorizer code, minus the validation.
+
+    // Add all non-virtual columns from the TableScan operator.
+    RowSchema rowSchema = findTsOp(mapWork).getSchema();
+    final List<String> colNames = new ArrayList<String>(rowSchema.getSignature().size());
+    final List<TypeInfo> colTypes = new ArrayList<TypeInfo>(rowSchema.getSignature().size());
+    for (ColumnInfo c : rowSchema.getSignature()) {
+      String columnName = c.getInternalName();
+      if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(columnName)) continue;
+      colNames.add(columnName);
+      colTypes.add(TypeInfoUtils.getTypeInfoFromTypeString(c.getTypeName()));
+    }
+
+    // Determine the partition columns using the first partition descriptor.
+    // Note - like vectorizer, this assumes partition columns go after data columns.
+    int partitionColumnCount = 0;
+    Iterator<String> paths = mapWork.getPathToAliases().keySet().iterator();
+    if (paths.hasNext()) {
+      PartitionDesc partDesc = mapWork.getPathToPartitionInfo().get(paths.next());
+      if (partDesc != null) {
+        LinkedHashMap<String, String> partSpec = partDesc.getPartSpec();
+        if (partSpec != null && partSpec.isEmpty()) {
+          partitionColumnCount = partSpec.size();
+        }
+      }
+    }
+    return new VectorizedRowBatchCtx(colNames.toArray(new String[colNames.size()]),
+        colTypes.toArray(new TypeInfo[colTypes.size()]), partitionColumnCount, new String[0]);
+  }
+
+  static TableScanOperator findTsOp(MapWork mapWork) throws HiveException {
+    if (mapWork.getAliasToWork() == null) {
+      throw new HiveException("Unexpected - aliasToWork is missing; " + NONVECTOR_SETTING_MESSAGE);
+    }
+    Iterator<Operator<?>> ops = mapWork.getAliasToWork().values().iterator();
+    TableScanOperator tableScanOperator = null;
+    while (ops.hasNext()) {
+      Operator<?> op = ops.next();
+      if (op instanceof TableScanOperator) {
+        if (tableScanOperator != null) {
+          throw new HiveException("Unexpected - more than one TSOP; " + NONVECTOR_SETTING_MESSAGE);
+        }
+        tableScanOperator = (TableScanOperator)op;
+      }
+    }
+    return tableScanOperator;
+  }
+
 }

@@ -907,19 +907,19 @@ public final class GenMapRedUtils {
       }
     } else if (task instanceof ExecDriver) {
       MapredWork work = (MapredWork) task.getWork();
-      work.getMapWork().deriveLlap(conf);
+      work.getMapWork().deriveLlap(conf, true);
     } else if (task != null && (task.getWork() instanceof TezWork)) {
       TezWork work = (TezWork)task.getWork();
       for (BaseWork w : work.getAllWorkUnsorted()) {
         if (w instanceof MapWork) {
-          ((MapWork)w).deriveLlap(conf);
+          ((MapWork)w).deriveLlap(conf, false);
         }
       }
     } else if (task instanceof SparkTask) {
       SparkWork work = (SparkWork) task.getWork();
       for (BaseWork w : work.getAllWorkUnsorted()) {
         if (w instanceof MapWork) {
-          ((MapWork) w).deriveLlap(conf);
+          ((MapWork) w).deriveLlap(conf, false);
         }
       }
     }

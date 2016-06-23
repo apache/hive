@@ -491,7 +491,12 @@ public class MapOperator extends AbstractMapOperator {
         }
       } catch (Exception e) {
         // TODO: policy on deserialization errors
-        String message = toErrorMessage(value, row, current.rowObjectInspector);
+        String message = null;
+        try {
+          message = toErrorMessage(value, row, current.rowObjectInspector);
+        } catch (Throwable t) {
+          message = "[" + row + ", " + value + "]: cannot get error message " + t.getMessage();
+        }
         if (row == null) {
           deserialize_error_count.set(deserialize_error_count.get() + 1);
           throw new HiveException("Hive Runtime Error while processing writable " + message, e);
