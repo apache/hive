@@ -60,7 +60,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: x314@source
 POSTHOOK: Output: x314@target1
 POSTHOOK: Lineage: target1.x SIMPLE [(source)source.FieldSchema(name:s2, type:int, comment:null), ]
-POSTHOOK: Lineage: target1.y EXPRESSION []
+POSTHOOK: Lineage: target1.y SIMPLE []
 POSTHOOK: Lineage: target1.z SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
 PREHOOK: query: -- expect target1 to contain 1 row (2,NULL,1)
 select * from target1
