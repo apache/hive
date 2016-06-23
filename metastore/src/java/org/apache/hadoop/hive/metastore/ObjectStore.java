@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
@@ -2412,16 +2413,16 @@ public class ObjectStore implements RawStore, Configurable {
         // If we have some sort of expression tree, try SQL filter pushdown.
         List<Partition> result = null;
         if (exprTree != null) {
-          result = directSql.getPartitionsViaSqlFilter(ctx.getTable(), exprTree, null);
+          SqlFilterForPushdown filter = new SqlFilterForPushdown();
+          if (directSql.generateSqlFilterForPushdown(ctx.getTable(), exprTree, filter)) {
+            return directSql.getPartitionsViaSqlFilter(filter, null);
+          }
         }
-        if (result == null) {
-          // We couldn't do SQL filter pushdown. Get names via normal means.
-          List<String> partNames = new LinkedList<String>();
-          hasUnknownPartitions.set(getPartitionNamesPrunedByExprNoTxn(
-              ctx.getTable(), expr, defaultPartitionName, maxParts, partNames));
-          result = directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames);
-        }
-        return result;
+        // We couldn't do SQL filter pushdown. Get names via normal means.
+        List<String> partNames = new LinkedList<String>();
+        hasUnknownPartitions.set(getPartitionNamesPrunedByExprNoTxn(
+            ctx.getTable(), expr, defaultPartitionName, maxParts, partNames));
+        return directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames);
       }
 
       @Override
@@ -2650,6 +2651,9 @@ public class ObjectStore implements RawStore, Configurable {
       this.doUseDirectSql = allowSql && isConfigEnabled && directSql.isCompatibleDatastore();
     }
 
+    protected boolean canUseDirectSql(GetHelper<T> ctx) throws MetaException {
+      return true; // By default, assume we can user directSQL - that's kind of the point.
+    }
     protected abstract String describeResult();
     protected abstract T getSqlResult(GetHelper<T> ctx) throws MetaException;
     protected abstract T getJdoResult(
@@ -2661,13 +2665,16 @@ public class ObjectStore implements RawStore, Configurable {
         if (doUseDirectSql) {
           try {
             directSql.prepareTxn();
-            setResult(getSqlResult(this));
+            this.results = getSqlResult(this);
           } catch (Exception ex) {
             handleDirectSqlError(ex);
           }
         }
+        // Note that this will be invoked in 2 cases:
+        //    1) DirectSQL was disabled to start with;
+        //    2) DirectSQL threw and was disabled in handleDirectSqlError.
         if (!doUseDirectSql) {
-          setResult(getJdoResult(this));
+          this.results = getJdoResult(this);
         }
         return commit();
       } catch (NoSuchObjectException ex) {
@@ -2688,11 +2695,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (initTable && (tblName != null)) {
         table = ensureGetTable(dbName, tblName);
       }
-    }
-
-    private boolean setResult(T results) {
-      this.results = results;
-      return this.results != null;
+      doUseDirectSql = doUseDirectSql && canUseDirectSql(this);
     }
 
     private void handleDirectSqlError(Exception ex) throws MetaException, NoSuchObjectException {
@@ -2737,10 +2740,6 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       doUseDirectSql = false;
-    }
-
-    public void disableDirectSql() {
-      this.doUseDirectSql = false;
     }
 
     private T commit() {
@@ -2822,15 +2821,21 @@ public class ObjectStore implements RawStore, Configurable {
     final ExpressionTree tree = (filter != null && !filter.isEmpty())
       ? PartFilterExprUtil.getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
     return new GetHelper<Integer>(dbName, tblName, allowSql, allowJdo) {
+      private SqlFilterForPushdown filter = new SqlFilterForPushdown();
       @Override
       protected String describeResult() {
-        return null;
+        return "Partition count";
       }
+
+      protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
+        return directSql.generateSqlFilterForPushdown(ctx.getTable(), tree, filter);
+      };
 
       @Override
       protected Integer getSqlResult(GetHelper<Integer> ctx) throws MetaException {
-        return directSql.getNumPartitionsViaSqlFilter(ctx.getTable(), tree);
+        return directSql.getNumPartitionsViaSqlFilter(filter);
       }
+
       @Override
       protected Integer getJdoResult(
         GetHelper<Integer> ctx) throws MetaException, NoSuchObjectException {
@@ -2844,19 +2849,19 @@ public class ObjectStore implements RawStore, Configurable {
       throws MetaException, NoSuchObjectException {
     final ExpressionTree tree = (filter != null && !filter.isEmpty())
         ? PartFilterExprUtil.getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
-
     return new GetListHelper<Partition>(dbName, tblName, allowSql, allowJdo) {
+      private SqlFilterForPushdown filter = new SqlFilterForPushdown();
+
+      @Override
+      protected boolean canUseDirectSql(GetHelper<List<Partition>> ctx) throws MetaException {
+        return directSql.generateSqlFilterForPushdown(ctx.getTable(), tree, filter);
+      };
+
       @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
-        List<Partition> parts = directSql.getPartitionsViaSqlFilter(
-            ctx.getTable(), tree, (maxParts < 0) ? null : (int)maxParts);
-        if (parts == null) {
-          // Cannot push down SQL filter. The message has been logged internally.
-          // This is not an error so don't roll back, just go to JDO.
-          ctx.disableDirectSql();
-        }
-        return parts;
+        return directSql.getPartitionsViaSqlFilter(filter, (maxParts < 0) ? null : (int)maxParts);
       }
+
       @Override
       protected List<Partition> getJdoResult(
           GetHelper<List<Partition>> ctx) throws MetaException, NoSuchObjectException {

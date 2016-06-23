@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import javax.security.auth.login.LoginException;
 
 import java.io.*;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -135,9 +136,9 @@ public class HiveConf extends Configuration {
     hiveDefaultURL = classLoader.getResource("hive-default.xml");
 
     // Look for hive-site.xml on the CLASSPATH and log its location if found.
-    hiveSiteURL = classLoader.getResource("hive-site.xml");
-    hivemetastoreSiteUrl = classLoader.getResource("hivemetastore-site.xml");
-    hiveServer2SiteUrl = classLoader.getResource("hiveserver2-site.xml");
+    hiveSiteURL = findConfigFile(classLoader, "hive-site.xml", true);
+    hivemetastoreSiteUrl = findConfigFile(classLoader, "hivemetastore-site.xml", false);
+    hiveServer2SiteUrl = findConfigFile(classLoader, "hiveserver2-site.xml", false);
 
     for (ConfVars confVar : ConfVars.values()) {
       vars.put(confVar.varname, confVar);
@@ -147,6 +148,50 @@ public class HiveConf extends Configuration {
     populateLlapDaemonVarsSet(llapDaemonConfVarsSetLocal);
     llapDaemonVarsSet = Collections.unmodifiableSet(llapDaemonConfVarsSetLocal);
   }
+
+  private static URL findConfigFile(ClassLoader classLoader, String name, boolean doLog) {
+    URL result = classLoader.getResource(name);
+    if (result == null) {
+      String confPath = System.getenv("HIVE_CONF_DIR");
+      result = checkConfigFile(new File(confPath, name));
+      if (result == null) {
+        String homePath = System.getenv("HIVE_HOME");
+        String nameInConf = "conf" + File.pathSeparator + name;
+        result = checkConfigFile(new File(homePath, nameInConf));
+        if (result == null) {
+          URI jarUri = null;
+          try {
+            jarUri = HiveConf.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+          } catch (Throwable e) {
+            if (l4j.isInfoEnabled()) {
+              l4j.info("Cannot get jar URI", e);
+            }
+            System.err.println("Cannot get jar URI: " + e.getMessage());
+          }
+          result = checkConfigFile(new File(new File(jarUri).getParentFile(), nameInConf));
+        }
+      }
+    }
+    if (doLog && l4j.isInfoEnabled()) {
+      l4j.info("Found configuration file " + result);
+    }
+    return result;
+  }
+
+  private static URL checkConfigFile(File f) {
+    try {
+      return (f.exists() && f.isFile()) ? f.toURI().toURL() : null;
+    } catch (Throwable e) {
+      if (l4j.isInfoEnabled()) {
+        l4j.info("Error looking for config " + f, e);
+      }
+      System.err.println("Error looking for config " + f + ": " + e.getMessage());
+      return null;
+    }
+  }
+
+
+
 
   @InterfaceAudience.Private
   public static final String PREFIX_LLAP = "llap.";
