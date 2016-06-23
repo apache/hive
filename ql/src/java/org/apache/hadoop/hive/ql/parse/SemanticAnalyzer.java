@@ -55,8 +55,10 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -152,6 +154,7 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFrameSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
@@ -6520,6 +6523,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  @SuppressWarnings("unchecked")
+  private void setStatsForNonNativeTable(Table tab) throws SemanticException {
+    String tableName = DDLSemanticAnalyzer.getDotName(new String[] { tab.getDbName(),
+        tab.getTableName() });
+    AlterTableDesc alterTblDesc = new AlterTableDesc(AlterTableTypes.DROPPROPS, null, false);
+    HashMap<String, String> mapProp = new HashMap<>();
+    mapProp.put(StatsSetupConst.COLUMN_STATS_ACCURATE, null);
+    alterTblDesc.setOldName(tableName);
+    alterTblDesc.setProps(mapProp);
+    alterTblDesc.setDropIfExists(true);
+    this.rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
+  }
+
   @SuppressWarnings("nls")
   protected Operator genFileSinkPlan(String dest, QB qb, Operator input)
       throws SemanticException {
@@ -6642,11 +6658,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           acidOp = getAcidType(table_desc.getOutputFileFormatClass());
           checkAcidConstraints(qb, table_desc, dest_tab);
         }
-        ltd = new LoadTableDesc(queryTmpdir,table_desc, dpCtx, acidOp);
+        ltd = new LoadTableDesc(queryTmpdir, table_desc, dpCtx, acidOp);
         ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
             dest_tab.getTableName()));
         ltd.setLbCtx(lbCtx);
         loadTableWork.add(ltd);
+      } else {
+        // This is a non-native table.
+        // We need to set stats as inaccurate.
+        setStatsForNonNativeTable(dest_tab);
       }
 
       WriteEntity output = null;
