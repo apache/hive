@@ -39,6 +39,7 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,19 +54,21 @@ public class HivePreFilteringRule extends RelOptRule {
                                                           .getLogger(HivePreFilteringRule.class
                                                               .getName());
 
-  public static final HivePreFilteringRule INSTANCE   = new HivePreFilteringRule();
-
-  private final FilterFactory              filterFactory;
-
   private static final Set<SqlKind>        COMPARISON = EnumSet.of(SqlKind.EQUALS,
                                                           SqlKind.GREATER_THAN_OR_EQUAL,
                                                           SqlKind.LESS_THAN_OR_EQUAL,
                                                           SqlKind.GREATER_THAN, SqlKind.LESS_THAN,
                                                           SqlKind.NOT_EQUALS);
 
-  private HivePreFilteringRule() {
+  private final FilterFactory              filterFactory;
+
+  // Max number of nodes when converting to CNF
+  private final int maxCNFNodeCount;
+
+  public HivePreFilteringRule(int maxCNFNodeCount) {
     super(operand(Filter.class, operand(RelNode.class, any())));
     this.filterFactory = HiveRelFactories.HIVE_FILTER_FACTORY;
+    this.maxCNFNodeCount = maxCNFNodeCount;
   }
 
   @Override
@@ -120,7 +123,7 @@ public class HivePreFilteringRule extends RelOptRule {
 
       for (RexNode operand : operands) {
         if (operand.getKind() == SqlKind.OR) {
-          extractedCommonOperands = extractCommonOperands(rexBuilder, operand);
+          extractedCommonOperands = extractCommonOperands(rexBuilder, operand, maxCNFNodeCount);
           for (RexNode extractedExpr : extractedCommonOperands) {
             if (operandsToPushDownDigest.add(extractedExpr.toString())) {
               operandsToPushDown.add(extractedExpr);
@@ -155,7 +158,7 @@ public class HivePreFilteringRule extends RelOptRule {
       break;
 
     case OR:
-      operandsToPushDown = extractCommonOperands(rexBuilder, topFilterCondition);
+      operandsToPushDown = extractCommonOperands(rexBuilder, topFilterCondition, maxCNFNodeCount);
       break;
     default:
       return;
@@ -191,7 +194,8 @@ public class HivePreFilteringRule extends RelOptRule {
 
   }
 
-  private static List<RexNode> extractCommonOperands(RexBuilder rexBuilder, RexNode condition) {
+  private static List<RexNode> extractCommonOperands(RexBuilder rexBuilder, RexNode condition,
+          int maxCNFNodeCount) {
     assert condition.getKind() == SqlKind.OR;
     Multimap<String, RexNode> reductionCondition = LinkedHashMultimap.create();
 
@@ -200,13 +204,12 @@ public class HivePreFilteringRule extends RelOptRule {
     Set<String> refsInAllOperands = null;
 
     // 1. We extract the information necessary to create the predicate for the
-    // new
-    // filter; currently we support comparison functions, in and between
+    // new filter; currently we support comparison functions, in and between
     ImmutableList<RexNode> operands = RexUtil.flattenOr(((RexCall) condition).getOperands());
     for (int i = 0; i < operands.size(); i++) {
       final RexNode operand = operands.get(i);
 
-      final RexNode operandCNF = RexUtil.toCnf(rexBuilder, operand);
+      final RexNode operandCNF = HiveRexUtil.toCnf(rexBuilder, maxCNFNodeCount, operand);
       final List<RexNode> conjunctions = RelOptUtil.conjunctions(operandCNF);
 
       Set<String> refsInCurrentOperand = Sets.newHashSet();

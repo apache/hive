@@ -38,6 +38,7 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.util.ControlFlowException;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
 import org.slf4j.Logger;
@@ -50,6 +51,160 @@ import com.google.common.collect.Lists;
 public class HiveRexUtil {
 
   protected static final Logger LOG = LoggerFactory.getLogger(HiveRexUtil.class);
+
+
+  /** Converts an expression to conjunctive normal form (CNF).
+   *
+   * <p>The following expression is in CNF:
+   *
+   * <blockquote>(a OR b) AND (c OR d)</blockquote>
+   *
+   * <p>The following expression is not in CNF:
+   *
+   * <blockquote>(a AND b) OR c</blockquote>
+   *
+   * but can be converted to CNF:
+   *
+   * <blockquote>(a OR c) AND (b OR c)</blockquote>
+   *
+   * <p>The following expression is not in CNF:
+   *
+   * <blockquote>NOT (a OR NOT b)</blockquote>
+   *
+   * but can be converted to CNF by applying de Morgan's theorem:
+   *
+   * <blockquote>NOT a AND b</blockquote>
+   *
+   * <p>Expressions not involving AND, OR or NOT at the top level are in CNF.
+   */
+  public static RexNode toCnf(RexBuilder rexBuilder, RexNode rex) {
+    return new CnfHelper(rexBuilder).toCnf(rex);
+  }
+
+  public static RexNode toCnf(RexBuilder rexBuilder, int maxCNFNodeCount, RexNode rex) {
+    return new CnfHelper(rexBuilder, maxCNFNodeCount).toCnf(rex);
+  }
+
+  /** Helps {@link org.apache.calcite.rex.RexUtil#toCnf}. */
+  private static class CnfHelper {
+    final RexBuilder rexBuilder;
+    int currentCount;
+    final int maxNodeCount;
+
+    private CnfHelper(RexBuilder rexBuilder) {
+      this(rexBuilder, Integer.MAX_VALUE);
+    }
+
+    private CnfHelper(RexBuilder rexBuilder, int maxNodeCount) {
+      this.rexBuilder = rexBuilder;
+      this.maxNodeCount = maxNodeCount == -1 ? Integer.MAX_VALUE : maxNodeCount;
+    }
+
+    public RexNode toCnf(RexNode rex) {
+      try {
+        this.currentCount = 0;
+        return toCnf2(rex);
+      } catch (OverflowError e) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Transformation to CNF not carried out as number of resulting nodes "
+                  + "in expression is greater than the max number of nodes allowed");
+        }
+        Util.swallow(e, null);
+        return rex;
+      }
+    }
+
+    private RexNode toCnf2(RexNode rex) {
+      final List<RexNode> operands;
+      switch (rex.getKind()) {
+      case AND:
+        incrementAndCheck();
+        operands = RexUtil.flattenAnd(((RexCall) rex).getOperands());
+        final List<RexNode> cnfOperands = Lists.newArrayList();
+        for (RexNode node : operands) {
+          RexNode cnf = toCnf2(node);
+          switch (cnf.getKind()) {
+          case AND:
+            incrementAndCheck();
+            cnfOperands.addAll(((RexCall) cnf).getOperands());
+            break;
+          default:
+            incrementAndCheck();
+            cnfOperands.add(cnf);
+          }
+        }
+        return and(cnfOperands);
+      case OR:
+        incrementAndCheck();
+        operands = RexUtil.flattenOr(((RexCall) rex).getOperands());
+        final RexNode head = operands.get(0);
+        final RexNode headCnf = toCnf2(head);
+        final List<RexNode> headCnfs = RelOptUtil.conjunctions(headCnf);
+        final RexNode tail = or(Util.skip(operands));
+        final RexNode tailCnf = toCnf2(tail);
+        final List<RexNode> tailCnfs = RelOptUtil.conjunctions(tailCnf);
+        final List<RexNode> list = Lists.newArrayList();
+        for (RexNode h : headCnfs) {
+          for (RexNode t : tailCnfs) {
+            list.add(or(ImmutableList.of(h, t)));
+          }
+        }
+        return and(list);
+      case NOT:
+        final RexNode arg = ((RexCall) rex).getOperands().get(0);
+        switch (arg.getKind()) {
+        case NOT:
+          return toCnf2(((RexCall) arg).getOperands().get(0));
+        case OR:
+          operands = ((RexCall) arg).getOperands();
+          List<RexNode> transformedDisj = new ArrayList<>();
+          for (RexNode input : RexUtil.flattenOr(operands)) {
+            transformedDisj.add(rexBuilder.makeCall(input.getType(), SqlStdOperatorTable.NOT,
+                    ImmutableList.of(input)));
+          }
+          return toCnf2(and(transformedDisj));
+        case AND:
+          operands = ((RexCall) arg).getOperands();
+          List<RexNode> transformedConj = new ArrayList<>();
+          for (RexNode input : RexUtil.flattenAnd(operands)) {
+            transformedConj.add(rexBuilder.makeCall(input.getType(), SqlStdOperatorTable.NOT,
+                    ImmutableList.of(input)));
+          }
+          return toCnf2(or(transformedConj));
+        default:
+          incrementAndCheck();
+          return rex;
+        }
+      default:
+        incrementAndCheck();
+        return rex;
+      }
+    }
+
+    private RexNode and(Iterable<? extends RexNode> nodes) {
+      return RexUtil.composeConjunction(rexBuilder, nodes, false);
+    }
+
+    private RexNode or(Iterable<? extends RexNode> nodes) {
+      return RexUtil.composeDisjunction(rexBuilder, nodes, false);
+    }
+
+    private void incrementAndCheck() {
+      this.currentCount++;
+      if (this.currentCount > this.maxNodeCount) {
+        throw OverflowError.INSTANCE;
+      }
+    }
+
+    @SuppressWarnings("serial")
+    private static class OverflowError extends ControlFlowException {
+
+      public static final OverflowError INSTANCE = new OverflowError();
+
+      private OverflowError() {}
+    }
+  }
+
 
   /**
    * Simplifies a boolean expression.

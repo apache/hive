@@ -1119,6 +1119,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       PerfLogger perfLogger = SessionState.getPerfLogger();
 
+      final int maxCNFNodeCount = conf.getIntVar(HiveConf.ConfVars.HIVE_CBO_CNF_NODES_LIMIT);
+      final int minNumORClauses = conf.getIntVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZERMIN);
+
       //1. Distinct aggregate rewrite
       // Run this optimization early, since it is expanding the operator pipeline.
       if (!conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("mr") &&
@@ -1139,7 +1142,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // ((R1.x=R2.x) and R1.z=10)) and rand(1) < 0.1
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       basePlan = hepPlan(basePlan, false, mdProvider, null, HepMatchOrder.ARBITRARY,
-          HivePreFilteringRule.INSTANCE);
+          new HivePreFilteringRule(maxCNFNodeCount));
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
         "Calcite: Prejoin ordering transformation, factor out common filter elements and separating deterministic vs non-deterministic UDF");
 
@@ -1165,8 +1168,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveReduceExpressionsRule.FILTER_INSTANCE);
       rules.add(HiveReduceExpressionsRule.JOIN_INSTANCE);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
-        final int min = conf.getIntVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZERMIN);
-        rules.add(new HivePointLookupOptimizerRule(min));
+        rules.add(new HivePointLookupOptimizerRule(minNumORClauses));
       }
       rules.add(HiveJoinAddNotNullRule.INSTANCE_JOIN);
       rules.add(HiveJoinAddNotNullRule.INSTANCE_SEMIJOIN);
