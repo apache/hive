@@ -42,7 +42,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@studenttab10k
 POSTHOOK: Output: default@student_acid
 POSTHOOK: Lineage: student_acid.age SIMPLE [(studenttab10k)studenttab10k.FieldSchema(name:age2, type:int, comment:null), ]
-POSTHOOK: Lineage: student_acid.grade EXPRESSION []
+POSTHOOK: Lineage: student_acid.grade SIMPLE []
 PREHOOK: query: select * from student_acid
 PREHOOK: type: QUERY
 PREHOOK: Input: default@student_acid
@@ -91,7 +91,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__3
 POSTHOOK: Output: default@student_acid
 POSTHOOK: Lineage: student_acid.age EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: student_acid.grade EXPRESSION []
+POSTHOOK: Lineage: student_acid.grade SIMPLE []
 PREHOOK: query: select * from student_acid
 PREHOOK: type: QUERY
 PREHOOK: Input: default@student_acid

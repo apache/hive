@@ -4282,12 +4282,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         "No table/partition found in QB metadata for dest='" + dest + "'"));
     }
     ArrayList<ExprNodeDesc> new_col_list = new ArrayList<ExprNodeDesc>();
-    ArrayList<ColumnInfo> newSchema = new ArrayList<ColumnInfo>();
     colListPos = 0;
     List<FieldSchema> targetTableCols = target != null ? target.getCols() : partition.getCols();
     List<String> targetTableColNames = new ArrayList<String>();
+    List<TypeInfo> targetTableColTypes = new ArrayList<TypeInfo>();
     for(FieldSchema fs : targetTableCols) {
       targetTableColNames.add(fs.getName());
+      targetTableColTypes.add(TypeInfoUtils.getTypeInfoFromTypeString(fs.getType()));
     }
     Map<String, String> partSpec = qb.getMetaData().getPartSpecForAlias(dest);
     if(partSpec != null) {
@@ -4296,13 +4297,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for(Map.Entry<String, String> partKeyVal : partSpec.entrySet()) {
         if (partKeyVal.getValue() == null) {
           targetTableColNames.add(partKeyVal.getKey());//these must be after non-partition cols
+          targetTableColTypes.add(TypeInfoFactory.stringTypeInfo);
         }
       }
     }
     RowResolver newOutputRR = new RowResolver();
     //now make the select produce <regular columns>,<dynamic partition columns> with
     //where missing columns are NULL-filled
-    for(String f : targetTableColNames) {
+    for (int i = 0; i < targetTableColNames.size(); i++) {
+      String f = targetTableColNames.get(i);
       if(targetCol2Projection.containsKey(f)) {
         //put existing column in new list to make sure it is in the right position
         new_col_list.add(targetCol2Projection.get(f));
@@ -4312,10 +4315,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       else {
         //add new 'synthetic' columns for projections not provided by Select
-        TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR);
-        CommonToken t = new CommonToken(HiveParser.TOK_NULL);
-        t.setText("TOK_NULL");
-        ExprNodeDesc exp = genExprNodeDesc(new ASTNode(t), inputRR, tcCtx);
+        ExprNodeDesc exp = new ExprNodeConstantDesc(targetTableColTypes.get(i), null);
         new_col_list.add(exp);
         final String tableAlias = null;//this column doesn't come from any table
         ColumnInfo colInfo = new ColumnInfo(getColumnInternalName(colListPos),

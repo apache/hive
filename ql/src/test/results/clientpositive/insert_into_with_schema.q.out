@@ -72,7 +72,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: x314@source
 POSTHOOK: Output: x314@target1
 POSTHOOK: Lineage: target1.x SIMPLE [(source)source.FieldSchema(name:s2, type:int, comment:null), ]
-POSTHOOK: Lineage: target1.y EXPRESSION []
+POSTHOOK: Lineage: target1.y SIMPLE []
 POSTHOOK: Lineage: target1.z SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
 PREHOOK: query: -- expect target1 to contain 1 row (2,NULL,1)
 select * from target1
@@ -99,9 +99,9 @@ POSTHOOK: Output: x314@target1
 POSTHOOK: Output: x314@target2
 POSTHOOK: Lineage: target1.x SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
 POSTHOOK: Lineage: target1.y SIMPLE [(source)source.FieldSchema(name:s2, type:int, comment:null), ]
-POSTHOOK: Lineage: target1.z EXPRESSION []
+POSTHOOK: Lineage: target1.z SIMPLE []
 POSTHOOK: Lineage: target2.x SIMPLE [(source)source.FieldSchema(name:s2, type:int, comment:null), ]
-POSTHOOK: Lineage: target2.y EXPRESSION []
+POSTHOOK: Lineage: target2.y SIMPLE []
 POSTHOOK: Lineage: target2.z SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
 PREHOOK: query: --expect target1 to have 2rows (2,NULL,1), (1,2,NULL)
 select * from target1 order by x,y,z
@@ -192,7 +192,7 @@ POSTHOOK: Input: x314@source
 POSTHOOK: Input: x314@source2
 POSTHOOK: Output: x314@target1
 POSTHOOK: Lineage: target1.x SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
-POSTHOOK: Lineage: target1.y EXPRESSION []
+POSTHOOK: Lineage: target1.y SIMPLE []
 POSTHOOK: Lineage: target1.z SIMPLE [(source2)source2.FieldSchema(name:s2, type:int, comment:null), ]
 PREHOOK: query: --expect target1 to have 1 row (1,NULL,NULL)
 select * from target1
@@ -224,7 +224,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: x314@values__tmp__table__2
 POSTHOOK: Output: x314@pageviews@datestamp=2014-09-23/i=1
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=1).link SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=1).source EXPRESSION []
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=1).source SIMPLE []
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=1).userid EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: -- expect 1 row: ('jsmith', 'mail.com', NULL) in partition '2014-09-23'/'1'
 select * from pageviews
@@ -256,7 +256,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: x314@values__tmp__table__3
 POSTHOOK: Output: x314@pageviews@datestamp=2014-09-23/i=7
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=7).link SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=7).source EXPRESSION []
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=7).source SIMPLE []
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=7).userid EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: INSERT INTO TABLE pageviews PARTITION (datestamp,i)(userid,i,link,datestamp) VALUES ('jsmith', 17, '17mail.com', '2014-09-23')
 PREHOOK: type: QUERY
@@ -267,7 +267,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: x314@values__tmp__table__4
 POSTHOOK: Output: x314@pageviews@datestamp=2014-09-23/i=17
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=17).link SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=17).source EXPRESSION []
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=17).source SIMPLE []
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=17).userid EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: INSERT INTO TABLE pageviews PARTITION (datestamp,i)(userid,i,link,datestamp) VALUES ('jsmith', 19, '19mail.com', '2014-09-24')
 PREHOOK: type: QUERY
@@ -278,7 +278,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: x314@values__tmp__table__5
 POSTHOOK: Output: x314@pageviews@datestamp=2014-09-24/i=19
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-24,i=19).link SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-24,i=19).source EXPRESSION []
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-24,i=19).source SIMPLE []
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-24,i=19).userid EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: -- here the 'datestamp' partition column is not provided and will be NULL-filled
 INSERT INTO TABLE pageviews PARTITION (datestamp,i)(userid,i,link) VALUES ('jsmith', 23, '23mail.com')
@@ -291,7 +291,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: x314@values__tmp__table__6
 POSTHOOK: Output: x314@pageviews@datestamp=__HIVE_DEFAULT_PARTITION__/i=23
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=__HIVE_DEFAULT_PARTITION__,i=23).link SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: pageviews PARTITION(datestamp=__HIVE_DEFAULT_PARTITION__,i=23).source EXPRESSION []
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=__HIVE_DEFAULT_PARTITION__,i=23).source SIMPLE []
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=__HIVE_DEFAULT_PARTITION__,i=23).userid EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: -- expect 5 rows:
 -- expect ('jsmith', 'mail.com', NULL) in partition '2014-09-23'/'1'
