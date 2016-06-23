@@ -31,6 +31,7 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.ql.io.StreamingOutputFormat;
 
 import com.google.common.base.Preconditions;
 
@@ -38,7 +39,7 @@ import com.google.common.base.Preconditions;
  *
  */
 public class LlapOutputFormat<K extends Writable, V extends Writable>
-  implements OutputFormat<K, V> {
+  implements OutputFormat<K, V>, StreamingOutputFormat {
 
   public static final String LLAP_OF_ID_KEY = "llap.of.id";
 
