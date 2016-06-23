@@ -153,7 +153,6 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     private final SearchArgument sarg;
     private final String[] columnNames;
     private final VectorizedRowBatchCtx rbCtx;
-    private final boolean[] columnsToIncludeTruncated;
     private final Object[] partitionValues;
 
     private final LinkedList<ColumnVectorBatch> pendingData = new LinkedList<ColumnVectorBatch>();
@@ -194,8 +193,6 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       MapWork mapWork = Utilities.getMapWork(job);
       VectorizedRowBatchCtx ctx = mapWork.getVectorizedRowBatchCtx();
       rbCtx = ctx != null ? ctx : createFakeVrbCtx(mapWork);
-
-      columnsToIncludeTruncated = rbCtx.getColumnsToIncludeTruncated(job);
 
       int partitionColumnCount = rbCtx.getPartitionColumnCount();
       if (partitionColumnCount > 0) {
@@ -319,7 +316,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
 
     @Override
     public VectorizedRowBatch createValue() {
-      return rbCtx.createVectorizedRowBatch(columnsToIncludeTruncated);
+      return rbCtx.createVectorizedRowBatch();
     }
 
     @Override
@@ -425,7 +422,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       }
     }
     return new VectorizedRowBatchCtx(colNames.toArray(new String[colNames.size()]),
-        colTypes.toArray(new TypeInfo[colTypes.size()]), partitionColumnCount, new String[0]);
+        colTypes.toArray(new TypeInfo[colTypes.size()]), null, partitionColumnCount, new String[0]);
   }
 
   static TableScanOperator findTsOp(MapWork mapWork) throws HiveException {

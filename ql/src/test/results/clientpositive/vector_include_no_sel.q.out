@@ -1,0 +1,282 @@
+PREHOOK: query: -- HIVE-13872
+-- Looking for TableScan immediately followed by ReduceSink (no intervening SEL operator).
+-- This caused problems for Vectorizer not eliminating columns which are not included.
+-- The input file format didn't fill in those vectorized columns and thus caused NPE in
+-- ReduceSink.
+-- Only a problem when NOT CBO because of CBO rule-based transforms.
+--
+-- Using a cross-product.
+
+create table store_sales_txt
+(
+    ss_sold_date_sk           int,
+    ss_sold_time_sk           int,
+    ss_item_sk                int,
+    ss_customer_sk            int,
+    ss_cdemo_sk               int,
+    ss_hdemo_sk               int,
+    ss_addr_sk                int,
+    ss_store_sk               int,
+    ss_promo_sk               int,
+    ss_ticket_number          int,
+    ss_quantity               int,
+    ss_wholesale_cost         float,
+    ss_list_price             float,
+    ss_sales_price            float,
+    ss_ext_discount_amt       float,
+    ss_ext_sales_price        float,
+    ss_ext_wholesale_cost     float,
+    ss_ext_list_price         float,
+    ss_ext_tax                float,
+    ss_coupon_amt             float,
+    ss_net_paid               float,
+    ss_net_paid_inc_tax       float,
+    ss_net_profit             float                  
+)
+row format delimited fields terminated by '|' 
+stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_sales_txt
+POSTHOOK: query: -- HIVE-13872
+-- Looking for TableScan immediately followed by ReduceSink (no intervening SEL operator).
+-- This caused problems for Vectorizer not eliminating columns which are not included.
+-- The input file format didn't fill in those vectorized columns and thus caused NPE in
+-- ReduceSink.
+-- Only a problem when NOT CBO because of CBO rule-based transforms.
+--
+-- Using a cross-product.
+
+create table store_sales_txt
+(
+    ss_sold_date_sk           int,
+    ss_sold_time_sk           int,
+    ss_item_sk                int,
+    ss_customer_sk            int,
+    ss_cdemo_sk               int,
+    ss_hdemo_sk               int,
+    ss_addr_sk                int,
+    ss_store_sk               int,
+    ss_promo_sk               int,
+    ss_ticket_number          int,
+    ss_quantity               int,
+    ss_wholesale_cost         float,
+    ss_list_price             float,
+    ss_sales_price            float,
+    ss_ext_discount_amt       float,
+    ss_ext_sales_price        float,
+    ss_ext_wholesale_cost     float,
+    ss_ext_list_price         float,
+    ss_ext_tax                float,
+    ss_coupon_amt             float,
+    ss_net_paid               float,
+    ss_net_paid_inc_tax       float,
+    ss_net_profit             float                  
+)
+row format delimited fields terminated by '|' 
+stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_sales_txt
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/store_sales.txt' OVERWRITE INTO TABLE store_sales_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@store_sales_txt
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/store_sales.txt' OVERWRITE INTO TABLE store_sales_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@store_sales_txt
+PREHOOK: query: create table store_sales stored as orc as select * from store_sales_txt
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@store_sales_txt
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: create table store_sales stored as orc as select * from store_sales_txt
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@store_sales_txt
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_sales
+POSTHOOK: Lineage: store_sales.ss_addr_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_addr_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_cdemo_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_cdemo_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_coupon_amt SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_coupon_amt, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_customer_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_customer_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_ext_discount_amt SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_discount_amt, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_ext_list_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_list_price, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_ext_sales_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_sales_price, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_ext_tax SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_ext_wholesale_cost SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_wholesale_cost, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_hdemo_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_hdemo_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_item_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_item_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_list_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_list_price, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_net_paid SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_net_paid, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_net_paid_inc_tax SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_net_profit SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_promo_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_promo_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_quantity SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_quantity, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_sales_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_sales_price, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_sold_date_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_sold_date_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_sold_time_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_sold_time_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_store_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_store_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_ticket_number SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ticket_number, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales.ss_wholesale_cost SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_wholesale_cost, type:float, comment:null), ]
+PREHOOK: query: create table customer_demographics_txt
+(
+    cd_demo_sk                int,
+    cd_gender                 string,
+    cd_marital_status         string,
+    cd_education_status       string,
+    cd_purchase_estimate      int,
+    cd_credit_rating          string,
+    cd_dep_count              int,
+    cd_dep_employed_count     int,
+    cd_dep_college_count      int 
+)
+row format delimited fields terminated by '|' 
+stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@customer_demographics_txt
+POSTHOOK: query: create table customer_demographics_txt
+(
+    cd_demo_sk                int,
+    cd_gender                 string,
+    cd_marital_status         string,
+    cd_education_status       string,
+    cd_purchase_estimate      int,
+    cd_credit_rating          string,
+    cd_dep_count              int,
+    cd_dep_employed_count     int,
+    cd_dep_college_count      int 
+)
+row format delimited fields terminated by '|' 
+stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@customer_demographics_txt
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/customer_demographics.txt' OVERWRITE INTO TABLE customer_demographics_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@customer_demographics_txt
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/customer_demographics.txt' OVERWRITE INTO TABLE customer_demographics_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@customer_demographics_txt
+PREHOOK: query: create table customer_demographics stored as orc as select * from customer_demographics_txt
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@customer_demographics_txt
+PREHOOK: Output: database:default
+PREHOOK: Output: default@customer_demographics
+POSTHOOK: query: create table customer_demographics stored as orc as select * from customer_demographics_txt
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@customer_demographics_txt
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@customer_demographics
+POSTHOOK: Lineage: customer_demographics.cd_credit_rating SIMPLE [(customer_demographics_txt)customer_demographics_txt.FieldSchema(name:cd_credit_rating, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_demographics.cd_demo_sk SIMPLE [(customer_demographics_txt)customer_demographics_txt.FieldSchema(name:cd_demo_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: customer_demographics.cd_dep_college_count SIMPLE [(customer_demographics_txt)customer_demographics_txt.FieldSchema(name:cd_dep_college_count, type:int, comment:null), ]
+POSTHOOK: Lineage: customer_demographics.cd_dep_count SIMPLE [(customer_demographics_txt)customer_demographics_txt.FieldSchema(name:cd_dep_count, type:int, comment:null), ]
+POSTHOOK: Lineage: customer_demographics.cd_dep_employed_count SIMPLE [(customer_demographics_txt)customer_demographics_txt.FieldSchema(name:cd_dep_employed_count, type:int, comment:null), ]
+POSTHOOK: Lineage: customer_demographics.cd_education_status SIMPLE [(customer_demographics_txt)customer_demographics_txt.FieldSchema(name:cd_education_status, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_demographics.cd_gender SIMPLE [(customer_demographics_txt)customer_demographics_txt.FieldSchema(name:cd_gender, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_demographics.cd_marital_status SIMPLE [(customer_demographics_txt)customer_demographics_txt.FieldSchema(name:cd_marital_status, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_demographics.cd_purchase_estimate SIMPLE [(customer_demographics_txt)customer_demographics_txt.FieldSchema(name:cd_purchase_estimate, type:int, comment:null), ]
+Warning: Map Join MAPJOIN[15][bigTable=store_sales] in task 'Stage-2:MAPRED' is a cross product
+PREHOOK: query: explain
+select count(1) from customer_demographics,store_sales
+where ((customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
+       (customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'))
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(1) from customer_demographics,store_sales
+where ((customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
+       (customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'))
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        customer_demographics 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        customer_demographics 
+          TableScan
+            alias: customer_demographics
+            Statistics: Num rows: 200 Data size: 74200 Basic stats: COMPLETE Column stats: NONE
+            HashTable Sink Operator
+              keys:
+                0 
+                1 
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: store_sales
+            Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              keys:
+                0 
+                1 
+              outputColumnNames: _col0, _col2, _col16
+              Statistics: Num rows: 200000 Data size: 92055200 Basic stats: COMPLETE Column stats: NONE
+              Filter Operator
+                predicate: (((_col0 = _col16) and (_col2 = 'M')) or ((_col0 = _col16) and (_col2 = 'U'))) (type: boolean)
+                Statistics: Num rows: 100000 Data size: 46027600 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  Statistics: Num rows: 100000 Data size: 46027600 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count(1)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Map Join MAPJOIN[15][bigTable=store_sales] in task 'Stage-2:MAPRED' is a cross product
+PREHOOK: query: select count(1) from customer_demographics,store_sales
+where ((customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
+       (customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_demographics
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from customer_demographics,store_sales
+where ((customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
+       (customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_demographics
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+0

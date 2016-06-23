@@ -335,16 +335,16 @@ public class VectorAssignRow {
    */
   public void assignRowColumn(VectorizedRowBatch batch, int batchIndex, int logicalColumnIndex,
       Object object) {
-    final int projectionColumnNum = projectionColumnNums[logicalColumnIndex];
-    if (object == null) {
-      VectorizedBatchUtil.setNullColIsNullValue(batch.cols[projectionColumnNum], batchIndex);
-      return;
-    }
     Category targetCategory = targetCategories[logicalColumnIndex];
     if (targetCategory == null) {
       /*
        * This is a column that we don't want (i.e. not included) -- we are done.
        */
+      return;
+    }
+    final int projectionColumnNum = projectionColumnNums[logicalColumnIndex];
+    if (object == null) {
+      VectorizedBatchUtil.setNullColIsNullValue(batch.cols[projectionColumnNum], batchIndex);
       return;
     }
     switch (targetCategory) {
@@ -493,19 +493,19 @@ public class VectorAssignRow {
   public void assignConvertRowColumn(VectorizedRowBatch batch, int batchIndex,
       int logicalColumnIndex, Object object) {
     Preconditions.checkState(isConvert[logicalColumnIndex]);
+    Category targetCategory = targetCategories[logicalColumnIndex];
+    if (targetCategory == null) {
+      /*
+       * This is a column that we don't want (i.e. not included) -- we are done.
+       */
+      return;
+    }
     final int projectionColumnNum = projectionColumnNums[logicalColumnIndex];
     if (object == null) {
       VectorizedBatchUtil.setNullColIsNullValue(batch.cols[projectionColumnNum], batchIndex);
       return;
     }
     try {
-      Category targetCategory = targetCategories[logicalColumnIndex];
-      if (targetCategory == null) {
-        /*
-         * This is a column that we don't want (i.e. not included) -- we are done.
-         */
-        return;
-      }
       switch (targetCategory) {
       case PRIMITIVE:
         PrimitiveCategory targetPrimitiveCategory = targetPrimitiveCategories[logicalColumnIndex];

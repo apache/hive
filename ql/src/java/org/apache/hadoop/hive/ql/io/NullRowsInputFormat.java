@@ -67,7 +67,6 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
 
     private int counter;
     protected final VectorizedRowBatchCtx rbCtx;
-    private final boolean[] columnsToIncludeTruncated;
     private final Object[] partitionValues;
     private boolean addPartitionCols = true;
 
@@ -78,7 +77,6 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
       }
       if (isVectorMode) {
         rbCtx = Utilities.getVectorizedRowBatchCtx(conf);
-        columnsToIncludeTruncated = rbCtx.getColumnsToIncludeTruncated(conf);
         int partitionColumnCount = rbCtx.getPartitionColumnCount();
         if (partitionColumnCount > 0) {
           partitionValues = new Object[partitionColumnCount];
@@ -88,7 +86,6 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
         }
       } else {
         rbCtx = null;
-        columnsToIncludeTruncated = null;
         partitionValues = null;
       }
     }
@@ -105,7 +102,7 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
     @Override
     public Object createValue() {
       return rbCtx == null ? NullWritable.get() :
-        rbCtx.createVectorizedRowBatch(columnsToIncludeTruncated);
+        rbCtx.createVectorizedRowBatch();
     }
 
     @Override
@@ -143,11 +140,10 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
       vrb.size = size;
       vrb.selectedInUse = false;
       for (int i = 0; i < rbCtx.getDataColumnCount(); i++) {
-        if (columnsToIncludeTruncated != null
-            && (columnsToIncludeTruncated.length <= i || !columnsToIncludeTruncated[i])) {
+        ColumnVector cv = vrb.cols[i];
+        if (cv == null) {
           continue;
         }
-        ColumnVector cv = vrb.cols[i];
         cv.noNulls = false;
         cv.isRepeating = true;
         cv.isNull[0] = true;

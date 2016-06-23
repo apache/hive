@@ -1,0 +1,200 @@
+1|M|M|Primary|500|Good|0|0|0|
+2|F|M|Primary|500|Good|0|0|0|
+3|M|S|Primary|500|Good|0|0|0|
+4|F|S|Primary|500|Good|0|0|0|
+5|M|D|Primary|500|Good|0|0|0|
+6|F|D|Primary|500|Good|0|0|0|
+7|M|W|Primary|500|Good|0|0|0|
+8|F|W|Primary|500|Good|0|0|0|
+9|M|U|Primary|500|Good|0|0|0|
+10|F|U|Primary|500|Good|0|0|0|
+11|M|M|Secondary|500|Good|0|0|0|
+12|F|M|Secondary|500|Good|0|0|0|
+13|M|S|Secondary|500|Good|0|0|0|
+14|F|S|Secondary|500|Good|0|0|0|
+15|M|D|Secondary|500|Good|0|0|0|
+16|F|D|Secondary|500|Good|0|0|0|
+17|M|W|Secondary|500|Good|0|0|0|
+18|F|W|Secondary|500|Good|0|0|0|
+19|M|U|Secondary|500|Good|0|0|0|
+20|F|U|Secondary|500|Good|0|0|0|
+21|M|M|College|500|Good|0|0|0|
+22|F|M|College|500|Good|0|0|0|
+23|M|S|College|500|Good|0|0|0|
+24|F|S|College|500|Good|0|0|0|
+25|M|D|College|500|Good|0|0|0|
+26|F|D|College|500|Good|0|0|0|
+27|M|W|College|500|Good|0|0|0|
+28|F|W|College|500|Good|0|0|0|
+29|M|U|College|500|Good|0|0|0|
+30|F|U|College|500|Good|0|0|0|
+31|M|M|2 yr Degree|500|Good|0|0|0|
+32|F|M|2 yr Degree|500|Good|0|0|0|
+33|M|S|2 yr Degree|500|Good|0|0|0|
+34|F|S|2 yr Degree|500|Good|0|0|0|
+35|M|D|2 yr Degree|500|Good|0|0|0|
+36|F|D|2 yr Degree|500|Good|0|0|0|
+37|M|W|2 yr Degree|500|Good|0|0|0|
+38|F|W|2 yr Degree|500|Good|0|0|0|
+39|M|U|2 yr Degree|500|Good|0|0|0|
+40|F|U|2 yr Degree|500|Good|0|0|0|
+41|M|M|4 yr Degree|500|Good|0|0|0|
+42|F|M|4 yr Degree|500|Good|0|0|0|
+43|M|S|4 yr Degree|500|Good|0|0|0|
+44|F|S|4 yr Degree|500|Good|0|0|0|
+45|M|D|4 yr Degree|500|Good|0|0|0|
+46|F|D|4 yr Degree|500|Good|0|0|0|
+47|M|W|4 yr Degree|500|Good|0|0|0|
+48|F|W|4 yr Degree|500|Good|0|0|0|
+49|M|U|4 yr Degree|500|Good|0|0|0|
+50|F|U|4 yr Degree|500|Good|0|0|0|
+51|M|M|Advanced Degree|500|Good|0|0|0|
+52|F|M|Advanced Degree|500|Good|0|0|0|
+53|M|S|Advanced Degree|500|Good|0|0|0|
+54|F|S|Advanced Degree|500|Good|0|0|0|
+55|M|D|Advanced Degree|500|Good|0|0|0|
+56|F|D|Advanced Degree|500|Good|0|0|0|
+57|M|W|Advanced Degree|500|Good|0|0|0|
+58|F|W|Advanced Degree|500|Good|0|0|0|
+59|M|U|Advanced Degree|500|Good|0|0|0|
+60|F|U|Advanced Degree|500|Good|0|0|0|
+61|M|M|Unknown|500|Good|0|0|0|
+62|F|M|Unknown|500|Good|0|0|0|
+63|M|S|Unknown|500|Good|0|0|0|
+64|F|S|Unknown|500|Good|0|0|0|
+65|M|D|Unknown|500|Good|0|0|0|
+66|F|D|Unknown|500|Good|0|0|0|
+67|M|W|Unknown|500|Good|0|0|0|
+68|F|W|Unknown|500|Good|0|0|0|
+69|M|U|Unknown|500|Good|0|0|0|
+70|F|U|Unknown|500|Good|0|0|0|
+71|M|M|Primary|1000|Good|0|0|0|
+72|F|M|Primary|1000|Good|0|0|0|
+73|M|S|Primary|1000|Good|0|0|0|
+74|F|S|Primary|1000|Good|0|0|0|
+75|M|D|Primary|1000|Good|0|0|0|
+76|F|D|Primary|1000|Good|0|0|0|
+77|M|W|Primary|1000|Good|0|0|0|
+78|F|W|Primary|1000|Good|0|0|0|
+79|M|U|Primary|1000|Good|0|0|0|
+80|F|U|Primary|1000|Good|0|0|0|
+81|M|M|Secondary|1000|Good|0|0|0|
+82|F|M|Secondary|1000|Good|0|0|0|
+83|M|S|Secondary|1000|Good|0|0|0|
+84|F|S|Secondary|1000|Good|0|0|0|
+85|M|D|Secondary|1000|Good|0|0|0|
+86|F|D|Secondary|1000|Good|0|0|0|
+87|M|W|Secondary|1000|Good|0|0|0|
+88|F|W|Secondary|1000|Good|0|0|0|
+89|M|U|Secondary|1000|Good|0|0|0|
+90|F|U|Secondary|1000|Good|0|0|0|
+91|M|M|College|1000|Good|0|0|0|
+92|F|M|College|1000|Good|0|0|0|
+93|M|S|College|1000|Good|0|0|0|
+94|F|S|College|1000|Good|0|0|0|
+95|M|D|College|1000|Good|0|0|0|
+96|F|D|College|1000|Good|0|0|0|
+97|M|W|College|1000|Good|0|0|0|
+98|F|W|College|1000|Good|0|0|0|
+99|M|U|College|1000|Good|0|0|0|
+100|F|U|College|1000|Good|0|0|0|
+101|M|M|2 yr Degree|1000|Good|0|0|0|
+102|F|M|2 yr Degree|1000|Good|0|0|0|
+103|M|S|2 yr Degree|1000|Good|0|0|0|
+104|F|S|2 yr Degree|1000|Good|0|0|0|
+105|M|D|2 yr Degree|1000|Good|0|0|0|
+106|F|D|2 yr Degree|1000|Good|0|0|0|
+107|M|W|2 yr Degree|1000|Good|0|0|0|
+108|F|W|2 yr Degree|1000|Good|0|0|0|
+109|M|U|2 yr Degree|1000|Good|0|0|0|
+110|F|U|2 yr Degree|1000|Good|0|0|0|
+111|M|M|4 yr Degree|1000|Good|0|0|0|
+112|F|M|4 yr Degree|1000|Good|0|0|0|
+113|M|S|4 yr Degree|1000|Good|0|0|0|
+114|F|S|4 yr Degree|1000|Good|0|0|0|
+115|M|D|4 yr Degree|1000|Good|0|0|0|
+116|F|D|4 yr Degree|1000|Good|0|0|0|
+117|M|W|4 yr Degree|1000|Good|0|0|0|
+118|F|W|4 yr Degree|1000|Good|0|0|0|
+119|M|U|4 yr Degree|1000|Good|0|0|0|
+120|F|U|4 yr Degree|1000|Good|0|0|0|
+121|M|M|Advanced Degree|1000|Good|0|0|0|
+122|F|M|Advanced Degree|1000|Good|0|0|0|
+123|M|S|Advanced Degree|1000|Good|0|0|0|
+124|F|S|Advanced Degree|1000|Good|0|0|0|
+125|M|D|Advanced Degree|1000|Good|0|0|0|
+126|F|D|Advanced Degree|1000|Good|0|0|0|
+127|M|W|Advanced Degree|1000|Good|0|0|0|
+128|F|W|Advanced Degree|1000|Good|0|0|0|
+129|M|U|Advanced Degree|1000|Good|0|0|0|
+130|F|U|Advanced Degree|1000|Good|0|0|0|
+131|M|M|Unknown|1000|Good|0|0|0|
+132|F|M|Unknown|1000|Good|0|0|0|
+133|M|S|Unknown|1000|Good|0|0|0|
+134|F|S|Unknown|1000|Good|0|0|0|
+135|M|D|Unknown|1000|Good|0|0|0|
+136|F|D|Unknown|1000|Good|0|0|0|
+137|M|W|Unknown|1000|Good|0|0|0|
+138|F|W|Unknown|1000|Good|0|0|0|
+139|M|U|Unknown|1000|Good|0|0|0|
+140|F|U|Unknown|1000|Good|0|0|0|
+141|M|M|Primary|1500|Good|0|0|0|
+142|F|M|Primary|1500|Good|0|0|0|
+143|M|S|Primary|1500|Good|0|0|0|
+144|F|S|Primary|1500|Good|0|0|0|
+145|M|D|Primary|1500|Good|0|0|0|
+146|F|D|Primary|1500|Good|0|0|0|
+147|M|W|Primary|1500|Good|0|0|0|
+148|F|W|Primary|1500|Good|0|0|0|
+149|M|U|Primary|1500|Good|0|0|0|
+150|F|U|Primary|1500|Good|0|0|0|
+151|M|M|Secondary|1500|Good|0|0|0|
+152|F|M|Secondary|1500|Good|0|0|0|
+153|M|S|Secondary|1500|Good|0|0|0|
+154|F|S|Secondary|1500|Good|0|0|0|
+155|M|D|Secondary|1500|Good|0|0|0|
+156|F|D|Secondary|1500|Good|0|0|0|
+157|M|W|Secondary|1500|Good|0|0|0|
+158|F|W|Secondary|1500|Good|0|0|0|
+159|M|U|Secondary|1500|Good|0|0|0|
+160|F|U|Secondary|1500|Good|0|0|0|
+161|M|M|College|1500|Good|0|0|0|
+162|F|M|College|1500|Good|0|0|0|
+163|M|S|College|1500|Good|0|0|0|
+164|F|S|College|1500|Good|0|0|0|
+165|M|D|College|1500|Good|0|0|0|
+166|F|D|College|1500|Good|0|0|0|
+167|M|W|College|1500|Good|0|0|0|
+168|F|W|College|1500|Good|0|0|0|
+169|M|U|College|1500|Good|0|0|0|
+170|F|U|College|1500|Good|0|0|0|
+171|M|M|2 yr Degree|1500|Good|0|0|0|
+172|F|M|2 yr Degree|1500|Good|0|0|0|
+173|M|S|2 yr Degree|1500|Good|0|0|0|
+174|F|S|2 yr Degree|1500|Good|0|0|0|
+175|M|D|2 yr Degree|1500|Good|0|0|0|
+176|F|D|2 yr Degree|1500|Good|0|0|0|
+177|M|W|2 yr Degree|1500|Good|0|0|0|
+178|F|W|2 yr Degree|1500|Good|0|0|0|
+179|M|U|2 yr Degree|1500|Good|0|0|0|
+180|F|U|2 yr Degree|1500|Good|0|0|0|
+181|M|M|4 yr Degree|1500|Good|0|0|0|
+182|F|M|4 yr Degree|1500|Good|0|0|0|
+183|M|S|4 yr Degree|1500|Good|0|0|0|
+184|F|S|4 yr Degree|1500|Good|0|0|0|
+185|M|D|4 yr Degree|1500|Good|0|0|0|
+186|F|D|4 yr Degree|1500|Good|0|0|0|
+187|M|W|4 yr Degree|1500|Good|0|0|0|
+188|F|W|4 yr Degree|1500|Good|0|0|0|
+189|M|U|4 yr Degree|1500|Good|0|0|0|
+190|F|U|4 yr Degree|1500|Good|0|0|0|
+191|M|M|Advanced Degree|1500|Good|0|0|0|
+192|F|M|Advanced Degree|1500|Good|0|0|0|
+193|M|S|Advanced Degree|1500|Good|0|0|0|
+194|F|S|Advanced Degree|1500|Good|0|0|0|
+195|M|D|Advanced Degree|1500|Good|0|0|0|
+196|F|D|Advanced Degree|1500|Good|0|0|0|
+197|M|W|Advanced Degree|1500|Good|0|0|0|
+198|F|W|Advanced Degree|1500|Good|0|0|0|
+199|M|U|Advanced Degree|1500|Good|0|0|0|
+200|F|U|Advanced Degree|1500|Good|0|0|0|

@@ -1732,9 +1732,12 @@ public class TreeReaderFactory {
                           int batchSize) throws IOException {
       for(int i=0; i < fields.length &&
           (vectorColumnCount == -1 || i < vectorColumnCount); ++i) {
-        batch.cols[i].reset();
-        batch.cols[i].ensureSize((int) batchSize, false);
-        fields[i].nextVector(batch.cols[i], null, batchSize);
+        ColumnVector colVector = batch.cols[i];
+        if (colVector != null) {
+          colVector.reset();
+          colVector.ensureSize((int) batchSize, false);
+          fields[i].nextVector(colVector, null, batchSize);
+        }
       }
     }
 

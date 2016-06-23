@@ -100,6 +100,10 @@ public class VectorMapOperator extends AbstractMapOperator {
 
   private transient TypeInfo[] tableRowTypeInfos;
 
+  private transient int[] dataColumnNums;
+
+  private transient StandardStructObjectInspector neededStandardStructObjectInspector;
+
   private transient VectorizedRowBatchCtx batchContext;
               // The context for creating the VectorizedRowBatch for this Map node that
               // the Vectorizer class determined.
@@ -122,7 +126,7 @@ public class VectorMapOperator extends AbstractMapOperator {
   private transient int partitionColumnCount;
   private transient Object[] partitionValues;
 
-  private transient boolean[] columnsToIncludeTruncated;
+  private transient boolean[] dataColumnsToIncludeTruncated;
 
   /*
    * The following members have context information for the current partition file being read.
@@ -264,7 +268,7 @@ public class VectorMapOperator extends AbstractMapOperator {
 
           // Initialize with data row type conversion parameters.
           readerColumnCount =
-              vectorDeserializeRow.initConversion(tableRowTypeInfos, columnsToIncludeTruncated);
+              vectorDeserializeRow.initConversion(tableRowTypeInfos, dataColumnsToIncludeTruncated);
 
           deserializeRead = lazySimpleDeserializeRead;
         }
@@ -280,7 +284,7 @@ public class VectorMapOperator extends AbstractMapOperator {
 
           // Initialize with data row type conversion parameters.
           readerColumnCount =
-              vectorDeserializeRow.initConversion(tableRowTypeInfos, columnsToIncludeTruncated);
+              vectorDeserializeRow.initConversion(tableRowTypeInfos, dataColumnsToIncludeTruncated);
 
           deserializeRead = lazyBinaryDeserializeRead;
         }
@@ -351,7 +355,7 @@ public class VectorMapOperator extends AbstractMapOperator {
 
       // Initialize with data type conversion parameters.
       readerColumnCount =
-          vectorAssign.initConversion(dataTypeInfos, tableRowTypeInfos, columnsToIncludeTruncated);
+          vectorAssign.initConversion(dataTypeInfos, tableRowTypeInfos, dataColumnsToIncludeTruncated);
     }
   }
 
@@ -396,40 +400,24 @@ public class VectorMapOperator extends AbstractMapOperator {
     return vectorPartitionContext;
   }
 
-  private void determineColumnsToInclude(Configuration hconf) {
+  private void determineDataColumnsToIncludeTruncated() {
 
-    columnsToIncludeTruncated = null;
+    Preconditions.checkState(batchContext != null);
+    Preconditions.checkState(dataColumnNums != null);
 
-    List<Integer> columnsToIncludeTruncatedList = ColumnProjectionUtils.getReadColumnIDs(hconf);
-    if (columnsToIncludeTruncatedList != null &&
-        columnsToIncludeTruncatedList.size() > 0 && columnsToIncludeTruncatedList.size() < dataColumnCount ) {
+    boolean[] columnsToInclude = new boolean[dataColumnCount];;
+    final int count = dataColumnNums.length;
+    int columnNum = -1;
+    for (int i = 0; i < count; i++) {
+      columnNum = dataColumnNums[i];
+      Preconditions.checkState(columnNum < dataColumnCount);
+      columnsToInclude[columnNum] = true;
+    }
 
-      // Partitioned columns will not be in the include list.
-
-      boolean[] columnsToInclude = new boolean[dataColumnCount];
-      Arrays.fill(columnsToInclude, false);
-      for (int columnNum : columnsToIncludeTruncatedList) {
-        columnsToInclude[columnNum] = true;
-      }
-
-      // Work backwards to find the highest wanted column.
-
-      int highestWantedColumnNum = -1;
-      for (int i = dataColumnCount - 1; i >= 0; i--) {
-        if (columnsToInclude[i]) {
-          highestWantedColumnNum = i;
-          break;
-        }
-      }
-      if (highestWantedColumnNum == -1) {
-        throw new RuntimeException("No columns to include?");
-      }
-      int newColumnCount = highestWantedColumnNum + 1;
-      if (newColumnCount == dataColumnCount) {
-        columnsToIncludeTruncated = columnsToInclude;
-      } else {
-        columnsToIncludeTruncated = Arrays.copyOf(columnsToInclude, newColumnCount);
-      }
+    if (columnNum == -1) {
+      dataColumnsToIncludeTruncated = new boolean[0];
+    } else {
+      dataColumnsToIncludeTruncated = Arrays.copyOf(columnsToInclude, columnNum + 1);
     }
   }
 
@@ -479,23 +467,20 @@ public class VectorMapOperator extends AbstractMapOperator {
     // so set it here to none.
     currentReadType = VectorMapOperatorReadType.NONE;
 
-    determineColumnsToInclude(hconf);
-
     batchContext = conf.getVectorizedRowBatchCtx();
-
     /*
      * Use a different batch for vectorized Input File Format readers so they can do their work
      * overlapped with work of the row collection that vector/row deserialization does.  This allows
      * the partitions to mix modes (e.g. for us to flush the previously batched rows on file change).
      */
     vectorizedInputFileFormatBatch =
-        batchContext.createVectorizedRowBatch(columnsToIncludeTruncated);
+        batchContext.createVectorizedRowBatch();
     conf.setVectorizedRowBatch(vectorizedInputFileFormatBatch);
 
     /*
      * This batch is used by vector/row deserializer readers.
      */
-    deserializerBatch = batchContext.createVectorizedRowBatch(columnsToIncludeTruncated);
+    deserializerBatch = batchContext.createVectorizedRowBatch();
 
     batchCounter = 0;
 
@@ -503,18 +488,40 @@ public class VectorMapOperator extends AbstractMapOperator {
     partitionColumnCount = batchContext.getPartitionColumnCount();
     partitionValues = new Object[partitionColumnCount];
 
+    dataColumnNums = batchContext.getDataColumnNums();
+    Preconditions.checkState(dataColumnNums != null);
+
+    // Form a truncated boolean include array for our vector/row deserializers.
+    determineDataColumnsToIncludeTruncated();
+
     /*
      * Create table related objects
      */
+    final String[] rowColumnNames = batchContext.getRowColumnNames();
+    final TypeInfo[] rowColumnTypeInfos = batchContext.getRowColumnTypeInfos();
     tableStructTypeInfo =
         TypeInfoFactory.getStructTypeInfo(
-          Arrays.asList(batchContext.getRowColumnNames()),
-          Arrays.asList(batchContext.getRowColumnTypeInfos()));
+            Arrays.asList(rowColumnNames),
+            Arrays.asList(rowColumnTypeInfos));
     tableStandardStructObjectInspector =
         (StandardStructObjectInspector)
             TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(tableStructTypeInfo);
 
     tableRowTypeInfos = batchContext.getRowColumnTypeInfos();
+
+    /*
+     * NOTE: We do not alter the projectedColumns / projectionSize of the batches to just be
+     * the included columns (+ partition columns).
+     *
+     * For now, we need to model the object inspector rows because there are still several
+     * vectorized operators that use them.
+     *
+     * We need to continue to model the Object[] as having null objects for not included columns
+     * until the following has been fixed:
+     *    o When we have to output a STRUCT for AVG we switch to row GroupBy operators.
+     *    o Some variations of VectorMapOperator, VectorReduceSinkOperator, VectorFileSinkOperator
+     *      use the row super class to process rows.
+     */
 
     /*
      * The Vectorizer class enforces that there is only one TableScanOperator, so
@@ -657,13 +664,15 @@ public class VectorMapOperator extends AbstractMapOperator {
       if (currentDataColumnCount < dataColumnCount) {
 
         /*
-         * Default any additional data columns to NULL once for the file.
+         * Default any additional data columns to NULL once for the file (if they are present).
          */
         for (int i = currentDataColumnCount; i < dataColumnCount; i++) {
           ColumnVector colVector = deserializerBatch.cols[i];
-          colVector.isNull[0] = true;
-          colVector.noNulls = false;
-          colVector.isRepeating = true;
+          if (colVector != null) {
+            colVector.isNull[0] = true;
+            colVector.noNulls = false;
+            colVector.isRepeating = true;
+          }
         }
       }
 
@@ -788,8 +797,11 @@ public class VectorMapOperator extends AbstractMapOperator {
              * because they are not present in the partition, and not partition columns.
              */
             for (int c = 0; c < currentDataColumnCount; c++) {
-              deserializerBatch.cols[c].reset();
-              deserializerBatch.cols[c].init();
+              ColumnVector colVector = deserializerBatch.cols[c];
+              if (colVector != null) {
+                colVector.reset();
+                colVector.init();
+              }
             }
             deserializerBatch.selectedInUse = false;
             deserializerBatch.size = 0;
