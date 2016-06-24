@@ -936,7 +936,8 @@ public class HiveConf extends Configuration {
 
     // reloadable jars
     HIVERELOADABLEJARS("hive.reloadable.aux.jars.path", "",
-        "Jars can be renewed by executing reload command. And these jars can be "
+        "The locations of the plugin jars, which can be a comma-separated folders or jars. Jars can be renewed\n"
+        + "by executing reload command. And these jars can be "
             + "used as the auxiliary classes like creating a UDF or SerDe."),
 
     // hive added files and jars

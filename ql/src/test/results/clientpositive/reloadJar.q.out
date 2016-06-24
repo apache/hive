@@ -1,0 +1,64 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION example_iden AS 'IdentityStringUDF'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: example_iden
+POSTHOOK: query: CREATE TEMPORARY FUNCTION example_iden AS 'IdentityStringUDF'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: example_iden
+PREHOOK: query: EXPLAIN
+SELECT example_iden(key)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT example_iden(key)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: example_iden(key) (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Limit
+                Number of rows: 1
+                Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT example_iden(key)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT example_iden(key)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238
+PREHOOK: query: DROP TEMPORARY FUNCTION example_iden
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: example_iden
+POSTHOOK: query: DROP TEMPORARY FUNCTION example_iden
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: example_iden
+#### A masked pattern was here ####
