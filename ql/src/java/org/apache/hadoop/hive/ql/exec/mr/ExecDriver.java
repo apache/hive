@@ -91,6 +91,7 @@ import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
@@ -140,6 +141,26 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   }
 
   /**
+   * Retrieve the resources from the current session and configuration for the given type.
+   * @return Comma-separated list of resources
+   */
+  protected static String getResource(HiveConf conf, SessionState.ResourceType resType) {
+    switch(resType) {
+    case JAR:
+      String addedJars = Utilities.getResourceFiles(conf, SessionState.ResourceType.JAR);
+      String auxJars = conf.getAuxJars();
+      String reloadableAuxJars = SessionState.get() == null ? null : SessionState.get().getReloadableAuxJars();
+      return HiveStringUtils.joinIgnoringEmpty(new String[]{addedJars, auxJars, reloadableAuxJars}, ',');
+    case FILE:
+      return Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
+    case ARCHIVE:
+      return Utilities.getResourceFiles(conf, SessionState.ResourceType.ARCHIVE);
+    }
+
+    return null;
+  }
+
+  /**
    * Initialization when invoked from QL.
    */
   @Override
@@ -149,25 +170,10 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     job = new JobConf(conf, ExecDriver.class);
 
-    // NOTE: initialize is only called if it is in non-local mode.
-    // In case it's in non-local mode, we need to move the SessionState files
-    // and jars to jobConf.
-    // In case it's in local mode, MapRedTask will set the jobConf.
-    //
-    // "tmpfiles" and "tmpjars" are set by the method ExecDriver.execute(),
-    // which will be called by both local and NON-local mode.
-    String addedFiles = Utilities.getResourceFiles(job, SessionState.ResourceType.FILE);
-    if (StringUtils.isNotBlank(addedFiles)) {
-      HiveConf.setVar(job, ConfVars.HIVEADDEDFILES, addedFiles);
-    }
-    String addedJars = Utilities.getResourceFiles(job, SessionState.ResourceType.JAR);
-    if (StringUtils.isNotBlank(addedJars)) {
-      HiveConf.setVar(job, ConfVars.HIVEADDEDJARS, addedJars);
-    }
-    String addedArchives = Utilities.getResourceFiles(job, SessionState.ResourceType.ARCHIVE);
-    if (StringUtils.isNotBlank(addedArchives)) {
-      HiveConf.setVar(job, ConfVars.HIVEADDEDARCHIVES, addedArchives);
-    }
+    initializeFiles("tmpjars", getResource(conf, SessionState.ResourceType.JAR));
+    initializeFiles("tmpfiles", getResource(conf, SessionState.ResourceType.FILE));
+    initializeFiles("tmparchives", getResource(conf, SessionState.ResourceType.ARCHIVE));
+
     conf.stripHiddenConfigurations(job);
     this.jobExecHelper = new HadoopJobExecHelper(queryState, job, console, this, this);
   }
@@ -297,40 +303,16 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       throw new RuntimeException(e.getMessage(), e);
     }
 
-
     // No-Op - we don't really write anything here ..
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(Text.class);
 
-    // Transfer HIVEAUXJARS and HIVEADDEDJARS to "tmpjars" so hadoop understands
-    // it
-    String auxJars = HiveConf.getVar(job, HiveConf.ConfVars.HIVEAUXJARS);
-    String addedJars = HiveConf.getVar(job, HiveConf.ConfVars.HIVEADDEDJARS);
-    if (StringUtils.isNotBlank(auxJars) || StringUtils.isNotBlank(addedJars)) {
-      String allJars = StringUtils.isNotBlank(auxJars) ? (StringUtils.isNotBlank(addedJars) ? addedJars
-          + "," + auxJars
-          : auxJars)
-          : addedJars;
-      LOG.info("adding libjars: " + allJars);
-      initializeFiles("tmpjars", allJars);
-    }
-
-    // Transfer HIVEADDEDFILES to "tmpfiles" so hadoop understands it
-    String addedFiles = HiveConf.getVar(job, HiveConf.ConfVars.HIVEADDEDFILES);
-    if (StringUtils.isNotBlank(addedFiles)) {
-      initializeFiles("tmpfiles", addedFiles);
-    }
     int returnVal = 0;
     boolean noName = StringUtils.isEmpty(job.get(MRJobConfig.JOB_NAME));
 
     if (noName) {
       // This is for a special case to ensure unit tests pass
       job.set(MRJobConfig.JOB_NAME, "JOB" + Utilities.randGen.nextInt());
-    }
-    String addedArchives = HiveConf.getVar(job, HiveConf.ConfVars.HIVEADDEDARCHIVES);
-    // Transfer HIVEADDEDARCHIVES to "tmparchives" so hadoop understands it
-    if (StringUtils.isNotBlank(addedArchives)) {
-      initializeFiles("tmparchives", addedArchives);
     }
 
     try{
@@ -638,6 +620,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     String jobConfFileName = null;
     boolean noLog = false;
     String files = null;
+    String libjars = null;
     boolean localtask = false;
     try {
       for (int i = 0; i < args.length; i++) {
@@ -649,7 +632,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           noLog = true;
         } else if (args[i].equals("-files")) {
           files = args[++i];
-        } else if (args[i].equals("-localtask")) {
+        } else if (args[i].equals("-libjars")) {
+          libjars = args[++i];
+        }else if (args[i].equals("-localtask")) {
           localtask = true;
         }
       }
@@ -669,8 +654,13 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       conf.addResource(new Path(jobConfFileName));
     }
 
+    // Initialize the resources from command line
     if (files != null) {
       conf.set("tmpfiles", files);
+    }
+
+    if (libjars != null) {
+      conf.set("tmpjars", libjars);
     }
 
     if(UserGroupInformation.isSecurityEnabled()){
@@ -725,17 +715,11 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     // this is workaround for hadoop-17 - libjars are not added to classpath of the
     // child process. so we add it here explicitly
-
-    String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
-    String addedJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEADDEDJARS);
     try {
       // see also - code in CliDriver.java
       ClassLoader loader = conf.getClassLoader();
-      if (StringUtils.isNotBlank(auxJars)) {
-        loader = Utilities.addToClassPath(loader, StringUtils.split(auxJars, ","));
-      }
-      if (StringUtils.isNotBlank(addedJars)) {
-        loader = Utilities.addToClassPath(loader, StringUtils.split(addedJars, ","));
+      if (StringUtils.isNotBlank(libjars)) {
+        loader = Utilities.addToClassPath(loader, StringUtils.split(libjars, ","));
       }
       conf.setClassLoader(loader);
       // Also set this to the Thread ContextClassLoader, so new threads will
