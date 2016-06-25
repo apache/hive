@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.OperationLog;
@@ -276,6 +277,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       // ThreadLocal Hive object needs to be set in background thread.
       // The metastore client in Hive is associated with right user.
       final Hive parentHive = parentSession.getSessionHive();
+      final PerfLogger parentPerfLogger = SessionState.getPerfLogger();
       // Current UGI will get used by metastore when metsatore is in embedded mode
       // So this needs to get passed to the new background thread
       final UserGroupInformation currentUGI = getCurrentUGI();
@@ -289,6 +291,7 @@ public class SQLOperation extends ExecuteStatementOperation {
             public Object run() throws HiveSQLException {
               Hive.set(parentHive);
               SessionState.setCurrentSessionState(parentSessionState);
+              PerfLogger.setPerfLogger(parentPerfLogger);
               // Set current OperationLog in this async thread for keeping on saving query log.
               registerCurrentOperationLog();
               registerLoggingContext();

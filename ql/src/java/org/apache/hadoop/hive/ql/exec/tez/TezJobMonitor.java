@@ -444,7 +444,7 @@ public class TezJobMonitor {
 
     // parse, analyze, optimize and compile
     long compile = perfLogger.getEndTime(PerfLogger.COMPILE) -
-        perfLogger.getStartTime(PerfLogger.DRIVER_RUN);
+        perfLogger.getStartTime(PerfLogger.COMPILE);
     console.printInfo(String.format(OPERATION_SUMMARY, "Compile Query",
         secondsFormat.format(compile / 1000.0) + "s"));
 
