@@ -257,6 +257,20 @@ message Table {
   optional bool is_temporary = 14;
 }
 
+message Index {
+  optional string indexHandlerClass = 1; // reserved
+  required string dbName = 2;
+  required string origTableName = 3;
+  optional string location = 4;
+  optional Parameters sd_parameters = 5; // storage descriptor parameters
+  optional int32 createTime = 6;
+  optional int32 lastAccessTime = 7;
+  optional string indexTableName = 8;
+  optional bytes sd_hash = 9;
+  optional Parameters parameters = 10;
+  optional bool deferredRebuild = 11;
+}
+
 message PartitionKeyComparator {
   required string names = 1;
   required string types = 2;
