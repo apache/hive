@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -754,6 +755,132 @@ public class TestHBaseStore {
     store.dropPartition(DB, tableName, vals);
     thrown.expect(NoSuchObjectException.class);
     store.getPartition(DB, tableName, vals);
+  }
+
+  @Test
+  public void createIndex() throws Exception {
+    String tableName = "mytable";
+    int startTime = (int)(System.currentTimeMillis() / 1000);
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema("col1", "int", ""));
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    Map<String, String> params = new HashMap<String, String>();
+    params.put("key", "value");
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17,
+        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
+    Table table = new Table(tableName, "default", "me", startTime, startTime, 0, sd, null,
+        emptyParameters, null, null, null);
+    store.createTable(table);
+
+    String indexName = "myindex";
+    String indexTableName = tableName + "__" + indexName + "__";
+    Index index = new Index(indexName, null, "default", tableName, startTime, startTime,
+        indexTableName, sd, emptyParameters, false);
+    store.addIndex(index);
+
+    Index ind = store.getIndex("default", tableName, indexName);
+    Assert.assertEquals(1, ind.getSd().getColsSize());
+    Assert.assertEquals("col1", ind.getSd().getCols().get(0).getName());
+    Assert.assertEquals("int", ind.getSd().getCols().get(0).getType());
+    Assert.assertEquals("", ind.getSd().getCols().get(0).getComment());
+    Assert.assertEquals("serde", ind.getSd().getSerdeInfo().getName());
+    Assert.assertEquals("seriallib", ind.getSd().getSerdeInfo().getSerializationLib());
+    Assert.assertEquals("file:/tmp", ind.getSd().getLocation());
+    Assert.assertEquals("input", ind.getSd().getInputFormat());
+    Assert.assertEquals("output", ind.getSd().getOutputFormat());
+    Assert.assertFalse(ind.getSd().isCompressed());
+    Assert.assertEquals(17, ind.getSd().getNumBuckets());
+    Assert.assertEquals(1, ind.getSd().getBucketColsSize());
+    Assert.assertEquals("bucketcol", ind.getSd().getBucketCols().get(0));
+    Assert.assertEquals(1, ind.getSd().getSortColsSize());
+    Assert.assertEquals("sortcol", ind.getSd().getSortCols().get(0).getCol());
+    Assert.assertEquals(1, ind.getSd().getSortCols().get(0).getOrder());
+    Assert.assertEquals(1, ind.getSd().getParametersSize());
+    Assert.assertEquals("value", ind.getSd().getParameters().get("key"));
+    Assert.assertEquals(indexName, ind.getIndexName());
+    Assert.assertNull(ind.getIndexHandlerClass());
+    Assert.assertEquals("default", ind.getDbName());
+    Assert.assertEquals(tableName, ind.getOrigTableName());
+    Assert.assertEquals(0, ind.getParametersSize());
+    Assert.assertEquals(startTime, ind.getCreateTime());
+    Assert.assertEquals(startTime, ind.getLastAccessTime());
+    Assert.assertEquals(false, ind.isDeferredRebuild());
+  }
+
+  @Test
+  public void alterIndex() throws Exception {
+    String tableName = "mytable";
+    int startTime = (int)(System.currentTimeMillis() / 1000);
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema("col1", "int", ""));
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    Map<String, String> params = new HashMap<String, String>();
+    params.put("key", "value");
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17,
+        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
+    Table table = new Table(tableName, "default", "me", startTime, startTime, 0, sd, null,
+        emptyParameters, null, null, null);
+    store.createTable(table);
+
+    String indexName = "myindex";
+    Index index = new Index(indexName, null, "default", tableName, startTime, startTime,
+        tableName + "__" + indexName + "__", sd, emptyParameters, false);
+    store.addIndex(index);
+
+    startTime += 10;
+    index.setLastAccessTime(startTime);
+    store.alterIndex("default", tableName, indexName, index); 
+
+    Index ind = store.getIndex("default", tableName, indexName);
+    Assert.assertEquals(1, ind.getSd().getColsSize());
+    Assert.assertEquals("col1", ind.getSd().getCols().get(0).getName());
+    Assert.assertEquals("int", ind.getSd().getCols().get(0).getType());
+    Assert.assertEquals("", ind.getSd().getCols().get(0).getComment());
+    Assert.assertEquals("serde", ind.getSd().getSerdeInfo().getName());
+    Assert.assertEquals("seriallib", ind.getSd().getSerdeInfo().getSerializationLib());
+    Assert.assertEquals("file:/tmp", ind.getSd().getLocation());
+    Assert.assertEquals("input", ind.getSd().getInputFormat());
+    Assert.assertEquals("output", ind.getSd().getOutputFormat());
+    Assert.assertFalse(ind.getSd().isCompressed());
+    Assert.assertEquals(17, ind.getSd().getNumBuckets());
+    Assert.assertEquals(1, ind.getSd().getBucketColsSize());
+    Assert.assertEquals("bucketcol", ind.getSd().getBucketCols().get(0));
+    Assert.assertEquals(1, ind.getSd().getSortColsSize());
+    Assert.assertEquals("sortcol", ind.getSd().getSortCols().get(0).getCol());
+    Assert.assertEquals(1, ind.getSd().getSortCols().get(0).getOrder());
+    Assert.assertEquals(1, ind.getSd().getParametersSize());
+    Assert.assertEquals("value", ind.getSd().getParameters().get("key"));
+    Assert.assertEquals(indexName, ind.getIndexName());
+    Assert.assertNull(ind.getIndexHandlerClass());
+    Assert.assertEquals("default", ind.getDbName());
+    Assert.assertEquals(tableName, ind.getOrigTableName());
+    Assert.assertEquals(0, ind.getParametersSize());
+    Assert.assertEquals(startTime, ind.getLastAccessTime());
+    Assert.assertEquals(false, ind.isDeferredRebuild());
+  }
+
+  @Test
+  public void dropIndex() throws Exception {
+    String tableName = "mytable";
+    int startTime = (int)(System.currentTimeMillis() / 1000);
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema("col1", "int", ""));
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    Map<String, String> params = new HashMap<String, String>();
+    params.put("key", "value");
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17,
+        serde, Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
+    Table table = new Table(tableName, "default", "me", startTime, startTime, 0, sd, null,
+        emptyParameters, null, null, null);
+    store.createTable(table);
+
+    String indexName = "myindex";
+    Index index = new Index(indexName, null, "default", tableName, startTime, startTime,
+        tableName + "__" + indexName + "__", sd, emptyParameters, false);
+    store.addIndex(index);
+
+    store.dropIndex("default", tableName, indexName);
+
   }
 
   @Test

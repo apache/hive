@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
@@ -98,6 +99,7 @@ public class HBaseReadWrite implements MetadataStore {
   final static String SECURITY_TABLE = "HBMS_SECURITY";
   final static String SEQUENCES_TABLE = "HBMS_SEQUENCES";
   final static String TABLE_TABLE = "HBMS_TBLS";
+  final static String INDEX_TABLE = "HBMS_INDEX";
   final static String USER_TO_ROLE_TABLE = "HBMS_USER_TO_ROLE";
   final static String FILE_METADATA_TABLE = "HBMS_FILE_METADATA";
   final static byte[] CATALOG_CF = "c".getBytes(HBaseUtils.ENCODING);
@@ -109,7 +111,7 @@ public class HBaseReadWrite implements MetadataStore {
   public final static String[] tableNames = { AGGR_STATS_TABLE, DB_TABLE, FUNC_TABLE,
                                               GLOBAL_PRIVS_TABLE, PART_TABLE, USER_TO_ROLE_TABLE,
                                               ROLE_TABLE, SD_TABLE, SECURITY_TABLE, SEQUENCES_TABLE,
-                                              TABLE_TABLE, FILE_METADATA_TABLE };
+                                              TABLE_TABLE, INDEX_TABLE, FILE_METADATA_TABLE };
   public final static Map<String, List<byte[]>> columnFamilies = new HashMap<> (tableNames.length);
 
   static {
@@ -124,6 +126,7 @@ public class HBaseReadWrite implements MetadataStore {
     columnFamilies.put(SECURITY_TABLE, Arrays.asList(CATALOG_CF));
     columnFamilies.put(SEQUENCES_TABLE, Arrays.asList(CATALOG_CF));
     columnFamilies.put(TABLE_TABLE, Arrays.asList(CATALOG_CF, STATS_CF));
+    columnFamilies.put(INDEX_TABLE, Arrays.asList(CATALOG_CF, STATS_CF));
     // Stats CF will contain PPD stats.
     columnFamilies.put(FILE_METADATA_TABLE, Arrays.asList(CATALOG_CF, STATS_CF));
   }
@@ -1744,6 +1747,119 @@ public class HBaseReadWrite implements MetadataStore {
     return sdParts.containingTable;
   }
 
+  /**********************************************************************************************
+   * Index related methods
+   *********************************************************************************************/
+
+  /**
+   * Put an index object.  This should only be called when the index is new (create index) as it
+   * will blindly add/increment the storage descriptor.  If you are altering an existing index
+   * call {@link #replaceIndex} instead.
+   * @param index index object
+   * @throws IOException
+   */
+  void putIndex(Index index) throws IOException {
+    byte[] hash = putStorageDescriptor(index.getSd());
+    byte[][] serialized = HBaseUtils.serializeIndex(index, hash);
+    store(INDEX_TABLE, serialized[0], CATALOG_CF, CATALOG_COL, serialized[1]);
+  }
+
+  /**
+   * Fetch an index object
+   * @param dbName database the table is in
+   * @param origTableName original table name
+   * @param indexName index name
+   * @return Index object, or null if no such table
+   * @throws IOException
+   */
+  Index getIndex(String dbName, String origTableName, String indexName) throws IOException {
+    byte[] key = HBaseUtils.buildKey(dbName, origTableName, indexName);
+    byte[] serialized = read(INDEX_TABLE, key, CATALOG_CF, CATALOG_COL);
+    if (serialized == null) return null;
+    HBaseUtils.StorageDescriptorParts sdParts =
+        HBaseUtils.deserializeIndex(dbName, origTableName, indexName, serialized);
+    StorageDescriptor sd = getStorageDescriptor(sdParts.sdHash);
+    HBaseUtils.assembleStorageDescriptor(sd, sdParts);
+    return sdParts.containingIndex;
+  }
+
+  /**
+   * Delete a table
+   * @param dbName name of database table is in
+   * @param origTableName table the index is built on
+   * @param indexName index name
+   * @throws IOException
+   */
+  void deleteIndex(String dbName, String origTableName, String indexName) throws IOException {
+    deleteIndex(dbName, origTableName, indexName, true);
+  }
+
+  void deleteIndex(String dbName, String origTableName, String indexName, boolean decrementRefCnt)
+      throws IOException {
+    // Find the index so I can get the storage descriptor and drop it
+    if (decrementRefCnt) {
+      Index index = getIndex(dbName, origTableName, indexName);
+      decrementStorageDescriptorRefCount(index.getSd());
+    }
+    byte[] key = HBaseUtils.buildKey(dbName, origTableName, indexName);
+    delete(INDEX_TABLE, key, null, null);
+  }
+
+  /**
+   * Get a list of tables.
+   * @param dbName Database these tables are in
+   * @param origTableName original table name
+   * @param maxResults max indexes to fetch.  If negative all indexes will be returned.
+   * @return list of indexes of the table
+   * @throws IOException
+   */
+  List<Index> scanIndexes(String dbName, String origTableName, int maxResults) throws IOException {
+    // There's no way to know whether all the tables we are looking for are
+    // in the cache, so we would need to scan one way or another.  Thus there's no value in hitting
+    // the cache for this function.
+    byte[] keyPrefix = null;
+    if (dbName != null) {
+      keyPrefix = HBaseUtils.buildKeyWithTrailingSeparator(dbName, origTableName);
+    }
+    Iterator<Result> iter = scan(INDEX_TABLE, keyPrefix, HBaseUtils.getEndPrefix(keyPrefix),
+        CATALOG_CF, CATALOG_COL, null);
+    List<Index> indexes = new ArrayList<>();
+    int numToFetch = maxResults < 0 ? Integer.MAX_VALUE : maxResults;
+    for (int i = 0; i < numToFetch && iter.hasNext(); i++) {
+      Result result = iter.next();
+      HBaseUtils.StorageDescriptorParts sdParts = HBaseUtils.deserializeIndex(result.getRow(),
+          result.getValue(CATALOG_CF, CATALOG_COL));
+      StorageDescriptor sd = getStorageDescriptor(sdParts.sdHash);
+      HBaseUtils.assembleStorageDescriptor(sd, sdParts);
+      indexes.add(sdParts.containingIndex);
+    }
+    return indexes;
+  }
+
+  /**
+   * Replace an existing index.  This will also compare the storage descriptors and see if the
+   * reference count needs to be adjusted
+   * @param oldIndex old version of the index
+   * @param newIndex new version of the index
+   */
+  void replaceIndex(Index oldIndex, Index newIndex) throws IOException {
+    byte[] hash;
+    byte[] oldHash = HBaseUtils.hashStorageDescriptor(oldIndex.getSd(), md);
+    byte[] newHash = HBaseUtils.hashStorageDescriptor(newIndex.getSd(), md);
+    if (Arrays.equals(oldHash, newHash)) {
+      hash = oldHash;
+    } else {
+      decrementStorageDescriptorRefCount(oldIndex.getSd());
+      hash = putStorageDescriptor(newIndex.getSd());
+    }
+    byte[][] serialized = HBaseUtils.serializeIndex(newIndex, hash);
+    store(INDEX_TABLE, serialized[0], CATALOG_CF, CATALOG_COL, serialized[1]);
+    if (!(oldIndex.getDbName().equals(newIndex.getDbName()) &&
+        oldIndex.getOrigTableName().equals(newIndex.getOrigTableName()) &&
+        oldIndex.getIndexName().equals(newIndex.getIndexName()))) {
+      deleteIndex(oldIndex.getDbName(), oldIndex.getOrigTableName(), oldIndex.getIndexName(), false);
+    }
+  }
   /**********************************************************************************************
    * StorageDescriptor related methods
    *********************************************************************************************/

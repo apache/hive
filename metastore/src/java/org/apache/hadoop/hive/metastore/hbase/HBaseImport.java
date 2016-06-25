@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore.hbase;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -118,6 +120,7 @@ public class HBaseImport {
   private List<Database> dbs;
   private BlockingQueue<Table> partitionedTables;
   private BlockingQueue<String[]> tableNameQueue;
+  private BlockingQueue<String[]> indexNameQueue;
   private BlockingQueue<PartQueueEntry> partQueue;
   private boolean writingToQueue, readersFinished;
   private boolean doKerberos, doAll;
@@ -239,6 +242,7 @@ public class HBaseImport {
     // We don't want to bound the size of the table queue because we keep it all in memory
     partitionedTables = new LinkedBlockingQueue<>();
     tableNameQueue = new LinkedBlockingQueue<>();
+    indexNameQueue = new LinkedBlockingQueue<>();
 
     // Bound the size of this queue so we don't get too much in memory.
     partQueue = new ArrayBlockingQueue<>(parallel * 2);
@@ -263,6 +267,7 @@ public class HBaseImport {
     if (doAll || dbsToImport != null || tablesToImport != null) {
       copyTables();
       copyPartitions();
+      copyIndexes();
     }
     if (doAll || dbsToImport != null || functionsToImport != null) {
       copyFunctions();
@@ -363,6 +368,66 @@ public class HBaseImport {
             }
             screen("Copying table " + name[0] + "." + name[1]);
             hbaseStore.get().createTable(table);
+          }
+        } catch (InterruptedException | MetaException | InvalidObjectException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+  }
+
+  private void copyIndexes() throws MetaException, InvalidObjectException, InterruptedException {
+    screen("Copying indexes");
+
+    // Start the parallel threads that will copy the indexes
+    Thread[] copiers = new Thread[parallel];
+    writingToQueue = true;
+    for (int i = 0; i < parallel; i++) {
+      copiers[i] = new IndexCopier();
+      copiers[i].start();
+    }
+
+    // Put indexes from the databases we copied into the queue
+    for (Database db : dbs) {
+      screen("Coyping indexes in database " + db.getName());
+      for (String tableName : rdbmsStore.get().getAllTables(db.getName())) {
+        for (Index index : rdbmsStore.get().getIndexes(db.getName(), tableName, -1)) {
+          indexNameQueue.put(new String[]{db.getName(), tableName, index.getIndexName()});
+        }
+      }
+    }
+
+    // Now put any specifically requested tables into the queue
+    if (tablesToImport != null) {
+      for (String compoundTableName : tablesToImport) {
+        String[] tn = compoundTableName.split("\\.");
+        if (tn.length != 2) {
+          error(compoundTableName + " not in proper form.  Must be in form dbname.tablename.  " +
+              "Ignoring this table and continuing.");
+        } else {
+          for (Index index : rdbmsStore.get().getIndexes(tn[0], tn[1], -1)) {
+            indexNameQueue.put(new String[]{tn[0], tn[1], index.getIndexName()});
+          }
+        }
+      }
+    }
+
+    writingToQueue = false;
+
+    // Wait until we've finished adding all the tables
+    for (Thread copier : copiers) copier.join();
+ }
+
+  private class IndexCopier extends Thread {
+    @Override
+    public void run() {
+      while (writingToQueue || indexNameQueue.size() > 0) {
+        try {
+          String[] name = indexNameQueue.poll(1, TimeUnit.SECONDS);
+          if (name != null) {
+            Index index = rdbmsStore.get().getIndex(name[0], name[1], name[2]);
+            screen("Copying index " + name[0] + "." + name[1] + "." + name[2]);
+            hbaseStore.get().addIndex(index);
           }
         } catch (InterruptedException | MetaException | InvalidObjectException e) {
           throw new RuntimeException(e);

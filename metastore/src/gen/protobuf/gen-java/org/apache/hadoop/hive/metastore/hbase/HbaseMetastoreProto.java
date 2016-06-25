@@ -30773,6 +30773,1960 @@ public final class HbaseMetastoreProto {
     // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.Table)
   }
 
+  public interface IndexOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional string indexHandlerClass = 1;
+    /**
+     * <code>optional string indexHandlerClass = 1;</code>
+     *
+     * <pre>
+     * reserved
+     * </pre>
+     */
+    boolean hasIndexHandlerClass();
+    /**
+     * <code>optional string indexHandlerClass = 1;</code>
+     *
+     * <pre>
+     * reserved
+     * </pre>
+     */
+    java.lang.String getIndexHandlerClass();
+    /**
+     * <code>optional string indexHandlerClass = 1;</code>
+     *
+     * <pre>
+     * reserved
+     * </pre>
+     */
+    com.google.protobuf.ByteString
+        getIndexHandlerClassBytes();
+
+    // required string dbName = 2;
+    /**
+     * <code>required string dbName = 2;</code>
+     */
+    boolean hasDbName();
+    /**
+     * <code>required string dbName = 2;</code>
+     */
+    java.lang.String getDbName();
+    /**
+     * <code>required string dbName = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getDbNameBytes();
+
+    // required string origTableName = 3;
+    /**
+     * <code>required string origTableName = 3;</code>
+     */
+    boolean hasOrigTableName();
+    /**
+     * <code>required string origTableName = 3;</code>
+     */
+    java.lang.String getOrigTableName();
+    /**
+     * <code>required string origTableName = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getOrigTableNameBytes();
+
+    // optional string location = 4;
+    /**
+     * <code>optional string location = 4;</code>
+     */
+    boolean hasLocation();
+    /**
+     * <code>optional string location = 4;</code>
+     */
+    java.lang.String getLocation();
+    /**
+     * <code>optional string location = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getLocationBytes();
+
+    // optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;</code>
+     *
+     * <pre>
+     * storage descriptor parameters
+     * </pre>
+     */
+    boolean hasSdParameters();
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;</code>
+     *
+     * <pre>
+     * storage descriptor parameters
+     * </pre>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters getSdParameters();
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;</code>
+     *
+     * <pre>
+     * storage descriptor parameters
+     * </pre>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ParametersOrBuilder getSdParametersOrBuilder();
+
+    // optional int32 createTime = 6;
+    /**
+     * <code>optional int32 createTime = 6;</code>
+     */
+    boolean hasCreateTime();
+    /**
+     * <code>optional int32 createTime = 6;</code>
+     */
+    int getCreateTime();
+
+    // optional int32 lastAccessTime = 7;
+    /**
+     * <code>optional int32 lastAccessTime = 7;</code>
+     */
+    boolean hasLastAccessTime();
+    /**
+     * <code>optional int32 lastAccessTime = 7;</code>
+     */
+    int getLastAccessTime();
+
+    // optional string indexTableName = 8;
+    /**
+     * <code>optional string indexTableName = 8;</code>
+     */
+    boolean hasIndexTableName();
+    /**
+     * <code>optional string indexTableName = 8;</code>
+     */
+    java.lang.String getIndexTableName();
+    /**
+     * <code>optional string indexTableName = 8;</code>
+     */
+    com.google.protobuf.ByteString
+        getIndexTableNameBytes();
+
+    // optional bytes sd_hash = 9;
+    /**
+     * <code>optional bytes sd_hash = 9;</code>
+     */
+    boolean hasSdHash();
+    /**
+     * <code>optional bytes sd_hash = 9;</code>
+     */
+    com.google.protobuf.ByteString getSdHash();
+
+    // optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;</code>
+     */
+    boolean hasParameters();
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters getParameters();
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ParametersOrBuilder getParametersOrBuilder();
+
+    // optional bool deferredRebuild = 11;
+    /**
+     * <code>optional bool deferredRebuild = 11;</code>
+     */
+    boolean hasDeferredRebuild();
+    /**
+     * <code>optional bool deferredRebuild = 11;</code>
+     */
+    boolean getDeferredRebuild();
+  }
+  /**
+   * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.Index}
+   */
+  public static final class Index extends
+      com.google.protobuf.GeneratedMessage
+      implements IndexOrBuilder {
+    // Use Index.newBuilder() to construct.
+    private Index(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private Index(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final Index defaultInstance;
+    public static Index getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public Index getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private Index(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              indexHandlerClass_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              dbName_ = input.readBytes();
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              origTableName_ = input.readBytes();
+              break;
+            }
+            case 34: {
+              bitField0_ |= 0x00000008;
+              location_ = input.readBytes();
+              break;
+            }
+            case 42: {
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000010) == 0x00000010)) {
+                subBuilder = sdParameters_.toBuilder();
+              }
+              sdParameters_ = input.readMessage(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(sdParameters_);
+                sdParameters_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000010;
+              break;
+            }
+            case 48: {
+              bitField0_ |= 0x00000020;
+              createTime_ = input.readInt32();
+              break;
+            }
+            case 56: {
+              bitField0_ |= 0x00000040;
+              lastAccessTime_ = input.readInt32();
+              break;
+            }
+            case 66: {
+              bitField0_ |= 0x00000080;
+              indexTableName_ = input.readBytes();
+              break;
+            }
+            case 74: {
+              bitField0_ |= 0x00000100;
+              sdHash_ = input.readBytes();
+              break;
+            }
+            case 82: {
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000200) == 0x00000200)) {
+                subBuilder = parameters_.toBuilder();
+              }
+              parameters_ = input.readMessage(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(parameters_);
+                parameters_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000200;
+              break;
+            }
+            case 88: {
+              bitField0_ |= 0x00000400;
+              deferredRebuild_ = input.readBool();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_Index_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_Index_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<Index> PARSER =
+        new com.google.protobuf.AbstractParser<Index>() {
+      public Index parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new Index(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<Index> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional string indexHandlerClass = 1;
+    public static final int INDEXHANDLERCLASS_FIELD_NUMBER = 1;
+    private java.lang.Object indexHandlerClass_;
+    /**
+     * <code>optional string indexHandlerClass = 1;</code>
+     *
+     * <pre>
+     * reserved
+     * </pre>
+     */
+    public boolean hasIndexHandlerClass() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string indexHandlerClass = 1;</code>
+     *
+     * <pre>
+     * reserved
+     * </pre>
+     */
+    public java.lang.String getIndexHandlerClass() {
+      java.lang.Object ref = indexHandlerClass_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          indexHandlerClass_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string indexHandlerClass = 1;</code>
+     *
+     * <pre>
+     * reserved
+     * </pre>
+     */
+    public com.google.protobuf.ByteString
+        getIndexHandlerClassBytes() {
+      java.lang.Object ref = indexHandlerClass_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        indexHandlerClass_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // required string dbName = 2;
+    public static final int DBNAME_FIELD_NUMBER = 2;
+    private java.lang.Object dbName_;
+    /**
+     * <code>required string dbName = 2;</code>
+     */
+    public boolean hasDbName() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required string dbName = 2;</code>
+     */
+    public java.lang.String getDbName() {
+      java.lang.Object ref = dbName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          dbName_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string dbName = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getDbNameBytes() {
+      java.lang.Object ref = dbName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        dbName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // required string origTableName = 3;
+    public static final int ORIGTABLENAME_FIELD_NUMBER = 3;
+    private java.lang.Object origTableName_;
+    /**
+     * <code>required string origTableName = 3;</code>
+     */
+    public boolean hasOrigTableName() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>required string origTableName = 3;</code>
+     */
+    public java.lang.String getOrigTableName() {
+      java.lang.Object ref = origTableName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          origTableName_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string origTableName = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getOrigTableNameBytes() {
+      java.lang.Object ref = origTableName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        origTableName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string location = 4;
+    public static final int LOCATION_FIELD_NUMBER = 4;
+    private java.lang.Object location_;
+    /**
+     * <code>optional string location = 4;</code>
+     */
+    public boolean hasLocation() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional string location = 4;</code>
+     */
+    public java.lang.String getLocation() {
+      java.lang.Object ref = location_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          location_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string location = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getLocationBytes() {
+      java.lang.Object ref = location_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        location_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;
+    public static final int SD_PARAMETERS_FIELD_NUMBER = 5;
+    private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters sdParameters_;
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;</code>
+     *
+     * <pre>
+     * storage descriptor parameters
+     * </pre>
+     */
+    public boolean hasSdParameters() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;</code>
+     *
+     * <pre>
+     * storage descriptor parameters
+     * </pre>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters getSdParameters() {
+      return sdParameters_;
+    }
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;</code>
+     *
+     * <pre>
+     * storage descriptor parameters
+     * </pre>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ParametersOrBuilder getSdParametersOrBuilder() {
+      return sdParameters_;
+    }
+
+    // optional int32 createTime = 6;
+    public static final int CREATETIME_FIELD_NUMBER = 6;
+    private int createTime_;
+    /**
+     * <code>optional int32 createTime = 6;</code>
+     */
+    public boolean hasCreateTime() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
+    }
+    /**
+     * <code>optional int32 createTime = 6;</code>
+     */
+    public int getCreateTime() {
+      return createTime_;
+    }
+
+    // optional int32 lastAccessTime = 7;
+    public static final int LASTACCESSTIME_FIELD_NUMBER = 7;
+    private int lastAccessTime_;
+    /**
+     * <code>optional int32 lastAccessTime = 7;</code>
+     */
+    public boolean hasLastAccessTime() {
+      return ((bitField0_ & 0x00000040) == 0x00000040);
+    }
+    /**
+     * <code>optional int32 lastAccessTime = 7;</code>
+     */
+    public int getLastAccessTime() {
+      return lastAccessTime_;
+    }
+
+    // optional string indexTableName = 8;
+    public static final int INDEXTABLENAME_FIELD_NUMBER = 8;
+    private java.lang.Object indexTableName_;
+    /**
+     * <code>optional string indexTableName = 8;</code>
+     */
+    public boolean hasIndexTableName() {
+      return ((bitField0_ & 0x00000080) == 0x00000080);
+    }
+    /**
+     * <code>optional string indexTableName = 8;</code>
+     */
+    public java.lang.String getIndexTableName() {
+      java.lang.Object ref = indexTableName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          indexTableName_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string indexTableName = 8;</code>
+     */
+    public com.google.protobuf.ByteString
+        getIndexTableNameBytes() {
+      java.lang.Object ref = indexTableName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        indexTableName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional bytes sd_hash = 9;
+    public static final int SD_HASH_FIELD_NUMBER = 9;
+    private com.google.protobuf.ByteString sdHash_;
+    /**
+     * <code>optional bytes sd_hash = 9;</code>
+     */
+    public boolean hasSdHash() {
+      return ((bitField0_ & 0x00000100) == 0x00000100);
+    }
+    /**
+     * <code>optional bytes sd_hash = 9;</code>
+     */
+    public com.google.protobuf.ByteString getSdHash() {
+      return sdHash_;
+    }
+
+    // optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;
+    public static final int PARAMETERS_FIELD_NUMBER = 10;
+    private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters parameters_;
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;</code>
+     */
+    public boolean hasParameters() {
+      return ((bitField0_ & 0x00000200) == 0x00000200);
+    }
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters getParameters() {
+      return parameters_;
+    }
+    /**
+     * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ParametersOrBuilder getParametersOrBuilder() {
+      return parameters_;
+    }
+
+    // optional bool deferredRebuild = 11;
+    public static final int DEFERREDREBUILD_FIELD_NUMBER = 11;
+    private boolean deferredRebuild_;
+    /**
+     * <code>optional bool deferredRebuild = 11;</code>
+     */
+    public boolean hasDeferredRebuild() {
+      return ((bitField0_ & 0x00000400) == 0x00000400);
+    }
+    /**
+     * <code>optional bool deferredRebuild = 11;</code>
+     */
+    public boolean getDeferredRebuild() {
+      return deferredRebuild_;
+    }
+
+    private void initFields() {
+      indexHandlerClass_ = "";
+      dbName_ = "";
+      origTableName_ = "";
+      location_ = "";
+      sdParameters_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.getDefaultInstance();
+      createTime_ = 0;
+      lastAccessTime_ = 0;
+      indexTableName_ = "";
+      sdHash_ = com.google.protobuf.ByteString.EMPTY;
+      parameters_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.getDefaultInstance();
+      deferredRebuild_ = false;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasDbName()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasOrigTableName()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (hasSdParameters()) {
+        if (!getSdParameters().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      if (hasParameters()) {
+        if (!getParameters().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getIndexHandlerClassBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getDbNameBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, getOrigTableNameBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(4, getLocationBytes());
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeMessage(5, sdParameters_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeInt32(6, createTime_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeInt32(7, lastAccessTime_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        output.writeBytes(8, getIndexTableNameBytes());
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        output.writeBytes(9, sdHash_);
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        output.writeMessage(10, parameters_);
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        output.writeBool(11, deferredRebuild_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getIndexHandlerClassBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getDbNameBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getOrigTableNameBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, getLocationBytes());
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(5, sdParameters_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(6, createTime_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(7, lastAccessTime_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(8, getIndexTableNameBytes());
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(9, sdHash_);
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(10, parameters_);
+      }
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(11, deferredRebuild_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.Index}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.IndexOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_Index_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_Index_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getSdParametersFieldBuilder();
+          getParametersFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        indexHandlerClass_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        dbName_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        origTableName_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
+        location_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
+        if (sdParametersBuilder_ == null) {
+          sdParameters_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.getDefaultInstance();
+        } else {
+          sdParametersBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000010);
+        createTime_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000020);
+        lastAccessTime_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000040);
+        indexTableName_ = "";
+        bitField0_ = (bitField0_ & ~0x00000080);
+        sdHash_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000100);
+        if (parametersBuilder_ == null) {
+          parameters_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.getDefaultInstance();
+        } else {
+          parametersBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000200);
+        deferredRebuild_ = false;
+        bitField0_ = (bitField0_ & ~0x00000400);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_Index_descriptor;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index build() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index buildPartial() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.indexHandlerClass_ = indexHandlerClass_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.dbName_ = dbName_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.origTableName_ = origTableName_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.location_ = location_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        if (sdParametersBuilder_ == null) {
+          result.sdParameters_ = sdParameters_;
+        } else {
+          result.sdParameters_ = sdParametersBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        result.createTime_ = createTime_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000040;
+        }
+        result.lastAccessTime_ = lastAccessTime_;
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+          to_bitField0_ |= 0x00000080;
+        }
+        result.indexTableName_ = indexTableName_;
+        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+          to_bitField0_ |= 0x00000100;
+        }
+        result.sdHash_ = sdHash_;
+        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+          to_bitField0_ |= 0x00000200;
+        }
+        if (parametersBuilder_ == null) {
+          result.parameters_ = parameters_;
+        } else {
+          result.parameters_ = parametersBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
+          to_bitField0_ |= 0x00000400;
+        }
+        result.deferredRebuild_ = deferredRebuild_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index) {
+          return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index other) {
+        if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index.getDefaultInstance()) return this;
+        if (other.hasIndexHandlerClass()) {
+          bitField0_ |= 0x00000001;
+          indexHandlerClass_ = other.indexHandlerClass_;
+          onChanged();
+        }
+        if (other.hasDbName()) {
+          bitField0_ |= 0x00000002;
+          dbName_ = other.dbName_;
+          onChanged();
+        }
+        if (other.hasOrigTableName()) {
+          bitField0_ |= 0x00000004;
+          origTableName_ = other.origTableName_;
+          onChanged();
+        }
+        if (other.hasLocation()) {
+          bitField0_ |= 0x00000008;
+          location_ = other.location_;
+          onChanged();
+        }
+        if (other.hasSdParameters()) {
+          mergeSdParameters(other.getSdParameters());
+        }
+        if (other.hasCreateTime()) {
+          setCreateTime(other.getCreateTime());
+        }
+        if (other.hasLastAccessTime()) {
+          setLastAccessTime(other.getLastAccessTime());
+        }
+        if (other.hasIndexTableName()) {
+          bitField0_ |= 0x00000080;
+          indexTableName_ = other.indexTableName_;
+          onChanged();
+        }
+        if (other.hasSdHash()) {
+          setSdHash(other.getSdHash());
+        }
+        if (other.hasParameters()) {
+          mergeParameters(other.getParameters());
+        }
+        if (other.hasDeferredRebuild()) {
+          setDeferredRebuild(other.getDeferredRebuild());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasDbName()) {
+          
+          return false;
+        }
+        if (!hasOrigTableName()) {
+          
+          return false;
+        }
+        if (hasSdParameters()) {
+          if (!getSdParameters().isInitialized()) {
+            
+            return false;
+          }
+        }
+        if (hasParameters()) {
+          if (!getParameters().isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Index) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional string indexHandlerClass = 1;
+      private java.lang.Object indexHandlerClass_ = "";
+      /**
+       * <code>optional string indexHandlerClass = 1;</code>
+       *
+       * <pre>
+       * reserved
+       * </pre>
+       */
+      public boolean hasIndexHandlerClass() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string indexHandlerClass = 1;</code>
+       *
+       * <pre>
+       * reserved
+       * </pre>
+       */
+      public java.lang.String getIndexHandlerClass() {
+        java.lang.Object ref = indexHandlerClass_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          indexHandlerClass_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string indexHandlerClass = 1;</code>
+       *
+       * <pre>
+       * reserved
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getIndexHandlerClassBytes() {
+        java.lang.Object ref = indexHandlerClass_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          indexHandlerClass_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string indexHandlerClass = 1;</code>
+       *
+       * <pre>
+       * reserved
+       * </pre>
+       */
+      public Builder setIndexHandlerClass(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        indexHandlerClass_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string indexHandlerClass = 1;</code>
+       *
+       * <pre>
+       * reserved
+       * </pre>
+       */
+      public Builder clearIndexHandlerClass() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        indexHandlerClass_ = getDefaultInstance().getIndexHandlerClass();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string indexHandlerClass = 1;</code>
+       *
+       * <pre>
+       * reserved
+       * </pre>
+       */
+      public Builder setIndexHandlerClassBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        indexHandlerClass_ = value;
+        onChanged();
+        return this;
+      }
+
+      // required string dbName = 2;
+      private java.lang.Object dbName_ = "";
+      /**
+       * <code>required string dbName = 2;</code>
+       */
+      public boolean hasDbName() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required string dbName = 2;</code>
+       */
+      public java.lang.String getDbName() {
+        java.lang.Object ref = dbName_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          dbName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string dbName = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getDbNameBytes() {
+        java.lang.Object ref = dbName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          dbName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string dbName = 2;</code>
+       */
+      public Builder setDbName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        dbName_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string dbName = 2;</code>
+       */
+      public Builder clearDbName() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        dbName_ = getDefaultInstance().getDbName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string dbName = 2;</code>
+       */
+      public Builder setDbNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        dbName_ = value;
+        onChanged();
+        return this;
+      }
+
+      // required string origTableName = 3;
+      private java.lang.Object origTableName_ = "";
+      /**
+       * <code>required string origTableName = 3;</code>
+       */
+      public boolean hasOrigTableName() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required string origTableName = 3;</code>
+       */
+      public java.lang.String getOrigTableName() {
+        java.lang.Object ref = origTableName_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          origTableName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string origTableName = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getOrigTableNameBytes() {
+        java.lang.Object ref = origTableName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          origTableName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string origTableName = 3;</code>
+       */
+      public Builder setOrigTableName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        origTableName_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string origTableName = 3;</code>
+       */
+      public Builder clearOrigTableName() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        origTableName_ = getDefaultInstance().getOrigTableName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string origTableName = 3;</code>
+       */
+      public Builder setOrigTableNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        origTableName_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string location = 4;
+      private java.lang.Object location_ = "";
+      /**
+       * <code>optional string location = 4;</code>
+       */
+      public boolean hasLocation() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string location = 4;</code>
+       */
+      public java.lang.String getLocation() {
+        java.lang.Object ref = location_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          location_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string location = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getLocationBytes() {
+        java.lang.Object ref = location_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          location_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string location = 4;</code>
+       */
+      public Builder setLocation(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        location_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string location = 4;</code>
+       */
+      public Builder clearLocation() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        location_ = getDefaultInstance().getLocation();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string location = 4;</code>
+       */
+      public Builder setLocationBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        location_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;
+      private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters sdParameters_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ParametersOrBuilder> sdParametersBuilder_;
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;</code>
+       *
+       * <pre>
+       * storage descriptor parameters
+       * </pre>
+       */
+      public boolean hasSdParameters() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;</code>
+       *
+       * <pre>
+       * storage descriptor parameters
+       * </pre>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters getSdParameters() {
+        if (sdParametersBuilder_ == null) {
+          return sdParameters_;
+        } else {
+          return sdParametersBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;</code>
+       *
+       * <pre>
+       * storage descriptor parameters
+       * </pre>
+       */
+      public Builder setSdParameters(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters value) {
+        if (sdParametersBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          sdParameters_ = value;
+          onChanged();
+        } else {
+          sdParametersBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000010;
+        return this;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;</code>
+       *
+       * <pre>
+       * storage descriptor parameters
+       * </pre>
+       */
+      public Builder setSdParameters(
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.Builder builderForValue) {
+        if (sdParametersBuilder_ == null) {
+          sdParameters_ = builderForValue.build();
+          onChanged();
+        } else {
+          sdParametersBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000010;
+        return this;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;</code>
+       *
+       * <pre>
+       * storage descriptor parameters
+       * </pre>
+       */
+      public Builder mergeSdParameters(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters value) {
+        if (sdParametersBuilder_ == null) {
+          if (((bitField0_ & 0x00000010) == 0x00000010) &&
+              sdParameters_ != org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.getDefaultInstance()) {
+            sdParameters_ =
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.newBuilder(sdParameters_).mergeFrom(value).buildPartial();
+          } else {
+            sdParameters_ = value;
+          }
+          onChanged();
+        } else {
+          sdParametersBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000010;
+        return this;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;</code>
+       *
+       * <pre>
+       * storage descriptor parameters
+       * </pre>
+       */
+      public Builder clearSdParameters() {
+        if (sdParametersBuilder_ == null) {
+          sdParameters_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.getDefaultInstance();
+          onChanged();
+        } else {
+          sdParametersBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000010);
+        return this;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;</code>
+       *
+       * <pre>
+       * storage descriptor parameters
+       * </pre>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.Builder getSdParametersBuilder() {
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return getSdParametersFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;</code>
+       *
+       * <pre>
+       * storage descriptor parameters
+       * </pre>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ParametersOrBuilder getSdParametersOrBuilder() {
+        if (sdParametersBuilder_ != null) {
+          return sdParametersBuilder_.getMessageOrBuilder();
+        } else {
+          return sdParameters_;
+        }
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters sd_parameters = 5;</code>
+       *
+       * <pre>
+       * storage descriptor parameters
+       * </pre>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ParametersOrBuilder> 
+          getSdParametersFieldBuilder() {
+        if (sdParametersBuilder_ == null) {
+          sdParametersBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ParametersOrBuilder>(
+                  sdParameters_,
+                  getParentForChildren(),
+                  isClean());
+          sdParameters_ = null;
+        }
+        return sdParametersBuilder_;
+      }
+
+      // optional int32 createTime = 6;
+      private int createTime_ ;
+      /**
+       * <code>optional int32 createTime = 6;</code>
+       */
+      public boolean hasCreateTime() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <code>optional int32 createTime = 6;</code>
+       */
+      public int getCreateTime() {
+        return createTime_;
+      }
+      /**
+       * <code>optional int32 createTime = 6;</code>
+       */
+      public Builder setCreateTime(int value) {
+        bitField0_ |= 0x00000020;
+        createTime_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 createTime = 6;</code>
+       */
+      public Builder clearCreateTime() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        createTime_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // optional int32 lastAccessTime = 7;
+      private int lastAccessTime_ ;
+      /**
+       * <code>optional int32 lastAccessTime = 7;</code>
+       */
+      public boolean hasLastAccessTime() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional int32 lastAccessTime = 7;</code>
+       */
+      public int getLastAccessTime() {
+        return lastAccessTime_;
+      }
+      /**
+       * <code>optional int32 lastAccessTime = 7;</code>
+       */
+      public Builder setLastAccessTime(int value) {
+        bitField0_ |= 0x00000040;
+        lastAccessTime_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 lastAccessTime = 7;</code>
+       */
+      public Builder clearLastAccessTime() {
+        bitField0_ = (bitField0_ & ~0x00000040);
+        lastAccessTime_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // optional string indexTableName = 8;
+      private java.lang.Object indexTableName_ = "";
+      /**
+       * <code>optional string indexTableName = 8;</code>
+       */
+      public boolean hasIndexTableName() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>optional string indexTableName = 8;</code>
+       */
+      public java.lang.String getIndexTableName() {
+        java.lang.Object ref = indexTableName_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          indexTableName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string indexTableName = 8;</code>
+       */
+      public com.google.protobuf.ByteString
+          getIndexTableNameBytes() {
+        java.lang.Object ref = indexTableName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          indexTableName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string indexTableName = 8;</code>
+       */
+      public Builder setIndexTableName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000080;
+        indexTableName_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string indexTableName = 8;</code>
+       */
+      public Builder clearIndexTableName() {
+        bitField0_ = (bitField0_ & ~0x00000080);
+        indexTableName_ = getDefaultInstance().getIndexTableName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string indexTableName = 8;</code>
+       */
+      public Builder setIndexTableNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000080;
+        indexTableName_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional bytes sd_hash = 9;
+      private com.google.protobuf.ByteString sdHash_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>optional bytes sd_hash = 9;</code>
+       */
+      public boolean hasSdHash() {
+        return ((bitField0_ & 0x00000100) == 0x00000100);
+      }
+      /**
+       * <code>optional bytes sd_hash = 9;</code>
+       */
+      public com.google.protobuf.ByteString getSdHash() {
+        return sdHash_;
+      }
+      /**
+       * <code>optional bytes sd_hash = 9;</code>
+       */
+      public Builder setSdHash(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000100;
+        sdHash_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bytes sd_hash = 9;</code>
+       */
+      public Builder clearSdHash() {
+        bitField0_ = (bitField0_ & ~0x00000100);
+        sdHash_ = getDefaultInstance().getSdHash();
+        onChanged();
+        return this;
+      }
+
+      // optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;
+      private org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters parameters_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ParametersOrBuilder> parametersBuilder_;
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;</code>
+       */
+      public boolean hasParameters() {
+        return ((bitField0_ & 0x00000200) == 0x00000200);
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters getParameters() {
+        if (parametersBuilder_ == null) {
+          return parameters_;
+        } else {
+          return parametersBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;</code>
+       */
+      public Builder setParameters(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters value) {
+        if (parametersBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          parameters_ = value;
+          onChanged();
+        } else {
+          parametersBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000200;
+        return this;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;</code>
+       */
+      public Builder setParameters(
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.Builder builderForValue) {
+        if (parametersBuilder_ == null) {
+          parameters_ = builderForValue.build();
+          onChanged();
+        } else {
+          parametersBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000200;
+        return this;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;</code>
+       */
+      public Builder mergeParameters(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters value) {
+        if (parametersBuilder_ == null) {
+          if (((bitField0_ & 0x00000200) == 0x00000200) &&
+              parameters_ != org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.getDefaultInstance()) {
+            parameters_ =
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.newBuilder(parameters_).mergeFrom(value).buildPartial();
+          } else {
+            parameters_ = value;
+          }
+          onChanged();
+        } else {
+          parametersBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000200;
+        return this;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;</code>
+       */
+      public Builder clearParameters() {
+        if (parametersBuilder_ == null) {
+          parameters_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.getDefaultInstance();
+          onChanged();
+        } else {
+          parametersBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000200);
+        return this;
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.Builder getParametersBuilder() {
+        bitField0_ |= 0x00000200;
+        onChanged();
+        return getParametersFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ParametersOrBuilder getParametersOrBuilder() {
+        if (parametersBuilder_ != null) {
+          return parametersBuilder_.getMessageOrBuilder();
+        } else {
+          return parameters_;
+        }
+      }
+      /**
+       * <code>optional .org.apache.hadoop.hive.metastore.hbase.Parameters parameters = 10;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ParametersOrBuilder> 
+          getParametersFieldBuilder() {
+        if (parametersBuilder_ == null) {
+          parametersBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.Parameters.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ParametersOrBuilder>(
+                  parameters_,
+                  getParentForChildren(),
+                  isClean());
+          parameters_ = null;
+        }
+        return parametersBuilder_;
+      }
+
+      // optional bool deferredRebuild = 11;
+      private boolean deferredRebuild_ ;
+      /**
+       * <code>optional bool deferredRebuild = 11;</code>
+       */
+      public boolean hasDeferredRebuild() {
+        return ((bitField0_ & 0x00000400) == 0x00000400);
+      }
+      /**
+       * <code>optional bool deferredRebuild = 11;</code>
+       */
+      public boolean getDeferredRebuild() {
+        return deferredRebuild_;
+      }
+      /**
+       * <code>optional bool deferredRebuild = 11;</code>
+       */
+      public Builder setDeferredRebuild(boolean value) {
+        bitField0_ |= 0x00000400;
+        deferredRebuild_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool deferredRebuild = 11;</code>
+       */
+      public Builder clearDeferredRebuild() {
+        bitField0_ = (bitField0_ & ~0x00000400);
+        deferredRebuild_ = false;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.Index)
+    }
+
+    static {
+      defaultInstance = new Index(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.Index)
+  }
+
   public interface PartitionKeyComparatorOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
@@ -34618,6 +36572,11 @@ public final class HbaseMetastoreProto {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_org_apache_hadoop_hive_metastore_hbase_Table_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_Index_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_Index_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -34787,24 +36746,32 @@ public final class HbaseMetastoreProto {
       "w_expanded_text\030\013 \001(\t\022\022\n\ntable_type\030\014 \001(" +
       "\t\022Q\n\nprivileges\030\r \001(\0132=.org.apache.hadoo",
       "p.hive.metastore.hbase.PrincipalPrivileg" +
-      "eSet\022\024\n\014is_temporary\030\016 \001(\010\"\353\004\n\026Partition" +
-      "KeyComparator\022\r\n\005names\030\001 \002(\t\022\r\n\005types\030\002 " +
-      "\002(\t\022S\n\002op\030\003 \003(\0132G.org.apache.hadoop.hive" +
-      ".metastore.hbase.PartitionKeyComparator." +
-      "Operator\022S\n\005range\030\004 \003(\0132D.org.apache.had" +
-      "oop.hive.metastore.hbase.PartitionKeyCom" +
-      "parator.Range\032(\n\004Mark\022\r\n\005value\030\001 \002(\t\022\021\n\t" +
-      "inclusive\030\002 \002(\010\032\272\001\n\005Range\022\013\n\003key\030\001 \002(\t\022R" +
-      "\n\005start\030\002 \001(\0132C.org.apache.hadoop.hive.m",
-      "etastore.hbase.PartitionKeyComparator.Ma" +
-      "rk\022P\n\003end\030\003 \001(\0132C.org.apache.hadoop.hive" +
-      ".metastore.hbase.PartitionKeyComparator." +
-      "Mark\032\241\001\n\010Operator\022Z\n\004type\030\001 \002(\0162L.org.ap" +
-      "ache.hadoop.hive.metastore.hbase.Partiti" +
-      "onKeyComparator.Operator.Type\022\013\n\003key\030\002 \002" +
-      "(\t\022\013\n\003val\030\003 \002(\t\"\037\n\004Type\022\010\n\004LIKE\020\000\022\r\n\tNOT" +
-      "EQUALS\020\001*#\n\rPrincipalType\022\010\n\004USER\020\000\022\010\n\004R" +
-      "OLE\020\001"
+      "eSet\022\024\n\014is_temporary\030\016 \001(\010\"\334\002\n\005Index\022\031\n\021" +
+      "indexHandlerClass\030\001 \001(\t\022\016\n\006dbName\030\002 \002(\t\022" +
+      "\025\n\rorigTableName\030\003 \002(\t\022\020\n\010location\030\004 \001(\t" +
+      "\022I\n\rsd_parameters\030\005 \001(\01322.org.apache.had" +
+      "oop.hive.metastore.hbase.Parameters\022\022\n\nc" +
+      "reateTime\030\006 \001(\005\022\026\n\016lastAccessTime\030\007 \001(\005\022" +
+      "\026\n\016indexTableName\030\010 \001(\t\022\017\n\007sd_hash\030\t \001(\014" +
+      "\022F\n\nparameters\030\n \001(\01322.org.apache.hadoop" +
+      ".hive.metastore.hbase.Parameters\022\027\n\017defe",
+      "rredRebuild\030\013 \001(\010\"\353\004\n\026PartitionKeyCompar" +
+      "ator\022\r\n\005names\030\001 \002(\t\022\r\n\005types\030\002 \002(\t\022S\n\002op" +
+      "\030\003 \003(\0132G.org.apache.hadoop.hive.metastor" +
+      "e.hbase.PartitionKeyComparator.Operator\022" +
+      "S\n\005range\030\004 \003(\0132D.org.apache.hadoop.hive." +
+      "metastore.hbase.PartitionKeyComparator.R" +
+      "ange\032(\n\004Mark\022\r\n\005value\030\001 \002(\t\022\021\n\tinclusive" +
+      "\030\002 \002(\010\032\272\001\n\005Range\022\013\n\003key\030\001 \002(\t\022R\n\005start\030\002" +
+      " \001(\0132C.org.apache.hadoop.hive.metastore." +
+      "hbase.PartitionKeyComparator.Mark\022P\n\003end",
+      "\030\003 \001(\0132C.org.apache.hadoop.hive.metastor" +
+      "e.hbase.PartitionKeyComparator.Mark\032\241\001\n\010" +
+      "Operator\022Z\n\004type\030\001 \002(\0162L.org.apache.hado" +
+      "op.hive.metastore.hbase.PartitionKeyComp" +
+      "arator.Operator.Type\022\013\n\003key\030\002 \002(\t\022\013\n\003val" +
+      "\030\003 \002(\t\"\037\n\004Type\022\010\n\004LIKE\020\000\022\r\n\tNOTEQUALS\020\001*" +
+      "#\n\rPrincipalType\022\010\n\004USER\020\000\022\010\n\004ROLE\020\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -35021,8 +36988,14 @@ public final class HbaseMetastoreProto {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Table_descriptor,
               new java.lang.String[] { "Owner", "CreateTime", "LastAccessTime", "Retention", "Location", "SdParameters", "SdHash", "PartitionKeys", "Parameters", "ViewOriginalText", "ViewExpandedText", "TableType", "Privileges", "IsTemporary", });
-          internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_descriptor =
+          internal_static_org_apache_hadoop_hive_metastore_hbase_Index_descriptor =
             getDescriptor().getMessageTypes().get(21);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_Index_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_Index_descriptor,
+              new java.lang.String[] { "IndexHandlerClass", "DbName", "OrigTableName", "Location", "SdParameters", "CreateTime", "LastAccessTime", "IndexTableName", "SdHash", "Parameters", "DeferredRebuild", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_descriptor =
+            getDescriptor().getMessageTypes().get(22);
           internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_descriptor,

@@ -1264,7 +1264,7 @@ public class Hive {
     if (!TableType.VIRTUAL_VIEW.toString().equals(tTable.getTableType())) {
       // Fix the non-printable chars
       Map<String, String> parameters = tTable.getSd().getParameters();
-      String sf = parameters.get(SERIALIZATION_FORMAT);
+      String sf = parameters!=null?parameters.get(SERIALIZATION_FORMAT) : null;
       if (sf != null) {
         char[] b = sf.toCharArray();
         if ((b.length == 1) && (b[0] < 10)) { // ^A, ^B, ^C, ^D, \t

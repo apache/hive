@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -830,6 +831,7 @@ public class HBaseUtils {
     Map<String, String> parameters;
     Partition containingPartition;
     Table containingTable;
+    Index containingIndex;
   }
 
   static void assembleStorageDescriptor(StorageDescriptor sd, StorageDescriptorParts parts) {
@@ -841,7 +843,10 @@ public class HBaseUtils {
       parts.containingPartition.setSd(ssd);
     } else if (parts.containingTable != null) {
       parts.containingTable.setSd(ssd);
-    } else {
+    } else if (parts.containingIndex != null) {
+      parts.containingIndex.setSd(ssd);
+    }
+    else {
       throw new RuntimeException("Need either a partition or a table");
     }
   }
@@ -1111,6 +1116,94 @@ public class HBaseUtils {
       table.setPrivileges(buildPrincipalPrivilegeSet(proto.getPrivileges()));
     }
     if (proto.hasIsTemporary()) table.setTemporary(proto.getIsTemporary());
+    return sdParts;
+  }
+
+  /**
+   * Serialize an index
+   * @param index index object
+   * @param sdHash hash that is being used as a key for the enclosed storage descriptor
+   * @return First element is the key, second is the serialized index
+   */
+  static byte[][] serializeIndex(Index index, byte[] sdHash) {
+    byte[][] result = new byte[2][];
+    result[0] = buildKey(HiveStringUtils.normalizeIdentifier(index.getDbName()),
+        HiveStringUtils.normalizeIdentifier(index.getOrigTableName()),
+        HiveStringUtils.normalizeIdentifier(index.getIndexName()));
+    HbaseMetastoreProto.Index.Builder builder = HbaseMetastoreProto.Index.newBuilder();
+    builder.setDbName(index.getDbName());
+    builder.setOrigTableName(index.getOrigTableName());
+    if (index.getSd().getLocation() != null) builder.setLocation(index.getSd().getLocation());
+    if (index.getSd().getParameters() != null) {
+      builder.setSdParameters(buildParameters(index.getSd().getParameters()));
+    }
+    if (index.getIndexHandlerClass() != null) {
+      builder.setIndexHandlerClass(index.getIndexHandlerClass());
+    }
+    if (index.getIndexTableName() != null) {
+      builder.setIndexTableName(index.getIndexTableName());
+    }
+    builder
+        .setCreateTime(index.getCreateTime())
+        .setLastAccessTime(index.getLastAccessTime())
+        .setDeferredRebuild(index.isDeferredRebuild());
+    if (index.getParameters() != null) {
+      builder.setParameters(buildParameters(index.getParameters()));
+    }
+    if (sdHash != null) {
+      builder.setSdHash(ByteString.copyFrom(sdHash));
+    }
+    result[1] = builder.build().toByteArray();
+    return result;
+  }
+
+  /**
+   * Deserialize an index.  This version should be used when the index key is not already
+   * known (eg a scan).
+   * @param key the key fetched from HBase
+   * @param serialized the value fetched from HBase
+   * @return A struct that contains the index plus parts of the storage descriptor
+   */
+  static StorageDescriptorParts deserializeIndex(byte[] key, byte[] serialized)
+      throws InvalidProtocolBufferException {
+    String[] keys = deserializeKey(key);
+    return deserializeIndex(keys[0], keys[1], keys[2], serialized);
+  }
+
+  /**
+   * Deserialize an index.  This version should be used when the table key is
+   * known (eg a get).
+   * @param dbName database name
+   * @param origTableName original table name
+   * @param indexName index name
+   * @param serialized the value fetched from HBase
+   * @return A struct that contains the index plus parts of the storage descriptor
+   */
+  static StorageDescriptorParts deserializeIndex(String dbName, String origTableName,
+                                                 String indexName, byte[] serialized)
+      throws InvalidProtocolBufferException {
+    HbaseMetastoreProto.Index proto = HbaseMetastoreProto.Index.parseFrom(serialized);
+    Index index = new Index();
+    StorageDescriptorParts sdParts = new StorageDescriptorParts();
+    sdParts.containingIndex = index;
+    index.setDbName(dbName);
+    index.setIndexName(indexName);
+    index.setOrigTableName(origTableName);
+    if (proto.hasLocation()) sdParts.location = proto.getLocation();
+    if (proto.hasSdParameters()) sdParts.parameters = buildParameters(proto.getSdParameters());
+    if (proto.hasIndexHandlerClass()) {
+      index.setIndexHandlerClass(proto.getIndexHandlerClass());
+    }
+    if (proto.hasIndexTableName()) {
+      index.setIndexTableName(proto.getIndexTableName());
+    }
+    index.setCreateTime(proto.getCreateTime());
+    index.setLastAccessTime(proto.getLastAccessTime());
+    index.setDeferredRebuild(proto.getDeferredRebuild());
+    index.setParameters(buildParameters(proto.getParameters()));
+    if (proto.hasSdHash()) {
+      sdParts.sdHash = proto.getSdHash().toByteArray();
+    }
     return sdParts;
   }
 

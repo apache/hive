@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -63,6 +64,7 @@ public class TestHBaseImport extends HBaseIntegrationTests {
   private static final String[] tableNames = new String[] {"allnonparttable", "allparttable"};
   private static final String[] partVals = new String[] {"na", "emea", "latam", "apac"};
   private static final String[] funcNames = new String[] {"allfunc1", "allfunc2"};
+  private static final String[] indexNames = new String[] {"allindex1", "allindex2"};
 
   private static final List<Integer> masterKeySeqs = new ArrayList<Integer>();
   @Rule
@@ -146,7 +148,11 @@ public class TestHBaseImport extends HBaseIntegrationTests {
       }
 
       Assert.assertEquals(4, store.getPartitions(dbNames[i], tableNames[1], -1).size());
-      Assert.assertEquals(2, store.getAllTables(dbNames[i]).size());
+      // Including two index table
+      Assert.assertEquals(4, store.getAllTables(dbNames[i]).size());
+
+      Assert.assertEquals(2, store.getIndexes(dbNames[i], tableNames[0], -1).size());
+      Assert.assertEquals(0, store.getIndexes(dbNames[i], tableNames[1], -1).size());
 
       Assert.assertEquals(2, store.getFunctions(dbNames[i], "*").size());
       for (int j = 0; j < funcNames.length; j++) {
@@ -218,7 +224,11 @@ public class TestHBaseImport extends HBaseIntegrationTests {
     }
 
     Assert.assertEquals(4, store.getPartitions(dbNames[0], tableNames[1], -1).size());
-    Assert.assertEquals(2, store.getAllTables(dbNames[0]).size());
+    // Including two index table
+    Assert.assertEquals(4, store.getAllTables(dbNames[0]).size());
+
+    Assert.assertEquals(2, store.getIndexes(dbNames[0], tableNames[0], -1).size());
+    Assert.assertEquals(0, store.getIndexes(dbNames[0], tableNames[1], -1).size());
 
     Assert.assertEquals(2, store.getFunctions(dbNames[0], "*").size());
     for (int j = 0; j < funcNames.length; j++) {
@@ -323,6 +333,9 @@ public class TestHBaseImport extends HBaseIntegrationTests {
     Assert.assertEquals(1, store.getAllTables(db.getName()).size());
     Assert.assertNull(store.getTable(db.getName(), tableNames[1]));
 
+    List<Index> indexes = store.getIndexes(db.getName(), tableNames[0], -1);
+    Assert.assertEquals(2, indexes.size());
+
     Assert.assertEquals(0, store.getFunctions(dbNames[0], "*").size());
     Assert.assertEquals(baseNumDbs + 1, store.getAllDatabases().size());
 
@@ -378,6 +391,9 @@ public class TestHBaseImport extends HBaseIntegrationTests {
     Assert.assertEquals(4, store.getPartitions(dbNames[0], tableNames[1], -1).size());
 
     Assert.assertNull(store.getTable(db.getName(), tableNames[0]));
+
+    List<Index> indexes = store.getIndexes(db.getName(), tableNames[1], -1);
+    Assert.assertEquals(0, indexes.size());
 
     Assert.assertEquals(0, store.getFunctions(dbNames[0], "*").size());
     Assert.assertEquals(baseNumDbs + 1, store.getAllDatabases().size());
@@ -510,6 +526,15 @@ public class TestHBaseImport extends HBaseIntegrationTests {
         rdbms.createFunction(new Function(funcName, dbNames[i], "classname", "ownername",
             PrincipalType.USER, (int) System.currentTimeMillis() / 1000, FunctionType.JAVA,
             Arrays.asList(new ResourceUri(ResourceType.JAR, "uri"))));
+      }
+
+      for (String indexName : indexNames) {
+        LOG.debug("Creating new index " + dbNames[i] + "." + tableNames[0] + "." + indexName);
+        String indexTableName = tableNames[0] + "__" + indexName + "__";
+        rdbms.createTable(new Table(indexTableName, dbNames[i], "me", now, now, 0, sd, partCols,
+            emptyParameters, null, null, null));
+        rdbms.addIndex(new Index(indexName, null, dbNames[i], tableNames[0],
+            now, now, indexTableName, sd, emptyParameters, false));
       }
     }
     for (int i = 0; i < tokenIds.length; i++) rdbms.addToken(tokenIds[i], tokens[i]);
