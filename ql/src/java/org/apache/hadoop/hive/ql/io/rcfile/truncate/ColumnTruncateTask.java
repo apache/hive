@@ -64,7 +64,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
       DriverContext driverContext, CompilationOpContext opContext) {
     super.initialize(queryState, queryPlan, driverContext, opContext);
     job = new JobConf(conf, ColumnTruncateTask.class);
-    jobExecHelper = new HadoopJobExecHelper(queryState, job, this.console, this, this);
+    jobExecHelper = new HadoopJobExecHelper(job, this.console, this, this);
   }
 
   @Override

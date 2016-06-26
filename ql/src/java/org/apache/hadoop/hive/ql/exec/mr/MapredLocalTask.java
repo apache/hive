@@ -128,7 +128,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     job = new JobConf(conf, ExecDriver.class);
     execContext = new ExecMapperContext(job);
     //we don't use the HadoopJobExecHooks for local tasks
-    this.jobExecHelper = new HadoopJobExecHelper(queryState, job, console, this, null);
+    this.jobExecHelper = new HadoopJobExecHelper(job, console, this, null);
   }
 
   public static String now() {

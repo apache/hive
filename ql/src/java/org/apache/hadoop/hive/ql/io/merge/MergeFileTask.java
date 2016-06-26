@@ -65,7 +65,7 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
       DriverContext driverContext, CompilationOpContext opContext) {
     super.initialize(queryState, queryPlan, driverContext, opContext);
     job = new JobConf(conf, MergeFileTask.class);
-    jobExecHelper = new HadoopJobExecHelper(queryState, job, this.console, this, this);
+    jobExecHelper = new HadoopJobExecHelper(job, this.console, this, this);
   }
 
   @Override

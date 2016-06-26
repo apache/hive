@@ -126,7 +126,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   public ExecDriver() {
     super();
     console = new LogHelper(LOG);
-    this.jobExecHelper = new HadoopJobExecHelper(queryState, job, console, this, this);
+    job = new JobConf(ExecDriver.class);
+    this.jobExecHelper = new HadoopJobExecHelper(job, console, this, this);
   }
 
   @Override
@@ -175,7 +176,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     initializeFiles("tmparchives", getResource(conf, SessionState.ResourceType.ARCHIVE));
 
     conf.stripHiddenConfigurations(job);
-    this.jobExecHelper = new HadoopJobExecHelper(queryState, job, console, this, this);
+    this.jobExecHelper = new HadoopJobExecHelper(job, console, this, this);
   }
 
   /**
@@ -185,7 +186,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     setWork(plan);
     this.job = job;
     console = new LogHelper(LOG, isSilent);
-    this.jobExecHelper = new HadoopJobExecHelper(queryState, job, console, this, this);
+    this.jobExecHelper = new HadoopJobExecHelper(job, console, this, this);
   }
 
   /**
@@ -671,6 +672,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID, "").trim();
     if(queryId.isEmpty()) {
       queryId = "unknown-" + System.currentTimeMillis();
+      HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYID, queryId);
     }
     System.setProperty(HiveConf.ConfVars.HIVEQUERYID.toString(), queryId);
 
