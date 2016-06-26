@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -205,7 +206,7 @@ public class ReduceSinkDeDuplication extends Transform {
           return false;
         }
 
-        Integer moveRSOrderTo = checkOrder(cRSc.getOrder(), pRSNc.getOrder(),
+        Integer moveRSOrderTo = checkOrder(true, cRSc.getOrder(), pRSNc.getOrder(),
                 cRSc.getNullOrder(), pRSNc.getNullOrder());
         if (moveRSOrderTo == null) {
           return false;
@@ -304,6 +305,16 @@ public class ReduceSinkDeDuplication extends Transform {
         }
         pRS.getConf().setOrder(cRS.getConf().getOrder());
         pRS.getConf().setNullOrder(cRS.getConf().getNullOrder());
+      } else {
+        // The sorting order of the parent RS is more specific or they are equal.
+        // We will copy the order from the child RS, and then fill in the order
+        // of the rest of columns with the one taken from parent RS.
+        StringBuilder order = new StringBuilder(cRS.getConf().getOrder());
+        StringBuilder orderNull = new StringBuilder(cRS.getConf().getNullOrder());
+        order.append(pRS.getConf().getOrder().substring(order.length()));
+        orderNull.append(pRS.getConf().getNullOrder().substring(orderNull.length()));
+        pRS.getConf().setOrder(order.toString());
+        pRS.getConf().setNullOrder(orderNull.toString());
       }
 
       if (result[3] > 0) {
@@ -342,7 +353,9 @@ public class ReduceSinkDeDuplication extends Transform {
         throws SemanticException {
       ReduceSinkDesc cConf = cRS.getConf();
       ReduceSinkDesc pConf = pRS.getConf();
-      Integer moveRSOrderTo = checkOrder(cConf.getOrder(), pConf.getOrder(),
+      // If there is a PTF between cRS and pRS we cannot ignore the order direction
+      final boolean checkStrictEquality = isStrictEqualityNeeded(cRS, pRS);
+      Integer moveRSOrderTo = checkOrder(checkStrictEquality, cConf.getOrder(), pConf.getOrder(),
               cConf.getNullOrder(), pConf.getNullOrder());
       if (moveRSOrderTo == null) {
         return null;
@@ -368,6 +381,18 @@ public class ReduceSinkDeDuplication extends Transform {
           pConf.getNumDistributionKeys());
       return new int[] {moveKeyColTo, movePartitionColTo, moveRSOrderTo,
           moveReducerNumTo, moveNumDistKeyTo};
+    }
+
+    private boolean isStrictEqualityNeeded(ReduceSinkOperator cRS, ReduceSinkOperator pRS) {
+      Operator<? extends OperatorDesc> parent = cRS.getParentOperators().get(0);
+      while (parent != pRS) {
+        assert parent.getNumParent() == 1;
+        if (parent instanceof PTFOperator) {
+          return true;
+        }
+        parent = parent.getParentOperators().get(0);
+      }
+      return false;
     }
 
     private Integer checkNumDistributionKey(int cnd, int pnd) {
@@ -452,8 +477,7 @@ public class ReduceSinkDeDuplication extends Transform {
       return Integer.valueOf(cexprs.size()).compareTo(pexprs.size());
     }
 
-    // order of overlapping keys should be exactly the same
-    protected Integer checkOrder(String corder, String porder,
+    protected Integer checkOrder(boolean checkStrictEquality, String corder, String porder,
             String cNullOrder, String pNullOrder) {
       assert corder.length() == cNullOrder.length();
       assert porder.length() == pNullOrder.length();
@@ -468,12 +492,15 @@ public class ReduceSinkDeDuplication extends Transform {
       }
       corder = corder.trim();
       porder = porder.trim();
-      cNullOrder = cNullOrder.trim();
-      pNullOrder = pNullOrder.trim();
-      int target = Math.min(corder.length(), porder.length());
-      if (!corder.substring(0, target).equals(porder.substring(0, target)) ||
-              !cNullOrder.substring(0, target).equals(pNullOrder.substring(0, target))) {
-        return null;
+      if (checkStrictEquality) {
+        // order of overlapping keys should be exactly the same
+        cNullOrder = cNullOrder.trim();
+        pNullOrder = pNullOrder.trim();
+        int target = Math.min(corder.length(), porder.length());
+        if (!corder.substring(0, target).equals(porder.substring(0, target)) ||
+                !cNullOrder.substring(0, target).equals(pNullOrder.substring(0, target))) {
+          return null;
+        }
       }
       return Integer.valueOf(corder.length()).compareTo(porder.length());
     }

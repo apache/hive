@@ -7,7 +7,6 @@ set hive.optimize.correlation=true;
 -- The query in this file have operators with same set of keys
 -- but having different sorting orders.
 -- Correlation optimizer currently do not optimize this case.
--- This case will be optimized latter (need a follow-up jira).
 
 EXPLAIN
 SELECT xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt

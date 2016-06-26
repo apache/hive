@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -40,6 +41,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import com.google.common.collect.Sets;
 
 public class HiveAggregate extends Aggregate implements HiveRelNode {
+
+  private LinkedHashSet<Integer> aggregateColumnsOrder;
+
 
   public HiveAggregate(RelOptCluster cluster, RelTraitSet traitSet, RelNode child,
       boolean indicator, ImmutableBitSet groupSet, List<ImmutableBitSet> groupSets,
@@ -124,6 +128,14 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
       builder.add(name, aggCall.e.type);
     }
     return builder.build();
+  }
+
+  public void setAggregateColumnsOrder(LinkedHashSet<Integer> aggregateColumnsOrder) {
+    this.aggregateColumnsOrder = aggregateColumnsOrder;
+  }
+
+  public LinkedHashSet<Integer> getAggregateColumnsOrder() {
+    return this.aggregateColumnsOrder;
   }
 
 }

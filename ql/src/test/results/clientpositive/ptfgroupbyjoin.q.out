@@ -79,28 +79,36 @@ STAGE PLANS:
             Filter Operator
               predicate: fkey is not null (type: boolean)
               Statistics: Num rows: 2 Data size: 18 Basic stats: COMPLETE Column stats: NONE
-              Group By Operator
-                keys: id (type: int), fkey (type: int)
-                mode: hash
-                outputColumnNames: _col0, _col1
+              Select Operator
+                expressions: fkey (type: int), id (type: int)
+                outputColumnNames: fkey, id
                 Statistics: Num rows: 2 Data size: 18 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: int), _col1 (type: int)
-                  sort order: ++
-                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                Group By Operator
+                  keys: fkey (type: int), id (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 2 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int), _col1 (type: int)
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                    Statistics: Num rows: 2 Data size: 18 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int), KEY._col1 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          Select Operator
+            expressions: _col1 (type: int), _col0 (type: int)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
@@ -369,28 +377,36 @@ STAGE PLANS:
             Filter Operator
               predicate: fkey is not null (type: boolean)
               Statistics: Num rows: 2 Data size: 18 Basic stats: COMPLETE Column stats: NONE
-              Group By Operator
-                keys: id (type: int), fkey (type: int)
-                mode: hash
-                outputColumnNames: _col0, _col1
+              Select Operator
+                expressions: fkey (type: int), id (type: int)
+                outputColumnNames: fkey, id
                 Statistics: Num rows: 2 Data size: 18 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: int), _col1 (type: int)
-                  sort order: ++
-                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                Group By Operator
+                  keys: fkey (type: int), id (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 2 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int), _col1 (type: int)
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                    Statistics: Num rows: 2 Data size: 18 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int), KEY._col1 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          Select Operator
+            expressions: _col1 (type: int), _col0 (type: int)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce

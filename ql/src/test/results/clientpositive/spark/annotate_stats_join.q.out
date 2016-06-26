@@ -257,9 +257,9 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col1 (type: int), _col0 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: int)
                         sort order: ++
-                        Map-reduce partition columns: _col1 (type: int), _col0 (type: string)
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                         Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: int)
         Map 3 
@@ -275,9 +275,9 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: int), _col1 (type: string)
+                        key expressions: _col1 (type: string), _col0 (type: int)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                        Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
                         Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 2 
             Reduce Operator Tree:
@@ -285,8 +285,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: int), _col0 (type: string)
-                  1 _col0 (type: int), _col1 (type: string)
+                  0 _col0 (type: string), _col1 (type: int)
+                  1 _col1 (type: string), _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
                 Statistics: Num rows: 6 Data size: 1164 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -331,9 +331,9 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col1 (type: int), _col0 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: int)
                         sort order: ++
-                        Map-reduce partition columns: _col1 (type: int), _col0 (type: string)
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                         Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: int)
         Map 3 
@@ -349,9 +349,9 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: int), _col1 (type: string)
+                        key expressions: _col1 (type: string), _col0 (type: int)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                        Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
                         Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 2 
             Reduce Operator Tree:
@@ -359,8 +359,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: int), _col0 (type: string)
-                  1 _col0 (type: int), _col1 (type: string)
+                  0 _col0 (type: string), _col1 (type: int)
+                  1 _col1 (type: string), _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
                 Statistics: Num rows: 6 Data size: 1164 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -409,9 +409,9 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col1 (type: int), _col0 (type: string), _col0 (type: string)
-                        sort order: +++
-                        Map-reduce partition columns: _col1 (type: int), _col0 (type: string), _col0 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: int)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                         Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: int)
         Map 3 
@@ -427,9 +427,9 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: int), _col1 (type: string), _col1 (type: string)
-                        sort order: +++
-                        Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col1 (type: string)
+                        key expressions: _col1 (type: string), _col0 (type: int)
+                        sort order: ++
+                        Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
                         Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 2 
             Reduce Operator Tree:
@@ -437,13 +437,13 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: int), _col0 (type: string), _col0 (type: string)
-                  1 _col0 (type: int), _col1 (type: string), _col1 (type: string)
+                  0 _col0 (type: string), _col1 (type: int)
+                  1 _col1 (type: string), _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 11 Data size: 2134 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 6 Data size: 1164 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 11 Data size: 2134 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 6 Data size: 1164 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -683,9 +683,9 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col1 (type: int), _col0 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: int)
                         sort order: ++
-                        Map-reduce partition columns: _col1 (type: int), _col0 (type: string)
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                         Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: int)
         Map 3 
@@ -701,9 +701,9 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: int), _col1 (type: string)
+                        key expressions: _col1 (type: string), _col0 (type: int)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                        Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
                         Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
         Map 4 
             Map Operator Tree:
@@ -718,9 +718,9 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col1 (type: int), _col0 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: int)
                         sort order: ++
-                        Map-reduce partition columns: _col1 (type: int), _col0 (type: string)
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                         Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint), _col3 (type: int)
         Reducer 2 
@@ -730,9 +730,9 @@ STAGE PLANS:
                      Inner Join 0 to 1
                      Inner Join 0 to 2
                 keys:
-                  0 _col1 (type: int), _col0 (type: string)
-                  1 _col0 (type: int), _col1 (type: string)
-                  2 _col1 (type: int), _col0 (type: string)
+                  0 _col0 (type: string), _col1 (type: int)
+                  1 _col1 (type: string), _col0 (type: int)
+                  2 _col0 (type: string), _col1 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 1 Data size: 296 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator

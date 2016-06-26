@@ -1085,24 +1085,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col2 (type: int), _col1 (type: string)
+              key expressions: _col1 (type: string), _col2 (type: int)
               sort order: ++
-              Map-reduce partition columns: _col2 (type: int), _col1 (type: string)
+              Map-reduce partition columns: _col1 (type: string), _col2 (type: int)
               Statistics: Num rows: 26 Data size: 3485 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: string)
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: int), _col1 (type: string)
+              key expressions: _col1 (type: string), _col0 (type: int)
               sort order: ++
-              Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+              Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
               Statistics: Num rows: 4 Data size: 484 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join0 to 1
           keys:
-            0 _col2 (type: int), _col1 (type: string)
-            1 _col0 (type: int), _col1 (type: string)
+            0 _col1 (type: string), _col2 (type: int)
+            1 _col1 (type: string), _col0 (type: int)
           outputColumnNames: _col0, _col1, _col2, _col4
           Statistics: Num rows: 28 Data size: 3833 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
