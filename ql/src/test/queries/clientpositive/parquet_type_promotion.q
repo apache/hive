@@ -5,11 +5,16 @@ SET hive.metastore.disallow.incompatible.col.type.changes=false;
 
 CREATE TABLE parquet_type_promotion_staging (
   cint int,
+  cint2 int,
+  cint3 int,
   clong bigint,
+  clong2 bigint,
   cfloat float,
   cdouble double,
   m1 map<string, int>,
+  m2 map<string, bigint>,
   l1 array<int>,
+  l2 array<bigint>,
   st1 struct<c1:int, c2:int>,
   fm1 map<string, float>,
   fl1 array<float>,
@@ -25,16 +30,20 @@ SELECT * FROM parquet_type_promotion_staging;
 
 CREATE TABLE parquet_type_promotion (
   cint int,
+  cint2 int,
+  cint3 int,
   clong bigint,
+  clong2 bigint,
   cfloat float,
   cdouble double,
   m1 map<string, int>,
+  m2 map<string, bigint>,
   l1 array<int>,
+  l2 array<bigint>,
   st1 struct<c1:int, c2:int>,
   fm1 map<string, float>,
   fl1 array<float>,
   fst1 struct<c1:float, c2:float>
-
 ) STORED AS PARQUET;
 
 INSERT OVERWRITE TABLE parquet_type_promotion
@@ -44,11 +53,16 @@ SELECT * FROM parquet_type_promotion;
 
 ALTER TABLE  parquet_type_promotion REPLACE COLUMNS(
   cint bigint,
-  clong bigint,
+  cint2 float,
+  cint3 double,
+  clong float,
+  clong2 double,
   cfloat double,
   cdouble double,
   m1 map<string, bigint>,
+  m2 map<string, float>,
   l1 array<bigint>,
+  l2 array<double>,
   st1 struct<c1:int, c2:bigint>,
   fm1 map<string, double>,
   fl1 array<double>,

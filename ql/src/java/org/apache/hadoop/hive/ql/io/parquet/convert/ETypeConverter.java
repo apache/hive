@@ -21,6 +21,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -50,7 +51,6 @@ public enum ETypeConverter {
 
   EDOUBLE_CONVERTER(Double.TYPE) {
     @Override
-
     PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo) {
       return new PrimitiveConverter() {
         @Override
@@ -93,27 +93,62 @@ public enum ETypeConverter {
   },
   EINT32_CONVERTER(Integer.TYPE) {
     @Override
-    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo) {
-      if (hiveTypeInfo != null && hiveTypeInfo.equals(TypeInfoFactory.longTypeInfo)) {
-        return new PrimitiveConverter() {
-          @Override
-          public void addInt(final int value) {
-            parent.set(index, new LongWritable((long)value));
-          }
-        };
-      } else {
-        return new PrimitiveConverter() {
-          @Override
-          public void addInt(final int value) {
-            parent.set(index, new IntWritable(value));
-          }
-        };
+    PrimitiveConverter getConverter(final PrimitiveType type, final int index,
+        final ConverterParent parent, TypeInfo hiveTypeInfo) {
+      if (hiveTypeInfo != null) {
+        switch (hiveTypeInfo.getTypeName()) {
+        case serdeConstants.BIGINT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addInt(final int value) {
+              parent.set(index, new LongWritable((long) value));
+            }
+          };
+        case serdeConstants.FLOAT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addInt(final int value) {
+              parent.set(index, new FloatWritable((float) value));
+            }
+          };
+        case serdeConstants.DOUBLE_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addInt(final int value) {
+              parent.set(index, new DoubleWritable((float) value));
+            }
+          };
+        }
       }
+      return new PrimitiveConverter() {
+        @Override
+        public void addInt(final int value) {
+          parent.set(index, new IntWritable(value));
+        }
+      };
     }
   },
   EINT64_CONVERTER(Long.TYPE) {
     @Override
     PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo) {
+      if(hiveTypeInfo != null) {
+        switch(hiveTypeInfo.getTypeName()) {
+        case serdeConstants.FLOAT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addLong(final long value) {
+              parent.set(index, new FloatWritable(value));
+            }
+          };
+        case serdeConstants.DOUBLE_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addLong(final long value) {
+              parent.set(index, new DoubleWritable(value));
+            }
+          };
+        }
+      }
       return new PrimitiveConverter() {
         @Override
         public void addLong(final long value) {
