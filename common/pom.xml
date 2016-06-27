@@ -85,11 +85,6 @@
       <artifactId>ant</artifactId>
       <version>${ant.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.json</groupId>
-      <artifactId>json</artifactId>
-      <version>${json.version}</version>
-    </dependency>
     <!-- test inter-project -->
     <dependency>
       <groupId>com.google.code.tempus-fugit</groupId>
