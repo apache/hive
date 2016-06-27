@@ -38,6 +38,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.exec.vector.VectorFileSinkOperator;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
@@ -233,6 +234,7 @@ public class SerializationUtilities {
       kryo.register(TableDesc.class);
       kryo.register(UnionOperator.class);
       kryo.register(FileSinkOperator.class);
+      kryo.register(VectorFileSinkOperator.class);
       kryo.register(HiveIgnoreKeyTextOutputFormat.class);
       kryo.register(StandardConstantListObjectInspector.class);
       kryo.register(StandardConstantMapObjectInspector.class);
