@@ -292,6 +292,9 @@ public final class TxnDbUtil {
   }
   @VisibleForTesting
   public static String queryToString(String query) throws Exception {
+    return queryToString(query, true);
+  }
+  public static String queryToString(String query, boolean includeHeader) throws Exception {
     Connection conn = null;
     Statement stmt = null;
     ResultSet rs = null;
@@ -301,10 +304,12 @@ public final class TxnDbUtil {
       stmt = conn.createStatement();
       rs = stmt.executeQuery(query);
       ResultSetMetaData rsmd = rs.getMetaData();
-      for(int colPos = 1; colPos <= rsmd.getColumnCount(); colPos++) {
-        sb.append(rsmd.getColumnName(colPos)).append("   ");
+      if(includeHeader) {
+        for (int colPos = 1; colPos <= rsmd.getColumnCount(); colPos++) {
+          sb.append(rsmd.getColumnName(colPos)).append("   ");
+        }
+        sb.append('\n');
       }
-      sb.append('\n');
       while(rs.next()) {
         for (int colPos = 1; colPos <= rsmd.getColumnCount(); colPos++) {
           sb.append(rs.getObject(colPos)).append("   ");

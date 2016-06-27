@@ -277,6 +277,7 @@ public class HiveEndPoint {
 
   private static class ConnectionImpl implements StreamingConnection {
     private final IMetaStoreClient msClient;
+    private final IMetaStoreClient heartbeaterMSClient;
     private final HiveEndPoint endPt;
     private final UserGroupInformation ugi;
     private final String username;
@@ -309,6 +310,9 @@ public class HiveEndPoint {
       }
       this.secureMode = ugi==null ? false : ugi.hasKerberosCredentials();
       this.msClient = getMetaStoreClient(endPoint, conf, secureMode);
+      // We use a separate metastore client for heartbeat calls to ensure heartbeat RPC calls are
+      // isolated from the other transaction related RPC calls.
+      this.heartbeaterMSClient = getMetaStoreClient(endPoint, conf, secureMode);
       checkEndPoint(endPoint, msClient);
       if (createPart  &&  !endPoint.partitionVals.isEmpty()) {
         createPartitionIfNotExists(endPoint, msClient, conf);
@@ -366,6 +370,7 @@ public class HiveEndPoint {
     public void close() {
       if (ugi==null) {
         msClient.close();
+        heartbeaterMSClient.close();
         return;
       }
       try {
@@ -374,6 +379,7 @@ public class HiveEndPoint {
               @Override
               public Void run() throws Exception {
                 msClient.close();
+                heartbeaterMSClient.close();
                 return null;
               }
             } );
@@ -429,8 +435,8 @@ public class HiveEndPoint {
     private TransactionBatch fetchTransactionBatchImpl(int numTransactions,
                                                   RecordWriter recordWriter)
             throws StreamingException, TransactionBatchUnAvailable, InterruptedException {
-      return new TransactionBatchImpl(username, ugi, endPt, numTransactions, msClient
-              , recordWriter, agentInfo);
+      return new TransactionBatchImpl(username, ugi, endPt, numTransactions, msClient,
+          heartbeaterMSClient, recordWriter, agentInfo);
     }
 
 
@@ -541,14 +547,14 @@ public class HiveEndPoint {
             + endPoint.metaStoreUri + ". " + e.getMessage(), e);
       }
     }
-
-
   } // class ConnectionImpl
+
   private static class TransactionBatchImpl implements TransactionBatch {
     private final String username;
     private final UserGroupInformation ugi;
     private final HiveEndPoint endPt;
     private final IMetaStoreClient msClient;
+    private final IMetaStoreClient heartbeaterMSClient;
     private final RecordWriter recordWriter;
     private final List<Long> txnIds;
 
@@ -572,9 +578,9 @@ public class HiveEndPoint {
      * @throws TransactionBatchUnAvailable if failed to acquire a new Transaction batch
      */
     private TransactionBatchImpl(final String user, UserGroupInformation ugi, HiveEndPoint endPt,
-              final int numTxns, final IMetaStoreClient msClient, RecordWriter recordWriter, 
-              String agentInfo)
-            throws StreamingException, TransactionBatchUnAvailable, InterruptedException {
+        final int numTxns, final IMetaStoreClient msClient,
+        final IMetaStoreClient heartbeaterMSClient, RecordWriter recordWriter, String agentInfo)
+        throws StreamingException, TransactionBatchUnAvailable, InterruptedException {
       boolean success = false;
       try {
         if ( endPt.partitionVals!=null   &&   !endPt.partitionVals.isEmpty() ) {
@@ -588,6 +594,7 @@ public class HiveEndPoint {
         this.ugi = ugi;
         this.endPt = endPt;
         this.msClient = msClient;
+        this.heartbeaterMSClient = heartbeaterMSClient;
         this.recordWriter = recordWriter;
         this.agentInfo = agentInfo;
 
@@ -937,7 +944,7 @@ public class HiveEndPoint {
       Long first = txnIds.get(currentTxnIndex);
       Long last = txnIds.get(txnIds.size()-1);
       try {
-        HeartbeatTxnRangeResponse resp = msClient.heartbeatTxnRange(first, last);
+        HeartbeatTxnRangeResponse resp = heartbeaterMSClient.heartbeatTxnRange(first, last);
         if (!resp.getAborted().isEmpty() || !resp.getNosuch().isEmpty()) {
           throw new HeartBeatFailure(resp.getAborted(), resp.getNosuch());
         }
@@ -1044,6 +1051,5 @@ public class HiveEndPoint {
     }
     conf.setBoolVar(var, value);
   }
-
 
 }  // class HiveEndPoint
