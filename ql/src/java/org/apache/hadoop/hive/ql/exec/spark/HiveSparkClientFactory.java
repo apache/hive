@@ -29,6 +29,7 @@ import java.util.Set;
 import org.apache.commons.compress.utils.CharsetNames;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -96,7 +97,7 @@ public class HiveSparkClientFactory {
             sparkConf.put(propertyName, properties.getProperty(propertyName));
             LOG.info(String.format(
               "load spark property from %s (%s -> %s).",
-              SPARK_DEFAULT_CONF_FILE, propertyName, value));
+              SPARK_DEFAULT_CONF_FILE, propertyName, Utilities.maskIfPassword(propertyName,value)));
           }
         }
       }
@@ -133,7 +134,7 @@ public class HiveSparkClientFactory {
         sparkConf.put(propertyName, value);
         LOG.info(String.format(
           "load spark property from hive configuration (%s -> %s).",
-          propertyName, value));
+          propertyName, Utilities.maskIfPassword(propertyName,value)));
       } else if (propertyName.startsWith("yarn") &&
         (sparkMaster.equals("yarn-client") || sparkMaster.equals("yarn-cluster"))) {
         String value = hiveConf.get(propertyName);
@@ -143,7 +144,7 @@ public class HiveSparkClientFactory {
         sparkConf.put("spark.hadoop." + propertyName, value);
         LOG.info(String.format(
           "load yarn property from hive configuration in %s mode (%s -> %s).",
-          sparkMaster, propertyName, value));
+          sparkMaster, propertyName, Utilities.maskIfPassword(propertyName,value)));
       } else if (propertyName.equals(HiveConf.ConfVars.HADOOPFS.varname)) {
         String value = hiveConf.get(propertyName);
         if (value != null && !value.isEmpty()) {
@@ -156,7 +157,7 @@ public class HiveSparkClientFactory {
         String value = hiveConf.get(propertyName);
         sparkConf.put("spark.hadoop." + propertyName, value);
         LOG.info(String.format(
-          "load HBase configuration (%s -> %s).", propertyName, value));
+          "load HBase configuration (%s -> %s).", propertyName, Utilities.maskIfPassword(propertyName,value)));
       }
 
       if (RpcConfiguration.HIVE_SPARK_RSC_CONFIGS.contains(propertyName)) {
@@ -164,7 +165,7 @@ public class HiveSparkClientFactory {
         sparkConf.put(propertyName, value);
         LOG.info(String.format(
           "load RPC property from hive configuration (%s -> %s).",
-          propertyName, value));
+          propertyName, Utilities.maskIfPassword(propertyName,value)));
       }
     }
 
