@@ -125,7 +125,10 @@ public abstract class TaskCompiler {
         if (SessionState.get().isHiveServerQuery()) {
           conf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER,ThriftFormatter.class.getName());
         } else {
-          conf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER, DefaultFetchFormatter.class.getName());
+          String formatterName = conf.get(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER);
+          if (formatterName == null || formatterName.isEmpty()) {
+            conf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER, DefaultFetchFormatter.class.getName());
+          }
         }
       }
       return;
