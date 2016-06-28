@@ -3011,6 +3011,7 @@ public class HiveConf extends Configuration {
     ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY.varname,
     ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION.varname,
     ConfVars.HIVE_EXECUTION_ENGINE.varname,
+    ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname,
     ConfVars.HIVE_EXIM_URI_SCHEME_WL.varname,
     ConfVars.HIVE_FILE_MAX_FOOTER.varname,
     ConfVars.HIVE_HADOOP_SUPPORTS_SUBDIRECTORIES.varname,
@@ -3085,10 +3086,11 @@ public class HiveConf extends Configuration {
     "mapreduce\\.reduce\\..*",
     "mapreduce\\.output\\.fileoutputformat\\.compress\\.codec",
     "mapreduce\\.output\\.fileoutputformat\\.compress\\.type",
+    "oozie\\..*",
     "tez\\.am\\..*",
     "tez\\.task\\..*",
     "tez\\.runtime\\..*",
-    "tez.queue.name",
+    "tez\\.queue\\.name",
 
   };
 
