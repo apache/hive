@@ -1118,6 +1118,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Partition Pruning; otherwise Expression evaluation may try to execute
       // corelated sub query.
 
+      LOG.info("Jesus - Plan0: " + RelOptUtil.toString(basePlan));
+      
       PerfLogger perfLogger = SessionState.getPerfLogger();
 
       final int maxCNFNodeCount = conf.getIntVar(HiveConf.ConfVars.HIVE_CBO_CNF_NODES_LIMIT);
@@ -1146,6 +1148,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           new HivePreFilteringRule(maxCNFNodeCount));
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
         "Calcite: Prejoin ordering transformation, factor out common filter elements and separating deterministic vs non-deterministic UDF");
+
+      LOG.info("Jesus - Plan2: " + RelOptUtil.toString(basePlan));
 
       // 3. Run exhaustive PPD, add not null filters, transitive inference,
       // constant propagation, constant folding
@@ -1184,6 +1188,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
               rules.toArray(new RelOptRule[rules.size()]));
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
         "Calcite: Prejoin ordering transformation, PPD, not null predicates, transitive inference, constant folding");
+
+      LOG.info("Jesus - Plan3: " + RelOptUtil.toString(basePlan));
 
       // 4. Push down limit through outer join
       // NOTE: We run this after PPD to support old style join syntax.

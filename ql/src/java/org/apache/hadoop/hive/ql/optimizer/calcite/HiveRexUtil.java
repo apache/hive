@@ -411,8 +411,10 @@ public class HiveRexUtil {
 
   public static RexNode simplifyAnd2(RexBuilder rexBuilder,
       List<RexNode> terms, List<RexNode> notTerms) {
-    if (terms.contains(rexBuilder.makeLiteral(false))) {
-      return rexBuilder.makeLiteral(false);
+    for (RexNode term : terms) {
+      if (term.isAlwaysFalse()) {
+        return rexBuilder.makeLiteral(false);
+      }
     }
     if (terms.isEmpty() && notTerms.isEmpty()) {
       return rexBuilder.makeLiteral(true);
@@ -447,8 +449,10 @@ public class HiveRexUtil {
    * UNKNOWN it will be interpreted as FALSE. */
   public static RexNode simplifyAnd2ForUnknownAsFalse(RexBuilder rexBuilder,
       List<RexNode> terms, List<RexNode> notTerms) {
-    if (terms.contains(rexBuilder.makeLiteral(false))) {
-      return rexBuilder.makeLiteral(false);
+    for (RexNode term : terms) {
+      if (term.isAlwaysFalse()) {
+        return rexBuilder.makeLiteral(false);
+      }
     }
     if (terms.isEmpty() && notTerms.isEmpty()) {
       return rexBuilder.makeLiteral(true);
