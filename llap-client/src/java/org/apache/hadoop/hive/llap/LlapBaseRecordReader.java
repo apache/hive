@@ -54,8 +54,10 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
   protected final LinkedBlockingQueue<ReaderEvent> readerEvents = new LinkedBlockingQueue<ReaderEvent>();
   protected final long timeout;
   protected final Closeable client;
+  private final Closeable socket;
 
-  public LlapBaseRecordReader(InputStream in, Schema schema, Class<V> clazz, JobConf job, Closeable client) {
+  public LlapBaseRecordReader(InputStream in, Schema schema,
+      Class<V> clazz, JobConf job, Closeable client, Closeable socket) {
     din = new DataInputStream(in);
     this.schema = schema;
     this.clazz = clazz;
@@ -63,6 +65,7 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
     this.timeout = 3 * HiveConf.getTimeVar(job,
         HiveConf.ConfVars.LLAP_DAEMON_AM_LIVENESS_CONNECTION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     this.client = client;
+    this.socket = socket;
   }
 
   public Schema getSchema() {
@@ -78,6 +81,7 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
       LOG.error("Error closing input stream:" + err.getMessage(), err);
       caughtException = err;
     }
+    // Don't close the socket - the stream already does that if needed.
 
     if (client != null) {
       try {
@@ -152,9 +156,10 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
           ReaderEvent event = getReaderEvent();
           switch (event.getEventType()) {
             case ERROR:
-              throw new IOException("Received reader event error: " + event.getMessage());
+              throw new IOException("Received reader event error: " + event.getMessage(), io);
             default:
-              throw new IOException("Got reader event type " + event.getEventType() + ", expected error event");
+              throw new IOException("Got reader event type " + event.getEventType()
+                  + ", expected error event", io);
           }
         }
       } else {
@@ -214,7 +219,13 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
         if (LOG.isDebugEnabled()) {
           LOG.debug("Interrupting reader thread due to reader event with error " + event.getMessage());
         }
-        getReaderThread().interrupt();
+        readerThread.interrupt();
+        try {
+          socket.close();
+        } catch (IOException e) {
+          // Leave the client to time out.
+          LOG.error("Cannot close the socket on error", e);
+        }
         break;
       default:
         throw new RuntimeException("Unhandled ReaderEvent type " + event.getEventType() + " with message " + event.getMessage());

@@ -103,7 +103,8 @@ public class TestLlapOutputFormat {
       writer.close(null);
 
       InputStream in = socket.getInputStream();
-      LlapBaseRecordReader reader = new LlapBaseRecordReader(in, null, Text.class, job, null);
+      LlapBaseRecordReader reader = new LlapBaseRecordReader(
+          in, null, Text.class, job, null, null);
 
       LOG.debug("Have record reader");
 

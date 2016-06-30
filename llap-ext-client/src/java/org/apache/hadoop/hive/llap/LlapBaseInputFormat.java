@@ -170,8 +170,8 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     LOG.info("Registered id: " + fragmentId);
 
     @SuppressWarnings("rawtypes")
-    LlapBaseRecordReader recordReader = new LlapBaseRecordReader(
-        socket.getInputStream(), llapSplit.getSchema(), Text.class, job, llapClient);
+    LlapBaseRecordReader recordReader = new LlapBaseRecordReader(socket.getInputStream(),
+        llapSplit.getSchema(), Text.class, job, llapClient, (java.io.Closeable)socket);
     umbilicalResponder.setRecordReader(recordReader);
     return recordReader;
   }
