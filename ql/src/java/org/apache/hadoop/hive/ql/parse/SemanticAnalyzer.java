@@ -1593,6 +1593,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           HashMap<String, String> partition = new HashMap<String, String>();
           for (int i = 0; i < childCount; i++) {
             String partitionName = partitions.getChild(i).getChild(0).getText();
+            // Convert to lowercase for the comparison
+            partitionName = partitionName.toLowerCase();
             Tree pvalue = partitions.getChild(i).getChild(1);
             if (pvalue == null) {
               break;
