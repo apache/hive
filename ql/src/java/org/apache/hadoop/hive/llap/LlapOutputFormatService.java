@@ -166,7 +166,7 @@ public class LlapOutputFormatService {
   protected class LlapOutputFormatServiceHandler
     extends SimpleChannelInboundHandler<LlapOutputSocketInitMessage> {
     private final int sendBufferSize;
-    private final Object channelWritabilityMonitor = new Object();
+
     public LlapOutputFormatServiceHandler(final int sendBufferSize) {
       this.sendBufferSize = sendBufferSize;
     }
@@ -194,9 +194,11 @@ public class LlapOutputFormatService {
         }
       }
       LOG.debug("registering socket for: " + id);
+      int maxPendingWrites = HiveConf.getIntVar(conf,
+          HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_MAX_PENDING_WRITES);
       @SuppressWarnings("rawtypes")
       LlapRecordWriter writer = new LlapRecordWriter(
-          new ChannelOutputStream(ctx, id, sendBufferSize, channelWritabilityMonitor));
+          new ChannelOutputStream(ctx, id, sendBufferSize, maxPendingWrites));
       boolean isFailed = true;
       synchronized (lock) {
         if (!writers.containsKey(id)) {
@@ -221,14 +223,6 @@ public class LlapOutputFormatService {
         lock.notifyAll();
       }
       LOG.error(error);
-    }
-
-    @Override
-    public void channelWritabilityChanged(final ChannelHandlerContext ctx) throws Exception {
-      super.channelWritabilityChanged(ctx);
-      synchronized (channelWritabilityMonitor) {
-        channelWritabilityMonitor.notifyAll();
-      }
     }
   }
 
