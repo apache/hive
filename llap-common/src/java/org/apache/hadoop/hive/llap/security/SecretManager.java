@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.delegation.DelegationKey;
@@ -43,8 +44,6 @@ import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Id;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.protobuf.ByteString;
 
 public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdentifier>
   implements SigningSecretManager {
@@ -63,6 +62,7 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
 
   @Override
   public void startThreads() throws IOException {
+    LOG.info("Starting ZK threads as user " + UserGroupInformation.getCurrentUser());
     super.startThreads();
     if (!HiveConf.getBoolVar(conf, ConfVars.LLAP_VALIDATE_ACLS)
       || !UserGroupInformation.isSecurityEnabled()) return;
@@ -154,7 +154,12 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
         conf, ConfVars.LLAP_DELEGATION_TOKEN_LIFETIME, TimeUnit.SECONDS);
     zkConf.setLong(DelegationTokenManager.MAX_LIFETIME, tokenLifetime);
     zkConf.setLong(DelegationTokenManager.RENEW_INTERVAL, tokenLifetime);
-    zkConf.set(SecretManager.ZK_DTSM_ZK_KERBEROS_PRINCIPAL, principal);
+    try {
+      zkConf.set(SecretManager.ZK_DTSM_ZK_KERBEROS_PRINCIPAL,
+          SecurityUtil.getServerPrincipal(principal, "0.0.0.0"));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
     zkConf.set(SecretManager.ZK_DTSM_ZK_KERBEROS_KEYTAB, keyTab);
     String zkPath = "zkdtsm_" + clusterId;
     LOG.info("Using {} as ZK secret manager path", zkPath);
@@ -172,14 +177,14 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     return new LlapZkConf(zkConf, zkUgi);
   }
 
-  public static SecretManager createSecretManager(final Configuration conf, String clusterId) {
+  public static SecretManager createSecretManager(Configuration conf, String clusterId) {
     String llapPrincipal = HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_PRINCIPAL),
         llapKeytab = HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_KEYTAB_FILE);
     return SecretManager.createSecretManager(conf, llapPrincipal, llapKeytab, clusterId);
   }
 
   public static SecretManager createSecretManager(
-      final Configuration conf, String llapPrincipal, String llapKeytab, final String clusterId) {
+      Configuration conf, String llapPrincipal, String llapKeytab, final String clusterId) {
     assert UserGroupInformation.isSecurityEnabled();
     final LlapZkConf c = createLlapZkConf(conf, llapPrincipal, llapKeytab, clusterId);
     return c.zkUgi.doAs(new PrivilegedAction<SecretManager>() {
