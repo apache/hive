@@ -2955,6 +2955,9 @@ public class HiveConf extends Configuration {
         "output after sending the fragment. The fragment will fail if its output is not claimed."),
     LLAP_DAEMON_OUTPUT_SERVICE_SEND_BUFFER_SIZE("hive.llap.daemon.output.service.send.buffer.size",
         128 * 1024, "Send buffer size to be used by LLAP daemon output service"),
+    LLAP_DAEMON_OUTPUT_SERVICE_MAX_PENDING_WRITES("hive.llap.daemon.output.service.max.pending.writes",
+        8, "Maximum number of queued writes allowed per connection when sending data\n" +
+        " via the LLAP output service to external clients."),
     LLAP_ENABLE_GRACE_JOIN_IN_LLAP("hive.llap.enable.grace.join.in.llap", false,
         "Override if grace join should be allowed to run in llap."),
 
