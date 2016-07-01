@@ -212,6 +212,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
     // add aux jars
     addJars(HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS));
+    addJars(SessionState.get().getReloadableAuxJars());
 
     // add added jars
     String addedJars = Utilities.getResourceFiles(conf, SessionState.ResourceType.JAR);
