@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -981,8 +982,28 @@ public class SessionState {
     }
   }
 
-  // reloading the jars under the path specified in hive.reloadable.aux.jars.path property
-  public void reloadAuxJars() throws IOException {
+  /**
+   * Load the jars under the path specified in hive.aux.jars.path property. Add
+   * the jars to the classpath so the local task can refer to them.
+   * @throws IOException
+   */
+  public void loadAuxJars() throws IOException {
+    String[] jarPaths = StringUtils.split(conf.getAuxJars(), ',');
+    if (ArrayUtils.isEmpty(jarPaths)) return;
+
+    URLClassLoader currentCLoader =
+        (URLClassLoader) SessionState.get().getConf().getClassLoader();
+    currentCLoader =
+        (URLClassLoader) Utilities.addToClassPath(currentCLoader, jarPaths);
+    conf.setClassLoader(currentCLoader);
+    Thread.currentThread().setContextClassLoader(currentCLoader);
+  }
+
+  /**
+   * Reload the jars under the path specified in hive.reloadable.aux.jars.path property.
+   * @throws IOException
+   */
+  public void loadReloadableAuxJars() throws IOException {
     final Set<String> reloadedAuxJars = new HashSet<String>();
 
     final String renewableJarPath = conf.getVar(ConfVars.HIVERELOADABLEJARS);
@@ -991,7 +1012,7 @@ public class SessionState {
       return;
     }
 
-    Set<String> jarPaths = Utilities.getJarFilesByPath(renewableJarPath);
+    Set<String> jarPaths = FileUtils.getJarFilesByPath(renewableJarPath, conf);
 
     // load jars under the hive.reloadable.aux.jars.path
     if(!jarPaths.isEmpty()){
@@ -999,32 +1020,21 @@ public class SessionState {
     }
 
     // remove the previous renewable jars
-    try {
-      if (preReloadableAuxJars != null && !preReloadableAuxJars.isEmpty()) {
-        Utilities.removeFromClassPath(preReloadableAuxJars.toArray(new String[0]));
-      }
-    } catch (Exception e) {
-      String msg = "Fail to remove the reloaded jars loaded last time: " + e;
-      throw new IOException(msg, e);
+    if (preReloadableAuxJars != null && !preReloadableAuxJars.isEmpty()) {
+      Utilities.removeFromClassPath(preReloadableAuxJars.toArray(new String[0]));
     }
 
-    try {
-      if (reloadedAuxJars != null && !reloadedAuxJars.isEmpty()) {
-        URLClassLoader currentCLoader =
-            (URLClassLoader) SessionState.get().getConf().getClassLoader();
-        currentCLoader =
-            (URLClassLoader) Utilities.addToClassPath(currentCLoader,
-                reloadedAuxJars.toArray(new String[0]));
-        conf.setClassLoader(currentCLoader);
-        Thread.currentThread().setContextClassLoader(currentCLoader);
-      }
-      preReloadableAuxJars.clear();
-      preReloadableAuxJars.addAll(reloadedAuxJars);
-    } catch (Exception e) {
-      String msg =
-          "Fail to add jars from the path specified in hive.reloadable.aux.jars.path property: " + e;
-      throw new IOException(msg, e);
+    if (reloadedAuxJars != null && !reloadedAuxJars.isEmpty()) {
+      URLClassLoader currentCLoader =
+          (URLClassLoader) SessionState.get().getConf().getClassLoader();
+      currentCLoader =
+          (URLClassLoader) Utilities.addToClassPath(currentCLoader,
+              reloadedAuxJars.toArray(new String[0]));
+      conf.setClassLoader(currentCLoader);
+      Thread.currentThread().setContextClassLoader(currentCLoader);
     }
+    preReloadableAuxJars.clear();
+    preReloadableAuxJars.addAll(reloadedAuxJars);
   }
 
   static void registerJars(List<String> newJars) throws IllegalArgumentException {
@@ -1047,7 +1057,7 @@ public class SessionState {
       Utilities.removeFromClassPath(jarsToUnregister.toArray(new String[0]));
       console.printInfo("Deleted " + jarsToUnregister + " from class path");
       return true;
-    } catch (Exception e) {
+    } catch (IOException e) {
       console.printError("Unable to unregister " + jarsToUnregister
           + "\nException: " + e.getMessage(), "\n"
               + org.apache.hadoop.util.StringUtils.stringifyException(e));
@@ -1545,5 +1555,13 @@ public class SessionState {
    */
   public Timestamp getQueryCurrentTimestamp() {
     return queryCurrentTimestamp;
+  }
+
+  /**
+   * Gets the comma-separated reloadable aux jars
+   * @return the list of reloadable aux jars
+   */
+  public String getReloadableAuxJars() {
+    return StringUtils.join(preReloadableAuxJars, ',');
   }
 }

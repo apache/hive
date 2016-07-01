@@ -152,7 +152,8 @@ public class LocalHiveSparkClient implements HiveSparkClient {
     addJars((new JobConf(this.getClass())).getJar());
 
     // add aux jars
-    addJars(HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS));
+    addJars(conf.getAuxJars());
+    addJars(SessionState.get() == null ? null : SessionState.get().getReloadableAuxJars());
 
     // add added jars
     String addedJars = Utilities.getResourceFiles(conf, SessionState.ResourceType.JAR);

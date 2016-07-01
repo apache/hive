@@ -38,6 +38,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.MessageDigest;
@@ -2180,40 +2181,13 @@ public final class Utilities {
     return oneurl;
   }
 
-    /**
-     * get the jar files from specified directory or get jar files by several jar names sperated by comma
-     * @param path
-     * @return
-     */
-    public static Set<String> getJarFilesByPath(String path){
-        Set<String> result = new HashSet<String>();
-        if (path == null || path.isEmpty()) {
-            return result;
-        }
-
-        File paths = new File(path);
-        if (paths.exists() && paths.isDirectory()) {
-            // add all jar files under the reloadable auxiliary jar paths
-            Set<File> jarFiles = new HashSet<File>();
-            jarFiles.addAll(org.apache.commons.io.FileUtils.listFiles(
-                    paths, new String[]{"jar"}, true));
-            for (File f : jarFiles) {
-                result.add(f.getAbsolutePath());
-            }
-        } else {
-            String[] files = path.split(",");
-            Collections.addAll(result, files);
-        }
-        return result;
-    }
-
   /**
    * Add new elements to the classpath.
    *
    * @param newPaths
    *          Array of classpath elements
    */
-  public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) throws Exception {
+  public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) {
     URLClassLoader loader = (URLClassLoader) cloader;
     List<URL> curPath = Arrays.asList(loader.getURLs());
     ArrayList<URL> newPath = new ArrayList<URL>();
@@ -2240,7 +2214,7 @@ public final class Utilities {
    * @param pathsToRemove
    *          Array of classpath elements
    */
-  public static void removeFromClassPath(String[] pathsToRemove) throws Exception {
+  public static void removeFromClassPath(String[] pathsToRemove) throws IOException {
     Thread curThread = Thread.currentThread();
     URLClassLoader loader = (URLClassLoader) curThread.getContextClassLoader();
     Set<URL> newPath = new HashSet<URL>(Arrays.asList(loader.getURLs()));

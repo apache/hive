@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.ql.exec.Utilities.getFileExtension;
-
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -43,10 +42,8 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.apache.commons.io.FileUtils;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
@@ -64,7 +61,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFromUtcTimestamp;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
-
 import org.junit.Test;
 
 
@@ -138,29 +134,6 @@ public class TestUtilities extends TestCase {
     }
   }
 
-  public void testGetJarFilesByPath() {
-    File f = Files.createTempDir();
-    String jarFileName1 = f.getAbsolutePath() + File.separator + "a.jar";
-    String jarFileName2 = f.getAbsolutePath() + File.separator + "b.jar";
-    File jarFile = new File(jarFileName1);
-    try {
-      FileUtils.touch(jarFile);
-      HashSet<String> jars = (HashSet) Utilities.getJarFilesByPath(f.getAbsolutePath());
-      Assert.assertEquals(Sets.newHashSet(jarFile.getAbsolutePath()),jars);
-
-      File jarFile2 = new File(jarFileName2);
-      FileUtils.touch(jarFile2);
-      String newPath = "file://" + jarFileName1 + "," + "file://" + jarFileName2;
-      jars = (HashSet) Utilities.getJarFilesByPath(newPath);
-
-      Assert.assertEquals(Sets.newHashSet("file://" + jarFileName1, "file://" + jarFileName2), jars);
-    } catch (IOException e) {
-      LOG.error("failed to copy file to reloading folder", e);
-      Assert.fail(e.getMessage());
-    } finally {
-      FileUtils.deleteQuietly(f);
-    }
-  }
 
   public void testMaskIfPassword() {
     Assert.assertNull(Utilities.maskIfPassword("",null));

@@ -44,8 +44,11 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.StreamPrinter;
+
 /**
  * Extension of ExecDriver:
  * - can optionally spawn a map-reduce task from a separate jvm
@@ -147,24 +150,8 @@ public class MapRedTask extends ExecDriver implements Serializable {
       String hadoopExec = conf.getVar(HiveConf.ConfVars.HADOOPBIN);
       String hiveJar = conf.getJar();
 
-      String libJarsOption;
-      String addedJars = Utilities.getResourceFiles(conf, SessionState.ResourceType.JAR);
-      conf.setVar(ConfVars.HIVEADDEDJARS, addedJars);
-      String auxJars = conf.getAuxJars();
-      // Put auxjars and addedjars together into libjars
-      if (StringUtils.isEmpty(addedJars)) {
-        if (StringUtils.isEmpty(auxJars)) {
-          libJarsOption = " ";
-        } else {
-          libJarsOption = " -libjars " + auxJars + " ";
-        }
-      } else {
-        if (StringUtils.isEmpty(auxJars)) {
-          libJarsOption = " -libjars " + addedJars + " ";
-        } else {
-          libJarsOption = " -libjars " + addedJars + "," + auxJars + " ";
-        }
-      }
+      String libJars = super.getResource(conf, ResourceType.JAR);
+      String libJarsOption = StringUtils.isEmpty(libJars) ? " " : " -libjars " + libJars + " ";
 
       // Generate the hiveConfArgs after potentially adding the jars
       String hiveConfArgs = generateCmdLine(conf, ctx);
@@ -193,7 +180,8 @@ public class MapRedTask extends ExecDriver implements Serializable {
           + planPath.toString() + " " + isSilent + " " + hiveConfArgs;
 
       String workDir = (new File(".")).getCanonicalPath();
-      String files = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
+
+      String files = super.getResource(conf, ResourceType.FILE);
       if (!files.isEmpty()) {
         cmdLine = cmdLine + " -files " + files;
 
