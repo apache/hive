@@ -519,11 +519,8 @@ public class HiveAlterHandler implements AlterHandler {
         updatePartColumnStats(msdb, dbname, name, oldTmpPart.getValues(), tmpPart);
       }
       msdb.alterPartitions(dbname, name, partValsList, new_parts);
-    } catch (InvalidObjectException e) {
-      throw new InvalidOperationException("alter is not possible");
-    } catch (NoSuchObjectException e){
-      //old partition does not exist
-      throw new InvalidOperationException("alter is not possible");
+    } catch (InvalidObjectException | NoSuchObjectException e) {
+      throw new InvalidOperationException("Alter partition operation fails: " + e);
     }
     return oldParts;
   }
