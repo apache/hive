@@ -644,8 +644,8 @@ public class Table implements Serializable {
    */
   public List<FieldSchema> getAllCols() {
     ArrayList<FieldSchema> f_list = new ArrayList<FieldSchema>();
-    f_list.addAll(getPartCols());
     f_list.addAll(getCols());
+    f_list.addAll(getPartCols());
     return f_list;
   }
 
