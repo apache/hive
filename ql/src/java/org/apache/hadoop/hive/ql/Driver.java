@@ -299,9 +299,6 @@ public class Driver implements CommandProcessor {
         SessionState.get().getConf() : new HiveConf()), null);
   }
 
-  /**
-   * for backwards compatibility with current tests
-   */
   public Driver(HiveConf conf) {
     this(new QueryState(conf), null);
   }
@@ -2028,5 +2025,16 @@ public class Driver implements CommandProcessor {
    */
   public void setOperationId(String opId) {
     this.operationId = opId;
+  }
+
+  /** 
+   * Resets QueryState to get new queryId on Driver reuse.
+   */
+  public void resetQueryState() {
+    // Note: Driver cleanup for reuse at this point is not very clear. The assumption here is that
+    // repeated compile/execute calls create new contexts, plan, etc., so we don't need to worry
+    // propagating queryState into those existing fields, or resetting them.
+    releaseResources();
+    this.queryState = new QueryState(queryState.getConf());
   }
 }

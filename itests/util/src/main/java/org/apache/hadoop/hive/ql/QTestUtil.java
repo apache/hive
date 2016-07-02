@@ -1656,6 +1656,7 @@ public class QTestUtil {
   public void resetParser() throws SemanticException {
     drv.init();
     pd = new ParseDriver();
+    queryState = new QueryState(conf);
     sem = new SemanticAnalyzer(queryState);
   }
 

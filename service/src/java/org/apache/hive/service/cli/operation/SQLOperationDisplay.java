@@ -41,7 +41,7 @@ public class SQLOperationDisplay {
   public SQLOperationDisplay(SQLOperation sqlOperation) throws HiveSQLException {
     this.state = sqlOperation.getState();
     this.userName = sqlOperation.getParentSession().getUserName();
-    this.executionEngine = sqlOperation.getQueryState().getConf().getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
+    this.executionEngine = sqlOperation.getExecutionEngine();
     this.beginTime = System.currentTimeMillis();
     this.operationId = sqlOperation.getHandle().getHandleIdentifier().toString();
   }
