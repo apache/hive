@@ -120,6 +120,8 @@ public final class CommandProcessorFactory {
       if (drv == null) {
         drv = new Driver();
         mapDrivers.put(conf, drv);
+      } else {
+        drv.resetQueryState();
       }
       drv.init();
       return drv;

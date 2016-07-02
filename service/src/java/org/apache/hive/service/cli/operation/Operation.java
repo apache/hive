@@ -104,10 +104,6 @@ public abstract class Operation {
     queryState = new QueryState(parentSession.getHiveConf(), confOverlay, runAsync);
   }
 
-  public QueryState getQueryState() {
-    return queryState;
-  }
-
   public Future<?> getBackgroundHandle() {
     return backgroundHandle;
   }

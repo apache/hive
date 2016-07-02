@@ -664,4 +664,8 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
     }
   }
+
+  public String getExecutionEngine() {
+    return queryState.getConf().getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
+  }
 }
