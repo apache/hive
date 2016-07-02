@@ -759,6 +759,9 @@ public class VectorMapOperator extends AbstractMapOperator {
            * We pass the VectorizedRowBatch through here.
            */
           batchCounter++;
+          if (value != null) {
+            numRows += ((VectorizedRowBatch) value).size;
+          }
           oneRootOperator.process(value, 0);
           if (oneRootOperator.getDone()) {
             setDone(true);
@@ -776,6 +779,7 @@ public class VectorMapOperator extends AbstractMapOperator {
               currentReadType == VectorMapOperatorReadType.ROW_DESERIALIZE);
 
           if (deserializerBatch.size == deserializerBatch.DEFAULT_SIZE) {
+            numRows += deserializerBatch.size;
 
             /*
              * Feed current full batch to operator tree.
@@ -862,6 +866,7 @@ public class VectorMapOperator extends AbstractMapOperator {
     if (!abort && oneRootOperator != null && !oneRootOperator.getDone() &&
         currentReadType != VectorMapOperatorReadType.VECTORIZED_INPUT_FILE_FORMAT) {
       if (deserializerBatch.size > 0) {
+        numRows += deserializerBatch.size;
         batchCounter++;
         oneRootOperator.process(deserializerBatch, 0);
         deserializerBatch.size = 0;
