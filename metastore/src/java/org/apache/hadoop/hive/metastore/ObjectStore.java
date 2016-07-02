@@ -54,6 +54,7 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.identity.IntIdentity;
 
+import com.google.common.collect.Maps;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -6763,8 +6764,9 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private void writeMTableColumnStatistics(Table table, MTableColumnStatistics mStatsObj)
-    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+  private void writeMTableColumnStatistics(Table table, MTableColumnStatistics mStatsObj,
+      MTableColumnStatistics oldStats) throws NoSuchObjectException, MetaException,
+      InvalidObjectException, InvalidInputException {
     String dbName = mStatsObj.getDbName();
     String tableName = mStatsObj.getTableName();
     String colName = mStatsObj.getColName();
@@ -6775,12 +6777,8 @@ public class ObjectStore implements RawStore, Configurable {
         + " colName=" + colName);
       validateTableCols(table, Lists.newArrayList(colName));
 
-      List<MTableColumnStatistics> oldStats =
-          getMTableColumnStatistics(table, Lists.newArrayList(colName), queryWrapper);
-
-      if (!oldStats.isEmpty()) {
-        assert oldStats.size() == 1;
-        StatObjectConverter.setFieldsIntoOldStats(mStatsObj, oldStats.get(0));
+      if (oldStats != null) {
+        StatObjectConverter.setFieldsIntoOldStats(mStatsObj, oldStats);
       } else {
         pm.makePersistent(mStatsObj);
       }
@@ -6790,8 +6788,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private void writeMPartitionColumnStatistics(Table table, Partition partition,
-      MPartitionColumnStatistics mStatsObj) throws NoSuchObjectException,
-        MetaException, InvalidObjectException, InvalidInputException {
+      MPartitionColumnStatistics mStatsObj, MPartitionColumnStatistics oldStats)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     String dbName = mStatsObj.getDbName();
     String tableName = mStatsObj.getTableName();
     String partName = mStatsObj.getPartitionName();
@@ -6815,17 +6813,39 @@ public class ObjectStore implements RawStore, Configurable {
 
     QueryWrapper queryWrapper = new QueryWrapper();
     try {
-      List<MPartitionColumnStatistics> oldStats = getMPartitionColumnStatistics(
-          table, Lists.newArrayList(partName), Lists.newArrayList(colName), queryWrapper);
-      if (!oldStats.isEmpty()) {
-        assert oldStats.size() == 1;
-        StatObjectConverter.setFieldsIntoOldStats(mStatsObj, oldStats.get(0));
-    } else {
-      pm.makePersistent(mStatsObj);
-    }
+      if (oldStats != null) {
+        StatObjectConverter.setFieldsIntoOldStats(mStatsObj, oldStats);
+      } else {
+        pm.makePersistent(mStatsObj);
+      }
     } finally {
       queryWrapper.close();
     }
+  }
+
+  /**
+   * Get table's column stats
+   *
+   * @param table
+   * @param colNames
+   * @return Map of column name and its stats
+   * @throws NoSuchObjectException
+   * @throws MetaException
+   */
+  private Map<String, MTableColumnStatistics> getPartitionColStats(Table table,
+     List<String> colNames) throws NoSuchObjectException, MetaException {
+    Map<String, MTableColumnStatistics> statsMap = Maps.newHashMap();
+    QueryWrapper queryWrapper = new QueryWrapper();
+    try {
+      List<MTableColumnStatistics> stats = getMTableColumnStatistics(table,
+          colNames, queryWrapper);
+      for(MTableColumnStatistics cStat : stats) {
+        statsMap.put(cStat.getColName(), cStat);
+      }
+    } finally {
+      queryWrapper.close();
+    }
+    return statsMap;
   }
 
   @Override
@@ -6842,11 +6862,16 @@ public class ObjectStore implements RawStore, Configurable {
       // So let's not use them anywhere unless absolutely necessary.
       Table table = ensureGetTable(statsDesc.getDbName(), statsDesc.getTableName());
       List<String> colNames = new ArrayList<>();
+      for (ColumnStatisticsObj statsObj : statsObjs) {
+        colNames.add(statsObj.getColName());
+      }
+      Map<String, MTableColumnStatistics> oldStats = getPartitionColStats(table, colNames);
+
       for (ColumnStatisticsObj statsObj:statsObjs) {
         // We have to get mtable again because DataNucleus.
         MTableColumnStatistics mStatsObj = StatObjectConverter.convertToMTableColumnStatistics(
             ensureGetMTable(statsDesc.getDbName(), statsDesc.getTableName()), statsDesc, statsObj);
-        writeMTableColumnStatistics(table, mStatsObj);
+        writeMTableColumnStatistics(table, mStatsObj, oldStats.get(statsObj.getColName()));
         colNames.add(statsObj.getColName());
       }
 
@@ -6868,40 +6893,70 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  /**
+   * Get partition's column stats
+   *
+   * @param table
+   * @param partitionName
+   * @param colNames
+   * @return Map of column name and its stats
+   * @throws NoSuchObjectException
+   * @throws MetaException
+   */
+  private Map<String, MPartitionColumnStatistics> getPartitionColStats(Table table,
+      String partitionName, List<String> colNames) throws NoSuchObjectException, MetaException {
+    Map<String, MPartitionColumnStatistics> statsMap = Maps.newHashMap();
+    QueryWrapper queryWrapper = new QueryWrapper();
+    try {
+      List<MPartitionColumnStatistics> stats = getMPartitionColumnStatistics(table,
+          Lists.newArrayList(partitionName), colNames, queryWrapper);
+      for(MPartitionColumnStatistics cStat : stats) {
+        statsMap.put(cStat.getColName(), cStat);
+      }
+    } finally {
+      queryWrapper.close();
+    }
+    return statsMap;
+  }
+
   @Override
   public boolean updatePartitionColumnStatistics(ColumnStatistics colStats, List<String> partVals)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     boolean committed = false;
 
     try {
-    openTransaction();
-    List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
-    ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
-    Table table = ensureGetTable(statsDesc.getDbName(), statsDesc.getTableName());
-    Partition partition = convertToPart(getMPartition(
-        statsDesc.getDbName(), statsDesc.getTableName(), partVals));
-    List<String> colNames = new ArrayList<>();
-    for (ColumnStatisticsObj statsObj:statsObjs) {
-      // We have to get partition again because DataNucleus
+      openTransaction();
+      List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
+      ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+      Table table = ensureGetTable(statsDesc.getDbName(), statsDesc.getTableName());
+      Partition partition = convertToPart(getMPartition(
+          statsDesc.getDbName(), statsDesc.getTableName(), partVals));
+      List<String> colNames = new ArrayList<>();
+
+      for(ColumnStatisticsObj statsObj : statsObjs) {
+        colNames.add(statsObj.getColName());
+      }
+
+      Map<String, MPartitionColumnStatistics> oldStats = getPartitionColStats(table, statsDesc
+          .getPartName(), colNames);
+
       MPartition mPartition = getMPartition(
           statsDesc.getDbName(), statsDesc.getTableName(), partVals);
       if (partition == null) {
         throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
       }
-      MPartitionColumnStatistics mStatsObj =
-          StatObjectConverter.convertToMPartitionColumnStatistics(mPartition, statsDesc, statsObj);
-      writeMPartitionColumnStatistics(table, partition, mStatsObj);
-      colNames.add(statsObj.getColName());
-    }
-    // Set the partition properties
-    // No need to check again if it exists.
-    MPartition mPartition = getMPartition(
-        statsDesc.getDbName(), statsDesc.getTableName(), partVals);
-    Map<String, String> parameters = mPartition.getParameters();
-    StatsSetupConst.setColumnStatsState(parameters, colNames);
-    mPartition.setParameters(parameters);
-    committed = commitTransaction();
-    return committed;
+
+      for (ColumnStatisticsObj statsObj : statsObjs) {
+        MPartitionColumnStatistics mStatsObj =
+            StatObjectConverter.convertToMPartitionColumnStatistics(mPartition, statsDesc, statsObj);
+        writeMPartitionColumnStatistics(table, partition, mStatsObj,
+            oldStats.get(statsObj.getColName()));
+      }
+      Map<String, String> parameters = mPartition.getParameters();
+      StatsSetupConst.setColumnStatsState(parameters, colNames);
+      mPartition.setParameters(parameters);
+      committed = commitTransaction();
+      return committed;
     } finally {
       if (!committed) {
         rollbackTransaction();
