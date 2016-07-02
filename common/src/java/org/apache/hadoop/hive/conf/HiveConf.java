@@ -572,6 +572,9 @@ public class HiveConf extends Configuration {
         "not blocked.\n" +
         "\n" +
         "See HIVE-4409 for more details."),
+    METASTORE_LIMIT_PARTITION_REQUEST("hive.metastore.limit.partition.request", -1,
+        "This limits the number of partitions that can be requested from the metastore for a given table.\n" +
+            "The default value \"-1\" means no limit."),
 
     NEWTABLEDEFAULTPARA("hive.table.parameters.default", "",
         "Default property values for newly created tables"),
@@ -1004,9 +1007,11 @@ public class HiveConf extends Configuration {
         "Insert queries are not restricted by this limit."),
     HIVELIMITPUSHDOWNMEMORYUSAGE("hive.limit.pushdown.memory.usage", -1f,
         "The max memory to be used for hash in RS operator for top K selection."),
+
+    @Deprecated
     HIVELIMITTABLESCANPARTITION("hive.limit.query.max.table.partition", -1,
         "This controls how many partitions can be scanned for each partitioned table.\n" +
-        "The default value \"-1\" means no limit."),
+        "The default value \"-1\" means no limit. (DEPRECATED: Please use " + ConfVars.METASTORE_LIMIT_PARTITION_REQUEST + " in the metastore instead.)"),
 
     HIVEHASHTABLEKEYCOUNTADJUSTMENT("hive.hashtable.key.count.adjustment", 1.0f,
         "Adjustment to mapjoin hashtable size derived from table and column statistics; the estimate" +

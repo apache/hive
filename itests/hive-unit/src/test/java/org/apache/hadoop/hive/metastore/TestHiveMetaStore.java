@@ -90,6 +90,8 @@ public abstract class TestHiveMetaStore extends TestCase {
   private static final String TEST_DB1_NAME = "testdb1";
   private static final String TEST_DB2_NAME = "testdb2";
 
+  private static final int DEFAULT_LIMIT_PARTITION_REQUEST = 100;
+
   @Override
   protected void setUp() throws Exception {
     hiveConf = new HiveConf(this.getClass());
@@ -103,6 +105,7 @@ public abstract class TestHiveMetaStore extends TestCase {
     hiveConf.set("hive.key4", "0");
 
     hiveConf.setIntVar(ConfVars.METASTORE_BATCH_RETRIEVE_MAX, 2);
+    hiveConf.setIntVar(ConfVars.METASTORE_LIMIT_PARTITION_REQUEST, DEFAULT_LIMIT_PARTITION_REQUEST);
   }
 
   public void testNameMethods() {
@@ -554,7 +557,49 @@ public abstract class TestHiveMetaStore extends TestCase {
 
   }
 
+  public void testListPartitionsWihtLimitEnabled() throws Throwable {
+    // create a table with multiple partitions
+    String dbName = "compdb";
+    String tblName = "comptbl";
+    String typeName = "Person";
 
+    cleanUp(dbName, tblName, typeName);
+
+    // Create too many partitions, just enough to validate over limit requests
+    List<List<String>> values = new ArrayList<List<String>>();
+    for (int i=0; i<DEFAULT_LIMIT_PARTITION_REQUEST + 1; i++) {
+      values.add(makeVals("2008-07-01 14:13:12", Integer.toString(i)));
+    }
+
+    createMultiPartitionTableSchema(dbName, tblName, typeName, values);
+
+    List<Partition> partitions;
+    short maxParts;
+
+    // Requesting more partitions than allowed should throw an exception
+    try {
+      maxParts = -1;
+      partitions = client.listPartitions(dbName, tblName, maxParts);
+      fail("should have thrown MetaException about partition limit");
+    } catch (MetaException e) {
+      assertTrue(true);
+    }
+
+    // Requesting more partitions than allowed should throw an exception
+    try {
+      maxParts = DEFAULT_LIMIT_PARTITION_REQUEST + 1;
+      partitions = client.listPartitions(dbName, tblName, maxParts);
+      fail("should have thrown MetaException about partition limit");
+    } catch (MetaException e) {
+      assertTrue(true);
+    }
+
+    // Requesting less partitions than allowed should work
+    maxParts = DEFAULT_LIMIT_PARTITION_REQUEST / 2;
+    partitions = client.listPartitions(dbName, tblName, maxParts);
+    assertNotNull("should have returned partitions", partitions);
+    assertEquals(" should have returned 50 partitions", maxParts, partitions.size());
+  }
 
   public void testListPartitionNames() throws Throwable {
     // create a table with multiple partitions

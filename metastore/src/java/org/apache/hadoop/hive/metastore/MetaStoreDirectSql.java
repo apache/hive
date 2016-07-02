@@ -827,7 +827,7 @@ class MetaStoreDirectSql {
       + "  inner join \"DBS\" on \"TBLS\".\"DB_ID\" = \"DBS\".\"DB_ID\" "
       + "     and \"DBS\".\"NAME\" = ? "
       + join(filter.joins, ' ')
-      + (filter.filter == null ? "" : (" where " + filter.filter));
+      + (filter.filter == null || filter.filter.trim().isEmpty() ? "" : (" where " + filter.filter));
 
     Object[] params = new Object[filter.params.size() + 2];
     params[0] = tblName;
