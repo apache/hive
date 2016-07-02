@@ -18,6 +18,36 @@ fail() {
   exit 1
 }
 
+alias echoerr='>&2 echo'
+
+# Parses the patch filename, and returns the branch name.
+# If empty or branch is not part of the filename, it returns a default branch
+# Note: DEFAULT_BRANCH must exists
+get_branch_name() {
+  local PATCH_NAME="$1"
+  local branch="$2"        # $2 is a default branch
+
+  if [[ -n $PATCH_NAME ]]; then
+    # Test PATCH_NAME:
+    # HIVE-123.patch HIVE-123.1.patch HIVE-123-tez.patch HIVE-123.1-tez.patch
+    # HIVE-XXXX.patch, HIVE-XXXX.XX.patch  HIVE-XXXX.XX-branch.patch HIVE-XXXX-branch.patch
+    if [[ $PATCH_NAME =~ ^HIVE-[0-9]+(\.[0-9]+)?(-[A-Za-z0-9.-]+)?\.(patch|patch.\txt)$ ]]; then
+      if [[ -n "${BASH_REMATCH[2]}" ]]; then
+        branch=${BASH_REMATCH[2]#*-}
+      fi
+    elif [[ $PATCH_NAME =~ ^(HIVE-[0-9]+\.)?D[0-9]+(\.[0-9]+)?\.(patch|patch.\txt)$ ]]; then
+      # It will assume the default branch
+      continue
+    else
+      echoerr "Patch '$PATCH_NAME' does not appear to be a patch"
+      return 1
+    fi
+  fi
+
+  echo $branch
+  return 0
+}
+
 # Parses the JIRA/patch to find relavent information.
 # Exports two variables of import:
 # * BUILD_PROFILE - the profile which the ptest server understands
@@ -59,25 +89,12 @@ process_jira() {
   fi
   # validate the patch name, parse branch if needed
   shopt -s nocasematch
+
+  # Get branch name
   PATCH_NAME=$(basename $PATCH_URL)
-  # Test examples:
-  # HIVE-123.patch HIVE-123.1.patch HIVE-123.D123.patch HIVE-123.D123.1.patch HIVE-123-tez.patch HIVE-123.1-tez.patch
-  # HIVE-XXXX.patch, HIVE-XXXX.XX.patch  HIVE-XXXX.XX-branch.patch HIVE-XXXX-branch.patch
-  if [[ $PATCH_NAME =~ ^HIVE-[0-9]+(\.[0-9]+)?(-[a-z0-9-]+)?\.(patch|patch.\txt)$ ]]
-  then
-    if [[ -n "${BASH_REMATCH[2]}" ]]
-    then
-      BRANCH=${BASH_REMATCH[2]#*-}
-    else
-      echo "Assuming branch $BRANCH"
-    fi
-  # HIVE-XXXX.DXXXX.patch or HIVE-XXXX.DXXXX.XX.patch
-  elif [[ $PATCH_NAME =~ ^(HIVE-[0-9]+\.)?D[0-9]+(\.[0-9]+)?\.(patch|patch.\txt)$ ]]
-  then
-    echo "Assuming branch $BRANCH"
-  else
-    fail "Patch $PATCH_NAME does not appear to be a patch"
-  fi
+  BRANCH=$(get_branch_name $PATCH_NAME $BRANCH)
+  echo "Assuming branch $BRANCH"
+
   shopt -u nocasematch
   # append mr2 if needed
   if [[ $BRANCH =~ (mr1|mr2)$ ]]

@@ -52,6 +52,10 @@ case "$BUILD_PROFILE" in
    test -n "$JAVA8_URL" || fail "JAVA8_URL must be specified"
    url="$JAVA8_URL&ISSUE_NUM=$ISSUE_NUM"
   ;;
+  branch-2.1-mr2)
+   test -n "$BRANCH21_URL" || fail "BRANCH21_URL must be specified"
+   url="$BRANCH21_URL&ISSUE_NUM=$ISSUE_NUM"
+  ;;
   *)
   echo "Unknown profile '$BUILD_PROFILE'"
   exit 1
