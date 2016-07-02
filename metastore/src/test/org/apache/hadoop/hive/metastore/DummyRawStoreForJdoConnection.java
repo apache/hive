@@ -349,6 +349,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public int getNumPartitionsByExpr(String dbName, String tblName, byte[] expr)
+      throws MetaException, NoSuchObjectException {
+    return -1;
+  }
+
+  @Override
   public Table markPartitionForEvent(String dbName, String tblName, Map<String, String> partVals,
       PartitionEventType evtType) throws MetaException, UnknownTableException,
       InvalidPartitionException, UnknownPartitionException {

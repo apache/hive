@@ -185,6 +185,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static HiveDelegationTokenManager delegationTokenManager;
   private static boolean useSasl;
 
+  public static final String NO_FILTER_STRING = "";
+  public static final int UNLIMITED_MAX_PARTITIONS = -1;
+
   private static final class ChainedTTransportFactory extends TTransportFactory {
     private final TTransportFactory parentTransFactory;
     private final TTransportFactory childTransFactory;
@@ -3129,6 +3132,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<Partition> ret = null;
       Exception ex = null;
       try {
+        checkLimitNumberOfPartitionsByFilter(db_name, tbl_name, NO_FILTER_STRING, max_parts);
         ret = getMS().getPartitions(db_name, tbl_name, max_parts);
       } catch (Exception e) {
         ex = e;
@@ -3156,6 +3160,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<Partition> ret = null;
       Exception ex = null;
       try {
+        checkLimitNumberOfPartitionsByFilter(dbName, tblName, NO_FILTER_STRING, maxParts);
         ret = getMS().getPartitionsWithAuth(dbName, tblName, maxParts,
             userName, groupNames);
       } catch (InvalidObjectException e) {
@@ -3169,6 +3174,35 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       return ret;
 
+    }
+
+    private void checkLimitNumberOfPartitionsByFilter(String dbName, String tblName, String filterString, int maxParts) throws TException {
+      if (isPartitionLimitEnabled()) {
+        checkLimitNumberOfPartitions(tblName, get_num_partitions_by_filter(dbName, tblName, filterString), maxParts);
+      }
+    }
+
+    private void checkLimitNumberOfPartitionsByExpr(String dbName, String tblName, byte[] filterExpr, int maxParts) throws TException {
+      if (isPartitionLimitEnabled()) {
+        checkLimitNumberOfPartitions(tblName, get_num_partitions_by_expr(dbName, tblName, filterExpr), maxParts);
+      }
+    }
+
+    private boolean isPartitionLimitEnabled() {
+      int partitionLimit = HiveConf.getIntVar(hiveConf, HiveConf.ConfVars.METASTORE_LIMIT_PARTITION_REQUEST);
+      return partitionLimit > -1;
+    }
+
+    private void checkLimitNumberOfPartitions(String tblName, int numPartitions, int maxToFetch) throws MetaException {
+      if (isPartitionLimitEnabled()) {
+        int partitionLimit = HiveConf.getIntVar(hiveConf, HiveConf.ConfVars.METASTORE_LIMIT_PARTITION_REQUEST);
+        int partitionRequest = (maxToFetch < 0) ? numPartitions : maxToFetch;
+        if (partitionRequest > partitionLimit) {
+          String configName = ConfVars.METASTORE_LIMIT_PARTITION_REQUEST.varname;
+          throw new MetaException(String.format("Number of partitions scanned (=%d) on table '%s' exceeds limit" +
+              " (=%d). This is controlled on the metastore server by %s.", partitionRequest, tblName, partitionLimit, configName));
+        }
+      }
     }
 
     @Override
@@ -4659,6 +4693,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<Partition> ret = null;
       Exception ex = null;
       try {
+        checkLimitNumberOfPartitionsByFilter(dbName, tblName, filter, maxParts);
         ret = getMS().getPartitionsByFilter(dbName, tblName, filter, maxParts);
       } catch (Exception e) {
         ex = e;
@@ -4709,6 +4744,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       PartitionsByExprResult ret = null;
       Exception ex = null;
       try {
+        checkLimitNumberOfPartitionsByExpr(dbName, tblName, req.getExpr(), UNLIMITED_MAX_PARTITIONS);
         List<Partition> partitions = new LinkedList<Partition>();
         boolean hasUnknownPartitions = getMS().getPartitionsByExpr(dbName, tblName,
             req.getExpr(), req.getDefaultPartitionName(), req.getMaxParts(), partitions);
@@ -4736,10 +4772,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    @Override
     public int get_num_partitions_by_filter(final String dbName,
                                             final String tblName, final String filter)
-            throws MetaException, NoSuchObjectException, TException {
+            throws TException {
       startTableFunction("get_num_partitions_by_filter", dbName, tblName);
 
       int ret = -1;
@@ -4751,6 +4786,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         rethrowException(e);
       } finally {
         endFunction("get_num_partitions_by_filter", ret != -1, ex, tblName);
+      }
+      return ret;
+    }
+
+    public int get_num_partitions_by_expr(final String dbName,
+                                            final String tblName, final byte[] expr)
+        throws TException {
+      startTableFunction("get_num_partitions_by_expr", dbName, tblName);
+
+      int ret = -1;
+      Exception ex = null;
+      try {
+        ret = getMS().getNumPartitionsByExpr(dbName, tblName, expr);
+      } catch (Exception e) {
+        ex = e;
+        rethrowException(e);
+      } finally {
+        endFunction("get_num_partitions_by_expr", ret != -1, ex, tblName);
       }
       return ret;
     }

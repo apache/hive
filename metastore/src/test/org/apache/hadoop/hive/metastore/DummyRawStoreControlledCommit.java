@@ -318,6 +318,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public int getNumPartitionsByExpr(String dbName, String tblName,
+                                      byte[] expr) throws MetaException, NoSuchObjectException {
+    return objectStore.getNumPartitionsByExpr(dbName, tblName, expr);
+  }
+
+  @Override
   public List<Partition> getPartitionsByNames(String dbName, String tblName,
       List<String> partNames) throws MetaException, NoSuchObjectException {
     return objectStore.getPartitionsByNames(dbName, tblName, partNames);

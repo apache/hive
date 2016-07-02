@@ -2514,7 +2514,23 @@ public class ObjectStore implements RawStore, Configurable {
 
   private Integer getNumPartitionsViaOrmFilter(Table table, ExpressionTree tree, boolean isValidatedFilter)
     throws MetaException {
-    return getPartitionsViaOrmFilter(table, tree, (short) -1, isValidatedFilter).size();
+    Map<String, Object> params = new HashMap<String, Object>();
+    String jdoFilter = makeQueryFilterString(table.getDbName(), table, tree, params, isValidatedFilter);
+    if (jdoFilter == null) {
+      assert !isValidatedFilter;
+      return null;
+    }
+
+    Query query = pm.newQuery(
+        "select count(partitionName) from org.apache.hadoop.hive.metastore.model.MPartition"
+    );
+    query.setFilter(jdoFilter);
+    String parameterDeclaration = makeParameterDeclarationStringObj(params);
+    query.declareParameters(parameterDeclaration);
+    Long result = (Long) query.executeWithMap(params);
+    query.closeAll();
+
+    return result.intValue();
   }
 
   /**
@@ -2852,35 +2868,77 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public int getNumPartitionsByFilter(String dbName, String tblName,
                                       String filter) throws MetaException, NoSuchObjectException {
-    return getNumPartitionsByFilterInternal(dbName, tblName, filter,
-      true, true);
-  }
+    final ExpressionTree exprTree = (filter != null && !filter.isEmpty())
+        ? PartFilterExprUtil.getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
 
-  protected int getNumPartitionsByFilterInternal(String dbName, String tblName,
-                                                 String filter, boolean allowSql, boolean allowJdo)
-    throws MetaException, NoSuchObjectException {
-    final ExpressionTree tree = (filter != null && !filter.isEmpty())
-      ? PartFilterExprUtil.getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
-    return new GetHelper<Integer>(dbName, tblName, allowSql, allowJdo) {
+    return new GetHelper<Integer>(dbName, tblName, true, true) {
       private SqlFilterForPushdown filter = new SqlFilterForPushdown();
+
       @Override
       protected String describeResult() {
         return "Partition count";
       }
 
       protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
-        return directSql.generateSqlFilterForPushdown(ctx.getTable(), tree, filter);
+        return directSql.generateSqlFilterForPushdown(ctx.getTable(), exprTree, filter);
       };
 
       @Override
       protected Integer getSqlResult(GetHelper<Integer> ctx) throws MetaException {
         return directSql.getNumPartitionsViaSqlFilter(filter);
       }
-
       @Override
       protected Integer getJdoResult(
-        GetHelper<Integer> ctx) throws MetaException, NoSuchObjectException {
-        return getNumPartitionsViaOrmFilter(ctx.getTable(), tree, true);
+          GetHelper<Integer> ctx) throws MetaException, NoSuchObjectException {
+        return getNumPartitionsViaOrmFilter(ctx.getTable(), exprTree, true);
+      }
+    }.run(true);
+  }
+
+  @Override
+  public int getNumPartitionsByExpr(String dbName, String tblName,
+                                             byte[] expr) throws MetaException, NoSuchObjectException {
+    final ExpressionTree exprTree = PartFilterExprUtil.makeExpressionTree(expressionProxy, expr);
+    final byte[] tempExpr = expr; // Need to be final to pass it to an inner class
+
+
+    return new GetHelper<Integer>(dbName, tblName, true, true) {
+      private SqlFilterForPushdown filter = new SqlFilterForPushdown();
+
+      @Override
+      protected String describeResult() {
+        return "Partition count";
+      }
+
+      protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
+        return directSql.generateSqlFilterForPushdown(ctx.getTable(), exprTree, filter);
+      };
+
+      @Override
+      protected Integer getSqlResult(GetHelper<Integer> ctx) throws MetaException {
+        return directSql.getNumPartitionsViaSqlFilter(filter);
+      }
+      @Override
+      protected Integer getJdoResult(
+          GetHelper<Integer> ctx) throws MetaException, NoSuchObjectException {
+        Integer numPartitions = null;
+
+        if (exprTree != null) {
+          try {
+            numPartitions = getNumPartitionsViaOrmFilter(ctx.getTable(), exprTree, true);
+          } catch (MetaException e) {
+            numPartitions = null;
+          }
+        }
+
+        // if numPartitions could not be obtained from ORM filters, then get number partitions names, and count them
+        if (numPartitions == null) {
+          List<String> filteredPartNames = new ArrayList<String>();
+          getPartitionNamesPrunedByExprNoTxn(ctx.getTable(), tempExpr, "", (short) -1, filteredPartNames);
+          numPartitions = filteredPartNames.size();
+        }
+
+        return numPartitions;
       }
     }.run(true);
   }
