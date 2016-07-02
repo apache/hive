@@ -424,6 +424,8 @@ public final class OpProcFactory {
         removeAllCandidates(owi);
       }
       ExprWalkerInfo pushDownPreds = owi.getPrunedPreds(tsOp);
+      // nonFinalCandidates predicates should be empty
+      assert pushDownPreds == null || !pushDownPreds.hasNonFinalCandidates();
       return createFilter(tsOp, pushDownPreds, owi);
     }
 

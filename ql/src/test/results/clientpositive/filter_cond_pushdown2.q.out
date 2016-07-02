@@ -1,0 +1,344 @@
+PREHOOK: query: drop table if exists users_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists users_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE users_table(
+  `field_1` int,
+  `field_2` string,
+  `field_3` boolean,
+  `field_4` boolean,
+  `field_5` boolean,
+  `field_6` boolean,
+  `field_7` boolean)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@users_table
+POSTHOOK: query: CREATE TABLE users_table(
+  `field_1` int,
+  `field_2` string,
+  `field_3` boolean,
+  `field_4` boolean,
+  `field_5` boolean,
+  `field_6` boolean,
+  `field_7` boolean)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@users_table
+PREHOOK: query: load data local inpath '../../data/files/small_csv.csv' into table users_table
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@users_table
+POSTHOOK: query: load data local inpath '../../data/files/small_csv.csv' into table users_table
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@users_table
+PREHOOK: query: explain
+with all_hits as (
+select * from users_table
+),
+all_exposed_users as (
+select distinct
+field_1,
+field_2
+from all_hits
+where field_3
+),
+interacted as (
+select distinct
+field_1,
+field_2
+from all_hits
+where field_4
+)
+select
+all_exposed_users.field_1,
+count(*) as nr_exposed,
+sum(if(interacted.field_2 is not null, 1, 0)) as nr_interacted
+from all_exposed_users
+left outer join interacted
+on all_exposed_users.field_1 = interacted.field_1
+and all_exposed_users.field_2 = interacted.field_2
+group by all_exposed_users.field_1
+order by all_exposed_users.field_1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+with all_hits as (
+select * from users_table
+),
+all_exposed_users as (
+select distinct
+field_1,
+field_2
+from all_hits
+where field_3
+),
+interacted as (
+select distinct
+field_1,
+field_2
+from all_hits
+where field_4
+)
+select
+all_exposed_users.field_1,
+count(*) as nr_exposed,
+sum(if(interacted.field_2 is not null, 1, 0)) as nr_interacted
+from all_exposed_users
+left outer join interacted
+on all_exposed_users.field_1 = interacted.field_1
+and all_exposed_users.field_2 = interacted.field_2
+group by all_exposed_users.field_1
+order by all_exposed_users.field_1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-5
+  Stage-3 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-3
+  Stage-5 is a root stage
+  Stage-0 depends on stages: Stage-4
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: users_table
+            Statistics: Num rows: 21 Data size: 2280 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: field_3 (type: boolean)
+              Statistics: Num rows: 10 Data size: 1085 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: field_1 (type: int), field_2 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 10 Data size: 1085 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  keys: _col0 (type: int), _col1 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 10 Data size: 1085 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int), _col1 (type: string)
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                    Statistics: Num rows: 10 Data size: 1085 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: int), KEY._col1 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 5 Data size: 542 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: int), _col1 (type: string)
+              sort order: ++
+              Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+              Statistics: Num rows: 5 Data size: 542 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: int), _col1 (type: string)
+              sort order: ++
+              Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+              Statistics: Num rows: 5 Data size: 542 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Left Outer Join0 to 1
+          keys:
+            0 _col0 (type: int), _col1 (type: string)
+            1 _col0 (type: int), _col1 (type: string)
+          outputColumnNames: _col0, _col3
+          Statistics: Num rows: 5 Data size: 596 Basic stats: COMPLETE Column stats: NONE
+          Group By Operator
+            aggregations: count(), sum(if(_col3 is not null, 1, 0))
+            keys: _col0 (type: int)
+            mode: hash
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 5 Data size: 596 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: int)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: int)
+              Statistics: Num rows: 5 Data size: 596 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: bigint), _col2 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0), sum(VALUE._col1)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 2 Data size: 238 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-4
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: int)
+              sort order: +
+              Statistics: Num rows: 2 Data size: 238 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: bigint), _col2 (type: bigint)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: bigint), VALUE._col1 (type: bigint)
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 2 Data size: 238 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 2 Data size: 238 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: users_table
+            Statistics: Num rows: 21 Data size: 2280 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: field_4 (type: boolean)
+              Statistics: Num rows: 10 Data size: 1085 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: field_1 (type: int), field_2 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 10 Data size: 1085 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  keys: _col0 (type: int), _col1 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 10 Data size: 1085 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int), _col1 (type: string)
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                    Statistics: Num rows: 10 Data size: 1085 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: int), KEY._col1 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 5 Data size: 542 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: with all_hits as (
+select * from users_table
+),
+all_exposed_users as (
+select distinct
+field_1,
+field_2
+from all_hits
+where field_3
+),
+interacted as (
+select distinct
+field_1,
+field_2
+from all_hits
+where field_4
+)
+select
+all_exposed_users.field_1,
+count(*) as nr_exposed,
+sum(if(interacted.field_2 is not null, 1, 0)) as nr_interacted
+from all_exposed_users
+left outer join interacted
+on all_exposed_users.field_1 = interacted.field_1
+and all_exposed_users.field_2 = interacted.field_2
+group by all_exposed_users.field_1
+order by all_exposed_users.field_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@users_table
+#### A masked pattern was here ####
+POSTHOOK: query: with all_hits as (
+select * from users_table
+),
+all_exposed_users as (
+select distinct
+field_1,
+field_2
+from all_hits
+where field_3
+),
+interacted as (
+select distinct
+field_1,
+field_2
+from all_hits
+where field_4
+)
+select
+all_exposed_users.field_1,
+count(*) as nr_exposed,
+sum(if(interacted.field_2 is not null, 1, 0)) as nr_interacted
+from all_exposed_users
+left outer join interacted
+on all_exposed_users.field_1 = interacted.field_1
+and all_exposed_users.field_2 = interacted.field_2
+group by all_exposed_users.field_1
+order by all_exposed_users.field_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@users_table
+#### A masked pattern was here ####
+31651	1	1
+216051	1	0
+239413	1	1
+252028	1	0
+269414	1	0
+300632	1	1
+301813	1	0
+409611	1	1
+438598	1	0
+453386	1	0
+474061	1	1
+537646	1	0
+575004	1	1
+676296	1	1
+715496	1	1
+750354	1	0
+804209	1	1
+807477	1	0
