@@ -7650,34 +7650,36 @@ public class ObjectStore implements RawStore, Configurable {
     boolean strictValidation =
       HiveConf.getBoolVar(getConf(), HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION);
     // read the schema version stored in metastore db
-    String schemaVer = getMetaStoreSchemaVersion();
-    if (schemaVer == null) {
+    String dbSchemaVer = getMetaStoreSchemaVersion();
+    // version of schema for this version of hive
+    String hiveSchemaVer = MetaStoreSchemaInfo.getHiveSchemaVersion();
+
+    if (dbSchemaVer == null) {
       if (strictValidation) {
         throw new MetaException("Version information not found in metastore. ");
       } else {
         LOG.warn("Version information not found in metastore. "
             + HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString() +
             " is not enabled so recording the schema version " +
-            MetaStoreSchemaInfo.getHiveSchemaVersion());
-        setMetaStoreSchemaVersion(MetaStoreSchemaInfo.getHiveSchemaVersion(),
+            hiveSchemaVer);
+        setMetaStoreSchemaVersion(hiveSchemaVer,
           "Set by MetaStore " + USER + "@" + HOSTNAME);
       }
     } else {
       // metastore schema version is different than Hive distribution needs
-      if (schemaVer.equalsIgnoreCase(MetaStoreSchemaInfo.getHiveSchemaVersion())) {
-        LOG.debug("Found expected HMS version of " + schemaVer);
+      if (MetaStoreSchemaInfo.isVersionCompatible(hiveSchemaVer, dbSchemaVer)) {
+        LOG.debug("Found expected HMS version of " + dbSchemaVer);
       } else {
         if (strictValidation) {
-          throw new MetaException("Hive Schema version "
-              + MetaStoreSchemaInfo.getHiveSchemaVersion() +
-              " does not match metastore's schema version " + schemaVer +
+          throw new MetaException("Hive Schema version " + hiveSchemaVer +
+              " does not match metastore's schema version " + dbSchemaVer +
               " Metastore is not upgraded or corrupt");
         } else {
-          LOG.error("Version information found in metastore differs " + schemaVer +
-              " from expected schema version " + MetaStoreSchemaInfo.getHiveSchemaVersion() +
+          LOG.error("Version information found in metastore differs " + dbSchemaVer +
+              " from expected schema version " + hiveSchemaVer +
               ". Schema verififcation is disabled " +
               HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION + " so setting version.");
-          setMetaStoreSchemaVersion(MetaStoreSchemaInfo.getHiveSchemaVersion(),
+          setMetaStoreSchemaVersion(hiveSchemaVer,
             "Set by MetaStore " + USER + "@" + HOSTNAME);
         }
       }
