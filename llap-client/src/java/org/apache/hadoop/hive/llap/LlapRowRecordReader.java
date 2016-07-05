@@ -165,6 +165,7 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
     String types = typesBuffer.toString();
     props.put(serdeConstants.LIST_COLUMNS, columns);
     props.put(serdeConstants.LIST_COLUMN_TYPES, types);
+    props.put(serdeConstants.ESCAPE_CHAR, "\\");
     SerDe serde = new LazySimpleSerDe();
     serde.initialize(conf, props);
 
