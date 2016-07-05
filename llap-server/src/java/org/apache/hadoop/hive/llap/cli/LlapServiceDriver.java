@@ -195,7 +195,8 @@ public class LlapServiceDriver {
       // if needed, use --hiveconf llap.daemon.service.hosts=@llap0 to dynamically switch between
       // instances
       conf.set(ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, "@" + options.getName());
-      propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, "@" + options.getName());
+      propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname,
+          "@" + options.getName());
     }
 
     if (options.getSize() != -1) {
@@ -205,7 +206,8 @@ public class LlapServiceDriver {
           Preconditions.checkArgument(options.getCache() < options.getSize(),
               "Cache has to be smaller than the container sizing");
         } else if (options.getCache() < options.getSize()) {
-          LOG.warn("Note that this might need YARN physical memory monitoring to be turned off (yarn.nodemanager.pmem-check-enabled=false)");
+          LOG.warn("Note that this might need YARN physical memory monitoring to be turned off "
+              + "(yarn.nodemanager.pmem-check-enabled=false)");
         }
       }
       if (options.getXmx() != -1) {
@@ -328,6 +330,12 @@ public class LlapServiceDriver {
 
     for (String className : DEFAULT_AUX_CLASSES) {
       localizeJarForClass(lfs, libDir, className, false);
+    }
+    Collection<String> codecs = conf.getStringCollection("io.compression.codecs");
+    if (codecs != null) {
+      for (String codecClassName : codecs) {
+        localizeJarForClass(lfs, libDir, codecClassName, false);
+      }
     }
 
     if (options.getIsHBase()) {
@@ -540,10 +548,9 @@ public class LlapServiceDriver {
         throw (t instanceof IOException) ? (IOException)t : new IOException(t);
       }
       hasException = true;
-      String err =
-          "Cannot find a jar for [" + className + "] due to an exception (" + t.getMessage()
-              + "); not packaging the jar";
-      LOG.error(err, t);
+      String err = "Cannot find a jar for [" + className + "] due to an exception ("
+          + t.getMessage() + "); not packaging the jar";
+      LOG.error(err);
       System.err.println(err);
     }
     if (jarPath != null) {
