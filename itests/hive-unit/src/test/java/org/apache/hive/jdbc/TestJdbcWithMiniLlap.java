@@ -19,6 +19,7 @@
 package org.apache.hive.jdbc;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -158,9 +159,66 @@ public class TestJdbcWithMiniLlap {
     stmt.close();
   }
 
-  private int getLlapIFRowCount(String query, int numSplits) throws Exception {
+  @Test(timeout = 60000)
+  public void testLlapInputFormatEndToEnd() throws Exception {
+    createTestTable("testtab1");
 
-    // Setup LlapInputFormat
+    int rowCount;
+
+    RowCollector rowCollector = new RowCollector();
+    String query = "select * from testtab1 where under_col = 0";
+    rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(3, rowCount);
+    assertArrayEquals(new String[] {"0", "val_0"}, rowCollector.rows.get(0));
+    assertArrayEquals(new String[] {"0", "val_0"}, rowCollector.rows.get(1));
+    assertArrayEquals(new String[] {"0", "val_0"}, rowCollector.rows.get(2));
+
+    // Try empty rows query
+    rowCollector.rows.clear();
+    query = "select * from testtab1 where true = false";
+    rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(0, rowCount);
+  }
+
+  @Test(timeout = 60000)
+  public void testNonAsciiStrings() throws Exception {
+    createTestTable("testtab1");
+
+    RowCollector rowCollector = new RowCollector();
+    String nonAscii = "À côté du garçon";
+    String query = "select value, '" + nonAscii + "' from testtab1 where under_col=0";
+    int rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(3, rowCount);
+
+    assertArrayEquals(new String[] {"val_0", nonAscii}, rowCollector.rows.get(0));
+    assertArrayEquals(new String[] {"val_0", nonAscii}, rowCollector.rows.get(1));
+    assertArrayEquals(new String[] {"val_0", nonAscii}, rowCollector.rows.get(2));
+  }
+
+  private interface RowProcessor {
+    void process(Row row);
+  }
+
+  private static class RowCollector implements RowProcessor {
+    ArrayList<String[]> rows = new ArrayList<String[]>();
+    Schema schema = null;
+    int numColumns = 0;
+
+    public void process(Row row) {
+      if (schema == null) {
+        schema = row.getSchema();
+        numColumns = schema.getColumns().size();
+      }
+
+      String[] arr = new String[numColumns];
+      for (int idx = 0; idx < numColumns; ++idx) {
+        arr[idx] = row.getValue(idx).toString();
+      }
+      rows.add(arr);
+    }
+  }
+
+  private int processQuery(String query, int numSplits, RowProcessor rowProcessor) throws Exception {
     String url = miniHS2.getJdbcURL();
     String user = System.getProperty("user.name");
     String pwd = user;
@@ -185,47 +243,13 @@ public class TestJdbcWithMiniLlap {
 
       int numColumns = 2;
       RecordReader<NullWritable, Row> reader = inputFormat.getRecordReader(split, job, null);
-      if (reader instanceof LlapRowRecordReader && first) {
-        Schema schema = ((LlapRowRecordReader) reader).getSchema();
-        System.out.println(""+schema);
-        assertEquals(numColumns, schema.getColumns().size());
-      }
-
-      if (first) {
-        System.out.println("Results: ");
-        System.out.println("");
-        first = false;
-      }
-
       Row row = reader.createValue();
       while (reader.next(NullWritable.get(), row)) {
-        for (int idx = 0; idx < numColumns; idx++) {
-          if (idx > 0) {
-            System.out.print(", ");
-          }
-          System.out.print(row.getValue(idx));
-        }
-        System.out.println("");
+        rowProcessor.process(row);
         ++rowCount;
       }
     }
 
     return rowCount;
-  }
-
-  @Test(timeout = 60000)
-  public void testLlapInputFormatEndToEnd() throws Exception {
-    createTestTable("testtab1");
-
-    int rowCount;
-
-    String query = "select * from testtab1 where under_col = 0";
-    rowCount = getLlapIFRowCount(query, 1);
-    assertEquals(3, rowCount);
-
-    // Try empty rows query
-    query = "select * from testtab1 where true = false";
-    rowCount = getLlapIFRowCount(query, 1);
-    assertEquals(0, rowCount);
   }
 }
