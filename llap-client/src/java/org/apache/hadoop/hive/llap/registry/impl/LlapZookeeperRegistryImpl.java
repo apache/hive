@@ -90,7 +90,8 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
   private static final String IPC_SHUFFLE = "shuffle";
   private static final String IPC_LLAP = "llap";
   private static final String IPC_OUTPUTFORMAT = "llapoutputformat";
-  private final static String ROOT_NAMESPACE = "llap";
+  private final static String SASL_NAMESPACE = "llap-sasl";
+  private final static String UNSECURE_NAMESPACE = "llap-unsecure";
   private final static String USER_SCOPE_PATH_PREFIX = "user-";
   private static final String DISABLE_MESSAGE =
       "Set " + ConfVars.LLAP_VALIDATE_ACLS.varname + " to false to disable ACL validation";
@@ -126,29 +127,6 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     hostname = localhost;
   }
 
-  /**
-   * ACLProvider for providing appropriate ACLs to CuratorFrameworkFactory
-   */
-  private final ACLProvider zooKeeperAclProvider = new ACLProvider() {
-
-    @Override
-    public List<ACL> getDefaultAcl() {
-      // We always return something from getAclForPath so this should not happen.
-      LOG.warn("getDefaultAcl was called");
-      return Lists.newArrayList(ZooDefs.Ids.OPEN_ACL_UNSAFE);
-    }
-
-    @Override
-    public List<ACL> getAclForPath(String path) {
-      if (!UserGroupInformation.isSecurityEnabled() || path == null
-          || !path.contains(userPathPrefix)) {
-        // No security or the path is below the user path - full access.
-        return Lists.newArrayList(ZooDefs.Ids.OPEN_ACL_UNSAFE);
-      }
-      return createSecureAcls();
-    }
-  };
-
   public LlapZookeeperRegistryImpl(String instanceName, Configuration conf) {
     this.conf = new Configuration(conf);
     this.conf.addResource(YarnConfiguration.YARN_SITE_CONFIGURATION_FILE);
@@ -161,17 +139,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
             TimeUnit.MILLISECONDS);
     int maxRetries = HiveConf.getIntVar(conf, ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES);
 
-    // Create a CuratorFramework instance to be used as the ZooKeeper client
-    // Use the zooKeeperAclProvider to create appropriate ACLs
-    this.zooKeeperClient = CuratorFrameworkFactory.builder()
-        .connectString(zkEnsemble)
-        .sessionTimeoutMs(sessionTimeout)
-        .aclProvider(zooKeeperAclProvider)
-        .namespace(ROOT_NAMESPACE)
-        .retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries))
-        .build();
-
-    // sample path: /llap/hiveuser/hostname/workers/worker-0000000
+    // sample path: /llap-sasl/hiveuser/hostname/workers/worker-0000000
     // worker-0000000 is the sequence number which will be retained until session timeout. If a
     // worker does not respond due to communication interruptions it will retain the same sequence
     // number when it returns back. If session timeout expires, the node will be deleted and new
@@ -181,6 +149,40 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     this.instancesCache = null;
     this.instances = null;
     this.stateChangeListeners = new HashSet<>();
+
+    final boolean isSecure = UserGroupInformation.isSecurityEnabled();
+    ACLProvider zooKeeperAclProvider = new ACLProvider() {
+      @Override
+      public List<ACL> getDefaultAcl() {
+        // We always return something from getAclForPath so this should not happen.
+        LOG.warn("getDefaultAcl was called");
+        return Lists.newArrayList(ZooDefs.Ids.OPEN_ACL_UNSAFE);
+      }
+
+      @Override
+      public List<ACL> getAclForPath(String path) {
+        if (!isSecure || path == null || !path.contains(userPathPrefix)) {
+          // No security or the path is below the user path - full access.
+          return Lists.newArrayList(ZooDefs.Ids.OPEN_ACL_UNSAFE);
+        }
+        return createSecureAcls();
+      }
+    };
+    String rootNs = HiveConf.getVar(conf, ConfVars.LLAP_ZK_REGISTRY_NAMESPACE);
+    if (rootNs == null) {
+      rootNs = isSecure ? SASL_NAMESPACE : UNSECURE_NAMESPACE; // The normal path.
+    }
+
+    // Create a CuratorFramework instance to be used as the ZooKeeper client
+    // Use the zooKeeperAclProvider to create appropriate ACLs
+    this.zooKeeperClient = CuratorFrameworkFactory.builder()
+        .connectString(zkEnsemble)
+        .sessionTimeoutMs(sessionTimeout)
+        .aclProvider(zooKeeperAclProvider)
+        .namespace(rootNs)
+        .retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries))
+        .build();
+
     LOG.info("Llap Zookeeper Registry is enabled with registryid: " + instanceName);
   }
 
