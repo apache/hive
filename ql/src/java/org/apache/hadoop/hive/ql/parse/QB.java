@@ -437,4 +437,17 @@ public class QB {
     return aliasInsideView;
   }
 
+  /**
+   * returns true, if the query block contains any query, or subquery without a source table
+   * Like select current_user(), select current_database()
+   * @return true, if the query block contains any query without a source table
+   */
+  public boolean containsQueryWithoutSourceTable() {
+    for (QBExpr qbexpr : aliasToSubq.values()) {
+      if (qbexpr.containsQueryWithoutSourceTable()) {
+        return true;
+      }
+    }
+    return aliasToTabs.size()==0 && aliasToSubq.size()==0;
+  }
 }

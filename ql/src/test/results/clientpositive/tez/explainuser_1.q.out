@@ -5358,7 +5358,7 @@ PREHOOK: query: explain select explode(array('a', 'b'))
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select explode(array('a', 'b'))
 POSTHOOK: type: QUERY
-Plan not optimized by CBO due to missing feature [Others].
+Plan not optimized by CBO.
 
 Stage-0
   Fetch Operator

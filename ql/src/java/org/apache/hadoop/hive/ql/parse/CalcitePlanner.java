@@ -387,8 +387,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
     boolean needToLogMessage = STATIC_LOG.isInfoEnabled();
     boolean isSupportedRoot = root == HiveParser.TOK_QUERY || root == HiveParser.TOK_EXPLAIN
         || qb.isCTAS();
-    boolean isSupportedType = qb.getIsQuery() || qb.isCTAS()
-        || cboCtx.type == PreCboCtx.Type.INSERT;
+    // Queries without a source table currently are not supported by CBO
+    boolean isSupportedType = (qb.getIsQuery() && !qb.containsQueryWithoutSourceTable())
+        || qb.isCTAS() || cboCtx.type == PreCboCtx.Type.INSERT;
     boolean noBadTokens = HiveCalciteUtil.validateASTForUnsupportedTokens(ast);
     boolean result = isSupportedRoot && isSupportedType && getCreateViewDesc() == null
         && noBadTokens;
@@ -400,7 +401,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           msg += "doesn't have QUERY or EXPLAIN as root and not a CTAS; ";
         }
         if (!isSupportedType) {
-          msg += "is not a query, CTAS, or insert; ";
+          msg += "is not a query with at least one source table "
+                  + " or there is a subquery without a source table, or CTAS, or insert; ";
         }
         if (getCreateViewDesc() != null) {
           msg += "has create view; ";

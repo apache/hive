@@ -120,4 +120,17 @@ public class QBExpr {
     }
     return qbexpr1.isSimpleSelectQuery() && qbexpr2.isSimpleSelectQuery();
   }
+
+  /**
+   * returns true, if the query block contains any query, or subquery without a source table
+   * Like select current_user(), select current_database()
+   * @return true, if the query block contains any query without a source table
+   */
+  public boolean containsQueryWithoutSourceTable() {
+    if (qb != null) {
+      return qb.containsQueryWithoutSourceTable();
+    } else {
+      return qbexpr1.containsQueryWithoutSourceTable() || qbexpr2.containsQueryWithoutSourceTable();
+    }
+  }
 }
