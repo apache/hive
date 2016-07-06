@@ -2786,6 +2786,9 @@ public class HiveConf extends Configuration {
     LLAP_ZK_REGISTRY_USER("hive.llap.zk.registry.user", "",
         "In the LLAP ZooKeeper-based registry, specifies the username in the Zookeeper path.\n" +
         "This should be the hive user or whichever user is running the LLAP daemon."),
+    LLAP_ZK_REGISTRY_NAMESPACE("hive.llap.zk.registry.namespace", null,
+        "In the LLAP ZooKeeper-based registry, overrides the ZK path namespace. Note that\n" +
+        "using this makes the path management (e.g. setting correct ACLs) your responsibility."),
     // Note: do not rename to ..service.acl; Hadoop generates .hosts setting name from this,
     // resulting in a collision with existing hive.llap.daemon.service.hosts and bizarre errors.
     // These are read by Hadoop IPC, so you should check the usage and naming conventions (e.g.
