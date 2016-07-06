@@ -193,9 +193,9 @@ public class RetryingHMSHandler implements InvocationHandler {
 
       if (retryCount >= retryLimit) {
         LOG.error("HMSHandler Fatal error: " + ExceptionUtils.getStackTrace(caughtException));
-        // Since returning exceptions with a nested "cause" can be a problem in
-        // Thrift, we are stuffing the stack trace into the message itself.
-        throw new MetaException(ExceptionUtils.getStackTrace(caughtException));
+        MetaException me = new MetaException(caughtException.getMessage());
+        me.initCause(caughtException);
+        throw me;
       }
 
       assert (retryInterval >= 0);
