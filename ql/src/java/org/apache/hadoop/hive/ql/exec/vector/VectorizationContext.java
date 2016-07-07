@@ -1126,10 +1126,8 @@ public class VectorizationContext {
     } catch (Exception ex) {
       throw new HiveException(ex);
     } finally {
-      if (childrenMode != VectorExpressionDescriptor.Mode.PROJECTION){
-        for (VectorExpression ve : children) {
-          ocm.freeOutputColumn(ve.getOutputColumn());
-        }
+      for (VectorExpression ve : children) {
+        ocm.freeOutputColumn(ve.getOutputColumn());
       }
     }
   }
