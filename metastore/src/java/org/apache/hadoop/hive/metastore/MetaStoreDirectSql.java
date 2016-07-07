@@ -838,11 +838,15 @@ class MetaStoreDirectSql {
 
     long start = doTrace ? System.nanoTime() : 0;
     Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    @SuppressWarnings("unchecked")
-    int sqlResult = extractSqlInt(query.executeWithArray(params));
+
+    List<Integer> result = executeWithArray(query, params, queryText);
+    if (result == null || result.size() == 0) {
+      throw new MetaException("Could not get number of partitions from Direct SQL.");
+    }
+
     long queryTime = doTrace ? System.nanoTime() : 0;
     timingTrace(doTrace, queryText, start, queryTime);
-    return sqlResult;
+    return extractSqlInt(result.get(0));
   }
 
 
