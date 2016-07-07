@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -66,6 +67,20 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
   static final Logger LOG = LoggerFactory.getLogger(GenericUDAFPercentileApprox.class.getName());
 
+  private static void verifyFractionType(ObjectInspector oi) throws UDFArgumentTypeException {
+    PrimitiveCategory pc = ((PrimitiveObjectInspector)oi).getPrimitiveCategory();
+    switch(pc) {
+      case FLOAT:
+      case DOUBLE:
+      case DECIMAL:
+        break;
+      default:
+        throw new UDFArgumentTypeException(1, "Only a floating point or decimal, or "
+          + "floating point or decimal array argument is accepted as parameter 2, but "
+          + pc + " was passed instead.");
+    }
+  }
+
   @Override
   public GenericUDAFEvaluator getEvaluator(GenericUDAFParameterInfo info) throws SemanticException {
     ObjectInspector[] parameters = info.getParameterObjectInspectors();
@@ -91,7 +106,6 @@ public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
     case TIMESTAMP:
     case DECIMAL:
       break;
-    case DATE:
     default:
       throw new UDFArgumentTypeException(0,
           "Only numeric type arguments are accepted but "
@@ -103,15 +117,7 @@ public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
     switch(parameters[1].getCategory()) {
     case PRIMITIVE:
       // Only a single double was passed as parameter 2, a single quantile is being requested
-      switch(((PrimitiveObjectInspector) parameters[1]).getPrimitiveCategory()) {
-      case FLOAT:
-      case DOUBLE:
-        break;
-      default:
-        throw new UDFArgumentTypeException(1,
-          "Only a float/double or float/double array argument is accepted as parameter 2, but "
-          + parameters[1].getTypeName() + " was passed instead.");
-      }
+      verifyFractionType(parameters[1]);
       break;
 
     case LIST:
@@ -119,28 +125,19 @@ public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
       if(((ListObjectInspector) parameters[1]).getListElementObjectInspector().getCategory() !=
          ObjectInspector.Category.PRIMITIVE) {
           throw new UDFArgumentTypeException(1,
-            "A float/double array argument may be passed as parameter 2, but "
+            "A floating point or decimal array argument may be passed as parameter 2, but "
             + parameters[1].getTypeName() + " was passed instead.");
       }
       // Now make sure it's an array of doubles or floats. We don't allow integer types here
       // because percentile (really, quantile) values should generally be strictly between 0 and 1.
-      switch(((PrimitiveObjectInspector)((ListObjectInspector) parameters[1]).getListElementObjectInspector()).
-             getPrimitiveCategory()) {
-      case FLOAT:
-      case DOUBLE:
-        break;
-      default:
-        throw new UDFArgumentTypeException(1,
-          "A float/double array argument may be passed as parameter 2, but "
-          + parameters[1].getTypeName() + " was passed instead.");
-      }
+      verifyFractionType(((ListObjectInspector) parameters[1]).getListElementObjectInspector());
       wantManyQuantiles = true;
       break;
 
     default:
       throw new UDFArgumentTypeException(1,
-        "Only a float/double or float/double array argument is accepted as parameter 2, but "
-        + parameters[1].getTypeName() + " was passed instead.");
+        "Only a floating point or decimal, or floating point or decimal array argument is accepted"
+          + " as parameter 2, but " + parameters[1].getTypeName() + " was passed instead.");
     }
     // Also make sure it is a constant.
     if (!ObjectInspectorUtils.isConstantObjectInspector(parameters[1])) {

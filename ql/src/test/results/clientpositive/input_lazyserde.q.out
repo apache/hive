@@ -231,11 +231,11 @@ POSTHOOK: query: CREATE TABLE destBin(a UNIONTYPE<int, double, array<string>, st
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destBin
-PREHOOK: query: INSERT OVERWRITE TABLE destBin SELECT create_union( CASE WHEN key < 100 THEN 0 WHEN key < 200 THEN 1 WHEN key < 300 THEN 2 WHEN key < 400 THEN 3 ELSE 0 END, key, 2.0, array("one","two"), struct(5,"five")) FROM srcbucket2
+PREHOOK: query: INSERT OVERWRITE TABLE destBin SELECT create_union( CASE WHEN key < 100 THEN 0 WHEN key < 200 THEN 1 WHEN key < 300 THEN 2 WHEN key < 400 THEN 3 ELSE 0 END, key, 2.0D, array("one","two"), struct(5,"five")) FROM srcbucket2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket2
 PREHOOK: Output: default@destbin
-POSTHOOK: query: INSERT OVERWRITE TABLE destBin SELECT create_union( CASE WHEN key < 100 THEN 0 WHEN key < 200 THEN 1 WHEN key < 300 THEN 2 WHEN key < 400 THEN 3 ELSE 0 END, key, 2.0, array("one","two"), struct(5,"five")) FROM srcbucket2
+POSTHOOK: query: INSERT OVERWRITE TABLE destBin SELECT create_union( CASE WHEN key < 100 THEN 0 WHEN key < 200 THEN 1 WHEN key < 300 THEN 2 WHEN key < 400 THEN 3 ELSE 0 END, key, 2.0D, array("one","two"), struct(5,"five")) FROM srcbucket2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket2
 POSTHOOK: Output: default@destbin

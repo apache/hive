@@ -139,7 +139,6 @@ public final class ConstantPropagateProcFactory {
 
   private static final Set<PrimitiveCategory> unSupportedTypes = ImmutableSet
       .<PrimitiveCategory>builder()
-      .add(PrimitiveCategory.DECIMAL)
       .add(PrimitiveCategory.VARCHAR)
       .add(PrimitiveCategory.CHAR).build();
 
@@ -180,20 +179,26 @@ public final class ConstantPropagateProcFactory {
     PrimitiveTypeInfo priti = (PrimitiveTypeInfo) ti;
     PrimitiveTypeInfo descti = (PrimitiveTypeInfo) desc.getTypeInfo();
 
+
     if (unSupportedTypes.contains(priti.getPrimitiveCategory())
         || unSupportedTypes.contains(descti.getPrimitiveCategory())) {
-      // FIXME: support template types. It currently has conflict with
-      // ExprNodeConstantDesc
+      // FIXME: support template types. It currently has conflict with ExprNodeConstantDesc
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Unsupported types " + priti + "; " + descti);
+      }
       return null;
     }
 
-    // We shouldn't cast strings to other types because that can broke original data in cases of
+    // We shouldn't cast strings to other types because that can break original data in cases of
     // leading zeros or zeros trailing after decimal point.
     // Example: "000126" => 126 => "126"
-
-    boolean brokingDataTypesCombination = (unsafeConversionTypes.contains(priti.getPrimitiveCategory()) &&
-            !unsafeConversionTypes.contains(descti.getPrimitiveCategory()));
-    if (performSafeTypeCast && brokingDataTypesCombination) {
+    boolean brokenDataTypesCombination = unsafeConversionTypes.contains(
+        priti.getPrimitiveCategory()) && !unsafeConversionTypes.contains(
+            descti.getPrimitiveCategory());
+    if (performSafeTypeCast && brokenDataTypesCombination) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Unsupported cast " + priti + "; " + descti);
+      }
       return null;
     }
 

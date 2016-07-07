@@ -485,6 +485,7 @@ public final class PrimitiveObjectInspectorUtils {
       return ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o)
           .getDouble();
     case DECIMAL:
+      // TODO: lossy conversion!
       return ((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o).doubleValue();
     case DATE:  // unsupported conversion
     default:
@@ -653,7 +654,7 @@ public final class PrimitiveObjectInspectorUtils {
       break;
     case DECIMAL:
       result = ((HiveDecimalObjectInspector) oi)
-          .getPrimitiveJavaObject(o).intValue();
+          .getPrimitiveJavaObject(o).intValue();  // TODO: lossy conversion!
       break;
     case DATE:  // unsupported conversion
     default: {
@@ -717,7 +718,7 @@ public final class PrimitiveObjectInspectorUtils {
       break;
     case DECIMAL:
       result = ((HiveDecimalObjectInspector) oi)
-          .getPrimitiveJavaObject(o).longValue();
+          .getPrimitiveJavaObject(o).longValue();  // TODO: lossy conversion!
       break;
     case DATE:  // unsupported conversion
     default:

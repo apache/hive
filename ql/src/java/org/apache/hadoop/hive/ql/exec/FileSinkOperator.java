@@ -147,7 +147,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     Path taskOutputTempPath;
     Path[] outPaths;
     Path[] finalPaths;
-    RecordWriter[] outWriters; // TODO# this
+    RecordWriter[] outWriters;
     RecordUpdater[] updaters;
     Stat stat;
     int acidLastBucket = -1;

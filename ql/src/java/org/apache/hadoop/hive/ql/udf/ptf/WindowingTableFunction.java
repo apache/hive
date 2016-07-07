@@ -1255,7 +1255,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       HiveDecimal d2 = PrimitiveObjectInspectorUtils.getHiveDecimal(v2,
           (PrimitiveObjectInspector) expressionDef.getOI());
       if ( d1 != null && d2 != null ) {
-        return d1.subtract(d2).intValue() > amt;
+        return d1.subtract(d2).intValue() > amt;  // TODO: lossy conversion!
       }
 
       return d1 != null || d2 != null; // True if only one value is null

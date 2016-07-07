@@ -204,7 +204,7 @@ public class UDFToInteger extends UDF {
     if (i == null) {
       return null;
     } else {
-      intWritable.set(i.getHiveDecimal().intValue());
+      intWritable.set(i.getHiveDecimal().intValue());  // TODO: lossy conversion!
       return intWritable;
     }
   }

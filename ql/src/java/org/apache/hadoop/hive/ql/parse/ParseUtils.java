@@ -174,10 +174,8 @@ public final class ParseUtils {
     case HiveParser.Identifier:
     case HiveParser.Number:
     case HiveParser.StringLiteral:
-    case HiveParser.BigintLiteral:
-    case HiveParser.SmallintLiteral:
-    case HiveParser.TinyintLiteral:
-    case HiveParser.DecimalLiteral:
+    case HiveParser.IntegralLiteral:
+    case HiveParser.NumberLiteral:
     case HiveParser.TOK_STRINGLITERALSEQUENCE:
     case HiveParser.TOK_CHARSETLITERAL:
     case HiveParser.TOK_DATELITERAL:

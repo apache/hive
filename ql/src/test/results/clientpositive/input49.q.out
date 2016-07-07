@@ -15,7 +15,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@intable
 POSTHOOK: Lineage: intable.b EXPRESSION []
-POSTHOOK: Lineage: intable.d SIMPLE []
+POSTHOOK: Lineage: intable.d EXPRESSION []
 POSTHOOK: Lineage: intable.f EXPRESSION []
 POSTHOOK: Lineage: intable.i SIMPLE []
 POSTHOOK: Lineage: intable.l SIMPLE []

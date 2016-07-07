@@ -80,7 +80,6 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
     } catch (NumberFormatException ex) {
       return null;
     }
-
     bd = normalize(bd, true);
     return bd == null ? null : new HiveDecimal(bd);
   }
@@ -161,6 +160,7 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
     return bdPrecision;
   }
 
+  /** Note - this method will corrupt the value if it doesn't fit. */
   public int intValue() {
     return bd.intValue();
   }
@@ -169,10 +169,12 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
     return bd.doubleValue();
   }
 
+  /** Note - this method will corrupt the value if it doesn't fit. */
   public long longValue() {
     return bd.longValue();
   }
 
+  /** Note - this method will corrupt the value if it doesn't fit. */
   public short shortValue() {
     return bd.shortValue();
   }
@@ -328,5 +330,9 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
     }
 
     return HiveDecimal.create(bd);
+  }
+
+  public long longValueExact() {
+    return bd.longValueExact();
   }
 }

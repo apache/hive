@@ -500,31 +500,31 @@ POSTHOOK: Lineage: test_4.my_string SIMPLE [(values__tmp__table__4)values__tmp__
 PREHOOK: query: explain
 select * from test_4 where struct(`my_bigint`, `my_string`, `my_double`)
 IN (
-struct(1L, "a", 1.5),
-struct(1L, "b", -0.5),
-struct(3L, "b", 1.5),
-struct(1L, "d", 1.5),
-struct(1L, "c", 1.5),
-struct(1L, "b", 2.5),
-struct(1L, "b", 0.5),
-struct(5L, "b", 1.5),
-struct(1L, "a", 0.5),
-struct(3L, "b", 1.5)
+struct(1L, "a", 1.5D),
+struct(1L, "b", -0.5D),
+struct(3L, "b", 1.5D),
+struct(1L, "d", 1.5D),
+struct(1L, "c", 1.5D),
+struct(1L, "b", 2.5D),
+struct(1L, "b", 0.5D),
+struct(5L, "b", 1.5D),
+struct(1L, "a", 0.5D),
+struct(3L, "b", 1.5D)
 )
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select * from test_4 where struct(`my_bigint`, `my_string`, `my_double`)
 IN (
-struct(1L, "a", 1.5),
-struct(1L, "b", -0.5),
-struct(3L, "b", 1.5),
-struct(1L, "d", 1.5),
-struct(1L, "c", 1.5),
-struct(1L, "b", 2.5),
-struct(1L, "b", 0.5),
-struct(5L, "b", 1.5),
-struct(1L, "a", 0.5),
-struct(3L, "b", 1.5)
+struct(1L, "a", 1.5D),
+struct(1L, "b", -0.5D),
+struct(3L, "b", 1.5D),
+struct(1L, "d", 1.5D),
+struct(1L, "c", 1.5D),
+struct(1L, "b", 2.5D),
+struct(1L, "b", 0.5D),
+struct(5L, "b", 1.5D),
+struct(1L, "a", 0.5D),
+struct(3L, "b", 1.5D)
 )
 POSTHOOK: type: QUERY
 Stage-0
@@ -539,32 +539,32 @@ Stage-0
 
 PREHOOK: query: select * from test_4 where struct(`my_bigint`, `my_string`, `my_double`)
 IN (
-struct(1L, "a", 1.5),
-struct(1L, "b", -0.5),
-struct(3L, "b", 1.5),
-struct(1L, "d", 1.5),
-struct(1L, "c", 1.5),
-struct(1L, "b", 2.5),
-struct(1L, "b", 0.5),
-struct(5L, "b", 1.5),
-struct(1L, "a", 0.5),
-struct(3L, "b", 1.5)
+struct(1L, "a", 1.5D),
+struct(1L, "b", -0.5D),
+struct(3L, "b", 1.5D),
+struct(1L, "d", 1.5D),
+struct(1L, "c", 1.5D),
+struct(1L, "b", 2.5D),
+struct(1L, "b", 0.5D),
+struct(5L, "b", 1.5D),
+struct(1L, "a", 0.5D),
+struct(3L, "b", 1.5D)
 )
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_4
 #### A masked pattern was here ####
 POSTHOOK: query: select * from test_4 where struct(`my_bigint`, `my_string`, `my_double`)
 IN (
-struct(1L, "a", 1.5),
-struct(1L, "b", -0.5),
-struct(3L, "b", 1.5),
-struct(1L, "d", 1.5),
-struct(1L, "c", 1.5),
-struct(1L, "b", 2.5),
-struct(1L, "b", 0.5),
-struct(5L, "b", 1.5),
-struct(1L, "a", 0.5),
-struct(3L, "b", 1.5)
+struct(1L, "a", 1.5D),
+struct(1L, "b", -0.5D),
+struct(3L, "b", 1.5D),
+struct(1L, "d", 1.5D),
+struct(1L, "c", 1.5D),
+struct(1L, "b", 2.5D),
+struct(1L, "b", 0.5D),
+struct(5L, "b", 1.5D),
+struct(1L, "a", 0.5D),
+struct(3L, "b", 1.5D)
 )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_4
@@ -573,31 +573,31 @@ POSTHOOK: Input: default@test_4
 PREHOOK: query: explain
 select `my_bigint`, `my_string`, `my_double`, struct(`my_bigint`, `my_string`, `my_double`)
 IN (
-struct(1L, "a", 1.5),
-struct(1L, "b", -0.5),
-struct(3L, "b", 1.5),
-struct(1L, "d", 1.5),
-struct(1L, "c", 1.5),
-struct(1L, "b", 2.5),
-struct(1L, "b", 0.5),
-struct(5L, "b", 1.5),
-struct(1L, "a", 0.5),
-struct(3L, "b", 1.5)
+struct(1L, "a", 1.5D),
+struct(1L, "b", -0.5D),
+struct(3L, "b", 1.5D),
+struct(1L, "d", 1.5D),
+struct(1L, "c", 1.5D),
+struct(1L, "b", 2.5D),
+struct(1L, "b", 0.5D),
+struct(5L, "b", 1.5D),
+struct(1L, "a", 0.5D),
+struct(3L, "b", 1.5D)
 ) as b from test_4
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select `my_bigint`, `my_string`, `my_double`, struct(`my_bigint`, `my_string`, `my_double`)
 IN (
-struct(1L, "a", 1.5),
-struct(1L, "b", -0.5),
-struct(3L, "b", 1.5),
-struct(1L, "d", 1.5),
-struct(1L, "c", 1.5),
-struct(1L, "b", 2.5),
-struct(1L, "b", 0.5),
-struct(5L, "b", 1.5),
-struct(1L, "a", 0.5),
-struct(3L, "b", 1.5)
+struct(1L, "a", 1.5D),
+struct(1L, "b", -0.5D),
+struct(3L, "b", 1.5D),
+struct(1L, "d", 1.5D),
+struct(1L, "c", 1.5D),
+struct(1L, "b", 2.5D),
+struct(1L, "b", 0.5D),
+struct(5L, "b", 1.5D),
+struct(1L, "a", 0.5D),
+struct(3L, "b", 1.5D)
 ) as b from test_4
 POSTHOOK: type: QUERY
 Stage-0
@@ -610,32 +610,32 @@ Stage-0
 
 PREHOOK: query: select `my_bigint`, `my_string`, `my_double`, struct(`my_bigint`, `my_string`, `my_double`)
 IN (
-struct(1L, "a", 1.5),
-struct(1L, "b", -0.5),
-struct(3L, "b", 1.5),
-struct(1L, "d", 1.5),
-struct(1L, "c", 1.5),
-struct(1L, "b", 2.5),
-struct(1L, "b", 0.5),
-struct(5L, "b", 1.5),
-struct(1L, "a", 0.5),
-struct(3L, "b", 1.5)
+struct(1L, "a", 1.5D),
+struct(1L, "b", -0.5D),
+struct(3L, "b", 1.5D),
+struct(1L, "d", 1.5D),
+struct(1L, "c", 1.5D),
+struct(1L, "b", 2.5D),
+struct(1L, "b", 0.5D),
+struct(5L, "b", 1.5D),
+struct(1L, "a", 0.5D),
+struct(3L, "b", 1.5D)
 ) as b from test_4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_4
 #### A masked pattern was here ####
 POSTHOOK: query: select `my_bigint`, `my_string`, `my_double`, struct(`my_bigint`, `my_string`, `my_double`)
 IN (
-struct(1L, "a", 1.5),
-struct(1L, "b", -0.5),
-struct(3L, "b", 1.5),
-struct(1L, "d", 1.5),
-struct(1L, "c", 1.5),
-struct(1L, "b", 2.5),
-struct(1L, "b", 0.5),
-struct(5L, "b", 1.5),
-struct(1L, "a", 0.5),
-struct(3L, "b", 1.5)
+struct(1L, "a", 1.5D),
+struct(1L, "b", -0.5D),
+struct(3L, "b", 1.5D),
+struct(1L, "d", 1.5D),
+struct(1L, "c", 1.5D),
+struct(1L, "b", 2.5D),
+struct(1L, "b", 0.5D),
+struct(5L, "b", 1.5D),
+struct(1L, "a", 0.5D),
+struct(3L, "b", 1.5D)
 ) as b from test_4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_4

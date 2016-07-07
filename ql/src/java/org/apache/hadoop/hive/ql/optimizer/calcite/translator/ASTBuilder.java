@@ -190,7 +190,7 @@ class ASTBuilder {
       } else {
         val = literal.getValue3();
       }
-      type = HiveParser.TinyintLiteral;
+      type = HiveParser.IntegralLiteral;
       break;
     case SMALLINT:
       if (useTypeQualInLiteral) {
@@ -198,11 +198,11 @@ class ASTBuilder {
       } else {
         val = literal.getValue3();
       }
-      type = HiveParser.SmallintLiteral;
+      type = HiveParser.IntegralLiteral;
       break;
     case INTEGER:
       val = literal.getValue3();
-      type = HiveParser.BigintLiteral;
+      type = HiveParser.IntegralLiteral;
       break;
     case BIGINT:
       if (useTypeQualInLiteral) {
@@ -210,15 +210,15 @@ class ASTBuilder {
       } else {
         val = literal.getValue3();
       }
-      type = HiveParser.BigintLiteral;
+      type = HiveParser.IntegralLiteral;
       break;
     case DOUBLE:
       val = literal.getValue3() + "D";
-      type = HiveParser.Number;
+      type = HiveParser.NumberLiteral;
       break;
     case DECIMAL:
       val = literal.getValue3() + "BD";
-      type = HiveParser.DecimalLiteral;
+      type = HiveParser.NumberLiteral;
       break;
     case FLOAT:
     case REAL:

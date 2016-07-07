@@ -619,6 +619,7 @@ public class ConvertTreeReaderFactory extends TreeReaderFactory {
         longColVector.isNull[elementNum] = true;
         longColVector.noNulls = false;
       } else {
+        // TODO: lossy conversion!
         downCastAnyInteger(longColVector, elementNum, decimalValue.longValue(), readerType);
       }
     }

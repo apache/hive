@@ -197,7 +197,7 @@ public class UDFToShort extends UDF {
     if (i == null) {
       return null;
     } else {
-      shortWritable.set(i.getHiveDecimal().shortValue());
+      shortWritable.set(i.getHiveDecimal().shortValue());   // TODO: lossy conversion!
       return shortWritable;
     }
   }

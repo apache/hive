@@ -144,5 +144,5 @@ PREHOOK: Input: default@decimal_6_3
 POSTHOOK: query: desc DECIMAL_6_3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@decimal_6_3
-k                   	double              	                    
+k                   	decimal(11,5)       	                    
 v                   	int                 	                    

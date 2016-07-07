@@ -191,57 +191,57 @@ insert into table test_4 values (1, "b", 1.5), (1, "a", 0.5), (2, "b", 1.5);
 explain
 select * from test_4 where struct(`my_bigint`, `my_string`, `my_double`)
 IN (
-struct(1L, "a", 1.5),
-struct(1L, "b", -0.5),
-struct(3L, "b", 1.5),
-struct(1L, "d", 1.5),
-struct(1L, "c", 1.5),
-struct(1L, "b", 2.5),
-struct(1L, "b", 0.5),
-struct(5L, "b", 1.5),
-struct(1L, "a", 0.5),
-struct(3L, "b", 1.5)
+struct(1L, "a", 1.5D),
+struct(1L, "b", -0.5D),
+struct(3L, "b", 1.5D),
+struct(1L, "d", 1.5D),
+struct(1L, "c", 1.5D),
+struct(1L, "b", 2.5D),
+struct(1L, "b", 0.5D),
+struct(5L, "b", 1.5D),
+struct(1L, "a", 0.5D),
+struct(3L, "b", 1.5D)
 );
 
 select * from test_4 where struct(`my_bigint`, `my_string`, `my_double`)
 IN (
-struct(1L, "a", 1.5),
-struct(1L, "b", -0.5),
-struct(3L, "b", 1.5),
-struct(1L, "d", 1.5),
-struct(1L, "c", 1.5),
-struct(1L, "b", 2.5),
-struct(1L, "b", 0.5),
-struct(5L, "b", 1.5),
-struct(1L, "a", 0.5),
-struct(3L, "b", 1.5)
+struct(1L, "a", 1.5D),
+struct(1L, "b", -0.5D),
+struct(3L, "b", 1.5D),
+struct(1L, "d", 1.5D),
+struct(1L, "c", 1.5D),
+struct(1L, "b", 2.5D),
+struct(1L, "b", 0.5D),
+struct(5L, "b", 1.5D),
+struct(1L, "a", 0.5D),
+struct(3L, "b", 1.5D)
 );
 
 explain
 select `my_bigint`, `my_string`, `my_double`, struct(`my_bigint`, `my_string`, `my_double`)
 IN (
-struct(1L, "a", 1.5),
-struct(1L, "b", -0.5),
-struct(3L, "b", 1.5),
-struct(1L, "d", 1.5),
-struct(1L, "c", 1.5),
-struct(1L, "b", 2.5),
-struct(1L, "b", 0.5),
-struct(5L, "b", 1.5),
-struct(1L, "a", 0.5),
-struct(3L, "b", 1.5)
+struct(1L, "a", 1.5D),
+struct(1L, "b", -0.5D),
+struct(3L, "b", 1.5D),
+struct(1L, "d", 1.5D),
+struct(1L, "c", 1.5D),
+struct(1L, "b", 2.5D),
+struct(1L, "b", 0.5D),
+struct(5L, "b", 1.5D),
+struct(1L, "a", 0.5D),
+struct(3L, "b", 1.5D)
 ) as b from test_4;
 
 select `my_bigint`, `my_string`, `my_double`, struct(`my_bigint`, `my_string`, `my_double`)
 IN (
-struct(1L, "a", 1.5),
-struct(1L, "b", -0.5),
-struct(3L, "b", 1.5),
-struct(1L, "d", 1.5),
-struct(1L, "c", 1.5),
-struct(1L, "b", 2.5),
-struct(1L, "b", 0.5),
-struct(5L, "b", 1.5),
-struct(1L, "a", 0.5),
-struct(3L, "b", 1.5)
+struct(1L, "a", 1.5D),
+struct(1L, "b", -0.5D),
+struct(3L, "b", 1.5D),
+struct(1L, "d", 1.5D),
+struct(1L, "c", 1.5D),
+struct(1L, "b", 2.5D),
+struct(1L, "b", 0.5D),
+struct(5L, "b", 1.5D),
+struct(1L, "a", 0.5D),
+struct(3L, "b", 1.5D)
 ) as b from test_4;

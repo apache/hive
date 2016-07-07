@@ -655,7 +655,7 @@ public class RecordReaderImpl implements RecordReader {
           // widening conversion
           return ((Number) obj).longValue();
         } else if (obj instanceof HiveDecimal) {
-          return ((HiveDecimal) obj).longValue();
+          return ((HiveDecimal) obj).longValue(); // TODO: lossy conversion!
         } else if (obj instanceof String) {
           return Long.valueOf(obj.toString());
         }

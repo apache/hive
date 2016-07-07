@@ -410,24 +410,14 @@ CharSetLiteral
     | '0' 'X' (HexDigit|Digit)+
     ;
 
-BigintLiteral
+IntegralLiteral
     :
-    (Digit)+ 'L'
+    (Digit)+ ('L' | 'S' | 'Y')
     ;
 
-SmallintLiteral
+NumberLiteral
     :
-    (Digit)+ 'S'
-    ;
-
-TinyintLiteral
-    :
-    (Digit)+ 'Y'
-    ;
-
-DecimalLiteral
-    :
-    Number 'B' 'D'
+    Number ('D' | 'B' 'D')
     ;
 
 ByteLengthLiteral

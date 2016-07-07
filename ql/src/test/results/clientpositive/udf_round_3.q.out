@@ -52,4 +52,4 @@ select round(126.1), round(126.7), round(32766.1), round(32766.7) from src table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-126.0	127.0	32766.0	32767.0
+126	127	32766	32767

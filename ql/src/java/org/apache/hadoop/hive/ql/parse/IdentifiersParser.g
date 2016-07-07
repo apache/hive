@@ -251,10 +251,8 @@ constant
     | intervalLiteral
     | StringLiteral
     | stringLiteralSequence
-    | BigintLiteral
-    | SmallintLiteral
-    | TinyintLiteral
-    | DecimalLiteral
+    | IntegralLiteral
+    | NumberLiteral
     | charSetStringLiteral
     | booleanValue
     ;

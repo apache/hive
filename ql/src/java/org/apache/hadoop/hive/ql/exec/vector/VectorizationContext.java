@@ -1703,7 +1703,7 @@ public class VectorizationContext {
       return ((Number) scalar).longValue();
     case DECIMAL:
       HiveDecimal decimalVal = (HiveDecimal) scalar;
-      return decimalVal.longValue();
+      return decimalVal.longValueExact();
     default:
       throw new HiveException("Unsupported type "+typename+" for cast to Long");
     }

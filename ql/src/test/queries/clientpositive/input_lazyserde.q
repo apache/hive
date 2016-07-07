@@ -32,7 +32,7 @@ INSERT OVERWRITE TABLE dest1 SELECT src_thrift.mstringstring FROM src_thrift DIS
 SELECT * from dest1;
 
 CREATE TABLE destBin(a UNIONTYPE<int, double, array<string>, struct<col1:int,col2:string>>) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe' STORED AS SEQUENCEFILE;
-INSERT OVERWRITE TABLE destBin SELECT create_union( CASE WHEN key < 100 THEN 0 WHEN key < 200 THEN 1 WHEN key < 300 THEN 2 WHEN key < 400 THEN 3 ELSE 0 END, key, 2.0, array("one","two"), struct(5,"five")) FROM srcbucket2;
+INSERT OVERWRITE TABLE destBin SELECT create_union( CASE WHEN key < 100 THEN 0 WHEN key < 200 THEN 1 WHEN key < 300 THEN 2 WHEN key < 400 THEN 3 ELSE 0 END, key, 2.0D, array("one","two"), struct(5,"five")) FROM srcbucket2;
 SELECT * from destBin;
 DROP TABLE destBin;
 

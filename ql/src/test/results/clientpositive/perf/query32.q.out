@@ -60,7 +60,7 @@ Stage-0
               Select Operator [SEL_33] (rows=232311810 width=135)
                 Output:["_col1"]
                 Filter Operator [FIL_32] (rows=232311810 width=135)
-                  predicate:(UDFToDouble(_col1) > _col5)
+                  predicate:(_col1 > _col5)
                   Select Operator [SEL_31] (rows=696935432 width=135)
                     Output:["_col1","_col5"]
                     Merge Join Operator [MERGEJOIN_60] (rows=696935432 width=135)

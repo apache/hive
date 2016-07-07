@@ -2487,15 +2487,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
     case HiveParser.Number:
     case HiveParser.StringLiteral:
-    case HiveParser.BigintLiteral:
-    case HiveParser.SmallintLiteral:
-    case HiveParser.TinyintLiteral:
-    case HiveParser.DecimalLiteral:
+    case HiveParser.IntegralLiteral:
+    case HiveParser.NumberLiteral:
     case HiveParser.TOK_STRINGLITERALSEQUENCE:
     case HiveParser.TOK_CHARSETLITERAL:
     case HiveParser.KW_TRUE:
     case HiveParser.KW_FALSE:
-      break;
+      break;  
 
     case HiveParser.TOK_FUNCTION:
       // check all the arguments

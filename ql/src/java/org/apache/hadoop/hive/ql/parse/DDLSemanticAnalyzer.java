@@ -3483,37 +3483,18 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * @return
    */
   private boolean isConstant(ASTNode node) {
-    boolean result = false;
     switch(node.getToken().getType()) {
       case HiveParser.Number:
-        result = true;
-        break;
       case HiveParser.StringLiteral:
-        result = true;
-        break;
-      case HiveParser.BigintLiteral:
-        result = true;
-        break;
-      case HiveParser.SmallintLiteral:
-        result = true;
-        break;
-      case HiveParser.TinyintLiteral:
-        result = true;
-        break;
-      case HiveParser.DecimalLiteral:
-        result = true;
-        break;
+      case HiveParser.IntegralLiteral:
+      case HiveParser.NumberLiteral:
       case HiveParser.CharSetName:
-        result = true;
-        break;
       case HiveParser.KW_TRUE:
       case HiveParser.KW_FALSE:
-        result = true;
-        break;
+        return true;
       default:
-          break;
+        return false;
     }
-    return result;
   }
 
   private void validateSkewedLocationString(String newLocation) throws SemanticException {

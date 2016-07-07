@@ -207,7 +207,7 @@ public class UDFToLong extends UDF {
     if (i == null) {
       return null;
     } else {
-      longWritable.set(i.getHiveDecimal().longValue());
+      longWritable.set(i.getHiveDecimal().longValue()); // TODO: lossy conversion!
       return longWritable;
     }
   }

@@ -18,10 +18,13 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Formatter;
+import java.util.IllegalFormatConversionException;
 import java.util.Locale;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -111,7 +114,8 @@ public class GenericUDFPrintf extends GenericUDF {
 
     ArrayList<Object> argumentList = new ArrayList<Object>();
     for (int i = 1; i < arguments.length; i++) {
-      switch (((PrimitiveObjectInspector)argumentOIs[i]).getPrimitiveCategory()) {
+      PrimitiveObjectInspector poi = (PrimitiveObjectInspector)argumentOIs[i];
+      switch (poi.getPrimitiveCategory()) {
         case BOOLEAN:
         case BYTE:
         case SHORT:
@@ -123,9 +127,17 @@ public class GenericUDFPrintf extends GenericUDF {
         case VARCHAR:
         case STRING:
         case TIMESTAMP:
+          argumentList.add(poi.getPrimitiveJavaObject(arguments[i].get()));
+          break;
         case DECIMAL:
-          argumentList.add(((PrimitiveObjectInspector)argumentOIs[i])
-            .getPrimitiveJavaObject(arguments[i].get()));
+          // Decimal classes cannot be converted by printf, so convert them to doubles.
+          Object obj = poi.getPrimitiveJavaObject(arguments[i].get());
+          if (obj instanceof HiveDecimal) {
+            obj = ((HiveDecimal)obj).doubleValue();
+          } else if (obj instanceof BigDecimal) {
+            obj = ((BigDecimal)obj).doubleValue();
+          }
+          argumentList.add(obj);
           break;
         default:
           argumentList.add(arguments[i].get());

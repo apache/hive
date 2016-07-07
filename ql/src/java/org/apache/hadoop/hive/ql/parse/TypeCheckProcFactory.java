@@ -174,10 +174,8 @@ public class TypeCheckProcFactory {
     opRules.put(new RuleRegExp("R1", HiveParser.TOK_NULL + "%"),
         tf.getNullExprProcessor());
     opRules.put(new RuleRegExp("R2", HiveParser.Number + "%|" +
-        HiveParser.TinyintLiteral + "%|" +
-        HiveParser.SmallintLiteral + "%|" +
-        HiveParser.BigintLiteral + "%|" +
-        HiveParser.DecimalLiteral + "%"),
+        HiveParser.IntegralLiteral + "%|" +
+        HiveParser.NumberLiteral + "%"),
         tf.getNumExprProcessor());
     opRules
         .put(new RuleRegExp("R3", HiveParser.Identifier + "%|"
@@ -288,6 +286,7 @@ public class TypeCheckProcFactory {
       }
 
       Number v = null;
+      ExprNodeConstantDesc decimalNode = null;
       ASTNode expr = (ASTNode) nd;
       // The expression can be any one of Double, Long and Integer. We
       // try to parse the expression in that order to ensure that the
@@ -295,41 +294,55 @@ public class TypeCheckProcFactory {
       try {
         if (expr.getText().endsWith("L")) {
           // Literal bigint.
-          v = Long.valueOf(expr.getText().substring(
-                0, expr.getText().length() - 1));
+          v = Long.valueOf(expr.getText().substring(0, expr.getText().length() - 1));
         } else if (expr.getText().endsWith("S")) {
           // Literal smallint.
-          v = Short.valueOf(expr.getText().substring(
-                0, expr.getText().length() - 1));
+          v = Short.valueOf(expr.getText().substring(0, expr.getText().length() - 1));
         } else if (expr.getText().endsWith("Y")) {
           // Literal tinyint.
-          v = Byte.valueOf(expr.getText().substring(
-                0, expr.getText().length() - 1));
+          v = Byte.valueOf(expr.getText().substring(0, expr.getText().length() - 1));
         } else if (expr.getText().endsWith("BD")) {
           // Literal decimal
           String strVal = expr.getText().substring(0, expr.getText().length() - 2);
-          HiveDecimal hd = HiveDecimal.create(strVal);
-          int prec = 1;
-          int scale = 0;
-          if (hd != null) {
-            prec = hd.precision();
-            scale = hd.scale();
-          }
-          DecimalTypeInfo typeInfo = TypeInfoFactory.getDecimalTypeInfo(prec, scale);
-          return new ExprNodeConstantDesc(typeInfo, hd);
+          return createDecimal(strVal, false);
+        } else if (expr.getText().endsWith("D")) {
+          // Literal double.
+          v = Double.valueOf(expr.getText().substring(0, expr.getText().length() - 1));
         } else {
           v = Double.valueOf(expr.getText());
+          if (expr.getText() != null && !expr.getText().toLowerCase().contains("e")) {
+            decimalNode = createDecimal(expr.getText(), true);
+            if (decimalNode != null) {
+              v = null; // We will use decimal if all else fails.
+            }
+          }
           v = Long.valueOf(expr.getText());
           v = Integer.valueOf(expr.getText());
         }
       } catch (NumberFormatException e) {
         // do nothing here, we will throw an exception in the following block
       }
-      if (v == null) {
-        throw new SemanticException(ErrorMsg.INVALID_NUMERICAL_CONSTANT
-            .getMsg(expr));
+      if (v == null && decimalNode == null) {
+        throw new SemanticException(ErrorMsg.INVALID_NUMERICAL_CONSTANT.getMsg(expr));
       }
-      return new ExprNodeConstantDesc(v);
+      return v != null ? new ExprNodeConstantDesc(v) : decimalNode;
+    }
+
+    public static ExprNodeConstantDesc createDecimal(String strVal, boolean notNull) {
+      // Note: the normalize() call with rounding in HiveDecimal will currently reduce the
+      //       precision and scale of the value by throwing away trailing zeroes. This may or may
+      //       not be desirable for the literals; however, this used to be the default behavior
+      //       for explicit decimal literals (e.g. 1.0BD), so we keep this behavior for now.
+      HiveDecimal hd = HiveDecimal.create(strVal);
+      if (notNull && hd == null) return null;
+      int prec = 1;
+      int scale = 0;
+      if (hd != null) {
+        prec = hd.precision();
+        scale = hd.scale();
+      }
+      DecimalTypeInfo typeInfo = TypeInfoFactory.getDecimalTypeInfo(prec, scale);
+      return new ExprNodeConstantDesc(typeInfo, hd);
     }
 
   }

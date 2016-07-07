@@ -1,5 +1,4 @@
 WARNING: Comparing a bigint and a double may result in a loss of precision.
-WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: -- SORT_QUERY_RESULTS
 
 SELECT STDDEV_SAMP(csmallint),
