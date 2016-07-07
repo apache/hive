@@ -123,7 +123,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -979,33 +978,36 @@ public class VectorizationContext {
 
     int numChildren = (childExpr == null) ? 0 : childExpr.size();
 
-    if (genericeUdf != null &&
+    if (numChildren > 2 && genericeUdf != null && mode == VectorExpressionDescriptor.Mode.FILTER &&
         ((genericeUdf instanceof GenericUDFOPOr) || (genericeUdf instanceof GenericUDFOPAnd))) {
 
-      // Special case handling for Multi-OR and Multi-AND FILTER and PROJECTION.
+      // Special case handling for Multi-OR and Multi-AND.
 
+      for (int i = 0; i < numChildren; i++) {
+        ExprNodeDesc child = childExpr.get(i);
+        String childTypeString = child.getTypeString();
+        if (childTypeString == null) {
+          throw new HiveException("Null child type name string");
+        }
+        TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(childTypeString);
+        Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
+        if (columnVectorType != ColumnVector.Type.LONG){
+          return null;
+        }
+        if (!(child instanceof ExprNodeGenericFuncDesc) && !(child instanceof ExprNodeColumnDesc)) {
+          return null;
+        }
+      }
       Class<?> vclass;
       if (genericeUdf instanceof GenericUDFOPOr) {
-        if (mode == VectorExpressionDescriptor.Mode.PROJECTION) {
-          vclass = ColOrCol.class;
-        } else {
-          vclass = FilterExprOrExpr.class;
-        }
+        vclass = FilterExprOrExpr.class;
       } else if (genericeUdf instanceof GenericUDFOPAnd) {
-        if (mode == VectorExpressionDescriptor.Mode.PROJECTION) {
-          vclass = ColAndCol.class;
-        } else {
-          vclass = FilterExprAndExpr.class;
-        }
+        vclass = FilterExprAndExpr.class;
       } else {
         throw new RuntimeException("Unexpected multi-child UDF");
       }
       VectorExpressionDescriptor.Mode childrenMode = getChildrenMode(mode, udfClass);
-      if (mode == VectorExpressionDescriptor.Mode.PROJECTION) {
-        return createVectorMultiAndOrProjectionExpr(vclass, childExpr, childrenMode, returnType);
-      } else {
-        return createVectorExpression(vclass, childExpr, childrenMode, returnType);
-      }
+      return createVectorExpression(vclass, childExpr, childrenMode, returnType);
     }
     if (numChildren > VectorExpressionDescriptor.MAX_NUM_ARGUMENTS) {
       return null;
@@ -1044,37 +1046,6 @@ public class VectorizationContext {
     return createVectorExpression(vclass, childExpr, childrenMode, returnType);
   }
 
-  private void determineChildrenVectorExprAndArguments(Class<?> vectorClass,
-      List<ExprNodeDesc> childExpr, int numChildren, VectorExpressionDescriptor.Mode childrenMode,
-      VectorExpression.Type [] inputTypes, List<VectorExpression> children, Object[] arguments)
-          throws HiveException {
-    for (int i = 0; i < numChildren; i++) {
-      ExprNodeDesc child = childExpr.get(i);
-      String undecoratedName = getUndecoratedName(child.getTypeInfo().getTypeName());
-      inputTypes[i] = VectorExpression.Type.getValue(undecoratedName);
-      if (inputTypes[i] == VectorExpression.Type.OTHER){
-        throw new HiveException("No vector type for " + vectorClass.getSimpleName() + " argument #" + i + " type name " + undecoratedName);
-      }
-      if (child instanceof ExprNodeGenericFuncDesc) {
-        VectorExpression vChild = getVectorExpression(child, childrenMode);
-          children.add(vChild);
-          arguments[i] = vChild.getOutputColumn();
-      } else if (child instanceof ExprNodeColumnDesc) {
-        int colIndex = getInputColumnIndex((ExprNodeColumnDesc) child);
-          if (childrenMode == VectorExpressionDescriptor.Mode.FILTER) {
-            // In filter mode, the column must be a boolean
-            children.add(new SelectColumnIsTrue(colIndex));
-          }
-          arguments[i] = colIndex;
-      } else if (child instanceof ExprNodeConstantDesc) {
-        Object scalarValue = getVectorTypeScalarValue((ExprNodeConstantDesc) child);
-        arguments[i] = (null == scalarValue) ? getConstantVectorExpression(null, child.getTypeInfo(), childrenMode) : scalarValue;
-      } else {
-        throw new HiveException("Cannot handle expression type: " + child.getClass().getSimpleName());
-      }
-    }
-  }
-
   private VectorExpression createVectorExpression(Class<?> vectorClass,
       List<ExprNodeDesc> childExpr, VectorExpressionDescriptor.Mode childrenMode, TypeInfo returnType) throws HiveException {
     int numChildren = childExpr == null ? 0: childExpr.size();
@@ -1082,41 +1053,31 @@ public class VectorizationContext {
     List<VectorExpression> children = new ArrayList<VectorExpression>();
     Object[] arguments = new Object[numChildren];
     try {
-      determineChildrenVectorExprAndArguments(vectorClass, childExpr, numChildren, childrenMode,
-          inputTypes, children, arguments);
-      VectorExpression  vectorExpression = instantiateExpression(vectorClass, returnType, arguments);
-      vectorExpression.setInputTypes(inputTypes);
-      if ((vectorExpression != null) && !children.isEmpty()) {
-        vectorExpression.setChildExpressions(children.toArray(new VectorExpression[0]));
-      }
-      return vectorExpression;
-    } catch (Exception ex) {
-      throw new HiveException(ex);
-    } finally {
-      for (VectorExpression ve : children) {
-        ocm.freeOutputColumn(ve.getOutputColumn());
-      }
-    }
-  }
-
-  private VectorExpression createVectorMultiAndOrProjectionExpr(Class<?> vectorClass,
-      List<ExprNodeDesc> childExpr, VectorExpressionDescriptor.Mode childrenMode, TypeInfo returnType) throws HiveException {
-    int numChildren = childExpr == null ? 0: childExpr.size();
-    VectorExpression.Type [] inputTypes = new VectorExpression.Type[numChildren];
-    List<VectorExpression> children = new ArrayList<VectorExpression>();
-    Object[] arguments = new Object[numChildren];
-    try {
-      determineChildrenVectorExprAndArguments(vectorClass, childExpr, numChildren, childrenMode,
-          inputTypes, children, arguments);
-
-      // For Multi-AND/OR, transform the arguments -- column indices into an array of int.
-      int[] colNums = new int[numChildren];
       for (int i = 0; i < numChildren; i++) {
-        colNums[i] = (Integer) arguments[i];
+        ExprNodeDesc child = childExpr.get(i);
+        String undecoratedName = getUndecoratedName(child.getTypeInfo().getTypeName());
+        inputTypes[i] = VectorExpression.Type.getValue(undecoratedName);
+        if (inputTypes[i] == VectorExpression.Type.OTHER){
+          throw new HiveException("No vector type for " + vectorClass.getSimpleName() + " argument #" + i + " type name " + undecoratedName);
+        }
+        if (child instanceof ExprNodeGenericFuncDesc) {
+          VectorExpression vChild = getVectorExpression(child, childrenMode);
+            children.add(vChild);
+            arguments[i] = vChild.getOutputColumn();
+        } else if (child instanceof ExprNodeColumnDesc) {
+          int colIndex = getInputColumnIndex((ExprNodeColumnDesc) child);
+            if (childrenMode == VectorExpressionDescriptor.Mode.FILTER) {
+              // In filter mode, the column must be a boolean
+              children.add(new SelectColumnIsTrue(colIndex));
+            }
+            arguments[i] = colIndex;
+        } else if (child instanceof ExprNodeConstantDesc) {
+          Object scalarValue = getVectorTypeScalarValue((ExprNodeConstantDesc) child);
+          arguments[i] = (null == scalarValue) ? getConstantVectorExpression(null, child.getTypeInfo(), childrenMode) : scalarValue;
+        } else {
+          throw new HiveException("Cannot handle expression type: " + child.getClass().getSimpleName());
+        }
       }
-      arguments = new Object[1];
-      arguments[0] = colNums;
-
       VectorExpression  vectorExpression = instantiateExpression(vectorClass, returnType, arguments);
       vectorExpression.setInputTypes(inputTypes);
       if ((vectorExpression != null) && !children.isEmpty()) {
