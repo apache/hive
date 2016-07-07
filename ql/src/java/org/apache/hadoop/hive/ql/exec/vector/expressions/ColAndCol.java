@@ -66,24 +66,18 @@ public class ColAndCol extends VectorExpression {
      * We construct a simple index map to the child expression in mapToChildExpression.
      */
     if (childExpressions != null && mapToChildExpression == null) {
-      // Some vector child expressions can be omitted (e.g. if they are existing boolean columns).
+      // 
       mapToChildExpression = new int [colNums.length];
-      Arrays.fill(mapToChildExpression, -1);
-      for (int c = 0; c < childExpressions.length; c++) {
-        VectorExpression ve = childExpressions[c];
+      int childIndex = 0;
+      for (int i = 0; i < childExpressions.length; i++) {
+        VectorExpression ve = childExpressions[i];
         int outputColumn = ve.getOutputColumn();
-        int i = 0;
-        while (true) {
-          if (i >= colNums.length) {
-            throw new RuntimeException("Vectorized child expression output not found");
-          }
-          if (colNums[i] == outputColumn) {
-            mapToChildExpression[i] = c;
-            break;
-          }
-          i++;
+        while (outputColumn != colNums[childIndex]) {
+          mapToChildExpression[childIndex++] = -1;
         }
+        mapToChildExpression[childIndex++] = i;
       }
+      Preconditions.checkState(childIndex == colNums.length);
     }
 
     final int n = batch.size;
@@ -301,9 +295,9 @@ public class ColAndCol extends VectorExpression {
 
             Preconditions.checkState(andSel == 0);
             andRepeating = false;
-
+  
             if (andRepeatingIsNull) {
-
+  
               /*
                * Since andRepeatingIsNull is true, we always set intermediateNulls when building
                * andSel/andSelected when the next row is true.
@@ -326,7 +320,7 @@ public class ColAndCol extends VectorExpression {
               }
               andRepeatingIsNull = false;
             } else {
-
+  
               /*
                * Previous rounds were all true with no null child columns.  Just build
                * andSel/andSelected when the next row is true.

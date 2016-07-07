@@ -69,22 +69,16 @@ public class ColOrCol extends VectorExpression {
     if (childExpressions != null && mapToChildExpression == null) {
       // Some vector child expressions can be omitted (e.g. if they are existing boolean columns).
       mapToChildExpression = new int [colNums.length];
-      Arrays.fill(mapToChildExpression, -1);
-      for (int c = 0; c < childExpressions.length; c++) {
-        VectorExpression ve = childExpressions[c];
+      int childIndex = 0;
+      for (int i = 0; i < childExpressions.length; i++) {
+        VectorExpression ve = childExpressions[i];
         int outputColumn = ve.getOutputColumn();
-        int i = 0;
-        while (true) {
-          if (i >= colNums.length) {
-            throw new RuntimeException("Vectorized child expression output not found");
-          }
-          if (colNums[i] == outputColumn) {
-            mapToChildExpression[i] = c;
-            break;
-          }
-          i++;
+        while (outputColumn != colNums[childIndex]) {
+          mapToChildExpression[childIndex++] = -1;
         }
+        mapToChildExpression[childIndex++] = i;
       }
+      Preconditions.checkState(childIndex == colNums.length);
     }
 
     final int n = batch.size;
@@ -322,7 +316,7 @@ public class ColOrCol extends VectorExpression {
 
             Preconditions.checkState(orSel == 0);
             orRepeating = false;
-
+  
             if (orRepeatingHasNulls) {
 
               /*
@@ -352,7 +346,7 @@ public class ColOrCol extends VectorExpression {
               }
               orRepeatingHasNulls = false;
             } else {
-
+  
               /*
                * Previous rounds were all false with no null child columns.  Build
                * orSel/orSelected when the next row is false.  Otherwise, when the row is true, mark
@@ -385,9 +379,9 @@ public class ColOrCol extends VectorExpression {
 
             Preconditions.checkState(orSel == 0);
             orRepeating = false;
-
+  
             if (orRepeatingHasNulls) {
-
+  
               /*
                * Since orRepeatingIsNull is true, we always set intermediateNulls when building
                * orSel/orSelected when the next row is null or false.  Otherwise, when the row
@@ -415,7 +409,7 @@ public class ColOrCol extends VectorExpression {
               }
               orRepeatingHasNulls = false;
             } else {
-
+  
               /*
                * Previous rounds were all true with no null child columns.  Build
                * andSel/andSelected when the next row is true; also build when next is null
