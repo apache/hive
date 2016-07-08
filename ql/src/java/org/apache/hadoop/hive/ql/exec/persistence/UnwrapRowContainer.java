@@ -18,14 +18,15 @@
 
 package org.apache.hadoop.hive.ql.exec.persistence;
 
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.SerDeException;
-
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 
 /**
  * Unwraps values from current key with valueIndex in mapjoin desc
@@ -35,6 +36,7 @@ public class UnwrapRowContainer
 
   private final byte alias;
   private final int[] valueIndex;
+  private final Converter[] converters;
   private final boolean tagged;
   private final List<Object> unwrapped;
 
@@ -43,9 +45,10 @@ public class UnwrapRowContainer
 
   private transient RowIterator<List<Object>> iterator;
 
-  public UnwrapRowContainer(byte alias, int[] valueIndex, boolean tagged)  {
+  public UnwrapRowContainer(byte alias, int[] valueIndex, Converter[] converters, boolean tagged)  {
     this.alias = alias;
     this.valueIndex = valueIndex;
+    this.converters = converters;
     this.tagged = tagged;
     this.unwrapped = new ArrayList<Object>();
   }
@@ -72,9 +75,16 @@ public class UnwrapRowContainer
       return null;
     }
     unwrapped.clear();
-    for (int index : valueIndex) {
+    for (int pos = 0; pos < valueIndex.length; pos++) {
+      int index = valueIndex[pos];
       if (index >= 0) {
-        unwrapped.add(currentKey == null ? null : currentKey[index]);
+        if (currentKey == null) {
+          unwrapped.add(null);
+        } else if (converters[pos] != null) {
+          unwrapped.add(converters[pos].convert(currentKey[index]));
+        } else {
+          unwrapped.add(currentKey[index]);
+        }
       } else {
         unwrapped.add(values.get(-index - 1));
       }
