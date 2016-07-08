@@ -173,6 +173,10 @@ public class GroupByOperator extends Operator<GroupByDesc> {
    */
   protected transient int numEntriesHashTable;
 
+  private int maxNewSetNum = 0;
+  private int maxHashSize = 0;
+  private int countNewSet = 0;
+
   public static FastBitSet groupingSet2BitSet(int value) {
     FastBitSet bits = new FastBitSet();
     int index = 0;
@@ -190,6 +194,11 @@ public class GroupByOperator extends Operator<GroupByDesc> {
   protected void initializeOp(Configuration hconf) throws HiveException {
     numRowsInput = 0;
     numRowsHashTbl = 0;
+
+    maxNewSetNum = HiveConf.getIntVar(hconf,
+	HiveConf.ConfVars.HIVEDISTINCTNEWSETMAX);
+    maxHashSize = HiveConf.getIntVar(hconf,
+	HiveConf.ConfVars.HIVEDISTINCTSETSIZEMAX);
 
     heartbeatInterval = HiveConf.getIntVar(hconf,
         HiveConf.ConfVars.HIVESENDHEARTBEAT);
@@ -705,6 +714,11 @@ public class GroupByOperator extends Operator<GroupByDesc> {
   @Override
   public void endGroup() throws HiveException {
     if (groupKeyIsNotReduceKey) {
+      if (countNewSet < maxNewSetNum && keysCurrentGroup.size() > maxHashSize) {
+	keysCurrentGroup = new HashSet<KeyWrapper>();
+	countNewSet++;
+	return;
+      }
       keysCurrentGroup.clear();
     }
   }

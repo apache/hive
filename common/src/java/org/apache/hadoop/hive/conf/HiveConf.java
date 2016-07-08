@@ -989,7 +989,10 @@ public class HiveConf extends Configuration {
     HIVESKEWJOINMAPJOINMINSPLIT("hive.skewjoin.mapjoin.min.split", 33554432L,
         "Determine the number of map task at most used in the follow up map join job for a skew join by specifying \n" +
         "the minimum split size. It should be used together with hive.skewjoin.mapjoin.map.tasks to perform a fine grained control."),
-
+    HIVEDISTINCTSETSIZEMAX("hive.distinct.setsize.max", 50000,
+	"Only for count(distinct x), is over this threshold, will new a hashset"),
+    HIVEDISTINCTNEWSETMAX("hive.distinct.newset.max", 0, 
+	"Only for count(distinct x), is over this threshold, will Set clear still"),
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000,
         "Send a heartbeat after this interval - used by mapjoin and filter operators"),
     HIVELIMITMAXROWSIZE("hive.limit.row.max.size", 100000L,
