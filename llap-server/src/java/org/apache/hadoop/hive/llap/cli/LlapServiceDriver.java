@@ -204,7 +204,8 @@ public class LlapServiceDriver {
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MAPPED) == false) {
           // direct heap allocations need to be safer
           Preconditions.checkArgument(options.getCache() < options.getSize(),
-              "Cache has to be smaller than the container sizing");
+              "Cache size (" + humanReadableByteCount(options.getCache()) + ") has to be smaller" +
+                  " than the container sizing (" + humanReadableByteCount(options.getSize()) + ")");
         } else if (options.getCache() < options.getSize()) {
           LOG.warn("Note that this might need YARN physical memory monitoring to be turned off "
               + "(yarn.nodemanager.pmem-check-enabled=false)");
@@ -212,13 +213,18 @@ public class LlapServiceDriver {
       }
       if (options.getXmx() != -1) {
         Preconditions.checkArgument(options.getXmx() < options.getSize(),
-            "Working memory has to be smaller than the container sizing");
+            "Working memory (Xmx=" + humanReadableByteCount(options.getXmx()) + ") has to be" +
+                " smaller than the container sizing (" +
+                humanReadableByteCount(options.getSize()) + ")");
       }
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_DIRECT)
           && false == HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MAPPED)) {
         // direct and not memory mapped
         Preconditions.checkArgument(options.getXmx() + options.getCache() < options.getSize(),
-            "Working memory + cache has to be smaller than the container sizing ");
+            "Working memory + cache (Xmx="+ humanReadableByteCount(options.getXmx()) +
+                " + cache=" + humanReadableByteCount(options.getCache()) + ")"
+                + " has to be smaller than the container sizing (" +
+                humanReadableByteCount(options.getSize()) + ")");
       }
     }
 
@@ -228,7 +234,8 @@ public class LlapServiceDriver {
     if (options.getSize() != -1) {
       containerSize = options.getSize() / (1024 * 1024);
       Preconditions.checkArgument(containerSize >= minAlloc,
-          "Container size should be greater than minimum allocation(%s)", minAlloc + "m");
+          "Container size (" + humanReadableByteCount(options.getSize()) + ") should be greater" +
+              " than minimum allocation(" + humanReadableByteCount(minAlloc * 1024L * 1024L) + ")");
       conf.setLong(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, containerSize);
       propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, String.valueOf(containerSize));
     }
@@ -582,5 +589,13 @@ public class LlapServiceDriver {
     lfs.copyFromLocalFile(new Path(conf.getResource(f).toString()), confPath);
   }
 
-
+  private String humanReadableByteCount(long bytes) {
+    int unit = 1024;
+    if (bytes < unit) {
+      return bytes + "B";
+    }
+    int exp = (int) (Math.log(bytes) / Math.log(unit));
+    String suffix = "KMGTPE".charAt(exp-1) + "";
+    return String.format("%.2f%sB", bytes / Math.pow(unit, exp), suffix);
+  }
 }
