@@ -28,7 +28,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -39,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -211,8 +211,8 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     addJars((new JobConf(this.getClass())).getJar());
 
     // add aux jars
-    addJars(HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS));
-    addJars(SessionState.get().getReloadableAuxJars());
+    addJars(conf.getAuxJars());
+    addJars(SessionState.get() == null ? null : SessionState.get().getReloadableAuxJars());
 
     // add added jars
     String addedJars = Utilities.getResourceFiles(conf, SessionState.ResourceType.JAR);
@@ -242,7 +242,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private void addResources(String addedFiles) throws IOException {
     for (String addedFile : CSV_SPLITTER.split(Strings.nullToEmpty(addedFiles))) {
       try {
-        URI fileUri = SparkUtilities.getURI(addedFile);
+        URI fileUri = FileUtils.getURI(addedFile);
         if (fileUri != null && !localFiles.contains(fileUri)) {
           localFiles.add(fileUri);
           if (SparkUtilities.needUploadToHDFS(fileUri, sparkConf)) {
@@ -259,7 +259,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private void addJars(String addedJars) throws IOException {
     for (String addedJar : CSV_SPLITTER.split(Strings.nullToEmpty(addedJars))) {
       try {
-        URI jarUri = SparkUtilities.getURI(addedJar);
+        URI jarUri = FileUtils.getURI(addedJar);
         if (jarUri != null && !localJars.contains(jarUri)) {
           localJars.add(jarUri);
           if (SparkUtilities.needUploadToHDFS(jarUri, sparkConf)) {

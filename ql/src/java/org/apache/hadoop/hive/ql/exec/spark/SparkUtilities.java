@@ -65,20 +65,6 @@ public class SparkUtilities {
     return copy;
   }
 
-  public static URI getURI(String path) throws URISyntaxException {
-    if (path == null) {
-      return null;
-    }
-
-      URI uri = new URI(path);
-      if (uri.getScheme() == null) {
-        // if no file schema in path, we assume it's file on local fs.
-        uri = new File(path).toURI();
-      }
-
-    return uri;
-  }
-
   /**
    * Uploads a local file to HDFS
    *
