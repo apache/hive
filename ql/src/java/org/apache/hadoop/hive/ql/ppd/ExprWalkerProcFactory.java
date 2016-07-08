@@ -47,6 +47,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.ppd.ExprWalkerInfo.ExprInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Expression factory for predicate pushdown processing. Each processor
@@ -372,7 +374,8 @@ public final class ExprWalkerProcFactory {
 
     ExprInfo exprInfo = ctx.getExprInfo(expr);
     if (exprInfo != null && exprInfo.isCandidate) {
-      ctx.addFinalCandidate(exprInfo.alias, expr);
+      ctx.addFinalCandidate(exprInfo.alias, exprInfo.convertedExpr != null ?
+              exprInfo.convertedExpr : expr);
       return;
     } else if (!FunctionRegistry.isOpAnd(expr) &&
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {

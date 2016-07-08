@@ -386,6 +386,8 @@ public final class OpProcFactory {
       TableScanOperator tsOp = (TableScanOperator) nd;
       mergeWithChildrenPred(tsOp, owi, null, null);
       ExprWalkerInfo pushDownPreds = owi.getPrunedPreds(tsOp);
+      // nonFinalCandidates predicates should be empty
+      assert pushDownPreds == null || !pushDownPreds.hasNonFinalCandidates();
       return createFilter(tsOp, pushDownPreds, owi);
     }
 

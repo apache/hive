@@ -212,6 +212,18 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
     return false;
   }
 
+  public boolean hasNonFinalCandidates() {
+    if (nonFinalPreds == null || nonFinalPreds.isEmpty()) {
+      return false;
+    }
+    for (List<ExprNodeDesc> exprs : nonFinalPreds.values()) {
+      if (!exprs.isEmpty()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * Adds the specified expr as a non-final candidate
    *
