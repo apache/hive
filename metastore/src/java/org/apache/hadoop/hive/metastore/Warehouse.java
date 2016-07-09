@@ -112,16 +112,6 @@ public class Warehouse {
     return getFs(f, conf);
   }
 
-  public static void closeFs(FileSystem fs) throws MetaException {
-    try {
-      if (fs != null) {
-        fs.close();
-      }
-    } catch (IOException e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
-    }
-  }
-
 
   /**
    * Hadoop File System reverse lookups paths with raw ip addresses The File
