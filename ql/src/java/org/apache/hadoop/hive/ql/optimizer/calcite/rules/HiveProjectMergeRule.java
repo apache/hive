@@ -17,13 +17,53 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import java.util.Set;
+
+import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.rules.ProjectMergeRule;
+import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexOver;
+import org.apache.calcite.tools.RelBuilderFactory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 
+/**
+ * ProjectMergeRule merges a {@link org.apache.calcite.rel.core.Project} into
+ * another {@link org.apache.calcite.rel.core.Project},
+ * provided the projects aren't projecting identical sets of input references.
+ */
 public class HiveProjectMergeRule extends ProjectMergeRule {
-  public static final HiveProjectMergeRule INSTANCE = new HiveProjectMergeRule();
 
-  public HiveProjectMergeRule() {
-    super(true, HiveRelFactories.HIVE_BUILDER);
+  public static final HiveProjectMergeRule INSTANCE =
+          new HiveProjectMergeRule(true, HiveRelFactories.HIVE_BUILDER);
+
+  public static final HiveProjectMergeRule INSTANCE_NO_FORCE =
+          new HiveProjectMergeRule(false, HiveRelFactories.HIVE_BUILDER);
+
+
+  private HiveProjectMergeRule(boolean force, RelBuilderFactory relBuilderFactory) {
+    super(force, relBuilderFactory);
   }
+
+  @Override
+  public boolean matches(RelOptRuleCall call) {
+    // Currently we do not support merging windowing functions with other
+    // windowing functions i.e. embedding windowing functions within each
+    // other
+    final Project topProject = call.rel(0);
+    final Project bottomProject = call.rel(1);
+    for (RexNode expr : topProject.getChildExps()) {
+      if (expr instanceof RexOver) {
+        Set<Integer> positions = HiveCalciteUtil.getInputRefs(expr);
+        for (int pos : positions) {
+          if (bottomProject.getChildExps().get(pos) instanceof RexOver) {
+            return false;
+          }
+        }
+      }
+    }
+    return super.matches(call);
+  }
+
 }

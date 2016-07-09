@@ -1014,10 +1014,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 4. Run other optimizations that do not need stats
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
-              HepMatchOrder.BOTTOM_UP,
-              ProjectRemoveRule.INSTANCE, UnionMergeRule.INSTANCE,
-              new ProjectMergeRule(false, HiveRelFactories.HIVE_PROJECT_FACTORY),
-              HiveAggregateProjectMergeRule.INSTANCE, HiveJoinCommuteRule.INSTANCE);
+              HepMatchOrder.BOTTOM_UP, ProjectRemoveRule.INSTANCE, UnionMergeRule.INSTANCE,
+              HiveProjectMergeRule.INSTANCE_NO_FORCE, HiveAggregateProjectMergeRule.INSTANCE,
+              HiveJoinCommuteRule.INSTANCE);
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Optimizations without stats");
 
       // 5. Run aggregate-join transpose (cost based)
@@ -1117,8 +1116,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // TODO: Decorelation of subquery should be done before attempting
       // Partition Pruning; otherwise Expression evaluation may try to execute
       // corelated sub query.
-
-      LOG.info("Jesus - Plan0: " + RelOptUtil.toString(basePlan));
       
       PerfLogger perfLogger = SessionState.getPerfLogger();
 
@@ -1148,8 +1145,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           new HivePreFilteringRule(maxCNFNodeCount));
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
         "Calcite: Prejoin ordering transformation, factor out common filter elements and separating deterministic vs non-deterministic UDF");
-
-      LOG.info("Jesus - Plan2: " + RelOptUtil.toString(basePlan));
 
       // 3. Run exhaustive PPD, add not null filters, transitive inference,
       // constant propagation, constant folding
@@ -1188,8 +1183,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
               rules.toArray(new RelOptRule[rules.size()]));
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
         "Calcite: Prejoin ordering transformation, PPD, not null predicates, transitive inference, constant folding");
-
-      LOG.info("Jesus - Plan3: " + RelOptUtil.toString(basePlan));
 
       // 4. Push down limit through outer join
       // NOTE: We run this after PPD to support old style join syntax.
