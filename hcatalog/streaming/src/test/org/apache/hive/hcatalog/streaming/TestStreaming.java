@@ -64,6 +64,8 @@ import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.orc.impl.OrcAcidUtils;
 import org.apache.orc.tools.FileDump;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
@@ -300,11 +302,11 @@ public class TestStreaming {
     List<String> partitionVals = new ArrayList<String>();
     partitionVals.add("2015");
     HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, "testing5", "store_sales", partitionVals);
+    StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
     DelimitedInputWriter writer = new DelimitedInputWriter(new String[] {"ss_sold_date_sk","ss_sold_time_sk", "ss_item_sk",
       "ss_customer_sk", "ss_cdemo_sk", "ss_hdemo_sk", "ss_addr_sk", "ss_store_sk", "ss_promo_sk", "ss_ticket_number", "ss_quantity",
       "ss_wholesale_cost", "ss_list_price", "ss_sales_price", "ss_ext_discount_amt", "ss_ext_sales_price", "ss_ext_wholesale_cost",
-      "ss_ext_list_price", "ss_ext_tax", "ss_coupon_amt", "ss_net_paid", "ss_net_paid_inc_tax", "ss_net_profit"},",", endPt);
-    StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
+      "ss_ext_list_price", "ss_ext_tax", "ss_coupon_amt", "ss_net_paid", "ss_net_paid_inc_tax", "ss_net_profit"},",", endPt, connection);
 
     TransactionBatch txnBatch =  connection.fetchTransactionBatch(2, writer);
     txnBatch.beginNextTransaction();
@@ -562,8 +564,8 @@ public class TestStreaming {
     // 1)  to partitioned table
     HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName, tblName,
             partitionVals);
-    DelimitedInputWriter writer = new DelimitedInputWriter(fieldNames,",", endPt);
     StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
+    DelimitedInputWriter writer = new DelimitedInputWriter(fieldNames,",", endPt, connection);
 
     TransactionBatch txnBatch =  connection.fetchTransactionBatch(10, writer);
 
@@ -641,8 +643,8 @@ public class TestStreaming {
   @Test
   public void testHeartbeat() throws Exception {
     HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName2, tblName2, null);
-    DelimitedInputWriter writer = new DelimitedInputWriter(fieldNames2,",", endPt);
     StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
+    DelimitedInputWriter writer = new DelimitedInputWriter(fieldNames2,",", endPt, connection);
 
     TransactionBatch txnBatch =  connection.fetchTransactionBatch(5, writer);
     txnBatch.beginNextTransaction();
@@ -670,8 +672,8 @@ public class TestStreaming {
     // 1) to partitioned table
     HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName, tblName,
             partitionVals);
-    DelimitedInputWriter writer = new DelimitedInputWriter(fieldNames,",", endPt);
     StreamingConnection connection = endPt.newConnection(true, "UT_" + Thread.currentThread().getName());
+    DelimitedInputWriter writer = new DelimitedInputWriter(fieldNames,",", endPt, connection);
 
     TransactionBatch txnBatch =  connection.fetchTransactionBatch(10, writer);
     txnBatch.beginNextTransaction();
@@ -697,28 +699,35 @@ public class TestStreaming {
 
   @Test
   public void testTransactionBatchCommit_Delimited() throws Exception {
+    testTransactionBatchCommit_Delimited(null);
+  }
+  @Test
+  public void testTransactionBatchCommit_DelimitedUGI() throws Exception {
+    testTransactionBatchCommit_Delimited(Utils.getUGI());
+  }
+  private void testTransactionBatchCommit_Delimited(UserGroupInformation ugi) throws Exception {
     HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName, tblName,
-            partitionVals);
-    DelimitedInputWriter writer = new DelimitedInputWriter(fieldNames,",", endPt);
-    StreamingConnection connection = endPt.newConnection(true, "UT_" + Thread.currentThread().getName());
+      partitionVals);
+    StreamingConnection connection = endPt.newConnection(true, conf, ugi, "UT_" + Thread.currentThread().getName());
+    DelimitedInputWriter writer = new DelimitedInputWriter(fieldNames,",", endPt, conf, connection);
 
     // 1st Txn
     TransactionBatch txnBatch =  connection.fetchTransactionBatch(10, writer);
     txnBatch.beginNextTransaction();
     Assert.assertEquals(TransactionBatch.TxnState.OPEN
-            , txnBatch.getCurrentTransactionState());
+      , txnBatch.getCurrentTransactionState());
     txnBatch.write("1,Hello streaming".getBytes());
     txnBatch.commit();
 
     checkDataWritten(partLoc, 1, 10, 1, 1, "{1, Hello streaming}");
 
     Assert.assertEquals(TransactionBatch.TxnState.COMMITTED
-            , txnBatch.getCurrentTransactionState());
+      , txnBatch.getCurrentTransactionState());
 
     // 2nd Txn
     txnBatch.beginNextTransaction();
     Assert.assertEquals(TransactionBatch.TxnState.OPEN
-            , txnBatch.getCurrentTransactionState());
+      , txnBatch.getCurrentTransactionState());
     txnBatch.write("2,Welcome to streaming".getBytes());
 
     // data should not be visible
@@ -727,11 +736,11 @@ public class TestStreaming {
     txnBatch.commit();
 
     checkDataWritten(partLoc, 1, 10, 1, 1, "{1, Hello streaming}",
-        "{2, Welcome to streaming}");
+      "{2, Welcome to streaming}");
 
     txnBatch.close();
     Assert.assertEquals(TransactionBatch.TxnState.INACTIVE
-            , txnBatch.getCurrentTransactionState());
+      , txnBatch.getCurrentTransactionState());
 
 
     connection.close();
@@ -739,19 +748,19 @@ public class TestStreaming {
 
     // To Unpartitioned table
     endPt = new HiveEndPoint(metaStoreURI, dbName2, tblName2, null);
-    writer = new DelimitedInputWriter(fieldNames,",", endPt);
-    connection = endPt.newConnection(true, "UT_" + Thread.currentThread().getName());
+    connection = endPt.newConnection(true, conf, ugi, "UT_" + Thread.currentThread().getName());
+    writer = new DelimitedInputWriter(fieldNames,",", endPt, conf, connection);
 
     // 1st Txn
     txnBatch =  connection.fetchTransactionBatch(10, writer);
     txnBatch.beginNextTransaction();
     Assert.assertEquals(TransactionBatch.TxnState.OPEN
-            , txnBatch.getCurrentTransactionState());
+      , txnBatch.getCurrentTransactionState());
     txnBatch.write("1,Hello streaming".getBytes());
     txnBatch.commit();
 
     Assert.assertEquals(TransactionBatch.TxnState.COMMITTED
-            , txnBatch.getCurrentTransactionState());
+      , txnBatch.getCurrentTransactionState());
     connection.close();
   }
 
@@ -759,8 +768,8 @@ public class TestStreaming {
   public void testTransactionBatchCommit_Json() throws Exception {
     HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName, tblName,
             partitionVals);
-    StrictJsonWriter writer = new StrictJsonWriter(endPt);
     StreamingConnection connection = endPt.newConnection(true, "UT_" + Thread.currentThread().getName());
+    StrictJsonWriter writer = new StrictJsonWriter(endPt, connection);
 
     // 1st Txn
     TransactionBatch txnBatch =  connection.fetchTransactionBatch(10, writer);
@@ -844,8 +853,8 @@ public class TestStreaming {
 
     HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName, tblName,
             partitionVals);
-    DelimitedInputWriter writer = new DelimitedInputWriter(fieldNames,",", endPt);
     StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
+    DelimitedInputWriter writer = new DelimitedInputWriter(fieldNames,",", endPt, connection);
 
 
     TransactionBatch txnBatch =  connection.fetchTransactionBatch(10, writer);
@@ -872,8 +881,8 @@ public class TestStreaming {
     String agentInfo = "UT_" + Thread.currentThread().getName();
     HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName, tblName,
             partitionVals);
-    DelimitedInputWriter writer = new DelimitedInputWriter(fieldNames,",", endPt);
     StreamingConnection connection = endPt.newConnection(false, agentInfo);
+    DelimitedInputWriter writer = new DelimitedInputWriter(fieldNames,",", endPt, connection);
 
     TransactionBatch txnBatch =  connection.fetchTransactionBatch(10, writer);
     txnBatch.beginNextTransaction();
@@ -1173,8 +1182,8 @@ public class TestStreaming {
 
     // 2) Insert data into both tables
     HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName3, tblName3, null);
-    DelimitedInputWriter writer = new DelimitedInputWriter(colNames,",", endPt);
     StreamingConnection connection = endPt.newConnection(false, agentInfo);
+    DelimitedInputWriter writer = new DelimitedInputWriter(colNames,",", endPt, connection);
 
     TransactionBatch txnBatch =  connection.fetchTransactionBatch(2, writer);
     txnBatch.beginNextTransaction();
@@ -1186,8 +1195,8 @@ public class TestStreaming {
 
 
     HiveEndPoint endPt2 = new HiveEndPoint(metaStoreURI, dbName4, tblName4, null);
-    DelimitedInputWriter writer2 = new DelimitedInputWriter(colNames2,",", endPt2);
     StreamingConnection connection2 = endPt2.newConnection(false, agentInfo);
+    DelimitedInputWriter writer2 = new DelimitedInputWriter(colNames2,",", endPt2, connection);
     TransactionBatch txnBatch2 =  connection2.fetchTransactionBatch(2, writer2);
     txnBatch2.beginNextTransaction();
 
@@ -1250,8 +1259,8 @@ public class TestStreaming {
 
     // 2) Insert data into both tables
     HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName3, tblName3, null);
-    DelimitedInputWriter writer = new DelimitedInputWriter(colNames,",", endPt);
     StreamingConnection connection = endPt.newConnection(false, agentInfo);
+    DelimitedInputWriter writer = new DelimitedInputWriter(colNames,",", endPt, connection);
 
     TransactionBatch txnBatch =  connection.fetchTransactionBatch(2, writer);
     txnBatch.beginNextTransaction();
@@ -1322,8 +1331,8 @@ public class TestStreaming {
 
     // 2) Insert data into both tables
     HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName3, tblName3, null);
-    DelimitedInputWriter writer = new DelimitedInputWriter(colNames,",", endPt);
     StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
+    DelimitedInputWriter writer = new DelimitedInputWriter(colNames,",", endPt, connection);
 
     // we need side file for this test, so we create 2 txn batch and test with only one
     TransactionBatch txnBatch =  connection.fetchTransactionBatch(2, writer);
@@ -1448,8 +1457,8 @@ public class TestStreaming {
 
     // 2) Insert data into both tables
     HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName3, tblName3, null);
-    DelimitedInputWriter writer = new DelimitedInputWriter(colNames,",", endPt);
     StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
+    DelimitedInputWriter writer = new DelimitedInputWriter(colNames,",", endPt, connection);
 
     TransactionBatch txnBatch =  connection.fetchTransactionBatch(2, writer);
     txnBatch.beginNextTransaction();
@@ -1670,9 +1679,9 @@ public class TestStreaming {
     runCmdOnDriver("create table T(a int, b int) clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
 
     HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, "testErrors", "T", null);
-    DelimitedInputWriter innerWriter = new DelimitedInputWriter("a,b".split(","),",", endPt);
-    FaultyWriter writer = new FaultyWriter(innerWriter);
     StreamingConnection connection = endPt.newConnection(false, agentInfo);
+    DelimitedInputWriter innerWriter = new DelimitedInputWriter("a,b".split(","),",", endPt, connection);
+    FaultyWriter writer = new FaultyWriter(innerWriter);
 
     TransactionBatch txnBatch =  connection.fetchTransactionBatch(2, writer);
     txnBatch.close();
