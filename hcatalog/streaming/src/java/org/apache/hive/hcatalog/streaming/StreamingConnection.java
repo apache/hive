@@ -18,6 +18,8 @@
 
 package org.apache.hive.hcatalog.streaming;
 
+import org.apache.hadoop.security.UserGroupInformation;
+
 /**
  * Represents a connection to a HiveEndPoint. Used to acquire transaction batches.
  */
@@ -46,4 +48,8 @@ public interface StreamingConnection {
    */
   public void close();
 
+  /**
+   * @return UserGroupInformation associated with this connection or {@code null} if there is none
+   */
+  UserGroupInformation getUserGroupInformation();
 }
