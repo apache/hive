@@ -46,28 +46,40 @@ public class StrictJsonWriter extends AbstractRecordWriter {
   private final StructField[] bucketStructFields;
 
   /**
-   *
-   * @param endPoint the end point to write to
-   * @throws ConnectionError
-   * @throws SerializationError
-   * @throws StreamingException
+   * @deprecated As of release 1.3/2.1.  Replaced by {@link #StrictJsonWriter(HiveEndPoint, HiveConf, StreamingConnection)}
    */
   public StrictJsonWriter(HiveEndPoint endPoint)
-          throws ConnectionError, SerializationError, StreamingException {
-    this(endPoint, null);
+    throws ConnectionError, SerializationError, StreamingException {
+    this(endPoint, null, null);
   }
 
   /**
-   *
+   * @deprecated As of release 1.3/2.1.  Replaced by {@link #StrictJsonWriter(HiveEndPoint, HiveConf, StreamingConnection)}
+   */
+  public StrictJsonWriter(HiveEndPoint endPoint, HiveConf conf) throws StreamingException {
+    this(endPoint, conf, null);
+  }
+  /**
    * @param endPoint the end point to write to
-   * @param conf a Hive conf object. Should be null if not using advanced Hive settings.
    * @throws ConnectionError
    * @throws SerializationError
    * @throws StreamingException
    */
-  public StrictJsonWriter(HiveEndPoint endPoint, HiveConf conf)
+  public StrictJsonWriter(HiveEndPoint endPoint, StreamingConnection conn)
           throws ConnectionError, SerializationError, StreamingException {
-    super(endPoint, conf);
+    this(endPoint, null, conn);
+  }
+  /**
+   * @param endPoint the end point to write to
+   * @param conf a Hive conf object. Should be null if not using advanced Hive settings.
+   * @param conn connection this Writer is to be used with
+   * @throws ConnectionError
+   * @throws SerializationError
+   * @throws StreamingException
+   */
+  public StrictJsonWriter(HiveEndPoint endPoint, HiveConf conf, StreamingConnection conn)
+          throws ConnectionError, SerializationError, StreamingException {
+    super(endPoint, conf, conn);
     this.serde = createSerde(tbl, conf);
     // get ObjInspectors for entire record and bucketed cols
     try {

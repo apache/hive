@@ -37,12 +37,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.thrift.TException;
 
 import java.io.IOException;
 
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -68,34 +70,59 @@ abstract class AbstractRecordWriter implements RecordWriter {
   private Long curBatchMinTxnId;
   private Long curBatchMaxTxnId;
 
+  private static final class TableWriterPair {
+    private final Table tbl;
+    private final Path partitionPath;
+    TableWriterPair(Table t, Path p) {
+      tbl = t;
+      partitionPath = p;
+    }
+  }
+  /**
+   * @deprecated As of release 1.3/2.1.  Replaced by {@link #AbstractRecordWriter(HiveEndPoint, HiveConf, StreamingConnection)}
+   */
   protected AbstractRecordWriter(HiveEndPoint endPoint, HiveConf conf)
-          throws ConnectionError, StreamingException {
-    this.endPoint = endPoint;
+    throws ConnectionError, StreamingException {
+    this(endPoint, conf, null);
+  }
+  protected AbstractRecordWriter(HiveEndPoint endPoint2, HiveConf conf, StreamingConnection conn)
+          throws StreamingException {
+    this.endPoint = endPoint2;
     this.conf = conf!=null ? conf
                 : HiveEndPoint.createHiveConf(DelimitedInputWriter.class, endPoint.metaStoreUri);
     try {
       msClient = HCatUtil.getHiveMetastoreClient(this.conf);
-      this.tbl = msClient.getTable(endPoint.database, endPoint.table);
-      this.partitionPath = getPathForEndPoint(msClient, endPoint);
-      this.totalBuckets = tbl.getSd().getNumBuckets();
-      if(totalBuckets <= 0) {
-        throw new StreamingException("Cannot stream to table that has not been bucketed : "
-                + endPoint);
+      UserGroupInformation ugi = conn != null ? conn.getUserGroupInformation() : null;
+      if (ugi == null) {
+        this.tbl = msClient.getTable(endPoint.database, endPoint.table);
+        this.partitionPath = getPathForEndPoint(msClient, endPoint);
+      } else {
+        TableWriterPair twp = ugi.doAs(
+          new PrivilegedExceptionAction<TableWriterPair>() {
+            @Override
+            public TableWriterPair run() throws Exception {
+              return new TableWriterPair(msClient.getTable(endPoint.database, endPoint.table),
+                getPathForEndPoint(msClient, endPoint));
+            }
+          });
+        this.tbl = twp.tbl;
+        this.partitionPath = twp.partitionPath;
       }
-      this.bucketIds = getBucketColIDs(tbl.getSd().getBucketCols(), tbl.getSd().getCols()) ;
+      this.totalBuckets = tbl.getSd().getNumBuckets();
+      if (totalBuckets <= 0) {
+        throw new StreamingException("Cannot stream to table that has not been bucketed : "
+          + endPoint);
+      }
+      this.bucketIds = getBucketColIDs(tbl.getSd().getBucketCols(), tbl.getSd().getCols());
       this.bucketFieldData = new Object[bucketIds.size()];
       String outFormatName = this.tbl.getSd().getOutputFormat();
-      outf = (AcidOutputFormat<?,?>) ReflectionUtils.newInstance(JavaUtils.loadClass(outFormatName), conf);
+      outf = (AcidOutputFormat<?, ?>) ReflectionUtils.newInstance(JavaUtils.loadClass(outFormatName), conf);
       bucketFieldData = new Object[bucketIds.size()];
-    } catch (MetaException e) {
-      throw new ConnectionError(endPoint, e);
-    } catch (NoSuchObjectException e) {
-      throw new ConnectionError(endPoint, e);
-    } catch (TException e) {
-      throw new StreamingException(e.getMessage(), e);
-    } catch (ClassNotFoundException e) {
-      throw new StreamingException(e.getMessage(), e);
-    } catch (IOException e) {
+    } catch(InterruptedException e) {
+      throw new StreamingException(endPoint2.toString(), e);
+    } catch (MetaException | NoSuchObjectException e) {
+      throw new ConnectionError(endPoint2, e);
+    } catch (TException | ClassNotFoundException | IOException e) {
       throw new StreamingException(e.getMessage(), e);
     }
   }

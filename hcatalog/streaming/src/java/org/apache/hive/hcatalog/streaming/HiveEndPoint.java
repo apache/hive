@@ -97,7 +97,7 @@ public class HiveEndPoint {
 
 
   /**
-   * @deprecated Use {@link #newConnection(boolean, String)}
+   * @deprecated As of release 1.3/2.1.  Replaced by {@link #newConnection(boolean, String)}
    */
   public StreamingConnection newConnection(final boolean createPartIfNotExists)
     throws ConnectionError, InvalidPartition, InvalidTable, PartitionCreationFailed
@@ -105,7 +105,7 @@ public class HiveEndPoint {
     return newConnection(createPartIfNotExists, null, null, null);
   }
   /**
-   * @deprecated Use {@link #newConnection(boolean, HiveConf, String)}
+   * @deprecated As of release 1.3/2.1.  Replaced by {@link #newConnection(boolean, HiveConf, String)}
    */
   public StreamingConnection newConnection(final boolean createPartIfNotExists, HiveConf conf)
     throws ConnectionError, InvalidPartition, InvalidTable, PartitionCreationFailed
@@ -113,7 +113,7 @@ public class HiveEndPoint {
     return newConnection(createPartIfNotExists, conf, null, null);
   }
   /**
-   * @deprecated Use {@link #newConnection(boolean, HiveConf, UserGroupInformation, String)}
+   * @deprecated As of release 1.3/2.1.  Replaced by {@link #newConnection(boolean, HiveConf, UserGroupInformation, String)}
    */
   public StreamingConnection newConnection(final boolean createPartIfNotExists, final HiveConf conf,
                                            final UserGroupInformation authenticatedUser)
@@ -395,6 +395,10 @@ public class HiveEndPoint {
       }
     }
 
+    @Override
+    public UserGroupInformation getUserGroupInformation() {
+      return ugi;
+    }
 
     /**
      * Acquires a new batch of transactions from Hive.

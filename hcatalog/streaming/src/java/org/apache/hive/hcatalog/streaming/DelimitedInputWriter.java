@@ -73,12 +73,11 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
    * @throws InvalidColumn any element in colNamesForFields refers to a non existing column
    */
   public DelimitedInputWriter(String[] colNamesForFields, String delimiter,
-                              HiveEndPoint endPoint)
-          throws ClassNotFoundException, ConnectionError, SerializationError,
-                 InvalidColumn, StreamingException {
-    this(colNamesForFields, delimiter, endPoint, null);
+                              HiveEndPoint endPoint, StreamingConnection conn)
+    throws ClassNotFoundException, ConnectionError, SerializationError,
+      InvalidColumn, StreamingException {
+    this(colNamesForFields, delimiter, endPoint, null, conn);
   }
-
  /** Constructor. Uses default separator of the LazySimpleSerde
   * @param colNamesForFields Column name assignment for input fields. nulls or empty
   *                          strings in the array indicates the fields to be skipped
@@ -92,13 +91,12 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
   * @throws InvalidColumn any element in colNamesForFields refers to a non existing column
   */
    public DelimitedInputWriter(String[] colNamesForFields, String delimiter,
-                              HiveEndPoint endPoint, HiveConf conf)
+                              HiveEndPoint endPoint, HiveConf conf, StreamingConnection conn)
           throws ClassNotFoundException, ConnectionError, SerializationError,
                  InvalidColumn, StreamingException {
      this(colNamesForFields, delimiter, endPoint, conf,
-             (char) LazySerDeParameters.DefaultSeparators[0]);
+       (char) LazySerDeParameters.DefaultSeparators[0], conn);
    }
-
   /**
    * Constructor. Allows overriding separator of the LazySimpleSerde
    * @param colNamesForFields Column name assignment for input fields
@@ -108,6 +106,7 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
    * @param serdeSeparator separator used when encoding data that is fed into the
    *                             LazySimpleSerde. Ensure this separator does not occur
    *                             in the field data
+   * @param conn connection this Writer is to be used with
    * @throws ConnectionError Problem talking to Hive
    * @throws ClassNotFoundException Serde class not found
    * @throws SerializationError Serde initialization/interaction failed
@@ -115,10 +114,10 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
    * @throws InvalidColumn any element in colNamesForFields refers to a non existing column
    */
   public DelimitedInputWriter(String[] colNamesForFields, String delimiter,
-                              HiveEndPoint endPoint, HiveConf conf, char serdeSeparator)
+                              HiveEndPoint endPoint, HiveConf conf, char serdeSeparator, StreamingConnection conn)
           throws ClassNotFoundException, ConnectionError, SerializationError,
                  InvalidColumn, StreamingException {
-    super(endPoint, conf);
+    super(endPoint, conf, conn);
     this.tableColumns = getCols(tbl);
     this.serdeSeparator = serdeSeparator;
     this.delimiter = delimiter;
@@ -142,6 +141,33 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
     for (int i = 0; i < bucketIds.size(); i++) {
       bucketStructFields[i] = allFields.get(bucketIds.get(i));
     }
+  }
+  /**
+   * @deprecated As of release 1.3/2.1.  Replaced by {@link #DelimitedInputWriter(String[], String, HiveEndPoint, StreamingConnection)}
+   */
+  public DelimitedInputWriter(String[] colNamesForFields, String delimiter,
+                              HiveEndPoint endPoint)
+    throws ClassNotFoundException, ConnectionError, SerializationError,
+    InvalidColumn, StreamingException {
+    this(colNamesForFields, delimiter, endPoint, null, null);
+  }
+  /**
+   * @deprecated As of release 1.3/2.1.  Replaced by {@link #DelimitedInputWriter(String[], String, HiveEndPoint, HiveConf, StreamingConnection)}
+   */
+  public DelimitedInputWriter(String[] colNamesForFields, String delimiter,
+                              HiveEndPoint endPoint, HiveConf conf)
+    throws ClassNotFoundException, ConnectionError, SerializationError,
+    InvalidColumn, StreamingException {
+    this(colNamesForFields, delimiter, endPoint, conf,
+      (char) LazySerDeParameters.DefaultSeparators[0], null);
+  }
+  /**
+   * @deprecated As of release 1.3/2.1.  Replaced by {@link #DelimitedInputWriter(String[], String, HiveEndPoint, HiveConf, char, StreamingConnection)}
+   */
+  public DelimitedInputWriter(String[] colNamesForFields, String delimiter,
+                              HiveEndPoint endPoint, HiveConf conf, char serdeSeparator)
+    throws ClassNotFoundException, StreamingException {
+    this(colNamesForFields, delimiter, endPoint, conf, serdeSeparator, null);
   }
 
   private boolean isReorderingNeeded(String delimiter, ArrayList<String> tableColumns) {
