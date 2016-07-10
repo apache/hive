@@ -2645,6 +2645,10 @@ public class ObjectStore implements RawStore, Configurable {
       // the fallback from failed SQL to JDO is not possible.
       boolean isConfigEnabled = HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL)
           && (HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL_DDL) || !isInTxn);
+      if (isConfigEnabled && directSql == null) {
+        directSql = new MetaStoreDirectSql(pm, getConf());
+      }
+
       if (!allowJdo && isConfigEnabled && !directSql.isCompatibleDatastore()) {
         throw new MetaException("SQL is not operational"); // test path; SQL is enabled and broken.
       }
