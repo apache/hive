@@ -17,7 +17,8 @@ THISSERVICE=cli
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 # Set old CLI as the default client
-if [ -n '$USE_DEPRECATED_CLI' ]; then
+# if USE_DEPRECATED_CLI is not set or is not equal to false use old CLI
+if [ -z "$USE_DEPRECATED_CLI" ] || [ "$USE_DEPRECATED_CLI" != "false" ]; then
   USE_DEPRECATED_CLI="true"
 fi
 
