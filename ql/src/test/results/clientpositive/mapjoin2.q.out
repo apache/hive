@@ -1,0 +1,56 @@
+PREHOOK: query: create table tbl (n bigint, t string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl
+POSTHOOK: query: create table tbl (n bigint, t string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl
+PREHOOK: query: insert into tbl values (1, 'one')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@tbl
+POSTHOOK: query: insert into tbl values (1, 'one')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@tbl
+POSTHOOK: Lineage: tbl.n EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: tbl.t SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: insert into tbl values(2, 'two')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@tbl
+POSTHOOK: query: insert into tbl values(2, 'two')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@tbl
+POSTHOOK: Lineage: tbl.n EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: tbl.t SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: select a.n, a.t, isnull(b.n), isnull(b.t) from (select * from tbl where n = 1) a  left outer join  (select * from tbl where 1 = 2) b on a.n = b.n
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl
+#### A masked pattern was here ####
+POSTHOOK: query: select a.n, a.t, isnull(b.n), isnull(b.t) from (select * from tbl where n = 1) a  left outer join  (select * from tbl where 1 = 2) b on a.n = b.n
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl
+#### A masked pattern was here ####
+1	one	true	true
+PREHOOK: query: select isnull(a.n), isnull(a.t), b.n, b.t from (select * from tbl where 2 = 1) a  right outer join  (select * from tbl where n = 2) b on a.n = b.n
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl
+#### A masked pattern was here ####
+POSTHOOK: query: select isnull(a.n), isnull(a.t), b.n, b.t from (select * from tbl where 2 = 1) a  right outer join  (select * from tbl where n = 2) b on a.n = b.n
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl
+#### A masked pattern was here ####
+true	true	2	two
+PREHOOK: query: select isnull(a.n), isnull(a.t), isnull(b.n), isnull(b.t) from (select * from tbl where n = 1) a  full outer join  (select * from tbl where n = 2) b on a.n = b.n
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl
+#### A masked pattern was here ####
+POSTHOOK: query: select isnull(a.n), isnull(a.t), isnull(b.n), isnull(b.t) from (select * from tbl where n = 1) a  full outer join  (select * from tbl where n = 2) b on a.n = b.n
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl
+#### A masked pattern was here ####
+false	false	true	true
+true	true	false	false
