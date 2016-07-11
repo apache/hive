@@ -107,23 +107,31 @@ public class GenTezUtils {
     reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
 
     if (isAutoReduceParallelism && reduceSink.getConf().getReducerTraits().contains(AUTOPARALLEL)) {
-      reduceWork.setAutoReduceParallelism(true);
 
       // configured limit for reducers
-      int maxReducers = context.conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
+      final int maxReducers = context.conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
+      // estimated number of reducers
+      final int nReducers = reduceSink.getConf().getNumReducers();
 
       // min we allow tez to pick
-      int minPartition = Math.max(1, (int) (reduceSink.getConf().getNumReducers()
-        * minPartitionFactor));
+      int minPartition = Math.max(1, (int) (nReducers * minPartitionFactor));
       minPartition = (minPartition > maxReducers) ? maxReducers : minPartition;
 
       // max we allow tez to pick
-      int maxPartition = (int) (reduceSink.getConf().getNumReducers() * maxPartitionFactor);
-      maxPartition = Math.max(1, (maxPartition > maxReducers) ? maxReducers :
-          maxPartition);
+      int maxPartition = Math.max(1, (int) (nReducers * maxPartitionFactor));
+      maxPartition = (maxPartition > maxReducers) ? maxReducers : maxPartition;
 
-      reduceWork.setMinReduceTasks(minPartition);
-      reduceWork.setMaxReduceTasks(maxPartition);
+      // reduce only if the parameters are significant
+      if (minPartition < maxPartition &&
+          nReducers * minPartitionFactor >= 1.0) {
+        reduceWork.setAutoReduceParallelism(true);
+
+        reduceWork.setMinReduceTasks(minPartition);
+        reduceWork.setMaxReduceTasks(maxPartition);
+      } else if (nReducers < maxPartition) {
+        // the max is good, the min is too low
+        reduceWork.setNumReduceTasks(maxPartition);
+      }
     }
 
     setupReduceSink(context, reduceWork, reduceSink);
