@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
@@ -26,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
 import org.apache.hadoop.hive.metastore.api.*;
@@ -709,56 +709,6 @@ public class DbTxnManager extends HiveTxnManagerImpl {
             new LockException("Failed trying to heartbeat queryId=" + queryId + ": "
                 + t.getMessage(), t);
       }
-    }
-  }
-
-  /**
-   * Synchronized MetaStoreClient wrapper
-   */
-  final class SynchronizedMetaStoreClient {
-    private final IMetaStoreClient client;
-    SynchronizedMetaStoreClient(IMetaStoreClient client) {
-      this.client = client;
-    }
-
-    synchronized long openTxn(String user) throws TException {
-      return client.openTxn(user);
-    }
-
-    synchronized void commitTxn(long txnid) throws TException {
-      client.commitTxn(txnid);
-    }
-
-    synchronized void rollbackTxn(long txnid) throws TException {
-      client.rollbackTxn(txnid);
-    }
-
-    synchronized void heartbeat(long txnid, long lockid) throws TException {
-      client.heartbeat(txnid, lockid);
-    }
-
-    synchronized ValidTxnList getValidTxns(long currentTxn) throws TException {
-      return client.getValidTxns(currentTxn);
-    }
-
-    synchronized LockResponse lock(LockRequest request) throws TException {
-      return client.lock(request);
-    }
-
-    synchronized LockResponse checkLock(long lockid) throws TException {
-      return client.checkLock(lockid);
-    }
-
-    synchronized void unlock(long lockid) throws TException {
-      client.unlock(lockid);
-    }
-
-    synchronized ShowLocksResponse showLocks(ShowLocksRequest showLocksRequest) throws TException {
-      return client.showLocks(showLocksRequest);
-    }
-
-    synchronized void close() {
-      client.close();
     }
   }
 }
