@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-import com.esotericsoftware.kryo.KryoException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
@@ -63,11 +62,15 @@ import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.esotericsoftware.kryo.KryoException;
 
 /**
  * Map side Join operator implementation.
@@ -239,19 +242,30 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     if (valueIndex == null) {
       return super.getValueObjectInspectors(alias, aliasToObjectInspectors);
     }
-    unwrapContainer[alias] = new UnwrapRowContainer(alias, valueIndex, hasFilter(alias));
 
     List<ObjectInspector> inspectors = aliasToObjectInspectors[alias];
-
     int bigPos = conf.getPosBigTable();
+    Converter[] converters = new Converter[valueIndex.length];
     List<ObjectInspector> valueOI = new ArrayList<ObjectInspector>();
     for (int i = 0; i < valueIndex.length; i++) {
       if (valueIndex[i] >= 0 && !joinKeysObjectInspectors[bigPos].isEmpty()) {
-        valueOI.add(joinKeysObjectInspectors[bigPos].get(valueIndex[i]));
+        if (conf.getNoOuterJoin()) {
+          valueOI.add(joinKeysObjectInspectors[bigPos].get(valueIndex[i]));
+        } else {
+          // It is an outer join. We are going to add the inspector from the
+          // inner side, but the key value will come from the outer side, so
+          // we need to create a converter from inputOI to outputOI.
+          valueOI.add(inspectors.get(i));
+          converters[i] = ObjectInspectorConverters.getConverter(
+                  joinKeysObjectInspectors[bigPos].get(valueIndex[i]), inspectors.get(i));
+        }
       } else {
         valueOI.add(inspectors.get(i));
       }
     }
+
+    unwrapContainer[alias] = new UnwrapRowContainer(alias, valueIndex, converters, hasFilter(alias));
+
     return valueOI;
   }
 
