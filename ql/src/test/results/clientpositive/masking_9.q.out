@@ -1,0 +1,64 @@
+PREHOOK: query: drop table masking_test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table masking_test
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create temporary table masking_test as select cast(key as int) as key, value from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test
+POSTHOOK: query: create temporary table masking_test as select cast(key as int) as key, value from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test
+PREHOOK: query: explain select ROW__ID from masking_test
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select ROW__ID from masking_test
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: masking_test
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
+                outputColumnNames: _col0
+                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select ROW__ID from masking_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test
+#### A masked pattern was here ####
+POSTHOOK: query: select ROW__ID from masking_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test
+#### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
