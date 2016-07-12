@@ -935,8 +935,8 @@ WITH SERDEPROPERTIES (
   'hbase.columns.mapping'='cf:string', 
   'serialization.format'='1')
 TBLPROPERTIES (
-  'COLUMN_STATS_ACCURATE'='{\"BASIC_STATS\":\"true\"}', 
   'hbase.table.name'='hbase_table_0', 
+#### A masked pattern was here ####
   'numFiles'='0', 
   'numRows'='0', 
   'rawDataSize'='0', 
