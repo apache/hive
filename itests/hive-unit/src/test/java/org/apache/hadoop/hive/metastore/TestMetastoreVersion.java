@@ -106,12 +106,14 @@ public class TestMetastoreVersion extends TestCase {
   }
 
   /***
-   * Test that with no verification, hive populates the schema and version correctly
+   * Test that with no verification, and record verification enabled, hive populates the schema
+   * and version correctly
    * @throws Exception
    */
   public void testMetastoreVersion () throws Exception {
     // let the schema and version be auto created
     System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString(), "false");
+    System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION_RECORD_VERSION.toString(), "true");
     hiveConf = new HiveConf(this.getClass());
     SessionState.start(new CliSessionState(hiveConf));
     driver = new Driver(hiveConf);
