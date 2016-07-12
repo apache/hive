@@ -1051,11 +1051,21 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     options.setSyncFolder(true);
     options.setSkipCRC(true);
     options.preserve(FileAttribute.BLOCKSIZE);
+
+    // Creates the command-line parameters for distcp
+    String[] params = {"-update", "-skipcrccheck", src.toString(), dst.toString()};
+
     try {
       conf.setBoolean("mapred.mapper.new-api", true);
       DistCp distcp = new DistCp(conf, options);
-      distcp.execute();
-      return true;
+
+      // HIVE-13704 states that we should use run() instead of execute() due to a hadoop known issue
+      // added by HADOOP-10459
+      if (distcp.run(params) == 0) {
+        return true;
+      } else {
+        return false;
+      }
     } catch (Exception e) {
       throw new IOException("Cannot execute DistCp process: " + e, e);
     } finally {
