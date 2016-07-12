@@ -200,6 +200,7 @@ public class OperationManager extends AbstractService {
   }
 
   private void addOperation(Operation operation) {
+    LOG.info("Adding operation: " + operation.getHandle());
     handleToOperation.put(operation.getHandle(), operation);
     if (operation instanceof SQLOperation) {
       synchronized (webuiLock) {
@@ -267,9 +268,10 @@ public class OperationManager extends AbstractService {
   }
 
   public void closeOperation(OperationHandle opHandle) throws HiveSQLException {
+    LOG.info("Closing operation: " + opHandle);
     Operation operation = removeOperation(opHandle);
     if (operation == null) {
-      throw new HiveSQLException("Operation does not exist!");
+      throw new HiveSQLException("Operation does not exist: " + opHandle);
     }
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
