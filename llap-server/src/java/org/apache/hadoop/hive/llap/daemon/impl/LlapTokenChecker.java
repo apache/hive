@@ -84,7 +84,7 @@ public final class LlapTokenChecker {
     String userName = kerberosName, appId = null;
     boolean isSigningRequired = false;
     for (LlapTokenIdentifier llapId : tokens) {
-      String newUserName = llapId.getRealUser().toString();
+      String newUserName = llapId.getOwner().toString();
       if (userName != null && !userName.equals(newUserName)) {
         throw new SecurityException("Ambiguous user name from credentials - " + userName
             + " and " + newUserName + " from " + llapId
@@ -123,7 +123,7 @@ public final class LlapTokenChecker {
     }
     if (tokens != null) {
       for (LlapTokenIdentifier llapId : tokens) {
-        String tokenUser = llapId.getRealUser().toString(), tokenAppId = llapId.getAppId();
+        String tokenUser = llapId.getOwner().toString(), tokenAppId = llapId.getAppId();
         if (checkTokenPermissions(userName, appId, tokenUser, tokenAppId)) return;
       }
     }
