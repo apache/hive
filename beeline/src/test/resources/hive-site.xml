@@ -24,10 +24,15 @@
     <description>Internal marker for test. Used for masking env-dependent values</description>
   </property>
 
-<property>
-  <name>datanucleus.schema.autoCreateAll</name>
-  <value>true</value>
-</property>
+  <property>
+    <name>datanucleus.schema.autoCreateAll</name>
+    <value>true</value>
+  </property>
+
+  <property>
+    <name>hive.metastore.schema.verification</name>
+    <value>false</value>
+  </property>
 
   <property>
     <name>javax.jdo.option.ConnectionURL</name>
