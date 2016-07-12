@@ -124,6 +124,8 @@ public class Context {
   private final String stagingDir;
 
   private Heartbeater heartbeater;
+  
+  private boolean skipTableMasking;
 
   public Context(Configuration conf) throws IOException {
     this(conf, generateExecutionId());
@@ -777,5 +779,13 @@ public class Context {
     if (getHeartbeater() != null && getHeartbeater().getLockException() != null) {
       throw getHeartbeater().getLockException();
     }
+  }
+
+  public boolean isSkipTableMasking() {
+    return skipTableMasking;
+  }
+
+  public void setSkipTableMasking(boolean skipTableMasking) {
+    this.skipTableMasking = skipTableMasking;
   }
 }

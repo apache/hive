@@ -17,16 +17,16 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
@@ -46,10 +46,12 @@ public class TableMask {
   private boolean enable;
   private boolean needsRewrite;
   private HiveAuthzContext queryContext;
+  private HiveConf conf;
 
-  public TableMask(SemanticAnalyzer analyzer, HiveConf conf) throws SemanticException {
+  public TableMask(SemanticAnalyzer analyzer, HiveConf conf, Context ctx) throws SemanticException {
     try {
       authorizer = SessionState.get().getAuthorizerV2();
+      this.conf = conf;
       String cmdString = analyzer.ctx.getCmd();
       SessionState ss = SessionState.get();
       HiveAuthzContext.Builder ctxBuilder = new HiveAuthzContext.Builder();
@@ -57,7 +59,7 @@ public class TableMask {
       ctxBuilder.setUserIpAddress(ss.getUserIpAddress());
       ctxBuilder.setForwardedAddresses(ss.getForwardedAddresses());
       queryContext = ctxBuilder.build();
-      if (authorizer != null && needTransform()) {
+      if (authorizer != null && needTransform() && !ctx.isSkipTableMasking()) {
         enable = true;
         translator = new UnparseTranslator(conf);
         translator.enable();
@@ -83,6 +85,8 @@ public class TableMask {
 
   public String create(HivePrivilegeObject privObject, MaskAndFilterInfo maskAndFilterInfo)
       throws SemanticException {
+    boolean doColumnMasking = false;
+    boolean doRowFiltering = false;
     StringBuilder sb = new StringBuilder();
     sb.append("(SELECT ");
     boolean firstOne = true;
@@ -107,38 +111,54 @@ public class TableMask {
         String colName = privObject.getColumns().get(index);
         if (!expr.equals(colName)) {
           // CAST(expr AS COLTYPE) AS COLNAME
-          sb.append("CAST(" + expr + " AS " + colTypes.get(index) + ") AS `" + colName + "`");
+          sb.append("CAST(" + expr + " AS " + colTypes.get(index) + ") AS "
+              + HiveUtils.unparseIdentifier(colName, conf));
+          doColumnMasking = true;
         } else {
-          sb.append(expr);
+          sb.append(HiveUtils.unparseIdentifier(colName, conf));
         }
       }
-    } else {
-      for (int index = 0; index < privObject.getColumns().size(); index++) {
-        String expr = privObject.getColumns().get(index);
-        if (!firstOne) {
-          sb.append(", ");
-        } else {
-          firstOne = false;
-        }
-        sb.append(expr);
+    } 
+    if (!doColumnMasking) {
+      sb = new StringBuilder();
+      sb.append("(SELECT *");
+    }
+
+    if (!maskAndFilterInfo.isView) {
+      // put all virtual columns in RowResolver.
+      Iterator<VirtualColumn> vcs = VirtualColumn.getRegistry(conf).iterator();
+      while (vcs.hasNext()) {
+        VirtualColumn vc = vcs.next();
+        sb.append(", " + vc.getName());
       }
     }
-    sb.append(" FROM `" + privObject.getDbname() + "`.`" + privObject.getObjectName() + "`");
+
+    sb.append(" FROM ");
+    sb.append(HiveUtils.unparseIdentifier(privObject.getDbname(), conf));
+    sb.append(".");
+    sb.append(HiveUtils.unparseIdentifier(privObject.getObjectName(), conf));
     sb.append(" " + maskAndFilterInfo.additionalTabInfo);
     String filter = privObject.getRowFilterExpression();
     if (filter != null) {
       sb.append(" WHERE " + filter);
+      doRowFiltering = true;
     }
-    sb.append(")" + maskAndFilterInfo.alias);
-    LOG.debug("TableMask creates `" + sb.toString() + "`");
-    return sb.toString();
+    sb.append(")" + HiveUtils.unparseIdentifier(maskAndFilterInfo.alias, conf));
+    
+    if (!doColumnMasking && !doRowFiltering) {
+      // nothing to do
+      return null;
+    } else {
+      LOG.debug("TableMask creates `" + sb.toString() + "`");
+      return sb.toString();
+    }
   }
 
-  void addTableMasking(ASTNode node, String replacementText) throws SemanticException {
+  void addTranslation(ASTNode node, String replacementText) throws SemanticException {
     translator.addTranslation(node, replacementText);
   }
 
-  void applyTableMasking(TokenRewriteStream tokenRewriteStream) throws SemanticException {
+  void applyTranslations(TokenRewriteStream tokenRewriteStream) throws SemanticException {
     translator.applyTranslations(tokenRewriteStream);
   }
 
