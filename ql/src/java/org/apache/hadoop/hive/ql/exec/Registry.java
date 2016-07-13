@@ -510,11 +510,12 @@ public class Registry {
   private void removePersistentFunctionUnderLock(FunctionInfo fi) {
     Class<?> functionClass = getPermanentUdfClass(fi);
     Integer refCount = persistent.get(functionClass);
-    assert refCount != null;
-    if (refCount == 1) {
-      persistent.remove(functionClass);
-    } else {
-      persistent.put(functionClass, Integer.valueOf(refCount - 1));
+    if (refCount != null) {
+      if (refCount == 1) {
+        persistent.remove(functionClass);
+      } else {
+        persistent.put(functionClass, Integer.valueOf(refCount - 1));
+      }
     }
   }
 
