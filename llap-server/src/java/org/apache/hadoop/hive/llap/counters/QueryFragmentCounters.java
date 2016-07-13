@@ -135,4 +135,8 @@ public class QueryFragmentCounters implements LowLevelCacheCounters {
     sb.append(" ]");
     return sb.toString();
   }
+
+  public TezCounters getTezCounters() {
+    return tezCounters;
+  }
 }

@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.orc.impl.DataReaderProperties;
 import org.apache.orc.impl.OrcIndex;
+import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -920,5 +921,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     public OrcProto.StripeFooter readStripeFooter(StripeInformation stripe) throws IOException {
       return orcDataReader.readStripeFooter(stripe);
     }
+  }
+
+  public TezCounters getTezCounters() {
+    return counters.getTezCounters();
   }
 }

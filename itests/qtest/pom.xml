@@ -545,7 +545,7 @@
                   logFile="${project.build.directory}/testminitezclidrivergen.log"
                   logDirectory="${project.build.directory}/qfile-results/clientpositive/"
                   hadoopVersion="${hadoop.version}"
-                  initScript="q_test_init.sql"
+		  initScript="${initScript}"
                   cleanupScript="q_test_cleanup.sql"/>
 
                 <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"

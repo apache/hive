@@ -80,7 +80,7 @@ public class LlapTaskReporter implements TaskReporterInterface {
   private final int maxEventsToGet;
   private final AtomicLong requestCounter;
   private final String containerIdStr;
-  private final String fragmentFullId;
+  private final String fragmentId;
   private final TezEvent initialEvent;
 
   private final ListeningExecutorService heartbeatExecutor;
@@ -90,14 +90,14 @@ public class LlapTaskReporter implements TaskReporterInterface {
 
   public LlapTaskReporter(LlapTaskUmbilicalProtocol umbilical, long amPollInterval,
                       long sendCounterInterval, int maxEventsToGet, AtomicLong requestCounter,
-      String containerIdStr, final String fragFullId, TezEvent initialEvent) {
+      String containerIdStr, final String fragmentId, TezEvent initialEvent) {
     this.umbilical = umbilical;
     this.pollInterval = amPollInterval;
     this.sendCounterInterval = sendCounterInterval;
     this.maxEventsToGet = maxEventsToGet;
     this.requestCounter = requestCounter;
     this.containerIdStr = containerIdStr;
-    this.fragmentFullId = fragFullId;
+    this.fragmentId = fragmentId;
     this.initialEvent = initialEvent;
     ExecutorService executor = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder()
         .setDaemon(true).setNameFormat("TaskHeartbeatThread").build());
@@ -110,9 +110,9 @@ public class LlapTaskReporter implements TaskReporterInterface {
   @Override
   public synchronized void registerTask(RuntimeTask task,
                                         ErrorReporter errorReporter) {
-    TezCounters tezCounters = task.addAndGetTezCounter(fragmentFullId);
-    FragmentCountersMap.registerCountersForFragment(fragmentFullId, tezCounters);
-    LOG.info("Registered counters for fragment: {} vertexName: {}", fragmentFullId, task.getVertexName());
+    TezCounters tezCounters = task.addAndGetTezCounter(fragmentId);
+    FragmentCountersMap.registerCountersForFragment(fragmentId, tezCounters);
+    LOG.info("Registered counters for fragment: {} vertexName: {}", fragmentId, task.getVertexName());
     currentCallable = new HeartbeatCallable(task, umbilical, pollInterval, sendCounterInterval,
         maxEventsToGet, requestCounter, containerIdStr, initialEvent);
     ListenableFuture<Boolean> future = heartbeatExecutor.submit(currentCallable);
@@ -125,8 +125,8 @@ public class LlapTaskReporter implements TaskReporterInterface {
    */
   @Override
   public synchronized void unregisterTask(TezTaskAttemptID taskAttemptID) {
-    LOG.info("Unregistered counters for fragment: {}", fragmentFullId);
-    FragmentCountersMap.unregisterCountersForFragment(fragmentFullId);
+    LOG.info("Unregistered counters for fragment: {}", fragmentId);
+    FragmentCountersMap.unregisterCountersForFragment(fragmentId);
     currentCallable.markComplete();
     currentCallable = null;
   }

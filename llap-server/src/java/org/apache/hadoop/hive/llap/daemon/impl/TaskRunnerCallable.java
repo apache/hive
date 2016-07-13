@@ -23,7 +23,9 @@ import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -39,6 +41,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWor
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.hadoop.hive.llap.tez.Converters;
+import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
 import org.apache.hadoop.hive.ql.io.IOContextMap;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.net.NetUtils;
@@ -46,6 +49,7 @@ import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.tez.common.CallableWithNdc;
 import org.apache.tez.common.TezCommonUtils;
 import org.apache.tez.common.security.JobTokenIdentifier;
@@ -100,7 +104,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private final FragmentCompletionHandler fragmentCompletionHanler;
   private volatile TezTaskRunner2 taskRunner;
   private volatile TaskReporterInterface taskReporter;
-  private volatile ListeningExecutorService executor;
+  private volatile ExecutorService executor;
   private LlapTaskUmbilicalProtocol umbilical;
   private volatile long startTime;
   private volatile String threadName;
@@ -181,12 +185,13 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     }
 
     // TODO This executor seems unnecessary. Here and TezChild
-    ExecutorService executorReal = Executors.newFixedThreadPool(1,
+    executor = new StatsRecordingThreadPool(1, 1,
+        0L, TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue<Runnable>(),
         new ThreadFactoryBuilder()
             .setDaemon(true)
             .setNameFormat("TezTaskRunner")
             .build());
-    executor = MoreExecutors.listeningDecorator(executorReal);
 
     // TODO Consolidate this code with TezChild.
     runtimeWatch.start();
@@ -214,12 +219,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
       }
     });
 
-    TezTaskAttemptID taskAttemptID = taskSpec.getTaskAttemptID();
-    TezTaskID taskId = taskAttemptID.getTaskID();
-    TezVertexID tezVertexID = taskId.getVertexID();
-    TezDAGID tezDAGID = tezVertexID.getDAGId();
-    String fragFullId = Joiner.on('_').join(tezDAGID.getId(), tezVertexID.getId(), taskId.getId(),
-        taskAttemptID.getId());
+    String fragmentId = LlapTezUtils.stripAttemptPrefix(taskSpec.getTaskAttemptID().toString());
     taskReporter = new LlapTaskReporter(
         umbilical,
         confParams.amHeartbeatIntervalMsMax,
@@ -227,7 +227,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
         confParams.amMaxEventsPerHeartbeat,
         new AtomicLong(0),
         request.getContainerIdString(),
-        fragFullId,
+        fragmentId,
         initialEvent);
 
     String attemptId = fragmentInfo.getFragmentIdentifierString();

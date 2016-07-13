@@ -81,7 +81,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@cross_numbers
 POSTHOOK: Lineage: cross_numbers.i EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-Warning: Shuffle Join MERGEJOIN[12][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: insert into table orc_llap
 select ctinyint + i, csmallint + i, cint + i, cbigint + i, cfloat + i, cdouble + i, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2
 from alltypesorc cross join cross_numbers
@@ -121,7 +121,7 @@ POSTHOOK: Output: default@orc_llap_small
 POSTHOOK: Lineage: orc_llap_small.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_llap_small.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
 POSTHOOK: Lineage: orc_llap_small.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-Warning: Map Join MAPJOIN[16][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: -- Cross join with no projection - do it on small table
 explain
 select count(1) from orc_llap_small y join orc_llap_small x
@@ -137,6 +137,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -157,8 +158,7 @@ STAGE PLANS:
                         1 
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 112 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                      HybridGraceHashJoin: true
+                      Statistics: Num rows: 225 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                       Group By Operator
                         aggregations: count(1)
                         mode: hash
@@ -183,7 +183,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -194,8 +194,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -204,7 +204,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[16][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: select count(1) from orc_llap_small y join orc_llap_small x
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap_small
@@ -278,6 +278,9 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table
+POSTHOOK: Lineage: llap_temp_table.cbigint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.csmallint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:csmallint, type:smallint, comment:null), ]
 PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@llap_temp_table
@@ -331,6 +334,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table
+POSTHOOK: Lineage: llap_temp_table.cbigint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cboolean1 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cboolean2 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cdouble SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cfloat SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.csmallint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cstring1 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cstring2 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.ctimestamp1 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.ctimestamp2 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.ctinyint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@llap_temp_table
@@ -384,6 +399,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table
+POSTHOOK: Lineage: llap_temp_table.cstring2 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cstring2, type:string, comment:null), ]
 PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@llap_temp_table
@@ -414,6 +430,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -442,7 +459,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -454,8 +471,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 61440 Data size: 14539970 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -476,6 +493,9 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table
+POSTHOOK: Lineage: llap_temp_table.c2 EXPRESSION [(orc_llap)orc_llap.null, ]
+POSTHOOK: Lineage: llap_temp_table.cstring1 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cstring2 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cstring2, type:string, comment:null), ]
 PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@llap_temp_table
@@ -506,8 +526,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 2 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -518,48 +539,62 @@ STAGE PLANS:
                   Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (csmallint is not null and cbigint is not null) (type: boolean)
-                    Statistics: Num rows: 30720 Data size: 7269985 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 csmallint (type: smallint)
-                        1 csmallint (type: smallint)
-                      outputColumnNames: _col6, _col22
-                      input vertices:
-                        1 Map 2
-                      Statistics: Num rows: 33792 Data size: 7996983 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
-                      Select Operator
-                        expressions: _col6 (type: string), _col22 (type: string)
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 33792 Data size: 7996983 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 33792 Data size: 7996983 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: csmallint (type: smallint), cstring1 (type: string)
+                      outputColumnNames: _col0, _col2
+                      Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: smallint)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: smallint)
+                        Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col2 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: o2
+                  alias: o1
                   filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
                   Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (csmallint is not null and cbigint is not null) (type: boolean)
-                    Statistics: Num rows: 30720 Data size: 7269985 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: csmallint (type: smallint)
-                      sort order: +
-                      Map-reduce partition columns: csmallint (type: smallint)
-                      Statistics: Num rows: 30720 Data size: 7269985 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: cstring2 (type: string)
+                    Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: csmallint (type: smallint), cstring2 (type: string)
+                      outputColumnNames: _col0, _col2
+                      Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: smallint)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: smallint)
+                        Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col2 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: smallint)
+                  1 _col0 (type: smallint)
+                outputColumnNames: _col2, _col5
+                Statistics: Num rows: 135168 Data size: 31987934 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col2 (type: string), _col5 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 135168 Data size: 31987934 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 135168 Data size: 31987934 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -579,6 +614,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table
+POSTHOOK: Lineage: llap_temp_table.cstring1 SIMPLE [(orc_llap)o1.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cstring2 SIMPLE [(orc_llap)o1.FieldSchema(name:cstring2, type:string, comment:null), ]
 PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@llap_temp_table
@@ -588,7 +625,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
 -735462183586256
-Warning: Map Join MAPJOIN[12][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[10][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: -- multi-stripe test
 insert into table orc_llap
 select ctinyint + i, csmallint + i, cint + i, cbigint + i, cfloat + i, cdouble + i, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2
@@ -669,6 +706,9 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table
+POSTHOOK: Lineage: llap_temp_table.cbigint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.csmallint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:csmallint, type:smallint, comment:null), ]
 PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@llap_temp_table
@@ -722,6 +762,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table
+POSTHOOK: Lineage: llap_temp_table.cbigint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cboolean1 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cboolean2 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cdouble SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cfloat SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.csmallint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cstring1 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cstring2 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.ctimestamp1 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.ctimestamp2 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.ctinyint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@llap_temp_table
@@ -775,6 +827,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table
+POSTHOOK: Lineage: llap_temp_table.cstring2 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cstring2, type:string, comment:null), ]
 PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@llap_temp_table
@@ -805,6 +858,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -813,40 +867,40 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orc_llap
-                  Statistics: Num rows: 8014 Data size: 1602939 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cstring1 (type: string), cstring2 (type: string)
                     outputColumnNames: cstring1, cstring2
-                    Statistics: Num rows: 8014 Data size: 1602939 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: cstring1 (type: string), cstring2 (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 8014 Data size: 1602939 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                        Statistics: Num rows: 8014 Data size: 1602939 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 4007 Data size: 801469 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 4007 Data size: 801469 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -867,6 +921,9 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table
+POSTHOOK: Lineage: llap_temp_table.c2 EXPRESSION [(orc_llap)orc_llap.null, ]
+POSTHOOK: Lineage: llap_temp_table.cstring1 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cstring2 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cstring2, type:string, comment:null), ]
 PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@llap_temp_table
@@ -897,8 +954,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 2 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -906,51 +964,65 @@ STAGE PLANS:
                 TableScan
                   alias: o1
                   filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
-                  Statistics: Num rows: 14311 Data size: 1602939 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (csmallint is not null and cbigint is not null) (type: boolean)
-                    Statistics: Num rows: 3578 Data size: 400762 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 csmallint (type: smallint)
-                        1 csmallint (type: smallint)
-                      outputColumnNames: _col6, _col22
-                      input vertices:
-                        1 Map 2
-                      Statistics: Num rows: 3935 Data size: 440838 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
-                      Select Operator
-                        expressions: _col6 (type: string), _col22 (type: string)
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 3935 Data size: 440838 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 3935 Data size: 440838 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: csmallint (type: smallint), cstring1 (type: string)
+                      outputColumnNames: _col0, _col2
+                      Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: smallint)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: smallint)
+                        Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col2 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: o2
+                  alias: o1
                   filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
-                  Statistics: Num rows: 14311 Data size: 1602939 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (csmallint is not null and cbigint is not null) (type: boolean)
-                    Statistics: Num rows: 3578 Data size: 400762 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: csmallint (type: smallint)
-                      sort order: +
-                      Map-reduce partition columns: csmallint (type: smallint)
-                      Statistics: Num rows: 3578 Data size: 400762 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: cstring2 (type: string)
+                    Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: csmallint (type: smallint), cstring2 (type: string)
+                      outputColumnNames: _col0, _col2
+                      Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: smallint)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: smallint)
+                        Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col2 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: smallint)
+                  1 _col0 (type: smallint)
+                outputColumnNames: _col2, _col5
+                Statistics: Num rows: 270336 Data size: 63975869 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col2 (type: string), _col5 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 270336 Data size: 63975869 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 270336 Data size: 63975869 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -970,6 +1042,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table
+POSTHOOK: Lineage: llap_temp_table.cstring1 SIMPLE [(orc_llap)o1.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cstring2 SIMPLE [(orc_llap)o1.FieldSchema(name:cstring2, type:string, comment:null), ]
 PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@llap_temp_table

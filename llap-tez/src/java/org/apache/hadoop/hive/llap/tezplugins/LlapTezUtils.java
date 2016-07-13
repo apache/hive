@@ -14,10 +14,23 @@
 
 package org.apache.hadoop.hive.llap.tezplugins;
 
+import java.text.NumberFormat;
+
 import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.tez.dag.records.TezDAGID;
+import org.apache.tez.dag.records.TezTaskAttemptID;
+import org.apache.tez.dag.records.TezTaskID;
+import org.apache.tez.dag.records.TezVertexID;
+import org.apache.tez.mapreduce.hadoop.MRHelpers;
+import org.apache.tez.mapreduce.hadoop.MRInputHelpers;
+import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 import org.apache.tez.mapreduce.input.MRInput;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.input.MultiMRInput;
+
+import com.google.common.base.Joiner;
 
 @InterfaceAudience.Private
 public class LlapTezUtils {
@@ -25,5 +38,20 @@ public class LlapTezUtils {
     // MRInput is not of interest since it'll always be ready.
     return !(inputClassName.equals(MRInputLegacy.class.getName()) || inputClassName.equals(
         MultiMRInput.class.getName()) || inputClassName.equals(MRInput.class.getName()));
+  }
+
+  public static String getFragmentId(final JobConf job) {
+    String taskAttemptId = job.get(MRInput.TEZ_MAPREDUCE_TASK_ATTEMPT_ID);
+    if (taskAttemptId != null) {
+      return stripAttemptPrefix(taskAttemptId);
+    }
+    return null;
+  }
+
+  public static String stripAttemptPrefix(final String s) {
+    if (s.startsWith(TezTaskAttemptID.ATTEMPT)) {
+      return s.substring(TezTaskAttemptID.ATTEMPT.length() + 1);
+    }
+    return s;
   }
 }
