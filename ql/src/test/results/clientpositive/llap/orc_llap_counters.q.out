@@ -142,9 +142,9 @@ POSTHOOK: Lineage: orc_ppd_staging.b SIMPLE []
 POSTHOOK: Lineage: orc_ppd_staging.bin EXPRESSION []
 POSTHOOK: Lineage: orc_ppd_staging.bo SIMPLE []
 POSTHOOK: Lineage: orc_ppd_staging.c EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.d SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging.d EXPRESSION []
 POSTHOOK: Lineage: orc_ppd_staging.da EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.dec EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging.dec SIMPLE []
 POSTHOOK: Lineage: orc_ppd_staging.f EXPRESSION []
 POSTHOOK: Lineage: orc_ppd_staging.i SIMPLE []
 POSTHOOK: Lineage: orc_ppd_staging.s SIMPLE []
@@ -210,6 +210,55 @@ POSTHOOK: Lineage: orc_ppd.si SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSche
 POSTHOOK: Lineage: orc_ppd.t SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: orc_ppd.ts SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_ppd.v EXPRESSION [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: describe formatted orc_ppd
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_ppd
+POSTHOOK: query: describe formatted orc_ppd
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_ppd
+# col_name            	data_type           	comment             
+	 	 
+t                   	tinyint             	                    
+si                  	smallint            	                    
+i                   	int                 	                    
+b                   	bigint              	                    
+f                   	float               	                    
+d                   	double              	                    
+bo                  	boolean             	                    
+s                   	string              	                    
+c                   	char(50)            	                    
+v                   	varchar(50)         	                    
+da                  	date                	                    
+ts                  	timestamp           	                    
+dec                 	decimal(4,2)        	                    
+bin                 	binary              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	2100                
+	orc.bloom.filter.columns	*                   
+	orc.row.index.stride	1000                
+	rawDataSize         	1223514             
+	totalSize           	60010               
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: -- Row group statistics for column t:
 -- Entry 0: count: 994 hasNull: true min: -10 max: 54 sum: 26014 positions: 0,0,0,0,0,0,0
 -- Entry 1: count: 1000 hasNull: false min: 54 max: 118 sum: 86812 positions: 0,2,124,0,0,116,11
@@ -636,7 +685,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 100
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 249
    CACHE_MISS_BYTES: 0
@@ -827,7 +876,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 1100
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 3980
    CACHE_MISS_BYTES: 0
@@ -1086,7 +1135,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 2100
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 3980
    CACHE_MISS_BYTES: 0
@@ -1136,7 +1185,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 2100
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 3980
    CACHE_MISS_BYTES: 0
@@ -1249,49 +1298,4 @@ Stage-1 LLAP IO COUNTERS:
    NUM_VECTOR_BATCHES: 2
    ROWS_EMITTED: 1100
    SELECTED_ROWGROUPS: 2
-2
-PREHOOK: query: -- when cbo is disabled constant gets converted to HiveDecimal
-select count(*) from orc_ppd where f=74.72
-PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
-#### A masked pattern was here ####
-Stage-1 HIVE COUNTERS:
-   CREATED_FILES: 1
-   DESERIALIZE_ERRORS: 0
-   RECORDS_IN_Map_1: 2100
-   RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
-2
-PREHOOK: query: select count(*) from orc_ppd where f=74.72
-PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
-#### A masked pattern was here ####
-Stage-1 HIVE COUNTERS:
-   CREATED_FILES: 1
-   DESERIALIZE_ERRORS: 0
-   RECORDS_IN_Map_1: 100
-   RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
-2
-PREHOOK: query: select count(*) from orc_ppd where f=74.72
-PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
-#### A masked pattern was here ####
-Stage-1 HIVE COUNTERS:
-   CREATED_FILES: 1
-   DESERIALIZE_ERRORS: 0
-   RECORDS_IN_Map_1: 2100
-   RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
-2
-PREHOOK: query: select count(*) from orc_ppd where f=74.72
-PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
-#### A masked pattern was here ####
-Stage-1 HIVE COUNTERS:
-   CREATED_FILES: 1
-   DESERIALIZE_ERRORS: 0
-   RECORDS_IN_Map_1: 100
-   RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
 2

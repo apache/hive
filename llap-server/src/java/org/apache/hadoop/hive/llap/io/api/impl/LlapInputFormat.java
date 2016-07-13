@@ -23,11 +23,6 @@ import org.apache.hadoop.hive.ql.io.BatchToRowInputFormat;
 
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
-import com.google.common.base.Joiner;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -44,8 +39,10 @@ import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.counters.FragmentCountersMap;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
+import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
+import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
@@ -93,12 +90,12 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
   private final InputFormat sourceInputFormat;
   private final AvoidSplitCombination sourceASC;
   private final ColumnVectorProducer cvp;
-  private final ListeningExecutorService executor;
+  private final ExecutorService executor;
   private final String hostName;
 
   @SuppressWarnings("rawtypes")
   LlapInputFormat(InputFormat sourceInputFormat, ColumnVectorProducer cvp,
-      ListeningExecutorService executor) {
+      ExecutorService executor) {
     // TODO: right now, we do nothing with source input format, ORC-only in the first cut.
     //       We'd need to plumb it thru and use it to get data to cache/etc.
     assert sourceInputFormat instanceof OrcInputFormat;
@@ -186,19 +183,13 @@ public LlapRecordReader(JobConf job, FileSplit split, List<Integer> includedCols
       this.columnIds = includedCols;
       this.sarg = ConvertAstToSearchArg.createFromConf(job);
       this.columnNames = ColumnProjectionUtils.getReadColumnNames(job);
-      String dagId = job.get("tez.mapreduce.dag.index");
-      String vertexId = job.get("tez.mapreduce.vertex.index");
-      String taskId = job.get("tez.mapreduce.task.index");
-      String taskAttemptId = job.get("tez.mapreduce.task.attempt.index");
+      String fragmentId = LlapTezUtils.getFragmentId(job);
       TezCounters taskCounters = null;
-      if (dagId != null && vertexId != null && taskId != null && taskAttemptId != null) {
-        String fullId = Joiner.on('_').join(dagId, vertexId, taskId, taskAttemptId);
-        taskCounters = FragmentCountersMap.getCountersForFragment(fullId);
-        LOG.info("Received dagid_vertexid_taskid_attempid: {}", fullId);
+      if (fragmentId != null) {
+        taskCounters = FragmentCountersMap.getCountersForFragment(fragmentId);
+        LOG.info("Received fragment id: {}", fragmentId);
       } else {
-        LOG.warn("Not using tez counters as some identifier is null." +
-            " dagId: {} vertexId: {} taskId: {} taskAttempId: {}",
-            dagId, vertexId, taskId, taskAttemptId);
+        LOG.warn("Not using tez counters as fragment id string is null");
       }
       this.counters = new QueryFragmentCounters(job, taskCounters);
       this.counters.setDesc(QueryFragmentCounters.Desc.MACHINE, hostName);
@@ -240,9 +231,13 @@ public LlapRecordReader(JobConf job, FileSplit split, List<Integer> includedCols
         }
       }
 
-      ListenableFuture<Void> future = executor.submit(rp.getReadCallable());
-      // TODO: we should NOT do this thing with handler. Reader needs to do cleanup in most cases.
-      Futures.addCallback(future, new UncaughtErrorHandler());
+      // perform the data read asynchronously
+      if (executor instanceof StatsRecordingThreadPool) {
+        // Every thread created by this thread pool will use the same handler
+        ((StatsRecordingThreadPool) executor)
+            .setUncaughtExceptionHandler(new IOUncaughtExceptionHandler());
+      }
+      executor.submit(rp.getReadCallable());
       return true;
     }
 
@@ -296,17 +291,12 @@ public LlapRecordReader(JobConf job, FileSplit split, List<Integer> includedCols
       return rbCtx;
     }
 
-    private final class UncaughtErrorHandler implements FutureCallback<Void> {
+    private final class IOUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
       @Override
-      public void onSuccess(Void result) {
-        // Successful execution of reader is supposed to call setDone.
-      }
-
-      @Override
-      public void onFailure(Throwable t) {
-        // Reader is not supposed to throw AFTER calling setError.
-        LlapIoImpl.LOG.error("Unhandled error from reader thread " + t.getMessage());
-        setError(t);
+      public void uncaughtException(final Thread t, final Throwable e) {
+        LlapIoImpl.LOG.error("Unhandled error from reader thread. threadName: {} threadId: {}" +
+            " Message: {}", t.getName(), t.getId(), e.getMessage());
+        setError(e);
       }
     }
 

@@ -15,23 +15,43 @@
  */
 package org.apache.hadoop.hive.llap.counters;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * LLAP IO related counters.
  */
 public enum LlapIOCounters {
-  NUM_VECTOR_BATCHES,
-  NUM_DECODED_BATCHES,
-  SELECTED_ROWGROUPS,
-  NUM_ERRORS,
-  ROWS_EMITTED,
-  METADATA_CACHE_HIT,
-  METADATA_CACHE_MISS,
-  CACHE_HIT_BYTES,
-  CACHE_MISS_BYTES,
-  ALLOCATED_BYTES,
-  ALLOCATED_USED_BYTES,
-  TOTAL_IO_TIME_NS,
-  DECODE_TIME_NS,
-  HDFS_TIME_NS,
-  CONSUMER_TIME_NS
+  NUM_VECTOR_BATCHES(true),
+  NUM_DECODED_BATCHES(true),
+  SELECTED_ROWGROUPS(true),
+  NUM_ERRORS(true),
+  ROWS_EMITTED(true),
+  METADATA_CACHE_HIT(true),
+  METADATA_CACHE_MISS(true),
+  CACHE_HIT_BYTES(true),
+  CACHE_MISS_BYTES(true),
+  ALLOCATED_BYTES(true),
+  ALLOCATED_USED_BYTES(true),
+  TOTAL_IO_TIME_NS(false),
+  DECODE_TIME_NS(false),
+  HDFS_TIME_NS(false),
+  CONSUMER_TIME_NS(false);
+
+  // flag to indicate if these counters are subject to change across different test runs
+  private boolean testSafe;
+
+  LlapIOCounters(final boolean testSafe) {
+    this.testSafe = testSafe;
+  }
+
+  public static List<String> testSafeCounterNames() {
+    List<String> testSafeCounters = new ArrayList<>();
+    for (LlapIOCounters counter : values()) {
+      if (counter.testSafe) {
+        testSafeCounters.add(counter.name());
+      }
+    }
+    return testSafeCounters;
+  }
 }

@@ -934,4 +934,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       return orcDataReader.readStripeFooter(stripe);
     }
   }
+
+  public TezCounters getTezCounters() {
+    return counters.getTezCounters();
+  }
 }

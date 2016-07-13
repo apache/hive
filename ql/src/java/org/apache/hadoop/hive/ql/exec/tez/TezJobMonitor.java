@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.ql.Context;
@@ -47,6 +48,7 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.tez.common.counters.FileSystemCounter;
 import org.apache.tez.common.counters.TaskCounter;
 import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.common.counters.TezCounters;
@@ -80,6 +82,7 @@ public class TezJobMonitor {
   private static final String QUERY_EXEC_SUMMARY_HEADER = "Query Execution Summary";
   private static final String TASK_SUMMARY_HEADER = "Task Execution Summary";
   private static final String LLAP_IO_SUMMARY_HEADER = "LLAP IO Summary";
+  private static final String FS_COUNTERS_SUMMARY_HEADER = "FileSystem Counters Summary";
 
   // keep this within 80 chars width. If more columns needs to be added then update min terminal
   // width requirement and SEPARATOR width accordingly
@@ -105,6 +108,9 @@ public class TezJobMonitor {
   private static final String LLAP_SUMMARY_HEADER = String.format(LLAP_SUMMARY_HEADER_FORMAT,
       "VERTICES", "ROWGROUPS", "META_HIT", "META_MISS", "DATA_HIT", "DATA_MISS",
       "ALLOCATION", "USED", "TOTAL_IO");
+
+  // FileSystem counters
+  private static final String FS_COUNTERS_HEADER_FORMAT = "%10s %15s %13s %18s %18s %13s";
 
   // Methods summary
   private static final String OPERATION_SUMMARY = "%-35s %9s";
@@ -391,6 +397,10 @@ public class TezJobMonitor {
         console.printInfo(LLAP_IO_SUMMARY_HEADER);
         printLlapIOSummary(progressMap, console, dagClient);
         console.printInfo(SEPARATOR);
+        console.printInfo("");
+
+        console.printInfo(FS_COUNTERS_SUMMARY_HEADER);
+        printFSCountersSummary(progressMap, console, dagClient);
       }
 
       console.printInfo("");
@@ -694,6 +704,62 @@ public class TezJobMonitor {
             secondsFormat.format(totalIoTime / 1000_000_000.0) + "s");
         console.printInfo(queryFragmentStats);
       }
+    }
+  }
+
+  private void printFSCountersSummary(Map<String, Progress> progressMap, LogHelper console,
+      DAGClient dagClient) {
+    SortedSet<String> keys = new TreeSet<>(progressMap.keySet());
+    Set<StatusGetOpts> statusOptions = new HashSet<>(1);
+    statusOptions.add(StatusGetOpts.GET_COUNTERS);
+    // Assuming FileSystem.getAllStatistics() returns all schemes that are accessed on task side
+    // as well. If not, we need a way to get all the schemes that are accessed by the tez task/llap.
+    for (FileSystem.Statistics statistics : FileSystem.getAllStatistics()) {
+      final String scheme = statistics.getScheme().toUpperCase();
+      final String fsCountersHeader = String.format(FS_COUNTERS_HEADER_FORMAT,
+          "VERTICES", "BYTES_READ", "READ_OPS", "LARGE_READ_OPS", "BYTES_WRITTEN", "WRITE_OPS");
+
+      console.printInfo("");
+      reprintLineWithColorAsBold("Scheme: " + scheme, Ansi.Color.RED);
+      console.printInfo(SEPARATOR);
+      reprintLineWithColorAsBold(fsCountersHeader, Ansi.Color.CYAN);
+      console.printInfo(SEPARATOR);
+
+      for (String vertexName : keys) {
+        TezCounters vertexCounters = null;
+        try {
+          vertexCounters = dagClient.getVertexStatus(vertexName, statusOptions)
+              .getVertexCounters();
+        } catch (IOException e) {
+          // best attempt, shouldn't really kill DAG for this
+        } catch (TezException e) {
+          // best attempt, shouldn't really kill DAG for this
+        }
+        if (vertexCounters != null) {
+          final String counterGroup = FileSystemCounter.class.getName();
+          final long bytesRead = getCounterValueByGroupName(vertexCounters,
+              counterGroup, scheme + "_" + FileSystemCounter.BYTES_READ.name());
+          final long bytesWritten = getCounterValueByGroupName(vertexCounters,
+              counterGroup, scheme + "_" + FileSystemCounter.BYTES_WRITTEN.name());
+          final long readOps = getCounterValueByGroupName(vertexCounters,
+              counterGroup, scheme + "_" + FileSystemCounter.READ_OPS.name());
+          final long largeReadOps = getCounterValueByGroupName(vertexCounters,
+              counterGroup, scheme + "_" + FileSystemCounter.LARGE_READ_OPS.name());
+          final long writeOps = getCounterValueByGroupName(vertexCounters,
+              counterGroup, scheme + "_" + FileSystemCounter.WRITE_OPS.name());
+
+          String fsCountersSummary = String.format(FS_COUNTERS_HEADER_FORMAT,
+              vertexName,
+              humanReadableByteCount(bytesRead),
+              readOps,
+              largeReadOps,
+              humanReadableByteCount(bytesWritten),
+              writeOps);
+          console.printInfo(fsCountersSummary);
+        }
+      }
+
+      console.printInfo(SEPARATOR);
     }
   }
 

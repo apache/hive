@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.List;
 
+import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
+import org.apache.tez.common.counters.FileSystemCounter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -57,11 +59,29 @@ public class PostExecTezSummaryPrinter implements ExecuteWithHookContext {
       LOG.info("Printing summary for tez task: " + tezTask.getName());
       TezCounters counters = tezTask.getTezCounters();
       if (counters != null) {
+        String hiveCountersGroup = HiveConf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP);
         for (CounterGroup group : counters) {
-          if ("HIVE".equals(group.getDisplayName())) {
+          if (hiveCountersGroup.equals(group.getDisplayName())) {
             console.printError(tezTask.getId() + " HIVE COUNTERS:");
             for (TezCounter counter : group) {
               console.printError("   " + counter.getDisplayName() + ": " + counter.getValue());
+            }
+          } else if (group.getName().equals(FileSystemCounter.class.getName())) {
+            console.printError(tezTask.getId() + " FILE SYSTEM COUNTERS:");
+            for (TezCounter counter : group) {
+              // HDFS counters should be relatively consistent across test runs when compared to
+              // local file system counters
+              if (counter.getName().contains("HDFS")) {
+                console.printError("   " + counter.getDisplayName() + ": " + counter.getValue());
+              }
+            }
+          } else if (group.getName().equals(LlapIOCounters.class.getName())) {
+            console.printError(tezTask.getId() + " LLAP IO COUNTERS:");
+            List<String> testSafeCounters = LlapIOCounters.testSafeCounterNames();
+            for (TezCounter counter : group) {
+              if (testSafeCounters.contains(counter.getDisplayName())) {
+                console.printError("   " + counter.getDisplayName() + ": " + counter.getValue());
+              }
             }
           }
         }
