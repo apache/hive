@@ -5760,6 +5760,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw new NoSuchObjectException(
               "Function " + dbName + "." + funcName + " does not exist");
         }
+      } catch (NoSuchObjectException e) {
+        ex = e;
+        rethrowException(e);
       } catch (Exception e) {
         ex = e;
         throw newMetaException(e);
