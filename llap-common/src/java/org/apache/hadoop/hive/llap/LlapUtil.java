@@ -49,4 +49,11 @@ public class LlapUtil {
     String hosts = HiveConf.getTrimmedVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
     return hostsRe.matcher(hosts.startsWith("@") ? hosts.substring(1) : hosts).replaceAll("_");
   }
+
+  public static String getUserNameFromPrincipal(String principal) {
+    // Based on SecurityUtil.
+    if (principal == null) return null;
+    String[] components = principal.split("[/@]");
+    return (components == null || components.length != 3) ? principal : components[0];
+  }
 }
