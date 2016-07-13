@@ -39,6 +39,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.security.auth.login.LoginException;
 
@@ -53,7 +54,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 import org.apache.hadoop.hive.llap.impl.LlapProtocolClientImpl;
-import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.security.LlapTokenClient;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.tez.LlapProtocolClientProxy;
@@ -109,6 +109,8 @@ public class TezSessionState {
   private boolean defaultQueue = false;
   private String user;
 
+  private AtomicReference<String> ownerThread = new AtomicReference<>(null);
+
   private final Set<String> additionalFilesNotFromConf = new HashSet<String>();
   private final Set<LocalResource> localizedResources = new HashSet<LocalResource>();
   private boolean doAsEnabled;
@@ -123,7 +125,7 @@ public class TezSessionState {
 
   public String toString() {
     return "sessionId=" + sessionId + ", queueName=" + queueName + ", user=" + user
-        + ", doAs=" + doAsEnabled + ", isOpen=" + isOpen();
+        + ", doAs=" + doAsEnabled + ", isOpen=" + isOpen() + ", isDefault=" + defaultQueue;
   }
 
   /**
@@ -220,12 +222,14 @@ public class TezSessionState {
       boolean isAsync, LogHelper console, Path scratchDir) throws IOException, LoginException,
         IllegalArgumentException, URISyntaxException, TezException {
     this.conf = conf;
-    this.queueName = conf.get("tez.queue.name");
+    // TODO Why is the queue name set again. It has already been setup via setQueueName. Do only one of the two.
+    this.queueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
     this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
 
-    final boolean llapMode = "llap".equals(HiveConf.getVar(
+    final boolean llapMode = "llap".equalsIgnoreCase(HiveConf.getVar(
         conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE));
 
+    // TODO This - at least for the session pool - will always be the hive user. How does doAs above this affect things ?
     UserGroupInformation ugi = Utils.getUGI();
     user = ugi.getShortUserName();
     LOG.info("User of session id " + sessionId + " is " + user);
@@ -279,6 +283,7 @@ public class TezSessionState {
         llapCredentials = new Credentials();
         llapCredentials.addToken(LlapTokenIdentifier.KIND_NAME, getLlapToken(user, tezConfig));
       }
+      // TODO Change this to not serialize the entire Configuration - minor.
       UserPayload servicePluginPayload = TezUtils.createUserPayloadFromConf(tezConfig);
       // we need plugins to handle llap and uber mode
       servicePluginsDescriptor = ServicePluginsDescriptor.create(true,
@@ -641,7 +646,7 @@ public class TezSessionState {
   }
 
   public void setDefault() {
-    defaultQueue  = true;
+    defaultQueue = true;
   }
 
   public boolean isDefault() {
@@ -662,5 +667,22 @@ public class TezSessionState {
 
   public boolean getDoAsEnabled() {
     return doAsEnabled;
+  }
+
+  /** Mark session as free for use from TezTask, for safety/debugging purposes. */
+  public void markFree() {
+    if (ownerThread.getAndSet(null) == null) throw new AssertionError("Not in use");
+  }
+
+  /** Mark session as being in use from TezTask, for safety/debugging purposes. */
+  public void markInUse() {
+    String newName = Thread.currentThread().getName();
+    do {
+      String oldName = ownerThread.get();
+      if (oldName != null) {
+        throw new AssertionError("Tez session is already in use from "
+            + oldName + "; cannot use from " + newName);
+      }
+    } while (!ownerThread.compareAndSet(null, newName));
   }
 }

@@ -575,7 +575,7 @@ public class SessionState {
 
     try {
       if (startSs.tezSessionState == null) {
-        startSs.tezSessionState = new TezSessionState(startSs.getSessionId());
+        startSs.setTezSession(new TezSessionState(startSs.getSessionId()));
       }
       if (startSs.tezSessionState.isOpen()) {
         return;
@@ -1479,12 +1479,12 @@ public class SessionState {
 
     try {
       if (tezSessionState != null) {
-        TezSessionPoolManager.getInstance().closeIfNotDefault(tezSessionState, false);
+        TezSessionPoolManager.closeIfNotDefault(tezSessionState, false);
       }
     } catch (Exception e) {
       LOG.info("Error closing tez session", e);
     } finally {
-      tezSessionState = null;
+      setTezSession(null);
     }
 
     try {
@@ -1569,8 +1569,17 @@ public class SessionState {
     return tezSessionState;
   }
 
+  /** Called from TezTask to attach a TezSession to use to the threadlocal. Ugly pattern... */
   public void setTezSession(TezSessionState session) {
-    this.tezSessionState = session;
+    if (tezSessionState == session) return; // The same object.
+    if (tezSessionState != null) {
+      tezSessionState.markFree();
+      tezSessionState = null;
+    }
+    if (session != null) {
+      session.markInUse();
+    }
+    tezSessionState = session;
   }
 
   public String getUserName() {

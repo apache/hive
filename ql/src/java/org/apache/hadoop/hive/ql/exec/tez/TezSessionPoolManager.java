@@ -45,6 +45,7 @@ import java.util.Set;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
@@ -82,7 +83,8 @@ public class TezSessionPoolManager {
 
   private Semaphore llapQueue;
   private HiveConf initConf = null;
-  int numConcurrentLlapQueries = -1;
+  // Config settings.
+  private int numConcurrentLlapQueries = -1;
   private long sessionLifetimeMs = 0;
   private long sessionLifetimeJitterMs = 0;
   /** A queue for initial sessions that have not been started yet. */
@@ -112,10 +114,11 @@ public class TezSessionPoolManager {
   }
 
   private void startInitialSession(TezSessionPoolSession sessionState) throws Exception {
-    HiveConf newConf = new HiveConf(initConf);
+    HiveConf newConf = new HiveConf(initConf); // TODO Why is this configuration management not happening inside TezSessionPool.
+    // Makes no senses for it to be mixed up like this.
     boolean isUsable = sessionState.tryUse();
     if (!isUsable) throw new IOException(sessionState + " is not usable at pool startup");
-    newConf.set("tez.queue.name", sessionState.getQueueName());
+    newConf.set(TezConfiguration.TEZ_QUEUE_NAME, sessionState.getQueueName());
     sessionState.open(newConf);
     if (sessionState.returnAfterUse()) {
       defaultQueuePool.put(sessionState);
@@ -134,6 +137,7 @@ public class TezSessionPoolManager {
         startInitialSession(session);
       }
     } else {
+      // TODO What is this doing now ?
       final SessionState parentSessionState = SessionState.get();
       // The runnable has no mutable state, so each thread can run the same thing.
       final AtomicReference<Exception> firstError = new AtomicReference<>(null);
@@ -150,6 +154,7 @@ public class TezSessionPoolManager {
             } catch (Exception e) {
               if (!firstError.compareAndSet(null, e)) {
                 LOG.error("Failed to start session; ignoring due to previous error", e);
+                // TODO Why even continue after this. We're already in a state where things are messed up ?
               }
             }
           }
@@ -248,8 +253,11 @@ public class TezSessionPoolManager {
     }
   }
 
+  // TODO Create and init session sets up queue, isDefault - but does not initialize the configuration
   private TezSessionPoolSession createAndInitSession(String queue, boolean isDefault) {
     TezSessionPoolSession sessionState = createSession(TezSessionState.makeSessionId());
+    // TODO When will the queue ever be null.
+    // Pass queue and default in as constructor parameters, and make them final.
     if (queue != null) {
       sessionState.setQueueName(queue);
     }
@@ -266,6 +274,7 @@ public class TezSessionPoolManager {
       throws Exception {
     String queueName = conf.get("tez.queue.name");
 
+    // TODO Session re-use completely disabled for doAs=true. Always launches a new session.
     boolean nonDefaultUser = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
 
     /*
@@ -333,7 +342,7 @@ public class TezSessionPoolManager {
 
   public static void closeIfNotDefault(
       TezSessionState tezSessionState, boolean keepTmpDir) throws Exception {
-    LOG.info("Closing tez session default? " + tezSessionState.isDefault());
+    LOG.info("Closing tez session if not default: " + tezSessionState);
     if (!tezSessionState.isDefault()) {
       tezSessionState.close(keepTmpDir);
     }
@@ -401,6 +410,11 @@ public class TezSessionPoolManager {
     try {
       UserGroupInformation ugi = Utils.getUGI();
       String userName = ugi.getShortUserName();
+      // TODO Will these checks work if some other user logs in. Isn't a doAs check required somewhere here as well.
+      // Should a doAs check happen here instead of after the user test.
+      // With HiveServer2 - who is the incoming user in terms of UGI (the hive user itself, or the user who actually submitted the query)
+
+      // Working in the assumption that the user here will be the hive user if doAs = false, we'll make it past this false check.
       LOG.info("The current user: " + userName + ", session user: " + session.getUser());
       if (userName.equals(session.getUser()) == false) {
         LOG.info("Different users incoming: " + userName + " existing: " + session.getUser());
@@ -412,34 +426,19 @@ public class TezSessionPoolManager {
 
     boolean doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
     // either variables will never be null because a default value is returned in case of absence
-    if (doAsEnabled != conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
+    if (doAsEnabled != session.getConf().getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
       return false;
     }
 
     if (!session.isDefault()) {
       String queueName = session.getQueueName();
-      LOG.info("Current queue name is " + queueName + " incoming queue name is "
-          + conf.get("tez.queue.name"));
-      if (queueName == null) {
-        if (conf.get("tez.queue.name") != null) {
-          // queue names are different
-          return false;
-        } else {
-          return true;
-        }
-      }
-
-      if (!queueName.equals(conf.get("tez.queue.name"))) {
-        // the String.equals method handles the case of conf not having the queue name as well.
-        return false;
-      }
+      String confQueueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
+      LOG.info("Current queue name is " + queueName + " incoming queue name is " + confQueueName);
+      return (queueName == null) ? confQueueName == null : queueName.equals(confQueueName);
     } else {
       // this session should never be a default session unless something has messed up.
-      throw new HiveException("Default queue should always be returned." +
-      "Hence we should not be here.");
+      throw new HiveException("The pool session " + session + " should have been returned to the pool"); 
     }
-
-    return true;
   }
 
   public TezSessionState getSession(TezSessionState session, HiveConf conf, boolean doOpen,
@@ -447,6 +446,7 @@ public class TezSessionPoolManager {
     if (llap && (this.numConcurrentLlapQueries > 0)) {
       llapQueue.acquire(); // blocks if no more llap queries can be submitted.
     }
+
     if (canWorkWithSameSession(session, conf)) {
       return session;
     }
@@ -458,13 +458,16 @@ public class TezSessionPoolManager {
     return getSession(conf, doOpen, forceCreate);
   }
 
-  public void closeAndOpen(TezSessionState sessionState, HiveConf conf,
+  /** Reopens the session that was found to not be running. */
+  public void reopenSession(TezSessionState sessionState, HiveConf conf,
       String[] additionalFiles, boolean keepTmpDir) throws Exception {
     HiveConf sessionConf = sessionState.getConf();
-    if (sessionConf != null && sessionConf.get("tez.queue.name") != null) {
-      conf.set("tez.queue.name", sessionConf.get("tez.queue.name"));
+    if (sessionConf != null && sessionConf.get(TezConfiguration.TEZ_QUEUE_NAME) != null) {
+      conf.set(TezConfiguration.TEZ_QUEUE_NAME, sessionConf.get(TezConfiguration.TEZ_QUEUE_NAME));
     }
-    closeIfNotDefault(sessionState, keepTmpDir);
+    // TODO: close basically resets the object to a bunch of nulls.
+    //       We should ideally not reuse the object because it's pointless and error-prone.
+    sessionState.close(keepTmpDir); // Clean up stuff.
     sessionState.open(conf, additionalFiles);
   }
 
@@ -479,7 +482,8 @@ public class TezSessionPoolManager {
     }
   }
 
-  private void closeAndReopen(TezSessionPoolSession oldSession) throws Exception {
+  /** Closes a running (expired) pool session and reopens it. */
+  private void closeAndReopenPoolSession(TezSessionPoolSession oldSession) throws Exception {
     String queueName = oldSession.getQueueName();
     HiveConf conf = oldSession.getConf();
     Path scratchDir = oldSession.getTezScratchDir();
@@ -502,7 +506,7 @@ public class TezSessionPoolManager {
         TezSessionPoolSession next = restartQueue.take();
         LOG.info("Restarting the expired session [" + next + "]");
         try {
-          closeAndReopen(next);
+          closeAndReopenPoolSession(next);
         } catch (InterruptedException ie) {
           throw ie;
         } catch (Exception e) {
@@ -573,7 +577,7 @@ public class TezSessionPoolManager {
    * if it's time, the expiration is triggered; in that case, or if it was already triggered, the
    * caller gets a different session. When the session is in use when it expires, the expiration
    * thread ignores it and lets the return to the pool take care of the expiration.
-   * */
+   */
   @VisibleForTesting
   static class TezSessionPoolSession extends TezSessionState {
     private static final int STATE_NONE = 0, STATE_IN_USE = 1, STATE_EXPIRED = 2;
@@ -670,6 +674,7 @@ public class TezSessionPoolManager {
     public boolean tryExpire(boolean isAsync) throws Exception {
       if (expirationNs == null) return true;
       if (!shouldExpire()) return false;
+      // Try to expire the session if it's not in use; if in use, bail.
       while (true) {
         if (sessionState.get() != STATE_NONE) return true; // returnAfterUse will take care of this
         if (sessionState.compareAndSet(STATE_NONE, STATE_EXPIRED)) {
@@ -683,7 +688,7 @@ public class TezSessionPoolManager {
       if (async) {
         parent.restartQueue.add(this);
       } else {
-        parent.closeAndReopen(this);
+        parent.closeAndReopenPoolSession(this);
       }
     }
 

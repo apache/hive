@@ -85,8 +85,8 @@ public abstract class Operation {
   protected static final EnumSet<FetchOrientation> DEFAULT_FETCH_ORIENTATION_SET =
       EnumSet.of(FetchOrientation.FETCH_NEXT,FetchOrientation.FETCH_FIRST);
 
-  protected Operation(HiveSession parentSession, OperationType opType, boolean runInBackground) {
-    this(parentSession, null, opType, runInBackground);
+  protected Operation(HiveSession parentSession, OperationType opType) {
+    this(parentSession, null, opType, false);
  }
 
   protected Operation(HiveSession parentSession, Map<String, String> confOverlay, OperationType opType, boolean runInBackground) {

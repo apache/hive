@@ -987,8 +987,8 @@ public class QTestUtil {
         && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.llap)) {
       // Copy the tezSessionState from the old CliSessionState.
       tezSessionState = oldSs.getTezSession();
-      ss.setTezSession(tezSessionState);
       oldSs.setTezSession(null);
+      ss.setTezSession(tezSessionState);
       oldSs.close();
     }
 
