@@ -61,6 +61,11 @@ public class TestOrcMetadataCache {
       assertEquals(i, lockCount);
       assertEquals(i, unlockCount);
     }
+
+    @Override
+    public int tryEvictContiguousData(int allocationSize, int count) {
+      return 0;
+    }
   }
 
   private static class DummyMemoryManager implements MemoryManager {
@@ -87,7 +92,7 @@ public class TestOrcMetadataCache {
     }
 
     @Override
-    public void forceReservedMemory(int memoryToEvict) {
+    public void forceReservedMemory(int allocationSize, int count) {
     }
   }
 

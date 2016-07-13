@@ -72,16 +72,22 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
 
   @Override
   public long evictSomeBlocks(long memoryToReserve) {
+    return evictInternal(memoryToReserve, -1);
+  }
+
+  private long evictInternal(long memoryToReserve, int minSize) {
     long evicted = 0;
     lock.lock();
     try {
       Iterator<LlapCacheableBuffer> iter = buffers.iterator();
       while (evicted < memoryToReserve && iter.hasNext()) {
-        LlapCacheableBuffer candidate = iter.next();
-        if (candidate.invalidate()) {
+        LlapCacheableBuffer buffer = iter.next();
+        long memUsage = buffer.getMemoryUsage();
+        if (memUsage < minSize || (minSize > 0  && !(buffer instanceof LlapDataBuffer))) continue;
+        if (buffer.invalidate()) {
           iter.remove();
-          evicted += candidate.getMemoryUsage();
-          evictionListener.notifyEvicted(candidate);
+          evicted += memUsage;
+          evictionListener.notifyEvicted(buffer);
         }
       }
     } finally {
@@ -107,5 +113,13 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
       sb.append("\n").append(parentDebugDump.debugDumpForOom());
     }
     return sb.toString();
+  }
+
+  @Override
+  public int tryEvictContiguousData(int allocationSize, int count) {
+    long evicted = evictInternal(allocationSize * count, allocationSize);
+    // This makes granularity assumptions.
+    assert evicted % allocationSize == 0;
+    return (int)(evicted / allocationSize);
   }
 }

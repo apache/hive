@@ -114,6 +114,11 @@ public class TestLowLevelCacheImpl {
 
     public void setParentDebugDumper(LlapOomDebugDump dumper) {
     }
+
+    @Override
+    public int tryEvictContiguousData(int allocationSize, int count) {
+      return count;
+    }
   }
 
   @Test
