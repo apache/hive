@@ -111,6 +111,7 @@ import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -138,6 +139,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InputEstimator;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -157,6 +159,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.Serializer;
@@ -167,6 +170,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.SequenceFile;
@@ -3614,5 +3619,82 @@ public final class Utilities {
     return rowObjectInspector;
   }
 
+  /**
+   * Check if LLAP IO supports the column type that is being read
+   * @param conf - configuration
+   * @return false for types not supported by vectorization, true otherwise
+   */
+  public static boolean checkLlapIOSupportedTypes(final Configuration conf) {
+    final String[] readColumnNames = ColumnProjectionUtils.getReadColumnNames(conf);
+    final String columnNames = conf.get(serdeConstants.LIST_COLUMNS);
+    final String columnTypes = conf.get(serdeConstants.LIST_COLUMN_TYPES);
+    if (columnNames == null || columnTypes == null || columnNames.isEmpty() ||
+        columnTypes.isEmpty()) {
+      LOG.warn("Column names ({}) or types ({}) is null. Skipping type checking for LLAP IO.",
+          columnNames, columnTypes);
+      return true;
+    }
+    final List<String> allColumnNames = Lists.newArrayList(columnNames.split(","));
+    final List<TypeInfo> typeInfos = TypeInfoUtils.getTypeInfosFromTypeString(columnTypes);
+    final List<String> allColumnTypes = TypeInfoUtils.getTypeStringsFromTypeInfo(typeInfos);
+    return checkLlapIOSupportedTypes(Lists.newArrayList(readColumnNames), allColumnNames,
+        allColumnTypes);
+  }
 
+  /**
+   * Check if LLAP IO supports the column type that is being read
+   * @param readColumnNames - columns that will be read from the table/partition
+   * @param allColumnNames - all columns
+   * @param allColumnTypes - all column types
+   * @return false for types not supported by vectorization, true otherwise
+   */
+  public static boolean checkLlapIOSupportedTypes(final List<String> readColumnNames,
+      final List<String> allColumnNames, final List<String> allColumnTypes) {
+    final String[] readColumnTypes = getReadColumnTypes(readColumnNames, allColumnNames,
+        allColumnTypes);
+
+    if (readColumnTypes != null) {
+      for (String readColumnType : readColumnTypes) {
+        if (readColumnType != null) {
+          if (!Vectorizer.validateDataType(readColumnType,
+              VectorExpressionDescriptor.Mode.PROJECTION)) {
+            LOG.warn("Unsupported column type encountered ({}). Disabling LLAP IO.",
+                readColumnType);
+            return false;
+          }
+        }
+      }
+    } else {
+      LOG.warn("readColumnTypes is null. Skipping type checking for LLAP IO. " +
+          "readColumnNames: {} allColumnNames: {} allColumnTypes: {} readColumnTypes: {}",
+          readColumnNames, allColumnNames, allColumnTypes, readColumnTypes);
+    }
+    return true;
+  }
+
+  private static String[] getReadColumnTypes(final List<String> readColumnNames,
+      final List<String> allColumnNames, final List<String> allColumnTypes) {
+    if (readColumnNames == null || allColumnNames == null || allColumnTypes == null ||
+        readColumnNames.isEmpty() || allColumnNames.isEmpty() || allColumnTypes.isEmpty()) {
+      return null;
+    }
+    Map<String, String> columnNameToType = new HashMap<>();
+    List<TypeInfo> types = TypeInfoUtils.typeInfosFromTypeNames(allColumnTypes);
+    if (allColumnNames.size() != types.size()) {
+      LOG.warn("Column names count does not match column types count." +
+              " ColumnNames: {} [{}] ColumnTypes: {} [{}]", allColumnNames, allColumnNames.size(),
+          allColumnTypes, types.size());
+      return null;
+    }
+
+    for (int i = 0; i < allColumnNames.size(); i++) {
+      columnNameToType.put(allColumnNames.get(i), types.get(i).toString());
+    }
+
+    String[] result = new String[readColumnNames.size()];
+    for (int i = 0; i < readColumnNames.size(); i++) {
+      result[i] = columnNameToType.get(readColumnNames.get(i));
+    }
+    return result;
+  }
 }

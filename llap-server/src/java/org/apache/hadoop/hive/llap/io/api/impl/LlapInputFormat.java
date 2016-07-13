@@ -95,6 +95,12 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     if (split instanceof LlapAwareSplit) {
       useLlapIo = ((LlapAwareSplit)split).canUseLlapIo();
     }
+
+    // validate for supported types. Until we fix HIVE-14089 we need this check.
+    if (useLlapIo) {
+      useLlapIo = Utilities.checkLlapIOSupportedTypes(job);
+    }
+
     if (!useLlapIo) {
       LlapIoImpl.LOG.warn("Not using LLAP IO for an unsupported split: " + split);
       @SuppressWarnings("unchecked")

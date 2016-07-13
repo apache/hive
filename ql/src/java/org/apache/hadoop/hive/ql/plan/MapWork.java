@@ -29,6 +29,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
@@ -36,8 +37,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -45,6 +48,9 @@ import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCo
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.JobConf;
 
 import com.google.common.collect.Interner;
@@ -231,6 +237,28 @@ public class MapWork extends BaseWork {
         }
       }
     }
+
+    // check if the column types that are read are supported by LLAP IO
+    for (Map.Entry<String, Operator<? extends OperatorDesc>> entry : aliasToWork.entrySet()) {
+      if (hasLlap) {
+        final String alias = entry.getKey();
+        Operator<? extends OperatorDesc> op = entry.getValue();
+        PartitionDesc partitionDesc = aliasToPartnInfo.get(alias);
+        if (op instanceof TableScanOperator && partitionDesc != null &&
+            partitionDesc.getTableDesc() != null) {
+          final TableScanOperator tsOp = (TableScanOperator) op;
+          final List<String> readColumnNames = tsOp.getNeededColumns();
+          final Properties props = partitionDesc.getTableDesc().getProperties();
+          final List<TypeInfo> typeInfos = TypeInfoUtils.getTypeInfosFromTypeString(
+              props.getProperty(serdeConstants.LIST_COLUMN_TYPES));
+          final List<String> allColumnTypes = TypeInfoUtils.getTypeStringsFromTypeInfo(typeInfos);
+          final List<String> allColumnNames = Utilities.getColumnNames(props);
+          hasLlap = Utilities.checkLlapIOSupportedTypes(readColumnNames, allColumnNames,
+              allColumnTypes);
+        }
+      }
+    }
+
     llapIoDesc = deriveLlapIoDescString(
         isLlapOn, canWrapAny, hasPathToPartInfo, hasLlap, hasNonLlap, hasAcid);
   }
