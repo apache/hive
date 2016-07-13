@@ -24,13 +24,12 @@ beeline () {
   beelineJarPath=`ls ${HIVE_LIB}/hive-beeline-*.jar`
   superCsvJarPath=`ls ${HIVE_LIB}/super-csv-*.jar`
   jlineJarPath=`ls ${HIVE_LIB}/jline-*.jar`
-  jdbcStandaloneJarPath=`ls ${HIVE_LIB}/hive-jdbc-*-standalone.jar`
   hadoopClasspath=""
   if [[ -n "${HADOOP_CLASSPATH}" ]]
   then
     hadoopClasspath="${HADOOP_CLASSPATH}:"
   fi
-  export HADOOP_CLASSPATH="${hadoopClasspath}${HIVE_CONF_DIR}:${beelineJarPath}:${superCsvJarPath}:${jlineJarPath}:${jdbcStandaloneJarPath}"
+  export HADOOP_CLASSPATH="${hadoopClasspath}${HIVE_CONF_DIR}:${beelineJarPath}:${superCsvJarPath}:${jlineJarPath}"
   export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=beeline-log4j2.properties "
 
   exec $HADOOP jar ${beelineJarPath} $CLASS $HIVE_OPTS "$@"
