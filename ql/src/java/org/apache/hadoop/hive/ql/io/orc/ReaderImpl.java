@@ -79,6 +79,7 @@ public class ReaderImpl extends org.apache.orc.impl.ReaderImpl
     boolean[] include = options.getInclude();
     // if included columns is null, then include all columns
     if (include == null) {
+      options = options.clone();
       include = new boolean[types.size()];
       Arrays.fill(include, true);
       options.include(include);
