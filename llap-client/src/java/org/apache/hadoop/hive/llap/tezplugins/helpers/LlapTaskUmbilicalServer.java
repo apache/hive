@@ -21,10 +21,14 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.ipc.Server;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.net.NetUtils;
+import org.apache.hadoop.security.authorize.PolicyProvider;
+import org.apache.hadoop.security.authorize.Service;
 import org.apache.hadoop.security.token.Token;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.JobTokenSecretManager;
@@ -53,6 +57,10 @@ public class LlapTaskUmbilicalServer {
         .setNumHandlers(numHandlers)
         .setSecretManager(jobTokenSecretManager).build();
 
+    if (conf.getBoolean(CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHORIZATION, false)) {
+      server.refreshServiceAcl(conf, new LlapUmbilicalExternalPolicyProvider());
+    }
+
     server.start();
     this.address = NetUtils.getConnectAddress(server);
     LOG.info(
@@ -68,6 +76,20 @@ public class LlapTaskUmbilicalServer {
     if (started.get()) { // Primarily to avoid multiple shutdowns.
       started.set(false);
       server.stop();
+    }
+  }
+
+  public static class LlapUmbilicalExternalPolicyProvider extends PolicyProvider {
+
+    private static final Service[] services = {
+      new Service(
+          MRJobConfig.MR_AM_SECURITY_SERVICE_AUTHORIZATION_TASK_UMBILICAL,
+          LlapTaskUmbilicalProtocol.class)
+    };
+
+    @Override
+    public Service[] getServices() {
+      return services.clone();
     }
   }
 }
