@@ -62,13 +62,16 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
 
   @Override
   public void startThreads() throws IOException {
-    LOG.info("Starting ZK threads as user " + UserGroupInformation.getCurrentUser());
+    String principalUser = LlapUtil.getUserNameFromPrincipal(
+        conf.get(SecretManager.ZK_DTSM_ZK_KERBEROS_PRINCIPAL));
+    LOG.info("Starting ZK threads as user " + UserGroupInformation.getCurrentUser()
+        + "; kerberos principal is configured for user (short user name) " + principalUser);
     super.startThreads();
     if (!HiveConf.getBoolVar(conf, ConfVars.LLAP_VALIDATE_ACLS)
       || !UserGroupInformation.isSecurityEnabled()) return;
     String path = conf.get(ZK_DTSM_ZNODE_WORKING_PATH, null);
     if (path == null) throw new AssertionError("Path was not set in config");
-    checkRootAcls(conf, path, UserGroupInformation.getCurrentUser().getShortUserName());
+    checkRootAcls(conf, path, principalUser);
   }
 
   // Workaround for HADOOP-12659 - remove when Hadoop 2.7.X is no longer supported.

@@ -50,6 +50,7 @@ import org.apache.curator.utils.CloseableUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceStateChangeListener;
@@ -735,18 +736,12 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     System.setProperty(ZooKeeperSaslClient.LOGIN_CONTEXT_NAME_KEY, SASL_LOGIN_CONTEXT_NAME);
 
     principal = SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
-    userNameFromPrincipal = getUserNameFromPrincipal(principal);
+    userNameFromPrincipal = LlapUtil.getUserNameFromPrincipal(principal);
     JaasConfiguration jaasConf = new JaasConfiguration(SASL_LOGIN_CONTEXT_NAME, principal,
         keyTabFile);
 
     // Install the Configuration in the runtime.
     javax.security.auth.login.Configuration.setConfiguration(jaasConf);
-  }
-
-  private String getUserNameFromPrincipal(String principal) {
-    // Based on SecurityUtil.
-    String[] components = principal.split("[/@]");
-    return (components == null || components.length != 3) ? principal : components[0];
   }
 
   /**
