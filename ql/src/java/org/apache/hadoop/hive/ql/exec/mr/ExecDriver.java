@@ -222,6 +222,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     Context ctx = driverContext.getCtx();
     boolean ctxCreated = false;
     Path emptyScratchDir;
+    JobClient jc = null;
 
     if (driverContext.isShutdown()) {
       LOG.warn("Task was cancelled");
@@ -389,7 +390,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       if (pwd != null) {
         HiveConf.setVar(job, HiveConf.ConfVars.METASTOREPWD, "HIVE");
       }
-      JobClient jc = new JobClient(job);
+      jc = new JobClient(job);
       // make this client wait if job tracker is not behaving well.
       Throttle.checkJobTracker(job, LOG);
 
@@ -471,6 +472,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           }
           HadoopJobExecHelper.runningJobs.remove(rj);
           jobID = rj.getID().toString();
+        }
+        if (jc!=null) {
+          jc.close();
         }
       } catch (Exception e) {
       }
