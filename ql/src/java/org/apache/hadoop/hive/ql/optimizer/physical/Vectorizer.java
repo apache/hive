@@ -186,25 +186,9 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   protected static transient final Logger LOG = LoggerFactory.getLogger(Vectorizer.class);
 
-  Pattern supportedDataTypesPattern;
-  List<Task<? extends Serializable>> vectorizableTasks =
-      new ArrayList<Task<? extends Serializable>>();
-  Set<Class<?>> supportedGenericUDFs = new HashSet<Class<?>>();
+  static Pattern supportedDataTypesPattern;
 
-  Set<String> supportedAggregationUdfs = new HashSet<String>();
-
-  private HiveConf hiveConf;
-
-  private boolean isSpark;
-
-  boolean useVectorizedInputFileFormat;
-  boolean useVectorDeserialize;
-  boolean useRowDeserialize;
-
-  boolean isSchemaEvolution;
-
-  public Vectorizer() {
-
+  static {
     StringBuilder patternBuilder = new StringBuilder();
     patternBuilder.append("int");
     patternBuilder.append("|smallint");
@@ -235,6 +219,25 @@ public class Vectorizer implements PhysicalPlanResolver {
     patternBuilder.append("|varchar.*");
 
     supportedDataTypesPattern = Pattern.compile(patternBuilder.toString());
+  }
+
+  List<Task<? extends Serializable>> vectorizableTasks =
+      new ArrayList<Task<? extends Serializable>>();
+  Set<Class<?>> supportedGenericUDFs = new HashSet<Class<?>>();
+
+  Set<String> supportedAggregationUdfs = new HashSet<String>();
+
+  private HiveConf hiveConf;
+
+  private boolean isSpark;
+
+  boolean useVectorizedInputFileFormat;
+  boolean useVectorDeserialize;
+  boolean useRowDeserialize;
+
+  boolean isSchemaEvolution;
+
+  public Vectorizer() {
 
     supportedGenericUDFs.add(GenericUDFOPPlus.class);
     supportedGenericUDFs.add(GenericUDFOPMinus.class);
@@ -1928,7 +1931,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return new Pair<Boolean,Boolean>(true, outputIsPrimitive);
   }
 
-  private boolean validateDataType(String type, VectorExpressionDescriptor.Mode mode) {
+  public static boolean validateDataType(String type, VectorExpressionDescriptor.Mode mode) {
     type = type.toLowerCase();
     boolean result = supportedDataTypesPattern.matcher(type).matches();
     if (result && mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {

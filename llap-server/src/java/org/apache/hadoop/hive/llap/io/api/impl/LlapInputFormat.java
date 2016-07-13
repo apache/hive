@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.llap.io.api.impl;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.io.BatchToRowInputFormat;
 
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -30,11 +31,14 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -64,8 +68,10 @@ import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -116,6 +122,12 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       useLlapIo = ((LlapAwareSplit)split).canUseLlapIo();
     }
     boolean isVectorized = Utilities.getUseVectorizedInputFileFormat(job);
+
+    // validate for supported types. Until we fix HIVE-14089 we need this check.
+    if (useLlapIo) {
+      useLlapIo = Utilities.checkLlapIOSupportedTypes(job);
+    }
+
     if (!useLlapIo) {
       LlapIoImpl.LOG.warn("Not using LLAP IO for an unsupported split: " + split);
       return sourceInputFormat.getRecordReader(split, job, reporter);

@@ -814,15 +814,16 @@ public final class TypeInfoUtils {
     return parser.parseTypeInfos();
   }
 
-  public static String getTypesString(List<TypeInfo> typeInfos) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < typeInfos.size(); i++) {
-      if (i > 0) {
-        sb.append(":");
-      }
-      sb.append(typeInfos.get(i).getTypeName());
+  public static List<String> getTypeStringsFromTypeInfo(List<TypeInfo> typeInfos) {
+    if (typeInfos == null) {
+      return null;
     }
-    return sb.toString();
+
+    List<String> result = new ArrayList<>(typeInfos.size());
+    for (TypeInfo typeInfo : typeInfos) {
+      result.add(typeInfo.toString());
+    }
+    return result;
   }
 
   public static TypeInfo getTypeInfoFromTypeString(String typeString) {
