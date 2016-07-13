@@ -33,6 +33,8 @@ import java.util.Map;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cli.LlapStatusOptionsProcessor.LlapStatusOptions;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
@@ -40,6 +42,7 @@ import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
+import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.util.Clock;
 import org.apache.hadoop.yarn.util.SystemClock;
 import org.apache.slider.api.ClusterDescription;
@@ -58,6 +61,44 @@ public class LlapStatusServiceDriver {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapStatusServiceDriver.class);
 
+  // Defining a bunch of configs here instead of in HiveConf. These are experimental, and mainly
+  // for use when retry handling is fixed in Yarn/Hadoop
+
+  private static final String CONF_PREFIX = "hive.llapcli.";
+
+  // The following two keys should ideally be used to control RM connect timeouts. However,
+  // they don't seem to work. The IPC timeout needs to be set instead.
+  @InterfaceAudience.Private
+  private static final String CONFIG_YARN_RM_TIMEOUT_MAX_WAIT_MS =
+      CONF_PREFIX + "yarn.rm.connect.max-wait-ms";
+  private static final long CONFIG_YARN_RM_TIMEOUT_MAX_WAIT_MS_DEFAULT = 10000l;
+  @InterfaceAudience.Private
+  private static final String CONFIG_YARN_RM_RETRY_INTERVAL_MS =
+      CONF_PREFIX + "yarn.rm.connect.retry-interval.ms";
+  private static final long CONFIG_YARN_RM_RETRY_INTERVAL_MS_DEFAULT = 5000l;
+
+  // As of Hadoop 2.7 - this is what controls the RM timeout.
+  @InterfaceAudience.Private
+  private static final String CONFIG_IPC_CLIENT_CONNECT_MAX_RETRIES =
+      CONF_PREFIX + "ipc.client.max-retries";
+  private static final int CONFIG_IPC_CLIENT_CONNECT_MAX_RETRIES_DEFAULT = 2;
+  @InterfaceAudience.Private
+  private static final String CONFIG_IPC_CLIENT_CONNECT_RETRY_INTERVAL_MS =
+      CONF_PREFIX + "ipc.client.connect.retry-interval-ms";
+  private static final long CONFIG_IPC_CLIENT_CONNECT_RETRY_INTERVAL_MS_DEFAULT = 1500l;
+
+  // As of Hadoop 2.8 - this timeout spec behaves in a strnage manner. "2000,1" means 2000s with 1 retry.
+  // However it does this - but does it thrice. Essentially - #retries+2 is the number of times the entire config
+  // is retried. "2000,1" means 3 retries - each with 1 retry with a random 2000ms sleep.
+  @InterfaceAudience.Private
+  private static final String CONFIG_TIMELINE_SERVICE_ENTITYGROUP_FS_STORE_RETRY_POLICY_SPEC =
+      CONF_PREFIX + "timeline.service.fs-store.retry.policy.spec";
+  private static final String
+      CONFIG_TIMELINE_SERVICE_ENTITYGROUP_FS_STORE_RETRY_POLICY_SPEC_DEFAULT = "2000, 1";
+
+  private static final String CONFIG_LLAP_ZK_REGISTRY_TIMEOUT_MS =
+      CONF_PREFIX + "zk-registry.timeout-ms";
+  private static final long CONFIG_LLAP_ZK_REGISTRY_TIMEOUT_MS_DEFAULT = 10000l;
 
 
   private static final String AM_KEY = "slider-appmaster";
@@ -104,6 +145,33 @@ public class LlapStatusServiceDriver {
       for (Map.Entry<Object, Object> props : options.getConf().entrySet()) {
         conf.set((String) props.getKey(), (String) props.getValue());
       }
+
+      // Setup timeouts for various services.
+
+      // Once we move to a Hadoop-2.8 dependency, the following paramteer can be used.
+      // conf.set(YarnConfiguration.TIMELINE_SERVICE_ENTITYGROUP_FS_STORE_RETRY_POLICY_SPEC);
+      conf.set("yarn.timeline-service.entity-group-fs-store.retry-policy-spec",
+          conf.get(CONFIG_TIMELINE_SERVICE_ENTITYGROUP_FS_STORE_RETRY_POLICY_SPEC,
+              CONFIG_TIMELINE_SERVICE_ENTITYGROUP_FS_STORE_RETRY_POLICY_SPEC_DEFAULT));
+
+      conf.setLong(YarnConfiguration.RESOURCEMANAGER_CONNECT_MAX_WAIT_MS,
+          conf.getLong(CONFIG_YARN_RM_TIMEOUT_MAX_WAIT_MS,
+              CONFIG_YARN_RM_TIMEOUT_MAX_WAIT_MS_DEFAULT));
+      conf.setLong(YarnConfiguration.RESOURCEMANAGER_CONNECT_RETRY_INTERVAL_MS,
+          conf.getLong(CONFIG_YARN_RM_RETRY_INTERVAL_MS, CONFIG_YARN_RM_RETRY_INTERVAL_MS_DEFAULT));
+
+      conf.setInt(CommonConfigurationKeysPublic.IPC_CLIENT_CONNECT_MAX_RETRIES_KEY,
+          conf.getInt(CONFIG_IPC_CLIENT_CONNECT_MAX_RETRIES,
+              CONFIG_IPC_CLIENT_CONNECT_MAX_RETRIES_DEFAULT));
+      conf.setLong(CommonConfigurationKeysPublic.IPC_CLIENT_CONNECT_RETRY_INTERVAL_KEY,
+          conf.getLong(CONFIG_IPC_CLIENT_CONNECT_RETRY_INTERVAL_MS,
+              CONFIG_IPC_CLIENT_CONNECT_RETRY_INTERVAL_MS_DEFAULT));
+
+      HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT, (conf
+          .getLong(CONFIG_LLAP_ZK_REGISTRY_TIMEOUT_MS, CONFIG_LLAP_ZK_REGISTRY_TIMEOUT_MS_DEFAULT) +
+          "ms"));
+
+
 
       String appName;
       appName = options.getName();
@@ -867,8 +935,6 @@ public class LlapStatusServiceDriver {
       } else {
         ret = ExitCode.INTERNAL_ERROR.getInt();
       }
-    } finally {
-      LOG.info("LLAP status finished");
     }
     if (ret != 0 || options == null) { // Failure / help
       System.exit(ret);
