@@ -290,6 +290,7 @@ public class SQLOperation extends ExecuteStatementOperation {
             @Override
             public Object run() throws HiveSQLException {
               Hive.set(parentHive);
+              // TODO: can this result in cross-thread reuse of session state?
               SessionState.setCurrentSessionState(parentSessionState);
               PerfLogger.setPerfLogger(parentPerfLogger);
               // Set current OperationLog in this async thread for keeping on saving query log.

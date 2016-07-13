@@ -130,81 +130,73 @@ public class TezTask extends Task<TezWork> {
       // Need to remove this static hack. But this is the way currently to get a session.
       SessionState ss = SessionState.get();
       session = ss.getTezSession();
-      session =
-          TezSessionPoolManager.getInstance().getSession(session, conf, false,
-              getWork().getLlapMode());
+      session = TezSessionPoolManager.getInstance().getSession(
+          session, conf, false, getWork().getLlapMode());
       ss.setTezSession(session);
-
-      // jobConf will hold all the configuration for hadoop, tez, and hive
-      JobConf jobConf = utils.createConfiguration(conf);
-
-      // Get all user jars from work (e.g. input format stuff).
-      String[] inputOutputJars = work.configureJobConfAndExtractJars(jobConf);
-
-      // we will localize all the files (jars, plans, hashtables) to the
-      // scratch dir. let's create this and tmp first.
-      Path scratchDir = ctx.getMRScratchDir();
-
-      // create the tez tmp dir
-      scratchDir = utils.createTezDir(scratchDir, conf);
-
-      Map<String,LocalResource> inputOutputLocalResources =
-          getExtraLocalResources(jobConf, scratchDir, inputOutputJars);
-
-      // Ensure the session is open and has the necessary local resources
-      updateSession(session, jobConf, scratchDir, inputOutputJars, inputOutputLocalResources);
-
-      List<LocalResource> additionalLr = session.getLocalizedResources();
-
-      // log which resources we're adding (apart from the hive exec)
-      if (LOG.isDebugEnabled()) {
-        if (additionalLr == null || additionalLr.size() == 0) {
-          LOG.debug("No local resources to process (other than hive-exec)");
-        } else {
-          for (LocalResource lr: additionalLr) {
-            LOG.debug("Adding local resource: " + lr.getResource());
-          }
-        }
-      }
-
-      // unless already installed on all the cluster nodes, we'll have to
-      // localize hive-exec.jar as well.
-      LocalResource appJarLr = session.getAppJarLr();
-
-      // next we translate the TezWork to a Tez DAG
-      DAG dag = build(jobConf, work, scratchDir, appJarLr, additionalLr, ctx);
-      CallerContext callerContext = CallerContext.create(
-          "HIVE", queryPlan.getQueryId(),
-          "HIVE_QUERY_ID", queryPlan.getQueryStr());
-      dag.setCallerContext(callerContext);
-
-      // Add the extra resources to the dag
-      addExtraResourcesToDag(session, dag, inputOutputJars, inputOutputLocalResources);
-
-      // submit will send the job to the cluster and start executing
-      dagClient = submit(jobConf, dag, scratchDir, appJarLr, session,
-          additionalLr, inputOutputJars, inputOutputLocalResources);
-
-      // finally monitor will print progress until the job is done
-      TezJobMonitor monitor = new TezJobMonitor(work.getWorkMap());
-      rc = monitor.monitorExecution(dagClient, conf, dag, ctx);
-      if (rc != 0) {
-        this.setException(new HiveException(monitor.getDiagnostics()));
-      }
-
-      // fetch the counters
       try {
-        Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
-        counters = dagClient.getDAGStatus(statusGetOpts).getDAGCounters();
-      } catch (Exception err) {
-        // Don't fail execution due to counters - just don't print summary info
-        LOG.error("Failed to get counters: " + err, err);
-        counters = null;
+        // jobConf will hold all the configuration for hadoop, tez, and hive
+        JobConf jobConf = utils.createConfiguration(conf);
+
+        // Get all user jars from work (e.g. input format stuff).
+        String[] inputOutputJars = work.configureJobConfAndExtractJars(jobConf);
+
+        // we will localize all the files (jars, plans, hashtables) to the
+        // scratch dir. let's create this and tmp first.
+        Path scratchDir = ctx.getMRScratchDir();
+
+        // create the tez tmp dir
+        scratchDir = utils.createTezDir(scratchDir, conf);
+
+        Map<String,LocalResource> inputOutputLocalResources =
+            getExtraLocalResources(jobConf, scratchDir, inputOutputJars);
+
+        // Ensure the session is open and has the necessary local resources
+        updateSession(session, jobConf, scratchDir, inputOutputJars, inputOutputLocalResources);
+
+        List<LocalResource> additionalLr = session.getLocalizedResources();
+        logResources(additionalLr);
+
+        // unless already installed on all the cluster nodes, we'll have to
+        // localize hive-exec.jar as well.
+        LocalResource appJarLr = session.getAppJarLr();
+
+        // next we translate the TezWork to a Tez DAG
+        DAG dag = build(jobConf, work, scratchDir, appJarLr, additionalLr, ctx);
+        CallerContext callerContext = CallerContext.create(
+            "HIVE", queryPlan.getQueryId(),
+            "HIVE_QUERY_ID", queryPlan.getQueryStr());
+        dag.setCallerContext(callerContext);
+
+        // Add the extra resources to the dag
+        addExtraResourcesToDag(session, dag, inputOutputJars, inputOutputLocalResources);
+
+        // submit will send the job to the cluster and start executing
+        dagClient = submit(jobConf, dag, scratchDir, appJarLr, session,
+            additionalLr, inputOutputJars, inputOutputLocalResources);
+
+        // finally monitor will print progress until the job is done
+        TezJobMonitor monitor = new TezJobMonitor(work.getWorkMap());
+        rc = monitor.monitorExecution(dagClient, conf, dag, ctx);
+        if (rc != 0) {
+          this.setException(new HiveException(monitor.getDiagnostics()));
+        }
+
+        // fetch the counters
+        try {
+          Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
+          counters = dagClient.getDAGStatus(statusGetOpts).getDAGCounters();
+        } catch (Exception err) {
+          // Don't fail execution due to counters - just don't print summary info
+          LOG.error("Failed to get counters: " + err, err);
+          counters = null;
+        }
+      } finally {
+        // We return this to the pool even if it's unusable; reopen is supposed to handle this.
+        TezSessionPoolManager.getInstance().returnSession(session, getWork().getLlapMode());
       }
-      TezSessionPoolManager.getInstance().returnSession(session, getWork().getLlapMode());
 
       if (LOG.isInfoEnabled() && counters != null
-          && (conf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY) ||
+          && (HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_SUMMARY) ||
           Utilities.isPerfOrAboveLogging(conf))) {
         for (CounterGroup group: counters) {
           LOG.info(group.getDisplayName() +":");
@@ -244,6 +236,18 @@ public class TezTask extends Task<TezWork> {
     return rc;
   }
 
+  private void logResources(List<LocalResource> additionalLr) {
+    // log which resources we're adding (apart from the hive exec)
+    if (!LOG.isDebugEnabled()) return;
+    if (additionalLr == null || additionalLr.size() == 0) {
+      LOG.debug("No local resources to process (other than hive-exec)");
+    } else {
+      for (LocalResource lr: additionalLr) {
+        LOG.debug("Adding local resource: " + lr.getResource());
+      }
+    }
+  }
+
   /**
    * Converted the list of jars into local resources
    */
@@ -270,6 +274,7 @@ public class TezTask extends Task<TezWork> {
         .hasResources(inputOutputJars);
 
     TezClient client = session.getSession();
+    // TODO null can also mean that this operation was interrupted. Should we really try to re-create the session in that case ?
     if (client == null) {
       // can happen if the user sets the tez flag after the session was
       // established
@@ -448,8 +453,10 @@ public class TezTask extends Task<TezWork> {
         console.printInfo("Tez session was closed. Reopening...");
 
         // close the old one, but keep the tmp files around
-        TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf, inputOutputJars,
-            true);
+        // TODO Why is the session being create using a conf instance belonging to TezTask
+        //      - instead of the session conf instance.
+        TezSessionPoolManager.getInstance().reopenSession(
+            sessionState, this.conf, inputOutputJars, true);
         console.printInfo("Session re-established.");
 
         dagClient = sessionState.getSession().submitDAG(dag);
@@ -459,7 +466,7 @@ public class TezTask extends Task<TezWork> {
       try {
         console.printInfo("Dag submit failed due to " + e.getMessage() + " stack trace: "
             + Arrays.toString(e.getStackTrace()) + " retrying...");
-        TezSessionPoolManager.getInstance().closeAndOpen(sessionState, this.conf, inputOutputJars,
+        TezSessionPoolManager.getInstance().reopenSession(sessionState, this.conf, inputOutputJars,
             true);
         dagClient = sessionState.getSession().submitDAG(dag);
       } catch (Exception retryException) {
