@@ -2651,7 +2651,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       boolean gotException = false;
       try {
         func = client.getFunction(dbName, "nonexistent_func");
-      } catch (MetaException e) {
+      } catch (NoSuchObjectException e) {
         // expected failure
         gotException = true;
       }
