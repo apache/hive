@@ -22,5 +22,6 @@ public interface MemoryManager extends LlapOomDebugDump {
   boolean reserveMemory(long memoryToReserve, boolean waitForEviction);
   void releaseMemory(long memUsage);
   void updateMaxSize(long maxSize);
-  void forceReservedMemory(int memoryToEvict);
+  /** TODO: temporary method until we get a better allocator. */
+  void forceReservedMemory(int allocationSize, int count);
 }

@@ -19,6 +19,9 @@
 package org.apache.hadoop.hive.llap.cache;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.lang.StringUtils;
@@ -188,10 +191,41 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
 
   @Override
   public long evictSomeBlocks(long memoryToReserve) {
-    long evicted = 0;
     // In normal case, we evict the items from the list.
-    LlapCacheableBuffer nextCandidate, firstCandidate;
+    long evicted = evictFromList(memoryToReserve);
+    if (evicted >= memoryToReserve) return evicted;
+    // This should not happen unless we are evicting a lot at once, or buffers are large (so
+    // there's a small number of buffers and they all live in the heap).
+    long time = timer.get();
+    while (evicted < memoryToReserve) {
+      LlapCacheableBuffer buffer = null;
+      synchronized (heap) {
+        buffer = evictFromHeapUnderLock(time);
+      }
+      if (buffer == null) return evicted;
+      evicted += buffer.getMemoryUsage();
+      evictionListener.notifyEvicted(buffer);
+    }
+    return evicted;
+  }
+
+  @Override
+  public int tryEvictContiguousData(int allocationSize, int count) {
+    int evicted = evictDataFromList(allocationSize, count);
+    count -= evicted;
+    if (count > 0) {
+      evicted += evictDataFromHeap(timer.get(), count, allocationSize);
+    }
+    return evicted;
+  }
+
+  private long evictFromList(long memoryToReserve) {
+    long evicted = 0;
+    LlapCacheableBuffer nextCandidate = null, firstCandidate = null;
     listLock.lock();
+    // We assume that there are no locked blocks in the list; or if they are, they can be dropped.
+    // Therefore we always evict one contiguous sequence from the tail. We can find it in one pass,
+    // splice it out and then finalize the eviction outside of the list lock.
     try {
       nextCandidate = firstCandidate = listTail;
       while (evicted < memoryToReserve && nextCandidate != null) {
@@ -226,22 +260,86 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
       evictionListener.notifyEvicted(firstCandidate);
       firstCandidate = firstCandidate.prev;
     }
-    if (evicted >= memoryToReserve) return evicted;
-    // This should not happen unless we are evicting a lot at once, or buffers are large (so
-    // there's a small number of buffers and they all live in the heap).
-    long time = timer.get();
-    while (evicted < memoryToReserve) {
-      LlapCacheableBuffer buffer = null;
-      synchronized (heap) {
-        buffer = evictFromHeapUnderLock(time);
-      }
-      if (buffer == null) return evicted;
-      evicted += buffer.getMemoryUsage();
-      evictionListener.notifyEvicted(buffer);
-    }
     return evicted;
   }
 
+
+  private int evictDataFromList(int minSize, int count) {
+    int evictedCount = 0;
+    // Unlike the normal evictFromList, we don't necessarily evict a sequence of blocks. We won't
+    // bother with optimization here and will just evict blocks one by one.
+    List<LlapCacheableBuffer> evictedBuffers = new ArrayList<>(count);
+    listLock.lock();
+    try {
+      LlapCacheableBuffer candidate = listTail;
+      while (evictedCount < count && candidate != null) {
+        LlapCacheableBuffer current = candidate;
+        candidate = candidate.prev;
+        long memUsage = current.getMemoryUsage();
+        if (memUsage < minSize || !(current instanceof LlapDataBuffer)) continue;
+        if (!current.invalidate()) {
+          // Locked buffer was in the list - just drop it; will be re-added on unlock.
+          removeFromListUnderLock(current);
+          continue;
+        }
+        // Remove the buffer from the list.
+        removeFromListUnderLock(current);
+        // This makes granularity assumptions.
+        assert memUsage % minSize == 0;
+        evictedCount += (memUsage / minSize);
+        evictedBuffers.add(current);
+      }
+    } finally {
+      listLock.unlock();
+    }
+    for (LlapCacheableBuffer buffer : evictedBuffers) {
+      evictionListener.notifyEvicted(buffer);
+    }
+    return evictedCount;
+  }
+
+
+  // Note: rarely called (unless buffers are very large or we evict a lot, or in LFU case).
+  private LlapCacheableBuffer evictFromHeapUnderLock(long time) {
+    while (true) {
+      if (heapSize == 0) return null;
+      LlapCacheableBuffer result = evictHeapElementUnderLock(time, 0);
+      if (result != null) return result;
+    }
+  }
+
+  // Note: almost never called (unless buffers are very large or we evict a lot, or LFU).
+  private int evictDataFromHeap(long time, int count, int minSize) {
+    LlapCacheableBuffer evicted = null;
+    int evictedCount = 0;
+    synchronized (heap) {
+      // Priorities go out of the window here.
+      int index = 0;
+      while (index < heapSize && evictedCount < count) {
+        LlapCacheableBuffer buffer = heap[index];
+        long memUsage = buffer.getMemoryUsage();
+        if (memUsage < minSize || !(buffer instanceof LlapDataBuffer)) {
+          ++index;
+          continue;
+        }
+        LlapCacheableBuffer result = evictHeapElementUnderLock(time, index);
+        // Don't advance the index - the buffer has been removed either way.
+        if (result != null) {
+          assert memUsage % minSize == 0;
+          evictedCount += (memUsage / minSize);
+          if (evicted != null) {
+            evictionListener.notifyEvicted(evicted);
+          }
+          evicted = result;
+        }
+      }
+    }
+    if (evicted != null) {
+      evictionListener.notifyEvicted(evicted);
+    }
+    return evictedCount;
+  }
+  
   private void heapifyUpUnderLock(LlapCacheableBuffer buffer, long time) {
     // See heapifyDown comment.
     int ix = buffer.indexInHeap;
@@ -260,29 +358,25 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
     heap[ix] = buffer;
   }
 
-  // Note: almost never called (unless buffers are very large or we evict a lot, or LFU).
-  private LlapCacheableBuffer evictFromHeapUnderLock(long time) {
-    while (true) {
-      if (heapSize == 0) return null;
-      LlapCacheableBuffer result = heap[0];
-      if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
-        LlapIoImpl.CACHE_LOGGER.info("Evicting {} at {}", result, time);
-      }
-      result.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
-      --heapSize;
-      boolean canEvict = result.invalidate();
-      if (heapSize > 0) {
-        LlapCacheableBuffer newRoot = heap[heapSize];
-        newRoot.indexInHeap = 0;
-        if (newRoot.lastUpdate != time) {
-          newRoot.priority = expirePriority(time, newRoot.lastUpdate, newRoot.priority);
-          newRoot.lastUpdate = time;
-        }
-        heapifyDownUnderLock(newRoot, time);
-      }
-      if (canEvict) return result;
-      // Otherwise we just removed a locked item from heap; unlock will re-add it, we continue.
+  private LlapCacheableBuffer evictHeapElementUnderLock(long time, int ix) {
+    LlapCacheableBuffer result = heap[ix];
+    if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
+      LlapIoImpl.CACHE_LOGGER.info("Evicting {} at {}", result, time);
     }
+    result.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
+    --heapSize;
+    boolean canEvict = result.invalidate();
+    if (heapSize > 0) {
+      LlapCacheableBuffer newRoot = heap[heapSize];
+      newRoot.indexInHeap = ix;
+      if (newRoot.lastUpdate != time) {
+        newRoot.priority = expirePriority(time, newRoot.lastUpdate, newRoot.priority);
+        newRoot.lastUpdate = time;
+      }
+      heapifyDownUnderLock(newRoot, time);
+    }
+    // Otherwise we just removed a locked item from heap; unlock will re-add it, we continue.
+    return canEvict ? result : null;
   }
 
   private void heapifyDownUnderLock(LlapCacheableBuffer buffer, long time) {

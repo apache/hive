@@ -265,7 +265,7 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
           if (destAllocIx == dest.length) return;
         }
       }
-      memoryManager.forceReservedMemory(allocationSize * (dest.length - destAllocIx));
+      memoryManager.forceReservedMemory(allocationSize, dest.length - destAllocIx);
       LlapIoImpl.LOG.warn("Failed to allocate despite reserved memory; will retry " + attempt);
     }
     String msg = "Failed to allocate " + size + "; at " + destAllocIx + " out of " + dest.length;

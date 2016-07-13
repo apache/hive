@@ -76,7 +76,7 @@ public class TestBuddyAllocator {
     }
 
     @Override
-    public void forceReservedMemory(int memoryToEvict) {
+    public void forceReservedMemory(int allocationSize, int count) {
     }
   }
 
