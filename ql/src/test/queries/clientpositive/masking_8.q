@@ -33,6 +33,4 @@ create table masking_test as select cast(key as int) as key, '12'
 '12', '12', '12', '12', '12', INPUT__FILE__NAME, '12', '12', '12', '12', '12'
  from src;
 
-explain select INPUT__FILE__NAME, *, ROW__ID from masking_test;
-
 select INPUT__FILE__NAME, *, ROW__ID from masking_test;
