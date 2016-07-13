@@ -687,3 +687,262 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: -- left outer join
+explain select * from emp left outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+PREHOOK: type: QUERY
+POSTHOOK: query: -- left outer join
+explain select * from emp left outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: emp
+            Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: lastname (type: string), deptid (type: int), locid (type: int)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+              Reduce Output Operator
+                key expressions: _col0 (type: string), _col1 (type: int)
+                sort order: ++
+                Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                value expressions: _col2 (type: int)
+          TableScan
+            alias: dept
+            Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: deptid (type: int), deptname (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+              Reduce Output Operator
+                key expressions: _col1 (type: string), _col0 (type: int)
+                sort order: ++
+                Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
+                Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Left Outer Join0 to 1
+          keys:
+            0 _col0 (type: string), _col1 (type: int)
+            1 _col1 (type: string), _col0 (type: int)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 48 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- left semi join
+explain select * from emp left semi join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+PREHOOK: type: QUERY
+POSTHOOK: query: -- left semi join
+explain select * from emp left semi join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: emp
+            Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (lastname is not null and deptid is not null) (type: boolean)
+              Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: lastname (type: string), deptid (type: int), locid (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: int)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                  Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col2 (type: int)
+          TableScan
+            alias: dept
+            Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (deptid is not null and deptname is not null) (type: boolean)
+              Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: deptname (type: string), deptid (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  keys: _col0 (type: string), _col1 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string), _col1 (type: int)
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                    Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Left Semi Join 0 to 1
+          keys:
+            0 _col0 (type: string), _col1 (type: int)
+            1 _col0 (type: string), _col1 (type: int)
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 3 Data size: 297 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 3 Data size: 297 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- right outer join
+explain select * from emp right outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+PREHOOK: type: QUERY
+POSTHOOK: query: -- right outer join
+explain select * from emp right outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: emp
+            Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: lastname (type: string), deptid (type: int), locid (type: int)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+              Reduce Output Operator
+                key expressions: _col0 (type: string), _col1 (type: int)
+                sort order: ++
+                Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                value expressions: _col2 (type: int)
+          TableScan
+            alias: dept
+            Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: deptid (type: int), deptname (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+              Reduce Output Operator
+                key expressions: _col1 (type: string), _col0 (type: int)
+                sort order: ++
+                Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
+                Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Right Outer Join0 to 1
+          keys:
+            0 _col0 (type: string), _col1 (type: int)
+            1 _col1 (type: string), _col0 (type: int)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          Statistics: Num rows: 6 Data size: 1164 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 6 Data size: 1164 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- full outer join
+explain select * from emp full outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+PREHOOK: type: QUERY
+POSTHOOK: query: -- full outer join
+explain select * from emp full outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: emp
+            Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: lastname (type: string), deptid (type: int), locid (type: int)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+              Reduce Output Operator
+                key expressions: _col0 (type: string), _col1 (type: int)
+                sort order: ++
+                Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
+                value expressions: _col2 (type: int)
+          TableScan
+            alias: dept
+            Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: deptid (type: int), deptname (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+              Reduce Output Operator
+                key expressions: _col1 (type: string), _col0 (type: int)
+                sort order: ++
+                Map-reduce partition columns: _col1 (type: string), _col0 (type: int)
+                Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Outer Join 0 to 1
+          keys:
+            0 _col0 (type: string), _col1 (type: int)
+            1 _col1 (type: string), _col0 (type: int)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          Statistics: Num rows: 54 Data size: 10476 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 54 Data size: 10476 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

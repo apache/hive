@@ -68,3 +68,14 @@ explain select * from emp e join dept d  on (e.deptid = d.deptid) join loc l on 
 -- Expected output rows: (48*6*8)/top2largest(3,7,7)*top2largest(6,6,6) = 1
 explain select * from emp e join dept d on (e.deptid = d.deptid and e.lastname = d.deptname) join loc l on (e.deptid = l.locid and e.lastname = l.state);
 
+-- left outer join
+explain select * from emp left outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname;
+
+-- left semi join
+explain select * from emp left semi join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname;
+
+-- right outer join
+explain select * from emp right outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname;
+
+-- full outer join
+explain select * from emp full outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname;

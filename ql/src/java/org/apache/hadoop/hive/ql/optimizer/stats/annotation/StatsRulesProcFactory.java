@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
@@ -61,6 +62,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -1469,8 +1471,8 @@ public class StatsRulesProcFactory {
 
         // update join statistics
         stats.setColumnStats(outColStats);
-        long newRowCount = inferredRowCount !=-1 ? inferredRowCount : computeNewRowCount(rowCounts, denom);
-        updateStatsForJoinType(stats, newRowCount, jop, rowCountParents);
+        long newRowCount = inferredRowCount !=-1 ? inferredRowCount : computeNewRowCount(rowCounts, denom, jop);
+        updateColStats(stats, newRowCount, jop, rowCountParents);
         jop.setStatistics(stats);
 
         if (isDebugEnabled) {
@@ -1644,7 +1646,7 @@ public class StatsRulesProcFactory {
         newNumRows = newrows;
       } else {
         // there is more than one FK
-        newNumRows = this.computeNewRowCount(rowCounts, getDenominator(distinctVals));
+        newNumRows = this.computeNewRowCount(rowCounts, getDenominator(distinctVals), jop);
       }
       return newNumRows;
     }
@@ -1764,7 +1766,7 @@ public class StatsRulesProcFactory {
       return result;
     }
 
-    private void updateStatsForJoinType(Statistics stats, long newNumRows,
+    private void updateColStats(Statistics stats, long newNumRows,
         CommonJoinOperator<? extends JoinDesc> jop,
         Map<Integer, Long> rowCountParents) {
 
@@ -1812,7 +1814,7 @@ public class StatsRulesProcFactory {
       stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
     }
 
-    private long computeNewRowCount(List<Long> rowCountParents, long denom) {
+    private long computeNewRowCount(List<Long> rowCountParents, long denom, CommonJoinOperator<? extends JoinDesc> join) {
       double factor = 0.0d;
       long result = 1;
       long max = rowCountParents.get(0);
@@ -1838,6 +1840,33 @@ public class StatsRulesProcFactory {
 
       result = (long) (result * factor);
 
+      if (join.getConf().getConds().length == 1) {
+        JoinCondDesc joinCond = join.getConf().getConds()[0];
+        switch (joinCond.getType()) {
+          case JoinDesc.INNER_JOIN:
+            // only dealing with special join types here.
+            break;
+          case JoinDesc.LEFT_OUTER_JOIN :
+            // all rows from left side will be present in resultset
+            result = Math.max(rowCountParents.get(joinCond.getLeft()),result);
+            break;
+          case JoinDesc.RIGHT_OUTER_JOIN :
+            // all rows from right side will be present in resultset
+            result = Math.max(rowCountParents.get(joinCond.getRight()),result);
+            break;
+          case JoinDesc.FULL_OUTER_JOIN :
+            // all rows from both side will be present in resultset
+            result = Math.max(StatsUtils.safeAdd(rowCountParents.get(joinCond.getRight()), rowCountParents.get(joinCond.getLeft())),result);
+            break;
+          case JoinDesc.LEFT_SEMI_JOIN :
+            // max # of rows = rows from left side
+            result = Math.min(rowCountParents.get(joinCond.getLeft()),result);
+            break;
+          default:
+            LOG.debug("Unhandled join type in stats estimation: " + joinCond.getType());
+            break;
+        }
+      }
       return result;
     }
 
