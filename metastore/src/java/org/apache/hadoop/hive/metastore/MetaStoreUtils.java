@@ -1180,6 +1180,33 @@ public class MetaStoreUtils {
   }
 
   /**
+   * Finds a free port on the machine, but allow the
+   * ability to specify a port number to not use, no matter what.
+   */
+  public static int findFreePortExcepting(int portToExclude) throws IOException {
+    ServerSocket socket1 = null;
+    ServerSocket socket2 = null;
+    try {
+      socket1 = new ServerSocket(0);
+      socket2 = new ServerSocket(0);
+      if (socket1.getLocalPort() != portToExclude) {
+        return socket1.getLocalPort();
+      }
+      // If we're here, then socket1.getLocalPort was the port to exclude
+      // Since both sockets were open together at a point in time, we're
+      // guaranteed that socket2.getLocalPort() is not the same.
+      return socket2.getLocalPort();
+    } finally {
+      if (socket1 != null){
+        socket1.close();
+      }
+      if (socket2 != null){
+        socket2.close();
+      }
+    }
+  }
+
+  /**
    * Catches exceptions that can't be handled and bundles them to MetaException
    *
    * @param e
