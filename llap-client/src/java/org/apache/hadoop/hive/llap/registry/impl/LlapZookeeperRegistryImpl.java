@@ -51,6 +51,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceStateChangeListener;
@@ -702,7 +703,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
 
 
   private void setupZookeeperAuth(final Configuration conf) throws IOException {
-    if (UserGroupInformation.isSecurityEnabled()) {
+    if (UserGroupInformation.isSecurityEnabled() && LlapProxy.isDaemon()) {
       LOG.info("UGI security is enabled. Setting up ZK auth.");
 
       String llapPrincipal = HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_PRINCIPAL);
@@ -718,7 +719,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
       // Install the JAAS Configuration for the runtime
       setZookeeperClientKerberosJaasConfig(llapPrincipal, llapKeytab);
     } else {
-      LOG.info("UGI security is not enabled. Skipping setting up ZK auth.");
+      LOG.info("UGI security is not enabled, or non-daemon environment. Skipping setting up ZK auth.");
     }
   }
 
