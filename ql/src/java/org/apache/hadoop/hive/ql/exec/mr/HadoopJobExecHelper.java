@@ -373,6 +373,19 @@ public class HadoopJobExecHelper {
       reportTime = System.currentTimeMillis();
     }
 
+    Counters ctrs = th.getCounters();
+
+    if (ctrs != null) {
+      Counter counterCpuMsec = ctrs.findCounter("org.apache.hadoop.mapred.Task$Counter",
+              "CPU_MILLISECONDS");
+      if (counterCpuMsec != null) {
+        long newCpuMSec = counterCpuMsec.getValue();
+        if (newCpuMSec > cpuMsec) {
+          cpuMsec = newCpuMSec;
+        }
+      }
+    }
+
     if (cpuMsec > 0) {
       console.printInfo("MapReduce Total cumulative CPU time: "
           + Utilities.formatMsecToStr(cpuMsec));
@@ -380,7 +393,6 @@ public class HadoopJobExecHelper {
 
     boolean success;
 
-    Counters ctrs = th.getCounters();
     if (fatal) {
       success = false;
     } else {
@@ -395,17 +407,6 @@ public class HadoopJobExecHelper {
           ss.getHiveHistory().setTaskCounters(SessionState.get().getQueryId(), getId(), ctrs);
         }
         success = rj.isSuccessful();
-      }
-    }
-
-    if (ctrs != null) {
-      Counter counterCpuMsec = ctrs.findCounter("org.apache.hadoop.mapred.Task$Counter",
-          "CPU_MILLISECONDS");
-      if (counterCpuMsec != null) {
-        long newCpuMSec = counterCpuMsec.getValue();
-        if (newCpuMSec > cpuMsec) {
-          cpuMsec = newCpuMSec;
-        }
       }
     }
 
