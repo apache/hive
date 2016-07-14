@@ -60,6 +60,9 @@ enum TProtocolVersion {
 
   // V8 adds support for interval types
   HIVE_CLI_SERVICE_PROTOCOL_V8
+
+  // V9 adds support for serializing ResultSets in SerDe
+  HIVE_CLI_SERVICE_PROTOCOL_V9
 }
 
 enum TTypeId {
