@@ -491,6 +491,14 @@ public final class OrcFile {
       return this;
     }
 
+    public FileSystem getFileSystem() {
+      return fileSystemValue;
+    }
+    
+    public Configuration getConfiguration() {
+      return configuration;
+    }
+ 
     public int getBufferSize() {
       return bufferSizeValue;
     }

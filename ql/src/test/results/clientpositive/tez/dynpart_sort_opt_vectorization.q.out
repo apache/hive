@@ -1163,10 +1163,10 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	8                   
+	numFiles            	4                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	2212                
+	totalSize           	2016                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1249,10 +1249,10 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
-	numFiles            	8                   
+	numFiles            	4                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	2212                
+	totalSize           	2016                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

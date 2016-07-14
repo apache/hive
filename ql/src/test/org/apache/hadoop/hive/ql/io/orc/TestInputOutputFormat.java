@@ -537,11 +537,11 @@ public class TestInputOutputFormat {
   public void testFileGenerator() throws Exception {
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     MockFileSystem fs = new MockFileSystem(conf,
-        new MockFile("mock:/a/b/part-00", 1000, new byte[0]),
-        new MockFile("mock:/a/b/part-01", 1000, new byte[0]),
-        new MockFile("mock:/a/b/_part-02", 1000, new byte[0]),
-        new MockFile("mock:/a/b/.part-03", 1000, new byte[0]),
-        new MockFile("mock:/a/b/part-04", 1000, new byte[0]));
+        new MockFile("mock:/a/b/part-00", 1000, new byte[1]),
+        new MockFile("mock:/a/b/part-01", 1000, new byte[1]),
+        new MockFile("mock:/a/b/_part-02", 1000, new byte[1]),
+        new MockFile("mock:/a/b/.part-03", 1000, new byte[1]),
+        new MockFile("mock:/a/b/part-04", 1000, new byte[1]));
     OrcInputFormat.FileGenerator gen =
       new OrcInputFormat.FileGenerator(context, fs,
           new MockPath(fs, "mock:/a/b"));

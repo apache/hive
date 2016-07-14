@@ -93,23 +93,20 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
 
     @Override
     public void close(boolean b) throws IOException {
-      // if we haven't written any rows, we need to create a file with a
-      // generic schema.
       if (writer == null) {
-        // a row with no columns
-        ObjectInspector inspector = ObjectInspectorFactory.
-            getStandardStructObjectInspector(new ArrayList<String>(),
-                new ArrayList<ObjectInspector>());
-        options.inspector(inspector);
-        writer = OrcFile.createWriter(path, options);
+        // we are closing a file without writing any data in it
+        FileSystem fs = options.getFileSystem() == null ?
+            path.getFileSystem(options.getConfiguration()) : options.getFileSystem();        
+        fs.createNewFile(path);
+        return;
       }
       writer.close();
     }
 
     @Override
     public SerDeStats getStats() {
-      stats.setRawDataSize(writer.getRawDataSize());
-      stats.setRowCount(writer.getNumberOfRows());
+      stats.setRawDataSize(null == writer ? 0 : writer.getRawDataSize());
+      stats.setRowCount(null == writer ? 0 : writer.getNumberOfRows());
       return stats;
     }
   }

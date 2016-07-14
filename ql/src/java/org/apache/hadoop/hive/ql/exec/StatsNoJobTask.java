@@ -123,7 +123,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
 
   class StatsCollection implements Runnable {
 
-    private Partition partn;
+    private final Partition partn;
 
     public StatsCollection(Partition part) {
       this.partn = part;
@@ -148,7 +148,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
         boolean statsAvailable = false;
         for(FileStatus file: fileList) {
           if (!file.isDir()) {
-            InputFormat<?, ?> inputFormat = (InputFormat<?, ?>) ReflectionUtil.newInstance(
+            InputFormat<?, ?> inputFormat = ReflectionUtil.newInstance(
                 partn.getInputFormatClass(), jc);
             InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0,
                 new String[] { partn.getLocation() });
@@ -193,7 +193,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
             "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
 
         // Before updating the partition params, if any partition params is null
-        // and if statsReliable is true then updatePartition() function  will fail 
+        // and if statsReliable is true then updatePartition() function  will fail
         // the task by returning 1
         if (work.isStatsReliable()) {
           partUpdates.put(tPart.getSd().getLocation(), null);
@@ -244,40 +244,45 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
           boolean statsAvailable = false;
           for(FileStatus file: fileList) {
             if (!file.isDir()) {
-              InputFormat<?, ?> inputFormat = (InputFormat<?, ?>) ReflectionUtil.newInstance(
+              InputFormat<?, ?> inputFormat = ReflectionUtil.newInstance(
                   table.getInputFormatClass(), jc);
-              InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0, new String[] { table
-                  .getDataLocation().toString() });
-              org.apache.hadoop.mapred.RecordReader<?, ?> recordReader =
-                  inputFormat.getRecordReader(dummySplit, jc, Reporter.NULL);
-              StatsProvidingRecordReader statsRR;
-              if (recordReader instanceof StatsProvidingRecordReader) {
-                statsRR = (StatsProvidingRecordReader) recordReader;
-                numRows += statsRR.getStats().getRowCount();
-                rawDataSize += statsRR.getStats().getRawDataSize();
-                fileSize += file.getLen();
+              InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0, new String[]{table
+                  .getDataLocation().toString()});
+              if (file.getLen() == 0) {
                 numFiles += 1;
                 statsAvailable = true;
+              } else {
+                org.apache.hadoop.mapred.RecordReader<?, ?> recordReader =
+                    inputFormat.getRecordReader(dummySplit, jc, Reporter.NULL);
+                StatsProvidingRecordReader statsRR;
+                if (recordReader instanceof StatsProvidingRecordReader) {
+                  statsRR = (StatsProvidingRecordReader) recordReader;
+                  numRows += statsRR.getStats().getRowCount();
+                  rawDataSize += statsRR.getStats().getRawDataSize();
+                  fileSize += file.getLen();
+                  numFiles += 1;
+                  statsAvailable = true;
+                }
+                recordReader.close();
               }
-              recordReader.close();
             }
-          }
 
-          if (statsAvailable) {
-            parameters.put(StatsSetupConst.ROW_COUNT, String.valueOf(numRows));
-            parameters.put(StatsSetupConst.RAW_DATA_SIZE, String.valueOf(rawDataSize));
-            parameters.put(StatsSetupConst.TOTAL_SIZE, String.valueOf(fileSize));
-            parameters.put(StatsSetupConst.NUM_FILES, String.valueOf(numFiles));
-            parameters.put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK, StatsSetupConst.TRUE);
+            if (statsAvailable) {
+              parameters.put(StatsSetupConst.ROW_COUNT, String.valueOf(numRows));
+              parameters.put(StatsSetupConst.RAW_DATA_SIZE, String.valueOf(rawDataSize));
+              parameters.put(StatsSetupConst.TOTAL_SIZE, String.valueOf(fileSize));
+              parameters.put(StatsSetupConst.NUM_FILES, String.valueOf(numFiles));
+              parameters.put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK, StatsSetupConst.TRUE);
 
-            db.alterTable(tableFullName, new Table(tTable));
+              db.alterTable(tableFullName, new Table(tTable));
 
-            String msg = "Table " + tableFullName + " stats: [" + toString(parameters) + ']';
-            LOG.debug(msg);
-            console.printInfo(msg);
-          } else {
-            String msg = "Table " + tableFullName + " does not provide stats.";
-            LOG.debug(msg);
+              String msg = "Table " + tableFullName + " stats: [" + toString(parameters) + ']';
+              LOG.debug(msg);
+              console.printInfo(msg);
+            } else {
+              String msg = "Table " + tableFullName + " does not provide stats.";
+              LOG.debug(msg);
+            }
           }
         } catch (Exception e) {
           console.printInfo("[Warning] could not update stats for " + tableFullName + ".",

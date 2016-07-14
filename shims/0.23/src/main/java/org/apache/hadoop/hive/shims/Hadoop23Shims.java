@@ -163,7 +163,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         Iterator<FileStatus> it = result.iterator();
         while (it.hasNext()) {
           FileStatus stat = it.next();
-          if (!stat.isFile()) {
+          if (!stat.isFile() || (stat.getLen() == 0 && !stat.getPath().toUri().getScheme().equals("nullscan"))) {
             it.remove();
           }
         }

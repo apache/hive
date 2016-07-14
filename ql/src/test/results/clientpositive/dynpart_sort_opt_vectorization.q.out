@@ -1114,7 +1114,7 @@ Partition Parameters:
 	numFiles            	8                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	2212                
+	totalSize           	2016                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1200,7 +1200,7 @@ Partition Parameters:
 	numFiles            	8                   
 	numRows             	6                   
 	rawDataSize         	120                 
-	totalSize           	2212                
+	totalSize           	2016                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
