@@ -89,9 +89,10 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
   @Override
   public void close() throws HiveSQLException {
     try {
-      acquire(true);
+      acquire(true, false);
       cancelDelegationToken();
     } finally {
+      release(true, false);
       try {
         super.close();
       } finally {
