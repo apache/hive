@@ -71,6 +71,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
     Collection<Future<?>> result = super.initializeOp(jobConf);
     hiveConf = jobConf;
     isMapOperator = conf.isMapSide();
+    currentKeys = null;
 
     reconstructQueryDef(hiveConf);
 
