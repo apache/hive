@@ -135,14 +135,19 @@ public class HiveServer2 extends CompositeService {
     }
     // Setup web UI
     try {
-      if (hiveConf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
-        LOG.info("Web UI is disabled since in test mode");
-      } else {
-        int webUIPort =
+      int webUIPort =
           hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_PORT);
+      // We disable web UI in tests unless the test is explicitly setting a
+      // unique web ui port so that we don't mess up ptests.
+      boolean uiDisabledInTest = hiveConf.getBoolVar(ConfVars.HIVE_IN_TEST) &&
+          (webUIPort == Integer.valueOf(ConfVars.HIVE_SERVER2_WEBUI_PORT.getDefaultValue()));
+      if (uiDisabledInTest) {
+        LOG.info("Web UI is disabled in test mode since webui port was not specified");
+      } else {
         if (webUIPort <= 0) {
           LOG.info("Web UI is disabled since port is set to " + webUIPort);
         } else {
+          LOG.info("Starting Web UI on port "+ webUIPort);
           HttpServer.Builder builder = new HttpServer.Builder("hiveserver2");
           builder.setPort(webUIPort).setConf(hiveConf);
           builder.setHost(hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_BIND_HOST));

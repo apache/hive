@@ -130,9 +130,10 @@ public class HttpServer {
       return new HttpServer(this);
     }
 
-    public Builder setConf(HiveConf conf) {
+    public Builder setConf(HiveConf origConf) {
+      this.conf = new HiveConf(origConf);
+      origConf.stripHiddenConfigurations(conf);
       setContextAttribute(CONF_CONTEXT_ATTRIBUTE, conf);
-      this.conf = conf;
       return this;
     }
 

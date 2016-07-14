@@ -25,10 +25,21 @@ import java.net.URL;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
 /**
  * TestHS2HttpServer -- executes tests of HiveServer2 HTTP Server
@@ -36,11 +47,17 @@ import org.junit.Test;
 public class TestHS2HttpServer {
 
   private static HiveServer2 hiveServer2 = null;
+  private static HiveConf hiveConf = null;
+  private static String metastorePasswd = "61ecbc41cdae3e6b32712a06c73606fa"; //random md5
+  private static Integer webUIPort = null;
 
   @BeforeClass
   public static void beforeTests() throws Exception {
-    HiveConf hiveConf = new HiveConf();
-    hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, false);
+    webUIPort = MetaStoreUtils.findFreePortExcepting(
+        Integer.valueOf(ConfVars.HIVE_SERVER2_WEBUI_PORT.getDefaultValue()));
+    hiveConf = new HiveConf();
+    hiveConf.set(ConfVars.METASTOREPWD.varname, metastorePasswd);
+    hiveConf.set(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname, webUIPort.toString());
     hiveServer2 = new HiveServer2();
     hiveServer2.init(hiveConf);
     hiveServer2.start();
@@ -48,9 +65,8 @@ public class TestHS2HttpServer {
   }
 
   @Test
-  public void testStackServket() throws Exception {
-    String baseURL = "http://localhost:"
-      + ConfVars.HIVE_SERVER2_WEBUI_PORT.getDefaultValue() + "/stacks";
+  public void testStackServlet() throws Exception {
+    String baseURL = "http://localhost:" + webUIPort + "/stacks";
     URL url = new URL(baseURL);
     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
     Assert.assertEquals(HttpURLConnection.HTTP_OK, conn.getResponseCode());
@@ -65,6 +81,44 @@ public class TestHS2HttpServer {
     }
     Assert.assertTrue(contents);
   }
+
+  @Test
+  public void testConfStrippedFromWebUI() throws Exception {
+
+    String pwdValFound = null;
+    String pwdKeyFound = null;
+    CloseableHttpClient httpclient = null;
+    try {
+      httpclient = HttpClients.createDefault();
+      HttpGet httpGet = new HttpGet("http://localhost:"+webUIPort+"/conf");
+      CloseableHttpResponse response1 = httpclient.execute(httpGet);
+
+      try {
+        HttpEntity entity1 = response1.getEntity();
+        BufferedReader br = new BufferedReader(new InputStreamReader(entity1.getContent()));
+        String line;
+        while ((line = br.readLine())!= null) {
+          if (line.contains(metastorePasswd)){
+            pwdValFound = line;
+          }
+          if (line.contains(ConfVars.METASTOREPWD.varname)){
+            pwdKeyFound = line;
+          }
+        }
+        EntityUtils.consume(entity1);
+      } finally {
+        response1.close();
+      }
+    } finally {
+      if (httpclient != null){
+        httpclient.close();
+      }
+    }
+
+    assertNotNull(pwdKeyFound);
+    assertNull(pwdValFound);
+  }
+
 
   @AfterClass
   public static void afterTests() throws Exception {
