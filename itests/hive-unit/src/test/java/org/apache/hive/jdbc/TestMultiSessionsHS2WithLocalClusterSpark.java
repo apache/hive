@@ -47,10 +47,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+@Ignore("These tests are flaky, and are spark tests")
 public class TestMultiSessionsHS2WithLocalClusterSpark {
   public static final String TEST_TAG = "miniHS2.localClusterSpark.tag";
   public static final String TEST_TAG_VALUE = "miniHS2.localClusterSpark.value";
