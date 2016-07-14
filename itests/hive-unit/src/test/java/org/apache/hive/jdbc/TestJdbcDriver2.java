@@ -135,6 +135,7 @@ public class TestJdbcDriver2 {
     System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
     System.setProperty(ConfVars.HIVEMAPREDMODE.varname, "nonstrict");
     System.setProperty(ConfVars.HIVE_AUTHORIZATION_MANAGER.varname, "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
+    System.setProperty(ConfVars.HIVE_SERVER2_PARALLEL_OPS_IN_SESSION.varname, "false");
 
     Statement stmt1 = con1.createStatement();
     assertNotNull("Statement is null", stmt1);
@@ -325,6 +326,23 @@ public class TestJdbcDriver2 {
     } catch(JdbcUriParseException e) {
       assertTrue(e.getMessage().contains("Bad URL format"));
     }
+  }
+
+  @Test
+  public void testSerializedExecution() throws Exception {
+    // Test running parallel queries (with parallel queries disabled).
+    // Should be serialized in the order of execution.
+    HiveStatement stmt1 = (HiveStatement) con.createStatement();
+    HiveStatement stmt2 = (HiveStatement) con.createStatement();
+    stmt1.execute("create temporary function sleepMsUDF as '" + SleepMsUDF.class.getName() + "'");
+    stmt1.execute("create table test_ser_1(i int)");
+    stmt1.executeAsync("insert into test_ser_1 select sleepMsUDF(under_col, 500) from "
+        + tableName + " limit 1");
+    boolean isResultSet = stmt2.executeAsync("select * from test_ser_1");
+    assertTrue(isResultSet);
+    ResultSet rs = stmt2.getResultSet();
+    assertTrue(rs.next());
+    assertFalse(rs.next());
   }
 
   @Test
@@ -2527,6 +2545,19 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     public Integer evaluate(final Integer value) {
       try {
         Thread.sleep(100);
+      } catch (InterruptedException e) {
+        // No-op
+      }
+      return value;
+    }
+  }
+
+
+  // A udf which sleeps for some number of ms to simulate a long running query
+  public static class SleepMsUDF extends UDF {
+    public Integer evaluate(final Integer value, final Integer ms) {
+      try {
+        Thread.sleep(ms);
       } catch (InterruptedException e) {
         // No-op
       }

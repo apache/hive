@@ -31,7 +31,7 @@ public abstract class ExecuteStatementOperation extends Operation {
 
   public ExecuteStatementOperation(HiveSession parentSession, String statement,
       Map<String, String> confOverlay, boolean runInBackground) {
-    super(parentSession, confOverlay, OperationType.EXECUTE_STATEMENT, runInBackground);
+    super(parentSession, confOverlay, OperationType.EXECUTE_STATEMENT);
     this.statement = statement;
   }
 

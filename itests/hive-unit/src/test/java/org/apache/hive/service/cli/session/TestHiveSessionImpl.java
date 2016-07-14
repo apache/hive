@@ -51,11 +51,11 @@ public class TestHiveSessionImpl {
     HiveSessionImpl session = new HiveSessionImpl(protocol, username, password,
       serverhiveConf, ipAddress) {
       @Override
-      protected synchronized void acquire(boolean userAccess) {
+      protected synchronized void acquire(boolean userAccess, boolean isOperation) {
       }
 
       @Override
-      protected synchronized void release(boolean userAccess) {
+      protected synchronized void release(boolean userAccess, boolean isOperation) {
       }
     };
 

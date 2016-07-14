@@ -89,7 +89,6 @@ import org.codehaus.jackson.map.ObjectMapper;
  */
 @SuppressWarnings("deprecation")
 public class SQLOperation extends ExecuteStatementOperation {
-
   private Driver driver = null;
   private CommandProcessorResponse response;
   private TableSchema resultSchema = null;
@@ -101,6 +100,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   private SQLOperationDisplay sqlOpDisplay;
   private long queryTimeout;
   private ScheduledExecutorService timeoutExecutor;
+  private final boolean runAsync;
 
   /**
    * A map to track query count running by each user
@@ -112,6 +112,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       boolean runInBackground, long queryTimeout) {
     // TODO: call setRemoteUser in ExecuteStatementOperation or higher.
     super(parentSession, statement, confOverlay, runInBackground);
+    this.runAsync = runInBackground;
     this.queryTimeout = queryTimeout;
     long timeout = HiveConf.getTimeVar(queryState.getConf(),
         HiveConf.ConfVars.HIVE_QUERY_TIMEOUT_SECONDS, TimeUnit.SECONDS);
@@ -125,6 +126,11 @@ public class SQLOperation extends ExecuteStatementOperation {
     } catch (HiveSQLException e) {
       LOG.warn("Error calcluating SQL Operation Display for webui", e);
     }
+  }
+
+  @Override
+  public boolean shouldRunAsync() {
+    return runAsync;
   }
 
   private void setupSessionIO(SessionState sessionState) {
@@ -278,70 +284,16 @@ public class SQLOperation extends ExecuteStatementOperation {
     if (!runAsync) {
       runQuery();
     } else {
-      // We'll pass ThreadLocals in the background thread from the foreground (handler) thread
-      final SessionState parentSessionState = SessionState.get();
-      // ThreadLocal Hive object needs to be set in background thread.
-      // The metastore client in Hive is associated with right user.
-      final Hive parentHive = parentSession.getSessionHive();
-      final PerfLogger parentPerfLogger = SessionState.getPerfLogger();
-      // Current UGI will get used by metastore when metsatore is in embedded mode
-      // So this needs to get passed to the new background thread
-      final UserGroupInformation currentUGI = getCurrentUGI();
-      // Runnable impl to call runInternal asynchronously,
-      // from a different thread
-      Runnable backgroundOperation = new Runnable() {
-        @Override
-        public void run() {
-          PrivilegedExceptionAction<Object> doAsAction = new PrivilegedExceptionAction<Object>() {
-            @Override
-            public Object run() throws HiveSQLException {
-              Hive.set(parentHive);
-              // TODO: can this result in cross-thread reuse of session state?
-              SessionState.setCurrentSessionState(parentSessionState);
-              PerfLogger.setPerfLogger(parentPerfLogger);
-              // Set current OperationLog in this async thread for keeping on saving query log.
-              registerCurrentOperationLog();
-              registerLoggingContext();
-              try {
-                if (asyncPrepare) {
-                  prepare(queryState);
-                }
-                runQuery();
-              } catch (HiveSQLException e) {
-                setOperationException(e);
-                LOG.error("Error running hive query: ", e);
-              } finally {
-                unregisterLoggingContext();
-                unregisterOperationLog();
-              }
-              return null;
-            }
-          };
+      // We'll pass ThreadLocals in the background thread from the foreground (handler) thread.
+      // 1) ThreadLocal Hive object needs to be set in background thread
+      // 2) The metastore client in Hive is associated with right user.
+      // 3) Current UGI will get used by metastore when metastore is in embedded mode
+      Runnable work = new BackgroundWork(getCurrentUGI(), parentSession.getSessionHive(),
+          SessionState.getPerfLogger(), SessionState.get(), asyncPrepare);
 
-          try {
-            currentUGI.doAs(doAsAction);
-          } catch (Exception e) {
-            setOperationException(new HiveSQLException(e));
-            LOG.error("Error running hive query as user : " + currentUGI.getShortUserName(), e);
-          }
-          finally {
-            /**
-             * We'll cache the ThreadLocal RawStore object for this background thread for an orderly cleanup
-             * when this thread is garbage collected later.
-             * @see org.apache.hive.service.server.ThreadWithGarbageCleanup#finalize()
-             */
-            if (ThreadWithGarbageCleanup.currentThread() instanceof ThreadWithGarbageCleanup) {
-              ThreadWithGarbageCleanup currentThread =
-                  (ThreadWithGarbageCleanup) ThreadWithGarbageCleanup.currentThread();
-              currentThread.cacheThreadLocalRawStore();
-            }
-          }
-        }
-      };
       try {
         // This submit blocks if no background threads are available to run this operation
-        Future<?> backgroundHandle =
-            getParentSession().getSessionManager().submitBackgroundOperation(backgroundOperation);
+        Future<?> backgroundHandle = getParentSession().submitBackgroundOperation(work);
         setBackgroundHandle(backgroundHandle);
       } catch (RejectedExecutionException rejected) {
         setState(OperationState.ERROR);
@@ -350,6 +302,74 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
     }
   }
+
+
+  private final class BackgroundWork implements Runnable {
+    private final UserGroupInformation currentUGI;
+    private final Hive parentHive;
+    private final PerfLogger parentPerfLogger;
+    private final SessionState parentSessionState;
+    private final boolean asyncPrepare;
+
+    private BackgroundWork(UserGroupInformation currentUGI,
+        Hive parentHive, PerfLogger parentPerfLogger,
+        SessionState parentSessionState, boolean asyncPrepare) {
+      this.currentUGI = currentUGI;
+      this.parentHive = parentHive;
+      this.parentPerfLogger = parentPerfLogger;
+      this.parentSessionState = parentSessionState;
+      this.asyncPrepare = asyncPrepare;
+    }
+
+    @Override
+    public void run() {
+      PrivilegedExceptionAction<Object> doAsAction = new PrivilegedExceptionAction<Object>() {
+        @Override
+        public Object run() throws HiveSQLException {
+          Hive.set(parentHive);
+          // TODO: can this result in cross-thread reuse of session state?
+          SessionState.setCurrentSessionState(parentSessionState);
+          PerfLogger.setPerfLogger(parentPerfLogger);
+          // Set current OperationLog in this async thread for keeping on saving query log.
+          registerCurrentOperationLog();
+          registerLoggingContext();
+          try {
+            if (asyncPrepare) {
+              prepare(queryState);
+            }
+            runQuery();
+          } catch (HiveSQLException e) {
+            setOperationException(e);
+            LOG.error("Error running hive query: ", e);
+          } finally {
+            unregisterLoggingContext();
+            unregisterOperationLog();
+          }
+          return null;
+        }
+      };
+
+      try {
+        currentUGI.doAs(doAsAction);
+      } catch (Exception e) {
+        setOperationException(new HiveSQLException(e));
+        LOG.error("Error running hive query as user : " + currentUGI.getShortUserName(), e);
+      }
+      finally {
+        /**
+         * We'll cache the ThreadLocal RawStore object for this background thread for an orderly cleanup
+         * when this thread is garbage collected later.
+         * @see org.apache.hive.service.server.ThreadWithGarbageCleanup#finalize()
+         */
+        if (ThreadWithGarbageCleanup.currentThread() instanceof ThreadWithGarbageCleanup) {
+          ThreadWithGarbageCleanup currentThread =
+              (ThreadWithGarbageCleanup) ThreadWithGarbageCleanup.currentThread();
+          currentThread.cacheThreadLocalRawStore();
+        }
+      }
+    }
+  }
+
 
   /**
    * Returns the current UGI on the stack
@@ -669,4 +689,5 @@ public class SQLOperation extends ExecuteStatementOperation {
   public String getExecutionEngine() {
     return queryState.getConf().getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
   }
+
 }
