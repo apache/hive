@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,12 +38,61 @@ import java.util.List;
 /**
  * This is the description of the types in an ORC file.
  */
-public class TypeDescription {
+public class TypeDescription
+    implements Comparable<TypeDescription>, Serializable {
   private static final int MAX_PRECISION = 38;
   private static final int MAX_SCALE = 38;
   private static final int DEFAULT_PRECISION = 38;
   private static final int DEFAULT_SCALE = 10;
   private static final int DEFAULT_LENGTH = 256;
+
+  @Override
+  public int compareTo(TypeDescription other) {
+    if (this == other) {
+      return 0;
+    } else if (other == null) {
+      return -1;
+    } else {
+      int result = category.compareTo(other.category);
+      if (result == 0) {
+        switch (category) {
+          case CHAR:
+          case VARCHAR:
+            return maxLength - other.maxLength;
+          case DECIMAL:
+            if (precision != other.precision) {
+              return precision - other.precision;
+            }
+            return scale - other.scale;
+          case UNION:
+          case LIST:
+          case MAP:
+            if (children.size() != other.children.size()) {
+              return children.size() - other.children.size();
+            }
+            for(int c=0; result == 0 && c < children.size(); ++c) {
+              result = children.get(c).compareTo(other.children.get(c));
+            }
+            break;
+          case STRUCT:
+            if (children.size() != other.children.size()) {
+              return children.size() - other.children.size();
+            }
+            for(int c=0; result == 0 && c < children.size(); ++c) {
+              result = fieldNames.get(c).compareTo(other.fieldNames.get(c));
+              if (result == 0) {
+                result = children.get(c).compareTo(other.children.get(c));
+              }
+            }
+            break;
+          default:
+            // PASS
+        }
+      }
+      return result;
+    }
+  }
+
   public enum Category {
     BOOLEAN("boolean", true),
     BYTE("tinyint", true),
@@ -278,12 +328,18 @@ public class TypeDescription {
 
   @Override
   public int hashCode() {
-    return getId();
+    long result = category.ordinal() * 4241 + maxLength + precision * 13 + scale;
+    if (children != null) {
+      for(TypeDescription child: children) {
+        result = result * 6959 + child.hashCode();
+      }
+    }
+    return (int) result;
   }
 
   @Override
   public boolean equals(Object other) {
-    if (other == null || other.getClass() != TypeDescription.class) {
+    if (other == null || !(other instanceof TypeDescription)) {
       return false;
     }
     if (other == this) {
@@ -291,8 +347,6 @@ public class TypeDescription {
     }
     TypeDescription castOther = (TypeDescription) other;
     if (category != castOther.category ||
-        getId() != castOther.getId() ||
-        getMaximumId() != castOther.getMaximumId() ||
         maxLength != castOther.maxLength ||
         scale != castOther.scale ||
         precision != castOther.precision) {
