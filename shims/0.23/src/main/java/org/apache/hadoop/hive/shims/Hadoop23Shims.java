@@ -1298,9 +1298,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     if (getSubjectMethod == null) {
       throw new IOException("The UGI method was not found: " + ugiCloneError);
     }
-    Subject subject = new Subject();
     try {
-      subject.getPrincipals().addAll(((Subject)getSubjectMethod.invoke(baseUgi)).getPrincipals());
+      Subject origSubject = (Subject) getSubjectMethod.invoke(baseUgi);
+      Subject subject = new Subject(false, origSubject.getPrincipals(),
+          origSubject.getPublicCredentials(), origSubject.getPrivateCredentials());
       return ugiCtor.newInstance(subject);
     } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
       throw new IOException(e);
