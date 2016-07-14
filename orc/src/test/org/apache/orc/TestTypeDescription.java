@@ -65,4 +65,27 @@ public class TestTypeDescription {
             "  \"f6\": {\"category\": \"char\", \"id\": 8, \"max\": 8, \"length\": 100}]}",
         struct.toJson());
   }
+
+  @Test
+  public void testEquals() {
+    TypeDescription type1 =
+        TypeDescription.createStruct()
+        .addField("a", TypeDescription.createInt())
+        .addField("b", TypeDescription.createStruct()
+                         .addField("x", TypeDescription.createString())
+                         .addField("y", TypeDescription.createBinary())
+                         .addField("z", TypeDescription.createDouble()))
+        .addField("c", TypeDescription.createString());
+    assertEquals(0, type1.getId());
+    assertEquals(6, type1.getMaximumId());
+    TypeDescription type2 =
+        TypeDescription.createStruct()
+        .addField("x", TypeDescription.createString())
+        .addField("y", TypeDescription.createBinary())
+        .addField("z", TypeDescription.createDouble());
+    assertEquals(0, type2.getId());
+    assertEquals(3, type2.getMaximumId());
+    assertEquals(type2, type1.getChildren().get(1));
+    assertEquals(type2.hashCode(), type1.getChildren().get(1).hashCode());
+  }
 }
