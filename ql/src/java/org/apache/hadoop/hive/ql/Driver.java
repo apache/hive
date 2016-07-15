@@ -904,6 +904,14 @@ public class Driver implements CommandProcessor {
     ValidTxnList txns = txnMgr.getValidTxns();
     String txnStr = txns.toString();
     conf.set(ValidTxnList.VALID_TXNS_KEY, txnStr);
+    if(plan.getFetchTask() != null) {
+      /**
+       * This is needed for {@link HiveConf.ConfVars.HIVEFETCHTASKCONVERSION} optimization which 
+       * initializes JobConf in FetchOperator before recordValidTxns() but this has to be done
+       * after locks are acquired to avoid race conditions in ACID.
+       */
+      plan.getFetchTask().setValidTxnList(txnStr);
+    }
     LOG.debug("Encoding valid txns info " + txnStr + " txnid:" + txnMgr.getCurrentTxnId());
   }
 

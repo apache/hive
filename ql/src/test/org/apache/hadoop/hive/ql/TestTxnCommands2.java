@@ -714,6 +714,17 @@ public class TestTxnCommands2 {
   }
 
   @Test
+  public void testSimpleRead() throws Exception {
+    hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "more");
+    int[][] tableData = {{1,2},{3,3}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(tableData));
+    int[][] tableData2 = {{5,3}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(tableData2));
+    hiveConf.set(ValidTxnList.VALID_TXNS_KEY, "0:");
+    List<String> rs = runStatementOnDriver("select * from " + Table.ACIDTBL);
+    Assert.assertEquals("Missing data", 3, rs.size());
+  }
+  @Test
   public void testUpdateMixedCase() throws Exception {
     int[][] tableData = {{1,2},{3,3},{5,3}};
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData));

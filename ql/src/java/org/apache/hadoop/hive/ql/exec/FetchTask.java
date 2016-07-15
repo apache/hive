@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -59,6 +58,9 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     super();
   }
 
+  public void setValidTxnList(String txnStr) {
+    fetch.setValidTxnList(txnStr);
+  }
   @Override
   public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext ctx,
       CompilationOpContext opContext) {
