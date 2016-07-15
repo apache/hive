@@ -36,6 +36,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -145,6 +146,9 @@ public class FetchOperator implements Serializable {
     initialize();
   }
 
+  public void setValidTxnList(String txnStr) {
+    job.set(ValidTxnList.VALID_TXNS_KEY, txnStr);
+  }
   private void initialize() throws HiveException {
     if (isStatReader) {
       outputOI = work.getStatRowOI();

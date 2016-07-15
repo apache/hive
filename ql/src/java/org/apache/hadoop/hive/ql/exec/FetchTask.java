@@ -59,6 +59,9 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     super();
   }
 
+  public void setValidTxnList(String txnStr) {
+    fetch.setValidTxnList(txnStr);
+  }
   @Override
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx) {
     super.initialize(conf, queryPlan, ctx);

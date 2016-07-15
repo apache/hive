@@ -791,6 +791,8 @@ public class TestStreaming {
             , txnBatch.getCurrentTransactionState());
 
     connection.close();
+    List<String> rs = queryTable(driver, "select * from " + dbName + "." + tblName);
+    Assert.assertEquals(1, rs.size());
   }
 
   @Test
