@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -50,6 +51,8 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.log4j.MDC;
+import org.apache.log4j.NDC;
 import org.apache.tez.common.CallableWithNdc;
 import org.apache.tez.common.TezCommonUtils;
 import org.apache.tez.common.security.JobTokenIdentifier;
@@ -166,107 +169,124 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
 
   @Override
   protected TaskRunner2Result callInternal() throws Exception {
-    isStarted.set(true);
+    setMDCFromNDC();
 
-    this.startTime = System.currentTimeMillis();
-    this.threadName = Thread.currentThread().getName();
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("canFinish: " + taskSpec.getTaskAttemptID() + ": " + canFinish());
-    }
-
-    // Unregister from the AMReporter, since the task is now running.
-    this.amReporter.unregisterTask(request.getAmHost(), request.getAmPort());
-
-    synchronized (this) {
-      if (!shouldRunTask) {
-        LOG.info("Not starting task {} since it was killed earlier", taskSpec.getTaskAttemptID());
-        return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, null, false);
-      }
-    }
-
-    // TODO This executor seems unnecessary. Here and TezChild
-    executor = new StatsRecordingThreadPool(1, 1,
-        0L, TimeUnit.MILLISECONDS,
-        new LinkedBlockingQueue<Runnable>(),
-        new ThreadFactoryBuilder()
-            .setDaemon(true)
-            .setNameFormat("TezTaskRunner")
-            .build());
-
-    // TODO Consolidate this code with TezChild.
-    runtimeWatch.start();
-    if (taskUgi == null) {
-      taskUgi = UserGroupInformation.createRemoteUser(vertex.getUser());
-    }
-    taskUgi.addCredentials(credentials);
-
-    Map<String, ByteBuffer> serviceConsumerMetadata = new HashMap<>();
-    serviceConsumerMetadata.put(TezConstants.TEZ_SHUFFLE_HANDLER_SERVICE_ID,
-        TezCommonUtils.convertJobTokenToBytes(jobToken));
-    Multimap<String, String> startedInputsMap = createStartedInputMap(vertex);
-
-    UserGroupInformation taskOwner =
-        UserGroupInformation.createRemoteUser(vertex.getTokenIdentifier());
-    final InetSocketAddress address =
-        NetUtils.createSocketAddrForHost(request.getAmHost(), request.getAmPort());
-    SecurityUtil.setTokenService(jobToken, address);
-    taskOwner.addToken(jobToken);
-    umbilical = taskOwner.doAs(new PrivilegedExceptionAction<LlapTaskUmbilicalProtocol>() {
-      @Override
-      public LlapTaskUmbilicalProtocol run() throws Exception {
-        return RPC.getProxy(LlapTaskUmbilicalProtocol.class,
-            LlapTaskUmbilicalProtocol.versionID, address, conf);
-      }
-    });
-
-    String fragmentId = LlapTezUtils.stripAttemptPrefix(taskSpec.getTaskAttemptID().toString());
-    taskReporter = new LlapTaskReporter(
-        umbilical,
-        confParams.amHeartbeatIntervalMsMax,
-        confParams.amCounterHeartbeatInterval,
-        confParams.amMaxEventsPerHeartbeat,
-        new AtomicLong(0),
-        request.getContainerIdString(),
-        fragmentId,
-        initialEvent);
-
-    String attemptId = fragmentInfo.getFragmentIdentifierString();
-    IOContextMap.setThreadAttemptId(attemptId);
     try {
-      synchronized (this) {
-        if (shouldRunTask) {
-          taskRunner = new TezTaskRunner2(conf, taskUgi, fragmentInfo.getLocalDirs(),
-              taskSpec,
-              vertex.getQueryIdentifier().getAppAttemptNumber(),
-              serviceConsumerMetadata, envMap, startedInputsMap, taskReporter, executor,
-              objectRegistry,
-              pid,
-              executionContext, memoryAvailable, false, tezHadoopShim);
-        }
-      }
-      if (taskRunner == null) {
-        LOG.info("Not starting task {} since it was killed earlier", taskSpec.getTaskAttemptID());
-        return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, null, false);
+      isStarted.set(true);
+
+      this.startTime = System.currentTimeMillis();
+      this.threadName = Thread.currentThread().getName();
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("canFinish: " + taskSpec.getTaskAttemptID() + ": " + canFinish());
       }
 
+      // Unregister from the AMReporter, since the task is now running.
+      this.amReporter.unregisterTask(request.getAmHost(), request.getAmPort());
+
+      synchronized (this) {
+        if (!shouldRunTask) {
+          LOG.info("Not starting task {} since it was killed earlier", taskSpec.getTaskAttemptID());
+          return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, null, false);
+        }
+      }
+
+      // TODO This executor seems unnecessary. Here and TezChild
+      executor = new StatsRecordingThreadPool(1, 1,
+          0L, TimeUnit.MILLISECONDS,
+          new LinkedBlockingQueue<Runnable>(),
+          new ThreadFactoryBuilder()
+              .setDaemon(true)
+              .setNameFormat("TezTaskRunner")
+              .build());
+
+      // TODO Consolidate this code with TezChild.
+      runtimeWatch.start();
+      if (taskUgi == null) {
+        taskUgi = UserGroupInformation.createRemoteUser(vertex.getUser());
+      }
+      taskUgi.addCredentials(credentials);
+
+      Map<String, ByteBuffer> serviceConsumerMetadata = new HashMap<>();
+      serviceConsumerMetadata.put(TezConstants.TEZ_SHUFFLE_HANDLER_SERVICE_ID,
+          TezCommonUtils.convertJobTokenToBytes(jobToken));
+      Multimap<String, String> startedInputsMap = createStartedInputMap(vertex);
+
+      UserGroupInformation taskOwner =
+          UserGroupInformation.createRemoteUser(vertex.getTokenIdentifier());
+      final InetSocketAddress address =
+          NetUtils.createSocketAddrForHost(request.getAmHost(), request.getAmPort());
+      SecurityUtil.setTokenService(jobToken, address);
+      taskOwner.addToken(jobToken);
+      umbilical = taskOwner.doAs(new PrivilegedExceptionAction<LlapTaskUmbilicalProtocol>() {
+        @Override
+        public LlapTaskUmbilicalProtocol run() throws Exception {
+          return RPC.getProxy(LlapTaskUmbilicalProtocol.class,
+              LlapTaskUmbilicalProtocol.versionID, address, conf);
+        }
+      });
+
+      String fragmentId = LlapTezUtils.stripAttemptPrefix(taskSpec.getTaskAttemptID().toString());
+      taskReporter = new LlapTaskReporter(
+          umbilical,
+          confParams.amHeartbeatIntervalMsMax,
+          confParams.amCounterHeartbeatInterval,
+          confParams.amMaxEventsPerHeartbeat,
+          new AtomicLong(0),
+          request.getContainerIdString(),
+          fragmentId,
+          initialEvent);
+
+      String attemptId = fragmentInfo.getFragmentIdentifierString();
+      IOContextMap.setThreadAttemptId(attemptId);
       try {
-        TaskRunner2Result result = taskRunner.run();
-        if (result.isContainerShutdownRequested()) {
-          LOG.warn("Unexpected container shutdown requested while running task. Ignoring");
+        synchronized (this) {
+          if (shouldRunTask) {
+            taskRunner = new TezTaskRunner2(conf, taskUgi, fragmentInfo.getLocalDirs(),
+                taskSpec,
+                vertex.getQueryIdentifier().getAppAttemptNumber(),
+                serviceConsumerMetadata, envMap, startedInputsMap, taskReporter, executor,
+                objectRegistry,
+                pid,
+                executionContext, memoryAvailable, false, tezHadoopShim);
+          }
         }
-        isCompleted.set(true);
-        return result;
+        if (taskRunner == null) {
+          LOG.info("Not starting task {} since it was killed earlier", taskSpec.getTaskAttemptID());
+          return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, null, false);
+        }
+
+        try {
+          TaskRunner2Result result = taskRunner.run();
+          if (result.isContainerShutdownRequested()) {
+            LOG.warn("Unexpected container shutdown requested while running task. Ignoring");
+          }
+          isCompleted.set(true);
+          return result;
+        } finally {
+          FileSystem.closeAllForUGI(taskUgi);
+          LOG.info("ExecutionTime for Container: " + request.getContainerIdString() + "=" +
+              runtimeWatch.stop().elapsedMillis());
+          if (LOG.isDebugEnabled()) {
+            LOG.debug(
+                "canFinish post completion: " + taskSpec.getTaskAttemptID() + ": " + canFinish());
+          }
+        }
       } finally {
-        FileSystem.closeAllForUGI(taskUgi);
-        LOG.info("ExecutionTime for Container: " + request.getContainerIdString() + "=" +
-            runtimeWatch.stop().elapsedMillis());
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("canFinish post completion: " + taskSpec.getTaskAttemptID() + ": " + canFinish());
-        }
+        IOContextMap.clearThreadAttempt(attemptId);
       }
     } finally {
-      IOContextMap.clearThreadAttempt(attemptId);
+      MDC.clear();
     }
+  }
+
+  private void setMDCFromNDC() {
+    final Stack<String> clonedNDC = NDC.cloneStack();
+    final String fragId = clonedNDC.pop();
+    final String queryId = clonedNDC.pop();
+    final String dagId = clonedNDC.pop();
+    MDC.put("dagId", dagId);
+    MDC.put("queryId", queryId);
+    MDC.put("fragmentId", fragId);
   }
 
   /**
