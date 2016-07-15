@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.metastore;
 public class TestSetUGIOnOnlyClient extends TestRemoteHiveMetaStore{
 
   @Override
-  protected void createClient(boolean setugi, int port) throws Exception {
+  protected void createClient(boolean setugi) throws Exception {
     // turn it on for client.
-    super.createClient(true, port);
+    super.createClient(true);
   }
 }

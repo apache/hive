@@ -150,6 +150,8 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * Hive Metastore Client.
  * The public implementation of IMetaStoreClient. Methods not inherited from IMetaStoreClient
@@ -276,6 +278,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     URI tmp = metastoreUris[0];
     metastoreUris[0] = metastoreUris[index];
     metastoreUris[index] = tmp;
+  }
+
+  @VisibleForTesting
+  public TTransport getTTransport() {
+    return transport;
   }
 
   @Override
