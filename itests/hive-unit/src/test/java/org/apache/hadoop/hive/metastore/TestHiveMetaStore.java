@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -33,6 +34,8 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.datanucleus.api.jdo.JDOPersistenceManager;
+import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -3209,6 +3212,54 @@ public abstract class TestHiveMetaStore extends TestCase {
     Thread.sleep(timeout);
     client.getAllDatabases();
     client.close();
+  }
+
+  public void testJDOPersistanceManagerCleanup() throws Exception {
+    if (isThriftClient == false) {
+      return;
+    }
+
+    int numObjectsBeforeClose =  getJDOPersistanceManagerCacheSize();
+    HiveMetaStoreClient closingClient = new HiveMetaStoreClient(hiveConf);
+    closingClient.getAllDatabases();
+    closingClient.close();
+    Thread.sleep(5 * 1000); // give HMS time to handle close request
+    int numObjectsAfterClose =  getJDOPersistanceManagerCacheSize();
+    Assert.assertTrue(numObjectsBeforeClose == numObjectsAfterClose);
+
+    HiveMetaStoreClient nonClosingClient = new HiveMetaStoreClient(hiveConf);
+    nonClosingClient.getAllDatabases();
+    // Drop connection without calling close. HMS thread deleteContext
+    // will trigger cleanup
+    nonClosingClient.getTTransport().close();
+    Thread.sleep(5 * 1000);
+    int numObjectsAfterDroppedConnection =  getJDOPersistanceManagerCacheSize();
+    Assert.assertTrue(numObjectsAfterClose == numObjectsAfterDroppedConnection);
+  }
+
+  private static int getJDOPersistanceManagerCacheSize() {
+    JDOPersistenceManagerFactory jdoPmf;
+    Set<JDOPersistenceManager> pmCacheObj;
+    Field pmCache;
+    Field pmf;
+    try {
+      pmf = ObjectStore.class.getDeclaredField("pmf");
+      if (pmf != null) {
+        pmf.setAccessible(true);
+        jdoPmf = (JDOPersistenceManagerFactory) pmf.get(null);
+        pmCache = JDOPersistenceManagerFactory.class.getDeclaredField("pmCache");
+        if (pmCache != null) {
+          pmCache.setAccessible(true);
+          pmCacheObj = (Set<JDOPersistenceManager>) pmCache.get(jdoPmf);
+          if (pmCacheObj != null) {
+            return pmCacheObj.size();
+          }
+        }
+      }
+    } catch (Exception ex) {
+      System.out.println(ex);
+    }
+    return -1;
   }
 
   private HiveMetaHookLoader getHookLoader() {

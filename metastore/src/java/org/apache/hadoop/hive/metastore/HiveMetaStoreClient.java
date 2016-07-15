@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -324,6 +325,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     URI tmp = metastoreUris[0];
     metastoreUris[0] = metastoreUris[index];
     metastoreUris[index] = tmp;
+  }
+
+  @VisibleForTesting
+  public TTransport getTTransport() {
+    return transport;
   }
 
   @Override
