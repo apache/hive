@@ -1,4 +1,3 @@
-;
 set hive.exec.mode.local.auto=false;
 set hive.exec.reducers.max = 2;
 
@@ -11,3 +10,5 @@ set VerifyNumReducersHook.num.reducers=1;
 
 insert overwrite table test_table
 select * from src;
+
+set hive.exec.post.hooks=;
