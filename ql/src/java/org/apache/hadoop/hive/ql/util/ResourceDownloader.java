@@ -103,8 +103,11 @@ public class ResourceDownloader {
     File destinationDir = (subDir == null) ? resourceDir : new File(resourceDir, subDir);
     ensureDirectory(destinationDir);
     File destinationFile = new File(destinationDir, new Path(srcUri.toString()).getName());
-    FileSystem fs = FileSystem.get(srcUri, conf);
     String dest = destinationFile.getCanonicalPath();
+    if (destinationFile.exists()) {
+      return dest;
+    }
+    FileSystem fs = FileSystem.get(srcUri, conf);
     fs.copyToLocalFile(new Path(srcUri.toString()), new Path(dest));
     // add "execute" permission to downloaded resource file (needed when loading dll file)
     FileUtil.chmod(dest, "ugo+rx", true);
