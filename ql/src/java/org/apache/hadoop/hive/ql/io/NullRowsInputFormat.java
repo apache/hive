@@ -18,19 +18,20 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobConfigurable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
 /**
  * NullRowsInputFormat outputs null rows, maximum 100.
@@ -41,28 +42,15 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
   static final int MAX_ROW = 100; // to prevent infinite loop
   static final Log LOG = LogFactory.getLog(NullRowsRecordReader.class.getName());
 
-  public static class DummyInputSplit implements InputSplit {
+  public static class DummyInputSplit extends FileSplit {
+    @SuppressWarnings("unused")  // Serialization ctor.
     public DummyInputSplit() {
+      super();
     }
 
-    @Override
-    public long getLength() throws IOException {
-      return 1;
+    public DummyInputSplit(String path) {
+      super(new Path(path, "null"), 0, 1, (String[]) null);
     }
-
-    @Override
-    public String[] getLocations() throws IOException {
-      return new String[0];
-    }
-
-    @Override
-    public void readFields(DataInput arg0) throws IOException {
-    }
-
-    @Override
-    public void write(DataOutput arg0) throws IOException {
-    }
-
   }
 
   public static class NullRowsRecordReader implements RecordReader<NullWritable, NullWritable> {
@@ -71,6 +59,7 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
 
     public NullRowsRecordReader() {
     }
+
     @Override
     public void close() throws IOException {
     }
@@ -111,11 +100,17 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
   }
 
   @Override
-  public InputSplit[] getSplits(JobConf arg0, int arg1) throws IOException {
-    InputSplit[] ret = new InputSplit[1];
-    ret[0] = new DummyInputSplit();
-    LOG.info("Calculating splits");
-    return ret;
+  public InputSplit[] getSplits(JobConf conf, int arg1) throws IOException {
+    // It's important to read the correct nulls! (in truth, the path is needed for SplitGrouper).
+    String[] paths = conf.getTrimmedStrings(FileInputFormat.INPUT_DIR, (String[]) null);
+    if (paths == null) {
+      throw new IOException("Cannot find path in conf");
+    }
+    InputSplit[] result = new InputSplit[paths.length];
+    for (int i = 0; i < paths.length; ++i) {
+      result[i] = new DummyInputSplit(paths[i]);
+    }
+    return result;
   }
 
   @Override
