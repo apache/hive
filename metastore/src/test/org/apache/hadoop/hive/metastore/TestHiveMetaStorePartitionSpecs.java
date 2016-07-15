@@ -78,6 +78,9 @@ public class TestHiveMetaStorePartitionSpecs {
   public static void tearDown() throws Exception {
     LOG.info("Shutting down metastore.");
     System.setSecurityManager(securityManager);
+
+    HiveMetaStoreClient hmsc = new HiveMetaStoreClient(hiveConf);
+    hmsc.dropDatabase(dbName, true, true, true);
   }
 
   @BeforeClass

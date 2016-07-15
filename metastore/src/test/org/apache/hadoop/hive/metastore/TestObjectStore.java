@@ -50,6 +50,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class TestObjectStore {
   private ObjectStore objectStore = null;
 
@@ -62,6 +65,7 @@ public class TestObjectStore {
   private static final String USER1 = "testobjectstoreuser1";
   private static final String ROLE1 = "testobjectstorerole1";
   private static final String ROLE2 = "testobjectstorerole2";
+  private static final Logger LOG = LoggerFactory.getLogger(TestObjectStore.class.getName());
 
   public static class MockPartitionExpressionProxy implements PartitionExpressionProxy {
     @Override
@@ -118,6 +122,7 @@ public class TestObjectStore {
     objectStore.createDatabase(db2);
 
     List<String> databases = objectStore.getAllDatabases();
+    LOG.info("databases: " + databases);
     Assert.assertEquals(2, databases.size());
     Assert.assertEquals(DB1, databases.get(0));
     Assert.assertEquals(DB2, databases.get(1));
