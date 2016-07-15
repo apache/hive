@@ -3005,7 +3005,7 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.SECONDS),
         "Number of seconds a request will wait to acquire the compile lock before giving up. " +
         "Setting it to 0s disables the timeout."),
-    HIVE_SERVER2_PARALLEL_OPS_IN_SESSION("hive.server2.parallel.ops.in.session", true,
+    HIVE_SERVER2_PARALLEL_OPS_IN_SESSION("hive.server2.parallel.ops.in.session", false,
         "Whether to allow several parallel operations (such as SQL statements) in one session."),
     HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL("hive.server2.materializedviews.registry.impl", "DEFAULT",
         new StringSet("DEFAULT", "DUMMY"),
