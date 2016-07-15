@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrB
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.security.LlapSignerImpl;
 import org.apache.hadoop.hive.llap.tez.Converters;
+import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -62,6 +63,7 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.util.AuxiliaryServiceHelper;
+import org.apache.log4j.MDC;
 import org.apache.log4j.NDC;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.TokenCache;
@@ -185,8 +187,19 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
         vertex.getVertexName(), request.getFragmentNumber(), request.getAttemptNumber());
 
     // This is the start of container-annotated logging.
-    // TODO Reduce the length of this string. Way too verbose at the moment.
-    NDC.push(fragmentIdString);
+    final String dagId = attemptId.getTaskID().getVertexID().getDAGId().toString();
+    final String queryId = vertex.getHiveQueryId();
+    final String fragId = LlapTezUtils.stripAttemptPrefix(fragmentIdString);
+    MDC.put("dagId", dagId);
+    MDC.put("queryId", queryId);
+    MDC.put("fragmentId", fragId);
+    // TODO: Ideally we want tez to use CallableWithMdc that retains the MDC for threads created in
+    // thread pool. For now, we will push both dagId and queryId into NDC and the custom thread
+    // pool that we use for task execution and llap io (StatsRecordingThreadPool) will pop them
+    // using reflection and update the MDC.
+    NDC.push(dagId);
+    NDC.push(queryId);
+    NDC.push(fragId);
     Scheduler.SubmissionState submissionState;
     SubmitWorkResponseProto.Builder responseBuilder = SubmitWorkResponseProto.newBuilder();
     try {
@@ -246,7 +259,8 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
         metrics.incrExecutorTotalRequestsHandled();
       }
     } finally {
-      NDC.pop();
+      MDC.clear();
+      NDC.clear();
     }
 
     responseBuilder.setSubmissionState(SubmissionStateProto.valueOf(submissionState.name()));

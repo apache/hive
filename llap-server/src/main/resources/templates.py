@@ -74,7 +74,7 @@ appConfig = """
     "site.global.app_user": "yarn",
     "site.global.app_root": "${AGENT_WORK_ROOT}/app/install/",
     "site.global.app_tmp_dir": "${AGENT_WORK_ROOT}/tmp/",
-    "site.global.app_logger": "RFA",
+    "site.global.app_logger": "%(daemon_logger)s",
     "site.global.app_log_level": "%(daemon_loglevel)s",
     "site.global.additional_cp": "%(hadoop_home)s",
     "site.global.daemon_args": "%(daemon_args)s",

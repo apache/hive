@@ -34,7 +34,6 @@ import java.util.concurrent.ExecutorService;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.counters.FragmentCountersMap;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
@@ -77,8 +76,10 @@ import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.SchemaEvolution;
 import org.apache.tez.common.counters.TezCounters;
+import org.apache.tez.runtime.api.impl.TaskSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowBatch>,
     VectorizedInputFormatInterface, SelfDescribingInputFormatInterface,
@@ -183,9 +184,14 @@ public LlapRecordReader(JobConf job, FileSplit split, List<Integer> includedCols
       this.columnIds = includedCols;
       this.sarg = ConvertAstToSearchArg.createFromConf(job);
       this.columnNames = ColumnProjectionUtils.getReadColumnNames(job);
-      String fragmentId = LlapTezUtils.getFragmentId(job);
+      final String fragmentId = LlapTezUtils.getFragmentId(job);
+      final String dagId = LlapTezUtils.getDagId(job);
+      final String queryId = HiveConf.getVar(job, HiveConf.ConfVars.HIVEQUERYID);
+      MDC.put("dagId", dagId);
+      MDC.put("queryId", queryId);
       TezCounters taskCounters = null;
       if (fragmentId != null) {
+        MDC.put("fragmentId", fragmentId);
         taskCounters = FragmentCountersMap.getCountersForFragment(fragmentId);
         LOG.info("Received fragment id: {}", fragmentId);
       } else {
@@ -354,6 +360,7 @@ public LlapRecordReader(JobConf job, FileSplit split, List<Integer> includedCols
       LlapIoImpl.LOG.info("Llap counters: {}" ,counters); // This is where counters are logged!
       feedback.stop();
       rethrowErrorIfAny();
+      MDC.clear();
     }
 
     private void rethrowErrorIfAny() throws IOException {

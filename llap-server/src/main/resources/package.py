@@ -71,6 +71,7 @@ def main(args):
 	parser.add_argument("--args", default="")
 	parser.add_argument("--name", default="llap0")
 	parser.add_argument("--loglevel", default="INFO")
+	parser.add_argument("--logger", default="query-routing")
 	parser.add_argument("--chaosmonkey", type=int, default=0)
 	parser.add_argument("--slider-am-container-mb", type=int, default=1024)
 	parser.add_argument("--slider-keytab-dir", default="")
@@ -120,6 +121,7 @@ def main(args):
 		"name" : resource.clusterName,
 		"daemon_args" : daemon_args,
 		"daemon_loglevel" : args.loglevel,
+		"daemon_logger" : args.logger,
 		"queue.string" : resource.queueString,
 		"monkey_interval" : args.chaosmonkey,
 		"monkey_percentage" : monkey_percentage,
