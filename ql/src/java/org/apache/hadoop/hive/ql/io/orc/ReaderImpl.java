@@ -480,6 +480,7 @@ public class ReaderImpl implements Reader {
     boolean[] include = options.getInclude();
     // if included columns is null, then include all columns
     if (include == null) {
+      options = options.clone();
       include = new boolean[footer.getTypesCount()];
       Arrays.fill(include, true);
       options.include(include);
