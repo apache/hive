@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 
 public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
   private static boolean isServerStarted = false;
+  private static int port;
 
   public TestRemoteHiveMetaStore() {
     super();
@@ -37,19 +38,20 @@ public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
 
     if (isServerStarted) {
       assertNotNull("Unable to connect to the MetaStore server", client);
+      hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
       return;
     }
 
-    int port = MetaStoreUtils.findFreePort();
+    port = MetaStoreUtils.findFreePort();
     System.out.println("Starting MetaStore Server on port " + port);
     MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
     isServerStarted = true;
 
     // This is default case with setugi off for both client and server
-    createClient(false, port);
+    createClient(false);
   }
 
-  protected void createClient(boolean setugi, int port) throws Exception {
+  protected void createClient(boolean setugi) throws Exception {
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI,setugi);
     client = new HiveMetaStoreClient(hiveConf);
