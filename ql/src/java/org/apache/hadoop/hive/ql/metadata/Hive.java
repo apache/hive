@@ -2796,8 +2796,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return false;
     }
 
-    String fullF1 = getQualifiedPathWithoutSchemeAndAuthority(srcf, srcFs) + Path.SEPARATOR;
-    String fullF2 = getQualifiedPathWithoutSchemeAndAuthority(destf, destFs) + Path.SEPARATOR;
+    String fullF1 = getQualifiedPathWithoutSchemeAndAuthority(srcf, srcFs).toString() + Path.SEPARATOR;
+    String fullF2 = getQualifiedPathWithoutSchemeAndAuthority(destf, destFs).toString() + Path.SEPARATOR;
 
     boolean isInTest = HiveConf.getBoolVar(srcFs.getConf(), ConfVars.HIVE_IN_TEST);
     // In the automation, the data warehouse is the local file system based.
@@ -2827,10 +2827,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return fullF1.startsWith(fullF2);
   }
 
-  private static String getQualifiedPathWithoutSchemeAndAuthority(Path srcf, FileSystem fs) {
+  private static Path getQualifiedPathWithoutSchemeAndAuthority(Path srcf, FileSystem fs) {
     Path currentWorkingDir = fs.getWorkingDirectory();
     Path path = srcf.makeQualified(srcf.toUri(), currentWorkingDir);
-    return ShimLoader.getHadoopShims().getPathWithoutSchemeAndAuthority(path).toString();
+    return ShimLoader.getHadoopShims().getPathWithoutSchemeAndAuthority(path);
   }
 
   private static Path mvFile(HiveConf conf, Path srcf, Path destf, boolean isSrcLocal,
@@ -2859,10 +2859,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     FileSystem destFS = dest.getFileSystem(conf);
     FileSystem srcFS = src.getFileSystem(conf);
     if (isSubDir(src, dest, srcFS, destFS, isSrcLocal)) {
-      final Path fullSrcPath = new Path(
-          getQualifiedPathWithoutSchemeAndAuthority(src, srcFS));
-      final Path fullDestPath = new Path(
-          getQualifiedPathWithoutSchemeAndAuthority(dest, destFS));
+      final Path fullSrcPath = getQualifiedPathWithoutSchemeAndAuthority(src, srcFS);
+      final Path fullDestPath = getQualifiedPathWithoutSchemeAndAuthority(dest, destFS);
       if (fullSrcPath.equals(fullDestPath)) {
         return;
       }
@@ -3217,18 +3215,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
         boolean isOldPathUnderDestf = false;
         FileStatus[] statuses = null;
         try {
-          FileSystem fs2 = oldPath.getFileSystem(conf);
-          statuses = fs2.listStatus(oldPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
+          FileSystem oldFs = oldPath.getFileSystem(conf);
+          statuses = oldFs.listStatus(oldPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
           // Do not delete oldPath if:
           //  - destf is subdir of oldPath
-          //if ( !(fs2.equals(destf.getFileSystem(conf)) && FileUtils.isSubDir(oldPath, destf, fs2)))
-          isOldPathUnderDestf = FileUtils.isSubDir(oldPath, destf, fs2);
+          isOldPathUnderDestf = isSubDir(oldPath, destf, oldFs, destFs, false);
           if (isOldPathUnderDestf) {
             // if oldPath is destf or its subdir, its should definitely be deleted, otherwise its
             // existing content might result in incorrect (extra) data.
             // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
             // not the destf or its subdir?
-            oldPathDeleted = trashFiles(fs2, statuses, conf);
+            oldPathDeleted = trashFiles(oldFs, statuses, conf);
           }
         } catch (IOException e) {
           if (isOldPathUnderDestf) {

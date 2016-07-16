@@ -18,10 +18,17 @@
 
 package org.apache.hadoop.hive.common;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Set;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,10 +38,72 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 
-import junit.framework.TestCase;
+public class TestFileUtils {
 
-public class TestFileUtils extends TestCase {
   public static final Logger LOG = LoggerFactory.getLogger(TestFileUtils.class);
+
+  @Test
+  public void isPathWithinSubtree_samePrefix() {
+    Path path = new Path("/somedir1");
+    Path subtree = new Path("/somedir");
+
+    assertFalse(FileUtils.isPathWithinSubtree(path, subtree));
+  }
+
+  @Test
+  public void isPathWithinSubtree_rootIsInside() {
+    Path path = new Path("/foo");
+    Path subtree = new Path("/foo");
+    assertTrue(FileUtils.isPathWithinSubtree(path, subtree));
+  }
+
+  @Test
+  public void isPathWithinSubtree_descendantInside() {
+    Path path = new Path("/foo/bar");
+    Path subtree = new Path("/foo");
+    assertTrue(FileUtils.isPathWithinSubtree(path, subtree));
+  }
+
+  @Test
+  public void isPathWithinSubtree_relativeWalk() {
+    Path path = new Path("foo/../../bar");
+    Path subtree = new Path("../bar");
+    assertTrue(FileUtils.isPathWithinSubtree(path, subtree));
+  }
+
+  @Test
+  public void getParentRegardlessOfScheme_badCases() {
+    Path path = new Path("proto://host1/foo/bar/baz");
+    ArrayList<Path> candidates = new ArrayList<>();
+    candidates.add(new Path("badproto://host1/foo"));
+    candidates.add(new Path("proto://badhost1/foo"));
+    candidates.add(new Path("proto://host1:71/foo/bar/baz"));
+    candidates.add(new Path("proto://host1/badfoo"));
+    candidates.add(new Path("/badfoo"));
+    Path res = FileUtils.getParentRegardlessOfScheme(path, candidates);
+    assertNull("none of these paths may match", res);
+  }
+
+  @Test
+  public void getParentRegardlessOfScheme_priority() {
+    Path path = new Path("proto://host1/foo/bar/baz");
+    ArrayList<Path> candidates = new ArrayList<>();
+    Path expectedPath;
+    candidates.add(new Path("proto://host1/"));
+    candidates.add(expectedPath = new Path("proto://host1/foo"));
+    Path res = FileUtils.getParentRegardlessOfScheme(path, candidates);
+    assertEquals(expectedPath, res);
+  }
+
+  @Test
+  public void getParentRegardlessOfScheme_root() {
+    Path path = new Path("proto://host1/foo");
+    ArrayList<Path> candidates = new ArrayList<>();
+    Path expectedPath;
+    candidates.add(expectedPath = new Path("proto://host1/foo"));
+    Path res = FileUtils.getParentRegardlessOfScheme(path, candidates);
+    assertEquals(expectedPath, res);
+  }
 
   @Test
   public void testGetJarFilesByPath() {

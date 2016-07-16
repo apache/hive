@@ -627,25 +627,6 @@ public final class FileUtils {
     return result;
   }
 
-  /**
-   * Check if first path is a subdirectory of second path.
-   * Both paths must belong to the same filesystem.
-   *
-   * @param p1 first path
-   * @param p2 second path
-   * @param fs FileSystem, both paths must belong to the same filesystem
-   * @return
-   */
-  public static boolean isSubDir(Path p1, Path p2, FileSystem fs) {
-    String path1 = fs.makeQualified(p1).toString();
-    String path2 = fs.makeQualified(p2).toString();
-    if (path1.startsWith(path2)) {
-      return true;
-    }
-
-    return false;
-  }
-
   public static boolean renameWithPerms(FileSystem fs, Path sourcePath,
                                Path destPath, boolean inheritPerms,
                                Configuration conf) throws IOException {
@@ -688,7 +669,7 @@ public final class FileUtils {
     //FileSystem api doesn't have a .equals() function implemented, so using
     //the uri for comparison. FileSystem already uses uri+Configuration for
     //equality in its CACHE .
-    //Once equality has been added in HDFS-4321, we should make use of it
+    //Once equality has been added in HDFS-9159, we should make use of it
     return fs1.getUri().equals(fs2.getUri());
   }
 
@@ -893,7 +874,7 @@ public final class FileUtils {
    * @param candidates  the candidate paths
    * @return
    */
-  public static Path getParentRegardlessOfScheme(Path path, Set<Path> candidates) {
+  public static Path getParentRegardlessOfScheme(Path path, Collection<Path> candidates) {
     Path schemalessPath = Path.getPathWithoutSchemeAndAuthority(path);
     
     for(;path!=null && schemalessPath!=null; path=path.getParent(),schemalessPath=schemalessPath.getParent()){
