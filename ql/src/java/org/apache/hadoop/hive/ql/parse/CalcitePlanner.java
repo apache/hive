@@ -2994,7 +2994,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               SemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getChild(0).getText()
                   .toLowerCase()), expr, col_list, excludedColumns, inputRR, starRR, pos,
               out_rwsch, tableMask.isEnabled() ? qb.getAliases() : tabAliasesForAllProjs, true);
-        } else if (expr.toStringTree().contains("TOK_FUNCTIONDI")
+        } else if (ParseUtils.containsTokenOfType(expr, HiveParser.TOK_FUNCTIONDI)
             && !(srcRel instanceof HiveAggregate)) {
           // Likely a malformed query eg, select hash(distinct c1) from t1;
           throw new CalciteSemanticException("Distinct without an aggreggation.",
