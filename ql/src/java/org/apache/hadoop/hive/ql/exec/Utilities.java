@@ -2102,14 +2102,14 @@ public final class Utilities {
 
     long[] summary = {0, 0, 0};
 
-    final List<String> pathNeedProcess = new ArrayList<String>();
+    final List<Path> pathNeedProcess = new ArrayList<>();
 
     // Since multiple threads could call this method concurrently, locking
     // this method will avoid number of threads out of control.
     synchronized (INPUT_SUMMARY_LOCK) {
       // For each input path, calculate the total size.
-      for (String path : work.getPathToAliases().keySet()) {
-        Path p = new Path(path);
+      for (Path path : work.getPathToAliases().keySet()) {
+        Path p = path;
 
         if (filter != null && !filter.accept(p)) {
           continue;
@@ -2145,9 +2145,9 @@ public final class Utilities {
       HiveInterruptCallback interrup = HiveInterruptUtils.add(new HiveInterruptCallback() {
         @Override
         public void interrupt() {
-          for (String path : pathNeedProcess) {
+          for (Path path : pathNeedProcess) {
             try {
-              new Path(path).getFileSystem(ctx.getConf()).close();
+              path.getFileSystem(ctx.getConf()).close();
             } catch (IOException ignore) {
                 LOG.debug("Failed to close filesystem", ignore);
             }
@@ -2160,9 +2160,9 @@ public final class Utilities {
       try {
         Configuration conf = ctx.getConf();
         JobConf jobConf = new JobConf(conf);
-        for (String path : pathNeedProcess) {
-          final Path p = new Path(path);
-          final String pathStr = path;
+        for (Path path : pathNeedProcess) {
+          final Path p = path;
+          final String pathStr = path.toString();
           // All threads share the same Configuration and JobConf based on the
           // assumption that they are thread safe if only read operations are
           // executed. It is not stated in Hadoop's javadoc, the sourcce codes
@@ -2172,9 +2172,8 @@ public final class Utilities {
           final Configuration myConf = conf;
           final JobConf myJobConf = jobConf;
           final Map<String, Operator<?>> aliasToWork = work.getAliasToWork();
-          final Map<String, ArrayList<String>> pathToAlias = work.getPathToAliases();
-          final PartitionDesc partDesc = work.getPathToPartitionInfo().get(
-              p.toString());
+          final Map<Path, ArrayList<String>> pathToAlias = work.getPathToAliases();
+          final PartitionDesc partDesc = work.getPathToPartitionInfo().get(p);
           Runnable r = new Runnable() {
             @Override
             public void run() {
@@ -2991,10 +2990,10 @@ public final class Utilities {
 
       // The alias may not have any path
       Path path = null;
-      for (String file : new LinkedList<String>(work.getPathToAliases().keySet())) {
+      for (Path file : new LinkedList<Path>(work.getPathToAliases().keySet())) {
         List<String> aliases = work.getPathToAliases().get(file);
         if (aliases.contains(alias)) {
-          path = new Path(file);
+          path = file;
 
           // Multiple aliases can point to the same path - it should be
           // processed only once
@@ -3070,7 +3069,7 @@ public final class Utilities {
     String strPath = path.toString();
 
     // The input file does not exist, replace it by a empty file
-    PartitionDesc partDesc = work.getPathToPartitionInfo().get(strPath);
+    PartitionDesc partDesc = work.getPathToPartitionInfo().get(path);
     if (partDesc.getTableDesc().isNonNative()) {
       // if this isn't a hive table we can't create an empty file for it.
       return path;
@@ -3092,16 +3091,11 @@ public final class Utilities {
     // update the work
     String strNewPath = newPath.toString();
 
-    LinkedHashMap<String, ArrayList<String>> pathToAliases = work.getPathToAliases();
-    pathToAliases.put(strNewPath, pathToAliases.get(strPath));
-    pathToAliases.remove(strPath);
+    work.addPathToAlias(newPath, work.getPathToAliases().get(path));
+    work.removePathToAlias(path);
 
-    work.setPathToAliases(pathToAliases);
-
-    LinkedHashMap<String, PartitionDesc> pathToPartitionInfo = work.getPathToPartitionInfo();
-    pathToPartitionInfo.put(strNewPath, pathToPartitionInfo.get(strPath));
-    pathToPartitionInfo.remove(strPath);
-    work.setPathToPartitionInfo(pathToPartitionInfo);
+    work.removePathToPartitionInfo(path);
+    work.addPathToPartitionInfo(newPath, partDesc);
 
     return newPath;
   }
@@ -3129,17 +3123,15 @@ public final class Utilities {
 
     // update the work
 
-    LinkedHashMap<String, ArrayList<String>> pathToAliases = work.getPathToAliases();
+    LinkedHashMap<Path, ArrayList<String>> pathToAliases = work.getPathToAliases();
     ArrayList<String> newList = new ArrayList<String>();
     newList.add(alias);
-    pathToAliases.put(newPath.toUri().toString(), newList);
+    pathToAliases.put(newPath, newList);
 
     work.setPathToAliases(pathToAliases);
 
-    LinkedHashMap<String, PartitionDesc> pathToPartitionInfo = work.getPathToPartitionInfo();
     PartitionDesc pDesc = work.getAliasToPartnInfo().get(alias).clone();
-    pathToPartitionInfo.put(newPath.toUri().toString(), pDesc);
-    work.setPathToPartitionInfo(pathToPartitionInfo);
+    work.addPathToPartitionInfo(newPath, pDesc);
 
     return newPath;
   }
@@ -3197,7 +3189,7 @@ public final class Utilities {
   public static void createTmpDirs(Configuration conf, MapWork mWork)
       throws IOException {
 
-    Map<String, ArrayList<String>> pa = mWork.getPathToAliases();
+    Map<Path, ArrayList<String>> pa = mWork.getPathToAliases();
     if (pa != null) {
       // common case: 1 table scan per map-work
       // rare case: smb joins

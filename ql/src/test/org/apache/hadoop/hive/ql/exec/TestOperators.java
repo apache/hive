@@ -295,17 +295,16 @@ public class TestOperators extends TestCase {
       ArrayList<String> aliases = new ArrayList<String>();
       aliases.add("a");
       aliases.add("b");
-      LinkedHashMap<String, ArrayList<String>> pathToAliases =
-        new LinkedHashMap<String, ArrayList<String>>();
-      pathToAliases.put("hdfs:///testDir", aliases);
+      LinkedHashMap<Path, ArrayList<String>> pathToAliases = new LinkedHashMap<>();
+      pathToAliases.put(new Path("hdfs:///testDir"), aliases);
 
       // initialize pathToTableInfo
       // Default: treat the table as a single column "col"
       TableDesc td = Utilities.defaultTd;
       PartitionDesc pd = new PartitionDesc(td, null);
-      LinkedHashMap<String, org.apache.hadoop.hive.ql.plan.PartitionDesc> pathToPartitionInfo =
-        new LinkedHashMap<String, org.apache.hadoop.hive.ql.plan.PartitionDesc>();
-      pathToPartitionInfo.put("hdfs:///testDir", pd);
+      LinkedHashMap<Path, org.apache.hadoop.hive.ql.plan.PartitionDesc> pathToPartitionInfo =
+        new LinkedHashMap<>();
+      pathToPartitionInfo.put(new Path("hdfs:///testDir"), pd);
 
       // initialize aliasToWork
       CompilationOpContext ctx = new CompilationOpContext();

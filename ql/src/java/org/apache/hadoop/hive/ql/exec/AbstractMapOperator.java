@@ -80,14 +80,14 @@ public abstract class AbstractMapOperator extends Operator<MapWork>
   private final Map<Integer, DummyStoreOperator> connectedOperators
   = new TreeMap<Integer, DummyStoreOperator>();
 
-  private transient final Map<String, Path> normalizedPaths = new HashMap<String, Path>();
+  private transient final Map<Path, Path> normalizedPaths = new HashMap<>();
 
-  private Path normalizePath(String onefile, boolean schemaless) {
+  private Path normalizePath(Path onefile, boolean schemaless) {
     //creating Path is expensive, so cache the corresponding
     //Path object in normalizedPaths
     Path path = normalizedPaths.get(onefile);
     if (path == null) {
-      path = new Path(onefile);
+      path = onefile;
       if (schemaless && path.toUri().getScheme() != null) {
         path = new Path(path.toUri().getPath());
       }
@@ -97,9 +97,9 @@ public abstract class AbstractMapOperator extends Operator<MapWork>
   }
 
   protected String getNominalPath(Path fpath) {
-    String nominal = null;
+    Path nominal = null;
     boolean schemaless = fpath.toUri().getScheme() == null;
-    for (String onefile : conf.getPathToAliases().keySet()) {
+    for (Path onefile : conf.getPathToAliases().keySet()) {
       Path onepath = normalizePath(onefile, schemaless);
       Path curfpath = fpath;
       if(!schemaless && onepath.toUri().getScheme() == null) {
@@ -118,7 +118,7 @@ public abstract class AbstractMapOperator extends Operator<MapWork>
     if (nominal == null) {
       throw new IllegalStateException("Invalid input path " + fpath);
     }
-    return nominal;
+    return nominal.toString();
   }
 
   public abstract void initEmptyInputChildren(List<Operator<?>> children, Configuration hconf)

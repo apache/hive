@@ -40,6 +40,7 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -271,9 +272,9 @@ public class DynamicPartitionPruner {
 
     Object[] row = new Object[1];
 
-    Iterator<String> it = work.getPathToPartitionInfo().keySet().iterator();
+    Iterator<Path> it = work.getPathToPartitionInfo().keySet().iterator();
     while (it.hasNext()) {
-      String p = it.next();
+      Path p = it.next();
       PartitionDesc desc = work.getPathToPartitionInfo().get(p);
       Map<String, String> spec = desc.getPartSpec();
       if (spec == null) {
@@ -299,9 +300,8 @@ public class DynamicPartitionPruner {
       if (!values.contains(partValue)) {
         LOG.info("Pruning path: " + p);
         it.remove();
-        work.getPathToAliases().remove(p);
-        work.getPaths().remove(p);
-        work.getPartitionDescs().remove(desc);
+        // work.removePathToPartitionInfo(p);
+        work.removePathToAlias(p);
       }
     }
   }

@@ -96,7 +96,7 @@ public class NullScanTaskDispatcher implements Dispatcher {
     return desc;
   }
 
-  private void processAlias(MapWork work, String path, ArrayList<String> aliasesAffected,
+  private void processAlias(MapWork work, Path path, ArrayList<String> aliasesAffected,
       ArrayList<String> aliases) {
     // the aliases that are allowed to map to a null scan.
     ArrayList<String> allowed = new ArrayList<String>();
@@ -111,13 +111,12 @@ public class NullScanTaskDispatcher implements Dispatcher {
       // Prefix partition with something to avoid it being a hidden file.
       Path fakePath = new Path(NullScanFileSystem.getBase() + newPartition.getTableName()
           + "/part" + encode(newPartition.getPartSpec()));
-      String fakeStr = fakePath.toString();
-      work.getPathToPartitionInfo().put(fakeStr, newPartition);
-      work.getPathToAliases().put(fakeStr, new ArrayList<String>(allowed));
+      work.addPathToPartitionInfo(fakePath, newPartition);
+      work.addPathToAlias(fakePath, new ArrayList<String>(allowed));
       aliasesAffected.removeAll(allowed);
       if (aliasesAffected.isEmpty()) {
-        work.getPathToAliases().remove(path);
-        work.getPathToPartitionInfo().remove(path);
+        work.removePathToAlias(path);
+        work.removePathToPartitionInfo(path);
       }
     }
   }
@@ -132,14 +131,14 @@ public class NullScanTaskDispatcher implements Dispatcher {
       tso.getConf().setIsMetadataOnly(true);
     }
     // group path alias according to work
-    LinkedHashMap<String, ArrayList<String>> candidates = new LinkedHashMap<String, ArrayList<String>>();
-    for (String path : work.getPaths()) {
+    LinkedHashMap<Path, ArrayList<String>> candidates = new LinkedHashMap<>();
+    for (Path path : work.getPaths()) {
       ArrayList<String> aliasesAffected = work.getPathToAliases().get(path);
       if (aliasesAffected != null && aliasesAffected.size() > 0) {
         candidates.put(path, aliasesAffected);
       }
     }
-    for (Entry<String, ArrayList<String>> entry : candidates.entrySet()) {
+    for (Entry<Path, ArrayList<String>> entry : candidates.entrySet()) {
       processAlias(work, entry.getKey(), entry.getValue(), aliases);
     }
   }

@@ -197,9 +197,9 @@ public class SparkDynamicPartitionPruner {
 
     Object[] row = new Object[1];
 
-    Iterator<String> it = work.getPathToPartitionInfo().keySet().iterator();
+    Iterator<Path> it = work.getPathToPartitionInfo().keySet().iterator();
     while (it.hasNext()) {
-      String p = it.next();
+      Path p = it.next();
       PartitionDesc desc = work.getPathToPartitionInfo().get(p);
       Map<String, String> spec = desc.getPartSpec();
       if (spec == null) {
@@ -225,8 +225,8 @@ public class SparkDynamicPartitionPruner {
       if (!values.contains(partValue)) {
         LOG.info("Pruning path: " + p);
         it.remove();
-        work.getPathToAliases().remove(p);
-        work.getPaths().remove(p);
+        work.removePathToAlias(p);
+        // HIVE-12244 call currently ineffective
         work.getPartitionDescs().remove(desc);
       }
     }

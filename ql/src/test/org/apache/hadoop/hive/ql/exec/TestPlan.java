@@ -64,13 +64,13 @@ public class TestPlan extends TestCase {
 
       ArrayList<String> aliasList = new ArrayList<String>();
       aliasList.add("a");
-      LinkedHashMap<String, ArrayList<String>> pa = new LinkedHashMap<String, ArrayList<String>>();
-      pa.put("/tmp/testfolder", aliasList);
+      LinkedHashMap<Path, ArrayList<String>> pa = new LinkedHashMap<>();
+      pa.put(new Path("/tmp/testfolder"), aliasList);
 
       TableDesc tblDesc = Utilities.defaultTd;
       PartitionDesc partDesc = new PartitionDesc(tblDesc, null);
-      LinkedHashMap<String, PartitionDesc> pt = new LinkedHashMap<String, PartitionDesc>();
-      pt.put("/tmp/testfolder", partDesc);
+      LinkedHashMap<Path, PartitionDesc> pt = new LinkedHashMap<>();
+      pt.put(new Path("/tmp/testfolder"), partDesc);
 
       LinkedHashMap<String, Operator<? extends OperatorDesc>> ao =
         new LinkedHashMap<String, Operator<? extends OperatorDesc>>();

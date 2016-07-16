@@ -127,7 +127,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
     private String inputFormatClassName;
     private CombineFileSplit inputSplitShim;
-    private Map<String, PartitionDesc> pathToPartitionInfo;
+    private Map<Path, PartitionDesc> pathToPartitionInfo;
 
     public CombineHiveInputSplit() throws IOException {
       this(ShimLoader.getHadoopShims().getCombineFileInputFormat()
@@ -142,7 +142,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       this(job, inputSplitShim, null);
     }
     public CombineHiveInputSplit(JobConf job, CombineFileSplit inputSplitShim,
-        Map<String, PartitionDesc> pathToPartitionInfo) throws IOException {
+        Map<Path, PartitionDesc> pathToPartitionInfo) throws IOException {
       this.inputSplitShim = inputSplitShim;
       this.pathToPartitionInfo = pathToPartitionInfo;
       if (job != null) {
@@ -262,7 +262,6 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     @Override
     public void write(DataOutput out) throws IOException {
       inputSplitShim.write(out);
-
       if (inputFormatClassName == null) {
         if (pathToPartitionInfo == null) {
           pathToPartitionInfo = Utilities.getMapWork(getJob()).getPathToPartitionInfo();
@@ -319,10 +318,10 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
    * Create Hive splits based on CombineFileSplit.
    */
   private InputSplit[] getCombineSplits(JobConf job, int numSplits,
-      Map<String, PartitionDesc> pathToPartitionInfo)
+      Map<Path, PartitionDesc> pathToPartitionInfo)
       throws IOException {
     init(job);
-    Map<String, ArrayList<String>> pathToAliases = mrwork.getPathToAliases();
+    Map<Path, ArrayList<String>> pathToAliases = mrwork.getPathToAliases();
     Map<String, Operator<? extends OperatorDesc>> aliasToWork =
       mrwork.getAliasToWork();
     CombineFileInputFormatShim combine = ShimLoader.getHadoopShims()
@@ -542,7 +541,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     if (combinablePaths.size() > 0) {
       FileInputFormat.setInputPaths(job, combinablePaths.toArray
           (new Path[combinablePaths.size()]));
-      Map<String, PartitionDesc> pathToPartitionInfo = this.pathToPartitionInfo != null ?
+      Map<Path, PartitionDesc> pathToPartitionInfo = this.pathToPartitionInfo != null ?
           this.pathToPartitionInfo : Utilities.getMapWork(job).getPathToPartitionInfo();
       InputSplit[] splits = getCombineSplits(job, numSplits, pathToPartitionInfo);
       for (InputSplit split : splits) {
@@ -587,8 +586,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     HashMap<String, SplitSample> nameToSamples = mrwork.getNameToSplitSample();
     List<CombineFileSplit> retLists = new ArrayList<CombineFileSplit>();
     Map<String, ArrayList<CombineFileSplit>> aliasToSplitList = new HashMap<String, ArrayList<CombineFileSplit>>();
-    Map<String, ArrayList<String>> pathToAliases = mrwork.getPathToAliases();
-    Map<String, ArrayList<String>> pathToAliasesNoScheme = removeScheme(pathToAliases);
+    Map<Path, ArrayList<String>> pathToAliases = mrwork.getPathToAliases();
+    Map<Path, ArrayList<String>> pathToAliasesNoScheme = removeScheme(pathToAliases);
 
     // Populate list of exclusive splits for every sampled alias
     //
@@ -657,10 +656,10 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     return retLists;
   }
 
-  Map<String, ArrayList<String>> removeScheme(Map<String, ArrayList<String>> pathToAliases) {
-    Map<String, ArrayList<String>> result = new HashMap<String, ArrayList<String>>();
-    for (Map.Entry <String, ArrayList<String>> entry : pathToAliases.entrySet()) {
-      String newKey = new Path(entry.getKey()).toUri().getPath();
+  Map<Path, ArrayList<String>> removeScheme(Map<Path, ArrayList<String>> pathToAliases) {
+    Map<Path, ArrayList<String>> result = new HashMap<>();
+    for (Map.Entry <Path, ArrayList<String>> entry : pathToAliases.entrySet()) {
+      Path newKey = Path.getPathWithoutSchemeAndAuthority(entry.getKey());
       result.put(newKey, entry.getValue());
     }
     return result;
@@ -688,9 +687,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       throw new IOException("cannot find class " + inputFormatClassName);
     }
 
-    pushProjectionsAndFilters(job, inputFormatClass,
-        hsplit.getPath(0).toString(),
-        hsplit.getPath(0).toUri().getPath());
+    pushProjectionsAndFilters(job, inputFormatClass, hsplit.getPath(0));
 
     return ShimLoader.getHadoopShims().getCombineFileInputFormat()
         .getRecordReader(job,

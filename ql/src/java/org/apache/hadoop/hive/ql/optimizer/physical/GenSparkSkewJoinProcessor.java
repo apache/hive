@@ -290,10 +290,10 @@ public class GenSparkSkewJoinProcessor {
         } else {
           path = smallTblDirs.get(tags[j]);
         }
-        mapWork.getPathToAliases().put(path.toString(), aliases);
+        mapWork.addPathToAlias(path, aliases);
         mapWork.getAliasToWork().put(alias, tableScan);
         PartitionDesc partitionDesc = new PartitionDesc(tableDescList.get(tags[j]), null);
-        mapWork.getPathToPartitionInfo().put(path.toString(), partitionDesc);
+        mapWork.addPathToPartitionInfo(path, partitionDesc);
         mapWork.getAliasToPartnInfo().put(alias, partitionDesc);
         mapWork.setName("Map " + GenSparkUtils.getUtils().getNextSeqNumber());
       }

@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
@@ -233,9 +234,8 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
       throw new SemanticException("Cannot find the " + FileSinkOperator.getOperatorName() +
           " operator at the last operator of the MapJoin Task.");
     }
-
     // The mapJoinTaskFileSinkOperator writes to a different directory
-    String childMRPath = mapJoinTaskFileSinkOperator.getConf().getDirName().toString();
+    Path childMRPath = mapJoinTaskFileSinkOperator.getConf().getDirName();
     List<String> childMRAliases = childMapWork.getPathToAliases().get(childMRPath);
     if (childMRAliases == null || childMRAliases.size() != 1) {
       return;
@@ -243,8 +243,8 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     String childMRAlias = childMRAliases.get(0);
 
     // Sanity check to make sure there is no alias conflict after merge.
-    for (Entry<String, ArrayList<String>> entry : childMapWork.getPathToAliases().entrySet()) {
-      String path = entry.getKey();
+    for (Entry<Path, ArrayList<String>> entry : childMapWork.getPathToAliases().entrySet()) {
+      Path path = entry.getKey();
       List<String> aliases = entry.getValue();
 
       if (path.equals(childMRPath)) {
@@ -299,7 +299,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
 
     TableScanOperator childMRTaskTableScanOperator =
         OperatorUtils.findSingleOperator(
-            childMapWork.getAliasToWork().get(childMRAlias), TableScanOperator.class);
+            childMapWork.getAliasToWork().get(childMRAlias.toString()), TableScanOperator.class);
     if (childMRTaskTableScanOperator == null) {
       throw new SemanticException("Expected a " + TableScanOperator.getOperatorName() +
           " operator as the work associated with alias " + childMRAlias +
@@ -323,7 +323,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     childInChildMRTask.replaceParent(childMRTaskTableScanOperator, parentInMapJoinTask);
 
     // Step 2.2: Replace the corresponding part childMRWork's MapWork.
-    GenMapRedUtils.replaceMapWork(mapJoinAlias, childMRAlias, mapJoinMapWork, childMapWork);
+    GenMapRedUtils.replaceMapWork(mapJoinAlias, childMRAlias.toString(), mapJoinMapWork, childMapWork);
 
     // Step 2.3: Fill up stuff in local work
     if (mapJoinLocalWork != null) {
@@ -394,7 +394,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     // Must be deterministic order map for consistent q-test output across Java versions
     HashMap<Task<? extends Serializable>, Set<String>> taskToAliases =
         new LinkedHashMap<Task<? extends Serializable>, Set<String>>();
-    HashMap<String, ArrayList<String>> pathToAliases = currWork.getPathToAliases();
+    HashMap<Path, ArrayList<String>> pathToAliases = currWork.getPathToAliases();
     Map<String, Operator<? extends OperatorDesc>> aliasToWork = currWork.getAliasToWork();
 
     // get parseCtx for this Join Operator

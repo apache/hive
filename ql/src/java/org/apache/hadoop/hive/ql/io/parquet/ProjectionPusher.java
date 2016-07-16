@@ -48,8 +48,7 @@ public class ProjectionPusher {
 
   private static final Logger LOG = LoggerFactory.getLogger(ProjectionPusher.class);
 
-  private final Map<String, PartitionDesc> pathToPartitionInfo =
-      new LinkedHashMap<String, PartitionDesc>();
+  private final Map<Path, PartitionDesc> pathToPartitionInfo = new LinkedHashMap<>();
   /**
    * MapWork is the Hive object which describes input files,
    * columns projections, and filters.
@@ -66,14 +65,13 @@ public class ProjectionPusher {
     if (mapWork == null && plan != null && plan.length() > 0) {
       mapWork = Utilities.getMapWork(job);
       pathToPartitionInfo.clear();
-      for (final Map.Entry<String, PartitionDesc> entry : mapWork.getPathToPartitionInfo().entrySet()) {
+      for (final Map.Entry<Path, PartitionDesc> entry : mapWork.getPathToPartitionInfo().entrySet()) {
         // key contains scheme (such as pfile://) and we want only the path portion fix in HIVE-6366
-        pathToPartitionInfo.put(new Path(entry.getKey()).toUri().getPath(), entry.getValue());
+        pathToPartitionInfo.put(Path.getPathWithoutSchemeAndAuthority(entry.getKey()), entry.getValue());
       }
     }
   }
 
-  @Deprecated  // Uses deprecated methods on ColumnProjectionUtils
   private void pushProjectionsAndFilters(final JobConf jobConf,
       final String splitPath,
       final String splitPathWithNoSchema) {
@@ -85,12 +83,12 @@ public class ProjectionPusher {
     }
 
     final Set<String> aliases = new HashSet<String>();
-    final Iterator<Entry<String, ArrayList<String>>> iterator =
+    final Iterator<Entry<Path, ArrayList<String>>> iterator =
         mapWork.getPathToAliases().entrySet().iterator();
 
     while (iterator.hasNext()) {
-      final Entry<String, ArrayList<String>> entry = iterator.next();
-      final String key = new Path(entry.getKey()).toUri().getPath();
+      final Entry<Path, ArrayList<String>> entry = iterator.next();
+      final String key = entry.getKey().toUri().getPath();
       if (splitPath.equals(key) || splitPathWithNoSchema.equals(key)) {
         aliases.addAll(entry.getValue());
       }
@@ -144,10 +142,10 @@ public class ProjectionPusher {
     // push down projections
     if (!allColumnsNeeded) {
       if (!neededColumnIDs.isEmpty()) {
-        ColumnProjectionUtils.appendReadColumnIDs(jobConf, new ArrayList<Integer>(neededColumnIDs));
+        ColumnProjectionUtils.appendReadColumns(jobConf, new ArrayList<Integer>(neededColumnIDs));
       }
     } else {
-      ColumnProjectionUtils.setFullyReadColumns(jobConf);
+      ColumnProjectionUtils.setReadAllColumns(jobConf);
     }
 
     pushFilters(jobConf, rowSchema, tableFilterExpr);
@@ -173,12 +171,11 @@ public class ProjectionPusher {
         filterExprSerialized);
   }
 
-  @Deprecated // Uses deprecated methods on ColumnProjectionUtils
   public JobConf pushProjectionsAndFilters(JobConf jobConf, Path path)
       throws IOException {
     updateMrWork(jobConf);  // TODO: refactor this in HIVE-6366
     final JobConf cloneJobConf = new JobConf(jobConf);
-    final PartitionDesc part = pathToPartitionInfo.get(path.toString());
+    final PartitionDesc part = pathToPartitionInfo.get(path);
 
     if ((part != null) && (part.getTableDesc() != null)) {
       Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), cloneJobConf);

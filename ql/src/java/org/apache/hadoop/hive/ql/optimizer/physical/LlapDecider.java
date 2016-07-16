@@ -418,8 +418,7 @@ public class LlapDecider implements PhysicalPlanResolver {
     }
 
     private boolean checkInputsVectorized(MapWork mapWork) {
-      for (String path : mapWork.getPathToPartitionInfo().keySet()) {
-        PartitionDesc pd = mapWork.getPathToPartitionInfo().get(path);
+      for( PartitionDesc pd : mapWork.getPathToPartitionInfo().values()) {
         List<Class<?>> interfaceList =
           Arrays.asList(pd.getInputFileFormatClass().getInterfaces());
         if (!interfaceList.contains(VectorizedInputFormatInterface.class)) {

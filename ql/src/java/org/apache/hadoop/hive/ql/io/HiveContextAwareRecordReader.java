@@ -66,7 +66,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
   private boolean wasUsingSortedSearch = false;
   private String genericUDFClassName = null;
   private final List<Comparison> stopComparisons = new ArrayList<Comparison>();
-  private Map<String, PartitionDesc> pathToPartitionInfo;
+  private Map<Path, PartitionDesc> pathToPartitionInfo;
 
   protected RecordReader recordReader;
   protected JobConf jobConf;

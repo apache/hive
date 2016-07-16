@@ -38,6 +38,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
@@ -710,10 +711,10 @@ public class Vectorizer implements PhysicalPlanResolver {
       List<String> tableDataColumnList = null;
       List<TypeInfo> tableDataTypeInfoList = null;
 
-      LinkedHashMap<String, ArrayList<String>> pathToAliases = mapWork.getPathToAliases();
-      LinkedHashMap<String, PartitionDesc> pathToPartitionInfo = mapWork.getPathToPartitionInfo();
-      for (Entry<String, ArrayList<String>> entry: pathToAliases.entrySet()) {
-        String path = entry.getKey();
+      LinkedHashMap<Path, ArrayList<String>> pathToAliases = mapWork.getPathToAliases();
+      LinkedHashMap<Path, PartitionDesc> pathToPartitionInfo = mapWork.getPathToPartitionInfo();
+      for (Entry<Path, ArrayList<String>> entry: pathToAliases.entrySet()) {
+        Path path = entry.getKey();
         List<String> aliases = entry.getValue();
         boolean isPresent = (aliases != null && aliases.indexOf(alias) != -1);
         if (!isPresent) {

@@ -74,9 +74,9 @@ public class MapWork extends BaseWork {
 
   // use LinkedHashMap to make sure the iteration order is
   // deterministic, to ease testing
-  private LinkedHashMap<String, ArrayList<String>> pathToAliases = new LinkedHashMap<String, ArrayList<String>>();
+  private LinkedHashMap<Path, ArrayList<String>> pathToAliases = new LinkedHashMap<>();
 
-  private LinkedHashMap<String, PartitionDesc> pathToPartitionInfo = new LinkedHashMap<String, PartitionDesc>();
+  private LinkedHashMap<Path, PartitionDesc> pathToPartitionInfo = new LinkedHashMap<>();
 
   private LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork = new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
 
@@ -153,16 +153,47 @@ public class MapWork extends BaseWork {
     super(name);
   }
 
+  
+  // HIVE-12244: this @Explain should be on the new method; but it changes the explain result
+  // HIVE-12244: example test which can be used to validate change: -Dtest=TestMiniLlapCliDriver -Dqfile=dynamic_partition_pruning.q
   @Explain(displayName = "Path -> Alias", explainLevels = { Level.EXTENDED })
-  public LinkedHashMap<String, ArrayList<String>> getPathToAliases() {
+  @Deprecated
+  public LinkedHashMap<String, ArrayList<String>> getPathToAliasesOld() {
+    LinkedHashMap<String, ArrayList<String>> ret = new LinkedHashMap<>();
+    for (Entry<Path, ArrayList<String>> p2a : pathToAliases.entrySet()) {
+      ret.put(p2a.getKey().toString(), p2a.getValue());
+    }
+    return ret;
+  }
+  
+  // @Explain(displayName = "Path -> Alias", explainLevels = { Level.EXTENDED })
+  public LinkedHashMap<Path, ArrayList<String>> getPathToAliases() {
+    //
     return pathToAliases;
   }
 
-  public void setPathToAliases(
-      final LinkedHashMap<String, ArrayList<String>> pathToAliases) {
+  public void setPathToAliases(final LinkedHashMap<Path, ArrayList<String>> pathToAliases) {
     this.pathToAliases = pathToAliases;
   }
 
+  public void addPathToAlias(Path path, ArrayList<String> aliases){
+    pathToAliases.put(path, aliases);
+  }
+  
+  public void addPathToAlias(Path path, String newAlias){
+    ArrayList<String> aliases = pathToAliases.get(path);
+    if (aliases == null) {
+      aliases=new ArrayList<String>();
+      pathToAliases.put(path, aliases);
+    }
+    aliases.add(newAlias);
+  }
+
+  
+  public void removePathToAlias(Path path){
+    pathToAliases.remove(path);
+  }
+  
   /**
    * This is used to display and verify output of "Path -> Alias" in test framework.
    *
@@ -178,27 +209,49 @@ public class MapWork extends BaseWork {
   public Map<String, ArrayList<String>> getTruncatedPathToAliases() {
     Map<String, ArrayList<String>> trunPathToAliases = new LinkedHashMap<String,
         ArrayList<String>>();
-    Iterator<Entry<String, ArrayList<String>>> itr = this.pathToAliases.entrySet().iterator();
+    Iterator<Entry<Path, ArrayList<String>>> itr = this.pathToAliases.entrySet().iterator();
     while (itr.hasNext()) {
-      final Entry<String, ArrayList<String>> entry = itr.next();
-      String origiKey = entry.getKey();
-      String newKey = PlanUtils.removePrefixFromWarehouseConfig(origiKey);
+      final Entry<Path, ArrayList<String>> entry = itr.next();
+      Path origiKey = entry.getKey();
+      String newKey = PlanUtils.removePrefixFromWarehouseConfig(origiKey.toString());
       ArrayList<String> value = entry.getValue();
       trunPathToAliases.put(newKey, value);
     }
     return trunPathToAliases;
   }
 
+  // HIVE-12244: this @Explain should be on the new method; but it changes the explain result
+  // HIVE-12244: example test which can be used to validate change: combine2.q
   @Explain(displayName = "Path -> Partition", explainLevels = { Level.EXTENDED })
-  public LinkedHashMap<String, PartitionDesc> getPathToPartitionInfo() {
+  @Deprecated
+  public LinkedHashMap<String, PartitionDesc> getPathToPartitionInfoOld() {
+    LinkedHashMap<String, PartitionDesc> ret = new LinkedHashMap<>();
+    for (Entry<Path, PartitionDesc> p2a : pathToPartitionInfo.entrySet()) {
+      ret.put(p2a.getKey().toString(), p2a.getValue());
+    }
+    return ret;
+  }
+
+  //@Explain(displayName = "Path -> Partition", explainLevels = { Level.EXTENDED })
+  public LinkedHashMap<Path, PartitionDesc> getPathToPartitionInfo() {
     return pathToPartitionInfo;
   }
 
-  public void setPathToPartitionInfo(
-      final LinkedHashMap<String, PartitionDesc> pathToPartitionInfo) {
+  public void setPathToPartitionInfo(final LinkedHashMap<Path, PartitionDesc> pathToPartitionInfo) {
     this.pathToPartitionInfo = pathToPartitionInfo;
   }
 
+  public void addPathToPartitionInfo(Path path, PartitionDesc partitionInfo) {
+    if (pathToPartitionInfo == null) {
+      pathToPartitionInfo=new LinkedHashMap<>();
+    }
+    pathToPartitionInfo.put(path, partitionInfo);
+  }
+
+  public void removePathToPartitionInfo(Path path) {
+    pathToPartitionInfo.remove(path);
+  }
+  
   /**
    * Derive additional attributes to be rendered by EXPLAIN.
    * TODO: this method is relied upon by custom input formats to set jobconf properties.
@@ -206,7 +259,7 @@ public class MapWork extends BaseWork {
    */
   public void deriveExplainAttributes() {
     if (pathToPartitionInfo != null) {
-      for (Map.Entry<String, PartitionDesc> entry : pathToPartitionInfo.entrySet()) {
+      for (Map.Entry<Path, PartitionDesc> entry : pathToPartitionInfo.entrySet()) {
         entry.getValue().deriveBaseFileName(entry.getKey());
       }
     }
@@ -347,7 +400,7 @@ public class MapWork extends BaseWork {
   }
 
   @SuppressWarnings("nls")
-  public void addMapWork(String path, String alias, Operator<?> work,
+  public void addMapWork(Path path, String alias, Operator<?> work,
       PartitionDesc pd) {
     ArrayList<String> curAliases = pathToAliases.get(path);
     if (curAliases == null) {
@@ -383,8 +436,8 @@ public class MapWork extends BaseWork {
 
   public void resolveDynamicPartitionStoredAsSubDirsMerge(HiveConf conf, Path path,
       TableDesc tblDesc, ArrayList<String> aliases, PartitionDesc partDesc) {
-    pathToAliases.put(path.toString(), aliases);
-    pathToPartitionInfo.put(path.toString(), partDesc);
+    pathToAliases.put(path, aliases);
+    pathToPartitionInfo.put(path, partDesc);
   }
 
   /**
@@ -446,7 +499,7 @@ public class MapWork extends BaseWork {
     return aliasToWork.isEmpty() ? null : aliasToWork.values().iterator().next();
   }
 
-  public void mergeAliasedInput(String alias, String pathDir, PartitionDesc partitionInfo) {
+  public void mergeAliasedInput(String alias, Path pathDir, PartitionDesc partitionInfo) {
     ArrayList<String> aliases = pathToAliases.get(pathDir);
     if (aliases == null) {
       aliases = new ArrayList<String>(Arrays.asList(alias));
@@ -529,9 +582,12 @@ public class MapWork extends BaseWork {
     return new ArrayList<Operator<?>>(aliasToWork.values());
   }
 
-  public ArrayList<String> getPaths() {
-    return new ArrayList<String>(pathToAliases.keySet());
+  public ArrayList<Path> getPaths() {
+    ArrayList<Path> ret=new ArrayList<>();
+    ret.addAll(pathToAliases.keySet());
+    return ret;
   }
+
 
   public ArrayList<PartitionDesc> getPartitionDescs() {
     return new ArrayList<PartitionDesc>(aliasToPartnInfo.values());

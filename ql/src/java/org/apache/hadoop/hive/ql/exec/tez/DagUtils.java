@@ -157,12 +157,12 @@ public class DagUtils {
   private final ConcurrentHashMap<String, Object> copyNotifiers = new ConcurrentHashMap<>();
 
   private void addCredentials(MapWork mapWork, DAG dag) {
-    Set<String> paths = mapWork.getPathToAliases().keySet();
+    Set<Path> paths = mapWork.getPathToAliases().keySet();
     if (!paths.isEmpty()) {
-      Iterator<URI> pathIterator = Iterators.transform(paths.iterator(), new Function<String, URI>() {
+      Iterator<URI> pathIterator = Iterators.transform(paths.iterator(), new Function<Path, URI>() {
         @Override
-        public URI apply(String input) {
-          return new Path(input).toUri();
+        public URI apply(Path path) {
+          return path.toUri();
         }
       });
 

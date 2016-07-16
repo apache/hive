@@ -47,9 +47,9 @@ public class TestCombineHiveInputFormat extends TestCase {
         TableDesc tblDesc = Utilities.defaultTd;
         tblDesc.setInputFileFormatClass(TestSkipCombineInputFormat.class);
         PartitionDesc partDesc = new PartitionDesc(tblDesc, null);
-        LinkedHashMap<String, PartitionDesc> pt = new LinkedHashMap<String, PartitionDesc>();
-        pt.put("/tmp/testfolder1", partDesc);
-        pt.put("/tmp/testfolder2", partDesc);
+        LinkedHashMap<Path, PartitionDesc> pt = new LinkedHashMap<>();
+        pt.put(new Path("/tmp/testfolder1"), partDesc);
+        pt.put(new Path("/tmp/testfolder2"), partDesc);
         MapredWork mrwork = new MapredWork();
         mrwork.getMapWork().setPathToPartitionInfo(pt);
         Path mapWorkPath = new Path("/tmp/" + System.getProperty("user.name"), "hive");

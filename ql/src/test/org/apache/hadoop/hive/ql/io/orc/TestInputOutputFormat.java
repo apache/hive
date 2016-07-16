@@ -1940,14 +1940,13 @@ public class TestInputOutputFormat {
       mapWork.setVectorizedRowBatchCtx(vectorizedRowBatchCtx);
     }
     mapWork.setUseBucketizedHiveInputFormat(false);
-    LinkedHashMap<String, ArrayList<String>> aliasMap =
-        new LinkedHashMap<String, ArrayList<String>>();
+    LinkedHashMap<Path, ArrayList<String>> aliasMap = new LinkedHashMap<>();
     ArrayList<String> aliases = new ArrayList<String>();
     aliases.add(tableName);
-    LinkedHashMap<String, PartitionDesc> partMap =
-        new LinkedHashMap<String, PartitionDesc>();
+    LinkedHashMap<Path, PartitionDesc> partMap = new LinkedHashMap<>();
     for(int p=0; p < partitions; ++p) {
-      aliasMap.put(partPath[p], aliases);
+      Path path = new Path(partPath[p]);
+      aliasMap.put(path, aliases);
       LinkedHashMap<String, String> partSpec =
           new LinkedHashMap<String, String>();
       PartitionDesc part = new PartitionDesc(tbl, partSpec);
@@ -1955,7 +1954,7 @@ public class TestInputOutputFormat {
         part.setVectorPartitionDesc(
             VectorPartitionDesc.createVectorizedInputFileFormat("MockInputFileFormatClassName", false));
       }
-      partMap.put(partPath[p], part);
+      partMap.put(path, part);
     }
     mapWork.setPathToAliases(aliasMap);
     mapWork.setPathToPartitionInfo(partMap);

@@ -23,6 +23,7 @@ import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -37,6 +38,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
@@ -349,33 +351,32 @@ public final class HiveFileFormatUtils {
   }
 
   public static PartitionDesc getPartitionDescFromPathRecursively(
-      Map<String, PartitionDesc> pathToPartitionInfo, Path dir,
-      Map<Map<String, PartitionDesc>, Map<String, PartitionDesc>> cacheMap)
+      Map<Path, PartitionDesc> pathToPartitionInfo, Path dir,
+      Map<Map<Path, PartitionDesc>, Map<Path, PartitionDesc>> cacheMap)
       throws IOException {
     return getPartitionDescFromPathRecursively(pathToPartitionInfo, dir,
         cacheMap, false);
   }
 
   public static PartitionDesc getPartitionDescFromPathRecursively(
-      Map<String, PartitionDesc> pathToPartitionInfo, Path dir,
-      Map<Map<String, PartitionDesc>, Map<String, PartitionDesc>> cacheMap,
-      boolean ignoreSchema) throws IOException {
+      Map<Path, PartitionDesc> pathToPartitionInfo, Path dir,
+      Map<Map<Path, PartitionDesc>, Map<Path, PartitionDesc>> cacheMap, boolean ignoreSchema)
+          throws IOException {
 
     PartitionDesc part = doGetPartitionDescFromPath(pathToPartitionInfo, dir);
 
     if (part == null
         && (ignoreSchema
             || (dir.toUri().getScheme() == null || dir.toUri().getScheme().trim().equals(""))
-            || pathsContainNoScheme(pathToPartitionInfo))) {
+            || FileUtils.pathsContainNoScheme(pathToPartitionInfo.keySet()))) {
 
-      Map<String, PartitionDesc> newPathToPartitionInfo = null;
+      Map<Path, PartitionDesc> newPathToPartitionInfo = null;
       if (cacheMap != null) {
         newPathToPartitionInfo = cacheMap.get(pathToPartitionInfo);
       }
 
       if (newPathToPartitionInfo == null) { // still null
-        newPathToPartitionInfo = new HashMap<String, PartitionDesc>();
-        populateNewPartitionDesc(pathToPartitionInfo, newPathToPartitionInfo);
+        newPathToPartitionInfo = populateNewPartitionDesc(pathToPartitionInfo);
 
         if (cacheMap != null) {
           cacheMap.put(pathToPartitionInfo, newPathToPartitionInfo);
@@ -391,64 +392,32 @@ public final class HiveFileFormatUtils {
     }
   }
 
-  private static boolean pathsContainNoScheme(Map<String, PartitionDesc> pathToPartitionInfo) {
-
-    for( Entry<String, PartitionDesc> pe  : pathToPartitionInfo.entrySet()){
-      if(new Path(pe.getKey()).toUri().getScheme() != null){
-        return false;
-      }
-    }
-    return true;
-
-  }
-
-  private static void populateNewPartitionDesc(
-      Map<String, PartitionDesc> pathToPartitionInfo,
-      Map<String, PartitionDesc> newPathToPartitionInfo) {
-    for (Map.Entry<String, PartitionDesc> entry: pathToPartitionInfo.entrySet()) {
-      String entryKey = entry.getKey();
+  private static Map<Path, PartitionDesc> populateNewPartitionDesc(Map<Path, PartitionDesc> pathToPartitionInfo) {
+    Map<Path, PartitionDesc> newPathToPartitionInfo = new HashMap<>();
+    for (Map.Entry<Path, PartitionDesc> entry: pathToPartitionInfo.entrySet()) {
       PartitionDesc partDesc = entry.getValue();
-      Path newP = new Path(entryKey);
-      String pathOnly = newP.toUri().getPath();
+      Path pathOnly = Path.getPathWithoutSchemeAndAuthority(entry.getKey());
       newPathToPartitionInfo.put(pathOnly, partDesc);
     }
+    return newPathToPartitionInfo;
   }
 
   private static PartitionDesc doGetPartitionDescFromPath(
-      Map<String, PartitionDesc> pathToPartitionInfo, Path dir) {
+      Map<Path, PartitionDesc> pathToPartitionInfo, Path dir) {
+    
     // We first do exact match, and then do prefix matching. The latter is due to input dir
     // could be /dir/ds='2001-02-21'/part-03 where part-03 is not part of partition
-    String dirPath = dir.toUri().getPath();
-    PartitionDesc part = pathToPartitionInfo.get(dir.toString());
-    if (part == null) {
-      //      LOG.warn("exact match not found, try ripping input path's theme and authority");
-      part = pathToPartitionInfo.get(dirPath);
+    Path path = FileUtils.getParentRegardlessOfScheme(dir,pathToPartitionInfo.keySet());
+    
+    if(path == null) {
+      // FIXME: old implementation returned null; exception maybe?
+      return null;
     }
-
-    if (part == null) {
-      Path curPath = new Path(dir.toUri().getPath()).getParent();
-      dir = dir.getParent();
-      while (dir != null) {
-
-        // first try full match
-        part = pathToPartitionInfo.get(dir.toString());
-        if (part == null) {
-
-          // exact match not found, try ripping input path's scheme and authority
-          part = pathToPartitionInfo.get(curPath.toString());
-        }
-        if (part != null) {
-          break;
-        }
-        dir = dir.getParent();
-        curPath = curPath.getParent();
-      }
-    }
-    return part;
+    return pathToPartitionInfo.get(path);
   }
 
-  private static boolean foundAlias(Map<String, ArrayList<String>> pathToAliases,
-                                    String path) {
+  private static boolean foundAlias(Map<Path, ArrayList<String>> pathToAliases,
+                                    Path path) {
     List<String> aliases = pathToAliases.get(path);
     if ((aliases == null) || (aliases.isEmpty())) {
       return false;
@@ -456,40 +425,29 @@ public final class HiveFileFormatUtils {
     return true;
   }
 
-  private static String getMatchingPath(Map<String, ArrayList<String>> pathToAliases,
+  private static Path getMatchingPath(Map<Path, ArrayList<String>> pathToAliases,
                                         Path dir) {
     // First find the path to be searched
-    String path = dir.toString();
+    Path path = dir;
     if (foundAlias(pathToAliases, path)) {
       return path;
     }
 
-    String dirPath = dir.toUri().getPath();
-    if(Shell.WINDOWS){
-      //temp hack
-      //do this to get rid of "/" before the drive letter in windows
-      dirPath = new Path(dirPath).toString();
-    }
+    Path dirPath = Path.getPathWithoutSchemeAndAuthority(dir);
     if (foundAlias(pathToAliases, dirPath)) {
       return dirPath;
     }
-    path = dirPath;
 
-    String dirStr = dir.toString();
-    int dirPathIndex = dirPath.lastIndexOf(Path.SEPARATOR);
-    int dirStrIndex = dirStr.lastIndexOf(Path.SEPARATOR);
-    while (dirPathIndex >= 0 && dirStrIndex >= 0) {
-      dirStr = dirStr.substring(0, dirStrIndex);
-      dirPath = dirPath.substring(0, dirPathIndex);
+    while (path!=null && dirPath!=null) {
+      path=path.getParent();
+      dirPath=dirPath.getParent();
       //first try full match
-      if (foundAlias(pathToAliases, dirStr)) {
-        return dirStr;
+      if (foundAlias(pathToAliases, path)) {
+        return path;
       }
       if (foundAlias(pathToAliases, dirPath)) {
         return dirPath;
       }
-      dirPathIndex = dirPath.lastIndexOf(Path.SEPARATOR);
-      dirStrIndex = dirStr.lastIndexOf(Path.SEPARATOR);
     }
     return null;
   }
@@ -501,7 +459,7 @@ public final class HiveFileFormatUtils {
    * @param dir            The path to look for
    **/
   public static List<Operator<? extends OperatorDesc>> doGetWorksFromPath(
-    Map<String, ArrayList<String>> pathToAliases,
+    Map<Path, ArrayList<String>> pathToAliases,
     Map<String, Operator<? extends OperatorDesc>> aliasToWork, Path dir) {
     List<Operator<? extends OperatorDesc>> opList =
       new ArrayList<Operator<? extends OperatorDesc>>();
@@ -519,12 +477,12 @@ public final class HiveFileFormatUtils {
    * @param dir            The path to look for
    **/
   public static List<String> doGetAliasesFromPath(
-    Map<String, ArrayList<String>> pathToAliases,
+    Map<Path, ArrayList<String>> pathToAliases,
     Path dir) {
     if (pathToAliases == null) {
       return new ArrayList<String>();
     }
-    String path = getMatchingPath(pathToAliases, dir);
+    Path path = getMatchingPath(pathToAliases, dir);
     return pathToAliases.get(path);
   }
 

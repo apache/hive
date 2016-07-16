@@ -146,13 +146,13 @@ public class MapJoinProcessor extends Transform {
       smallTableAliasList.add(alias);
       // get input path and remove this alias from pathToAlias
       // because this file will be fetched by fetch operator
-      LinkedHashMap<String, ArrayList<String>> pathToAliases = newWork.getMapWork().getPathToAliases();
+      LinkedHashMap<Path, ArrayList<String>> pathToAliases = newWork.getMapWork().getPathToAliases();
 
       // keep record all the input path for this alias
-      HashSet<String> pathSet = new HashSet<String>();
-      HashSet<String> emptyPath = new HashSet<String>();
-      for (Map.Entry<String, ArrayList<String>> entry2 : pathToAliases.entrySet()) {
-        String path = entry2.getKey();
+      HashSet<Path> pathSet = new HashSet<>();
+      HashSet<Path> emptyPath = new HashSet<>();
+      for (Map.Entry<Path, ArrayList<String>> entry2 : pathToAliases.entrySet()) {
+        Path path = entry2.getKey();
         ArrayList<String> list = entry2.getValue();
         if (list.contains(alias)) {
           // add to path set
@@ -165,8 +165,8 @@ public class MapJoinProcessor extends Transform {
         }
       }
       //remove the path, with which no alias associates
-      for (String path : emptyPath) {
-        pathToAliases.remove(path);
+      for (Path path : emptyPath) {
+        newWork.getMapWork().removePathToAlias(path);
       }
 
       // create fetch work
@@ -174,15 +174,15 @@ public class MapJoinProcessor extends Transform {
       List<Path> partDir = new ArrayList<Path>();
       List<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
 
-      for (String tablePath : pathSet) {
+      for (Path tablePath : pathSet) {
         PartitionDesc partitionDesc = newWork.getMapWork().getPathToPartitionInfo().get(tablePath);
         // create fetchwork for non partitioned table
         if (partitionDesc.getPartSpec() == null || partitionDesc.getPartSpec().size() == 0) {
-          fetchWork = new FetchWork(new Path(tablePath), partitionDesc.getTableDesc());
+          fetchWork = new FetchWork(tablePath, partitionDesc.getTableDesc());
           break;
         }
         // if table is partitioned,add partDir and partitionDesc
-        partDir.add(new Path(tablePath));
+        partDir.add(tablePath);
         partDesc.add(partitionDesc);
       }
       // create fetchwork for partitioned table

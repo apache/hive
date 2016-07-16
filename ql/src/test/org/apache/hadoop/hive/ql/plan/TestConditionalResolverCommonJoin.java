@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import junit.framework.Assert;
+
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -38,9 +40,9 @@ public class TestConditionalResolverCommonJoin {
   public void testResolvingDriverAlias() throws Exception {
     ConditionalResolverCommonJoin resolver = new ConditionalResolverCommonJoin();
 
-    HashMap<String, ArrayList<String>> pathToAliases = new HashMap<String, ArrayList<String>>();
-    pathToAliases.put("path1", new ArrayList<String>(Arrays.asList("alias1", "alias2")));
-    pathToAliases.put("path2", new ArrayList<String>(Arrays.asList("alias3")));
+    HashMap<Path, ArrayList<String>> pathToAliases = new HashMap<>();
+    pathToAliases.put(new Path("path1"), new ArrayList<String>(Arrays.asList("alias1", "alias2")));
+    pathToAliases.put(new Path("path2"), new ArrayList<String>(Arrays.asList("alias3")));
 
     HashMap<String, Long> aliasToKnownSize = new HashMap<String, Long>();
     aliasToKnownSize.put("alias1", 1024l);

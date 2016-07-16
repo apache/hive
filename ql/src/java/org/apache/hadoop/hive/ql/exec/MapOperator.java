@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,7 +28,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -289,7 +287,7 @@ public class MapOperator extends AbstractMapOperator {
     try {
       Map<ObjectInspector, Boolean> oiSettableProperties = new HashMap<ObjectInspector, Boolean>();
 
-      for (String onefile : conf.getPathToAliases().keySet()) {
+      for (Path onefile : conf.getPathToAliases().keySet()) {
         PartitionDesc pd = conf.getPathToPartitionInfo().get(onefile);
         TableDesc tableDesc = pd.getTableDesc();
         Deserializer partDeserializer = pd.getDeserializer(hconf);
@@ -363,8 +361,8 @@ public class MapOperator extends AbstractMapOperator {
 
     Map<TableDesc, StructObjectInspector> convertedOI = getConvertedOI(hconf);
 
-    for (Map.Entry<String, ArrayList<String>> entry : conf.getPathToAliases().entrySet()) {
-      String onefile = entry.getKey();
+    for (Map.Entry<Path, ArrayList<String>> entry : conf.getPathToAliases().entrySet()) {
+      Path onefile = entry.getKey();
       List<String> aliases = entry.getValue();
       PartitionDesc partDesc = conf.getPathToPartitionInfo().get(onefile);
 
@@ -374,9 +372,9 @@ public class MapOperator extends AbstractMapOperator {
           LOG.debug("Adding alias " + alias + " to work list for file "
               + onefile);
         }
-        Map<Operator<?>, MapOpCtx> contexts = opCtxMap.get(onefile);
+        Map<Operator<?>, MapOpCtx> contexts = opCtxMap.get(onefile.toString());
         if (contexts == null) {
-          opCtxMap.put(onefile, contexts = new LinkedHashMap<Operator<?>, MapOpCtx>());
+          opCtxMap.put(onefile.toString(), contexts = new LinkedHashMap<Operator<?>, MapOpCtx>());
         }
         if (contexts.containsKey(op)) {
           continue;

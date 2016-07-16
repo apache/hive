@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
@@ -92,7 +93,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   private JobConf job;
 
   // both classes access by subclasses
-  protected Map<String, PartitionDesc> pathToPartitionInfo;
+  protected Map<Path, PartitionDesc> pathToPartitionInfo;
   protected MapWork mrwork;
 
   /**
@@ -289,14 +290,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     boolean nonNative = false;
-    PartitionDesc part = pathToPartitionInfo.get(hsplit.getPath().toString());
+    PartitionDesc part = pathToPartitionInfo.get(hsplit.getPath());
     if ((part != null) && (part.getTableDesc() != null)) {
       Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), job);
       nonNative = part.getTableDesc().isNonNative();
     }
 
-    pushProjectionsAndFilters(job, inputFormatClass, hsplit.getPath()
-      .toString(), hsplit.getPath().toUri().getPath(), nonNative);
+    pushProjectionsAndFilters(job, inputFormatClass, hsplit.getPath(), nonNative);
 
     InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
     RecordReader innerReader = null;
@@ -376,12 +376,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   Path[] getInputPaths(JobConf job) throws IOException {
     Path[] dirs;
     if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-      Set<String> pathStrings = mrwork.getPathToPartitionInfo().keySet();
-      dirs = new Path[pathStrings.size()];
-      Iterator<String> it = pathStrings.iterator();
-      for (int i = 0; i < dirs.length; i++) {
-        dirs[i] = new Path(it.next());
-      }
+      dirs = mrwork.getPathToPartitionInfo().keySet().toArray(new Path[]{});
     } else {
       dirs = FileInputFormat.getInputPaths(job);
       if (dirs.length == 0) {
@@ -427,7 +422,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       TableDesc table = part.getTableDesc();
       TableScanOperator tableScan = null;
 
-      List<String> aliases = mrwork.getPathToAliases().get(dir.toString());
+      List<String> aliases = mrwork.getPathToAliases().get(dir);
 
       // Make filter pushdown information available to getSplits.
       if ((aliases != null) && (aliases.size() == 1)) {
@@ -518,12 +513,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
   }
 
+  
   protected static PartitionDesc getPartitionDescFromPath(
-      Map<String, PartitionDesc> pathToPartitionInfo, Path dir)
+      Map<Path, PartitionDesc> pathToPartitionInfo, Path dir)
       throws IOException {
-    PartitionDesc partDesc = pathToPartitionInfo.get(dir.toString());
+    PartitionDesc partDesc = pathToPartitionInfo.get(dir);
     if (partDesc == null) {
-      partDesc = pathToPartitionInfo.get(dir.toUri().getPath());
+      partDesc = pathToPartitionInfo.get(Path.getPathWithoutSchemeAndAuthority(dir));
     }
     if (partDesc == null) {
       throw new IOException("cannot find dir = " + dir.toString()
@@ -585,31 +581,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   protected void pushProjectionsAndFilters(JobConf jobConf, Class inputFormatClass,
-      String splitPath, String splitPathWithNoSchema) {
-    pushProjectionsAndFilters(jobConf, inputFormatClass, splitPath,
-      splitPathWithNoSchema, false);
-  }
-
-  private static boolean isMatch(String splitPath, String key) {
-    if (splitPath.equals(key)) {
-      return true;
-    }
-    // Take care of these cases:
-    //    splitPath:  hdfs://ns/user/hive/warehouse/src/data.txt
-    //    key:        [hdfs://ns]/user/hive/warehouse/src
-    //                [hdfs://ns]/user/hive/warehouse/src_2
-    //                [hdfs://ns]/user/hive/warehouse/src/
-    //                [hdfs://ns]/user/hive/warehouse/src/data.txt
-    key = StringUtils.removeEnd(key, "/");
-    int index = splitPath.indexOf(key);
-    if (index == -1) {
-      return false;
-    }
-    return splitPath.substring(index).equals(key) || splitPath.charAt(index+key.length()) == '/';
+      Path splitPath) {
+    pushProjectionsAndFilters(jobConf, inputFormatClass, splitPath, false);
   }
 
   protected void pushProjectionsAndFilters(JobConf jobConf, Class inputFormatClass,
-      String splitPath, String splitPathWithNoSchema, boolean nonNative) {
+      Path splitPath, boolean nonNative) {
+    Path splitPathWithNoSchema = Path.getPathWithoutSchemeAndAuthority(splitPath);
     if (this.mrwork == null) {
       init(job);
     }
@@ -619,12 +597,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     ArrayList<String> aliases = new ArrayList<String>();
-    Iterator<Entry<String, ArrayList<String>>> iterator = this.mrwork
+    Iterator<Entry<Path, ArrayList<String>>> iterator = this.mrwork
         .getPathToAliases().entrySet().iterator();
 
     while (iterator.hasNext()) {
-      Entry<String, ArrayList<String>> entry = iterator.next();
-      String key = entry.getKey();
+      Entry<Path, ArrayList<String>> entry = iterator.next();
+      Path key = entry.getKey();
       boolean match;
       if (nonNative) {
         // For non-native tables, we need to do an exact match to avoid
@@ -637,7 +615,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         // subdirectories.  (Unlike non-native tables, prefix mixups don't seem
         // to be a potential problem here since we are always dealing with the
         // path to something deeper than the table location.)
-        match = isMatch(splitPath, key) || isMatch(splitPathWithNoSchema, key);
+        match = FileUtils.isPathWithinSubtree(splitPath, key) || FileUtils.isPathWithinSubtree(splitPathWithNoSchema, key);
       }
       if (match) {
         ArrayList<String> list = entry.getValue();

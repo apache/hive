@@ -166,7 +166,7 @@ public class SparkSkewJoinProcFactory {
           streamDesc = origStreamDesc.concat(String.valueOf(++pos));
         }
       }
-      GenMapRedUtils.setTaskPlan(taskTmpDir.toUri().toString(), streamDesc,
+      GenMapRedUtils.setTaskPlan(taskTmpDir, streamDesc,
           tableScanOp, mapWork, false, tableDesc);
       // insert the new task between current task and its child
       @SuppressWarnings("unchecked")

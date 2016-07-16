@@ -21,14 +21,17 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -50,7 +53,7 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     private static final long serialVersionUID = 1L;
 
     private HashMap<Task<? extends Serializable>, Set<String>> taskToAliases;
-    HashMap<String, ArrayList<String>> pathToAliases;
+    HashMap<Path, ArrayList<String>> pathToAliases;
     HashMap<String, Long> aliasToKnownSize;
     private Task<? extends Serializable> commonJoinTask;
 
@@ -85,11 +88,11 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
       this.aliasToKnownSize = aliasToKnownSize;
     }
 
-    public HashMap<String, ArrayList<String>> getPathToAliases() {
+    public HashMap<Path, ArrayList<String>> getPathToAliases() {
       return pathToAliases;
     }
 
-    public void setPathToAliases(HashMap<String, ArrayList<String>> pathToAliases) {
+    public void setPathToAliases(final HashMap<Path, ArrayList<String>> pathToAliases) {
       this.pathToAliases = pathToAliases;
     }
 
@@ -166,7 +169,6 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     Set<String> participants = getParticipants(ctx);
 
     Map<String, Long> aliasToKnownSize = ctx.getAliasToKnownSize();
-    Map<String, ArrayList<String>> pathToAliases = ctx.getPathToAliases();
     Map<Task<? extends Serializable>, Set<String>> taskToAliases = ctx.getTaskToAliases();
 
     long threshold = HiveConf.getLongVar(conf, HiveConf.ConfVars.HIVESMALLTABLESFILESIZE);
@@ -212,10 +214,10 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     Set<String> aliases = getParticipants(ctx);
 
     Map<String, Long> aliasToKnownSize = ctx.getAliasToKnownSize();
-    Map<String, ArrayList<String>> pathToAliases = ctx.getPathToAliases();
+    Map<Path, ArrayList<String>> pathToAliases = ctx.getPathToAliases();
 
-    Set<String> unknownPaths = new HashSet<String>();
-    for (Map.Entry<String, ArrayList<String>> entry : pathToAliases.entrySet()) {
+    Set<Path> unknownPaths = new HashSet<>();
+    for (Map.Entry<Path, ArrayList<String>> entry : pathToAliases.entrySet()) {
       for (String alias : entry.getValue()) {
         if (aliases.contains(alias) && !aliasToKnownSize.containsKey(alias)) {
           unknownPaths.add(entry.getKey());
@@ -227,13 +229,12 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     Path localTmpDir = ctx.getLocalTmpDir();
     // need to compute the input size at runtime, and select the biggest as
     // the big table.
-    for (String p : unknownPaths) {
+    for (Path path: unknownPaths) {
       // this path is intermediate data
-      if (p.startsWith(hdfsTmpDir.toString()) || p.startsWith(localTmpDir.toString())) {
-        Path path = new Path(p);
+      if (FileUtils.isPathWithinSubtree(path,hdfsTmpDir) || FileUtils.isPathWithinSubtree(path,localTmpDir)) {
         FileSystem fs = path.getFileSystem(conf);
         long fileSize = fs.getContentSummary(path).getLength();
-        for (String alias : pathToAliases.get(p)) {
+        for (String alias : pathToAliases.get(path)) {
           Long length = aliasToKnownSize.get(alias);
           if (length == null) {
             aliasToKnownSize.put(alias, fileSize);

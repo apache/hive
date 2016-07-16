@@ -56,11 +56,8 @@ public class PartialScanWork extends MapWork implements Serializable {
     this.inputPaths = inputPaths;
     PartitionDesc partDesc = new PartitionDesc();
     partDesc.setInputFileFormatClass(RCFileBlockMergeInputFormat.class);
-    if(this.getPathToPartitionInfo() == null) {
-      this.setPathToPartitionInfo(new LinkedHashMap<String, PartitionDesc>());
-    }
     for(Path path: this.inputPaths) {
-      this.getPathToPartitionInfo().put(path.toString(), partDesc);
+      this.addPathToPartitionInfo(path, partDesc);
     }
   }
 

@@ -76,9 +76,9 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
   private void genSMBJoinWork(MapWork currWork, SMBMapJoinOperator smbJoinOp) {
     // Remove the paths which are not part of aliasToPartitionInfo
     Map<String, PartitionDesc> aliasToPartitionInfo = currWork.getAliasToPartnInfo();
-    List<String> removePaths = new ArrayList<String>();
+    List<Path> removePaths = new ArrayList<>();
 
-    for (Map.Entry<String, ArrayList<String>> entry : currWork.getPathToAliases().entrySet()) {
+    for (Map.Entry<Path, ArrayList<String>> entry : currWork.getPathToAliases().entrySet()) {
       boolean keepPath = false;
       for (String alias : entry.getValue()) {
         if (aliasToPartitionInfo.containsKey(alias)) {
@@ -94,10 +94,10 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
     }
 
     List<String> removeAliases = new ArrayList<String>();
-    for (String removePath : removePaths) {
+    for (Path removePath : removePaths) {
       removeAliases.addAll(currWork.getPathToAliases().get(removePath));
-      currWork.getPathToAliases().remove(removePath);
-      currWork.getPathToPartitionInfo().remove(removePath);
+      currWork.removePathToAlias(removePath);
+      currWork.removePathToPartitionInfo(removePath);
     }
 
     for (String alias : removeAliases) {
@@ -119,10 +119,10 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
 
       PartitionDesc partitionInfo = currWork.getAliasToPartnInfo().get(alias);
       if (fetchWork.getTblDir() != null) {
-        currWork.mergeAliasedInput(alias, fetchWork.getTblDir().toUri().toString(), partitionInfo);
+        currWork.mergeAliasedInput(alias, fetchWork.getTblDir(), partitionInfo);
       } else {
         for (Path pathDir : fetchWork.getPartDir()) {
-          currWork.mergeAliasedInput(alias, pathDir.toUri().toString(), partitionInfo);
+          currWork.mergeAliasedInput(alias, pathDir, partitionInfo);
         }
       }
     }
@@ -265,7 +265,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
     HashMap<Task<? extends Serializable>, Set<String>> taskToAliases =
         new LinkedHashMap<Task<? extends Serializable>, Set<String>>();
     // Note that pathToAlias will behave as if the original plan was a join plan
-    HashMap<String, ArrayList<String>> pathToAliases = currJoinWork.getMapWork().getPathToAliases();
+    HashMap<Path, ArrayList<String>> pathToAliases = currJoinWork.getMapWork().getPathToAliases();
 
     // generate a map join task for the big table
     SMBJoinDesc originalSMBJoinDesc = originalSMBJoinOp.getConf();

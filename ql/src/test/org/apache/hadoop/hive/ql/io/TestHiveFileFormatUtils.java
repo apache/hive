@@ -36,16 +36,12 @@ public class TestHiveFileFormatUtils extends TestCase {
     PartitionDesc partDesc_5 = new PartitionDesc();
     PartitionDesc partDesc_6 = new PartitionDesc();
 
-    Map<String, PartitionDesc> pathToPartitionInfo = new HashMap<String, PartitionDesc>();
+    Map<Path, PartitionDesc> pathToPartitionInfo = new HashMap<>();
 
-    pathToPartitionInfo.put(
-        new Path("file:///tbl/par1/part2/part3").toString(), partDesc_3);
-    pathToPartitionInfo.put(new Path("/tbl/par1/part2/part4").toString(),
-        partDesc_4);
-    pathToPartitionInfo.put(new Path("/tbl/par1/part2/part5/").toString(),
-        partDesc_5);
-    pathToPartitionInfo.put(new Path("hdfs:///tbl/par1/part2/part6/")
-        .toString(), partDesc_6);
+    pathToPartitionInfo.put(new Path("file:///tbl/par1/part2/part3"), partDesc_3);
+    pathToPartitionInfo.put(new Path("/tbl/par1/part2/part4"), partDesc_4);
+    pathToPartitionInfo.put(new Path("/tbl/par1/part2/part5/"), partDesc_5);
+    pathToPartitionInfo.put(new Path("hdfs:///tbl/par1/part2/part6/"), partDesc_6);
 
     // first group
     PartitionDesc ret = null;

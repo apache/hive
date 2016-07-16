@@ -138,11 +138,10 @@ public class TestTezTask {
     mws[0].setAliasToWork(map);
     mws[1].setAliasToWork(map);
 
-    LinkedHashMap<String, ArrayList<String>> pathMap
-      = new LinkedHashMap<String, ArrayList<String>>();
+    LinkedHashMap<Path, ArrayList<String>> pathMap = new LinkedHashMap<>();
     ArrayList<String> aliasList = new ArrayList<String>();
     aliasList.add("foo");
-    pathMap.put("foo", aliasList);
+    pathMap.put(new Path("foo"), aliasList);
 
     mws[0].setPathToAliases(pathMap);
     mws[1].setPathToAliases(pathMap);

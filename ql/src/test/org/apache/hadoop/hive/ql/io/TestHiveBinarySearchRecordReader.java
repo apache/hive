@@ -137,8 +137,8 @@ public class TestHiveBinarySearchRecordReader extends TestCase {
 
     TableDesc tblDesc = Utilities.defaultTd;
     PartitionDesc partDesc = new PartitionDesc(tblDesc, null);
-    LinkedHashMap<String, PartitionDesc> pt = new LinkedHashMap<String, PartitionDesc>();
-    pt.put("/tmp/testfolder", partDesc);
+    LinkedHashMap<Path, PartitionDesc> pt = new LinkedHashMap<>();
+    pt.put(new Path("/tmp/testfolder"), partDesc);
     MapredWork mrwork = new MapredWork();
     mrwork.getMapWork().setPathToPartitionInfo(pt);
     Utilities.setMapRedWork(conf, mrwork,new Path("/tmp/" + System.getProperty("user.name"), "hive"));

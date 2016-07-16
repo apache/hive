@@ -26,8 +26,10 @@ import java.net.URISyntaxException;
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -849,4 +851,64 @@ public final class FileUtils {
     }
     return false;
   }
+  
+  
+  /**
+   * Return whenever all paths in the collection are schemaless
+   * 
+   * @param paths
+   * @return
+   */
+  public static boolean pathsContainNoScheme(Collection<Path> paths) {
+    for( Path path  : paths){
+      if(path.toUri().getScheme() != null){
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Returns the deepest candidate path for the given path.
+   * 
+   * prioritizes on paths including schema / then includes matches without schema
+   * 
+   * @param path
+   * @param candidates  the candidate paths
+   * @return
+   */
+  public static Path getParentRegardlessOfScheme(Path path, Set<Path> candidates) {
+    Path schemalessPath = Path.getPathWithoutSchemeAndAuthority(path);
+    
+    for(;path!=null && schemalessPath!=null; path=path.getParent(),schemalessPath=schemalessPath.getParent()){
+      if(candidates.contains(path))
+        return path;
+      if(candidates.contains(schemalessPath))
+        return schemalessPath;
+    }
+    // exception?
+    return null;
+  }
+
+  /**
+   * Checks whenever path is inside the given subtree
+   * 
+   * return true iff
+   *  * path = subtree
+   *  * subtreeContains(path,d) for any descendant of the subtree node
+   * @param path    the path in question
+   * @param subtree
+   * 
+   * @return
+   */
+  public static boolean isPathWithinSubtree(Path path, Path subtree) {
+    while(path!=null){
+      if(subtree.equals(path)){
+        return true;
+      }
+      path=path.getParent();
+    }
+    return false;
+  }
+
 }

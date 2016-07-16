@@ -63,10 +63,7 @@ public class ColumnTruncateWork extends MapWork implements Serializable {
     this.dynPartCtx = dynPartCtx;
     PartitionDesc partDesc = new PartitionDesc();
     partDesc.setInputFileFormatClass(RCFileBlockMergeInputFormat.class);
-    if(this.getPathToPartitionInfo() == null) {
-      this.setPathToPartitionInfo(new LinkedHashMap<String, PartitionDesc>());
-    }
-    this.getPathToPartitionInfo().put(inputDir.toString(), partDesc);
+    this.addPathToPartitionInfo(inputDir, partDesc);
   }
 
   public Path getInputDir() {

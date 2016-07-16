@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.io;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 
 /**
@@ -48,21 +49,21 @@ public class IOPrepareCache {
     }
   }
   
-  private Map<Map<String, PartitionDesc>, Map<String, PartitionDesc>> partitionDescMap;
+  private Map<Map<Path, PartitionDesc>, Map<Path, PartitionDesc>> partitionDescMap;
   
-  public Map<Map<String, PartitionDesc>, Map<String, PartitionDesc>> allocatePartitionDescMap() {
+  public Map<Map<Path, PartitionDesc>, Map<Path, PartitionDesc>> allocatePartitionDescMap() {
     if (partitionDescMap == null) {
-      partitionDescMap = new HashMap<Map<String, PartitionDesc>, Map<String, PartitionDesc>>();
+      partitionDescMap = new HashMap<>();
     }
     return partitionDescMap;
   }
 
-  public Map<Map<String, PartitionDesc>, Map<String, PartitionDesc>> getPartitionDescMap() {
+  public Map<Map<Path, PartitionDesc>, Map<Path, PartitionDesc>> getPartitionDescMap() {
     return partitionDescMap;
   }
 
   public void setPartitionDescMap(
-      Map<Map<String, PartitionDesc>, Map<String, PartitionDesc>> partitionDescMap) {
+      Map<Map<Path, PartitionDesc>, Map<Path, PartitionDesc>> partitionDescMap) {
     this.partitionDescMap = partitionDescMap;
   } 
 

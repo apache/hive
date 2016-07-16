@@ -264,12 +264,12 @@ public final class GenMRSkewJoinProcessor {
       String alias = src.toString();
       aliases.add(alias);
       Path bigKeyDirPath = bigKeysDirMap.get(src);
-      newPlan.getPathToAliases().put(bigKeyDirPath.toString(), aliases);
+      newPlan.addPathToAlias(bigKeyDirPath, aliases);
 
       newPlan.getAliasToWork().put(alias, tblScan_op);
       PartitionDesc part = new PartitionDesc(tableDescList.get(src), null);
 
-      newPlan.getPathToPartitionInfo().put(bigKeyDirPath.toString(), part);
+      newPlan.addPathToPartitionInfo(bigKeyDirPath, part);
       newPlan.getAliasToPartnInfo().put(alias, part);
 
       Operator<? extends OperatorDesc> reducer = clonePlan.getReduceWork().getReducer();

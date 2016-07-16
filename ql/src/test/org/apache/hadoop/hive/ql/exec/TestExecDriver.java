@@ -162,7 +162,7 @@ public class TestExecDriver extends TestCase {
   }
 
   public static void addMapWork(MapredWork mr, Table tbl, String alias, Operator<?> work) {
-    mr.getMapWork().addMapWork(tbl.getDataLocation().toString(), alias, work, new PartitionDesc(
+    mr.getMapWork().addMapWork(tbl.getDataLocation(), alias, work, new PartitionDesc(
         Utilities.getTableDesc(tbl), null));
   }
 

@@ -68,8 +68,7 @@ public class BucketizedHiveInputFormat<K extends WritableComparable, V extends W
       throw new IOException("cannot find class " + inputFormatClassName);
     }
 
-    pushProjectionsAndFilters(job, inputFormatClass, hsplit.getPath()
-        .toString(), hsplit.getPath().toUri().getPath());
+    pushProjectionsAndFilters(job, inputFormatClass, hsplit.getPath());
 
     InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
 

@@ -290,8 +290,8 @@ public class TestUtilities {
     MapWork mapWork2 = new MapWork();
     JobConf jobConf = new JobConf();
 
-    String nonExistentPath1 = UUID.randomUUID().toString();
-    String nonExistentPath2 = UUID.randomUUID().toString();
+    Path nonExistentPath1 = new Path(UUID.randomUUID().toString());
+    Path nonExistentPath2 = new Path(UUID.randomUUID().toString());
 
     PartitionDesc mockPartitionDesc = mock(PartitionDesc.class);
     TableDesc mockTableDesc = mock(TableDesc.class);

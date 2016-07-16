@@ -428,7 +428,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     // Determine the partition columns using the first partition descriptor.
     // Note - like vectorizer, this assumes partition columns go after data columns.
     int partitionColumnCount = 0;
-    Iterator<String> paths = mapWork.getPathToAliases().keySet().iterator();
+    Iterator<Path> paths = mapWork.getPathToAliases().keySet().iterator();
     if (paths.hasNext()) {
       PartitionDesc partDesc = mapWork.getPathToPartitionInfo().get(paths.next());
       if (partDesc != null) {

@@ -78,11 +78,8 @@ public class MergeFileWork extends MapWork {
       this.internalInputFormat = RCFileBlockMergeInputFormat.class;
     }
     partDesc.setInputFileFormatClass(internalInputFormat);
-    if (this.getPathToPartitionInfo() == null) {
-      this.setPathToPartitionInfo(new LinkedHashMap<String, PartitionDesc>());
-    }
     for (Path path : this.inputPaths) {
-      this.getPathToPartitionInfo().put(path.toString(), partDesc);
+      this.addPathToPartitionInfo(path, partDesc);
     }
     this.isListBucketingAlterTableConcatenate = false;
   }

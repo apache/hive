@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -118,7 +119,7 @@ public abstract class AbstractJoinTaskDispatcher implements Dispatcher {
   }
 
   public long getTotalKnownInputSize(Context context, MapWork currWork,
-      Map<String, ArrayList<String>> pathToAliases,
+      Map<Path, ArrayList<String>> pathToAliases,
       HashMap<String, Long> aliasToSize) throws SemanticException {
     try {
       // go over all the input paths, and calculate a known total size, known
@@ -129,8 +130,8 @@ public abstract class AbstractJoinTaskDispatcher implements Dispatcher {
       // is chosen as big table, what's the total size of left tables, which
       // are going to be small tables.
       long aliasTotalKnownInputSize = 0L;
-      for (Map.Entry<String, ArrayList<String>> entry : pathToAliases.entrySet()) {
-        String path = entry.getKey();
+      for (Map.Entry<Path, ArrayList<String>> entry : pathToAliases.entrySet()) {
+        Path path = entry.getKey();
         List<String> aliasList = entry.getValue();
         ContentSummary cs = context.getCS(path);
         if (cs != null) {

@@ -305,20 +305,13 @@ public class PartitionDesc implements Serializable, Cloneable {
    * @param path
    *          URI to the partition file
    */
-  public void deriveBaseFileName(String path) {
+  public void deriveBaseFileName(Path path) {
     PlanUtils.configureInputJobPropertiesForStorageHandler(tableDesc);
 
     if (path == null) {
       return;
     }
-    try {
-      Path p = new Path(path);
-      baseFileName = p.getName();
-    } catch (Exception ex) {
-      // don't really care about the exception. the goal is to capture the
-      // the last component at the minimum - so set to the complete path
-      baseFileName = path;
-    }
+    baseFileName = path.getName();
   }
 
   public void intern(Interner<TableDesc> interner) {
