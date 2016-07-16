@@ -493,7 +493,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
 
   UserPayload getBytePayload(Multimap<Integer, Integer> routingTable) throws IOException {
     CustomEdgeConfiguration edgeConf =
-        new CustomEdgeConfiguration(routingTable.keySet().size(), routingTable);
+        new CustomEdgeConfiguration(numBuckets, routingTable);
     DataOutputBuffer dob = new DataOutputBuffer();
     edgeConf.write(dob);
     byte[] serialized = dob.getData();
