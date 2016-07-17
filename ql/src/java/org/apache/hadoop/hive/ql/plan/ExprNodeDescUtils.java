@@ -216,6 +216,10 @@ public class ExprNodeDescUtils {
     if (parent == null) {
       return source;
     }
+    if (isConstant(source)) {
+      //constant, just return
+      return source;
+    }
     if (source instanceof ExprNodeGenericFuncDesc) {
       // all children expression should be resolved
       ExprNodeGenericFuncDesc function = (ExprNodeGenericFuncDesc) source.clone();
@@ -243,7 +247,7 @@ public class ExprNodeDescUtils {
       field.setDesc(fieldDesc);
       return field;
     }
-    // constant or null expr, just return
+    // just return
     return source;
   }
 
@@ -477,6 +481,25 @@ public class ExprNodeDescUtils {
 					hashCodeToColumnDescMap);
 		}
 	}
+
+  public static boolean isConstant(ExprNodeDesc value) {
+    if (value instanceof ExprNodeConstantDesc) {
+      return true;
+    }
+    if (value instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) value;
+      if (!FunctionRegistry.isDeterministic(func.getGenericUDF())) {
+        return false;
+      }
+      for (ExprNodeDesc child : func.getChildren()) {
+        if (!isConstant(child)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
 
   public static boolean isAllConstants(List<ExprNodeDesc> value) {
     for (ExprNodeDesc expr : value) {

@@ -7511,7 +7511,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // backtrack can be null when input is script operator
       ExprNodeDesc exprBack = ExprNodeDescUtils.backtrack(expr, dummy, child);
-      int kindex = exprBack == null ? -1 : ExprNodeDescUtils.indexOf(exprBack, reduceKeysBack);
+      int kindex;
+      if (exprBack == null) {
+        kindex = -1;
+      } else if (ExprNodeDescUtils.isConstant(exprBack)) {
+        kindex = reduceKeysBack.indexOf(exprBack);
+      } else {
+        kindex = ExprNodeDescUtils.indexOf(exprBack, reduceKeysBack);
+      }
       if (kindex >= 0) {
         ColumnInfo newColInfo = new ColumnInfo(colInfo);
         newColInfo.setInternalName(Utilities.ReduceField.KEY + ".reducesinkkey" + kindex);
@@ -7523,7 +7530,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         index[i] = kindex;
         continue;
       }
-      int vindex = exprBack == null ? -1 : ExprNodeDescUtils.indexOf(exprBack, reduceValuesBack);
+      int vindex;
+      if (exprBack == null) {
+        vindex = -1;
+      } else if (ExprNodeDescUtils.isConstant(exprBack)) {
+        vindex = reduceValuesBack.indexOf(exprBack);
+      } else {
+        vindex = ExprNodeDescUtils.indexOf(exprBack, reduceValuesBack);
+      }
       if (vindex >= 0) {
         index[i] = -vindex - 1;
         continue;
