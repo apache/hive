@@ -1230,6 +1230,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
     }
+    sContext.setIndexForTezUnion(this.conf.getIndexInTezUnion());
     if (!statsPublisher.closeConnection(sContext)) {
       // The original exception is lost.
       // Not changing the interface to maintain backward compatibility

@@ -97,7 +97,14 @@ public class FSStatsPublisher implements StatsPublisher {
     assert statsDirs.size() == 1 : "Found multiple stats dirs: " + statsDirs;
     Path statsDir = new Path(statsDirs.get(0));
     try {
-      Path statsFile = new Path(statsDir,StatsSetupConst.STATS_FILE_PREFIX +conf.getInt("mapred.task.partition",0));
+      Path statsFile = null;
+      if (context.getIndexForTezUnion() != -1) {
+        statsFile = new Path(statsDir, StatsSetupConst.STATS_FILE_PREFIX
+            + conf.getInt("mapred.task.partition", 0) + "_" + context.getIndexForTezUnion());
+      } else {
+        statsFile = new Path(statsDir, StatsSetupConst.STATS_FILE_PREFIX
+            + conf.getInt("mapred.task.partition", 0));
+      }
       LOG.debug("About to create stats file for this task : " + statsFile);
       Output output = new Output(statsFile.getFileSystem(conf).create(statsFile,true));
       LOG.debug("Created file : " + statsFile);

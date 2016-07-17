@@ -296,7 +296,8 @@ public class GenTezUtils {
         linked = context.linkedFileSinks.get(path);
         linked.add(desc);
 
-        desc.setDirName(new Path(path, ""+linked.size()));
+        desc.setIndexInTezUnion(linked.size());
+        desc.setDirName(new Path(path, "" + desc.getIndexInTezUnion()));
         desc.setLinkedFileSink(true);
         desc.setParentDir(path);
         desc.setLinkedFileSinkDesc(linked);
