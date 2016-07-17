@@ -2902,25 +2902,10 @@ STAGE DEPENDENCIES:
   Stage-4 depends on stages: Stage-3
   Stage-0 depends on stages: Stage-4
   Stage-5 depends on stages: Stage-0
-  Stage-8 depends on stages: Stage-0
-  Stage-11 depends on stages: Stage-0
-  Stage-14 depends on stages: Stage-0
-  Stage-17 depends on stages: Stage-0
-  Stage-20 depends on stages: Stage-0
   Stage-1 depends on stages: Stage-4
   Stage-6 depends on stages: Stage-1
-  Stage-9 depends on stages: Stage-1
-  Stage-12 depends on stages: Stage-1
-  Stage-15 depends on stages: Stage-1
-  Stage-18 depends on stages: Stage-1
-  Stage-21 depends on stages: Stage-1
   Stage-2 depends on stages: Stage-4
   Stage-7 depends on stages: Stage-2
-  Stage-10 depends on stages: Stage-2
-  Stage-13 depends on stages: Stage-2
-  Stage-16 depends on stages: Stage-2
-  Stage-19 depends on stages: Stage-2
-  Stage-22 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-3
@@ -3471,21 +3456,6 @@ STAGE PLANS:
   Stage: Stage-5
     Stats-Aggr Operator
 
-  Stage: Stage-8
-    Stats-Aggr Operator
-
-  Stage: Stage-11
-    Stats-Aggr Operator
-
-  Stage: Stage-14
-    Stats-Aggr Operator
-
-  Stage: Stage-17
-    Stats-Aggr Operator
-
-  Stage: Stage-20
-    Stats-Aggr Operator
-
   Stage: Stage-1
     Move Operator
       tables:
@@ -3499,21 +3469,6 @@ STAGE PLANS:
   Stage: Stage-6
     Stats-Aggr Operator
 
-  Stage: Stage-9
-    Stats-Aggr Operator
-
-  Stage: Stage-12
-    Stats-Aggr Operator
-
-  Stage: Stage-15
-    Stats-Aggr Operator
-
-  Stage: Stage-18
-    Stats-Aggr Operator
-
-  Stage: Stage-21
-    Stats-Aggr Operator
-
   Stage: Stage-2
     Move Operator
       tables:
@@ -3525,21 +3480,6 @@ STAGE PLANS:
               name: default.c
 
   Stage: Stage-7
-    Stats-Aggr Operator
-
-  Stage: Stage-10
-    Stats-Aggr Operator
-
-  Stage: Stage-13
-    Stats-Aggr Operator
-
-  Stage: Stage-16
-    Stats-Aggr Operator
-
-  Stage: Stage-19
-    Stats-Aggr Operator
-
-  Stage: Stage-22
     Stats-Aggr Operator
 
 PREHOOK: query: explain

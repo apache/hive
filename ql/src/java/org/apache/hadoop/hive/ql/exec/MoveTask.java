@@ -233,7 +233,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   }
 
   // we check if there is only one immediate child task and it is stats task
-  private boolean hasFollowingStatsTask() {
+  public boolean hasFollowingStatsTask() {
     if (this.getNumChild() == 1) {
       return this.getChildTasks().get(0) instanceof StatsTask;
     }

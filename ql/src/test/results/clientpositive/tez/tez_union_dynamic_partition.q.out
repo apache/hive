@@ -49,7 +49,6 @@ STAGE DEPENDENCIES:
   Stage-2 depends on stages: Stage-1
   Stage-0 depends on stages: Stage-2
   Stage-3 depends on stages: Stage-0
-  Stage-4 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -121,9 +120,6 @@ STAGE PLANS:
               name: default.partunion1
 
   Stage: Stage-3
-    Stats-Aggr Operator
-
-  Stage: Stage-4
     Stats-Aggr Operator
 
 PREHOOK: query: insert into table partunion1 partition(part1)

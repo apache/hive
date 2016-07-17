@@ -178,8 +178,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	3                   
-	numRows             	0                   
-	rawDataSize         	0                   
+	numRows             	15                  
+	rawDataSize         	3483                
 	totalSize           	4003                
 #### A masked pattern was here ####
 	 	 
