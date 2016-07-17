@@ -234,6 +234,10 @@ public class ExprNodeDescUtils {
     if (parent == null) {
       return source;
     }
+    if (!foldExpr && isConstant(source)) {
+      //constant, just return
+      return source;
+    }
     if (source instanceof ExprNodeGenericFuncDesc) {
       // all children expression should be resolved
       ExprNodeGenericFuncDesc function = (ExprNodeGenericFuncDesc) source.clone();
@@ -268,7 +272,7 @@ public class ExprNodeDescUtils {
       field.setDesc(fieldDesc);
       return field;
     }
-    // constant or null expr, just return
+    // just return
     return source;
   }
 
