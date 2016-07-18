@@ -39,7 +39,7 @@ public class ReloadProcessor implements CommandProcessor{
   public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
     SessionState ss = SessionState.get();
     try {
-      ss.reloadAuxJars();
+      ss.loadReloadableAuxJars();
     } catch (IOException e) {
       LOG.error("fail to reload auxiliary jar files", e);
       return CommandProcessorResponse.create(e);

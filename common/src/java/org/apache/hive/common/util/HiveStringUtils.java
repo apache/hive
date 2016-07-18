@@ -42,12 +42,11 @@ import java.util.regex.Pattern;
 
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.util.StringUtils;
 
 /**
  * HiveStringUtils
