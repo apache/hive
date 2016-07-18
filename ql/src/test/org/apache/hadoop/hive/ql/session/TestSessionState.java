@@ -202,7 +202,7 @@ public class TestSessionState {
     try {
       dist = new File(reloadFolder.getAbsolutePath() + File.separator + reloadClazzFileName);
       Files.copy(new File(HiveTestUtils.getFileFromClasspath(clazzDistFileName)), dist);
-      ss.reloadAuxJars();
+      ss.loadReloadableAuxJars();
       Assert.assertEquals("version1", getReloadedClazzVersion(ss.getConf().getClassLoader()));
     } catch (Exception e) {
       LOG.error("Reload auxiliary jar test fail with message: ", e);
@@ -234,7 +234,7 @@ public class TestSessionState {
       dist = new File(reloadFolder.getAbsolutePath() + File.separator + reloadClazzFileName);
 
       Files.copy(new File(HiveTestUtils.getFileFromClasspath(clazzDistFileName)), dist);
-      ss.reloadAuxJars();
+      ss.loadReloadableAuxJars();
 
       Assert.assertEquals("version1", getReloadedClazzVersion(ss.getConf().getClassLoader()));
 
@@ -242,11 +242,11 @@ public class TestSessionState {
       FileUtils.deleteQuietly(dist);
       Files.copy(new File(HiveTestUtils.getFileFromClasspath(clazzV2FileName)), dist);
 
-      ss.reloadAuxJars();
+      ss.loadReloadableAuxJars();
       Assert.assertEquals("version2", getReloadedClazzVersion(ss.getConf().getClassLoader()));
 
       FileUtils.deleteQuietly(dist);
-      ss.reloadAuxJars();
+      ss.loadReloadableAuxJars();
     } catch (Exception e) {
       LOG.error("refresh existing jar file case failed with message: ", e);
       Assert.fail(e.getMessage());

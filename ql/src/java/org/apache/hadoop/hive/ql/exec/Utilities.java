@@ -1760,7 +1760,7 @@ public final class Utilities {
    * @param newPaths
    *          Array of classpath elements
    */
-  public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) throws Exception {
+  public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) {
     final URLClassLoader loader = (URLClassLoader) cloader;
     if (useExistingClassLoader(cloader)) {
       final UDFClassLoader udfClassLoader = (UDFClassLoader) loader;
@@ -1791,7 +1791,7 @@ public final class Utilities {
    * @param pathsToRemove
    *          Array of classpath elements
    */
-  public static void removeFromClassPath(String[] pathsToRemove) throws Exception {
+  public static void removeFromClassPath(String[] pathsToRemove) throws IOException {
     Thread curThread = Thread.currentThread();
     URLClassLoader loader = (URLClassLoader) curThread.getContextClassLoader();
     Set<URL> newPath = new HashSet<URL>(Arrays.asList(loader.getURLs()));
