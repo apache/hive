@@ -651,6 +651,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       throws HiveException {
     AbstractRowContainer.RowIterator<List<Object>> iter = storage[order[aliasNum]].rowIter();
     for (List<Object> row = iter.first(); row != null; row = iter.next()) {
+      reportProgress();
       int sz = joinValues[order[aliasNum]].size();
       int p = forwardCachePos;
       for (int j = 0; j < sz; j++) {
