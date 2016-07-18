@@ -19,8 +19,10 @@
 package org.apache.hadoop.hive.ql.optimizer.stats.annotation;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,7 +36,6 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
-import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
@@ -1472,7 +1473,7 @@ public class StatsRulesProcFactory {
         // update join statistics
         stats.setColumnStats(outColStats);
         long newRowCount = inferredRowCount !=-1 ? inferredRowCount : computeNewRowCount(rowCounts, denom, jop);
-        updateColStats(stats, newRowCount, jop, rowCountParents);
+        updateColStats(conf, stats, newRowCount, jop, rowCountParents);
         jop.setStatistics(stats);
 
         if (isDebugEnabled) {
@@ -1766,7 +1767,7 @@ public class StatsRulesProcFactory {
       return result;
     }
 
-    private void updateColStats(Statistics stats, long newNumRows,
+    private void updateColStats(HiveConf conf, Statistics stats, long newNumRows,
         CommonJoinOperator<? extends JoinDesc> jop,
         Map<Integer, Long> rowCountParents) {
 
@@ -1789,7 +1790,9 @@ public class StatsRulesProcFactory {
       // stats for columns from 1st parent should be scaled down by 200/10 = 20x
       // and stats for columns from 2nd parent should be scaled down by 200x
       List<ColStatistics> colStats = stats.getColumnStats();
+      Set<String> colNameStatsAvailable = new HashSet<>();
       for (ColStatistics cs : colStats) {
+        colNameStatsAvailable.add(cs.getColumnName());
         int pos = jop.getConf().getReversedExprs().get(cs.getColumnName());
         long oldRowCount = rowCountParents.get(pos);
         double ratio = (double) newNumRows / (double) oldRowCount;
@@ -1811,6 +1814,17 @@ public class StatsRulesProcFactory {
       stats.setColumnStats(colStats);
       long newDataSize = StatsUtils
           .getDataSizeFromColumnStats(newNumRows, colStats);
+      // Add default size for columns for which stats were not available
+      List<String> neededColumns = new ArrayList<>();
+      for (String colName : jop.getSchema().getColumnNames()) {
+        if (!colNameStatsAvailable.contains(colName)) {
+          neededColumns.add(colName);
+        }
+      }
+      if (neededColumns.size() != 0) {
+        int restColumnsDefaultSize = StatsUtils.estimateRowSizeFromSchema(conf, jop.getSchema().getSignature(), neededColumns);
+        newDataSize = StatsUtils.safeAdd(newDataSize, StatsUtils.safeMult(restColumnsDefaultSize, newNumRows));
+      }
       stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
     }
 
