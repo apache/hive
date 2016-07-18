@@ -55,6 +55,7 @@ class BeeLineOpts implements Completer {
       PROPERTY_PREFIX + "system.exit";
   public static final String DEFAULT_NULL_STRING = "NULL";
   public static final char DEFAULT_DELIMITER_FOR_DSV = '|';
+  public static final int DEFAULT_MAX_COLUMN_WIDTH = 50;
 
   private final BeeLine beeLine;
   private boolean autosave = false;
@@ -75,7 +76,7 @@ class BeeLineOpts implements Completer {
   private final Terminal terminal = TerminalFactory.get();
   private int maxWidth = DEFAULT_MAX_WIDTH;
   private int maxHeight = DEFAULT_MAX_HEIGHT;
-  private int maxColumnWidth = 15;
+  private int maxColumnWidth = DEFAULT_MAX_COLUMN_WIDTH;
   int timeout = -1;
   private String isolation = DEFAULT_ISOLATION_LEVEL;
   private String outputFormat = "table";

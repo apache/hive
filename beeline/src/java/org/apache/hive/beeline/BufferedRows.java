@@ -33,6 +33,7 @@ import java.util.LinkedList;
 class BufferedRows extends Rows {
   private final LinkedList<Row> list;
   private final Iterator<Row> iterator;
+  private int maxColumnWidth;
 
   BufferedRows(BeeLine beeLine, ResultSet rs) throws SQLException {
     super(beeLine, rs);
@@ -43,6 +44,7 @@ class BufferedRows extends Rows {
       list.add(new Row(count, rs));
     }
     iterator = list.iterator();
+    maxColumnWidth = beeLine.getOpts().getMaxColumnWidth();
   }
 
   public boolean hasNext() {
@@ -66,7 +68,8 @@ class BufferedRows extends Rows {
         max = new int[row.values.length];
       }
       for (int j = 0; j < max.length; j++) {
-        max[j] = Math.max(max[j], row.sizes[j] + 1);
+        // if the max column width is too large, reset it to max allowed Column width
+        max[j] = Math.min(Math.max(max[j], row.sizes[j] + 1), maxColumnWidth);
       }
     }
     for (Row row : list) {
