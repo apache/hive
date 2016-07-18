@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.io;
 
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -475,7 +476,9 @@ public class AcidUtils {
   /** State class for getChildState; cannot modify 2 things in a method. */
   private static class TxnBase {
     private FileStatus status;
-    private long txn;
+    private long txn = 0;
+    private long oldestBaseTxnId = Long.MAX_VALUE;
+    private Path oldestBase = null;
   }
 
   /**
@@ -571,6 +574,21 @@ public class AcidUtils {
       }
     }
 
+    if(bestBase.oldestBase != null && bestBase.status == null) {
+      /**
+       * If here, it means there was a base_x (> 1 perhaps) but none were suitable for given
+       * {@link txnList}.  Note that 'original' files are logically a base_Long.MIN_VALUE and thus
+       * cannot have any data for an open txn.  We could check {@link deltas} has files to cover
+       * [1,n] w/o gaps but this would almost never happen...*/
+      //todo: this should only care about 'open' tnxs (HIVE-14211)
+      long[] exceptions = txnList.getInvalidTransactions();
+      String minOpenTxn = exceptions != null && exceptions.length > 0 ?
+        Long.toString(exceptions[0]) : "x";
+      throw new IOException(ErrorMsg.ACID_NOT_ENOUGH_HISTORY.format(
+        Long.toString(txnList.getHighWatermark()),
+        minOpenTxn, bestBase.oldestBase.toString()));
+    }
+
     final Path base = bestBase.status == null ? null : bestBase.status.getPath();
     LOG.debug("in directory " + directory.toUri().toString() + " base = " + base + " deltas = " +
         deltas.size());
@@ -598,7 +616,26 @@ public class AcidUtils {
       }
     };
   }
-
+  /**
+   * We can only use a 'base' if it doesn't have an open txn (from specific reader's point of view)
+   * A 'base' with open txn in its range doesn't have 'enough history' info to produce a correct
+   * snapshot for this reader.
+   * Note that such base is NOT obsolete.  Obsolete files are those that are "covered" by other
+   * files within the snapshot.
+   */
+  private static boolean isValidBase(long baseTxnId, ValidTxnList txnList) {
+    /*This implementation is suboptimal.  It considers open/aborted txns invalid while we are only
+    * concerned with 'open' ones.  (Compaction removes any data that belongs to aborted txns and
+    * reads skip anything that belongs to aborted txn, thus base_7 is still OK if the only exception
+    * is txn 5 which is aborted).  So this implementation can generate false positives. (HIVE-14211)
+    * */
+    if(baseTxnId == Long.MIN_VALUE) {
+      //such base is created by 1st compaction in case of non-acid to acid table conversion
+      //By definition there are no open txns with id < 1.
+      return true;
+    }
+    return ValidTxnList.RangeResponse.ALL == txnList.isTxnRangeValid(1, baseTxnId);
+  }
   private static void getChildState(FileStatus child, HdfsFileStatusWithId childWithId,
       ValidTxnList txnList, List<ParsedDelta> working, List<FileStatus> originalDirectories,
       List<HdfsFileStatusWithId> original, List<FileStatus> obsolete, TxnBase bestBase, boolean ignoreEmptyFiles) {
@@ -606,13 +643,22 @@ public class AcidUtils {
     String fn = p.getName();
     if (fn.startsWith(BASE_PREFIX) && child.isDir()) {
       long txn = parseBase(p);
+      if(bestBase.oldestBaseTxnId > txn) {
+        //keep track for error reporting
+        bestBase.oldestBase = p;
+        bestBase.oldestBaseTxnId = txn;
+      }
       if (bestBase.status == null) {
-        bestBase.status = child;
-        bestBase.txn = txn;
+        if(isValidBase(txn, txnList)) {
+          bestBase.status = child;
+          bestBase.txn = txn;
+        }
       } else if (bestBase.txn < txn) {
-        obsolete.add(bestBase.status);
-        bestBase.status = child;
-        bestBase.txn = txn;
+        if(isValidBase(txn, txnList)) {
+          obsolete.add(bestBase.status);
+          bestBase.status = child;
+          bestBase.txn = txn;
+        }
       } else {
         obsolete.add(child);
       }

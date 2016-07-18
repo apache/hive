@@ -47,6 +47,7 @@ public class AcidOpenTxnsCounterService extends HouseKeeperServiceBase {
     return "Count number of open transactions";
   }
   private static final class OpenTxnsCounter implements Runnable {
+    private static volatile long lastLogTime = 0;
     private final TxnStore txnHandler;
     private final AtomicInteger isAliveCounter;
     private OpenTxnsCounter(HiveConf hiveConf, AtomicInteger isAliveCounter) {
@@ -59,7 +60,12 @@ public class AcidOpenTxnsCounterService extends HouseKeeperServiceBase {
         long startTime = System.currentTimeMillis();
         txnHandler.countOpenTxns();
         int count = isAliveCounter.incrementAndGet();
-        LOG.info("OpenTxnsCounter ran for " + (System.currentTimeMillis() - startTime)/1000 + "seconds.  isAliveCounter=" + count);
+        if(System.currentTimeMillis() - lastLogTime > 60*1000) {
+          //don't flood the logs with too many msgs
+          LOG.info("OpenTxnsCounter ran for " + (System.currentTimeMillis() - startTime) / 1000 +
+            "seconds.  isAliveCounter=" + count);
+          lastLogTime = System.currentTimeMillis();
+        }
       }
       catch(Throwable t) {
         LOG.error("Serious error in {}", Thread.currentThread().getName(), ": {}" + t.getMessage(), t);
