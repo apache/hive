@@ -582,12 +582,17 @@ public class Driver implements CommandProcessor {
     }
 
     Set<WriteEntity> additionalOutputs = new HashSet<WriteEntity>();
-    for (Entity e : sem.getOutputs()) {
+    for (WriteEntity e : sem.getOutputs()) {
       if (e.getType() == Entity.Type.PARTITION) {
-        additionalOutputs.add(new WriteEntity(e.getTable(), WriteEntity.WriteType.DDL_NO_LOCK));
+        additionalOutputs.add(new WriteEntity(e.getTable(), e.getWriteType()));
       }
     }
 
+    // The following union operation returns a union, which traverses over the
+    // first set once and then  then over each element of second set, in order, 
+    // that is not contained in first. This means it doesn't replace anything
+    // in first set, and would preserve the WriteType in WriteEntity in first
+    // set in case of outputs list.
     Set<ReadEntity> inputs = Sets.union(sem.getInputs(), additionalInputs);
     Set<WriteEntity> outputs = Sets.union(sem.getOutputs(), additionalOutputs);
 
