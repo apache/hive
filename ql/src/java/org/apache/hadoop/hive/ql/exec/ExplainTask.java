@@ -143,7 +143,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         out.print("LOGICAL PLAN:");
       }
       JSONObject jsonPlan = outputMap(work.getParseContext().getTopOps(), true,
-                                      out, jsonOutput, work.getExtended(), 0);
+                                      out, work.getExtended(), jsonOutput, 0);
       if (out != null) {
         out.println();
       }
