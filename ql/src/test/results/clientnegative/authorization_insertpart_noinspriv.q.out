@@ -1,0 +1,53 @@
+PREHOOK: query: -- check insert without select priv
+create table testp(i int) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testp
+POSTHOOK: query: -- check insert without select priv
+create table testp(i int) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testp
+PREHOOK: query: grant select on table testp to user user1
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@testp
+POSTHOOK: query: grant select on table testp to user user1
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@testp
+PREHOOK: query: create table user2tab(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@user2tab
+POSTHOOK: query: create table user2tab(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@user2tab
+PREHOOK: query: explain authorization insert into table testp partition (dt = '2012')  values (1)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain authorization insert into table testp partition (dt = '2012')  values (1)
+POSTHOOK: type: QUERY
+INPUTS: 
+  default@values__tmp__table__1
+OUTPUTS: 
+  default@testp@dt=2012
+CURRENT_USER: 
+  user1
+OPERATION: 
+  QUERY
+AUTHORIZATION_FAILURES: 
+  Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation QUERY [[INSERT] on Object [type=TABLE_OR_VIEW, name=default.testp, action=INSERT]]
+PREHOOK: query: explain authorization insert overwrite table testp partition (dt = '2012')  values (1)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain authorization insert overwrite table testp partition (dt = '2012')  values (1)
+POSTHOOK: type: QUERY
+INPUTS: 
+  default@values__tmp__table__2
+OUTPUTS: 
+  default@testp@dt=2012
+CURRENT_USER: 
+  user1
+OPERATION: 
+  QUERY
+AUTHORIZATION_FAILURES: 
+  Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation QUERY [[INSERT, DELETE] on Object [type=TABLE_OR_VIEW, name=default.testp, action=INSERT_OVERWRITE]]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation QUERY [[INSERT] on Object [type=TABLE_OR_VIEW, name=default.testp, action=INSERT]]
