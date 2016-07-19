@@ -113,7 +113,7 @@ public class HiveSessionImpl implements HiveSession {
 
   private volatile long lastAccessTime;
   private volatile long lastIdleTime;
-  private volatile int pendingCount = 0;
+  private volatile int activeCalls = 0;
   private final Semaphore operationLock;
 
 
@@ -360,7 +360,7 @@ public class HiveSessionImpl implements HiveSession {
     // set the thread name with the logging prefix.
     sessionState.updateThreadName();
     Hive.set(sessionHive);
-    pendingCount++;
+    activeCalls++;
     lastIdleTime = 0;
   }
 
@@ -397,10 +397,10 @@ public class HiveSessionImpl implements HiveSession {
     if (userAccess) {
       lastAccessTime = System.currentTimeMillis();
     }
-    pendingCount--;
+    activeCalls--;
     // lastIdleTime is only set by the last one
     // who calls release with empty opHandleSet.
-    if (pendingCount == 0 && opHandleSet.isEmpty()) {
+    if (activeCalls == 0 && opHandleSet.isEmpty()) {
       lastIdleTime = System.currentTimeMillis();
     }
   }
