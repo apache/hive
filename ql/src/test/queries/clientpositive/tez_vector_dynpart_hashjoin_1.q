@@ -55,7 +55,7 @@ set hive.optimize.dynamic.partition.hashjoin=true;
 set hive.auto.convert.join.noconditionaltask.size=200000;
 set hive.exec.reducers.bytes.per.reducer=200000;
 set hive.vectorized.execution.enabled=true;
-
+set hive.stats.fetch.column.stats=false;
 -- Try with dynamically partitioned hashjoin
 explain
 select

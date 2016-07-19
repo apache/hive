@@ -126,10 +126,10 @@ Stage-0
     Stage-1
       Map 1
       File Output Operator [FS_2]
-        Select Operator [SEL_1] (rows=500 width=10)
+        Select Operator [SEL_1] (rows=500 width=184)
           Output:["_col0"]
-          TableScan [TS_0] (rows=500 width=10)
-            default@src,src,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+          TableScan [TS_0] (rows=500 width=178)
+            default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: -- Simple Scans without limit (will be  Fetch task now)
 explain select key, value  from src

@@ -98,11 +98,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory_part_0
-                  Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 200 Data size: 4776 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
                     outputColumnNames: inv_quantity_on_hand
-                    Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 200 Data size: 4776 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       mode: hash
@@ -225,11 +225,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory_part_1
-                  Statistics: Num rows: 200 Data size: 11876 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 200 Data size: 13476 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
                     outputColumnNames: inv_quantity_on_hand
-                    Statistics: Num rows: 200 Data size: 11876 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 200 Data size: 13476 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       mode: hash
@@ -354,11 +354,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory_part_2a
-                  Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 200 Data size: 4776 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
                     outputColumnNames: inv_quantity_on_hand
-                    Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 200 Data size: 4776 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       mode: hash
@@ -464,11 +464,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory_part_2b
-                  Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 200 Data size: 4776 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
                     outputColumnNames: inv_quantity_on_hand
-                    Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 200 Data size: 4776 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       mode: hash
@@ -580,11 +580,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory_part_3
-                  Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 200 Data size: 4776 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
                     outputColumnNames: inv_quantity_on_hand
-                    Statistics: Num rows: 200 Data size: 3176 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 200 Data size: 4776 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       mode: hash

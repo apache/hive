@@ -52,9 +52,9 @@ order by c1;
 
 set hive.auto.convert.join=true;
 set hive.optimize.dynamic.partition.hashjoin=true;
-set hive.auto.convert.join.noconditionaltask.size=200000;
-set hive.exec.reducers.bytes.per.reducer=200000;
-
+set hive.auto.convert.join.noconditionaltask.size=20000;
+set hive.exec.reducers.bytes.per.reducer=20000;
+set hive.stats.fetch.column.stats=false;
 -- Try with dynamically partitioned hashjoin
 explain
 select
@@ -86,17 +86,17 @@ where
 
 explain
 select
-  a.csmallint, count(*) c1
+  a.csmallint cs, count(*) c1
 from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 group by a.csmallint
-order by c1;
+order by cs;
 
 select
-  a.csmallint, count(*) c1
+  a.csmallint cs, count(*) c1
 from alltypesorc a join alltypesorc b on a.cint = b.cint
 where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 group by a.csmallint
-order by c1;
+order by cs;

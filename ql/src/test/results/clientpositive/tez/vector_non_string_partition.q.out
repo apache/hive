@@ -47,18 +47,18 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: non_string_part
-                  Statistics: Num rows: 3073 Data size: 339150 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3073 Data size: 351442 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (cint > 0) (type: boolean)
-                    Statistics: Num rows: 1024 Data size: 113013 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1024 Data size: 4096 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: cint (type: int), ctinyint (type: tinyint)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1024 Data size: 113013 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1024 Data size: 4096 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
-                        Statistics: Num rows: 1024 Data size: 113013 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1024 Data size: 4096 Basic stats: COMPLETE Column stats: PARTIAL
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col1 (type: tinyint)
             Execution mode: vectorized
@@ -68,13 +68,13 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: tinyint)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1024 Data size: 113013 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1024 Data size: 4096 Basic stats: COMPLETE Column stats: PARTIAL
                 Limit
                   Number of rows: 10
-                  Statistics: Num rows: 10 Data size: 1100 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: PARTIAL
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 10 Data size: 1100 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: PARTIAL
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -126,18 +126,18 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: non_string_part
-                  Statistics: Num rows: 3073 Data size: 339150 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3073 Data size: 363734 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cint > 0) (type: boolean)
-                    Statistics: Num rows: 1024 Data size: 113013 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1024 Data size: 121205 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cint (type: int), cstring1 (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1024 Data size: 113013 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1024 Data size: 121205 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: string)
                         sort order: ++
-                        Statistics: Num rows: 1024 Data size: 113013 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1024 Data size: 121205 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
         Reducer 2 
@@ -146,13 +146,13 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1024 Data size: 113013 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1024 Data size: 121205 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 10
-                  Statistics: Num rows: 10 Data size: 1100 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 1180 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 10 Data size: 1100 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 1180 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

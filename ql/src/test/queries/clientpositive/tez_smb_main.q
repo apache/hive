@@ -63,6 +63,7 @@ from tab a join tab_part b on a.key = b.key;
 select count(*)
 from tab a join tab_part b on a.key = b.key;
 
+set hive.stats.fetch.column.stats=false;
 set hive.auto.convert.join.noconditionaltask.size=500;
 set hive.mapjoin.hybridgrace.minwbsize=125;
 set hive.mapjoin.hybridgrace.minnumpartitions=4;
@@ -79,12 +80,14 @@ select s2.key as key, s2.value as value from tab s2
 ) a join tab_part b on (a.key = b.key);
 
 set hive.auto.convert.join.noconditionaltask.size=10000;
+
 explain select count(*) from tab a join tab_part b on a.value = b.value;
 select count(*) from tab a join tab_part b on a.value = b.value;
 
+
 explain select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value;
 select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value;
-
+set hive.stats.fetch.column.stats=true;
 explain
 select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
 UNION  ALL

@@ -496,9 +496,12 @@ FROM
   ) master_table
 ) a GROUP BY key, value
 ;
+
+set hive.stats.fetch.column.stats=false;
 -- union26.q
 
 -- SORT_QUERY_RESULTS
+
 
 EXPLAIN
 SELECT 
@@ -545,6 +548,7 @@ WHERE ds='2008-04-08' and hr='11'
 group by key, value
 ;
 
+set hive.stats.fetch.column.stats=true;
 
 SELECT 
 count(1) as counts,

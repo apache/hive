@@ -38,12 +38,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
                     expressions: '2008-04-08' (type: string), key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1000 Data size: 272000 Basic stats: COMPLETE Column stats: COMPLETE
                     Transform Operator
                       command: cat
                       output info:
@@ -56,17 +56,17 @@ STAGE PLANS:
                             serialization.format 9
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1000 Data size: 272000 Basic stats: COMPLETE Column stats: COMPLETE
                       Filter Operator
                         isSamplingPred: false
                         predicate: (_col1 < 100) (type: boolean)
-                        Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 333 Data size: 2664 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col1 (type: string)
                           null sort order: a
                           sort order: +
                           Map-reduce partition columns: _col1 (type: string)
-                          Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 333 Data size: 2664 Basic stats: COMPLETE Column stats: COMPLETE
                           tag: -1
                           value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                           auto parallelism: true
@@ -174,13 +174,13 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col1 (type: string), VALUE._col2 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 333 Data size: 2664 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 333 Data size: 3537 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 333 Data size: 2664 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat

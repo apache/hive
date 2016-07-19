@@ -120,10 +120,12 @@ from tab1 a join tab_part b on a.key = b.key;
 
 explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value;
 
+set hive.auto.convert.join.noconditionaltask.size=50000;
 explain
 select a.key, a.value, b.value
 from tab a join tab_part b on a.key = b.key and a.ds = b.ds;
 
+set hive.auto.convert.join.noconditionaltask.size=10000;
 set hive.mapjoin.hybridgrace.hashtable = false;
 insert overwrite table tab partition (ds='2008-04-08')
 select key,value from srcbucket_mapjoin where key = 411;

@@ -87,9 +87,9 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_10]
-        Select Operator [SEL_9] (rows=250 width=14)
+        Select Operator [SEL_9] (rows=2 width=89)
           Output:["_col0"]
-          Merge Join Operator [MERGEJOIN_13] (rows=250 width=14)
+          Merge Join Operator [MERGEJOIN_13] (rows=2 width=89)
             Conds:(Inner)
           <-Map 1 [SIMPLE_EDGE]
             SHUFFLE [RS_6]
@@ -100,11 +100,11 @@ Stage-0
                     mydb@q1,a,Tbl:COMPLETE,Col:NONE,Output:["colnum"]
           <-Map 3 [SIMPLE_EDGE]
             SHUFFLE [RS_7]
-              Select Operator [SEL_5] (rows=250 width=10)
-                Filter Operator [FIL_12] (rows=250 width=10)
+              Select Operator [SEL_5] (rows=2 width=85)
+                Filter Operator [FIL_12] (rows=2 width=87)
                   predicate:(key = '5')
-                  TableScan [TS_3] (rows=500 width=10)
-                    default@src,src,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                  TableScan [TS_3] (rows=500 width=87)
+                    default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: with q1 as (select * from src where key= '5')

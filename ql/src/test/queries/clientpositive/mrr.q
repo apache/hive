@@ -54,6 +54,7 @@ ORDER BY s1.key;
 
 set hive.log.trace.id=Test2;
 set hive.auto.convert.join=true;
+set hive.stats.fetch.column.stats=false;
 -- query with broadcast join in the reduce stage
 EXPLAIN
 SELECT *

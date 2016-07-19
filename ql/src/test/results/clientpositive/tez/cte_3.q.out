@@ -16,12 +16,12 @@ Stage-2
       Map 1
       File Output Operator [FS_3]
         table:{"name:":"default.q1"}
-        Select Operator [SEL_2] (rows=250 width=10)
+        Select Operator [SEL_2] (rows=2 width=85)
           Output:["_col0"]
-          Filter Operator [FIL_4] (rows=250 width=10)
+          Filter Operator [FIL_4] (rows=2 width=87)
             predicate:(key = '5')
-            TableScan [TS_0] (rows=500 width=10)
-              default@src,src,Tbl:COMPLETE,Col:NONE,Output:["key"]
+            TableScan [TS_0] (rows=500 width=87)
+              default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 Stage-0
   Move Operator
      Please refer to the previous Stage-1
@@ -72,12 +72,12 @@ Stage-2
       Map 1
       File Output Operator [FS_3]
         table:{"name:":"default.q1"}
-        Select Operator [SEL_2] (rows=250 width=10)
+        Select Operator [SEL_2] (rows=2 width=85)
           Output:["_col0"]
-          Filter Operator [FIL_4] (rows=250 width=10)
+          Filter Operator [FIL_4] (rows=2 width=87)
             predicate:(key = '5')
-            TableScan [TS_0] (rows=500 width=10)
-              default@src,src,Tbl:COMPLETE,Col:NONE,Output:["key"]
+            TableScan [TS_0] (rows=500 width=87)
+              default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 Stage-0
   Move Operator
      Please refer to the previous Stage-1
@@ -140,12 +140,12 @@ Stage-5
               Map 1
               File Output Operator [FS_3]
                 table:{"name:":"default.q2"}
-                Select Operator [SEL_2] (rows=250 width=10)
+                Select Operator [SEL_2] (rows=2 width=85)
                   Output:["_col0"]
-                  Filter Operator [FIL_4] (rows=250 width=10)
+                  Filter Operator [FIL_4] (rows=2 width=87)
                     predicate:(key = '5')
-                    TableScan [TS_0] (rows=500 width=10)
-                      default@src,src,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                    TableScan [TS_0] (rows=500 width=87)
+                      default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
         Stage-0
           Move Operator
              Please refer to the previous Stage-1

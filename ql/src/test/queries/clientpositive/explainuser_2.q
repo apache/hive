@@ -100,6 +100,8 @@ JOIN (select key, value from src1 union select key, value from src union select 
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=10000;
+set hive.stats.fetch.column.stats=false;
+
 
 EXPLAIN
 SELECT x.key, z.value, y.value

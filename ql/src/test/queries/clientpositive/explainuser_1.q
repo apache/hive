@@ -380,8 +380,7 @@ drop table things;
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=10000;
-
-explain select srcpart.key from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key) where srcpart.value > 'val_450';
+set hive.stats.fetch.column.stats=false;
  
 set hive.mapjoin.optimized.hashtable=false;
 
@@ -390,7 +389,7 @@ explain select srcpart.key from srcpart join src on (srcpart.value=src.value) jo
 set hive.mapjoin.optimized.hashtable=true;
 
 explain select srcpart.key from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key) where srcpart.value > 'val_450';
-
+set hive.stats.fetch.column.stats=true;
 explain
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
