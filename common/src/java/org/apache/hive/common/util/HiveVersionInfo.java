@@ -66,7 +66,7 @@ public class HiveVersionInfo {
   }
 
   /**
-   * Get the subversion revision number for the root directory
+   * Get the git revision number for the root directory
    * @return the revision number, eg. "451451"
    */
   public static String getRevision() {
@@ -98,7 +98,7 @@ public class HiveVersionInfo {
   }
 
   /**
-   * Get the subversion URL for the root Hive directory.
+   * Get the git URL for the root Hive directory.
    */
   public static String getUrl() {
     return version != null ? version.url() : "Unknown";
@@ -126,7 +126,7 @@ public class HiveVersionInfo {
   public static void main(String[] args) {
     LOG.debug("version: "+ version);
     System.out.println("Hive " + getVersion());
-    System.out.println("Subversion " + getUrl() + " -r " + getRevision());
+    System.out.println("Git " + getUrl() + " -r " + getRevision());
     System.out.println("Compiled by " + getUser() + " on " + getDate());
     System.out.println("From source with checksum " + getSrcChecksum());
   }
