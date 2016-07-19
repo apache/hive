@@ -35,6 +35,9 @@ public class TestPlainSaslHelper extends TestCase {
   public void testDoAsSetting(){
 
     HiveConf hconf = new HiveConf();
+    hconf
+    .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     assertTrue("default value of hive server2 doAs should be true",
         hconf.getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS));
 

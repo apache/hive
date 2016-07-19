@@ -162,7 +162,11 @@ public class TestTezTask {
     conf = new JobConf();
     appLr = mock(LocalResource.class);
 
-    SessionState.start(new HiveConf());
+    HiveConf hiveConf = new HiveConf();
+    hiveConf
+        .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+            "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+    SessionState.start(hiveConf);
     session = mock(TezClient.class);
     sessionState = mock(TezSessionState.class);
     when(sessionState.getSession()).thenReturn(session);

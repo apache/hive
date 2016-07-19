@@ -78,6 +78,9 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
     hcatConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hcatConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hcatConf.set(ConfVars.METASTOREWAREHOUSE.varname, whPath.toString());
+    hcatConf
+    .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
 
     //Add hbase properties
     for (Map.Entry<String, String> el : getHbaseConf()) {

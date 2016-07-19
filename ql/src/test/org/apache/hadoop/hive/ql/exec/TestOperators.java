@@ -399,6 +399,8 @@ public class TestOperators extends TestCase {
     HiveConf conf = new HiveConf();
     conf.set("hive.support.concurrency", "false");
     conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
+    conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     SessionState.start(conf);
     String cmd = "create table fetchOp (id int, name string) " +
         "partitioned by (state string) " +

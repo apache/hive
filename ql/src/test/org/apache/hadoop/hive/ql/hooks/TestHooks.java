@@ -32,6 +32,9 @@ public class TestHooks {
   @BeforeClass
   public static void onetimeSetup() throws Exception {
     HiveConf conf = new HiveConf(TestHooks.class);
+    conf
+    .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     Driver driver = createDriver(conf);
     int ret = driver.run("create table t1(i int)").getResponseCode();
     assertEquals("Checking command success", 0, ret);
@@ -70,6 +73,9 @@ public class TestHooks {
     HiveConf conf = new HiveConf(TestHooks.class);
     HiveConf.setVar(conf, HiveConf.ConfVars.QUERYREDACTORHOOKS,
       SimpleQueryRedactor.class.getName());
+    conf
+    .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     Driver driver = createDriver(conf);
     int ret = driver.compile("select 'XXX' from t1");
     assertEquals("Checking command success", 0, ret);

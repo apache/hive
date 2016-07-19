@@ -10582,7 +10582,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         try {
           table = getTableObjectByName(tabIdName);
         } catch (HiveException e) {
-          throw new SemanticException("Table " + tabIdName + " is not found.");
+          // Table may not be found when materialization of CTE is on.
+          LOG.info("Table " + tabIdName + " is not found in walkASTMarkTABREF.");
+          continue;
         }
 
         List<String> colNames = new ArrayList<>();
