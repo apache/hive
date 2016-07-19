@@ -45,7 +45,11 @@ public class TestPrivilegesV1 extends PrivilegesTestBase{
     db = Mockito.mock(Hive.class);
     table = new Table(DB, TABLE);
     partition = new Partition(table);
-    SessionState.start(queryState.getConf());
+    HiveConf hiveConf = queryState.getConf();
+    hiveConf
+    .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+    SessionState.start(hiveConf);
     Mockito.when(db.getTable(DB, TABLE, false)).thenReturn(table);
     Mockito.when(db.getTable(TABLE_QNAME, false)).thenReturn(table);
     Mockito.when(db.getPartition(table, new HashMap<String, String>(), false))

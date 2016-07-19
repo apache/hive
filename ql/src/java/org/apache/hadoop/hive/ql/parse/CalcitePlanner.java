@@ -2965,7 +2965,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
           pos = genColListRegex(".*", expr.getChildCount() == 0 ? null : SemanticAnalyzer
               .getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(), expr, col_list,
-              excludedColumns, inputRR, starRR, pos, out_rwsch, tableMask.isEnabled() ? qb.getAliases() : tabAliasesForAllProjs, true);
+              excludedColumns, inputRR, starRR, pos, out_rwsch, qb.getAliases(), true);
           selectStar = true;
         } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL
             && !hasAsClause
@@ -2977,7 +2977,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // We don't allow this for ExprResolver - the Group By case
           pos = genColListRegex(SemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getText()),
               null, expr, col_list, excludedColumns, inputRR, starRR, pos, out_rwsch,
-              tableMask.isEnabled() ? qb.getAliases() : tabAliasesForAllProjs, true);
+              qb.getAliases(), true);
         } else if (expr.getType() == HiveParser.DOT
             && expr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL
             && inputRR.hasTableAlias(SemanticAnalyzer.unescapeIdentifier(expr.getChild(0)
@@ -2993,7 +2993,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               SemanticAnalyzer.unescapeIdentifier(expr.getChild(1).getText()),
               SemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getChild(0).getText()
                   .toLowerCase()), expr, col_list, excludedColumns, inputRR, starRR, pos,
-              out_rwsch, tableMask.isEnabled() ? qb.getAliases() : tabAliasesForAllProjs, true);
+              out_rwsch, qb.getAliases(), true);
         } else if (ParseUtils.containsTokenOfType(expr, HiveParser.TOK_FUNCTIONDI)
             && !(srcRel instanceof HiveAggregate)) {
           // Likely a malformed query eg, select hash(distinct c1) from t1;

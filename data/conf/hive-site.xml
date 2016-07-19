@@ -266,6 +266,12 @@
 </property>
 
 <property>
+  <name>hive.security.authorization.manager</name>
+  <value>org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest</value>
+  <description>The Hive client authorization manager class name.</description>
+</property>
+
+<property>
   <name>hive.llap.io.cache.orc.size</name>
   <value>8388608</value>
 </property>

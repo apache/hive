@@ -51,6 +51,9 @@ public class TestQBCompact {
   public static void init() throws Exception {
     queryState = new QueryState(null);
     conf = queryState.getConf();
+    conf
+    .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     SessionState.start(conf);
 
     // Create a table so we can work against it

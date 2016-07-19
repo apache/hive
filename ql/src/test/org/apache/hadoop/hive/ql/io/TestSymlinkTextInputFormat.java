@@ -133,7 +133,9 @@ public class TestSymlinkTextInputFormat extends TestCase {
 
 
     HiveConf hiveConf = new HiveConf(TestSymlinkTextInputFormat.class);
-
+    hiveConf
+    .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_REWORK_MAPREDWORK, true);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     Driver drv = new Driver(hiveConf);

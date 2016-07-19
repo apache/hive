@@ -63,6 +63,9 @@ public class TestDummyTxnManager {
   public void setUp() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
     conf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, DummyTxnManager.class.getName());
+    conf
+    .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     SessionState.start(conf);
     ctx = new Context(conf);
 
