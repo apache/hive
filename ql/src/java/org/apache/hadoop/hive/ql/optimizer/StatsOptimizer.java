@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -318,6 +319,10 @@ public class StatsOptimizer extends Transform {
         }
 
         Table tbl = tsOp.getConf().getTableMetadata();
+        if (AcidUtils.isAcidTable(tbl)) {
+          Logger.info("Table " + tbl.getTableName() + " is ACID table. Skip StatsOptimizer.");
+          return null;
+        }
         List<Object> oneRow = new ArrayList<Object>();
 
         Hive hive = Hive.get(pctx.getConf());
