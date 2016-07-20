@@ -250,8 +250,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
         Task<?> t = TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
             tblDesc), conf);
-        Table table = new Table(dbname, tblDesc.getTableName());
-        String currentDb = SessionState.get().getCurrentDatabase();
+        String[] dbTableName =Utilities.getDbTableName(dbname,tblDesc.getTableName());
+        Table table = new Table(dbTableName[0], dbTableName[1]);
         conf.set("import.destination.dir",
             wh.getTablePath(db.getDatabaseCurrent(),
                 tblDesc.getTableName()).toString());
