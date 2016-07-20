@@ -38,18 +38,23 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatContext;
+import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.Pair;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
 import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
 import org.apache.hive.hcatalog.mapreduce.SpecialCases;
 import org.apache.pig.Expression;
 import org.apache.pig.Expression.BinaryExpression;
+import org.apache.pig.Expression.Const;
 import org.apache.pig.PigException;
 import org.apache.pig.ResourceSchema;
 import org.apache.pig.ResourceStatistics;
 import org.apache.pig.impl.util.UDFContext;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -273,6 +278,16 @@ public class HCatLoader extends HCatBaseLoader {
     return partitionFilterString;
   }
 
+  private String getHCatConstString(Const con, HCatFieldSchema.Type type) {
+    Object value = con.getValue();
+    switch (type) {
+    case DATE:
+      return ((DateTime)value).toString(DateTimeFormat.forPattern("YYYY-MM-dd"));
+    default:
+      return con.toString();
+    }
+  }
+
   private String getHCatComparisonString(Expression expr) {
     if (expr instanceof BinaryExpression) {
       // call getHCatComparisonString on lhs and rhs, and and join the
@@ -290,6 +305,25 @@ public class HCatLoader extends HCatBaseLoader {
         opStr = expr.getOpType().toString();
       }
       BinaryExpression be = (BinaryExpression) expr;
+      if (be.getRhs() instanceof Const) {
+        // If the expr is column op const, will try to cast the const to string
+        // according to the data type of the column
+        UDFContext udfContext = UDFContext.getUDFContext();
+        Properties udfProps = udfContext.getUDFProperties(this.getClass(),
+            new String[]{signature});
+        HCatSchema hcatTableSchema = (HCatSchema) udfProps.get(HCatConstants.HCAT_TABLE_SCHEMA);
+        HCatFieldSchema fs = null;
+        try {
+          fs = hcatTableSchema.get(be.getLhs().toString());
+        } catch (HCatException e) {
+          // Shall never happen
+        }
+        if (fs != null) {
+          return "(" + getHCatComparisonString(be.getLhs()) +
+            opStr +
+            getHCatConstString((Const)be.getRhs(), fs.getType()) + ")";
+        }
+      }
       return "(" + getHCatComparisonString(be.getLhs()) +
         opStr +
         getHCatComparisonString(be.getRhs()) + ")";
