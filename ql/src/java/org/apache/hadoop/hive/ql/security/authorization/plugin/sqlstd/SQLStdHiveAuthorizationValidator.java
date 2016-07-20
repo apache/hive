@@ -80,16 +80,19 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
 
     // check privileges on input and output objects
     List<String> deniedMessages = new ArrayList<String>();
-    checkPrivileges(hiveOpType, inputHObjs, metastoreClient, userName, IOType.INPUT, deniedMessages);
-    checkPrivileges(hiveOpType, outputHObjs, metastoreClient, userName, IOType.OUTPUT, deniedMessages);
+    checkPrivileges(hiveOpType, inputHObjs, metastoreClient, userName, IOType.INPUT,
+        deniedMessages, context);
+    checkPrivileges(hiveOpType, outputHObjs, metastoreClient, userName, IOType.OUTPUT,
+        deniedMessages, context);
 
     SQLAuthorizationUtils.assertNoDeniedPermissions(new HivePrincipal(userName,
         HivePrincipalType.USER), hiveOpType, deniedMessages);
   }
 
   private void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> hiveObjects,
-      IMetaStoreClient metastoreClient, String userName, IOType ioType, List<String> deniedMessages)
-      throws HiveAuthzPluginException, HiveAccessControlException {
+      IMetaStoreClient metastoreClient, String userName, IOType ioType,
+      List<String> deniedMessages, HiveAuthzContext context)
+  throws HiveAuthzPluginException, HiveAccessControlException {
 
     if (hiveObjects == null) {
       return;
@@ -129,7 +132,7 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
         break;
       default:
         availPrivs = SQLAuthorizationUtils.getPrivilegesFromMetaStore(metastoreClient, userName,
-            hiveObj, privController.getCurrentRoleNames(), privController.isUserAdmin());
+            hiveObj, privController.getCurrentRoleNames(context), privController.isUserAdmin());
       }
 
       // Verify that there are no missing privileges

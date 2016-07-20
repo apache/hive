@@ -199,6 +199,7 @@ import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationTranslator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationTranslator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
@@ -713,9 +714,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     boolean grantOption = grantOrRevokeRoleDDL.isGrantOption();
     if (grantOrRevokeRoleDDL.getGrant()) {
-      authorizer.grantRole(principals, roles, grantOption, grantorPrinc);
+      authorizer.grantRole(principals, roles, grantOption, grantorPrinc, getAuthzContext());
     } else {
-      authorizer.revokeRole(principals, roles, grantOption, grantorPrinc);
+      authorizer.revokeRole(principals, roles, grantOption, grantorPrinc, getAuthzContext());
     }
     return 0;
   }
@@ -735,7 +736,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       List<HivePrivilegeInfo> privInfos = authorizer.showPrivileges(
           getAuthorizationTranslator(authorizer).getHivePrincipal(showGrantDesc.getPrincipalDesc()),
-          getAuthorizationTranslator(authorizer).getHivePrivilegeObject(showGrantDesc.getHiveObj()));
+          getAuthorizationTranslator(authorizer).getHivePrivilegeObject(showGrantDesc.getHiveObj()),
+          getAuthzContext());
       boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
       writeToFile(writeGrantInfo(privInfos, testMode), showGrantDesc.getResFile());
     } catch (IOException e) {
@@ -761,16 +763,24 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     HivePrincipal grantorPrincipal = new HivePrincipal(
         grantor, AuthorizationUtils.getHivePrincipalType(grantorType));
-
     if(isGrant){
       authorizer.grantPrivileges(hivePrincipals, hivePrivileges, hivePrivObject,
-          grantorPrincipal, grantOption);
+          grantorPrincipal, grantOption, getAuthzContext());
     }else {
       authorizer.revokePrivileges(hivePrincipals, hivePrivileges,
-          hivePrivObject, grantorPrincipal, grantOption);
+          hivePrivObject, grantorPrincipal, grantOption, getAuthzContext());
     }
     //no exception thrown, so looks good
     return 0;
+  }
+
+  private HiveAuthzContext getAuthzContext() {
+    SessionState ss = SessionState.get();
+    HiveAuthzContext.Builder authzContextBuilder = new HiveAuthzContext.Builder();
+    authzContextBuilder.setUserIpAddress(ss.getUserIpAddress());
+    authzContextBuilder.setForwardedAddresses(ss.getForwardedAddresses());
+    authzContextBuilder.setCommandString(ss.getConf().getQueryString());
+    return authzContextBuilder.build();
   }
 
   private int roleDDL(Hive db, RoleDDLDesc roleDDLDesc) throws Exception {
@@ -779,31 +789,32 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     //call the appropriate hive authorizer function
     switch(operation){
     case CREATE_ROLE:
-      authorizer.createRole(roleDDLDesc.getName(), null);
+      authorizer.createRole(roleDDLDesc.getName(), null, getAuthzContext());
       break;
     case DROP_ROLE:
-      authorizer.dropRole(roleDDLDesc.getName());
+      authorizer.dropRole(roleDDLDesc.getName(), getAuthzContext());
       break;
     case SHOW_ROLE_GRANT:
       boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
       List<HiveRoleGrant> roles = authorizer.getRoleGrantInfoForPrincipal(
-          AuthorizationUtils.getHivePrincipal(roleDDLDesc.getName(), roleDDLDesc.getPrincipalType()));
+          AuthorizationUtils.getHivePrincipal(roleDDLDesc.getName(),
+              roleDDLDesc.getPrincipalType()), getAuthzContext());
       writeToFile(writeRolesGrantedInfo(roles, testMode), roleDDLDesc.getResFile());
       break;
     case SHOW_ROLES:
-      List<String> allRoles = authorizer.getAllRoles();
+      List<String> allRoles = authorizer.getAllRoles(getAuthzContext());
       writeListToFileAfterSort(allRoles, roleDDLDesc.getResFile());
       break;
     case SHOW_CURRENT_ROLE:
-      List<String> roleNames = authorizer.getCurrentRoleNames();
+      List<String> roleNames = authorizer.getCurrentRoleNames(getAuthzContext());
       writeListToFileAfterSort(roleNames, roleDDLDesc.getResFile());
       break;
     case SET_ROLE:
-      authorizer.setCurrentRole(roleDDLDesc.getName());
+      authorizer.setCurrentRole(roleDDLDesc.getName(), getAuthzContext());
       break;
     case SHOW_ROLE_PRINCIPALS:
       testMode = conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
-      List<HiveRoleGrant> roleGrants = authorizer.getPrincipalGrantInfoForRole(roleDDLDesc.getName());
+      List<HiveRoleGrant> roleGrants = authorizer.getPrincipalGrantInfoForRole(roleDDLDesc.getName(), getAuthzContext());
       writeToFile(writeHiveRoleGrantInfo(roleGrants, testMode), roleDDLDesc.getResFile());
       break;
     default:

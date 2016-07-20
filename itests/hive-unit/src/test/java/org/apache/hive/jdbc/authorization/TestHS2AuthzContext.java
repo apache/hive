@@ -56,6 +56,7 @@ public class TestHS2AuthzContext {
   private static MiniHS2 miniHS2 = null;
   static HiveAuthorizer mockedAuthorizer;
   static HiveAuthenticationProvider authenticator;
+  static final String TABLE1_NAME = "TestHS2AuthzContextTab";
 
   /**
    * This factory creates a mocked HiveAuthorizer class.
@@ -83,6 +84,11 @@ public class TestHS2AuthzContext {
 
     miniHS2 = new MiniHS2(conf);
     miniHS2.start(new HashMap<String, String>());
+    // create tables as user1
+    Connection hs2Conn = getConnection("user1");
+    Statement stmt = hs2Conn.createStatement();
+    stmt.execute("create table " + TABLE1_NAME + "(i int) ");
+    stmt.close();
   }
 
   @AfterClass
@@ -101,6 +107,34 @@ public class TestHS2AuthzContext {
   @Test
   public void testAuthzContextContentsCmdProcessorCmd() throws Exception {
     verifyContextContents("dfs -ls /", "-ls /");
+  }
+
+  @Test
+  public void testGrantContextContents() throws Exception {
+    String cmd = "grant all on table " + TABLE1_NAME + " to user user2"; 
+    verifyContextContents(cmd, cmd);
+  }
+
+
+  @Test
+  public void testRevokeContextContents() throws Exception {
+    String cmd = "revoke all on table " + TABLE1_NAME + " from user user2"; 
+    verifyContextContents(cmd, cmd);
+  }
+
+  @Test
+  public void testRolesMgmtContextContents() throws Exception {
+    verifyContextContents("create role newrole");
+    verifyContextContents("grant role newrole to user user2 with admin option");
+    verifyContextContents("show role grant user user2");
+    verifyContextContents("show principals newrole");
+    verifyContextContents("revoke role newrole from user user2");
+    verifyContextContents("show roles");
+    verifyContextContents("drop role newrole");
+  }
+
+  private void verifyContextContents(String cmd) throws HiveAuthzPluginException, HiveAccessControlException, Exception {
+    verifyContextContents(cmd, cmd);
   }
 
   private void verifyContextContents(final String cmd, String ctxCmd) throws Exception,
@@ -128,7 +162,7 @@ public class TestHS2AuthzContext {
 
   }
 
-  private Connection getConnection(String userName) throws Exception {
+  private static Connection getConnection(String userName) throws Exception {
     return DriverManager.getConnection(miniHS2.getJdbcURL(), userName, "bar");
   }
 

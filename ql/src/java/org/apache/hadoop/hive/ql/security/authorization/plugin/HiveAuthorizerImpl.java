@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPri
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 
 /**
  * Convenience implementation of HiveAuthorizer.
@@ -45,39 +44,45 @@ public class HiveAuthorizerImpl extends AbstractHiveAuthorizer {
   @Override
   public void grantPrivileges(List<HivePrincipal> hivePrincipals,
       List<HivePrivilege> hivePrivileges, HivePrivilegeObject hivePrivObject,
-      HivePrincipal grantorPrincipal, boolean grantOption) throws HiveAuthzPluginException, HiveAccessControlException {
+      HivePrincipal grantorPrincipal, boolean grantOption, HiveAuthzContext ctx)
+      throws HiveAuthzPluginException, HiveAccessControlException {
     accessController.grantPrivileges(hivePrincipals, hivePrivileges, hivePrivObject,
-        grantorPrincipal, grantOption);
+        grantorPrincipal, grantOption, ctx);
   }
 
   @Override
   public void revokePrivileges(List<HivePrincipal> hivePrincipals,
       List<HivePrivilege> hivePrivileges, HivePrivilegeObject hivePrivObject,
-      HivePrincipal grantorPrincipal, boolean grantOption) throws HiveAuthzPluginException, HiveAccessControlException {
+      HivePrincipal grantorPrincipal, boolean grantOption, HiveAuthzContext ctx)
+      throws HiveAuthzPluginException, HiveAccessControlException {
     accessController.revokePrivileges(hivePrincipals, hivePrivileges, hivePrivObject,
-        grantorPrincipal, grantOption);
+        grantorPrincipal, grantOption, ctx);
   }
 
   @Override
-  public void createRole(String roleName, HivePrincipal adminGrantor) throws HiveAuthzPluginException, HiveAccessControlException {
-    accessController.createRole(roleName, adminGrantor);
+  public void createRole(String roleName, HivePrincipal adminGrantor, HiveAuthzContext ctx)
+      throws HiveAuthzPluginException, HiveAccessControlException {
+    accessController.createRole(roleName, adminGrantor, ctx);
   }
 
   @Override
-  public void dropRole(String roleName) throws HiveAuthzPluginException, HiveAccessControlException {
-    accessController.dropRole(roleName);
+  public void dropRole(String roleName, HiveAuthzContext ctx) 
+      throws HiveAuthzPluginException, HiveAccessControlException {
+    accessController.dropRole(roleName, ctx);
   }
 
   @Override
   public void grantRole(List<HivePrincipal> hivePrincipals, List<String> roles,
-      boolean grantOption, HivePrincipal grantorPrinc) throws HiveAuthzPluginException, HiveAccessControlException {
-    accessController.grantRole(hivePrincipals, roles, grantOption, grantorPrinc);
+      boolean grantOption, HivePrincipal grantorPrinc, HiveAuthzContext ctx) 
+          throws HiveAuthzPluginException, HiveAccessControlException {
+    accessController.grantRole(hivePrincipals, roles, grantOption, grantorPrinc, ctx);
   }
 
   @Override
   public void revokeRole(List<HivePrincipal> hivePrincipals, List<String> roles,
-      boolean grantOption, HivePrincipal grantorPrinc) throws HiveAuthzPluginException, HiveAccessControlException {
-    accessController.revokeRole(hivePrincipals, roles, grantOption, grantorPrinc);
+      boolean grantOption, HivePrincipal grantorPrinc, HiveAuthzContext ctx) 
+          throws HiveAuthzPluginException, HiveAccessControlException {
+    accessController.revokeRole(hivePrincipals, roles, grantOption, grantorPrinc, ctx);
   }
 
   @Override
@@ -95,14 +100,16 @@ public class HiveAuthorizerImpl extends AbstractHiveAuthorizer {
   }
 
   @Override
-  public List<String> getAllRoles() throws HiveAuthzPluginException, HiveAccessControlException {
-    return accessController.getAllRoles();
+  public List<String> getAllRoles(HiveAuthzContext ctx) 
+      throws HiveAuthzPluginException, HiveAccessControlException {
+    return accessController.getAllRoles(ctx);
   }
 
   @Override
   public List<HivePrivilegeInfo> showPrivileges(HivePrincipal principal,
-      HivePrivilegeObject privObj) throws HiveAuthzPluginException, HiveAccessControlException {
-    return accessController.showPrivileges(principal, privObj);
+      HivePrivilegeObject privObj, HiveAuthzContext ctx) 
+          throws HiveAuthzPluginException, HiveAccessControlException {
+    return accessController.showPrivileges(principal, privObj, ctx);
   }
 
   @Override
@@ -111,25 +118,25 @@ public class HiveAuthorizerImpl extends AbstractHiveAuthorizer {
   }
 
   @Override
-  public void setCurrentRole(String roleName) throws HiveAccessControlException, HiveAuthzPluginException {
-    accessController.setCurrentRole(roleName);
+  public void setCurrentRole(String roleName, HiveAuthzContext ctx) throws HiveAccessControlException, HiveAuthzPluginException {
+    accessController.setCurrentRole(roleName, ctx);
   }
 
   @Override
-  public List<String> getCurrentRoleNames() throws HiveAuthzPluginException {
-    return accessController.getCurrentRoleNames();
+  public List<String> getCurrentRoleNames(HiveAuthzContext ctx) throws HiveAuthzPluginException {
+    return accessController.getCurrentRoleNames(ctx);
   }
 
   @Override
-  public List<HiveRoleGrant> getPrincipalGrantInfoForRole(String roleName)
+  public List<HiveRoleGrant> getPrincipalGrantInfoForRole(String roleName, HiveAuthzContext ctx)
       throws HiveAuthzPluginException, HiveAccessControlException {
-    return accessController.getPrincipalGrantInfoForRole(roleName);
+    return accessController.getPrincipalGrantInfoForRole(roleName, ctx);
   }
 
   @Override
-  public List<HiveRoleGrant> getRoleGrantInfoForPrincipal(HivePrincipal principal)
+  public List<HiveRoleGrant> getRoleGrantInfoForPrincipal(HivePrincipal principal, HiveAuthzContext ctx)
       throws HiveAuthzPluginException, HiveAccessControlException {
-    return accessController.getRoleGrantInfoForPrincipal(principal);
+    return accessController.getRoleGrantInfoForPrincipal(principal, ctx);
   }
 
   @Override
