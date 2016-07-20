@@ -84,7 +84,9 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_CREATEMACRO, HiveOperation.CREATEMACRO);
     commandType.put(HiveParser.TOK_DROPMACRO, HiveOperation.DROPMACRO);
     commandType.put(HiveParser.TOK_CREATEVIEW, HiveOperation.CREATEVIEW);
+    commandType.put(HiveParser.TOK_CREATE_MATERIALIZED_VIEW, HiveOperation.CREATE_MATERIALIZED_VIEW);
     commandType.put(HiveParser.TOK_DROPVIEW, HiveOperation.DROPVIEW);
+    commandType.put(HiveParser.TOK_DROP_MATERIALIZED_VIEW, HiveOperation.DROP_MATERIALIZED_VIEW);
     commandType.put(HiveParser.TOK_CREATEINDEX, HiveOperation.CREATEINDEX);
     commandType.put(HiveParser.TOK_DROPINDEX, HiveOperation.DROPINDEX);
     commandType.put(HiveParser.TOK_ALTERINDEX_REBUILD, HiveOperation.ALTERINDEX_REBUILD);
@@ -231,6 +233,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SWITCHDATABASE:
       case HiveParser.TOK_DROPTABLE:
       case HiveParser.TOK_DROPVIEW:
+      case HiveParser.TOK_DROP_MATERIALIZED_VIEW:
       case HiveParser.TOK_DESCDATABASE:
       case HiveParser.TOK_DESCTABLE:
       case HiveParser.TOK_DESCFUNCTION:

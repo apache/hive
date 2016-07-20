@@ -345,7 +345,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     return TaskFactory.get(new DDLWork(
         getInputs(),
         getOutputs(),
-        new DropTableDesc(table.getTableName(), false, true, true, null)
+        new DropTableDesc(table.getTableName(), null, true, true, null)
     ), conf);
   }
 

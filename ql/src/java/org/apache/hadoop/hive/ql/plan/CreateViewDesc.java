@@ -36,8 +36,6 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private String viewName;
-  private String inputFormat;
-  private String outputFormat;
   private String originalText;
   private String expandedText;
   private List<FieldSchema> schema;
@@ -49,7 +47,12 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private boolean orReplace;
   private boolean isAlterViewAs;
   private boolean isMaterialized;
+  private String inputFormat;
+  private String outputFormat;
+  private String location; // only used for materialized views
   private String serde; // only used for materialized views
+  private String storageHandler; // only used for materialized views
+  private Map<String, String> serdeProps; // only used for materialized views
 
   /**
    * For serialization only.
@@ -58,7 +61,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   }
 
   /**
-   * Used to create a virtual view descriptor.
+   * Used to create a materialized view descriptor
    * @param viewName
    * @param schema
    * @param comment
@@ -67,27 +70,37 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
    * @param ifNotExists
    * @param orReplace
    * @param isAlterViewAs
+   * @param inputFormat
+   * @param outputFormat
+   * @param location
+   * @param serde
+   * @param storageHandler
+   * @param serdeProps
    */
-  public CreateViewDesc(String viewName, List<FieldSchema> schema,
-      String comment, String inputFormat,
-      String outputFormat, Map<String, String> tblProps,
-      List<String> partColNames, boolean ifNotExists,
-      boolean orReplace, boolean isAlterViewAs) {
+  public CreateViewDesc(String viewName, List<FieldSchema> schema, String comment,
+          Map<String, String> tblProps, List<String> partColNames,
+          boolean ifNotExists, boolean orReplace, boolean isAlterViewAs,
+          String inputFormat, String outputFormat, String location,
+          String serde, String storageHandler, Map<String, String> serdeProps) {
     this.viewName = viewName;
     this.schema = schema;
-    this.comment = comment;
-    this.inputFormat = inputFormat;
-    this.outputFormat = outputFormat;
     this.tblProps = tblProps;
     this.partColNames = partColNames;
+    this.comment = comment;
     this.ifNotExists = ifNotExists;
     this.orReplace = orReplace;
     this.isAlterViewAs = isAlterViewAs;
-    this.isMaterialized = false;
+    this.isMaterialized = true;
+    this.inputFormat = inputFormat;
+    this.outputFormat = outputFormat;
+    this.location = location;
+    this.serde = serde;
+    this.storageHandler = storageHandler;
+    this.serdeProps = serdeProps;
   }
 
   /**
-   * Used to create a materialized view descriptor
+   * Used to create a view descriptor
    * @param viewName
    * @param schema
    * @param comment
@@ -112,7 +125,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.ifNotExists = ifNotExists;
     this.orReplace = orReplace;
     this.isAlterViewAs = isAlterViewAs;
-    this.isMaterialized = true;
+    this.isMaterialized = false;
     this.inputFormat = inputFormat;
     this.outputFormat = outputFormat;
     this.serde = serde;
@@ -244,8 +257,20 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     return isMaterialized;
   }
 
+  public String getLocation() {
+    return location;
+  }
+
   public String getSerde() {
     return serde;
+  }
+
+  public String getStorageHandler() {
+    return storageHandler;
+  }
+
+  public Map<String, String> getSerdeProps() {
+    return serdeProps;
   }
 
 }

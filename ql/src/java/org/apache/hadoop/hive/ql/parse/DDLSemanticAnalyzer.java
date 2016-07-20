@@ -332,7 +332,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
     }
     case HiveParser.TOK_DROPTABLE:
-      analyzeDropTable(ast, false);
+      analyzeDropTable(ast, null);
       break;
     case HiveParser.TOK_TRUNCATETABLE:
       analyzeTruncateTable(ast);
@@ -407,7 +407,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeMetastoreCheck(ast);
       break;
     case HiveParser.TOK_DROPVIEW:
-      analyzeDropTable(ast, true);
+      analyzeDropTable(ast, TableType.VIRTUAL_VIEW);
+      break;
+    case HiveParser.TOK_DROP_MATERIALIZED_VIEW:
+      analyzeDropTable(ast, TableType.MATERIALIZED_VIEW);
       break;
     case HiveParser.TOK_ALTERVIEW: {
       String[] qualified = getQualifiedTableName((ASTNode) ast.getChild(0));
@@ -881,7 +884,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
 
 
-  private void analyzeDropTable(ASTNode ast, boolean expectView)
+  private void analyzeDropTable(ASTNode ast, TableType expectedType)
       throws SemanticException {
     String tableName = getUnescapedName((ASTNode) ast.getChild(0));
     boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
@@ -899,7 +902,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     boolean ifPurge = (ast.getFirstChildWithType(HiveParser.KW_PURGE) != null);
-    DropTableDesc dropTblDesc = new DropTableDesc(tableName, expectView, ifExists, ifPurge, replicationSpec);
+    DropTableDesc dropTblDesc = new DropTableDesc(tableName, expectedType, ifExists, ifPurge, replicationSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         dropTblDesc), conf));
   }
@@ -2736,7 +2739,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     addTableDropPartsOutputs(tab, partSpecs.values(), !ifExists);
 
     DropTableDesc dropTblDesc =
-        new DropTableDesc(getDotName(qualified), partSpecs, expectView, mustPurge, replicationSpec);
+        new DropTableDesc(getDotName(qualified), partSpecs, expectView ? TableType.VIRTUAL_VIEW : null,
+                mustPurge, replicationSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropTblDesc), conf));
   }
 

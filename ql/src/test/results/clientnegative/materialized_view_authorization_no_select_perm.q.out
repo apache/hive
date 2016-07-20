@@ -18,12 +18,12 @@ POSTHOOK: Lineage: amvnsp_table.a EXPRESSION [(values__tmp__table__1)values__tmp
 POSTHOOK: Lineage: amvnsp_table.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: amvnsp_table.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 PREHOOK: query: create materialized view amvnsp_mat_view as select a, c from amvnsp_table
-PREHOOK: type: CREATEVIEW
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@amvnsp_table
 PREHOOK: Output: database:default
 PREHOOK: Output: default@amvnsp_mat_view
 POSTHOOK: query: create materialized view amvnsp_mat_view as select a, c from amvnsp_table
-POSTHOOK: type: CREATEVIEW
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@amvnsp_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@amvnsp_mat_view

@@ -7,13 +7,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@umv_basetable
 PREHOOK: query: create materialized view umv_mat_view as select a, b, c from umv_basetable
-PREHOOK: type: CREATEVIEW
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@umv_basetable
 PREHOOK: Output: database:default
 PREHOOK: Output: default@umv_mat_view
 POSTHOOK: query: create materialized view umv_mat_view as select a, b, c from umv_basetable
-POSTHOOK: type: CREATEVIEW
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@umv_basetable
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@umv_mat_view
-FAILED: SemanticException [Error 10304]: You cannot update or delete records in a view
+FAILED: SemanticException [Error 10402]: You cannot update or delete records in a view

@@ -16,4 +16,4 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@dv_basetable
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dv_view
-FAILED: SemanticException [Error 10304]: You cannot update or delete records in a view
+FAILED: SemanticException [Error 10402]: You cannot update or delete records in a view

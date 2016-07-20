@@ -231,10 +231,9 @@ public abstract class TaskCompiler {
           // make the movetask's destination directory the table's destination.
           Path location;
           String loc = pCtx.getQueryProperties().isCTAS() ?
-                  pCtx.getCreateTable().getLocation() : null;
+                  pCtx.getCreateTable().getLocation() : pCtx.getCreateViewDesc().getLocation();
           if (loc == null) {
-            // get the table's default location
-            // Always use default location for materialized view
+            // get the default location
             Path targetPath;
             try {
               String protoName = null;

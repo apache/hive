@@ -424,6 +424,8 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
           wrapperApiTable.setTableType(TableType.EXTERNAL_TABLE.toString());
         } else if (MetaStoreUtils.isIndexTable(wrapperApiTable)) {
           wrapperApiTable.setTableType(TableType.INDEX_TABLE.toString());
+        } else if (MetaStoreUtils.isMaterializedViewTable(wrapperApiTable)) {
+          wrapperApiTable.setTableType(TableType.MATERIALIZED_VIEW.toString());
         } else if ((wrapperApiTable.getSd() == null) || (wrapperApiTable.getSd().getLocation() == null)) {
           wrapperApiTable.setTableType(TableType.VIRTUAL_VIEW.toString());
         } else {

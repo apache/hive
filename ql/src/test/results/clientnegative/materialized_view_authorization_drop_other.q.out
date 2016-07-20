@@ -18,13 +18,13 @@ POSTHOOK: Lineage: amvdo_table.a EXPRESSION [(values__tmp__table__1)values__tmp_
 POSTHOOK: Lineage: amvdo_table.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: amvdo_table.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 PREHOOK: query: create materialized view amvdo_mat_view as select a, c from amvdo_table
-PREHOOK: type: CREATEVIEW
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@amvdo_table
 PREHOOK: Output: database:default
 PREHOOK: Output: default@amvdo_mat_view
 POSTHOOK: query: create materialized view amvdo_mat_view as select a, c from amvdo_table
-POSTHOOK: type: CREATEVIEW
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@amvdo_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@amvdo_mat_view
-FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation DROPTABLE [[OBJECT OWNERSHIP] on Object [type=TABLE_OR_VIEW, name=default.amvdo_mat_view]]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation DROP_MATERIALIZED_VIEW [[OBJECT OWNERSHIP] on Object [type=TABLE_OR_VIEW, name=default.amvdo_mat_view], [OBJECT OWNERSHIP] on Object [type=TABLE_OR_VIEW, name=default.amvdo_mat_view]]

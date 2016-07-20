@@ -3795,7 +3795,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           if (dropTbl.getIfExists()) {
             return;
           }
-          throw new HiveException("Cannot drop a view with DROP TABLE");
+          if (dropTbl.getExpectMaterializedView()) {
+            throw new HiveException("Cannot drop a view with DROP MATERIALIZED VIEW");
+          } else {
+            throw new HiveException("Cannot drop a view with DROP TABLE");
+          }
+        }
+      } else if (tbl.isMaterializedView()) {
+        if (!dropTbl.getExpectMaterializedView()) {
+          if (dropTbl.getIfExists()) {
+            return;
+          }
+          if (dropTbl.getExpectView()) {
+            throw new HiveException("Cannot drop a materialized view with DROP VIEW");
+          } else {
+            throw new HiveException("Cannot drop a materialized view with DROP TABLE");
+          }
         }
       } else {
         if (dropTbl.getExpectView()) {
@@ -3804,6 +3819,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           }
           throw new HiveException(
               "Cannot drop a base table with DROP VIEW");
+        } else if (dropTbl.getExpectMaterializedView()) {
+          if (dropTbl.getIfExists()) {
+            return;
+          }
+          throw new HiveException(
+              "Cannot drop a base table with DROP MATERIALIZED VIEW");
         }
       }
     }
@@ -4247,17 +4268,21 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (crtView.getInputFormat() != null) {
         tbl.setInputFormatClass(crtView.getInputFormat());
       }
+
       if (crtView.getOutputFormat() != null) {
         tbl.setOutputFormatClass(crtView.getOutputFormat());
       }
 
       if (crtView.isMaterialized()) {
+        if (crtView.getLocation() != null) {
+          tbl.setDataLocation(new Path(crtView.getLocation()));
+        }
         // Short circuit the checks that the input format is valid, this is configured for all
         // materialized views and doesn't change so we don't need to check it constantly.
         tbl.getSd().setInputFormat(crtView.getInputFormat());
         tbl.getSd().setOutputFormat(crtView.getOutputFormat());
         tbl.getSd().setSerdeInfo(new SerDeInfo(crtView.getSerde(), crtView.getSerde(),
-                Collections.<String, String>emptyMap()));
+                crtView.getSerdeProps()));
       }
 
       db.createTable(tbl, crtView.getIfNotExists());
