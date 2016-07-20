@@ -1731,11 +1731,12 @@ public class Driver implements CommandProcessor {
     plan.setDone();
 
     if (SessionState.get() != null) {
+      SessionState.get().getLineageState().clear();
       try {
-        SessionState.get().getLineageState().clear();
         SessionState.get().getHiveHistory().logPlanProgress(plan);
-      } catch (Exception e) {
-        // ignore
+      } catch (IOException e) {
+        // Log and ignore
+        LOG.warn("Could not log query plan progress", e);
       }
     }
     console.printInfo("OK");

@@ -122,8 +122,14 @@ public class LineageState {
    * Clear all lineage states
    */
   public void clear() {
-    dirToFop.clear();
-    linfo.clear();
-    index.clear();
+    if (dirToFop != null) {
+      dirToFop.clear();
+    }
+    if (linfo != null) {
+      linfo.clear();
+    }
+    if (index != null) {
+      index.clear();
+    }
   }
 }
