@@ -275,7 +275,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // table, destination), so if the query is otherwise ok, it is as if we
       // did remove those and gave CBO the proper AST. That is kinda hacky.
       ASTNode queryForCbo = ast;
-      if (cboCtx.type == PreCboCtx.Type.CTAS) {
+      if (cboCtx.type == PreCboCtx.Type.CTAS_OR_MV) {
         queryForCbo = cboCtx.nodeOfInterest; // nodeOfInterest is the query
       }
       runCBO = canCBOHandleAst(queryForCbo, getQB(), cboCtx);
@@ -284,6 +284,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (runCBO) {
         disableJoinMerge = true;
         boolean reAnalyzeAST = false;
+        final boolean materializedView = getQB().isMaterializedView();
 
         try {
           if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
@@ -295,15 +296,30 @@ public class CalcitePlanner extends SemanticAnalyzer {
             // 1. Gen Optimized AST
             ASTNode newAST = getOptimizedAST();
 
-            // 1.1. Fix up the query for insert/ctas
-            newAST = fixUpCtasAndInsertAfterCbo(ast, newAST, cboCtx);
+            // 1.1. Fix up the query for insert/ctas/materialized views
+            newAST = fixUpAfterCbo(ast, newAST, cboCtx);
 
             // 2. Regen OP plan from optimized AST
             init(false);
-            if (cboCtx.type == PreCboCtx.Type.CTAS) {
-              // Redo create-table analysis, because it's not part of doPhase1.
-              setAST(newAST);
-              newAST = reAnalyzeCtasAfterCbo(newAST);
+            if (cboCtx.type == PreCboCtx.Type.CTAS_OR_MV) {
+              // Redo create-table/view analysis, because it's not part of doPhase1.
+              if (materializedView) {
+                // Use the REWRITTEN AST
+                setAST(newAST);
+                newAST = reAnalyzeMaterializedViewAfterCbo(newAST);
+                // Store text of the ORIGINAL QUERY
+                String originalText = ctx.getTokenRewriteStream().toString(
+                    cboCtx.nodeOfInterest.getTokenStartIndex(),
+                    cboCtx.nodeOfInterest.getTokenStopIndex());
+                createVwDesc.setViewOriginalText(originalText);
+                viewSelect = newAST;
+                viewsExpanded = new ArrayList<>();
+                viewsExpanded.add(createVwDesc.getViewName());
+              } else {
+                // CTAS
+                setAST(newAST);
+                newAST = reAnalyzeCTASAfterCbo(newAST);
+              }
             }
             Phase1Ctx ctx_1 = initPhase1Ctx();
             if (!doPhase1(newAST, getQB(), ctx_1, null)) {
@@ -402,12 +418,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
     int root = ast.getToken().getType();
     boolean needToLogMessage = STATIC_LOG.isInfoEnabled();
     boolean isSupportedRoot = root == HiveParser.TOK_QUERY || root == HiveParser.TOK_EXPLAIN
-        || qb.isCTAS();
+        || qb.isCTAS() || qb.isMaterializedView();
     // Queries without a source table currently are not supported by CBO
     boolean isSupportedType = (qb.getIsQuery() && !qb.containsQueryWithoutSourceTable())
-        || qb.isCTAS() || cboCtx.type == PreCboCtx.Type.INSERT;
+        || qb.isCTAS() || qb.isMaterializedView() || cboCtx.type == PreCboCtx.Type.INSERT;
     boolean noBadTokens = HiveCalciteUtil.validateASTForUnsupportedTokens(ast);
-    boolean result = isSupportedRoot && isSupportedType && getCreateViewDesc() == null
+    boolean result = isSupportedRoot && isSupportedType
+        && (getCreateViewDesc() == null || getCreateViewDesc().isMaterialized())
         && noBadTokens;
 
     if (!result) {
@@ -420,7 +437,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           msg += "is not a query with at least one source table "
                   + " or there is a subquery without a source table, or CTAS, or insert; ";
         }
-        if (getCreateViewDesc() != null) {
+        if (getCreateViewDesc() != null && !getCreateViewDesc().isMaterialized()) {
           msg += "has create view; ";
         }
         if (!noBadTokens) {
@@ -592,7 +609,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    */
   static class PreCboCtx extends PlannerContext {
     enum Type {
-      NONE, INSERT, CTAS, UNEXPECTED
+      NONE, INSERT, CTAS_OR_MV, UNEXPECTED
     }
 
     private ASTNode nodeOfInterest;
@@ -610,8 +627,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     @Override
-    void setCTASToken(ASTNode child) {
-      set(PreCboCtx.Type.CTAS, child);
+    void setCTASOrMVToken(ASTNode child) {
+      set(PreCboCtx.Type.CTAS_OR_MV, child);
     }
 
     @Override
@@ -622,7 +639,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
   }
 
-  ASTNode fixUpCtasAndInsertAfterCbo(ASTNode originalAst, ASTNode newAst, PreCboCtx cboCtx)
+  ASTNode fixUpAfterCbo(ASTNode originalAst, ASTNode newAst, PreCboCtx cboCtx)
       throws SemanticException {
     switch (cboCtx.type) {
 
@@ -630,7 +647,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // nothing to do
       return newAst;
 
-    case CTAS: {
+    case CTAS_OR_MV: {
       // Patch the optimized query back into original CTAS AST, replacing the
       // original query.
       replaceASTChild(cboCtx.nodeOfInterest, newAst);
@@ -655,7 +672,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
   }
 
-  ASTNode reAnalyzeCtasAfterCbo(ASTNode newAst) throws SemanticException {
+  ASTNode reAnalyzeCTASAfterCbo(ASTNode newAst) throws SemanticException {
     // analyzeCreateTable uses this.ast, but doPhase1 doesn't, so only reset it
     // here.
     newAst = analyzeCreateTable(newAst, getQB(), null);
@@ -663,6 +680,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
       LOG.error("analyzeCreateTable failed to initialize CTAS after CBO;" + " new ast is "
           + getAST().dump());
       throw new SemanticException("analyzeCreateTable failed to initialize CTAS after CBO");
+    }
+    return newAst;
+  }
+
+  ASTNode reAnalyzeMaterializedViewAfterCbo(ASTNode newAst) throws SemanticException {
+    // analyzeCreateView uses this.ast, but doPhase1 doesn't, so only reset it
+    // here.
+    newAst = analyzeCreateView(newAst, getQB(), null);
+    if (newAst == null) {
+      LOG.error("analyzeCreateTable failed to initialize materialized view after CBO;" + " new ast is "
+          + getAST().dump());
+      throw new SemanticException("analyzeCreateTable failed to initialize materialized view after CBO");
     }
     return newAst;
   }

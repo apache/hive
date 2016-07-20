@@ -44,8 +44,6 @@ show grant user user4 on table amvs_mat_view;
 select * from amvs_mat_view;
 
 set user.name=user1;
-alter materialized view amvs_mat_view rebuild;
-
 grant select on table amvs_table to user user2 with grant option;
 set user.name=user2;
 create materialized view amvs_mat_view2 as select a, b from amvs_table;

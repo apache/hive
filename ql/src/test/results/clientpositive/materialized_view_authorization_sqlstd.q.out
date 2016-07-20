@@ -18,12 +18,12 @@ POSTHOOK: Lineage: amvs_table.a EXPRESSION [(values__tmp__table__1)values__tmp__
 POSTHOOK: Lineage: amvs_table.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: amvs_table.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 PREHOOK: query: create materialized view amvs_mat_view as select a, c from amvs_table
-PREHOOK: type: CREATEVIEW
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@amvs_table
 PREHOOK: Output: database:default
 PREHOOK: Output: default@amvs_mat_view
 POSTHOOK: query: create materialized view amvs_mat_view as select a, c from amvs_table
-POSTHOOK: type: CREATEVIEW
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@amvs_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@amvs_mat_view
@@ -54,11 +54,11 @@ POSTHOOK: query: select * from amvs_mat_view
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@amvs_mat_view
 #### A masked pattern was here ####
-1	10.3
+1	10.30
 2	3.14
-2	172342.2
+2	172342.20
 3	978.76
-3	9.8
+3	9.80
 PREHOOK: query: show grant user user3 on table amvs_mat_view
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user user3 on table amvs_mat_view
@@ -137,21 +137,11 @@ POSTHOOK: query: select * from amvs_mat_view
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@amvs_mat_view
 #### A masked pattern was here ####
-1	10.3
+1	10.30
 2	3.14
-2	172342.2
+2	172342.20
 3	978.76
-3	9.8
-PREHOOK: query: alter materialized view amvs_mat_view rebuild
-PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@amvs_table
-PREHOOK: Output: database:default
-PREHOOK: Output: default@amvs_mat_view
-POSTHOOK: query: alter materialized view amvs_mat_view rebuild
-POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@amvs_table
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@amvs_mat_view
+3	9.80
 PREHOOK: query: grant select on table amvs_table to user user2 with grant option
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@amvs_table
@@ -159,12 +149,12 @@ POSTHOOK: query: grant select on table amvs_table to user user2 with grant optio
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@amvs_table
 PREHOOK: query: create materialized view amvs_mat_view2 as select a, b from amvs_table
-PREHOOK: type: CREATEVIEW
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@amvs_table
 PREHOOK: Output: database:default
 PREHOOK: Output: default@amvs_mat_view2
 POSTHOOK: query: create materialized view amvs_mat_view2 as select a, b from amvs_table
-POSTHOOK: type: CREATEVIEW
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@amvs_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@amvs_mat_view2
@@ -182,11 +172,11 @@ POSTHOOK: Input: default@amvs_mat_view2
 3	calvin
 3	charlie
 PREHOOK: query: drop materialized view amvs_mat_view2
-PREHOOK: type: DROPTABLE
+PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@amvs_mat_view2
 PREHOOK: Output: default@amvs_mat_view2
 POSTHOOK: query: drop materialized view amvs_mat_view2
-POSTHOOK: type: DROPTABLE
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@amvs_mat_view2
 POSTHOOK: Output: default@amvs_mat_view2
 PREHOOK: query: set role ADMIN
