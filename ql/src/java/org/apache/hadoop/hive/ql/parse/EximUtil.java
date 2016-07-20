@@ -127,7 +127,7 @@ public class EximUtil {
   }
 
   static void validateTable(org.apache.hadoop.hive.ql.metadata.Table table) throws SemanticException {
-    if (table.isView()) {
+    if (table.isView() || table.isMaterializedView()) {
       throw new SemanticException(ErrorMsg.DML_AGAINST_VIEW.getMsg());
     }
     if (table.isNonNative()) {

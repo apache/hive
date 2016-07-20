@@ -1000,7 +1000,9 @@ public abstract class BaseSemanticAnalyzer {
       assert (ast.getToken().getType() == HiveParser.TOK_TAB
           || ast.getToken().getType() == HiveParser.TOK_TABLE_PARTITION
           || ast.getToken().getType() == HiveParser.TOK_TABTYPE
-          || ast.getToken().getType() == HiveParser.TOK_CREATETABLE);
+          || ast.getToken().getType() == HiveParser.TOK_CREATETABLE
+          || ast.getToken().getType() == HiveParser.TOK_CREATE_MATERIALIZED_VIEW
+          || ast.getToken().getType() == HiveParser.TOK_REBUILD_MATERIALIZED_VIEW);
       int childIndex = 0;
       numDynParts = 0;
 
@@ -1012,7 +1014,9 @@ public abstract class BaseSemanticAnalyzer {
           tableName = conf.getVar(HiveConf.ConfVars.HIVETESTMODEPREFIX)
               + tableName;
         }
-        if (ast.getToken().getType() != HiveParser.TOK_CREATETABLE) {
+        if (ast.getToken().getType() != HiveParser.TOK_CREATETABLE &&
+            ast.getToken().getType() != HiveParser.TOK_CREATE_MATERIALIZED_VIEW &&
+            ast.getToken().getType() != HiveParser.TOK_REBUILD_MATERIALIZED_VIEW) {
           tableHandle = db.getTable(tableName);
         }
       } catch (InvalidTableException ite) {
@@ -1024,7 +1028,9 @@ public abstract class BaseSemanticAnalyzer {
       }
 
       // get partition metadata if partition specified
-      if (ast.getChildCount() == 2 && ast.getToken().getType() != HiveParser.TOK_CREATETABLE) {
+      if (ast.getChildCount() == 2 && ast.getToken().getType() != HiveParser.TOK_CREATETABLE &&
+          ast.getToken().getType() != HiveParser.TOK_CREATE_MATERIALIZED_VIEW &&
+          ast.getToken().getType() != HiveParser.TOK_REBUILD_MATERIALIZED_VIEW) {
         childIndex = 1;
         ASTNode partspec = (ASTNode) ast.getChild(1);
         partitions = new ArrayList<Partition>();

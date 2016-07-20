@@ -469,7 +469,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         listMapJoinOpsNoReducer, prunedPartitions, tabNameToTabObject,
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
         opToPartToSkewedPruner, viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting,
-        analyzeRewrite, tableDesc, queryProperties, viewProjectToTableSchema, acidFileSinks);
+        analyzeRewrite, tableDesc, createVwDesc, queryProperties, viewProjectToTableSchema, acidFileSinks);
   }
 
   public CompilationOpContext getOpContext() {
@@ -2060,7 +2060,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       switch (ast.getToken().getType()) {
         case HiveParser.TOK_TAB: {
           TableSpec ts = new TableSpec(db, conf, ast);
-          if (ts.tableHandle.isView()) {
+          if (ts.tableHandle.isView() || ts.tableHandle.isMaterializedView()) {
             throw new SemanticException(ErrorMsg.DML_AGAINST_VIEW.getMsg());
           }
 
@@ -2098,7 +2098,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if ((!qb.getParseInfo().getIsSubQ())
               && (((ASTNode) ast.getChild(0)).getToken().getType() == HiveParser.TOK_TMP_FILE)) {
 
-            if (qb.isCTAS()) {
+            if (qb.isCTAS() || qb.isMaterializedView()) {
               qb.setIsQuery(false);
               ctx.setResDir(null);
               ctx.setResFile(null);
@@ -4403,12 +4403,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Returns the GenericUDAFInfo struct for the aggregation.
    *
-   * @param aggName
-   *          The name of the UDAF.
+   * @param evaluator
+   * @param emode
    * @param aggParameters
    *          The exprNodeDesc of the original parameters
-   * @param aggTree
-   *          The ASTNode node of the UDAF in the query.
    * @return GenericUDAFInfo
    * @throws SemanticException
    *           when the UDAF is not found or has problems.
@@ -4714,6 +4712,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Generate the GroupByOperator for the Query Block (parseInfo.getXXX(dest)).
    * The new GroupByOperator will be a child of the reduceSinkOperatorInfo.
    *
+   * @param parseInfo
+   * @param dest
+   * @param reduceSinkOperatorInfo
    * @param mode
    *          The mode of the aggregation (MERGEPARTIAL, PARTIAL2)
    * @param genericUDAFEvaluators
@@ -4723,7 +4724,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *          list of grouping sets
    * @param groupingSetsPresent
    *          whether grouping sets are present in this query
-   * @param groupingSetsConsumedCurrentMR
+   * @param groupingSetsNeedAdditionalMRJob
    *          whether grouping sets are consumed by this group by
    * @return the new GroupByOperator
    */
@@ -6796,10 +6797,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // table command rather than taking the default value
       List<FieldSchema> field_schemas = null;
       CreateTableDesc tblDesc = qb.getTableDesc();
+      CreateViewDesc viewDesc = qb.getViewDesc();
       if (tblDesc != null) {
         field_schemas = new ArrayList<FieldSchema>();
         destTableIsTemporary = tblDesc.isTemporary();
         destTableIsMaterialization = tblDesc.isMaterialization();
+      } else if (viewDesc != null) {
+        field_schemas = new ArrayList<FieldSchema>();
+        destTableIsTemporary = false;
       }
 
       boolean first = true;
@@ -6858,6 +6863,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // update the create table descriptor with the resulting schema.
       if (tblDesc != null) {
         tblDesc.setCols(new ArrayList<FieldSchema>(field_schemas));
+      } else if (viewDesc != null) {
+        viewDesc.setSchema(new ArrayList<FieldSchema>(field_schemas));
       }
 
       boolean isDestTempFile = true;
@@ -6869,11 +6876,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean isDfsDir = (dest_type.intValue() == QBMetaData.DEST_DFS_FILE);
-      loadFileWork.add(new LoadFileDesc(tblDesc, queryTmpdir, dest_path, isDfsDir, cols,
+      loadFileWork.add(new LoadFileDesc(tblDesc, viewDesc, queryTmpdir, dest_path, isDfsDir, cols,
           colTypes));
 
       if (tblDesc == null) {
-        if (qb.getIsQuery()) {
+        if (viewDesc != null) {
+          table_desc = PlanUtils.getTableDesc(viewDesc, cols, colTypes);
+        } else if (qb.getIsQuery()) {
           String fileFormat;
           if (SessionState.get().getIsUsingThriftJDBCBinarySerDe()) {
               fileFormat = "SequenceFile";
@@ -10434,7 +10443,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *
    * @param source
    * @param dest
-   * @param outputColNames
+   * @param colExprMap
+   * @param outputInternalColNames
    *          - a list to which the new internal column names will be added, in
    *          the same order as in the dest row resolver
    */
@@ -10687,10 +10697,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // 3. analyze create view command
-    if (ast.getToken().getType() == HiveParser.TOK_CREATEVIEW
-        || (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW && ast.getChild(1).getType() == HiveParser.TOK_QUERY)) {
+    if (ast.getToken().getType() == HiveParser.TOK_CREATEVIEW ||
+        ast.getToken().getType() == HiveParser.TOK_CREATE_MATERIALIZED_VIEW ||
+        ast.getToken().getType() == HiveParser.TOK_REBUILD_MATERIALIZED_VIEW ||
+        (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW &&
+            ast.getChild(1).getType() == HiveParser.TOK_QUERY)) {
       child = analyzeCreateView(ast, qb);
-      queryState.setCommandType(HiveOperation.CREATEVIEW);
       if (child == null) {
         return false;
       }
@@ -10835,7 +10847,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         listMapJoinOpsNoReducer, prunedPartitions, tabNameToTabObject, opToSamplePruner,
         globalLimitCtx, nameToSplitSample, inputs, rootTasks, opToPartToSkewedPruner,
         viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting,
-        analyzeRewrite, tableDesc, queryProperties, viewProjectToTableSchema, acidFileSinks);
+        analyzeRewrite, tableDesc, createVwDesc, queryProperties, viewProjectToTableSchema, acidFileSinks);
 
     // 5. Take care of view creation
     if (createVwDesc != null) {
@@ -10846,32 +10858,34 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // validate the create view statement at this point, the createVwDesc gets
       // all the information for semanticcheck
-      validateCreateView(createVwDesc);
+      validateCreateView();
 
-      // Since we're only creating a view (not executing it), we don't need to
-      // optimize or translate the plan (and in fact, those procedures can
-      // interfere with the view creation). So skip the rest of this method.
-      ctx.setResDir(null);
-      ctx.setResFile(null);
+      if (!createVwDesc.isMaterialized()) {
+        // Since we're only creating a view (not executing it), we don't need to
+        // optimize or translate the plan (and in fact, those procedures can
+        // interfere with the view creation). So skip the rest of this method.
+        ctx.setResDir(null);
+        ctx.setResFile(null);
 
-      try {
-        PlanUtils.addInputsForView(pCtx);
-      } catch (HiveException e) {
-        throw new SemanticException(e);
-      }
-
-      // Generate lineage info for create view statements
-      // if LineageLogger hook is configured.
-      if (HiveConf.getVar(conf, HiveConf.ConfVars.POSTEXECHOOKS).contains(
-          "org.apache.hadoop.hive.ql.hooks.LineageLogger")) {
-        ArrayList<Transform> transformations = new ArrayList<Transform>();
-        transformations.add(new HiveOpConverterPostProc());
-        transformations.add(new Generator());
-        for (Transform t : transformations) {
-          pCtx = t.transform(pCtx);
+        try {
+          PlanUtils.addInputsForView(pCtx);
+        } catch (HiveException e) {
+          throw new SemanticException(e);
         }
+
+        // Generate lineage info for create view statements
+        // if LineageLogger hook is configured.
+        if (HiveConf.getVar(conf, HiveConf.ConfVars.POSTEXECHOOKS).contains(
+            "org.apache.hadoop.hive.ql.hooks.LineageLogger")) {
+          ArrayList<Transform> transformations = new ArrayList<Transform>();
+          transformations.add(new HiveOpConverterPostProc());
+          transformations.add(new Generator());
+          for (Transform t : transformations) {
+            pCtx = t.transform(pCtx);
+          }
+        }
+        return;
       }
-      return;
     }
 
     // 6. Generate table access stats if required
@@ -11002,6 +11016,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void saveViewDefinition() throws SemanticException {
 
+    if (createVwDesc.isMaterialized() && createVwDesc.getOrReplace()) {
+      // This is a rebuild, there's nothing to do here.
+      return;
+    }
+
     // Make a copy of the statement's result schema, since we may
     // modify it below as part of imposing view column names.
     List<FieldSchema> derivedSchema =
@@ -11112,7 +11131,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     createVwDesc.setSchema(derivedSchema);
-    createVwDesc.setViewExpandedText(expandedText);
+    if (!createVwDesc.isMaterialized()) {
+      // materialized views don't store the expanded text as they won't be rewritten at query time.
+      createVwDesc.setViewExpandedText(expandedText);
+    }
   }
 
   static List<FieldSchema> convertRowSchemaToViewSchema(RowResolver rr) throws SemanticException {
@@ -11496,8 +11518,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     RowFormatParams rowFormatParams = new RowFormatParams();
     StorageFormat storageFormat = new StorageFormat(conf);
 
-    LOG.info("Creating table " + dbDotTab + " position="
-        + ast.getCharPositionInLine());
+    LOG.info("Creating table " + dbDotTab + " position=" + ast.getCharPositionInLine());
     int numCh = ast.getChildCount();
 
     /*
@@ -11539,6 +11560,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           command_type = CTLT;
         }
         break;
+
       case HiveParser.TOK_QUERY: // CTAS
         if (command_type == CTLT) {
           throw new SemanticException(ErrorMsg.CTAS_CTLT_COEXISTENCE.getMsg());
@@ -11629,7 +11651,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException("Unrecognized command.");
     }
 
-    storageFormat.fillDefaultStorageFormat(isExt);
+    storageFormat.fillDefaultStorageFormat(isExt, false);
 
     if ((command_type == CTAS) && (storageFormat.getStorageHandler() != null)) {
       throw new SemanticException(ErrorMsg.CREATE_NON_NATIVE_AS.getMsg());
@@ -11782,6 +11804,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       qb.setTableDesc(tableDesc);
 
       return selectStmt;
+
     default:
       throw new SemanticException("Unrecognized command.");
     }
@@ -11797,8 +11820,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     outputs.add(new WriteEntity(t, WriteEntity.WriteType.DDL_NO_LOCK));
   }
 
-  private ASTNode analyzeCreateView(ASTNode ast, QB qb)
-      throws SemanticException {
+  private ASTNode analyzeCreateView(ASTNode ast, QB qb) throws SemanticException {
     String[] qualTabName = getQualifiedTableName((ASTNode) ast.getChild(0));
     String dbDotTable = getDotName(qualTabName);
     List<FieldSchema> cols = null;
@@ -11809,6 +11831,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ASTNode selectStmt = null;
     Map<String, String> tblProps = null;
     List<String> partColNames = null;
+    boolean isRebuild = ast.getToken().getType() == HiveParser.TOK_REBUILD_MATERIALIZED_VIEW;
+    boolean isMaterialized = ast.getToken().getType() == HiveParser.TOK_CREATE_MATERIALIZED_VIEW
+        || isRebuild;
+    StorageFormat storageFormat = storageFormat = new StorageFormat(conf);
+    storageFormat.fillDefaultStorageFormat(false, isMaterialized);
 
     LOG.info("Creating view " + dbDotTable + " position="
         + ast.getCharPositionInLine());
@@ -11852,18 +11879,40 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       orReplace = true;
     }
 
-    StorageFormat defaultFmt = new StorageFormat(conf);
-    defaultFmt.fillDefaultStorageFormat(false);
-    createVwDesc = new CreateViewDesc(
-      dbDotTable, cols, comment, defaultFmt.getInputFormat(),
-      defaultFmt.getOutputFormat(), tblProps, partColNames,
-      ifNotExists, orReplace, isAlterViewAs);
-
     unparseTranslator.enable();
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        createVwDesc), conf));
 
-    addDbAndTabToOutputs(qualTabName, TableType.VIRTUAL_VIEW);
+    if (isMaterialized) {
+      createVwDesc = new CreateViewDesc(dbDotTable, cols, comment, tblProps, partColNames,
+              ifNotExists, orReplace || isRebuild, isAlterViewAs, storageFormat.getInputFormat(),
+              storageFormat.getOutputFormat(), storageFormat.getSerde());
+      addDbAndTabToOutputs(qualTabName, TableType.MATERIALIZED_VIEW);
+      queryState.setCommandType(HiveOperation.CREATE_MATERIALIZED_VIEW);
+      qb.setViewDesc(createVwDesc);
+    } else {
+      createVwDesc = new CreateViewDesc(
+              dbDotTable, cols, comment, tblProps, partColNames,
+              ifNotExists, orReplace, isAlterViewAs, storageFormat.getInputFormat(),
+              storageFormat.getOutputFormat(), storageFormat.getSerde());
+      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+              createVwDesc), conf));
+
+      addDbAndTabToOutputs(qualTabName, TableType.VIRTUAL_VIEW);
+      queryState.setCommandType(HiveOperation.CREATEVIEW);
+    }
+
+    if (isRebuild) {
+      // We need to go lookup the table and get the select statement and then parse it.
+      try {
+        Table tab = db.getTable(qualTabName[0], qualTabName[1]);
+        String viewText = tab.getViewOriginalText();
+        ParseDriver pd = new ParseDriver();
+        ASTNode tree = pd.parse(viewText, ctx, false);
+        selectStmt = ParseUtils.findRootNonNullToken(tree);
+      } catch (Exception e) {
+        throw new SemanticException(e);
+      }
+    }
+
     return selectStmt;
   }
 
@@ -11874,7 +11923,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // validate the create view statement
   // the statement could be CREATE VIEW, REPLACE VIEW, or ALTER VIEW AS SELECT
   // check semantic conditions
-  private void validateCreateView(CreateViewDesc createVwDesc)
+  private void validateCreateView()
     throws SemanticException {
     try {
       Table oldView = getTable(createVwDesc.getViewName(), false);
@@ -11903,8 +11952,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       //replace view
       if (createVwDesc.getOrReplace() && oldView != null) {
 
+        // Don't allow swapping between virtual and materialized view in replace
+        if (oldView.getTableType().equals(TableType.VIRTUAL_VIEW) && createVwDesc.isMaterialized()) {
+          throw new SemanticException(ErrorMsg.REPLACE_VIEW_WITH_MATERIALIZED,
+              oldView.getTableName());
+        }
+
+        if (oldView.getTableType().equals(TableType.MATERIALIZED_VIEW) &&
+            !createVwDesc.isMaterialized()) {
+          throw new SemanticException(ErrorMsg.REPLACE_MATERIALIZED_WITH_VIEW,
+              oldView.getTableName());
+        }
+
         // Existing table is not a view
-        if (!oldView.getTableType().equals(TableType.VIRTUAL_VIEW)) {
+        if (!oldView.getTableType().equals(TableType.VIRTUAL_VIEW) &&
+            !oldView.getTableType().equals(TableType.MATERIALIZED_VIEW)) {
           String tableNotViewErrorMsg =
             "The following is an existing table, not a view: " +
             createVwDesc.getViewName();
@@ -11912,26 +11974,28 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             ErrorMsg.EXISTING_TABLE_IS_NOT_VIEW.getMsg(tableNotViewErrorMsg));
         }
 
-        // if old view has partitions, it could not be replaced
-        String partitionViewErrorMsg =
-          "The following view has partition, it could not be replaced: " +
-          createVwDesc.getViewName();
-        try {
-          if ((createVwDesc.getPartCols() == null ||
-            createVwDesc.getPartCols().isEmpty() ||
-            !createVwDesc.getPartCols().equals(oldView.getPartCols())) &&
-            !oldView.getPartCols().isEmpty() &&
-            !db.getPartitions(oldView).isEmpty()) {
+        if (!createVwDesc.isMaterialized()) {
+          // if old view has partitions, it could not be replaced
+          String partitionViewErrorMsg =
+              "The following view has partition, it could not be replaced: " +
+                  createVwDesc.getViewName();
+          try {
+            if ((createVwDesc.getPartCols() == null ||
+                createVwDesc.getPartCols().isEmpty() ||
+                !createVwDesc.getPartCols().equals(oldView.getPartCols())) &&
+                !oldView.getPartCols().isEmpty() &&
+                !db.getPartitions(oldView).isEmpty()) {
+              throw new SemanticException(
+                  ErrorMsg.REPLACE_VIEW_WITH_PARTITION.getMsg(partitionViewErrorMsg));
+            }
+          } catch (HiveException e) {
             throw new SemanticException(
-              ErrorMsg.REPLACE_VIEW_WITH_PARTITION.getMsg(partitionViewErrorMsg));
+                ErrorMsg.REPLACE_VIEW_WITH_PARTITION.getMsg(partitionViewErrorMsg));
           }
-        } catch (HiveException e) {
-          throw new SemanticException(
-            ErrorMsg.REPLACE_VIEW_WITH_PARTITION.getMsg(partitionViewErrorMsg));
         }
       }
     } catch (HiveException e) {
-      throw new SemanticException(e.getMessage());
+      throw new SemanticException(e.getMessage(), e);
     }
   }
 
@@ -13040,6 +13104,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       queryProperties.setHasOuterOrderBy(!qb.getParseInfo().getIsSubQ() &&
               !qb.getParseInfo().getDestToOrderBy().isEmpty());
       queryProperties.setOuterQueryLimit(qb.getParseInfo().getOuterQueryLimit());
+      queryProperties.setMaterializedView(qb.getViewDesc() != null);
     }
   }
   private void warn(String msg) {

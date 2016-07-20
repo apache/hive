@@ -332,6 +332,10 @@ public class Operation2Privilege {
         new PrivRequirement(SEL_GRANT_AR, IOType.INPUT),
         new PrivRequirement(OWNER_PRIV_AR, HivePrivilegeObjectType.DATABASE)));
 
+    op2Priv.put(HiveOperationType.CREATE_MATERIALIZED_VIEW, PrivRequirement.newPrivRequirementList(
+        new PrivRequirement(SEL_GRANT_AR, IOType.INPUT),
+        new PrivRequirement(OWNER_PRIV_AR, HivePrivilegeObjectType.DATABASE)));
+
     op2Priv.put(HiveOperationType.SHOWFUNCTIONS, PrivRequirement.newIOPrivRequirement
 (null, null));
     op2Priv.put(HiveOperationType.SHOWINDEXES, PrivRequirement.newIOPrivRequirement

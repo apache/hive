@@ -7,6 +7,7 @@ set user.name=user1;
 -- Test view authorization , and 'show grant' variants
 
 create table t1(i int, j int, k int);
+grant select on t1 to user user2 with grant option;
 show grant user user1 on table t1;
 
 -- protecting certain columns
@@ -25,6 +26,8 @@ grant insert on table vt1 to user user3;
 
 set user.name=user2;
 show grant user user2 on table vt1;
+create view vt3 as select i,k from t1;
+
 set user.name=user3;
 show grant user user3 on table vt1;
 

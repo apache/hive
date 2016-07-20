@@ -250,6 +250,8 @@ TOK_ALTERVIEW_DROPPROPERTIES;
 TOK_ALTERVIEW_ADDPARTS;
 TOK_ALTERVIEW_DROPPARTS;
 TOK_ALTERVIEW_RENAME;
+TOK_REBUILD_MATERIALIZED_VIEW;
+TOK_CREATE_MATERIALIZED_VIEW;
 TOK_VIEWPARTCOLS;
 TOK_EXPLAIN;
 TOK_EXPLAIN_SQ_REWRITE;
@@ -784,7 +786,9 @@ ddlStatement
     | showStatement
     | metastoreCheck
     | createViewStatement
+    | createMaterializedViewStatement
     | dropViewStatement
+    | dropMaterializedViewStatement
     | createFunctionStatement
     | createMacroStatement
     | createIndexStatement
@@ -1030,6 +1034,7 @@ alterStatement
 @after { popMsg(state); }
     : KW_ALTER KW_TABLE tableName alterTableStatementSuffix -> ^(TOK_ALTERTABLE tableName alterTableStatementSuffix)
     | KW_ALTER KW_VIEW tableName KW_AS? alterViewStatementSuffix -> ^(TOK_ALTERVIEW tableName alterViewStatementSuffix)
+    | KW_ALTER KW_MATERIALIZED KW_VIEW tableName KW_REBUILD -> ^(TOK_REBUILD_MATERIALIZED_VIEW tableName)
     | KW_ALTER KW_INDEX alterIndexStatementSuffix -> alterIndexStatementSuffix
     | KW_ALTER (KW_DATABASE|KW_SCHEMA) alterDatabaseStatementSuffix -> alterDatabaseStatementSuffix
     ;
@@ -1778,6 +1783,22 @@ createViewStatement
         )
     ;
 
+createMaterializedViewStatement
+@init {
+    pushMsg("create materialized view statement", state);
+}
+@after { popMsg(state); }
+    : KW_CREATE KW_MATERIALIZED KW_VIEW (ifNotExists)? name=tableName
+        tableComment? tablePropertiesPrefixed?
+        KW_AS selectStatementWithCTE
+    -> ^(TOK_CREATE_MATERIALIZED_VIEW $name 
+         ifNotExists?
+         tableComment?
+         tablePropertiesPrefixed?
+         selectStatementWithCTE
+        )
+    ;
+
 viewPartition
 @init { pushMsg("view partition specification", state); }
 @after { popMsg(state); }
@@ -1789,6 +1810,12 @@ dropViewStatement
 @init { pushMsg("drop view statement", state); }
 @after { popMsg(state); }
     : KW_DROP KW_VIEW ifExists? viewName -> ^(TOK_DROPVIEW viewName ifExists?)
+    ;
+
+dropMaterializedViewStatement
+@init { pushMsg("drop materialized view statement", state); }
+@after { popMsg(state); }
+    : KW_DROP KW_MATERIALIZED KW_VIEW ifExists? viewName -> ^(TOK_DROPTABLE viewName ifExists?)
     ;
 
 showFunctionIdentifier

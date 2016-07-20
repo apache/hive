@@ -78,6 +78,8 @@ public enum HiveOperation {
   CREATEMACRO("CREATEMACRO", null, null),
   DROPMACRO("DROPMACRO", null, null),
   CREATEVIEW("CREATEVIEW", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.CREATE}),
+  CREATE_MATERIALIZED_VIEW("CREATEVIEW", new Privilege[]{Privilege.SELECT}, new
+      Privilege[]{Privilege.CREATE}),
   DROPVIEW("DROPVIEW", null, new Privilege[]{Privilege.DROP}),
   CREATEINDEX("CREATEINDEX", null, null),
   DROPINDEX("DROPINDEX", null, null),

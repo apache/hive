@@ -199,7 +199,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     // initialize destination table/partition
     TableSpec ts = new TableSpec(db, conf, (ASTNode) tableTree);
 
-   if (ts.tableHandle.isView()) {
+    if (ts.tableHandle.isView() || ts.tableHandle.isMaterializedView()) {
       throw new SemanticException(ErrorMsg.DML_AGAINST_VIEW.getMsg());
     }
     if (ts.tableHandle.isNonNative()) {
