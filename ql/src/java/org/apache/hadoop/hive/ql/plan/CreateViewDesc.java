@@ -48,6 +48,8 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private boolean ifNotExists;
   private boolean orReplace;
   private boolean isAlterViewAs;
+  private boolean isMaterialized;
+  private String serde; // only used for materialized views
 
   /**
    * For serialization only.
@@ -55,6 +57,17 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   public CreateViewDesc() {
   }
 
+  /**
+   * Used to create a virtual view descriptor.
+   * @param viewName
+   * @param schema
+   * @param comment
+   * @param tblProps
+   * @param partColNames
+   * @param ifNotExists
+   * @param orReplace
+   * @param isAlterViewAs
+   */
   public CreateViewDesc(String viewName, List<FieldSchema> schema,
       String comment, String inputFormat,
       String outputFormat, Map<String, String> tblProps,
@@ -70,6 +83,39 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.ifNotExists = ifNotExists;
     this.orReplace = orReplace;
     this.isAlterViewAs = isAlterViewAs;
+    this.isMaterialized = false;
+  }
+
+  /**
+   * Used to create a materialized view descriptor
+   * @param viewName
+   * @param schema
+   * @param comment
+   * @param tblProps
+   * @param partColNames
+   * @param ifNotExists
+   * @param orReplace
+   * @param isAlterViewAs
+   * @param inputFormat
+   * @param outputFormat
+   * @param serde
+   */
+  public CreateViewDesc(String viewName, List<FieldSchema> schema, String comment,
+                        Map<String, String> tblProps, List<String> partColNames,
+                        boolean ifNotExists, boolean orReplace, boolean isAlterViewAs,
+                        String inputFormat, String outputFormat, String serde) {
+    this.viewName = viewName;
+    this.schema = schema;
+    this.tblProps = tblProps;
+    this.partColNames = partColNames;
+    this.comment = comment;
+    this.ifNotExists = ifNotExists;
+    this.orReplace = orReplace;
+    this.isAlterViewAs = isAlterViewAs;
+    this.isMaterialized = true;
+    this.inputFormat = inputFormat;
+    this.outputFormat = outputFormat;
+    this.serde = serde;
   }
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -192,6 +238,14 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
 
   public void setOutputFormat(String outputFormat) {
     this.outputFormat = outputFormat;
+  }
+
+  public boolean isMaterialized() {
+    return isMaterialized;
+  }
+
+  public String getSerde() {
+    return serde;
   }
 
 }

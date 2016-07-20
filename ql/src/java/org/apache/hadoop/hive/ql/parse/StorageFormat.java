@@ -104,13 +104,22 @@ public class StorageFormat {
     }
   }
 
-  protected void fillDefaultStorageFormat(boolean isExternal) throws SemanticException {
+  protected void fillDefaultStorageFormat(boolean isExternal, boolean isMaterializedView)
+      throws  SemanticException {
     if ((inputFormat == null) && (storageHandler == null)) {
-      String defaultFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT);
-      String defaultManagedFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTMANAGEDFILEFORMAT);
+      String defaultFormat;
+      String defaultManagedFormat;
+      if (isMaterializedView) {
+        defaultFormat = defaultManagedFormat =
+            HiveConf.getVar(conf, HiveConf.ConfVars.HIVEMATERIALIZEDVIEWFILEFORMAT);
+        serde = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEMATERIALIZEDVIEWSERDE);
+      } else {
+        defaultFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT);
+        defaultManagedFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTMANAGEDFILEFORMAT);
+      }
 
       if (!isExternal && !"none".equals(defaultManagedFormat)) {
-	defaultFormat = defaultManagedFormat;
+        defaultFormat = defaultManagedFormat;
       }
 
       if (StringUtils.isBlank(defaultFormat)) {

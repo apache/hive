@@ -1,0 +1,67 @@
+PREHOOK: query: create table rmv_table (cint int, cstring1 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rmv_table
+POSTHOOK: query: create table rmv_table (cint int, cstring1 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@rmv_table
+PREHOOK: query: insert into rmv_table values(1, 'fred'), (10, 'wilma')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@rmv_table
+POSTHOOK: query: insert into rmv_table values(1, 'fred'), (10, 'wilma')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@rmv_table
+POSTHOOK: Lineage: rmv_table.cint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: rmv_table.cstring1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: create materialized view rmv_mat_view as select cint, cstring1 from rmv_table where cint < 10
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@rmv_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rmv_mat_view
+POSTHOOK: query: create materialized view rmv_mat_view as select cint, cstring1 from rmv_table where cint < 10
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@rmv_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@rmv_mat_view
+PREHOOK: query: select * from rmv_mat_view
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rmv_mat_view
+#### A masked pattern was here ####
+POSTHOOK: query: select * from rmv_mat_view
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rmv_mat_view
+#### A masked pattern was here ####
+1	fred
+PREHOOK: query: insert into rmv_table values(2, 'barney'), (11, 'betty')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@rmv_table
+POSTHOOK: query: insert into rmv_table values(2, 'barney'), (11, 'betty')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@rmv_table
+POSTHOOK: Lineage: rmv_table.cint EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: rmv_table.cstring1 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: alter materialized view rmv_mat_view rebuild
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@rmv_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rmv_mat_view
+POSTHOOK: query: alter materialized view rmv_mat_view rebuild
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@rmv_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@rmv_mat_view
+PREHOOK: query: select * from rmv_mat_view
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rmv_mat_view
+#### A masked pattern was here ####
+POSTHOOK: query: select * from rmv_mat_view
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rmv_mat_view
+#### A masked pattern was here ####
+1	fred
+2	barney

@@ -1,0 +1,19 @@
+PREHOOK: query: create table uv_basetable (a int, b varchar(256), c decimal(10,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@uv_basetable
+POSTHOOK: query: create table uv_basetable (a int, b varchar(256), c decimal(10,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@uv_basetable
+PREHOOK: query: create view uv_view as select a, b, c from uv_basetable
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@uv_basetable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@uv_view
+POSTHOOK: query: create view uv_view as select a, b, c from uv_basetable
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@uv_basetable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@uv_view
+FAILED: SemanticException [Error 10304]: You cannot update or delete records in a view
