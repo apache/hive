@@ -118,7 +118,7 @@ public final class TaskFactory {
 
   public static int getAndIncrementId() {
     int curValue = tid.get().intValue();
-    tid.set(new Integer(curValue + 1));
+    tid.set(Integer.valueOf(curValue + 1));
     return curValue;
   }
 
