@@ -32,12 +32,6 @@ import org.slf4j.LoggerFactory;
 public class LlapUtil {
   private static final Logger LOG = LoggerFactory.getLogger(LlapUtil.class);
 
-  public static String getDaemonLocalDirList(Configuration conf) {
-    String localDirList = HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_WORK_DIRS);
-    if (localDirList != null && !localDirList.isEmpty()) return localDirList;
-    return conf.get("yarn.nodemanager.local-dirs");
-  }
-
   public static UserGroupInformation loginWithKerberos(
       String principal, String keytabFile) throws IOException {
     if (!UserGroupInformation.isSecurityEnabled()) return null;

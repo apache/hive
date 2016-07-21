@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.llap.security.SecretManager;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge.UdfWhitelistChecker;
@@ -434,7 +435,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
       int numExecutors = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
 
-      String localDirList = LlapUtil.getDaemonLocalDirList(daemonConf);
+      String localDirList = HiveUtils.getLocalDirList(daemonConf);
       String[] localDirs = (localDirList == null || localDirList.isEmpty()) ?
           new String[0] : StringUtils.getTrimmedStrings(localDirList);
       int rpcPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_PORT);
