@@ -31,7 +31,6 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
-import org.apache.calcite.rel.core.JoinInfo;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.rules.ValuesReduceRule;
@@ -219,13 +218,7 @@ public abstract class HiveReduceExpressionsRule extends RelOptRule {
           mq.getPulledUpPredicates(join.getRight());
       final RelOptPredicateList predicates =
           leftPredicates.union(rightPredicates.shift(fieldCount));
-      if (!reduceExpressions(join, expList, predicates)) {
-        return;
-      }
-      final JoinInfo joinInfo = JoinInfo.of(join.getLeft(), join.getRight(), expList.get(0));
-      if (!joinInfo.isEqui()) {
-        // This kind of join must be an equi-join, and the condition is
-        // no longer an equi-join. SemiJoin is an example of this.
+      if (!reduceExpressions(join, expList, predicates, true)) {
         return;
       }
       call.transformTo(

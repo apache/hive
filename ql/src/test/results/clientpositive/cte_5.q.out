@@ -63,6 +63,7 @@ src_thrift
 srcbucket
 srcbucket2
 srcpart
+Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain
 with q1 as (select * from src where key= '5')
 select a.colnum
@@ -87,18 +88,13 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: colnum is not null (type: boolean)
+              predicate: (UDFToDouble(colnum) = 5.0) (type: boolean)
               Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: colnum (type: int)
-                outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: UDFToDouble(_col0) (type: double)
-                  sort order: +
-                  Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                  sort order: 
                   Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: int)
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -108,26 +104,27 @@ STAGE PLANS:
               Select Operator
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: 5.0 (type: double)
-                  sort order: +
-                  Map-reduce partition columns: 5.0 (type: double)
+                  sort order: 
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
-            0 UDFToDouble(_col0) (type: double)
-            1 5.0 (type: double)
-          outputColumnNames: _col0
-          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            0 
+            1 
+          Statistics: Num rows: 250 Data size: 3656 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: 5 (type: int)
+            outputColumnNames: _col0
+            Statistics: Num rows: 250 Data size: 3656 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 250 Data size: 3656 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -135,6 +132,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: with q1 as (select * from src where key= '5')
 select a.colnum
 from mydb.q1 as a join q1 as b

@@ -1313,7 +1313,7 @@ STAGE PLANS:
                   alias: l
                   Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cint = 6981) (type: boolean)
+                    predicate: (6981 = cint) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdecimal2 (type: decimal(23,14))
@@ -1509,7 +1509,7 @@ STAGE PLANS:
                   alias: l
                   Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cint = 6981) (type: boolean)
+                    predicate: (6981 = cint) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdecimal2 (type: decimal(23,14))

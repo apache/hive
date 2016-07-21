@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +31,7 @@ import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
@@ -44,8 +46,10 @@ import org.apache.calcite.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 
 
 public class HiveRexUtil {
@@ -462,14 +466,32 @@ public class HiveRexUtil {
       return simplify(rexBuilder, terms.get(0), true);
     }
     // Try to simplify the expression
+    final Multimap<String,Pair<String,RexNode>> equalityTerms = ArrayListMultimap.create();
+    final Map<String,String> equalityConstantTerms = new HashMap<>();
     final Set<String> negatedTerms = new HashSet<>();
     final Set<String> nullOperands = new HashSet<>();
     final Set<RexNode> notNullOperands = new LinkedHashSet<>();
     final Set<String> comparedOperands = new HashSet<>();
     for (int i = 0; i < terms.size(); i++) {
-      final RexNode term = terms.get(i);
+      RexNode term = terms.get(i);
       if (!HiveCalciteUtil.isDeterministic(term)) {
         continue;
+      }
+      // Simplify BOOLEAN expressions if possible
+      while (term.getKind() == SqlKind.EQUALS) {
+        RexCall call = (RexCall) term;
+        if (call.getOperands().get(0).isAlwaysTrue()) {
+          term = call.getOperands().get(1);
+          terms.remove(i);
+          terms.add(i, term);
+          continue;
+        } else if (call.getOperands().get(1).isAlwaysTrue()) {
+          term = call.getOperands().get(0);
+          terms.remove(i);
+          terms.add(i, term);
+          continue;
+        }
+        break;
       }
       switch (term.getKind()) {
       case EQUALS:
@@ -481,17 +503,43 @@ public class HiveRexUtil {
         RexCall call = (RexCall) term;
         RexNode left = call.getOperands().get(0);
         comparedOperands.add(left.toString());
+        RexCall leftCast = null;
         // if it is a cast, we include the inner reference
         if (left.getKind() == SqlKind.CAST) {
-          RexCall leftCast = (RexCall) left;
+          leftCast = (RexCall) left;
           comparedOperands.add(leftCast.getOperands().get(0).toString());
         }
         RexNode right = call.getOperands().get(1);
         comparedOperands.add(right.toString());
+        RexCall rightCast = null;
         // if it is a cast, we include the inner reference
         if (right.getKind() == SqlKind.CAST) {
-          RexCall rightCast = (RexCall) right;
+          rightCast = (RexCall) right;
           comparedOperands.add(rightCast.getOperands().get(0).toString());
+        }
+        // Check for equality on different constants. If the same ref or CAST(ref)
+        // is equal to different constants, this condition cannot be satisfied,
+        // and hence it can be evaluated to FALSE
+        if (term.getKind() == SqlKind.EQUALS) {
+          boolean leftRef = left instanceof RexInputRef ||
+                  (leftCast != null && leftCast.getOperands().get(0) instanceof RexInputRef);
+          boolean rightRef = right instanceof RexInputRef ||
+                  (rightCast != null && rightCast.getOperands().get(0) instanceof RexInputRef);
+          if (right instanceof RexLiteral && leftRef) {
+            final String literal = right.toString();
+            final String prevLiteral = equalityConstantTerms.put(left.toString(), literal);
+            if (prevLiteral != null && !literal.equals(prevLiteral)) {
+              return rexBuilder.makeLiteral(false);
+            }
+          } else if (left instanceof RexLiteral && rightRef) {
+            final String literal = left.toString();
+            final String prevLiteral = equalityConstantTerms.put(right.toString(), literal);
+            if (prevLiteral != null && !literal.equals(prevLiteral)) {
+              return rexBuilder.makeLiteral(false);
+            }
+          } else if (leftRef && rightRef) {
+            equalityTerms.put(left.toString(), Pair.of(right.toString(), term));
+          }
         }
         // Assume the expression a > 5 is part of a Filter condition.
         // Then we can derive the negated term: a <= 5.
@@ -527,6 +575,30 @@ public class HiveRexUtil {
     // Example. IS NULL(x) AND x < 5  - not satisfiable
     if (!Collections.disjoint(nullOperands, comparedOperands)) {
       return rexBuilder.makeLiteral(false);
+    }
+    // Check for equality of two refs wrt equality with constants
+    // Example #1. x=5 AND y=5 AND x=y : x=5 AND y=5
+    // Example #2. x=5 AND y=6 AND x=y - not satisfiable
+    for (String ref1 : equalityTerms.keySet()) {
+      final String literal1 = equalityConstantTerms.get(ref1);
+      if (literal1 == null) {
+        continue;
+      }
+      Collection<Pair<String, RexNode>> references = equalityTerms.get(ref1);
+      for (Pair<String,RexNode> ref2 : references) {
+        final String literal2 = equalityConstantTerms.get(ref2.left);
+        if (literal2 == null) {
+          continue;
+        }
+        if (!literal1.equals(literal2)) {
+          // If an expression is equal to two different constants,
+          // it is not satisfiable
+          return rexBuilder.makeLiteral(false);
+        }
+        // Otherwise we can remove the term, as we already know that
+        // the expression is equal to two constants
+        terms.remove(ref2.right);
+      }
     }
     // Remove not necessary IS NOT NULL expressions.
     //

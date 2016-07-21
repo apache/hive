@@ -80,7 +80,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 51 Data size: 206 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 5) (type: boolean)
+              predicate: (5 = key) (type: boolean)
               Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
@@ -151,7 +151,7 @@ STAGE PLANS:
             alias: d
             Statistics: Num rows: 55 Data size: 222 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 5) (type: boolean)
+              predicate: (5 = key) (type: boolean)
               Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
@@ -226,7 +226,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 51 Data size: 206 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 5) (type: boolean)
+              predicate: (5 = key) (type: boolean)
               Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
@@ -402,7 +402,7 @@ STAGE PLANS:
             alias: d
             Statistics: Num rows: 55 Data size: 222 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = 5) (type: boolean)
+              predicate: (5 = key) (type: boolean)
               Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 27 Data size: 108 Basic stats: COMPLETE Column stats: NONE
