@@ -1,0 +1,179 @@
+PREHOOK: query: CREATE TABLE parquet_create_people_staging (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp,
+  state string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_create_people_staging
+POSTHOOK: query: CREATE TABLE parquet_create_people_staging (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp,
+  state string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_create_people_staging
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_create_people.txt' OVERWRITE INTO TABLE parquet_create_people_staging
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_create_people_staging
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_create_people.txt' OVERWRITE INTO TABLE parquet_create_people_staging
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_create_people_staging
+PREHOOK: query: CREATE TABLE parquet_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp,
+  state string)
+STORED AS parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_create_people
+POSTHOOK: query: CREATE TABLE parquet_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal,
+  start_date timestamp,
+  state string)
+STORED AS parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_create_people
+PREHOOK: query: INSERT OVERWRITE TABLE parquet_create_people SELECT * FROM parquet_create_people_staging ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_create_people_staging
+PREHOOK: Output: default@parquet_create_people
+POSTHOOK: query: INSERT OVERWRITE TABLE parquet_create_people SELECT * FROM parquet_create_people_staging ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_create_people_staging
+POSTHOOK: Output: default@parquet_create_people
+POSTHOOK: Lineage: parquet_create_people.address SIMPLE [(parquet_create_people_staging)parquet_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_create_people.first_name SIMPLE [(parquet_create_people_staging)parquet_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_create_people.id SIMPLE [(parquet_create_people_staging)parquet_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_create_people.last_name SIMPLE [(parquet_create_people_staging)parquet_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_create_people.salary SIMPLE [(parquet_create_people_staging)parquet_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: parquet_create_people.start_date SIMPLE [(parquet_create_people_staging)parquet_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: parquet_create_people.state SIMPLE [(parquet_create_people_staging)parquet_create_people_staging.FieldSchema(name:state, type:string, comment:null), ]
+PREHOOK: query: -- describe the table first. This should contain un-updated stats.
+DESC FORMATTED parquet_create_people
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@parquet_create_people
+POSTHOOK: query: -- describe the table first. This should contain un-updated stats.
+DESC FORMATTED parquet_create_people
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@parquet_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+state               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	100                 
+	rawDataSize         	700                 
+	totalSize           	6623                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- now run noscan and re-check the stats, and they should be updated.
+ANALYZE TABLE parquet_create_people COMPUTE STATISTICS noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_create_people
+PREHOOK: Output: default@parquet_create_people
+POSTHOOK: query: -- now run noscan and re-check the stats, and they should be updated.
+ANALYZE TABLE parquet_create_people COMPUTE STATISTICS noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_create_people
+POSTHOOK: Output: default@parquet_create_people
+PREHOOK: query: DESC FORMATTED parquet_create_people
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@parquet_create_people
+POSTHOOK: query: DESC FORMATTED parquet_create_people
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@parquet_create_people
+# col_name            	data_type           	comment             
+	 	 
+id                  	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+address             	string              	                    
+salary              	decimal(10,0)       	                    
+start_date          	timestamp           	                    
+state               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	100                 
+	rawDataSize         	5952                
+	totalSize           	6623                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: -- clean up
+DROP TABLE parquet_create_people_staging
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_create_people_staging
+PREHOOK: Output: default@parquet_create_people_staging
+POSTHOOK: query: -- clean up
+DROP TABLE parquet_create_people_staging
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_create_people_staging
+POSTHOOK: Output: default@parquet_create_people_staging
+PREHOOK: query: DROP TABLE parquet_create_people
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_create_people
+PREHOOK: Output: default@parquet_create_people
+POSTHOOK: query: DROP TABLE parquet_create_people
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_create_people
+POSTHOOK: Output: default@parquet_create_people

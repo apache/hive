@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.stats.PartialScanWork;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -90,8 +91,9 @@ public class GenMRTableScan1 implements NodeProcessor {
         if (parseCtx.getQueryProperties().isAnalyzeCommand()) {
           boolean partialScan = parseCtx.getQueryProperties().isPartialScanAnalyzeCommand();
           boolean noScan = parseCtx.getQueryProperties().isNoScanAnalyzeCommand();
-          if (inputFormat.equals(OrcInputFormat.class)) {
-            // For ORC, all the following statements are the same
+          if (inputFormat.equals(OrcInputFormat.class) ||
+                  inputFormat.equals(MapredParquetInputFormat.class)) {
+            // For ORC and Parquet, all the following statements are the same
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
