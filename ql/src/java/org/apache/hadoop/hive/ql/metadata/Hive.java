@@ -2929,8 +2929,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
             /* Move files one by one because source is a subdirectory of destination */
             for (final FileStatus srcStatus : srcs) {
 
+              final Path destFile = new Path(destf, srcStatus.getPath().getName());
               if (null == pool) {
-                if(!destFs.rename(srcStatus.getPath(), destf)) {
+                if(!destFs.rename(srcStatus.getPath(), destFile)) {
                   throw new IOException("rename for src path: " + srcStatus.getPath() + " to dest:"
                       + destf + " returned false");
                 }
@@ -2939,15 +2940,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
                   @Override
                   public Void call() throws Exception {
                     SessionState.setCurrentSessionState(parentSession);
-                    final Path destPath = new Path(destf, srcStatus.getPath().getName());
                     final String group = srcStatus.getGroup();
-                    if(destFs.rename(srcStatus.getPath(), destf)) {
+                    if(destFs.rename(srcStatus.getPath(), destFile)) {
                       if (inheritPerms) {
-                        HdfsUtils.setFullFileStatus(conf, desiredStatus, group, destFs, destPath, false);
+                        HdfsUtils.setFullFileStatus(conf, desiredStatus, group, destFs, destFile, false);
                       }
                     } else {
                       throw new IOException("rename for src path: " + srcStatus.getPath() + " to dest path:"
-                          + destPath + " returned false");
+                          + destFile + " returned false");
                     }
                     return null;
                   }
