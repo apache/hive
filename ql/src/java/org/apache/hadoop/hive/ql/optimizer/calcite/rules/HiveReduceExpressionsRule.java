@@ -22,6 +22,7 @@ import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.rules.ReduceExpressionsRule;
 import org.apache.calcite.rex.RexCall;
@@ -63,7 +64,7 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
    * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter}.
    */
   public static final ReduceExpressionsRule FILTER_INSTANCE =
-          new FilterReduceExpressionsRule(HiveFilter.class, HiveRelFactories.HIVE_BUILDER);
+      new FilterReduceExpressionsRule(HiveFilter.class, HiveRelFactories.HIVE_BUILDER);
 
   /**
    * Singleton rule that reduces constants inside a
@@ -79,18 +80,6 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
   public static final ReduceExpressionsRule JOIN_INSTANCE =
       new JoinReduceExpressionsRule(HiveJoin.class, HiveRelFactories.HIVE_BUILDER);
 
-  //~ Constructors -----------------------------------------------------------
-
-  /**
-   * Creates a HiveReduceExpressionsRule.
-   *
-   * @param clazz class of rels to which this rule should apply
-   */
-  protected HiveReduceExpressionsRule(Class<? extends RelNode> clazz,
-      RelBuilderFactory relBuilderFactory, String desc) {
-    super(clazz, relBuilderFactory, desc);
-  }
-
   /**
    * Rule that reduces constants inside a {@link org.apache.calcite.rel.core.Filter}.
    * If the condition is a constant, the filter is removed (if TRUE) or replaced with
@@ -99,11 +88,12 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
   public static class FilterReduceExpressionsRule extends ReduceExpressionsRule {
 
     public FilterReduceExpressionsRule(Class<? extends Filter> filterClass,
-        RelBuilderFactory relBuilderFactory) {
+                                       RelBuilderFactory relBuilderFactory) {
       super(filterClass, relBuilderFactory, "ReduceExpressionsRule(Filter)");
     }
 
-    @Override public void onMatch(RelOptRuleCall call) {
+    @Override
+    public void onMatch(RelOptRuleCall call) {
       final Filter filter = call.rel(0);
       final List<RexNode> expList =
           Lists.newArrayList(filter.getCondition());
@@ -141,7 +131,7 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
         // e.g condition(null = null) is reduced to condition (null) with null type
         // since this is a condition which will always be boolean type we cast it to
         // boolean type
-        if(newConditionExp.getType().getSqlTypeName() == SqlTypeName.NULL) {
+        if (newConditionExp.getType().getSqlTypeName() == SqlTypeName.NULL) {
           newConditionExp = call.builder().cast(newConditionExp, SqlTypeName.BOOLEAN);
         }
         call.transformTo(call.builder().
@@ -198,15 +188,15 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
       // it with an Empty.
       boolean alwaysTrue;
       switch (rexCall.getKind()) {
-      case IS_NULL:
-      case IS_UNKNOWN:
-        alwaysTrue = false;
-        break;
-      case IS_NOT_NULL:
-        alwaysTrue = true;
-        break;
-      default:
-        return;
+        case IS_NULL:
+        case IS_UNKNOWN:
+          alwaysTrue = false;
+          break;
+        case IS_NOT_NULL:
+          alwaysTrue = true;
+          break;
+        default:
+          return;
       }
       if (reverse) {
         alwaysTrue = !alwaysTrue;
@@ -223,6 +213,86 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
         }
       }
     }
+  }
+
+
+  /**
+   * Rule that reduces constants inside a {@link org.apache.calcite.rel.core.Project}.
+   */
+  public static class ProjectReduceExpressionsRule extends HiveReduceExpressionsRule {
+
+    public ProjectReduceExpressionsRule(Class<? extends Project> projectClass,
+                                        RelBuilderFactory relBuilderFactory) {
+      super(projectClass, relBuilderFactory, "HiveReduceExpressionsRule(Project)");
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      Project project = call.rel(0);
+      final RelOptPredicateList predicates =
+          RelMetadataQuery.instance().getPulledUpPredicates(project.getInput());
+      final List<RexNode> expList =
+          Lists.newArrayList(project.getProjects());
+      if (reduceExpressions(project, expList, predicates)) {
+        RelNode newProject = call.builder().push(project.getInput())
+            .project(expList, project.getRowType().getFieldNames()).build();
+        call.transformTo(newProject);
+
+        // New plan is absolutely better than old plan.
+        call.getPlanner().setImportance(project, 0.0);
+      }
+    }
+  }
+
+  /**
+   * Rule that reduces constants inside a {@link org.apache.calcite.rel.core.HiveJoin}.
+   */
+  public static class JoinReduceExpressionsRule extends HiveReduceExpressionsRule {
+
+    public JoinReduceExpressionsRule(Class<? extends HiveJoin> joinClass,
+                                     RelBuilderFactory relBuilderFactory) {
+      super(joinClass, relBuilderFactory, "HiveReduceExpressionsRule(HiveJoin)");
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final HiveJoin join = call.rel(0);
+      final List<RexNode> expList = Lists.newArrayList(join.getCondition());
+      final int fieldCount = join.getLeft().getRowType().getFieldCount();
+      RelMetadataQuery mq = RelMetadataQuery.instance();
+      final RelOptPredicateList leftPredicates =
+          mq.getPulledUpPredicates(join.getLeft());
+      final RelOptPredicateList rightPredicates =
+          mq.getPulledUpPredicates(join.getRight());
+      final RelOptPredicateList predicates =
+          leftPredicates.union(rightPredicates.shift(fieldCount));
+      if (!reduceExpressions(join, expList, predicates, true)) {
+        return;
+      }
+      call.transformTo(
+          join.copy(
+              join.getTraitSet(),
+              expList.get(0),
+              join.getLeft(),
+              join.getRight(),
+              join.getJoinType(),
+              join.isSemiJoinDone()));
+
+      // New plan is absolutely better than old plan.
+      call.getPlanner().setImportance(join, 0.0);
+    }
+  }
+
+  //~ Constructors -----------------------------------------------------------
+
+  /**
+   * Creates a HiveReduceExpressionsRule.
+   *
+   * @param clazz class of rels to which this rule should apply
+   */
+  protected HiveReduceExpressionsRule(Class<? extends RelNode> clazz,
+                                      RelBuilderFactory relBuilderFactory, String desc) {
+    super(clazz, relBuilderFactory, desc);
   }
 
 }
