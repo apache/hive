@@ -21,8 +21,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.llap.log.Log4jQueryCompleteMarker;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
+import org.apache.log4j.MDC;
+import org.apache.logging.slf4j.Log4jMarker;
 import org.apache.tez.common.CallableWithNdc;
 
 import org.apache.hadoop.service.AbstractService;
@@ -38,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -57,10 +61,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class QueryTracker extends AbstractService {
 
   private static final Logger LOG = LoggerFactory.getLogger(QueryTracker.class);
+  private static final Marker QUERY_COMPLETE_MARKER = new Log4jMarker(new Log4jQueryCompleteMarker());
 
   private final ScheduledExecutorService executorService;
 
   private final ConcurrentHashMap<QueryIdentifier, QueryInfo> queryInfoMap = new ConcurrentHashMap<>();
+
+
 
   private final String[] localDirsBase;
   private final FileSystem localFs;
@@ -116,13 +123,11 @@ public class QueryTracker extends AbstractService {
   /**
    * Register a new fragment for a specific query
    */
-  QueryFragmentInfo registerFragment(QueryIdentifier queryIdentifier, String appIdString,
+  QueryFragmentInfo registerFragment(QueryIdentifier queryIdentifier, String appIdString, String dagIdString,
       String dagName, String hiveQueryIdString, int dagIdentifier, String vertexName, int fragmentNumber, int attemptNumber,
       String user, SignableVertexSpec vertex, Token<JobTokenIdentifier> appToken,
       String fragmentIdString, LlapTokenInfo tokenInfo) throws IOException {
-    // QueryIdentifier is enough to uniquely identify a fragment. At the moment, it works off of appId and dag index.
-    // At a later point this could be changed to the Hive query identifier.
-    // Sending both over RPC is unnecessary overhead.
+
     ReadWriteLock dagLock = getDagLock(queryIdentifier);
     dagLock.readLock().lock();
     try {
@@ -144,9 +149,11 @@ public class QueryTracker extends AbstractService {
         if (UserGroupInformation.isSecurityEnabled()) {
           Preconditions.checkNotNull(tokenInfo.userName);
         }
-        queryInfo = new QueryInfo(queryIdentifier, appIdString, dagName, dagIdentifier, user,
-            getSourceCompletionMap(queryIdentifier), localDirsBase, localFs,
-            tokenInfo.userName, tokenInfo.appId);
+        queryInfo =
+            new QueryInfo(queryIdentifier, appIdString, dagIdString, dagName, hiveQueryIdString,
+                dagIdentifier, user,
+                getSourceCompletionMap(queryIdentifier), localDirsBase, localFs,
+                tokenInfo.userName, tokenInfo.appId);
         QueryInfo old = queryInfoMap.putIfAbsent(queryIdentifier, queryInfo);
         if (old != null) {
           queryInfo = old;
@@ -222,6 +229,22 @@ public class QueryTracker extends AbstractService {
           ShuffleHandler.get().unregisterDag(localDir, queryInfo.getAppIdString(), queryInfo.getDagIdentifier());
         }
       }
+
+      // Inform the routing purgePolicy.
+      // Send out a fake log message at the ERROR level with the MDC for this query setup. With an
+      // LLAP custom appender this message will not be logged.
+      final String dagId = queryInfo.getDagIdString();
+      final String queryId = queryInfo.getHiveQueryIdString();
+      MDC.put("dagId", dagId);
+      MDC.put("queryId", queryId);
+      try {
+        LOG.error(QUERY_COMPLETE_MARKER, "Ignore this. Log line to interact with logger." +
+            " Query complete: " + queryInfo.getHiveQueryIdString() + ", " +
+            queryInfo.getDagIdString());
+      } finally {
+        MDC.clear();
+      }
+
       // Clearing this before sending a kill is OK, since canFinish will change to false.
       // Ideally this should be a state machine where kills are issued to the executor,
       // and the structures are cleaned up once all tasks complete. New requests, however,

@@ -223,7 +223,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       Token<JobTokenIdentifier> jobToken = TokenCache.getSessionToken(credentials);
 
       QueryFragmentInfo fragmentInfo = queryTracker.registerFragment(
-          queryIdentifier, qIdProto.getApplicationIdString(),
+          queryIdentifier, qIdProto.getApplicationIdString(), dagId,
           vertex.getDagName(), vertex.getHiveQueryId(), dagIdentifier,
           vertex.getVertexName(), request.getFragmentNumber(), request.getAttemptNumber(),
           vertex.getUser(), vertex, jobToken, fragmentIdString, tokenInfo);

@@ -16,6 +16,14 @@ package org.apache.hadoop.hive.llap.daemon.impl;
 
 /**
  * An identifier for a query, which is unique.
+ *
+ * This is based on the AppId and dagId.
+ *
+ * At the moment, It's possible for Hive to use the same "hive.query.id" if a single query
+ * is split into stages - which prevents this identifier being used as the unique id.
+ *
+ * Not exposing getters to allow this to evolve - i.e. retain the uniqueness constraint.
+ *
  */
 public final class QueryIdentifier {
 

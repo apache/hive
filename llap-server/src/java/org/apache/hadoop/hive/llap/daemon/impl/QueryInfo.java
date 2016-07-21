@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +33,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateProto;
@@ -41,7 +41,9 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceSta
 public class QueryInfo {
   private final QueryIdentifier queryIdentifier;
   private final String appIdString;
+  private final String dagIdString;
   private final String dagName;
+  private final String hiveQueryIdString;
   private final int dagIdentifier;
   private final String user;
   private final String[] localDirsBase;
@@ -57,12 +59,17 @@ public class QueryInfo {
   private final FinishableStateTracker finishableStateTracker = new FinishableStateTracker();
   private final String tokenUserName, appId;
 
-  public QueryInfo(QueryIdentifier queryIdentifier, String appIdString, String dagName,
-      int dagIdentifier, String user, ConcurrentMap<String, SourceStateProto> sourceStateMap,
-      String[] localDirsBase, FileSystem localFs, String tokenUserName, String tokenAppId) {
+  public QueryInfo(QueryIdentifier queryIdentifier, String appIdString, String dagIdString,
+                   String dagName, String hiveQueryIdString,
+                   int dagIdentifier, String user,
+                   ConcurrentMap<String, SourceStateProto> sourceStateMap,
+                   String[] localDirsBase, FileSystem localFs, String tokenUserName,
+                   String tokenAppId) {
     this.queryIdentifier = queryIdentifier;
     this.appIdString = appIdString;
+    this.dagIdString = dagIdString;
     this.dagName = dagName;
+    this.hiveQueryIdString = hiveQueryIdString;
     this.dagIdentifier = dagIdentifier;
     this.sourceStateMap = sourceStateMap;
     this.user = user;
@@ -78,6 +85,14 @@ public class QueryInfo {
 
   public String getAppIdString() {
     return appIdString;
+  }
+
+  public String getDagIdString() {
+    return dagIdString;
+  }
+
+  public String getHiveQueryIdString() {
+    return hiveQueryIdString;
   }
 
   public int getDagIdentifier() {
