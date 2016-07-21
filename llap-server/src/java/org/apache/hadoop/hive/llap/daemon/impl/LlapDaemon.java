@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
 
 import javax.management.ObjectName;
 
@@ -85,9 +84,6 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapDaemon.class);
 
-  public static final String LOG4j2_PROPERTIES_FILE = "llap-daemon-log4j2.properties";
-  public static final String LLAP_HADOOP_METRICS2_PROPERTIES_FILE = "hadoop-metrics2-llapdaemon.properties";
-  public static final String HADOOP_METRICS2_PROPERTIES_FILE = "hadoop-metrics2.properties";
   private final Configuration shuffleHandlerConf;
   private final SecretManager secretManager;
   private final LlapProtocolServerImpl server;
@@ -284,7 +280,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
   private void initializeLogging(final Configuration conf) {
     long start = System.currentTimeMillis();
-    URL llap_l4j2 = LlapDaemon.class.getClassLoader().getResource(LOG4j2_PROPERTIES_FILE);
+    URL llap_l4j2 = LlapDaemon.class.getClassLoader().getResource(
+        LlapConstants.LOG4j2_PROPERTIES_FILE);
     if (llap_l4j2 != null) {
       final boolean async = LogUtils.checkAndSetAsyncLogging(conf);
       // required for MDC based routing appender so that child threads can inherit the MDC context
@@ -295,7 +292,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
           llap_l4j2, (end - start), async);
     } else {
       throw new RuntimeException("Log initialization failed." +
-          " Unable to locate " + LOG4j2_PROPERTIES_FILE + " file in classpath");
+          " Unable to locate " + LlapConstants.LOG4j2_PROPERTIES_FILE + " file in classpath");
     }
   }
 
