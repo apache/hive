@@ -701,7 +701,7 @@ public class HiveSessionImpl implements HiveSession {
         try {
           operation.close();
         } catch (Exception e) {
-          LOG.warn("Exception is thrown closing timed-out operation " + operation.getHandle(), e);
+          LOG.warn("Exception is thrown closing timed-out operation, reported open_operations metrics may be incorrect " + operation.getHandle(), e);
         }
       }
     } finally {
