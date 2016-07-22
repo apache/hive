@@ -3104,7 +3104,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
         break;
       case MYSQL:
-        if(ex.getErrorCode() == 1022 && "23000".equals(ex.getSQLState())) {
+        //https://dev.mysql.com/doc/refman/5.5/en/error-messages-server.html
+        if((ex.getErrorCode() == 1022 || ex.getErrorCode() == 1062 || ex.getErrorCode() == 1586)
+          && "23000".equals(ex.getSQLState())) {
           return true;
         }
         break;
