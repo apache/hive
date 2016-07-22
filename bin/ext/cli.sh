@@ -28,11 +28,12 @@ updateCli() {
 }
 
 cli () {
-  updateCli
-  execHiveCmd $CLASS $JAR "$@"
+  CLASS=org.apache.hadoop.hive.cli.CliDriver
+  execHiveCmd $CLASS "$@"
 }
 
 cli_help () {
-  updateCli
-  execHiveCmd $CLASS $JAR "--help"
-}
+  CLASS=org.apache.hadoop.hive.cli.CliDriver
+  execHiveCmd $CLASS "--help"
+} 
+

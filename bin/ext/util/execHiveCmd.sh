@@ -16,11 +16,9 @@
 execHiveCmd () {
   CLASS=$1;
   shift;
-  JAR=$1
-  shift;
 
   # cli specific code
-  if [ ! -f ${HIVE_LIB}/$JAR ]; then
+  if [ ! -f ${HIVE_LIB}/hive-cli-*.jar ]; then
     echo "Missing Hive CLI Jar"
     exit 3;
   fi
@@ -30,5 +28,5 @@ execHiveCmd () {
   fi
 
   # hadoop 20 or newer - skip the aux_jars option. picked up from hiveconf
-  exec $HADOOP jar ${HIVE_LIB}/$JAR $CLASS $HIVE_OPTS "$@"
+  exec $HADOOP jar ${HIVE_LIB}/hive-cli-*.jar $CLASS $HIVE_OPTS "$@"
 }
