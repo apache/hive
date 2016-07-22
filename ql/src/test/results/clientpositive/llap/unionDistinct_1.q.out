@@ -13918,14 +13918,14 @@ POSTHOOK: Input: default@t2
 PREHOOK: query: -- Test union with join on the left selecting multiple columns
 EXPLAIN
 SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS STRING) AS value FROM t1 a JOIN t2 b ON a.key = b.key
 UNION DISTINCT
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
 PREHOOK: type: QUERY
 POSTHOOK: query: -- Test union with join on the left selecting multiple columns
 EXPLAIN
 SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS STRING) AS value FROM t1 a JOIN t2 b ON a.key = b.key
 UNION DISTINCT
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
 POSTHOOK: type: QUERY
@@ -13964,10 +13964,11 @@ STAGE PLANS:
                       Select Operator
                         expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToString(UDFToDouble(_col5)) (type: string)
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: double), _col1 (type: string)
-                          mode: hash
+                        input vertices:
+                          1 Map 4
+                        Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+                        Select Operator
+                          expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToString(CAST( _col1 AS varchar(20))) (type: string)
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
@@ -14035,7 +14036,7 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
 UNION DISTINCT
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
 PREHOOK: type: QUERY
@@ -14043,7 +14044,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
 UNION DISTINCT
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
 POSTHOOK: type: QUERY
@@ -14051,30 +14052,24 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 0.0	0
-0.0	0.0
 2.0	2
-2.0	2.0
 4.0	4
-4.0	4.0
 5.0	5
-5.0	5.0
 8.0	8
-8.0	8.0
 9.0	9
-9.0	9.0
 PREHOOK: query: -- Test union with join on the right selecting multiple columns
 EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
 UNION DISTINCT
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
 PREHOOK: type: QUERY
 POSTHOOK: query: -- Test union with join on the right selecting multiple columns
 EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
 UNION DISTINCT
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -14095,19 +14090,19 @@ STAGE PLANS:
                   alias: t2
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: UDFToDouble(key) (type: double), UDFToDouble(key) (type: double)
+                    expressions: UDFToDouble(key) (type: double), key (type: string)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: _col0 (type: double), _col1 (type: double)
+                      keys: _col0 (type: double), _col1 (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: double), _col1 (type: double)
+                        key expressions: _col0 (type: double), _col1 (type: string)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: double), _col1 (type: double)
-                        Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
+                        Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
+                        Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 4 
             Map Operator Tree:
@@ -14131,17 +14126,23 @@ STAGE PLANS:
                       Select Operator
                         expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToDouble(_col5) (type: double)
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 5 Data size: 38 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: double), _col1 (type: double)
-                          mode: hash
+                        input vertices:
+                          1 Map 5
+                        Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+                        Select Operator
+                          expressions: UDFToDouble(UDFToLong(_col0)) (type: double), _col1 (type: string)
                           outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            key expressions: _col0 (type: double), _col1 (type: double)
-                            sort order: ++
-                            Map-reduce partition columns: _col0 (type: double), _col1 (type: double)
-                            Statistics: Num rows: 15 Data size: 108 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+                          Group By Operator
+                            keys: _col0 (type: double), _col1 (type: string)
+                            mode: hash
+                            outputColumnNames: _col0, _col1
+                            Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: double), _col1 (type: string)
+                              sort order: ++
+                              Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
+                              Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
         Map 5 
             Map Operator Tree:
@@ -14161,7 +14162,7 @@ STAGE PLANS:
             Execution mode: uber
             Reduce Operator Tree:
               Group By Operator
-                keys: KEY._col0 (type: double), KEY._col1 (type: double)
+                keys: KEY._col0 (type: double), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 7 Data size: 50 Basic stats: COMPLETE Column stats: NONE
@@ -14184,7 +14185,7 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
 UNION DISTINCT
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
@@ -14192,17 +14193,17 @@ PREHOOK: Input: default@t2
 POSTHOOK: query: SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
 UNION DISTINCT
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-0.0	0.0
-2.0	2.0
-4.0	4.0
-5.0	5.0
-8.0	8.0
-9.0	9.0
+0.0	0
+2.0	2
+4.0	4
+5.0	5
+8.0	8
+9.0	9
 PREHOOK: query: -- union33.q
 
 -- SORT_BEFORE_DIFF
@@ -14232,7 +14233,7 @@ SELECT key, value FROM (
 	SELECT key, value FROM src 
 	WHERE key = 0
 UNION DISTINCT
- 	SELECT key, COUNT(*) AS value FROM src
+ 	SELECT key, cast(COUNT(*) as string) AS value FROM src
  	GROUP BY key
 )a
 PREHOOK: type: QUERY
@@ -14241,7 +14242,7 @@ SELECT key, value FROM (
 	SELECT key, value FROM src 
 	WHERE key = 0
 UNION DISTINCT
- 	SELECT key, COUNT(*) AS value FROM src
+ 	SELECT key, cast(COUNT(*) as string) AS value FROM src
  	GROUP BY key
 )a
 POSTHOOK: type: QUERY
@@ -14368,7 +14369,7 @@ SELECT key, value FROM (
 	SELECT key, value FROM src 
 	WHERE key = 0
 UNION DISTINCT
- 	SELECT key, COUNT(*) AS value FROM src
+ 	SELECT key, cast(COUNT(*) as string) AS value FROM src
  	GROUP BY key
 )a
 PREHOOK: type: QUERY
@@ -14379,7 +14380,7 @@ SELECT key, value FROM (
 	SELECT key, value FROM src 
 	WHERE key = 0
 UNION DISTINCT
- 	SELECT key, COUNT(*) AS value FROM src
+ 	SELECT key, cast(COUNT(*) as string) AS value FROM src
  	GROUP BY key
 )a
 POSTHOOK: type: QUERY
@@ -14398,7 +14399,7 @@ POSTHOOK: Input: default@test_src
 310
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_src 
 SELECT key, value FROM (
-	SELECT key, COUNT(*) AS value FROM src
+	SELECT key, cast(COUNT(*) as string) AS value FROM src
  	GROUP BY key
 UNION DISTINCT
  	SELECT key, value FROM src 
@@ -14407,7 +14408,7 @@ UNION DISTINCT
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_src 
 SELECT key, value FROM (
-	SELECT key, COUNT(*) AS value FROM src
+	SELECT key, cast(COUNT(*) as string) AS value FROM src
  	GROUP BY key
 UNION DISTINCT
  	SELECT key, value FROM src 
@@ -14534,7 +14535,7 @@ STAGE PLANS:
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_src 
 SELECT key, value FROM (
-	SELECT key, COUNT(*) AS value FROM src
+	SELECT key, cast(COUNT(*) as string) AS value FROM src
  	GROUP BY key
 UNION DISTINCT
  	SELECT key, value FROM src 
@@ -14545,7 +14546,7 @@ PREHOOK: Input: default@src
 PREHOOK: Output: default@test_src
 POSTHOOK: query: INSERT OVERWRITE TABLE test_src 
 SELECT key, value FROM (
-	SELECT key, COUNT(*) AS value FROM src
+	SELECT key, cast(COUNT(*) as string) AS value FROM src
  	GROUP BY key
 UNION DISTINCT
  	SELECT key, value FROM src 

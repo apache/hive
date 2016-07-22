@@ -37,14 +37,14 @@ POSTHOOK: Output: default@alter_table_cascade
 PREHOOK: query: insert overwrite table alter_table_cascade partition (p1, p2)
   select c1, 'abc', '123' from alter_table_src
   union all
-  select c1, null, '123' from alter_table_src
+  select c1, cast(null as string), '123' from alter_table_src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_table_src
 PREHOOK: Output: default@alter_table_cascade
 POSTHOOK: query: insert overwrite table alter_table_cascade partition (p1, p2)
   select c1, 'abc', '123' from alter_table_src
   union all
-  select c1, null, '123' from alter_table_src
+  select c1, cast(null as string), '123' from alter_table_src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_table_src
 POSTHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
@@ -902,14 +902,14 @@ POSTHOOK: Output: default@alter_table_restrict
 PREHOOK: query: insert overwrite table alter_table_restrict partition (p1, p2)
   select c1, 'abc', '123' from alter_table_src
   union all
-  select c1, null, '123' from alter_table_src
+  select c1, cast(null as string), '123' from alter_table_src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_table_src
 PREHOOK: Output: default@alter_table_restrict
 POSTHOOK: query: insert overwrite table alter_table_restrict partition (p1, p2)
   select c1, 'abc', '123' from alter_table_src
   union all
-  select c1, null, '123' from alter_table_src
+  select c1, cast(null as string), '123' from alter_table_src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_table_src
 POSTHOOK: Output: default@alter_table_restrict@p1=__HIVE_DEFAULT_PARTITION__/p2=123

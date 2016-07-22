@@ -21,7 +21,7 @@ CREATE TABLE table_b2
 CREATE VIEW a_view AS
 SELECT
 substring(a1.composite_key, 1, locate('|',a1.composite_key) - 1) AS autoname,
-NULL AS col1
+cast(NULL as string) AS col1
 FROM table_a1 a1
 FULL OUTER JOIN table_a2 a2
 ON a1.composite_key = a2.composite_key

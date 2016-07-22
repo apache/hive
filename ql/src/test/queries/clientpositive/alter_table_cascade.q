@@ -14,7 +14,7 @@ create table alter_table_cascade (c1 string) partitioned by (p1 string, p2 strin
 insert overwrite table alter_table_cascade partition (p1, p2)
   select c1, 'abc', '123' from alter_table_src
   union all
-  select c1, null, '123' from alter_table_src;
+  select c1, cast(null as string), '123' from alter_table_src;
 
 show partitions alter_table_cascade;
 describe alter_table_cascade;
@@ -91,7 +91,7 @@ create table alter_table_restrict (c1 string) partitioned by (p1 string, p2 stri
 insert overwrite table alter_table_restrict partition (p1, p2)
   select c1, 'abc', '123' from alter_table_src
   union all
-  select c1, null, '123' from alter_table_src;
+  select c1, cast(null as string), '123' from alter_table_src;
 
 show partitions alter_table_restrict;
 describe alter_table_restrict;

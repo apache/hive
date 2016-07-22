@@ -33,7 +33,7 @@ SELECT * FROM
 (
 select key, 1 as `values` from inputTbl1
 union all
-select a.key as key, b.val as `values`
+select a.key as key, cast(b.val as bigint) as `values`
 FROM inputTbl1 a join inputTbl1 b on a.key=b.key
 )c;
 
@@ -42,7 +42,7 @@ SELECT * FROM
 (
 select key, 1 as `values` from inputTbl1
 union all
-select a.key as key, b.val as `values`
+select a.key as key, cast(b.val as bigint) as `values`
 FROM inputTbl1 a join inputTbl1 b on a.key=b.key
 )c;
 

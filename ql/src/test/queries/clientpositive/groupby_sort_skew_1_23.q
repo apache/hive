@@ -100,12 +100,12 @@ SELECT * FROM outputTbl3;
 -- group by followed by another group by
 EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
-SELECT key + key, sum(cnt) from
+SELECT cast(key + key as string), sum(cnt) from
 (SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
 group by key + key;
 
 INSERT OVERWRITE TABLE outputTbl1
-SELECT key + key, sum(cnt) from
+SELECT cast(key + key as string), sum(cnt) from
 (SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
 group by key + key;
 
@@ -135,14 +135,14 @@ INSERT OVERWRITE TABLE outputTbl1
 SELECT * FROM (
 SELECT key, count(1) FROM T1 GROUP BY key
   UNION ALL
-SELECT key + key as key, count(1) FROM T1 GROUP BY key + key
+SELECT cast(key + key as string) as key, count(1) FROM T1 GROUP BY key + key
 ) subq1;
 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT * FROM (
 SELECT key, count(1) as cnt FROM T1 GROUP BY key
   UNION ALL
-SELECT key + key as key, count(1) as cnt FROM T1 GROUP BY key + key
+SELECT cast(key + key as string) as key, count(1) as cnt FROM T1 GROUP BY key + key
 ) subq1;
 
 SELECT * FROM outputTbl1;

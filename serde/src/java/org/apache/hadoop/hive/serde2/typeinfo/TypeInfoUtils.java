@@ -874,6 +874,9 @@ public final class TypeInfoUtils {
     numericTypes.put(primitiveCategory, level);
   }
 
+  /**
+   * Test if it's implicitly convertible for data comparison.
+   */
   public static boolean implicitConvertible(PrimitiveCategory from, PrimitiveCategory to) {
     if (from == to) {
       return true;
