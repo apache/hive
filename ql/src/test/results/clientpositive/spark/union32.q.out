@@ -429,14 +429,14 @@ POSTHOOK: Input: default@t2
 PREHOOK: query: -- Test union with join on the left selecting multiple columns
 EXPLAIN
 SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
 UNION ALL
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
 PREHOOK: type: QUERY
 POSTHOOK: query: -- Test union with join on the left selecting multiple columns
 EXPLAIN
 SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
 UNION ALL
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
 POSTHOOK: type: QUERY
@@ -509,7 +509,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToString(UDFToDouble(_col1)) (type: string)
+                  expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToString(CAST( _col1 AS CHAR(20)) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -527,7 +527,7 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
 UNION ALL
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
 PREHOOK: type: QUERY
@@ -535,7 +535,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
 UNION ALL
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
 POSTHOOK: type: QUERY
@@ -545,48 +545,48 @@ POSTHOOK: Input: default@t2
 0.0	0
 0.0	0
 0.0	0
-0.0	0.0
-0.0	0.0
-0.0	0.0
-0.0	0.0
-0.0	0.0
-0.0	0.0
-0.0	0.0
-0.0	0.0
-0.0	0.0
+0.0	0
+0.0	0
+0.0	0
+0.0	0
+0.0	0
+0.0	0
+0.0	0
+0.0	0
+0.0	0
 2.0	2
-2.0	2.0
+2.0	2
 4.0	4
-4.0	4.0
+4.0	4
 5.0	5
 5.0	5
 5.0	5
-5.0	5.0
-5.0	5.0
-5.0	5.0
-5.0	5.0
-5.0	5.0
-5.0	5.0
-5.0	5.0
-5.0	5.0
-5.0	5.0
+5.0	5
+5.0	5
+5.0	5
+5.0	5
+5.0	5
+5.0	5
+5.0	5
+5.0	5
+5.0	5
 8.0	8
-8.0	8.0
+8.0	8
 9.0	9
-9.0	9.0
+9.0	9
 PREHOOK: query: -- Test union with join on the right selecting multiple columns
 EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
 UNION ALL
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
 PREHOOK: type: QUERY
 POSTHOOK: query: -- Test union with join on the right selecting multiple columns
 EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
 UNION ALL
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -605,7 +605,7 @@ STAGE PLANS:
                   alias: t2
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: UDFToDouble(key) (type: double), UDFToDouble(key) (type: double)
+                    expressions: UDFToDouble(key) (type: double), key (type: string)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
@@ -657,7 +657,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToDouble(_col1) (type: double)
+                  expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToString(CAST( _col1 AS CHAR(20)) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -677,7 +677,7 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
 UNION ALL
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
@@ -685,40 +685,40 @@ PREHOOK: Input: default@t2
 POSTHOOK: query: SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
 UNION ALL
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-0.0	0.0
-0.0	0.0
-0.0	0.0
-0.0	0.0
-0.0	0.0
-0.0	0.0
-0.0	0.0
-0.0	0.0
-0.0	0.0
-0.0	0.0
-0.0	0.0
-0.0	0.0
-2.0	2.0
-2.0	2.0
-4.0	4.0
-4.0	4.0
-5.0	5.0
-5.0	5.0
-5.0	5.0
-5.0	5.0
-5.0	5.0
-5.0	5.0
-5.0	5.0
-5.0	5.0
-5.0	5.0
-5.0	5.0
-5.0	5.0
-5.0	5.0
-8.0	8.0
-8.0	8.0
-9.0	9.0
-9.0	9.0
+0.0	0
+0.0	0
+0.0	0
+0.0	0
+0.0	0
+0.0	0
+0.0	0
+0.0	0
+0.0	0
+0.0	0
+0.0	0
+0.0	0
+2.0	2
+2.0	2
+4.0	4
+4.0	4
+5.0	5
+5.0	5
+5.0	5
+5.0	5
+5.0	5
+5.0	5
+5.0	5
+5.0	5
+5.0	5
+5.0	5
+5.0	5
+5.0	5
+8.0	8
+8.0	8
+9.0	9
+9.0	9

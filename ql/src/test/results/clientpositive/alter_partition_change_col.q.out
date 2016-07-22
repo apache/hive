@@ -29,14 +29,14 @@ POSTHOOK: Output: default@alter_partition_change_col1
 PREHOOK: query: insert overwrite table alter_partition_change_col1 partition (p1, p2)
   select c1, c2, 'abc', '123' from alter_partition_change_col0
   union all
-  select c1, c2, null, '123' from alter_partition_change_col0
+  select c1, c2, cast(null as string), '123' from alter_partition_change_col0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_partition_change_col0
 PREHOOK: Output: default@alter_partition_change_col1
 POSTHOOK: query: insert overwrite table alter_partition_change_col1 partition (p1, p2)
   select c1, c2, 'abc', '123' from alter_partition_change_col0
   union all
-  select c1, c2, null, '123' from alter_partition_change_col0
+  select c1, c2, cast(null as string), '123' from alter_partition_change_col0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_partition_change_col0
 POSTHOOK: Output: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123

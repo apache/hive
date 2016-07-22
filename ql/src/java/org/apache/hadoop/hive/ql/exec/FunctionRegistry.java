@@ -697,7 +697,9 @@ public final class FunctionRegistry {
   }
 
   /**
-   * Find a common class for union-all operator
+   * Find a common type for union-all operator. Only the common types for the same
+   * type group will resolve to a common type. No implicit conversion across different
+   * type groups will be done.
    */
   public static TypeInfo getCommonClassForUnionAll(TypeInfo a, TypeInfo b) {
     if (a.equals(b)) {
@@ -716,26 +718,21 @@ public final class FunctionRegistry {
 
     PrimitiveGrouping pgA = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcA);
     PrimitiveGrouping pgB = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcB);
-    // handle string types properly
-    if (pgA == PrimitiveGrouping.STRING_GROUP && pgB == PrimitiveGrouping.STRING_GROUP) {
+    if (pgA != pgB) {
+      return null;
+    }
+
+    switch(pgA) {
+    case STRING_GROUP:
       return getTypeInfoForPrimitiveCategory(
           (PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b,PrimitiveCategory.STRING);
+    case NUMERIC_GROUP:
+      return TypeInfoUtils.implicitConvertible(a, b) ? b : a;
+    case DATE_GROUP:
+      return TypeInfoFactory.timestampTypeInfo;
+    default:
+      return null;
     }
-
-    if (TypeInfoUtils.implicitConvertible(a, b)) {
-      return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, pcB);
-    }
-    if (TypeInfoUtils.implicitConvertible(b, a)) {
-      return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, pcA);
-    }
-    for (PrimitiveCategory t : TypeInfoUtils.numericTypeList) {
-      if (TypeInfoUtils.implicitConvertible(pcA, t)
-          && TypeInfoUtils.implicitConvertible(pcB, t)) {
-        return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, t);
-      }
-    }
-
-    return null;
   }
 
   /**
