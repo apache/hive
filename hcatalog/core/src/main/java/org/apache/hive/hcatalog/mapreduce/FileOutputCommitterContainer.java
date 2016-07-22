@@ -34,6 +34,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -443,7 +444,9 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
     //Copy table level hcat.* keys to the partition
     for (Entry<Object, Object> entry : storer.getProperties().entrySet()) {
-      params.put(entry.getKey().toString(), entry.getValue().toString());
+      if (!entry.getKey().toString().equals(StatsSetupConst.COLUMN_STATS_ACCURATE)) {
+        params.put(entry.getKey().toString(), entry.getValue().toString());
+      }
     }
     return params;
   }
@@ -763,49 +766,46 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     Table table = new Table(jobInfo.getTableInfo().getTable());
     Path tblPath = new Path(table.getTTable().getSd().getLocation());
     FileSystem fs = tblPath.getFileSystem(conf);
-
-    if( table.getPartitionKeys().size() == 0 ) {
-      //Move data from temp directory the actual table directory
-      //No metastore operation required.
-      Path src = new Path(jobInfo.getLocation());
-      moveTaskOutputs(fs, src, src, tblPath, false, table.isImmutable());
-      if (!src.equals(tblPath)){
-        fs.delete(src, true);
-      }
-      return;
-    }
-
     IMetaStoreClient client = null;
     HCatTableInfo tableInfo = jobInfo.getTableInfo();
     List<Partition> partitionsAdded = new ArrayList<Partition>();
     try {
       HiveConf hiveConf = HCatUtil.getHiveConf(conf);
       client = HCatUtil.getHiveMetastoreClient(hiveConf);
-      StorerInfo storer = InternalUtil.extractStorerInfo(table.getTTable().getSd(),table.getParameters());
+      if (table.getPartitionKeys().size() == 0) {
+        // Move data from temp directory the actual table directory
+        // No metastore operation required.
+        Path src = new Path(jobInfo.getLocation());
+        moveTaskOutputs(fs, src, src, tblPath, false, table.isImmutable());
+        if (!src.equals(tblPath)) {
+          fs.delete(src, true);
+        }
+        if (table.getParameters() != null
+            && table.getParameters().containsKey(StatsSetupConst.COLUMN_STATS_ACCURATE)) {
+          table.getParameters().remove(StatsSetupConst.COLUMN_STATS_ACCURATE);
+          client.alter_table(table.getDbName(), table.getTableName(), table.getTTable());
+        }
+        return;
+      }
+
+      StorerInfo storer = InternalUtil.extractStorerInfo(table.getTTable().getSd(),
+          table.getParameters());
 
       FileStatus tblStat = fs.getFileStatus(tblPath);
       String grpName = tblStat.getGroup();
       FsPermission perms = tblStat.getPermission();
 
       List<Partition> partitionsToAdd = new ArrayList<Partition>();
-      if (!dynamicPartitioningUsed){
-        partitionsToAdd.add(
-            constructPartition(
-                context,jobInfo,
-                tblPath.toString(), null, jobInfo.getPartitionValues()
-                ,jobInfo.getOutputSchema(), getStorerParameterMap(storer)
-                ,table, fs
-                ,grpName,perms));
-      }else{
-        for (Entry<String,Map<String,String>> entry : partitionsDiscoveredByPath.entrySet()){
-          partitionsToAdd.add(
-              constructPartition(
-                  context,jobInfo,
-                  getPartitionRootLocation(entry.getKey(),entry.getValue().size())
-                  ,entry.getKey(), entry.getValue()
-                  ,jobInfo.getOutputSchema(), getStorerParameterMap(storer)
-                  ,table, fs
-                  ,grpName,perms));
+      if (!dynamicPartitioningUsed) {
+        partitionsToAdd.add(constructPartition(context, jobInfo, tblPath.toString(), null,
+            jobInfo.getPartitionValues(), jobInfo.getOutputSchema(), getStorerParameterMap(storer),
+            table, fs, grpName, perms));
+      } else {
+        for (Entry<String, Map<String, String>> entry : partitionsDiscoveredByPath.entrySet()) {
+          partitionsToAdd.add(constructPartition(context, jobInfo,
+              getPartitionRootLocation(entry.getKey(), entry.getValue().size()), entry.getKey(),
+              entry.getValue(), jobInfo.getOutputSchema(), getStorerParameterMap(storer), table,
+              fs, grpName, perms));
         }
       }
 
