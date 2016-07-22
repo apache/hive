@@ -1542,8 +1542,10 @@ public class Hive {
       Partition newTPart = oldPart != null ? oldPart : new Partition(tbl, partSpec, newPartPath);
       alterPartitionSpecInMemory(tbl, partSpec, newTPart.getTPartition(), inheritTableSpecs, newPartPath.toString());
       validatePartition(newTPart);
-      if (null != newFiles) {
+      if ((null != newFiles) || replace) {
         fireInsertEvent(tbl, partSpec, newFiles);
+      } else {
+        LOG.debug("No new files were created, and is not a replace. Skipping generating INSERT event.");
       }
 
       //column stats will be inaccurate

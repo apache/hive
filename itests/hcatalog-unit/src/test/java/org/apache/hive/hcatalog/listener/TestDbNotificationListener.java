@@ -534,12 +534,15 @@ public class TestDbNotificationListener {
     driver.run("insert into table sip partition (ds) values (3, 'tomorrow')");
     driver.run("alter table sip drop partition (ds = 'tomorrow')");
 
+    driver.run("insert into table sip partition (ds) values (42, 'todaytwo')");
+    driver.run("insert overwrite table sip partition(ds='todaytwo') select c from sip where 'ds'='today'");
+
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
 
     for (NotificationEvent ne : rsp.getEvents()) LOG.debug("EVENT: " + ne.getMessage());
     // For reasons not clear to me there's one or more alter partitions after add partition and
     // insert.
-    assertEquals(19, rsp.getEventsSize());
+    assertEquals(24, rsp.getEventsSize());
     NotificationEvent event = rsp.getEvents().get(1);
     assertEquals(firstEventId + 2, event.getEventId());
     assertEquals(HCatConstants.HCAT_ADD_PARTITION_EVENT, event.getEventType());
@@ -569,7 +572,29 @@ public class TestDbNotificationListener {
     event = rsp.getEvents().get(18);
     assertEquals(firstEventId + 19, event.getEventId());
     assertEquals(HCatConstants.HCAT_DROP_PARTITION_EVENT, event.getEventType());
-  }
+
+    event = rsp.getEvents().get(19);
+    assertEquals(firstEventId + 20, event.getEventId());
+    assertEquals(HCatConstants.HCAT_ADD_PARTITION_EVENT, event.getEventType());
+    event = rsp.getEvents().get(20);
+    assertEquals(firstEventId + 21, event.getEventId());
+    assertEquals(HCatConstants.HCAT_ALTER_PARTITION_EVENT, event.getEventType());
+    assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
+
+    event = rsp.getEvents().get(21);
+    assertEquals(firstEventId + 22, event.getEventId());
+    assertEquals(HCatConstants.HCAT_INSERT_EVENT, event.getEventType());
+    assertTrue(event.getMessage().matches(".*\"files\":\\[\\].*")); // replace-overwrite introduces no new files
+    event = rsp.getEvents().get(22);
+    assertEquals(firstEventId + 23, event.getEventId());
+    assertEquals(HCatConstants.HCAT_ALTER_PARTITION_EVENT, event.getEventType());
+    assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
+    event = rsp.getEvents().get(23);
+    assertEquals(firstEventId + 24, event.getEventId());
+    assertEquals(HCatConstants.HCAT_ALTER_PARTITION_EVENT, event.getEventType());
+    assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
+
+   }
 
   @Test
   public void cleanupNotifs() throws Exception {
