@@ -380,6 +380,15 @@ public class TezCompiler extends TaskCompiler {
     GraphWalker ogw = new GenTezWorkWalker(disp, procCtx);
     ogw.startWalking(topNodes, null);
 
+    // we need to specify the reserved memory for each work that contains Map Join
+    for (List<BaseWork> baseWorkList : procCtx.mapJoinWorkMap.values()) {
+      for (BaseWork w : baseWorkList) {
+        // work should be the smallest unit for memory allocation
+        w.setReservedMemoryMB(
+            (int)(conf.getLongVar(ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD) / (1024 * 1024)));
+      }
+    }
+
     // we need to clone some operator plans and remove union operators still
     for (BaseWork w: procCtx.workWithUnionOperators) {
       GenTezUtils.removeUnionOperators(procCtx, w);

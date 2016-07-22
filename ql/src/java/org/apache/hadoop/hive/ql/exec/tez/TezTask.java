@@ -89,6 +89,7 @@ public class TezTask extends Task<TezWork> {
 
   private static final String CLASS_NAME = TezTask.class.getName();
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
+  private static final String TEZ_MEMORY_RESERVE_FRACTION = "tez.task.scale.memory.reserve-fraction";
 
   private TezCounters counters;
 
@@ -390,6 +391,12 @@ public class TezTask extends Task<TezWork> {
         Vertex wx =
             utils.createVertex(wxConf, w, scratchDir, appJarLr, additionalLr, fs, ctx, !isFinal,
                 work, work.getVertexType(w));
+        if (w.getReservedMemoryMB() > 0) {
+          // If reversedMemoryMB is set, make memory allocation fraction adjustment as needed
+          double frac = DagUtils.adjustMemoryReserveFraction(w.getReservedMemoryMB(), super.conf);
+          LOG.info("Setting " + TEZ_MEMORY_RESERVE_FRACTION + " to " + frac);
+          wx.setConf(TEZ_MEMORY_RESERVE_FRACTION, Double.toString(frac));
+        } // Otherwise just leave it up to Tez to decide how much memory to allocate
         dag.addVertex(wx);
         utils.addCredentials(w, dag);
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_CREATE_VERTEX + w.getName());

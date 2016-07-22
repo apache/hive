@@ -74,6 +74,8 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   protected boolean llapMode = false;
   protected boolean uberMode = false;
 
+  private int reservedMemoryMB = -1;  // default to -1 means we leave it up to Tez to decide
+
   public void setGatheringStats(boolean gatherStats) {
     this.gatheringStats = gatherStats;
   }
@@ -221,6 +223,14 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   public boolean getLlapMode() {
     return llapMode;
+  }
+
+  public int getReservedMemoryMB() {
+    return reservedMemoryMB;
+  }
+
+  public void setReservedMemoryMB(int memoryMB) {
+    reservedMemoryMB = memoryMB;
   }
 
   public abstract void configureJobConf(JobConf job);

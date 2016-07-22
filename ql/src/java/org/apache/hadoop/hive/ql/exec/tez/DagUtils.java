@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -454,7 +456,7 @@ public class DagUtils {
    * Falls back to Map-reduces map java opts if no tez specific options
    * are set
    */
-  private String getContainerJavaOpts(Configuration conf) {
+  private static String getContainerJavaOpts(Configuration conf) {
     String javaOpts = HiveConf.getVar(conf, HiveConf.ConfVars.HIVETEZJAVAOPTS);
 
     String logLevel = HiveConf.getVar(conf, HiveConf.ConfVars.HIVETEZLOGLEVEL);
@@ -1275,5 +1277,95 @@ public class DagUtils {
 
   private DagUtils() {
     // don't instantiate
+  }
+
+  /**
+   * TODO This method is temporary. Ideally Hive should only need to pass to Tez the amount of memory
+   *      it requires to do the map join, and Tez should take care of figuring out how much to allocate
+   * Adjust the percentage of memory to be reserved for the processor from Tez
+   * based on the actual requested memory by the Map Join, i.e. HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD
+   * @return the adjusted percentage
+   */
+  static double adjustMemoryReserveFraction(long memoryRequested, HiveConf conf) {
+    // User specified fraction always takes precedence
+    if (conf.getFloatVar(ConfVars.TEZ_TASK_SCALE_MEMORY_RESERVE_FRACTION) > 0) {
+      return conf.getFloatVar(ConfVars.TEZ_TASK_SCALE_MEMORY_RESERVE_FRACTION);
+    }
+
+    float tezHeapFraction = conf.getFloatVar(ConfVars.TEZ_CONTAINER_MAX_JAVA_HEAP_FRACTION);
+    float tezMinReserveFraction = conf.getFloatVar(ConfVars.TEZ_TASK_SCALE_MEMORY_RESERVE_FRACTION_MIN);
+    float tezMaxReserveFraction = conf.getFloatVar(ConfVars.TEZ_TASK_SCALE_MEMORY_RESERVE_FRACTION_MAX);
+
+    Resource resource = getContainerResource(conf);
+    long containerSize = (long) resource.getMemory() * 1024 * 1024;
+    String javaOpts = getContainerJavaOpts(conf);
+    long xmx = parseRightmostXmx(javaOpts);
+
+    if (xmx <= 0) {
+      xmx = (long) (tezHeapFraction * containerSize);
+    }
+
+    long actualMemToBeAllocated = (long) (tezMinReserveFraction * xmx);
+
+    if (actualMemToBeAllocated < memoryRequested) {
+      LOG.warn("The actual amount of memory to be allocated " + actualMemToBeAllocated +
+          " is less than the amount of requested memory for Map Join conversion " + memoryRequested);
+      float frac = (float) memoryRequested / xmx;
+      LOG.info("Fraction after calculation: " + frac);
+      if (frac <= tezMinReserveFraction) {
+        return tezMinReserveFraction;
+      } else if (frac > tezMinReserveFraction && frac < tezMaxReserveFraction) {
+        LOG.info("Will adjust Tez setting " + TezConfiguration.TEZ_TASK_SCALE_MEMORY_RESERVE_FRACTION +
+            " to " + frac + " to allocate more memory");
+        return frac;
+      } else {  // frac >= tezMaxReserveFraction
+        return tezMaxReserveFraction;
+      }
+    }
+
+    return tezMinReserveFraction;  // the default fraction
+  }
+
+  /**
+   * Parse a Java opts string, try to find the rightmost -Xmx option value (since there may be more than one)
+   * @param javaOpts Java opts string to parse
+   * @return the rightmost -Xmx value in bytes. If Xmx is not set, return -1
+   */
+  static long parseRightmostXmx(String javaOpts) {
+    // Find the last matching -Xmx following word boundaries
+    // Format: -Xmx<size>[g|G|m|M|k|K]
+    Pattern JAVA_OPTS_XMX_PATTERN = Pattern.compile(".*(?:^|\\s)-Xmx(\\d+)([gGmMkK]?)(?:$|\\s).*");
+    Matcher m = JAVA_OPTS_XMX_PATTERN.matcher(javaOpts);
+
+    if (m.matches()) {
+      long size = Long.parseLong(m.group(1));
+      if (size <= 0) {
+        return -1;
+      }
+
+      if (m.group(2).isEmpty()) {
+        // -Xmx specified in bytes
+        return size;
+      }
+
+      char unit = m.group(2).charAt(0);
+      switch (unit) {
+        case 'k':
+        case 'K':
+          // -Xmx specified in KB
+          return size * 1024;
+        case 'm':
+        case 'M':
+          // -Xmx specified in MB
+          return size * 1024 * 1024;
+        case 'g':
+        case 'G':
+          // -Xmx speficied in GB
+          return size * 1024 * 1024 * 1024;
+      }
+    }
+
+    // -Xmx not specified
+    return -1;
   }
 }
