@@ -185,6 +185,26 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
     res = new ArrayList<String>();
     driver.getResults(res);
     assertEquals(NUM_RECORDS, res.size());
+
+    query = "select count(*) from " + tableName;
+    retCode = driver.run(query).getResponseCode();
+    if (retCode != 0) {
+      throw new Exception("Error " + retCode + " running query " + query);
+    }
+    res = new ArrayList<String>();
+    driver.getResults(res);
+    assertEquals(1, res.size());
+    assertEquals("20", res.get(0));
+
+    query = "select count(*) from " + tableName + " where p1=1";
+    retCode = driver.run(query).getResponseCode();
+    if (retCode != 0) {
+      throw new Exception("Error " + retCode + " running query " + query);
+    }
+    res = new ArrayList<String>();
+    driver.getResults(res);
+    assertEquals(1, res.size());
+    assertEquals("4", res.get(0));
   }
 
   //TODO 1.0 miniCluster is slow this test times out, make it work

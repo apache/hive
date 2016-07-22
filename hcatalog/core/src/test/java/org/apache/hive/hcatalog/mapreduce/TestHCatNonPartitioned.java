@@ -141,10 +141,27 @@ public class TestHCatNonPartitioned extends HCatMapReduceTest {
 
     ArrayList<String> res = new ArrayList<String>();
     driver.getResults(res);
-    if (isTableImmutable()){
+    if (isTableImmutable()) {
       assertEquals(10, res.size());
-    }else {
+    } else {
       assertEquals(30, res.size());
+    }
+
+    query = "select count(*) from " + tableName;
+    retCode = driver.run(query).getResponseCode();
+
+    if (retCode != 0) {
+      throw new Exception("Error " + retCode + " running query " + query);
+    }
+
+    res = new ArrayList<String>();
+    driver.getResults(res);
+    if (isTableImmutable()) {
+      assertEquals(1, res.size());
+      assertEquals("10", res.get(0));
+    } else {
+      assertEquals(1, res.size());
+      assertEquals("30", res.get(0));
     }
   }
 }
