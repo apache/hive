@@ -86,7 +86,7 @@
                     if [[ ! -f $DOWNLOAD_DIR/$tarName ]]; then
                      curl -Sso $DOWNLOAD_DIR/$tarName $url || return 1
                     else
-                      content=$(tar --exclude='*/*' -tf "$DOWNLOAD_DIR/$tarName")
+                      content=$(tar -tf "$DOWNLOAD_DIR/$tarName" | head -1)
                       if ! echo "$content" | grep "spark-${spark.version}" >/dev/null 2>/dev/null; then
                         curl -Sso $DOWNLOAD_DIR/$tarName $url || return 1
                       fi
