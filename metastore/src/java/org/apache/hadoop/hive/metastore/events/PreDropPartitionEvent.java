@@ -36,7 +36,7 @@ public class PreDropPartitionEvent extends PreEventContext {
     super (PreEventType.DROP_PARTITION, handler);
     this.partitions = Collections.singletonList(partition);
     this.table = table;
-    this.deleteData = false;
+    this.deleteData = deleteData;
   }
 
   /**

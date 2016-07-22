@@ -31,7 +31,7 @@ public class DropTableEvent extends ListenerEvent {
     this.table = table;
     // In HiveMetaStore, the deleteData flag indicates whether DFS data should be
     // removed on a drop.
-    this.deleteData = false;
+    this.deleteData = deleteData;
   }
 
   /**
