@@ -385,6 +385,7 @@ public class HiveConf extends Configuration {
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_WEB_SSL.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_VALIDATE_ACLS.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_LOGGER.varname);
   }
 
   /**
@@ -2985,6 +2986,11 @@ public class HiveConf extends Configuration {
         "Whether to create the LLAP coordinator; since execution engine and container vs llap\n" +
         "settings are both coming from job configs, we don't know at start whether this should\n" +
         "be created. Default true."),
+    LLAP_DAEMON_LOGGER("hive.llap.daemon.logger", Constants.LLAP_LOGGER_NAME_RFA,
+        new StringSet(Constants.LLAP_LOGGER_NAME_QUERY_ROUTING,
+            Constants.LLAP_LOGGER_NAME_RFA,
+            Constants.LLAP_LOGGER_NAME_CONSOLE),
+        "logger used for llap-daemons."),
 
     SPARK_CLIENT_FUTURE_TIMEOUT("hive.spark.client.future.timeout",
       "60s", new TimeValidator(TimeUnit.SECONDS),

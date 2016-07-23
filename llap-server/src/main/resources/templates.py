@@ -103,6 +103,7 @@ resources = """
   "metadata" : {
   },
   "global" : {
+    "yarn.log.include.patterns": ".*\\\\.done"
   },
   "components": {
     "slider-appmaster": {

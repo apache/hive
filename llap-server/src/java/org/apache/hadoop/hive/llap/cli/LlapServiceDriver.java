@@ -199,6 +199,11 @@ public class LlapServiceDriver {
           "@" + options.getName());
     }
 
+    if (options.getLogger() != null) {
+      HiveConf.setVar(conf, ConfVars.LLAP_DAEMON_LOGGER, options.getLogger());
+      propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_LOGGER.varname, options.getLogger());
+    }
+
     if (options.getSize() != -1) {
       if (options.getCache() != -1) {
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MAPPED) == false) {
@@ -572,6 +577,15 @@ public class LlapServiceDriver {
     }
   }
 
+  /**
+   *
+   * @param lfs filesystem on which file will be generated
+   * @param confPath path wher the config will be generated
+   * @param configured the base configuration instances
+   * @param direct properties specified directly - i.e. using the properties exact option
+   * @param hiveconf properties specifried via --hiveconf
+   * @throws IOException
+   */
   private void createLlapDaemonConfig(FileSystem lfs, Path confPath, Configuration configured,
                                       Properties direct, Properties hiveconf) throws IOException {
     FSDataOutputStream confStream =
