@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.llap.cli;
 
+import com.google.common.base.Preconditions;
 import jline.TerminalFactory;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.log.LogHelpers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.util.StringUtils;
@@ -56,6 +58,7 @@ public class LlapOptionsProcessor {
   // Options for the pythin script that are here because our option parser cannot ignore the unknown ones
   public static final String OPTION_ARGS = "args"; // forward as arg
   public static final String OPTION_LOGLEVEL = "loglevel"; // forward as arg
+  public static final String OPTION_LOGGER = "logger"; // forward as arg
   public static final String OPTION_CHAOS_MONKEY = "chaosmonkey"; // forward as arg
   public static final String OPTION_SLIDER_KEYTAB_DIR = "slider-keytab-dir";
   public static final String OPTION_SLIDER_KEYTAB = "slider-keytab";
@@ -78,10 +81,12 @@ public class LlapOptionsProcessor {
     private final Properties conf;
     private final String javaPath;
     private final String llapQueueName;
+    private final String logger;
 
     public LlapOptions(String name, int instances, String directory, int executors, int ioThreads,
                        long cache, long size, long xmx, String jars, boolean isHbase,
-                       @Nonnull Properties hiveconf, String javaPath, String llapQueueName)
+                       @Nonnull Properties hiveconf, String javaPath, String llapQueueName,
+                       String logger)
         throws ParseException {
       if (instances <= 0) {
         throw new ParseException("Invalid configuration: " + instances
@@ -100,6 +105,7 @@ public class LlapOptionsProcessor {
       this.conf = hiveconf;
       this.javaPath = javaPath;
       this.llapQueueName = llapQueueName;
+      this.logger = logger;
     }
 
     public String getName() {
@@ -153,6 +159,10 @@ public class LlapOptionsProcessor {
     public String getLlapQueueName() {
       return llapQueueName;
     }
+
+    public String getLogger() {
+      return logger;
+    }
   }
 
   protected static final Logger l4j = LoggerFactory.getLogger(LlapOptionsProcessor.class.getName());
@@ -177,6 +187,12 @@ public class LlapOptionsProcessor {
 
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_LOGLEVEL).withLongOpt(OPTION_LOGLEVEL)
         .withDescription("log levels for the llap instance").create('l'));
+
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_LOGGER).withLongOpt(OPTION_LOGGER)
+        .withDescription(
+            "logger for llap instance ([" + LogHelpers.LLAP_LOGGER_NAME_RFA + "], " +
+                LogHelpers.LLAP_LOGGER_NAME_QUERY_ROUTING + ", " + LogHelpers.LLAP_LOGGER_NAME_CONSOLE)
+        .create());
 
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_CHAOS_MONKEY).withLongOpt(OPTION_CHAOS_MONKEY)
         .withDescription("chaosmonkey interval").create('m'));
@@ -284,10 +300,19 @@ public class LlapOptionsProcessor {
       javaHome = commandLine.getOptionValue(OPTION_JAVA_HOME);
     }
 
+    String logger = null;
+    if (commandLine.hasOption(OPTION_LOGGER)) {
+      logger = commandLine.getOptionValue(OPTION_LOGGER);
+      Preconditions.checkArgument(
+          logger.equalsIgnoreCase(LogHelpers.LLAP_LOGGER_NAME_QUERY_ROUTING) ||
+              logger.equalsIgnoreCase(LogHelpers.LLAP_LOGGER_NAME_CONSOLE) ||
+              logger.equalsIgnoreCase(LogHelpers.LLAP_LOGGER_NAME_RFA));
+    }
+
     // loglevel, chaosmonkey & args are parsed by the python processor
 
     return new LlapOptions(name, instances, directory, executors, ioThreads, cache,
-        size, xmx, jars, isHbase, hiveconf, javaHome, queueName);
+        size, xmx, jars, isHbase, hiveconf, javaHome, queueName, logger);
   }
 
   private void printUsage() {

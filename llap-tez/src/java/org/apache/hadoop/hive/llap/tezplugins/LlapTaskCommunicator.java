@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.Terminate
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
-import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.tez.Converters;
@@ -495,44 +494,18 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
         });
   }
 
-  //  @Override - TODO Add the annotation after upgrading Hive to Tez 0.8.4
+  @Override
   public String getInProgressLogsUrl(TezTaskAttemptID attemptID, NodeId containerNodeId) {
-    return constructLogUrl(containerNodeId);
-  }
-
-  //  @Override - TODO Add the annotation after upgrading Hive to Tez 0.8.4
-  public String getCompletedLogsUrl(TezTaskAttemptID attemptID, NodeId containerNodeId) {
-    return constructLogUrl(containerNodeId);
-  }
-
-  private String constructLogUrl(NodeId containerNodeId) {
-    Set<ServiceInstance> instanceSet = null;
-    try {
-      instanceSet = serviceRegistry.getInstances().getByHost(containerNodeId.getHost());
-    } catch (IOException e) {
-      // Not failing the job due to a failure constructing the log url
-      LOG.warn(
-          "Unable to find instance for yarnNodeId={} to construct the log url. Exception message={}",
-          containerNodeId, e.getMessage());
-      return null;
-    }
-    if (instanceSet != null) {
-      ServiceInstance matchedInstance = null;
-      for (ServiceInstance instance : instanceSet) {
-        if (instance.getRpcPort() == containerNodeId.getPort()) {
-          matchedInstance = instance;
-          break;
-        }
-      }
-      if (matchedInstance != null) {
-        return constructLlapLogUrl(matchedInstance);
-      }
-    }
+    // Not supported yet.
+    // Need support from YARN to link to an already aggregated log, or at least list them.
     return null;
   }
 
-  private String constructLlapLogUrl(ServiceInstance serviceInstance) {
-    return serviceInstance.getServicesAddress() + "/logs";
+  @Override
+  public String getCompletedLogsUrl(TezTaskAttemptID attemptID, NodeId containerNodeId) {
+    // Not supported yet.
+    // Need support from YARN to link to an already aggregated log, or at least list them.
+    return null;
   }
 
   private static class PingingNodeInfo {

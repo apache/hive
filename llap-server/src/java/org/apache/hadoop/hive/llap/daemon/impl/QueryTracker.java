@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.log.Log4jQueryCompleteMarker;
+import org.apache.hadoop.hive.llap.log.LogHelpers;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.log4j.MDC;
@@ -73,6 +74,7 @@ public class QueryTracker extends AbstractService {
   private final FileSystem localFs;
   private final String clusterId;
   private final long defaultDeleteDelaySeconds;
+  private final boolean routeBasedLoggingEnabled;
 
   // TODO At the moment there's no way of knowing whether a query is running or not.
   // A race is possible between dagComplete and registerFragment - where the registerFragment
@@ -118,6 +120,16 @@ public class QueryTracker extends AbstractService {
         conf, ConfVars.LLAP_DAEMON_NUM_FILE_CLEANER_THREADS);
     this.executorService = Executors.newScheduledThreadPool(numCleanerThreads,
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("QueryFileCleaner %d").build());
+
+    String logger = HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_LOGGER);
+    if (logger != null && (logger.equalsIgnoreCase(LogHelpers.LLAP_LOGGER_NAME_QUERY_ROUTING))) {
+      routeBasedLoggingEnabled = true;
+    } else {
+      routeBasedLoggingEnabled = false;
+    }
+    LOG.info(
+        "QueryTracker setup with numCleanerThreads={}, defaultCleanupDelay(s)={}, routeBasedLogging={}",
+        numCleanerThreads, defaultDeleteDelaySeconds, routeBasedLoggingEnabled);
   }
 
   /**
@@ -230,19 +242,21 @@ public class QueryTracker extends AbstractService {
         }
       }
 
-      // Inform the routing purgePolicy.
-      // Send out a fake log message at the ERROR level with the MDC for this query setup. With an
-      // LLAP custom appender this message will not be logged.
-      final String dagId = queryInfo.getDagIdString();
-      final String queryId = queryInfo.getHiveQueryIdString();
-      MDC.put("dagId", dagId);
-      MDC.put("queryId", queryId);
-      try {
-        LOG.error(QUERY_COMPLETE_MARKER, "Ignore this. Log line to interact with logger." +
-            " Query complete: " + queryInfo.getHiveQueryIdString() + ", " +
-            queryInfo.getDagIdString());
-      } finally {
-        MDC.clear();
+      if (routeBasedLoggingEnabled) {
+        // Inform the routing purgePolicy.
+        // Send out a fake log message at the ERROR level with the MDC for this query setup. With an
+        // LLAP custom appender this message will not be logged.
+        final String dagId = queryInfo.getDagIdString();
+        final String queryId = queryInfo.getHiveQueryIdString();
+        MDC.put("dagId", dagId);
+        MDC.put("queryId", queryId);
+        try {
+          LOG.error(QUERY_COMPLETE_MARKER, "Ignore this. Log line to interact with logger." +
+              " Query complete: " + queryInfo.getHiveQueryIdString() + ", " +
+              queryInfo.getDagIdString());
+        } finally {
+          MDC.clear();
+        }
       }
 
       // Clearing this before sending a kill is OK, since canFinish will change to false.

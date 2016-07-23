@@ -28,4 +28,5 @@ public class LlapConstants {
   // Note: Do not change without changing the corresponding reference in llap-daemon-log4j2.properties
   public static final String LLAP_LOG4j2_PURGE_POLICY_NAME_QUERY_ROUTING =
       "llapLogPurgerQueryRouting";
+
 }
