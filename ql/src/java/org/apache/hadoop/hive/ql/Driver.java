@@ -1205,11 +1205,34 @@ public class Driver implements CommandProcessor {
     long maxCompileLockWaitTime = HiveConf.getTimeVar(
       this.conf, ConfVars.HIVE_SERVER2_COMPILE_LOCK_TIMEOUT,
       TimeUnit.SECONDS);
+
+    final String lockAcquiredMsg = "Acquired the compile lock.";
+    // First shot without waiting.
+    try {
+      if (compileLock.tryLock(0, TimeUnit.SECONDS)) {
+        LOG.debug(lockAcquiredMsg);
+        return compileLock;
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Interrupted Exception ignored", e);
+      }
+      return null;
+    }
+
+    // If the first shot fails, then we log the waiting messages.
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Waiting to acquire compile lock: " + command);
+    }
+
+    OperationLog ol = OperationLog.getCurrentOperationLog();
+    if (ol != null) {
+      ol.writeOperationLog(LoggingLevel.EXECUTION, "Waiting to acquire compile lock.\n");
+    }
+
     if (maxCompileLockWaitTime > 0) {
       try {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Waiting to acquire compile lock: " + command);
-        }
         if(!compileLock.tryLock(maxCompileLockWaitTime, TimeUnit.SECONDS)) {
           errorMessage = ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCodedMsg();
           LOG.error(errorMessage + ": " + command);
@@ -1226,7 +1249,10 @@ public class Driver implements CommandProcessor {
       compileLock.lock();
     }
 
-    LOG.debug("Acquired the compile lock");
+    LOG.debug(lockAcquiredMsg);
+    if (ol != null) {
+        ol.writeOperationLog(LoggingLevel.EXECUTION, lockAcquiredMsg + "\n");
+    }
     return compileLock;
   }
 
