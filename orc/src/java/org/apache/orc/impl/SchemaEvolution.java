@@ -20,9 +20,8 @@ package org.apache.orc.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,50 +32,64 @@ import org.apache.orc.TypeDescription;
  * has been schema evolution.
  */
 public class SchemaEvolution {
-  private final Map<Integer, TypeDescription> readerToFile;
+  private final TypeDescription[] readerFileTypes;
   private final boolean[] included;
   private final TypeDescription readerSchema;
+  private boolean hasConversion;
   private static final Log LOG = LogFactory.getLog(SchemaEvolution.class);
 
   public SchemaEvolution(TypeDescription readerSchema, boolean[] included) {
-    this.included = included;
-    readerToFile = null;
+    this.included = (included == null ? null : Arrays.copyOf(included, included.length));
     this.readerSchema = readerSchema;
+
+    hasConversion = false;
+
+    readerFileTypes = new TypeDescription[this.readerSchema.getMaximumId() + 1];
+    buildSameSchemaFileTypesArray();
   }
 
   public SchemaEvolution(TypeDescription fileSchema,
                          TypeDescription readerSchema,
                          boolean[] included) throws IOException {
-    readerToFile = new HashMap<>(readerSchema.getMaximumId() + 1);
-    this.included = included;
+    this.included = (included == null ? null : Arrays.copyOf(included, included.length));
     if (checkAcidSchema(fileSchema)) {
       this.readerSchema = createEventSchema(readerSchema);
     } else {
       this.readerSchema = readerSchema;
     }
-    buildMapping(fileSchema, this.readerSchema);
+
+    hasConversion = false;
+    readerFileTypes = new TypeDescription[this.readerSchema.getMaximumId() + 1];
+    buildConversionFileTypesArray(fileSchema, this.readerSchema);
   }
 
   public TypeDescription getReaderSchema() {
     return readerSchema;
   }
 
-  public TypeDescription getFileType(TypeDescription readerType) {
-    TypeDescription result;
-    if (readerToFile == null) {
-      if (included == null || included[readerType.getId()]) {
-        result = readerType;
-      } else {
-        result = null;
-      }
-    } else {
-      result = readerToFile.get(readerType.getId());
-    }
-    return result;
+  /**
+   * Is there Schema Evolution data type conversion?
+   * @return
+   */
+  public boolean hasConversion() {
+    return hasConversion;
   }
 
-  void buildMapping(TypeDescription fileType,
-                    TypeDescription readerType) throws IOException {
+  public TypeDescription getFileType(TypeDescription readerType) {
+    return getFileType(readerType.getId());
+  }
+
+  /**
+   * Get the file type by reader type id.
+   * @param readerType
+   * @return
+   */
+  public TypeDescription getFileType(int id) {
+    return readerFileTypes[id];
+  }
+
+  void buildConversionFileTypesArray(TypeDescription fileType,
+                                     TypeDescription readerType) throws IOException {
     // if the column isn't included, don't map it
     if (included != null && !included[readerType.getId()]) {
       return;
@@ -101,9 +114,16 @@ public class SchemaEvolution {
         case CHAR:
         case VARCHAR:
           // We do conversion when same CHAR/VARCHAR type but different maxLength.
+          if (fileType.getMaxLength() != readerType.getMaxLength()) {
+            hasConversion = true;
+          }
           break;
         case DECIMAL:
           // We do conversion when same DECIMAL type but different precision/scale.
+          if (fileType.getPrecision() != readerType.getPrecision() ||
+              fileType.getScale() != readerType.getScale()) {
+            hasConversion = true;
+          }
           break;
         case UNION:
         case MAP:
@@ -113,7 +133,7 @@ public class SchemaEvolution {
           List<TypeDescription> readerChildren = readerType.getChildren();
           if (fileChildren.size() == readerChildren.size()) {
             for(int i=0; i < fileChildren.size(); ++i) {
-              buildMapping(fileChildren.get(i), readerChildren.get(i));
+              buildConversionFileTypesArray(fileChildren.get(i), readerChildren.get(i));
             }
           } else {
             isOk = false;
@@ -124,9 +144,12 @@ public class SchemaEvolution {
           // allow either side to have fewer fields than the other
           List<TypeDescription> fileChildren = fileType.getChildren();
           List<TypeDescription> readerChildren = readerType.getChildren();
+          if (fileChildren.size() != readerChildren.size()) {
+            hasConversion = true;
+          }
           int jointSize = Math.min(fileChildren.size(), readerChildren.size());
           for(int i=0; i < jointSize; ++i) {
-            buildMapping(fileChildren.get(i), readerChildren.get(i));
+            buildConversionFileTypesArray(fileChildren.get(i), readerChildren.get(i));
           }
           break;
         }
@@ -139,15 +162,45 @@ public class SchemaEvolution {
        */
 
       isOk = ConvertTreeReaderFactory.canConvert(fileType, readerType);
+      hasConversion = true;
     }
     if (isOk) {
-      readerToFile.put(readerType.getId(), fileType);
+      int id = readerType.getId();
+      if (readerFileTypes[id] != null) {
+        throw new RuntimeException("reader to file type entry already assigned");
+      }
+      readerFileTypes[id] = fileType;
     } else {
       throw new IOException(
           String.format(
               "ORC does not support type conversion from file type %s (%d) to reader type %s (%d)",
               fileType.toString(), fileType.getId(),
               readerType.toString(), readerType.getId()));
+    }
+  }
+
+  /**
+   * Use to make a reader to file type array when the schema is the same.
+   * @return
+   */
+  private void buildSameSchemaFileTypesArray() {
+    buildSameSchemaFileTypesArrayRecurse(readerSchema);
+  }
+
+  void buildSameSchemaFileTypesArrayRecurse(TypeDescription readerType) {
+    if (included != null && !included[readerType.getId()]) {
+      return;
+    }
+    int id = readerType.getId();
+    if (readerFileTypes[id] != null) {
+      throw new RuntimeException("reader to file type entry already assigned");
+    }
+    readerFileTypes[id] = readerType;
+    List<TypeDescription> children = readerType.getChildren();
+    if (children != null) {
+      for (TypeDescription child : children) {
+        buildSameSchemaFileTypesArrayRecurse(child);
+      }
     }
   }
 

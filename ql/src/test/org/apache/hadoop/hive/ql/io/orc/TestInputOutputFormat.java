@@ -768,7 +768,7 @@ public class TestInputOutputFormat {
       MockFileSystem fs, String path, OrcInputFormat.CombinedCtx combineCtx) throws IOException {
     OrcInputFormat.AcidDirInfo adi = createAdi(context, fs, path);
     return OrcInputFormat.determineSplitStrategy(combineCtx, context,
-        adi.fs, adi.splitPath, adi.acidInfo, adi.baseOrOriginalFiles, null, true);
+        adi.fs, adi.splitPath, adi.acidInfo, adi.baseOrOriginalFiles, null, null, true);
   }
 
   public OrcInputFormat.AcidDirInfo createAdi(
@@ -781,7 +781,7 @@ public class TestInputOutputFormat {
       OrcInputFormat.Context context, OrcInputFormat.FileGenerator gen) throws IOException {
     OrcInputFormat.AcidDirInfo adi = gen.call();
     return OrcInputFormat.determineSplitStrategy(
-        null, context, adi.fs, adi.splitPath, adi.acidInfo, adi.baseOrOriginalFiles, null, true);
+        null, context, adi.fs, adi.splitPath, adi.acidInfo, adi.baseOrOriginalFiles, null, null, true);
   }
 
   public static class MockBlock {
@@ -1389,7 +1389,7 @@ public class TestInputOutputFormat {
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
-            fs.getFileStatus(new Path("/a/file")), null, true,
+            fs.getFileStatus(new Path("/a/file")), null, null, true,
             new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null), null, true);
     OrcSplit result = splitter.createSplit(0, 200, null);
     assertEquals(0, result.getStart());
@@ -1430,7 +1430,7 @@ public class TestInputOutputFormat {
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
-            fs.getFileStatus(new Path("/a/file")), null, true,
+            fs.getFileStatus(new Path("/a/file")), null, null, true,
             new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null), null, true);
     List<OrcSplit> results = splitter.call();
     OrcSplit result = results.get(0);
@@ -1453,7 +1453,7 @@ public class TestInputOutputFormat {
     HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 0);
     context = new OrcInputFormat.Context(conf);
     splitter = new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
-      fs.getFileStatus(new Path("/a/file")), null, true,
+      fs.getFileStatus(new Path("/a/file")), null, null, true,
         new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null), null, true);
     results = splitter.call();
     for(int i=0; i < stripeSizes.length; ++i) {
@@ -1481,7 +1481,7 @@ public class TestInputOutputFormat {
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
-            fs.getFileStatus(new Path("/a/file")), null, true,
+            fs.getFileStatus(new Path("/a/file")), null, null, true,
             new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null), null, true);
     List<OrcSplit> results = splitter.call();
     OrcSplit result = results.get(0);
@@ -1503,7 +1503,7 @@ public class TestInputOutputFormat {
     HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 0);
     context = new OrcInputFormat.Context(conf);
     splitter = new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
-        fs.getFileStatus(new Path("/a/file")), null, true,
+        fs.getFileStatus(new Path("/a/file")), null, null, true,
         new ArrayList<AcidInputFormat.DeltaMetaData>(),
         true, null, null), null, true);
     results = splitter.call();
@@ -1523,7 +1523,7 @@ public class TestInputOutputFormat {
     HiveConf.setLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 100000);
     context = new OrcInputFormat.Context(conf);
     splitter = new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
-        fs.getFileStatus(new Path("/a/file")), null, true,
+        fs.getFileStatus(new Path("/a/file")), null, null, true,
         new ArrayList<AcidInputFormat.DeltaMetaData>(),
         true, null, null), null, true);
     results = splitter.call();

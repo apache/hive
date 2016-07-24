@@ -1,0 +1,124 @@
+PREHOOK: query: create table unique_1( 
+i int, 
+d double, 
+s string) 
+row format delimited 
+fields terminated by '|' 
+stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unique_1
+POSTHOOK: query: create table unique_1( 
+i int, 
+d double, 
+s string) 
+row format delimited 
+fields terminated by '|' 
+stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unique_1
+PREHOOK: query: load data local inpath '../../data/files/unique_1.txt' into table unique_1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@unique_1
+POSTHOOK: query: load data local inpath '../../data/files/unique_1.txt' into table unique_1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@unique_1
+PREHOOK: query: create table unique_2( 
+i int, 
+d double, 
+s string)
+row format delimited 
+fields terminated by '|' 
+stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unique_2
+POSTHOOK: query: create table unique_2( 
+i int, 
+d double, 
+s string)
+row format delimited 
+fields terminated by '|' 
+stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unique_2
+PREHOOK: query: load data local inpath '../../data/files/unique_2.txt' into table unique_2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@unique_2
+POSTHOOK: query: load data local inpath '../../data/files/unique_2.txt' into table unique_2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@unique_2
+PREHOOK: query: create table test_two_files( 
+i int, 
+d double, 
+s string)
+stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_two_files
+POSTHOOK: query: create table test_two_files( 
+i int, 
+d double, 
+s string)
+stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_two_files
+PREHOOK: query: insert into table test_two_files select * from unique_1 where i <= 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unique_1
+PREHOOK: Output: default@test_two_files
+POSTHOOK: query: insert into table test_two_files select * from unique_1 where i <= 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unique_1
+POSTHOOK: Output: default@test_two_files
+POSTHOOK: Lineage: test_two_files.d SIMPLE [(unique_1)unique_1.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: test_two_files.i SIMPLE [(unique_1)unique_1.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_two_files.s SIMPLE [(unique_1)unique_1.FieldSchema(name:s, type:string, comment:null), ]
+unique_1.i	unique_1.d	unique_1.s
+PREHOOK: query: insert into table test_two_files select * from unique_2 where i > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unique_2
+PREHOOK: Output: default@test_two_files
+POSTHOOK: query: insert into table test_two_files select * from unique_2 where i > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unique_2
+POSTHOOK: Output: default@test_two_files
+POSTHOOK: Lineage: test_two_files.d SIMPLE [(unique_2)unique_2.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: test_two_files.i SIMPLE [(unique_2)unique_2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_two_files.s SIMPLE [(unique_2)unique_2.FieldSchema(name:s, type:string, comment:null), ]
+unique_2.i	unique_2.d	unique_2.s
+PREHOOK: query: alter table test_two_files change column i i string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_two_files
+PREHOOK: Output: default@test_two_files
+PREHOOK: query: select s from test_two_files where i = -1591211872
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_two_files
+#### A masked pattern was here ####
+s
+fred king
+PREHOOK: query: select s from test_two_files where i = -1591211872
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_two_files
+#### A masked pattern was here ####
+s
+fred king
+PREHOOK: query: select s from test_two_files where i = '-1591211872'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_two_files
+#### A masked pattern was here ####
+s
+fred king
+PREHOOK: query: select s from test_two_files where i = -1591211872
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_two_files
+#### A masked pattern was here ####
+s
+fred king
