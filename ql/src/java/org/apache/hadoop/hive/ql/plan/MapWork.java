@@ -153,20 +153,7 @@ public class MapWork extends BaseWork {
     super(name);
   }
 
-  
-  // HIVE-12244: this @Explain should be on the new method; but it changes the explain result
-  // HIVE-12244: example test which can be used to validate change: -Dtest=TestMiniLlapCliDriver -Dqfile=dynamic_partition_pruning.q
   @Explain(displayName = "Path -> Alias", explainLevels = { Level.EXTENDED })
-  @Deprecated
-  public LinkedHashMap<String, ArrayList<String>> getPathToAliasesOld() {
-    LinkedHashMap<String, ArrayList<String>> ret = new LinkedHashMap<>();
-    for (Entry<Path, ArrayList<String>> p2a : pathToAliases.entrySet()) {
-      ret.put(p2a.getKey().toString(), p2a.getValue());
-    }
-    return ret;
-  }
-  
-  // @Explain(displayName = "Path -> Alias", explainLevels = { Level.EXTENDED })
   public LinkedHashMap<Path, ArrayList<String>> getPathToAliases() {
     //
     return pathToAliases;
@@ -220,19 +207,7 @@ public class MapWork extends BaseWork {
     return trunPathToAliases;
   }
 
-  // HIVE-12244: this @Explain should be on the new method; but it changes the explain result
-  // HIVE-12244: example test which can be used to validate change: combine2.q
   @Explain(displayName = "Path -> Partition", explainLevels = { Level.EXTENDED })
-  @Deprecated
-  public LinkedHashMap<String, PartitionDesc> getPathToPartitionInfoOld() {
-    LinkedHashMap<String, PartitionDesc> ret = new LinkedHashMap<>();
-    for (Entry<Path, PartitionDesc> p2a : pathToPartitionInfo.entrySet()) {
-      ret.put(p2a.getKey().toString(), p2a.getValue());
-    }
-    return ret;
-  }
-
-  //@Explain(displayName = "Path -> Partition", explainLevels = { Level.EXTENDED })
   public LinkedHashMap<Path, PartitionDesc> getPathToPartitionInfo() {
     return pathToPartitionInfo;
   }

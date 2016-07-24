@@ -33,10 +33,10 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 31)
-        Reducer 6 <- Map 5 (PARTITION-LEVEL SORT, 31)
-        Reducer 8 <- Map 5 (PARTITION-LEVEL SORT, 31)
         Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 31), Reducer 6 (PARTITION-LEVEL SORT, 31), Reducer 8 (PARTITION-LEVEL SORT, 31)
         Reducer 4 <- Reducer 3 (GROUP, 31)
+        Reducer 6 <- Map 5 (PARTITION-LEVEL SORT, 31)
+        Reducer 8 <- Map 5 (PARTITION-LEVEL SORT, 31)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -716,10 +716,10 @@ STAGE PLANS:
         Reducer 12 <- Map 11 (PARTITION-LEVEL SORT, 31), Map 16 (PARTITION-LEVEL SORT, 31)
         Reducer 13 <- Map 17 (PARTITION-LEVEL SORT, 31), Reducer 12 (PARTITION-LEVEL SORT, 31)
         Reducer 14 <- Map 18 (PARTITION-LEVEL SORT, 31), Reducer 13 (PARTITION-LEVEL SORT, 31)
+        Reducer 15 <- Reducer 14 (GROUP, 31)
         Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 31), Map 8 (PARTITION-LEVEL SORT, 31)
         Reducer 3 <- Map 9 (PARTITION-LEVEL SORT, 31), Reducer 2 (PARTITION-LEVEL SORT, 31)
         Reducer 4 <- Map 10 (PARTITION-LEVEL SORT, 31), Reducer 3 (PARTITION-LEVEL SORT, 31)
-        Reducer 15 <- Reducer 14 (GROUP, 31)
         Reducer 5 <- Reducer 4 (GROUP, 31)
         Reducer 6 <- Reducer 15 (PARTITION-LEVEL SORT, 31), Reducer 5 (PARTITION-LEVEL SORT, 31)
         Reducer 7 <- Reducer 6 (SORT, 1)
