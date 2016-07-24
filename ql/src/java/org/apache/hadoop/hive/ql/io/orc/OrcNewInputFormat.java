@@ -136,7 +136,7 @@ public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
   }
 
   // Nearly C/P from OrcInputFormat; there are too many statics everywhere to sort this out.
-  private Context createContext(Configuration conf, int numSplits) {
+  private Context createContext(Configuration conf, int numSplits) throws IOException {
     // Use threads to resolve directories into splits.
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_MS_FOOTER_CACHE_ENABLED)) {
       // Create HiveConf once, since this is expensive.

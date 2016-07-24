@@ -64,6 +64,7 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -536,11 +537,13 @@ public class TestOrcSplitElimination {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestOrcSplitElimination.class);
 
+  @Ignore("External cache has been turned off for now")
   @Test
   public void testExternalFooterCache() throws Exception {
     testFooterExternalCacheImpl(false);
   }
 
+  @Ignore("External cache has been turned off for now")
   @Test
   public void testExternalFooterCachePpd() throws Exception {
     testFooterExternalCacheImpl(true);
