@@ -467,12 +467,13 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         }
       }
       else if (ent.getValue() instanceof Map) {
+        String stringValue = getBasictypeKeyedMap((Map)ent.getValue()).toString();
         if (out != null) {
-          out.print(ent.getValue().toString());
+          out.print(stringValue);
           out.println();
         }
         if (jsonOutput) {
-          json.put(ent.getKey().toString(), ent.getValue().toString());
+          json.put(ent.getKey().toString(), stringValue);
         }
       }
       else if (ent.getValue() != null) {

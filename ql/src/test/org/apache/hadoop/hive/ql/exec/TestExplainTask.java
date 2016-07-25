@@ -101,7 +101,6 @@ public class TestExplainTask {
     assertEquals("both maps should be sorted the same way", result1, result2);
   }
 
-  @Ignore("HIVE-14287 will fix this later")
   @Test
   public void testExplainDoesSortMapValues() throws Exception {
     LinkedHashMap<String, String> explainMap1Val = new LinkedHashMap<>();
