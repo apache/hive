@@ -30,7 +30,8 @@ POSTHOOK: query: create table t4 (id int, key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t4
-Warning: Shuffle Join JOIN[12][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from t1 full outer join t2 on t1.id=t2.id join t3 on t2.id=t3.id where t3.id=20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 full outer join t2 on t1.id=t2.id join t3 on t2.id=t3.id where t3.id=20
@@ -43,7 +44,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 3 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
+        Reducer 3 <- Map 5 (PARTITION-LEVEL SORT, 1), Reducer 2 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -62,7 +64,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-        Map 3 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: t2
@@ -78,7 +80,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col1 (type: string), _col2 (type: string)
-        Map 4 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: t3
@@ -99,24 +101,35 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Right Outer Join0 to 1
-                     Inner Join 0 to 2
                 filter predicates:
                   0 
                   1 {true}
-                  2 
                 keys:
                   0 
                   1 
-                  2 
-                outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col7, _col8
+                outputColumnNames: _col0, _col1, _col2, _col4, _col5
                 Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col4 (type: string), _col5 (type: string)
+        Reducer 3 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col7, _col8
+                Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), 20 (type: int), _col4 (type: string), _col5 (type: string), 20 (type: int), _col7 (type: string), _col8 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                  Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -128,7 +141,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[12][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from t1 join t2 on (t1.id=t2.id) left outer join t3 on (t2.id=t3.id) where t2.id=20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 join t2 on (t1.id=t2.id) left outer join t3 on (t2.id=t3.id) where t2.id=20
@@ -141,7 +155,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 3 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
+        Reducer 3 <- Map 5 (PARTITION-LEVEL SORT, 1), Reducer 2 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -160,7 +175,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col1 (type: string), _col2 (type: string)
-        Map 3 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: t2
@@ -176,7 +191,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col1 (type: string), _col2 (type: string)
-        Map 4 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: t3
@@ -197,20 +212,32 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                     Left Outer Join0 to 2
                 keys:
                   0 
                   1 
-                  2 
-                outputColumnNames: _col1, _col2, _col4, _col5, _col6, _col7, _col8
+                outputColumnNames: _col1, _col2, _col4, _col5
                 Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: string), _col2 (type: string), _col4 (type: string), _col5 (type: string)
+        Reducer 3 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1, _col2, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: 20 (type: int), _col1 (type: string), _col2 (type: string), 20 (type: int), _col4 (type: string), _col5 (type: string), _col6 (type: int), _col7 (type: string), _col8 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                  Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -222,7 +249,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[12][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from t1 join t2 on (t1.id=t2.id) left outer join t3 on (t1.id=t3.id) where t2.id=20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 join t2 on (t1.id=t2.id) left outer join t3 on (t1.id=t3.id) where t2.id=20
@@ -235,7 +263,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 3 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
+        Reducer 3 <- Map 5 (PARTITION-LEVEL SORT, 1), Reducer 2 (PARTITION-LEVEL SORT, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -254,7 +283,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col1 (type: string), _col2 (type: string)
-        Map 3 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: t2
@@ -270,7 +299,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col1 (type: string), _col2 (type: string)
-        Map 4 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: t3
@@ -291,20 +320,32 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                     Left Outer Join0 to 2
                 keys:
                   0 
                   1 
-                  2 
-                outputColumnNames: _col1, _col2, _col4, _col5, _col6, _col7, _col8
+                outputColumnNames: _col1, _col2, _col4, _col5
                 Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: string), _col2 (type: string), _col4 (type: string), _col5 (type: string)
+        Reducer 3 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1, _col2, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: 20 (type: int), _col1 (type: string), _col2 (type: string), 20 (type: int), _col4 (type: string), _col5 (type: string), _col6 (type: int), _col7 (type: string), _col8 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                  Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

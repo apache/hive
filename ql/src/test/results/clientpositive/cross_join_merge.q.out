@@ -337,16 +337,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[9][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: explain
+Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: -- no merge
+explain
 select src1.key from src src1 left outer join src src2 join src src3
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: -- no merge
+explain
 select src1.key from src src1 left outer join src src2 join src src3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -371,6 +375,30 @@ STAGE PLANS:
               Reduce Output Operator
                 sort order: 
                 Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Left Outer Join0 to 1
+          keys:
+            0 
+            1 
+          outputColumnNames: _col0
+          Statistics: Num rows: 250000 Data size: 3906000 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 250000 Data size: 3906000 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string)
           TableScan
             alias: src1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
@@ -382,17 +410,15 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
-               Inner Join 0 to 2
+               Inner Join 0 to 1
           keys:
             0 
             1 
-            2 
           outputColumnNames: _col0
-          Statistics: Num rows: 125000000 Data size: 2453000000 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 125000000 Data size: 2578000000 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 125000000 Data size: 2453000000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 125000000 Data size: 2578000000 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

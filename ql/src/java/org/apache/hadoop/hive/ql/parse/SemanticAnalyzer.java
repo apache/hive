@@ -8924,6 +8924,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private ObjectPair<Integer, int[]> findMergePos(QBJoinTree node, QBJoinTree target) {
     int res = -1;
     String leftAlias = node.getLeftAlias();
+    if (leftAlias == null && (!node.getNoOuterJoin() || !target.getNoOuterJoin())) {
+      // Cross with outer join: currently we do not merge
+      return new ObjectPair(-1, null);
+    }
 
     ArrayList<ASTNode> nodeCondn = node.getExpressions().get(0);
     ArrayList<ASTNode> targetCondn = null;
