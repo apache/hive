@@ -32,13 +32,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.llap.LlapUtil;
-import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -135,7 +134,7 @@ public class RowContainer<ROW extends List<Object>>
     this.size = 0;
     this.itrCursor = 0;
     this.addCursor = 0;
-    this.spillFileDirs = getLocalDirsForSpillFiles(jc);
+    this.spillFileDirs = HiveUtils.getLocalDirList(jc);
     this.numFlushedBlocks = 0;
     this.tmpFile = null;
     this.currentWriteBlock = (ROW[]) new ArrayList[blockSize];
@@ -149,11 +148,6 @@ public class RowContainer<ROW extends List<Object>>
     } else {
       this.reporter = reporter;
     }
-  }
-
-  public static String getLocalDirsForSpillFiles(Configuration conf) {
-    return LlapProxy.isDaemon()
-        ? LlapUtil.getDaemonLocalDirList(conf) : conf.get("yarn.nodemanager.local-dirs");
   }
 
   private JobConf getLocalFSJobConfClone(Configuration jc) {
