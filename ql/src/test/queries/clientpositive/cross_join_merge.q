@@ -10,6 +10,7 @@ select src1.key from src src1 join src src2 join src src3 where src1.key=src2.ke
 explain
 select src1.key from src src1 join src src2 on 5 = src2.key join src src3 on src1.key=src3.key;
 
+-- no merge
 explain
 select src1.key from src src1 left outer join src src2 join src src3;
 
