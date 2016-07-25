@@ -187,14 +187,15 @@ public class OrcRecordUpdater implements RecordUpdater {
       fs = path.getFileSystem(options.getConfiguration());
     }
     this.fs = fs;
-    try {
-      FSDataOutputStream strm = fs.create(new Path(path, ACID_FORMAT), false);
-      strm.writeInt(ORC_ACID_VERSION);
-      strm.close();
-    } catch (IOException ioe) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Failed to create " + path + "/" + ACID_FORMAT + " with " +
+    Path formatFile = new Path(path, ACID_FORMAT);
+    if(!fs.exists(formatFile)) {
+      try (FSDataOutputStream strm = fs.create(formatFile, false)) {
+        strm.writeInt(ORC_ACID_VERSION);
+      } catch (IOException ioe) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Failed to create " + path + "/" + ACID_FORMAT + " with " +
             ioe);
+        }
       }
     }
     if (options.getMinimumTransactionId() != options.getMaximumTransactionId()
