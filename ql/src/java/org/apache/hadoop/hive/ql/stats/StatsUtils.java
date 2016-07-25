@@ -283,8 +283,8 @@ public class StatsUtils {
           // add partition column stats
           addParitionColumnStats(conf, neededColumns, referencedColumns, schema, table, partList,
               emptyStats);
-
           stats.addToColumnStats(emptyStats);
+          stats.addToDataSize(getDataSizeFromColumnStats(nr, emptyStats));
           stats.updateColumnStatsState(deriveStatType(emptyStats, referencedColumns));
         } else {
           List<ColumnStatisticsObj> colStats = aggrStats.getColStats();
