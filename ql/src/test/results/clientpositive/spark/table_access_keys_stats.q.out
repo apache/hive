@@ -548,3 +548,59 @@ Keys:key
 Table:default@t2
 Keys:key
 
+PREHOOK: query: -- simple joins
+SELECT *
+FROM T1 JOIN T2
+ON T1.key = t2.key
+ORDER BY T1.key ASC, T1.val ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+Operator:JOIN_8
+Table:default@t1
+Keys:key
+Table:default@t2
+Keys:key
+
+1	11	1	1
+2	12	2	1
+3	13	3	1
+7	17	7	1
+8	18	8	2
+8	28	8	2
+PREHOOK: query: SELECT *
+FROM T1 JOIN T2
+ON T1.key = T2.key AND T1.val = T2.val
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+Operator:JOIN_8
+Table:default@t1
+Keys:key,val
+Table:default@t2
+Keys:key,val
+
+PREHOOK: query: -- group by followed by a join
+SELECT * FROM
+(SELECT key, count(1) as c FROM T1 GROUP BY key) subq1
+JOIN
+(SELECT key, count(1) as c FROM T1 GROUP BY key) subq2
+ON subq1.key = subq2.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+Operator:GBY_4
+Table:default@t1
+Keys:key
+
+Operator:GBY_12
+Table:default@t1
+Keys:key
+
+1	1	1	1
+2	1	2	1
+3	1	3	1
+7	1	7	1
+8	2	8	2

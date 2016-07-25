@@ -994,6 +994,7 @@ public class HiveOpConverter {
         childOps[0].getCompilationOpContext(), desc, new RowSchema(outputColumns), childOps);
     joinOp.setColumnExprMap(colExprMap);
     joinOp.setPosToAliasMap(posToAliasMap);
+    joinOp.getConf().setBaseSrc(baseSrc);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Generated " + joinOp + " with row schema: [" + joinOp.getSchema() + "]");

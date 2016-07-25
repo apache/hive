@@ -218,3 +218,26 @@ FROM
 ) T4
 JOIN T3
 ON T3.val = T4.val;
+
+
+set hive.cbo.returnpath.hiveop=true;
+-- simple joins
+SELECT *
+FROM T1 JOIN T2
+ON T1.key = t2.key
+ORDER BY T1.key ASC, T1.val ASC;
+
+SELECT *
+FROM T1 JOIN T2
+ON T1.key = T2.key AND T1.val = T2.val;
+
+
+-- group by followed by a join
+SELECT * FROM
+(SELECT key, count(1) as c FROM T1 GROUP BY key) subq1
+JOIN
+(SELECT key, count(1) as c FROM T1 GROUP BY key) subq2
+ON subq1.key = subq2.key;
+
+
+set hive.cbo.returnpath.hiveop=false;
