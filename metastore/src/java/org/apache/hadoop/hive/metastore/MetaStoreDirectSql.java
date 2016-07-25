@@ -984,6 +984,11 @@ class MetaStoreDirectSql {
         List<String> joins, boolean dbHasJoinCastBug, String defaultPartName, DB dbType)
             throws MetaException {
       assert table != null;
+      if (tree == null) {
+        // consistent with other APIs like makeExpressionTree, null is returned to indicate that
+        // the filter could not pushed down due to parsing issue etc
+        return null;
+      }
       if (tree.getRoot() == null) {
         return "";
       }
