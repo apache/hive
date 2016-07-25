@@ -354,8 +354,10 @@ public class DbTxnManager extends HiveTxnManagerImpl {
    */
   @VisibleForTesting
   void acquireLocksWithHeartbeatDelay(QueryPlan plan, Context ctx, String username, long delay) throws LockException {
-    acquireLocks(plan, ctx, username, true);
-    ctx.setHeartbeater(startHeartbeat(delay));
+    LockState ls = acquireLocks(plan, ctx, username, true);
+    if (ls != null) { // If there's no lock, we don't need to do heartbeat
+      ctx.setHeartbeater(startHeartbeat(delay));
+    }
   }
 
 
@@ -438,6 +440,9 @@ public class DbTxnManager extends HiveTxnManagerImpl {
     }
     if(!isTxnOpen() && locks.isEmpty()) {
       // No locks, no txn, we outta here.
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("No need to send heartbeat as there is no transaction and no locks.");
+      }
       return;
     }
     for (HiveLock lock : locks) {
