@@ -1,6 +1,6 @@
 set hive.stats.autogather=true;
 
-create table tab_decimal(a decimal(10,3));
+create table tab_decimal(a decimal(35,3));
 
 -- insert some data
 LOAD DATA LOCAL INPATH "../../data/files/decimal.txt" INTO TABLE tab_decimal;
