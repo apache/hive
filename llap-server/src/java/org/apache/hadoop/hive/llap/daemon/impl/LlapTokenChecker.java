@@ -118,6 +118,9 @@ public final class LlapTokenChecker {
   @VisibleForTesting
   static void checkPermissionsInternal(String kerberosName, List<LlapTokenIdentifier> tokens,
       String userName, String appId, Object hint) {
+    if (appId == null) {
+      appId = "";
+    }
     if (kerberosName != null && StringUtils.isBlank(appId) && kerberosName.equals(userName)) {
       return;
     }
@@ -127,8 +130,8 @@ public final class LlapTokenChecker {
         if (checkTokenPermissions(userName, appId, tokenUser, tokenAppId)) return;
       }
     }
-    throw new SecurityException("Unauthorized to access "
-        + userName + ", " + appId.hashCode() + " (" + hint + ")");
+    throw new SecurityException(
+        "Unauthorized to access " + userName + ", " + appId + " (" + hint + ")");
   }
 
   public static void checkPermissions(
@@ -139,7 +142,7 @@ public final class LlapTokenChecker {
     }
     if (!checkTokenPermissions(userName, appId, prm.userName, prm.appId)) {
       throw new SecurityException("Unauthorized to access "
-          + userName + ", " + appId.hashCode() + " (" + hint + ")");
+          + userName + ", " + appId + " (" + hint + ")");
     }
   }
 
