@@ -11,10 +11,6 @@ TBLPROPERTIES ("transactional"="true");
 
 insert into table acidtest1 select cint, cstring1 from alltypesorc where cint is not null order by cint;
 
-desc formatted acidtest1;
-
-explain
-select cast (c1 as string) from acidtest1 limit 10;
 select cast (c1 as string) from acidtest1 limit 10;
 
 drop table acidtest1;

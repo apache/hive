@@ -24,27 +24,6 @@ POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@acidtest1
 POSTHOOK: Lineage: acidtest1.c1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: acidtest1.c2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-PREHOOK: query: explain
-select cast (c1 as string) from acidtest1 limit 10
-PREHOOK: type: QUERY
-POSTHOOK: query: explain
-select cast (c1 as string) from acidtest1 limit 10
-POSTHOOK: type: QUERY
-Plan optimized by CBO.
-
-Stage-0
-  Fetch Operator
-    limit:10
-    Stage-1
-      Map 1
-      File Output Operator [FS_3]
-        Limit [LIM_2] (rows=10 width=10)
-          Number of rows:10
-          Select Operator [SEL_1] (rows=9173 width=10)
-            Output:["_col0"]
-            TableScan [TS_0] (rows=9173 width=10)
-              default@acidtest1,acidtest1, ACID table,Tbl:COMPLETE,Col:NONE,Output:["c1"]
-
 PREHOOK: query: select cast (c1 as string) from acidtest1 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtest1
