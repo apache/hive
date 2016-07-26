@@ -53,7 +53,12 @@ public class UDFRegExpExtract extends UDF {
     Matcher m = p.matcher(s);
     if (m.find()) {
       MatchResult mr = m.toMatchResult();
-      return mr.group(extractIndex);
+        try {
+          return mr.group(extractIndex);
+        }
+        catch (IndexOutOfBoundsException e){
+          return "Regex index not found";
+        }
     }
     return "";
   }
