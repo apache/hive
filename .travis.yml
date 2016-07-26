@@ -1,0 +1,20 @@
+sudo: required
+
+language: java
+
+jdk:
+      - oraclejdk7
+
+before_install: 
+      - sudo rm /etc/mavenrc
+                - export M2_HOME=/usr/local/maven
+                              - export MAVEN_OPTS="-Dmaven.repo.local=$HOME/.m2/repository -Xmx2g -XX:MaxPermSize=256M"
+
+script:
+      - mvn install -DskipTests
+                - cd itests; mvn install -DskipTests
+
+
+cache:
+      directories:
+        - $HOME/.m2
