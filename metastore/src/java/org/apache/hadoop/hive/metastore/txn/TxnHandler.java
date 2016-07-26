@@ -3291,9 +3291,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
     }
     catch(RetryException ex) {
-      acquireLock(key);
+      return acquireLock(key);
     }
-    throw new MetaException("This can't happen because checkRetryable() has a retry limit");
   }
   public void acquireLock(String key, LockHandle handle) {
     //the idea is that this will use LockHandle.dbConn
