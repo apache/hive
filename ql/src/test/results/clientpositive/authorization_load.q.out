@@ -1,0 +1,138 @@
+PREHOOK: query: -- the main goal of these tests is to run a simple load and a load with regex, while being in the scope of SQLStdHiveAuthorizer
+
+create table t_auth_load(key string, value string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_auth_load
+POSTHOOK: query: -- the main goal of these tests is to run a simple load and a load with regex, while being in the scope of SQLStdHiveAuthorizer
+
+create table t_auth_load(key string, value string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_auth_load
+PREHOOK: query: create table t_auth_load2(key string, value string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_auth_load2
+POSTHOOK: query: create table t_auth_load2(key string, value string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_auth_load2
+PREHOOK: query: GRANT ALL on TABLE t_auth_load to ROLE public
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t_auth_load
+POSTHOOK: query: GRANT ALL on TABLE t_auth_load to ROLE public
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t_auth_load
+PREHOOK: query: GRANT ALL on TABLE t_auth_load2 to ROLE public
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t_auth_load2
+POSTHOOK: query: GRANT ALL on TABLE t_auth_load2 to ROLE public
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t_auth_load2
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table t_auth_load
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t_auth_load
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table t_auth_load
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t_auth_load
+PREHOOK: query: load data local inpath '../../data/files/kv2.txt' into table t_auth_load
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t_auth_load
+POSTHOOK: query: load data local inpath '../../data/files/kv2.txt' into table t_auth_load
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t_auth_load
+PREHOOK: query: load data local inpath '../../data/files/kv3.txt' into table t_auth_load
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t_auth_load
+POSTHOOK: query: load data local inpath '../../data/files/kv3.txt' into table t_auth_load
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t_auth_load
+PREHOOK: query: show table extended like t_auth_load
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like t_auth_load
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:t_auth_load
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:3
+totalFileSize:11819
+maxFileSize:5812
+minFileSize:216
+#### A masked pattern was here ####
+
+PREHOOK: query: desc extended t_auth_load
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t_auth_load
+POSTHOOK: query: desc extended t_auth_load
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t_auth_load
+key                 	string              	                    
+value               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: load data local inpath '../../data/files/kv[123].tx*' into table t_auth_load2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t_auth_load2
+POSTHOOK: query: load data local inpath '../../data/files/kv[123].tx*' into table t_auth_load2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t_auth_load2
+PREHOOK: query: show table extended like t_auth_load2
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like t_auth_load2
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:t_auth_load2
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:3
+totalFileSize:11819
+maxFileSize:5812
+minFileSize:216
+#### A masked pattern was here ####
+
+PREHOOK: query: desc extended t_auth_load2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t_auth_load2
+POSTHOOK: query: desc extended t_auth_load2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t_auth_load2
+key                 	string              	                    
+value               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: -- the following two selects should be identical
+select count(*) from t_auth_load
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_auth_load
+#### A masked pattern was here ####
+POSTHOOK: query: -- the following two selects should be identical
+select count(*) from t_auth_load
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_auth_load
+#### A masked pattern was here ####
+1025
+PREHOOK: query: select count(*) from t_auth_load2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_auth_load2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from t_auth_load2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_auth_load2
+#### A masked pattern was here ####
+1025

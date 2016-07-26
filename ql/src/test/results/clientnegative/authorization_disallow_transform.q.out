@@ -10,4 +10,12 @@ POSTHOOK: query: create table t1(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
-FAILED: HiveAccessControlException Permission denied: Principal [name=hive_test_user, type=USER] does not have following privileges for operation QUERY [[SELECT] on Object [type=LOCAL_URI, name=cat]]
+PREHOOK: query: SELECT TRANSFORM (*) USING 'cat' AS (key, value) FROM t1
+PREHOOK: type: QUERY
+PREHOOK: Input: cat
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+FAILED: Hive Internal Error: org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException(Query with transform clause is disallowed in current configuration.)
+org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException: Query with transform clause is disallowed in current configuration.
+#### A masked pattern was here ####
+
