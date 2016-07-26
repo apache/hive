@@ -24,44 +24,6 @@ POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@acidtest1
 POSTHOOK: Lineage: acidtest1.c1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: acidtest1.c2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-PREHOOK: query: explain
-select cast (c1 as string) from acidtest1 limit 10
-PREHOOK: type: QUERY
-POSTHOOK: query: explain
-select cast (c1 as string) from acidtest1 limit 10
-POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: acidtest1
-            Statistics: Num rows: 9173 Data size: 101613 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: UDFToString(c1) (type: string)
-              outputColumnNames: _col0
-              Statistics: Num rows: 9173 Data size: 101613 Basic stats: COMPLETE Column stats: NONE
-              Limit
-                Number of rows: 10
-                Statistics: Num rows: 10 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 10 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: 10
-      Processor Tree:
-        ListSink
-
 PREHOOK: query: select cast (c1 as string) from acidtest1 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtest1
