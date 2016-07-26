@@ -153,10 +153,9 @@ public class ConvertAstToSearchArg {
           return lit.toString();
         }
       case FLOAT:
-        if (lit instanceof Float || lit instanceof HiveDecimal) {
-          // converting a float directly to a double causes annoying conversion
-          // problems
-          return Double.parseDouble(lit.toString());
+        if (lit instanceof HiveDecimal) {
+          // HiveDecimal -> Float -> Number -> Double
+          return ((Number)((HiveDecimal) lit).floatValue()).doubleValue();
         } else {
           return ((Number) lit).doubleValue();
         }

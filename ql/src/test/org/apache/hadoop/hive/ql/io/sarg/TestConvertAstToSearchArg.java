@@ -2859,7 +2859,7 @@ public class TestConvertAstToSearchArg {
     assertEquals(1, sarg.getLeaves().size());
     PredicateLeaf leaf = sarg.getLeaves().get(0);
     assertEquals(PredicateLeaf.Type.FLOAT, leaf.getType());
-    assertEquals("(EQUALS flt 1.1)", leaf.toString());
+    assertEquals("(EQUALS flt " + ((Number) 1.1f).doubleValue() + ")", leaf.toString());
   }
 
   @Test
