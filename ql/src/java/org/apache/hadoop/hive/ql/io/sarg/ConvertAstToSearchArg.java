@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -149,10 +150,9 @@ public class ConvertAstToSearchArg {
           return lit.toString();
         }
       case FLOAT:
-        if (lit instanceof Float) {
-          // converting a float directly to a double causes annoying conversion
-          // problems
-          return Double.parseDouble(lit.toString());
+        if (lit instanceof HiveDecimal) {
+          // HiveDecimal -> Float -> Number -> Double
+          return ((Number)((HiveDecimal) lit).floatValue()).doubleValue();
         } else {
           return ((Number) lit).doubleValue();
         }
