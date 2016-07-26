@@ -187,6 +187,25 @@ public class TestBeelineArgParsing {
     Assert.assertTrue(bl.getOpts().getTruncateTable());
   }
 
+  @Test
+  public void testBeelineShowDbInPromptOptsDefault() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String args[] = new String[] { "-u", "url" };
+    Assert.assertEquals(0, bl.initArgs(args));
+    Assert.assertFalse(bl.getOpts().getShowDbInPrompt());
+    Assert.assertEquals("", bl.getFormattedDb());
+  }
+
+  @Test
+  public void testBeelineShowDbInPromptOptsTrue() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String args[] = new String[] { "-u", "url", "--showDbInPrompt=true" };
+    Assert.assertEquals(0, bl.initArgs(args));
+    Assert.assertTrue(bl.getOpts().getShowDbInPrompt());
+    Assert.assertEquals(" (default)", bl.getFormattedDb());
+  }
+
+
   /**
    * Test setting script file with -f option.
    */

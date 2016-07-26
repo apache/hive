@@ -138,6 +138,7 @@ public class BeeLine implements Closeable {
   private String currentDatabase = null;
 
   private History history;
+  // Indicates if this instance of beeline is running in compatibility mode, or beeline mode
   private boolean isBeeLine = true;
 
   private static final Options options = new Options();
@@ -1432,18 +1433,17 @@ public class BeeLine implements Closeable {
     HiveConf conf = getCommands().getHiveConf(true);
     prompt = conf.getVar(HiveConf.ConfVars.CLIPROMPT);
     prompt = getCommands().substituteVariables(conf, prompt);
-    return prompt + getFormattedDb(conf) + "> ";
+    return prompt + getFormattedDb() + "> ";
   }
 
   /**
    * Retrieve the current database name string to display, based on the
    * configuration value.
    *
-   * @param conf storing whether or not to show current db
    * @return String to show user for current db value
    */
-  String getFormattedDb(HiveConf conf) {
-    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIPRINTCURRENTDB)) {
+  String getFormattedDb() {
+    if (!getOpts().getShowDbInPrompt()) {
       return "";
     }
     String currDb = getCurrentDatabase();
@@ -1461,10 +1461,9 @@ public class BeeLine implements Closeable {
     } else {
       String printClosed = getDatabaseConnection().isClosed() ? " (closed)" : "";
       return getPromptForBeeline(getDatabaseConnections().getIndex()
-          + ": " + getDatabaseConnection().getUrl()) + printClosed + "> ";
+          + ": " + getDatabaseConnection().getUrl()) + printClosed + getFormattedDb() + "> ";
     }
   }
-
 
   static String getPromptForBeeline(String url) {
     if (url == null || url.length() == 0) {
@@ -1481,7 +1480,6 @@ public class BeeLine implements Closeable {
     }
     return url;
   }
-
 
   /**
    * Try to obtain the current size of the specified {@link ResultSet} by jumping to the last row

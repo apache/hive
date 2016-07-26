@@ -952,10 +952,7 @@ public class Commands {
       return false;
     }
 
-    ClientHook hook = null;
-    if (!beeLine.isBeeLine()) {
-      hook = ClientCommandHookFactory.get().getHook(sql);
-    }
+    ClientHook hook = ClientCommandHookFactory.get().getHook(beeLine, sql);
 
     try {
       Statement stmnt = null;

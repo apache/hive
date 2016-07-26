@@ -67,6 +67,7 @@ class BeeLineOpts implements Completer {
   private boolean silent = false;
   private boolean color = false;
   private boolean showHeader = true;
+  private boolean showDbInPrompt = false;
   private int headerInterval = 100;
   private boolean fastConnect = true;
   private boolean autoCommit = false;
@@ -465,6 +466,24 @@ class BeeLineOpts implements Completer {
       HiveConf conf = beeLine.getCommands().getHiveConf(true);
       header = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_HEADER);
       return header;
+    }
+  }
+
+  public void setShowDbInPrompt(boolean showDbInPrompt) {
+    this.showDbInPrompt = showDbInPrompt;
+  }
+
+  /**
+   * In beeline mode returns the beeline option provided by command line argument or config file
+   * In compatibility mode returns the value of the hive.cli.print.current.db config variable
+   * @return Should the current db displayed in the prompt
+   */
+  public boolean getShowDbInPrompt() {
+    if (beeLine.isBeeLine()) {
+      return showDbInPrompt;
+    } else {
+      HiveConf conf = beeLine.getCommands().getHiveConf(true);
+      return HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIPRINTCURRENTDB);
     }
   }
 

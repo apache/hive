@@ -266,6 +266,10 @@ public class Utils {
     throw new HiveSQLException(status);
   }
 
+  public static JdbcConnectionParams parseURL(String uri) throws JdbcUriParseException,
+          SQLException, ZooKeeperHiveClientException {
+    return parseURL(uri, new Properties());
+  }
   /**
    * Parse JDBC connection URL
    * The new format of the URL is:
