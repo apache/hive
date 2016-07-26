@@ -65,7 +65,7 @@ public class TestLlapTokenChecker {
   private List<LlapTokenIdentifier> createTokens(String... args) {
     List<LlapTokenIdentifier> tokens = new ArrayList<>();
     for (int i = 0; i < args.length; i += 2) {
-      tokens.add(new LlapTokenIdentifier(null, null, new Text(args[i]), "c", args[i + 1], false));
+      tokens.add(new LlapTokenIdentifier(new Text(args[i]), null, null, "c", args[i + 1], false));
     }
     return tokens;
   }
