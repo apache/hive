@@ -379,28 +379,91 @@ public class SQLAuthorizationUtils {
       String userName) throws HiveAuthzPluginException {
     // get the 'available privileges' from file system
 
-
     RequiredPrivileges availPrivs = new RequiredPrivileges();
     // check file system permission
     FileSystem fs;
     try {
       fs = FileSystem.get(filePath.toUri(), conf);
-      FileStatus fileStatus = FileUtils.getPathOrParentThatExists(fs, filePath);
-      if (FileUtils.isOwnerOfFileHierarchy(fs, fileStatus, userName)) {
-        availPrivs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
-      }
-      if (FileUtils.isActionPermittedForFileHierarchy(fs, fileStatus, userName, FsAction.WRITE)) {
-        availPrivs.addPrivilege(SQLPrivTypeGrant.INSERT_NOGRANT);
-        availPrivs.addPrivilege(SQLPrivTypeGrant.DELETE_NOGRANT);
-      }
-      if (FileUtils.isActionPermittedForFileHierarchy(fs, fileStatus, userName, FsAction.READ)) {
-        availPrivs.addPrivilege(SQLPrivTypeGrant.SELECT_NOGRANT);
+      FileStatus[] fileMatches = fs.globStatus(filePath);
+
+      // There are a couple of possibilities to consider here to see if we should recurse or not.
+      // a) Path is a regex, and may match multiple entries - if so, this is likely a load and
+      //        we should listStatus for all relevant matches, and recurse-check each of those.
+      //        Simply passing the filestatus on as recurse=true makes sense for this.
+      // b) Path is a singular directory/file and exists
+      //        recurse=true to check all its children if applicable
+      // c) Path is a singular entity that does not exist
+      //        recurse=false to check its parent - this is likely a case of
+      //        needing to create a dir that does not exist yet.
+
+      if ((fileMatches != null ) && (fileMatches.length > 1)){
+        LOG.debug("Checking fs privileges for multiple files that matched {}",
+            filePath.toString());
+        addPrivilegesFromFS(userName, availPrivs, fs, fileMatches, true);
+      } else {
+        FileStatus fileStatus = FileUtils.getFileStatusOrNull(fs, filePath);
+        boolean pickParent = (fileStatus == null); // did we find the file/dir itself?
+        if (pickParent){
+          fileStatus = FileUtils.getPathOrParentThatExists(fs, filePath.getParent());
+        }
+        Path path = fileStatus.getPath();
+        if (pickParent){
+          LOG.debug("Checking fs privileges for parent path {} for nonexistent {}",
+              path.toString(), filePath.toString());
+          addPrivilegesFromFS(userName, availPrivs, fs, fileStatus, false);
+        } else {
+          LOG.debug("Checking fs privileges for path itself {}, originally specified as {}",
+              path.toString(), filePath.toString());
+          addPrivilegesFromFS(userName, availPrivs, fs, fileStatus, true);
+        }
       }
     } catch (Exception e) {
       String msg = "Error getting permissions for " + filePath + ": " + e.getMessage();
       throw new HiveAuthzPluginException(msg, e);
     }
     return availPrivs;
+  }
+
+  private static void addPrivilegesFromFS(
+      String userName, RequiredPrivileges availPrivs, FileSystem fs,
+      FileStatus[] fileStatuses, boolean recurse) throws Exception {
+    // We need to obtain an intersection of all the privileges
+    if (fileStatuses.length > 0){
+      Set<SQLPrivTypeGrant> privs = getPrivilegesFromFS(userName, fs, fileStatuses[0], recurse);
+
+      for (int i = 1; (i < fileStatuses.length) && (privs.size() > 0); i++){
+        privs.retainAll(getPrivilegesFromFS(userName, fs, fileStatuses[i], recurse));
+      }
+      availPrivs.addAll(privs.toArray(new SQLPrivTypeGrant[privs.size()]));
+    }
+  }
+
+  private static void addPrivilegesFromFS(
+      String userName, RequiredPrivileges availPrivs, FileSystem fs,
+      FileStatus fileStatus, boolean recurse) throws Exception {
+    Set<SQLPrivTypeGrant> privs = getPrivilegesFromFS(userName, fs, fileStatus, recurse);
+    availPrivs.addAll(privs.toArray(new SQLPrivTypeGrant[privs.size()]));
+  }
+
+  private static Set<SQLPrivTypeGrant> getPrivilegesFromFS(
+      String userName, FileSystem fs,
+      FileStatus fileStatus, boolean recurse) throws Exception {
+    Set<SQLPrivTypeGrant> privs = new HashSet<SQLPrivTypeGrant>();
+    LOG.debug("Checking fs privileges for {} {}",
+        fileStatus.toString(), (recurse? "recursively":"without recursion"));
+    if (FileUtils.isOwnerOfFileHierarchy(fs, fileStatus, userName, recurse)) {
+      privs.add(SQLPrivTypeGrant.OWNER_PRIV);
+    }
+    if (FileUtils.isActionPermittedForFileHierarchy(fs, fileStatus, userName, FsAction.WRITE, recurse)) {
+      privs.add(SQLPrivTypeGrant.INSERT_NOGRANT);
+      privs.add(SQLPrivTypeGrant.DELETE_NOGRANT);
+    }
+    if (FileUtils.isActionPermittedForFileHierarchy(fs, fileStatus, userName, FsAction.READ, recurse)) {
+      privs.add(SQLPrivTypeGrant.SELECT_NOGRANT);
+    }
+    LOG.debug("addPrivilegesFromFS:[{}] asked for privileges on [{}] with recurse={} and obtained:[{}]",
+        userName, fileStatus, recurse, privs);
+    return privs;
   }
 
   public static void assertNoDeniedPermissions(HivePrincipal hivePrincipal,
