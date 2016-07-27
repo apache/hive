@@ -767,7 +767,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
 
     isVectorOutput = desc.getVectorDesc().isVectorOutput();
 
-    vOutContext = new VectorizationContext(getName(), desc.getOutputColumnNames());
+    vOutContext = new VectorizationContext(getName(), desc.getOutputColumnNames(),
+        /* vContextEnvironment */ vContext);
   }
 
   /** Kryo ctor. */

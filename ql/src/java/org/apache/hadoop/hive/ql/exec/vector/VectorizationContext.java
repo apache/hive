@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
@@ -138,6 +139,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.DateUtils;
 
+import com.google.common.annotations.VisibleForTesting;
+
 
 /**
  * Context class for vectorization execution.
@@ -165,9 +168,32 @@ public class VectorizationContext {
   // private final Map<String, Integer> columnMap;
   private int firstOutputColumnIndex;
 
+  private enum HiveVectorAdaptorUsageMode {
+    NONE,
+    CHOSEN,
+    ALL;
+
+    public static HiveVectorAdaptorUsageMode getHiveConfValue(HiveConf hiveConf) {
+      String string = HiveConf.getVar(hiveConf,
+          HiveConf.ConfVars.HIVE_VECTOR_ADAPTOR_USAGE_MODE);
+      return valueOf(string.toUpperCase());
+    }
+  }
+
+  private HiveVectorAdaptorUsageMode hiveVectorAdaptorUsageMode;
+
+  private void setHiveConfVars(HiveConf hiveConf) {
+    hiveVectorAdaptorUsageMode = HiveVectorAdaptorUsageMode.getHiveConfValue(hiveConf);
+  }
+
+  private void copyHiveConfVars(VectorizationContext vContextEnvironment) {
+    hiveVectorAdaptorUsageMode = vContextEnvironment.hiveVectorAdaptorUsageMode;
+  }
+
   // Convenient constructor for initial batch creation takes
   // a list of columns names and maps them to 0..n-1 indices.
-  public VectorizationContext(String contextName, List<String> initialColumnNames) {
+  public VectorizationContext(String contextName, List<String> initialColumnNames,
+      HiveConf hiveConf) {
     this.contextName = contextName;
     level = 0;
     this.initialColumnNames = initialColumnNames;
@@ -183,11 +209,26 @@ public class VectorizationContext {
     this.ocm = new OutputColumnManager(firstOutputColumnIndex);
     this.firstOutputColumnIndex = firstOutputColumnIndex;
     vMap = new VectorExpressionDescriptor();
+
+    if (hiveConf != null) {
+      setHiveConfVars(hiveConf);
+    }
+  }
+
+  public VectorizationContext(String contextName, List<String> initialColumnNames,
+      VectorizationContext vContextEnvironment) {
+    this(contextName, initialColumnNames, (HiveConf) null);
+    copyHiveConfVars(vContextEnvironment);
+  }
+
+  @VisibleForTesting
+  public VectorizationContext(String contextName, List<String> initialColumnNames) {
+    this(contextName, initialColumnNames, (HiveConf) null);
   }
 
   // Constructor to with the individual addInitialColumn method
   // followed by a call to finishedAddingInitialColumns.
-  public VectorizationContext(String contextName) {
+  public VectorizationContext(String contextName, HiveConf hiveConf) {
     this.contextName = contextName;
     level = 0;
     initialColumnNames = new ArrayList<String>();
@@ -197,6 +238,16 @@ public class VectorizationContext {
     this.ocm = new OutputColumnManager(0);
     this.firstOutputColumnIndex = 0;
     vMap = new VectorExpressionDescriptor();
+
+    if (hiveConf != null) {
+      setHiveConfVars(hiveConf);
+    }
+
+  }
+
+  @VisibleForTesting
+  public VectorizationContext(String contextName) {
+    this(contextName, (HiveConf) null);
   }
 
   // Constructor useful making a projection vectorization context.
@@ -213,6 +264,8 @@ public class VectorizationContext {
     this.ocm = vContext.ocm;
     this.firstOutputColumnIndex = vContext.firstOutputColumnIndex;
     vMap = new VectorExpressionDescriptor();
+
+    copyHiveConfVars(vContext);
   }
 
   // Add an initial column to a vectorization context when
@@ -491,10 +544,46 @@ public class VectorizationContext {
         ve = getGenericUdfVectorExpression(expr.getGenericUDF(),
             childExpressions, mode, exprDesc.getTypeInfo());
         if (ve == null) {
-          /*
-           * Ok, no vectorized class available.  No problem -- try to use the VectorUDFAdaptor.
-           */
-          ve = getCustomUDFExpression(expr, mode);
+          // Ok, no vectorized class available.  No problem -- try to use the VectorUDFAdaptor
+          // when configured.
+          //
+          // NOTE: We assume if hiveVectorAdaptorUsageMode has not been set it because we are
+          // executing a test that didn't create a HiveConf, etc.  No usage of VectorUDFAdaptor in
+          // that case.
+          if (hiveVectorAdaptorUsageMode != null) {
+            switch (hiveVectorAdaptorUsageMode) {
+            case NONE:
+              // No VectorUDFAdaptor usage.
+              throw new HiveException(
+                  "Could not vectorize expression (mode = " + mode.name() + "): " + exprDesc.toString()
+                    + " because hive.vectorized.adaptor.usage.mode=none");
+            case CHOSEN:
+              if (isNonVectorizedPathUDF(expr, mode)) {
+                ve = getCustomUDFExpression(expr, mode);
+              } else {
+                throw new HiveException(
+                    "Could not vectorize expression (mode = " + mode.name() + "): " + exprDesc.toString()
+                      + " because hive.vectorized.adaptor.usage.mode=chosen "
+                      + " and the UDF wasn't one of the chosen ones");
+              }
+              break;
+            case ALL:
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("We will try to use the VectorUDFAdaptor for " + exprDesc.toString()
+                    + " because hive.vectorized.adaptor.usage.mode=all");
+              }
+              ve = getCustomUDFExpression(expr, mode);
+              break;
+            default:
+              throw new RuntimeException("Unknown hive vector adaptor usage mode " +
+                hiveVectorAdaptorUsageMode.name());
+            }
+            if (ve == null) {
+              throw new HiveException(
+                  "Unable vectorize expression (mode = " + mode.name() + "): " + exprDesc.toString()
+                    + " even for the VectorUDFAdaptor");
+            }
+          }
         }
       }
     } else if (exprDesc instanceof ExprNodeConstantDesc) {
@@ -776,6 +865,64 @@ public class VectorizationContext {
       ((SettableUDF) genericUdf).setTypeInfo(castType);
     }
     return genericUdf;
+  }
+
+  /* Return true if this is one of a small set of functions for which
+   * it is significantly easier to use the old code path in vectorized
+   * mode instead of implementing a new, optimized VectorExpression.
+   *
+   * Depending on performance requirements and frequency of use, these
+   * may be implemented in the future with an optimized VectorExpression.
+   */
+  public static boolean isNonVectorizedPathUDF(ExprNodeGenericFuncDesc expr,
+      VectorExpressionDescriptor.Mode mode) {
+    GenericUDF gudf = expr.getGenericUDF();
+    if (gudf instanceof GenericUDFBridge) {
+      GenericUDFBridge bridge = (GenericUDFBridge) gudf;
+      Class<? extends UDF> udfClass = bridge.getUdfClass();
+      if (udfClass.equals(UDFHex.class)
+          || udfClass.equals(UDFRegExpExtract.class)
+          || udfClass.equals(UDFRegExpReplace.class)
+          || udfClass.equals(UDFConv.class)
+          || udfClass.equals(UDFFromUnixTime.class) && isIntFamily(arg0Type(expr))
+          || isCastToIntFamily(udfClass) && isStringFamily(arg0Type(expr))
+          || isCastToFloatFamily(udfClass) && isStringFamily(arg0Type(expr))
+          || udfClass.equals(UDFToString.class) &&
+               (arg0Type(expr).equals("timestamp")
+                   || arg0Type(expr).equals("double")
+                   || arg0Type(expr).equals("float"))) {
+        return true;
+      }
+    } else if ((gudf instanceof GenericUDFTimestamp && isStringFamily(arg0Type(expr)))
+
+            /* GenericUDFCase and GenericUDFWhen are implemented with the UDF Adaptor because
+             * of their complexity and generality. In the future, variations of these
+             * can be optimized to run faster for the vectorized code path. For example,
+             * CASE col WHEN 1 then "one" WHEN 2 THEN "two" ELSE "other" END
+             * is an example of a GenericUDFCase that has all constant arguments
+             * except for the first argument. This is probably a common case and a
+             * good candidate for a fast, special-purpose VectorExpression. Then
+             * the UDF Adaptor code path could be used as a catch-all for
+             * non-optimized general cases.
+             */
+            || gudf instanceof GenericUDFCase
+            || gudf instanceof GenericUDFWhen) {
+      return true;
+    } else if (gudf instanceof GenericUDFToChar &&
+               (arg0Type(expr).equals("timestamp")
+                   || arg0Type(expr).equals("double")
+                   || arg0Type(expr).equals("float"))) {
+      return true;
+    } else if (gudf instanceof GenericUDFToVarchar &&
+            (arg0Type(expr).equals("timestamp")
+                || arg0Type(expr).equals("double")
+                || arg0Type(expr).equals("float"))) {
+      return true;
+    } else if (gudf instanceof GenericUDFBetween && (mode == VectorExpressionDescriptor.Mode.PROJECTION)) {
+      // between has 4 args here, but can be vectorized like this
+      return true;
+    }
+    return false;
   }
 
   public static boolean isCastToIntFamily(Class<? extends UDF> udfClass) {
