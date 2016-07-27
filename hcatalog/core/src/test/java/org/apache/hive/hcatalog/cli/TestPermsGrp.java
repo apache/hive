@@ -98,9 +98,6 @@ public class TestPermsGrp extends TestCase {
     hcatConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hcatConf.setTimeVar(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, 60, TimeUnit.SECONDS);
     hcatConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    hcatConf
-    .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     clientWH = new Warehouse(hcatConf);
     msc = new HiveMetaStoreClient(hcatConf);
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
@@ -198,6 +195,8 @@ public class TestPermsGrp extends TestCase {
   private void callHCatCli(String[] args) {
     List<String> argsList = new ArrayList<String>();
     argsList.add("-Dhive.support.concurrency=false");
+    argsList
+        .add("-Dhive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     argsList.addAll(Arrays.asList(args));
     HCatCli.main(argsList.toArray(new String[]{}));
   }
