@@ -49,9 +49,6 @@ public class TestClientCommandHookFactory {
 
     return mockBeeLine;
   }
-  @BeforeClass
-  public static void setupMockData() {
-  }
 
   @Test
   public void testGetHookCli() {
