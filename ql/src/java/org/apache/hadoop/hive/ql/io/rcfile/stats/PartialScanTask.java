@@ -228,6 +228,7 @@ public class PartialScanTask extends Task<PartialScanWork> implements
 
     } catch (Exception e) {
       e.printStackTrace();
+      setException(e);
       String mesg = " with exception '" + Utilities.getNameMessage(e) + "'";
       if (rj != null) {
         mesg = "Ended Job = " + rj.getJobID() + mesg;

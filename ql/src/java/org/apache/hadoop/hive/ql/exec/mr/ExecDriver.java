@@ -473,6 +473,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     } catch (Exception e) {
       // jobClose needs to execute successfully otherwise fail task
       if (success) {
+        setException(e);
         success = false;
         returnVal = 3;
         String mesg = "Job Commit failed with exception '" + Utilities.getNameMessage(e) + "'";
