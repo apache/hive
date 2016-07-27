@@ -80,8 +80,6 @@ public class HCatCli {
     HiveConf conf = ss.getConf();
 
     HiveConf.setVar(conf, ConfVars.SEMANTIC_ANALYZER_HOOK, HCatSemanticAnalyzer.class.getName());
-    conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     String engine = HiveConf.getVar(conf, ConfVars.HIVE_EXECUTION_ENGINE);
     final String MR_ENGINE = "mr";
     if(!MR_ENGINE.equalsIgnoreCase(engine)) {
