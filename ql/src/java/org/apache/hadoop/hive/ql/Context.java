@@ -40,6 +40,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -332,6 +333,25 @@ public class Context {
     } catch (IllegalArgumentException e) {
       throw new RuntimeException("Error while making MR scratch "
           + "directory - check filesystem config (" + e.getCause() + ")", e);
+    }
+  }
+
+  /**
+   * Create a temporary directory depending of the path specified.
+   * - If path is an Object store filesystem, then use the default MR scratch directory (HDFS)
+   * - If path is on HDFS, then create a staging directory inside the path
+   *
+   * @param path Path used to verify the Filesystem to use for temporary directory
+   * @return A path to the new temporary directory
+     */
+  public Path getTempDirForPath(Path path) {
+    if (BlobStorageUtils.isBlobStoragePath(conf, path) && !BlobStorageUtils.isBlobStorageAsScratchDir(conf)) {
+      // For better write performance, we use HDFS for temporary data when object store is used.
+      // Note that the scratch directory configuration variable must use HDFS or any other non-blobstorage system
+      // to take advantage of this performance.
+      return getMRTmpPath();
+    } else {
+      return getExtTmpPathRelTo(path);
     }
   }
 

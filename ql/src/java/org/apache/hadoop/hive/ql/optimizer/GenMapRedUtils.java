@@ -36,6 +36,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -1751,15 +1752,17 @@ public final class GenMapRedUtils {
     Path dest = null;
 
     if (chDir) {
-      dest = fsOp.getConf().getFinalDirName();
+      FileSinkDesc fileSinkDesc = fsOp.getConf();
+      dest = fileSinkDesc.getFinalDirName();
 
       // generate the temporary file
       // it must be on the same file system as the current destination
       Context baseCtx = parseCtx.getContext();
 
-      Path tmpDir = baseCtx.getExternalTmpPath(dest);
+      // Create the required temporary file in the HDFS location if the destination
+      // path of the FileSinkOperator table is a blobstore path.
+      Path tmpDir = baseCtx.getTempDirForPath(fileSinkDesc.getDestPath());
 
-      FileSinkDesc fileSinkDesc = fsOp.getConf();
       // Change all the linked file sink descriptors
       if (fileSinkDesc.isLinkedFileSink()) {
         for (FileSinkDesc fsConf:fileSinkDesc.getLinkedFileSinkDesc()) {

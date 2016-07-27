@@ -2141,7 +2141,15 @@ public class HiveConf extends Configuration {
         new StringSet("throw", "skip", "ignore"), "The approach msck should take with HDFS " +
        "directories that are partition-like but contain unsupported characters. 'throw' (an " +
        "exception) is the default; 'skip' will skip the invalid directories and still repair the" +
-       " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)");
+       " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)"),
+
+    /* BLOBSTORE section */
+
+    HIVE_BLOBSTORE_SUPPORTED_SCHEMES("hive.blobstore.supported.schemes", "s3,s3a,s3n",
+            "Comma-separated list of supported blobstore schemes."),
+
+    HIVE_BLOBSTORE_USE_BLOBSTORE_AS_SCRATCHDIR("hive.blobstore.use.blobstore.as.scratchdir", false,
+            "Enable the use of scratch directories directly on blob storage systems (it may cause performance penalties).");
 
     public final String varname;
     private final String defaultExpr;

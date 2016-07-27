@@ -6079,7 +6079,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (isNonNativeTable) {
         queryTmpdir = dest_path;
       } else {
-        queryTmpdir = ctx.getExtTmpPathRelTo(dest_path);
+        queryTmpdir = ctx.getTempDirForPath(dest_path);
       }
       if (dpCtx != null) {
         // set the root of the temporary path where dynamic partition columns will populate
@@ -6198,7 +6198,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       dest_path = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
           .getAuthority(), partPath.toUri().getPath());
 
-      queryTmpdir = ctx.getExternalTmpPath(dest_path);
+      queryTmpdir = ctx.getTempDirForPath(dest_path);
       table_desc = Utilities.getTableDesc(dest_tab);
 
       // Add sorting/bucketing if needed
@@ -6260,7 +6260,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         try {
           Path qPath = FileUtils.makeQualified(dest_path, conf);
-          queryTmpdir = ctx.getExtTmpPathRelTo(qPath);
+          queryTmpdir = ctx.getTempDirForPath(qPath);
         } catch (Exception e) {
           throw new SemanticException("Error creating temporary folder on: "
               + dest_path, e);
@@ -6410,7 +6410,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       rsCtx.getNumFiles(),
       rsCtx.getTotalFiles(),
       rsCtx.getPartnCols(),
-      dpCtx);
+      dpCtx,
+      dest_path);
 
     // If this is an insert, update, or delete on an ACID table then mark that so the
     // FileSinkOperator knows how to properly write to it.
@@ -6438,7 +6439,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // it should be the same as the MoveWork's sourceDir.
     fileSinkDesc.setStatsAggPrefix(fileSinkDesc.getDirName().toString());
     if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-      String statsTmpLoc = ctx.getExtTmpPathRelTo(queryTmpdir).toString();
+      String statsTmpLoc = ctx.getTempDirForPath(dest_path).toString();
       LOG.info("Set stats collection dir : " + statsTmpLoc);
       conf.set(StatsSetupConst.STATS_TMP_LOC, statsTmpLoc);
     }

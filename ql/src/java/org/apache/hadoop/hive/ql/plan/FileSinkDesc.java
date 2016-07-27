@@ -91,6 +91,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   private long txnId = 0;  // transaction id for this operation
 
   private transient Table table;
+  private Path destPath;
 
   public FileSinkDesc() {
   }
@@ -98,7 +99,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   public FileSinkDesc(final Path dirName, final TableDesc tableInfo,
       final boolean compressed, final int destTableId, final boolean multiFileSpray,
       final boolean canBeMerged, final int numFiles, final int totalFiles,
-      final ArrayList<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx) {
+      final ArrayList<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx, Path destPath) {
 
     this.dirName = dirName;
     this.tableInfo = tableInfo;
@@ -132,7 +133,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   public Object clone() throws CloneNotSupportedException {
     FileSinkDesc ret = new FileSinkDesc(dirName, tableInfo, compressed,
         destTableId, multiFileSpray, canBeMerged, numFiles, totalFiles,
-        partitionCols, dpCtx);
+        partitionCols, dpCtx, destPath);
     ret.setCompressCodec(compressCodec);
     ret.setCompressType(compressType);
     ret.setGatherStats(gatherStats);
@@ -423,6 +424,10 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   public long getTransactionId() {
     return txnId;
+  }
+
+  public Path getDestPath() {
+    return destPath;
   }
 
   public Table getTable() {
