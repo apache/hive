@@ -88,7 +88,8 @@ public class VectorMapJoinBaseOperator extends MapJoinOperator implements Vector
     noOuterJoin = desc.isNoOuterJoin();
 
      // We are making a new output vectorized row batch.
-    vOutContext = new VectorizationContext(getName(), desc.getOutputColumnNames());
+    vOutContext = new VectorizationContext(getName(), desc.getOutputColumnNames(),
+        /* vContextEnvironment */ vContext);
   }
 
   @Override

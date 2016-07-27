@@ -1290,7 +1290,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       if (op.getParentOperators().size() == 0) {
         LOG.info("ReduceWorkVectorizationNodeProcessor process reduceColumnNames " + vectorTaskColumnInfo.allColumnNames.toString());
 
-        vContext = new VectorizationContext("__Reduce_Shuffle__", vectorTaskColumnInfo.allColumnNames);
+        vContext = new VectorizationContext("__Reduce_Shuffle__", vectorTaskColumnInfo.allColumnNames, hiveConf);
         taskVectorizationContext = vContext;
 
         saveRootVectorOp = true;
@@ -1329,8 +1329,8 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private static class ValidatorVectorizationContext extends VectorizationContext {
-    private ValidatorVectorizationContext() {
-      super("No Name");
+    private ValidatorVectorizationContext(HiveConf hiveConf) {
+      super("No Name", hiveConf);
     }
 
     @Override
@@ -1797,7 +1797,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
     try {
-      VectorizationContext vc = new ValidatorVectorizationContext();
+      VectorizationContext vc = new ValidatorVectorizationContext(hiveConf);
       if (vc.getVectorExpression(desc, mode) == null) {
         // TODO: this cannot happen - VectorizationContext throws in such cases.
         LOG.info("getVectorExpression returned null");
@@ -1851,7 +1851,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
 
     // See if we can vectorize the aggregation.
-    VectorizationContext vc = new ValidatorVectorizationContext();
+    VectorizationContext vc = new ValidatorVectorizationContext(hiveConf);
     VectorAggregateExpression vectorAggrExpr;
     try {
         vectorAggrExpr = vc.getAggregatorExpression(aggDesc, isReduceMergePartial);
@@ -1883,7 +1883,8 @@ public class Vectorizer implements PhysicalPlanResolver {
   private VectorizationContext getVectorizationContext(String contextName,
       VectorTaskColumnInfo vectorTaskColumnInfo) {
 
-    VectorizationContext vContext = new VectorizationContext(contextName, vectorTaskColumnInfo.allColumnNames);
+    VectorizationContext vContext =
+        new VectorizationContext(contextName, vectorTaskColumnInfo.allColumnNames, hiveConf);
 
     return vContext;
   }
