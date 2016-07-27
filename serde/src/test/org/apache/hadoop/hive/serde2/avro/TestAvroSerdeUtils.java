@@ -26,6 +26,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import static org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.EXCEPTION_MESSAGE;
@@ -68,14 +70,32 @@ public class TestAvroSerdeUtils {
 
   @Test
   public void isNullableTypeIdentifiesUnionsOfMoreThanTwoTypes() {
-    String schemaString = "{\n" +
-      "  \"type\": \"record\", \n" +
-      "  \"name\": \"shouldNotPass\",\n" +
-      "  \"fields\" : [\n" +
-      "    {\"name\":\"mayBeNull\", \"type\":[\"string\", \"int\", \"null\"]}\n" +
-      "  ]\n" +
-      "}";
-    testField(schemaString, "mayBeNull", false);
+    List<String> schemaStrings = Arrays.asList(
+        "{\n" +
+            "  \"type\": \"record\", \n" +
+            "  \"name\": \"shouldNotPass\",\n" +
+            "  \"fields\" : [\n" +
+            "    {\"name\":\"mayBeNull\", \"type\":[\"string\", \"int\", \"null\"]}\n" +
+            "  ]\n" +
+            "}",
+        "{\n" +
+            "  \"type\": \"record\", \n" +
+            "  \"name\": \"shouldNotPass\",\n" +
+            "  \"fields\" : [\n" +
+            "    {\"name\":\"mayBeNull\", \"type\":[\"string\", \"null\", \"int\"]}\n" +
+            "  ]\n" +
+            "}",
+        "{\n" +
+            "  \"type\": \"record\", \n" +
+            "  \"name\": \"shouldNotPass\",\n" +
+            "  \"fields\" : [\n" +
+            "    {\"name\":\"mayBeNull\", \"type\":[\"null\", \"string\", \"int\"]}\n" +
+            "  ]\n" +
+            "}"
+    );
+    for (String schemaString : schemaStrings) {
+      testField(schemaString, "mayBeNull", true);
+    }
   }
 
   @Test
