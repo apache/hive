@@ -45,7 +45,7 @@ import org.apache.hadoop.mapred.LineRecordReader.LineReader;
  * HiveIndexResult parses the input stream from an index query
  * to generate a list of file splits to query.
  */
-public class HiveIndexResult {
+public class HiveIndexResult implements IndexResult {
 
   public static final Logger l4j =
     LoggerFactory.getLogger(HiveIndexResult.class.getSimpleName());
@@ -182,6 +182,7 @@ public class HiveIndexResult {
     bucket.getOffsets().add(Long.parseLong(one_offset));
   }
 
+  @Override
   public boolean contains(FileSplit split) throws HiveException {
 
     if (buckets == null) {
