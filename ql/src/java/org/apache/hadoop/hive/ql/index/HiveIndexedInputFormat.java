@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Arrays;
+import java.util.Collection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,6 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
@@ -144,49 +144,14 @@ public class HiveIndexedInputFormat extends HiveInputFormat {
 
     HiveInputSplit[] splits = (HiveInputSplit[]) this.doGetSplits(job, numSplits);
 
-    ArrayList<HiveInputSplit> newSplits = new ArrayList<HiveInputSplit>(
-        numSplits);
-
     long maxInputSize = HiveConf.getLongVar(job, ConfVars.HIVE_INDEX_COMPACT_QUERY_MAX_SIZE);
     if (maxInputSize < 0) {
       maxInputSize=Long.MAX_VALUE;
     }
 
-    long sumSplitLengths = 0;
-    for (HiveInputSplit split : splits) {
-      l4j.info("split start : " + split.getStart());
-      l4j.info("split end : " + (split.getStart() + split.getLength()));
+    SplitFilter filter = new SplitFilter(hiveIndexResult, maxInputSize);
+    Collection<HiveInputSplit> newSplits = filter.filter(splits);
 
-      try {
-        if (hiveIndexResult.contains(split)) {
-          // we may miss a sync here
-          HiveInputSplit newSplit = split;
-          if (split.inputFormatClassName().contains("RCFile")
-              || split.inputFormatClassName().contains("SequenceFile")) {
-            if (split.getStart() > SequenceFile.SYNC_INTERVAL) {
-              newSplit = new HiveInputSplit(new FileSplit(split.getPath(),
-                  split.getStart() - SequenceFile.SYNC_INTERVAL,
-                  split.getLength() + SequenceFile.SYNC_INTERVAL,
-                  split.getLocations()),
-                  split.inputFormatClassName());
-            }
-          }
-          sumSplitLengths += newSplit.getLength();
-          if (sumSplitLengths > maxInputSize) {
-            throw new IOException(
-                "Size of data to read during a compact-index-based query exceeded the maximum of "
-                    + maxInputSize + " set in " + ConfVars.HIVE_INDEX_COMPACT_QUERY_MAX_SIZE.varname);
-          }
-          newSplits.add(newSplit);
-        }
-      } catch (HiveException e) {
-        throw new RuntimeException(
-            "Unable to get metadata for input table split" + split.getPath(), e);
-      }
-    }
-    InputSplit retA[] = newSplits.toArray((new FileSplit[newSplits.size()]));
-    l4j.info("Number of input splits: " + splits.length + " new input splits: "
-        + retA.length + ", sum of split lengths: " + sumSplitLengths);
-    return retA;
+    return newSplits.toArray(new FileSplit[newSplits.size()]);
   }
 }
