@@ -666,6 +666,9 @@ public abstract class CLIServiceTest {
       if (OperationState.CANCELED == state || state == OperationState.CLOSED
         || state == OperationState.FINISHED
         || state == OperationState.ERROR) {
+        for (QueryDisplay.TaskDisplay display: taskStatuses) {
+          assertNotNull(display.getReturnValue());
+        }
         break;
       }
       Thread.sleep(1000);
