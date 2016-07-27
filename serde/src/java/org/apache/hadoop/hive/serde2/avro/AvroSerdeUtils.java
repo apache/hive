@@ -43,6 +43,7 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Properties;
 
 /**
@@ -174,14 +175,29 @@ public class AvroSerdeUtils {
    * types via a union of type T and null.  This is a very common use case.
    * As such, we want to silently convert it to just T and allow the value to be null.
    *
+   * When a Hive union type is used with AVRO, the schema type becomes
+   * Union[NULL, T1, T2, ...]. The NULL in the union should be silently removed
+   *
    * @return true if type represents Union[T, Null], false otherwise
    */
   public static boolean isNullableType(Schema schema) {
-    return schema.getType().equals(Schema.Type.UNION) &&
-           schema.getTypes().size() == 2 &&
-             (schema.getTypes().get(0).getType().equals(Schema.Type.NULL) ||
-              schema.getTypes().get(1).getType().equals(Schema.Type.NULL));
-      // [null, null] not allowed, so this check is ok.
+    if (!schema.getType().equals(Schema.Type.UNION)) {
+      return false;
+    }
+
+    List<Schema> itemSchemas = schema.getTypes();
+    if (itemSchemas.size() < 2) {
+      return false;
+    }
+
+    for (Schema itemSchema : itemSchemas) {
+      if (Schema.Type.NULL.equals(itemSchema.getType())) {
+        return true;
+      }
+    }
+
+    // [null, null] not allowed, so this check is ok.
+    return false;
   }
 
   /**
@@ -189,9 +205,18 @@ public class AvroSerdeUtils {
    * does no checking that the provides Schema is nullable.
    */
   public static Schema getOtherTypeFromNullableType(Schema schema) {
-    List<Schema> types = schema.getTypes();
+    List<Schema> itemSchemas = new ArrayList<>();
+    for (Schema itemSchema : schema.getTypes()) {
+      if (!Schema.Type.NULL.equals(itemSchema.getType())) {
+        itemSchemas.add(itemSchema);
+      }
+    }
 
-    return types.get(0).getType().equals(Schema.Type.NULL) ? types.get(1) : types.get(0);
+    if (itemSchemas.size() > 1) {
+      return Schema.createUnion(itemSchemas);
+    } else {
+      return itemSchemas.get(0);
+    }
   }
 
   /**

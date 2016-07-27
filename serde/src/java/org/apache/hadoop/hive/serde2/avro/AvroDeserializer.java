@@ -306,9 +306,28 @@ class AvroDeserializer {
    */
   private Object deserializeNullableUnion(Object datum, Schema fileSchema, Schema recordSchema)
                                             throws AvroSerdeException {
+    if (recordSchema.getTypes().size() == 2) {
+      // A type like [NULL, T]
+      return deserializeSingleItemNullableUnion(datum, fileSchema, recordSchema);
+    } else {
+      // Types like [NULL, T1, T2, ...]
+      if (datum == null) {
+        return null;
+      } else {
+        Schema newRecordSchema = AvroSerdeUtils.getOtherTypeFromNullableType(recordSchema);
+        return worker(datum, fileSchema, newRecordSchema,
+            SchemaToTypeInfo.generateTypeInfo(newRecordSchema, null));
+      }
+    }
+  }
+
+  private Object deserializeSingleItemNullableUnion(Object datum,
+                                                    Schema fileSchema,
+                                                    Schema recordSchema)
+      throws AvroSerdeException {
     int tag = GenericData.get().resolveUnion(recordSchema, datum); // Determine index of value
     Schema schema = recordSchema.getTypes().get(tag);
-    if (schema.getType().equals(Schema.Type.NULL)) {
+    if (schema.getType().equals(Type.NULL)) {
       return null;
     }
 
@@ -344,7 +363,6 @@ class AvroDeserializer {
     }
     return worker(datum, currentFileSchema, schema,
       SchemaToTypeInfo.generateTypeInfo(schema, null));
-
   }
 
   private Object deserializeStruct(GenericData.Record datum, Schema fileSchema, StructTypeInfo columnType)

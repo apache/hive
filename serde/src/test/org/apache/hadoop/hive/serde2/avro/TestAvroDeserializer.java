@@ -291,7 +291,8 @@ public class TestAvroDeserializer {
     assertTrue(result.value instanceof String);
     assertEquals("this is a string", result.value);
     UnionObjectInspector uoi = (UnionObjectInspector)result.oi;
-    assertEquals(2, uoi.getTag(result.unionObject));
+    // The null in union type should be removed
+    assertEquals(1, uoi.getTag(result.unionObject));
 
     // Now the other enum possibility
     record = new GenericData.Record(ws);
@@ -300,7 +301,8 @@ public class TestAvroDeserializer {
     assertTrue(result.value instanceof Integer);
     assertEquals(99, result.value);
     uoi = (UnionObjectInspector)result.oi;
-    assertEquals(1, uoi.getTag(result.unionObject));
+    // The null in union type should be removed
+    assertEquals(0, uoi.getTag(result.unionObject));
   }
 
   @Test
