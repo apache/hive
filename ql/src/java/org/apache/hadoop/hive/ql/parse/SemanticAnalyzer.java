@@ -9508,8 +9508,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // This can be easily merged into 1 union
     RowResolver leftRR = opParseCtx.get(leftOp).getRowResolver();
     RowResolver rightRR = opParseCtx.get(rightOp).getRowResolver();
-    HashMap<String, ColumnInfo> leftmap = leftRR.getFieldMap(leftalias);
-    HashMap<String, ColumnInfo> rightmap = rightRR.getFieldMap(rightalias);
+    LinkedHashMap<String, ColumnInfo> leftmap = leftRR.getFieldMap(leftalias);
+    LinkedHashMap<String, ColumnInfo> rightmap = rightRR.getFieldMap(rightalias);
     // make sure the schemas of both sides are the same
     ASTNode tabref = qb.getAliases().isEmpty() ? null :
         qb.getParseInfo().getSrcForAlias(qb.getAliases().get(0));

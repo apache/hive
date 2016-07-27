@@ -250,7 +250,7 @@ public class RowResolver implements Serializable{
     return new ArrayList<String>(columnNames);
   }
 
-  public HashMap<String, ColumnInfo> getFieldMap(String tabAlias) {
+  public LinkedHashMap<String, ColumnInfo> getFieldMap(String tabAlias) {
     if (tabAlias == null) {
       return rslvMap.get(null);
     } else {
