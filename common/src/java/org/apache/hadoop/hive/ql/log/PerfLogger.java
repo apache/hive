@@ -220,7 +220,7 @@ public class PerfLogger {
   }
 
   //Methods for metrics integration.  Each thread-local PerfLogger will open/close scope during each perf-log method.
-  Map<String, MetricsScope> openScopes = new HashMap<String, MetricsScope>();
+  transient Map<String, MetricsScope> openScopes = new HashMap<String, MetricsScope>();
 
   private void beginMetrics(String method) {
     Metrics metrics = MetricsFactory.getInstance();
