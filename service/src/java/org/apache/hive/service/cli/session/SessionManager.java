@@ -351,14 +351,16 @@ public class SessionManager extends CompositeService {
       throw new HiveSQLException("Failed to execute session hooks: " + e.getMessage(), e);
     }
     handleToSession.put(session.getSessionHandle(), session);
+    LOG.info("Session opened, " + session.getSessionHandle() + ", current sessions:" + getOpenSessionCount());
     return session;
   }
 
-  public void closeSession(SessionHandle sessionHandle) throws HiveSQLException {
+  public synchronized void closeSession(SessionHandle sessionHandle) throws HiveSQLException {
     HiveSession session = handleToSession.remove(sessionHandle);
     if (session == null) {
       throw new HiveSQLException("Session does not exist: " + sessionHandle);
     }
+    LOG.info("Session closed, " + sessionHandle + ", current sessions:" + getOpenSessionCount());
     try {
       session.close();
     } finally {
