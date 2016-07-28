@@ -27,3 +27,16 @@ select
 from varchar_udf_2 limit 1;
 
 drop table varchar_udf_2;
+
+
+create temporary table HIVE_14349 (a string) stored as orc;
+
+insert into HIVE_14349 values('XYZa'), ('badXYZa');
+
+select * from HIVE_14349 where a LIKE 'XYZ%a%';
+
+insert into HIVE_14349 values ('XYZab'), ('XYZabBAD'), ('badXYZab'), ('badXYZabc');
+
+select * from HIVE_14349 where a LIKE 'XYZ%a_';
+
+drop table HIVE_14349;
