@@ -649,7 +649,7 @@ STAGE PLANS:
                   aggregations: avg(_col0)
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -663,29 +663,29 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<count:bigint,sum:double,input:int>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: avg(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: _col0 is null (type: boolean)
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
                 mode: complete
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col0 = 0) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       table:
@@ -710,7 +710,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -719,7 +719,7 @@ STAGE PLANS:
             0 
             1 
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 26 Data size: 3381 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 26 Data size: 5149 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -735,14 +735,14 @@ STAGE PLANS:
               key expressions: UDFToDouble(_col1) (type: double)
               sort order: +
               Map-reduce partition columns: UDFToDouble(_col1) (type: double)
-              Statistics: Num rows: 26 Data size: 3381 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 26 Data size: 5149 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: string), _col1 (type: int)
           TableScan
             Reduce Output Operator
               key expressions: _col0 (type: double)
               sort order: +
               Map-reduce partition columns: _col0 (type: double)
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -751,17 +751,17 @@ STAGE PLANS:
             0 UDFToDouble(_col1) (type: double)
             1 _col0 (type: double)
           outputColumnNames: _col0, _col1, _col3
-          Statistics: Num rows: 28 Data size: 3719 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 28 Data size: 5663 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: _col3 is null (type: boolean)
-            Statistics: Num rows: 14 Data size: 1859 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 14 Data size: 2831 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: int)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 14 Data size: 1859 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 14 Data size: 2831 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 14 Data size: 1859 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 14 Data size: 2831 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -816,7 +816,7 @@ STAGE PLANS:
                   aggregations: avg(_col0)
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -830,14 +830,14 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<count:bigint,sum:double,input:int>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: avg(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:

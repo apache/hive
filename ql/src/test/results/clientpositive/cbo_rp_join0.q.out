@@ -20,48 +20,48 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cbo_t1
-            Statistics: Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), c_int (type: int)
                 outputColumnNames: key, c_int
-                Statistics: Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: key (type: string)
                   sort order: +
                   Map-reduce partition columns: key (type: string)
-                  Statistics: Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: c_int (type: int)
           TableScan
             alias: cbo_t2:cbo_t2
-            Statistics: Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), c_int (type: int)
                 outputColumnNames: key, c_int
-                Statistics: Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: key (type: string)
                   sort order: +
                   Map-reduce partition columns: key (type: string)
-                  Statistics: Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: c_int (type: int)
           TableScan
             alias: cbo_t3:cbo_t3
-            Statistics: Num rows: 20 Data size: 1530 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1615 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string)
               outputColumnNames: key
-              Statistics: Num rows: 20 Data size: 1530 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 20 Data size: 1615 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 20 Data size: 1530 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 20 Data size: 1615 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -669,60 +669,60 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cbo_t1
-            Statistics: Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), c_int (type: int)
                 outputColumnNames: key, c_int
-                Statistics: Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: key (type: string)
                   sort order: +
                   Map-reduce partition columns: key (type: string)
-                  Statistics: Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: c_int (type: int)
           TableScan
             alias: cbo_t2:cbo_t2
-            Statistics: Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), c_int (type: int)
                 outputColumnNames: key, c_int
-                Statistics: Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: key (type: string)
                   sort order: +
                   Map-reduce partition columns: key (type: string)
-                  Statistics: Num rows: 18 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 18 Data size: 1513 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: c_int (type: int)
           TableScan
             alias: cbo_t3:cbo_t3
-            Statistics: Num rows: 20 Data size: 1530 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1615 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string)
               outputColumnNames: key
-              Statistics: Num rows: 20 Data size: 1530 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 20 Data size: 1615 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 20 Data size: 1530 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 20 Data size: 1615 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: cbo_t4:cbo_t1
-            Statistics: Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), c_int (type: int)
               outputColumnNames: key, c_int
-              Statistics: Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: key (type: string)
                 sort order: +
                 Map-reduce partition columns: key (type: string)
-                Statistics: Num rows: 20 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: c_int (type: int)
       Reduce Operator Tree:
         Join Operator

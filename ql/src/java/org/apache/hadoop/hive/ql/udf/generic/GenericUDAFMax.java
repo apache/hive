@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationType;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -79,8 +80,13 @@ public class GenericUDAFMax extends AbstractGenericUDAFResolver {
     }
 
     /** class for storing the current max value */
+    @AggregationType(estimable = true)
     static class MaxAgg extends AbstractAggregationBuffer {
       Object o;
+      @Override
+      public int estimate() {
+        return JavaDataModel.PRIMITIVES2;
+      }
     }
 
     @Override
@@ -138,7 +144,7 @@ public class GenericUDAFMax extends AbstractGenericUDAFResolver {
   /*
    * Based on the Paper by Daniel Lemire: Streaming Max-Min filter using no more
    * than 3 comparisons per elem.
-   * 
+   *
    * 1. His algorithm works on fixed size windows up to the current row. For row
    * 'i' and window 'w' it computes the min/max for window (i-w, i). 2. The core
    * idea is to keep a queue of (max, idx) tuples. A tuple in the queue
@@ -150,7 +156,7 @@ public class GenericUDAFMax extends AbstractGenericUDAFResolver {
    * element at the front of the queue has reached its max range of influence;
    * i.e. frontTuple.idx + w > i. If yes we can remove it from the queue. - on
    * the ith step o/p the front of the queue as the max for the ith entry.
-   * 
+   *
    * Here we modify the algorithm: 1. to handle window's that are of the form
    * (i-p, i+f), where p is numPreceding,f = numFollowing - we start outputing
    * rows only after receiving f rows. - the formula for 'influence range' of an
@@ -192,6 +198,7 @@ public class GenericUDAFMax extends AbstractGenericUDAFResolver {
             + (3 * JavaDataModel.PRIMITIVES1);
       }
 
+      @Override
       protected void reset() {
         maxChain.clear();
         super.reset();

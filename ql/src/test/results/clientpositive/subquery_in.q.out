@@ -297,7 +297,7 @@ STAGE PLANS:
                   aggregations: avg(_col0)
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     table:
@@ -311,22 +311,22 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<count:bigint,sum:double,input:int>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: avg(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: _col0 is not null (type: boolean)
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               keys: _col0 (type: double)
               mode: hash
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 table:
@@ -358,7 +358,7 @@ STAGE PLANS:
               key expressions: _col0 (type: double)
               sort order: +
               Map-reduce partition columns: _col0 (type: double)
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:

@@ -289,19 +289,19 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: ss
-            Statistics: Num rows: 1000 Data size: 3856 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ss_store_sk is not null (type: boolean)
-              Statistics: Num rows: 964 Data size: 3716 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_store_sk (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 964 Data size: 3716 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 964 Data size: 3716 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -354,19 +354,19 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: ss
-            Statistics: Num rows: 1000 Data size: 3856 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ss_store_sk > 0) (type: boolean)
-              Statistics: Num rows: 1000 Data size: 3856 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_store_sk (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1000 Data size: 3856 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 1000 Data size: 3856 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -419,19 +419,19 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
           TableScan
             alias: ss
-            Statistics: Num rows: 1000 Data size: 7668 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1000 Data size: 7676 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((ss_quantity > 10) and ss_store_sk is not null) (type: boolean)
-              Statistics: Num rows: 321 Data size: 2460 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 321 Data size: 2468 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_store_sk (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 321 Data size: 2460 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 321 Data size: 2468 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 321 Data size: 2460 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 321 Data size: 2468 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -484,19 +484,19 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: ss
-            Statistics: Num rows: 1000 Data size: 3856 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ss_store_sk is not null (type: boolean)
-              Statistics: Num rows: 964 Data size: 3716 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_store_sk (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 964 Data size: 3716 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 964 Data size: 3716 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -549,19 +549,19 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: ss
-            Statistics: Num rows: 1000 Data size: 7668 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1000 Data size: 7676 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((ss_quantity > 10) and ss_store_sk is not null) (type: boolean)
-              Statistics: Num rows: 321 Data size: 2460 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 321 Data size: 2468 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_store_sk (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 321 Data size: 2460 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 321 Data size: 2468 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 321 Data size: 2460 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 321 Data size: 2468 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -599,19 +599,19 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
-            Statistics: Num rows: 1000 Data size: 3856 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ss_store_sk is not null (type: boolean)
-              Statistics: Num rows: 964 Data size: 3716 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_store_sk (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 964 Data size: 3716 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 964 Data size: 3716 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: s
             Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -685,7 +685,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
-            Statistics: Num rows: 1000 Data size: 3856 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ss_store_sk > 1000) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
@@ -771,19 +771,19 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
-            Statistics: Num rows: 1000 Data size: 3856 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ss_store_sk is not null (type: boolean)
-              Statistics: Num rows: 964 Data size: 3716 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_store_sk (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 964 Data size: 3716 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 964 Data size: 3716 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: s
             Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
@@ -857,19 +857,19 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
-            Statistics: Num rows: 1000 Data size: 7668 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1000 Data size: 7676 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((ss_quantity > 10) and ss_store_sk is not null) (type: boolean)
-              Statistics: Num rows: 321 Data size: 2460 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 321 Data size: 2468 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_store_sk (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 321 Data size: 2460 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 321 Data size: 2468 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 321 Data size: 2460 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 321 Data size: 2468 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: s
             Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -944,19 +944,19 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
-            Statistics: Num rows: 1000 Data size: 7656 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1000 Data size: 7664 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ss_store_sk is not null and ss_addr_sk is not null) (type: boolean)
-              Statistics: Num rows: 916 Data size: 7012 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 916 Data size: 7020 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_addr_sk (type: int), ss_store_sk (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 916 Data size: 7012 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 916 Data size: 7020 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: int)
-                  Statistics: Num rows: 916 Data size: 7012 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 916 Data size: 7020 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int)
           TableScan
             alias: s

@@ -284,7 +284,7 @@ STAGE PLANS:
           Select Operator
             expressions: null (type: void)
             outputColumnNames: _col0
-            Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 8
@@ -510,7 +510,7 @@ STAGE PLANS:
           Select Operator
             expressions: null (type: date)
             outputColumnNames: _col0
-            Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 2 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 224

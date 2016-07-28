@@ -3088,10 +3088,10 @@ STAGE PLANS:
                       aggregations: max(ds)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -3108,10 +3108,10 @@ STAGE PLANS:
                       aggregations: min(ds)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -3156,34 +3156,34 @@ STAGE PLANS:
                 aggregations: max(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                           Target Vertex: Map 1
         Reducer 8 
             Execution mode: vectorized, llap
@@ -3192,34 +3192,34 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                           Target Vertex: Map 1
         Union 6 
             Vertex: Union 6
@@ -3296,10 +3296,10 @@ STAGE PLANS:
                       aggregations: max(ds)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -3316,10 +3316,10 @@ STAGE PLANS:
                       aggregations: min(ds)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -3366,34 +3366,34 @@ STAGE PLANS:
                 aggregations: max(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                           Target Vertex: Map 1
         Reducer 8 
             Execution mode: vectorized, llap
@@ -3402,34 +3402,34 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                           Target Vertex: Map 1
         Union 6 
             Vertex: Union 6
@@ -3509,10 +3509,10 @@ STAGE PLANS:
                       aggregations: min(ds)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -3547,10 +3547,10 @@ STAGE PLANS:
                       aggregations: max(ds)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -3561,49 +3561,49 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                           Target Vertex: Map 1
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                           Target Vertex: Map 5
         Reducer 2 
             Execution mode: vectorized, llap
@@ -3656,49 +3656,49 @@ STAGE PLANS:
                 aggregations: max(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                           Target Vertex: Map 1
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                           Target Vertex: Map 5
         Union 3 
             Vertex: Union 3
@@ -5347,10 +5347,10 @@ STAGE PLANS:
                       aggregations: max(ds)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -5367,10 +5367,10 @@ STAGE PLANS:
                       aggregations: min(ds)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -5396,34 +5396,34 @@ STAGE PLANS:
                 aggregations: max(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                           Target Vertex: Map 1
         Reducer 7 
             Execution mode: vectorized, llap
@@ -5432,34 +5432,34 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Dynamic Partitioning Event Operator
                           Target column: ds (string)
                           Target Input: srcpart
                           Partition key expr: ds
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                           Target Vertex: Map 1
         Union 5 
             Vertex: Union 5
