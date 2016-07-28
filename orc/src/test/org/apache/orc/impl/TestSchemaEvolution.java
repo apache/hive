@@ -120,7 +120,8 @@ public class TestSchemaEvolution {
                 .withPrecision(20).withScale(10)))
         .addField("f2", TypeDescription.createStruct()
             .addField("f3", TypeDescription.createDate())
-            .addField("f4", TypeDescription.createDouble()))
+            .addField("f4", TypeDescription.createDouble())
+            .addField("f5", TypeDescription.createByte()))
         .addField("f6", TypeDescription.createChar().withMaxLength(100));
     SchemaEvolution both2diff = new SchemaEvolution(fileStruct2, readerStruct2diff, null);
     assertTrue(both2diff.hasConversion());
@@ -131,7 +132,8 @@ public class TestSchemaEvolution {
                 .withPrecision(20).withScale(10)))
         .addField("f2", TypeDescription.createStruct()
             .addField("f3", TypeDescription.createDate())
-            .addField("f4", TypeDescription.createDouble()))
+            .addField("f4", TypeDescription.createDouble())
+            .addField("f5", TypeDescription.createBoolean()))
         .addField("f6", TypeDescription.createChar().withMaxLength(80));
     SchemaEvolution both2diffChar = new SchemaEvolution(fileStruct2, readerStruct2diffChar, null);
     assertTrue(both2diffChar.hasConversion());
@@ -162,5 +164,306 @@ public class TestSchemaEvolution {
     rows.nextBatch(batch);
     assertEquals(74.72, ((DoubleColumnVector) batch.cols[0]).vector[0], 0.00000000001);
     rows.close();
+  }
+
+  @Test
+  public void testSafePpdEvaluation() throws IOException {
+    TypeDescription fileStruct1 = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createInt())
+        .addField("f2", TypeDescription.createString())
+        .addField("f3", TypeDescription.createDecimal().withPrecision(38).withScale(10));
+    SchemaEvolution same1 = new SchemaEvolution(fileStruct1, null);
+    assertTrue(same1.isPPDSafeConversion(0));
+    assertFalse(same1.hasConversion());
+    TypeDescription readerStruct1 = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createInt())
+        .addField("f2", TypeDescription.createString())
+        .addField("f3", TypeDescription.createDecimal().withPrecision(38).withScale(10));
+    SchemaEvolution both1 = new SchemaEvolution(fileStruct1, readerStruct1, null);
+    assertFalse(both1.hasConversion());
+    assertTrue(both1.isPPDSafeConversion(0));
+    assertTrue(both1.isPPDSafeConversion(1));
+    assertTrue(both1.isPPDSafeConversion(2));
+    assertTrue(both1.isPPDSafeConversion(3));
+
+    // int -> long
+    TypeDescription readerStruct1diff = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createLong())
+        .addField("f2", TypeDescription.createString())
+        .addField("f3", TypeDescription.createDecimal().withPrecision(38).withScale(10));
+    SchemaEvolution both1diff = new SchemaEvolution(fileStruct1, readerStruct1diff, null);
+    assertTrue(both1diff.hasConversion());
+    assertFalse(both1diff.isPPDSafeConversion(0));
+    assertTrue(both1diff.isPPDSafeConversion(1));
+    assertTrue(both1diff.isPPDSafeConversion(2));
+    assertTrue(both1diff.isPPDSafeConversion(3));
+
+    // decimal(38,10) -> decimal(12, 10)
+    TypeDescription readerStruct1diffPrecision = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createInt())
+        .addField("f2", TypeDescription.createString())
+        .addField("f3", TypeDescription.createDecimal().withPrecision(12).withScale(10));
+    SchemaEvolution both1diffPrecision = new SchemaEvolution(fileStruct1, readerStruct1diffPrecision,
+        new boolean[] {true, false, false, true});
+    assertTrue(both1diffPrecision.hasConversion());
+    assertFalse(both1diffPrecision.isPPDSafeConversion(0));
+    assertFalse(both1diffPrecision.isPPDSafeConversion(1)); // column not included
+    assertFalse(both1diffPrecision.isPPDSafeConversion(2)); // column not included
+    assertFalse(both1diffPrecision.isPPDSafeConversion(3));
+
+    // add columns
+    readerStruct1 = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createInt())
+        .addField("f2", TypeDescription.createString())
+        .addField("f3", TypeDescription.createDecimal().withPrecision(38).withScale(10))
+        .addField("f4", TypeDescription.createBoolean());
+    both1 = new SchemaEvolution(fileStruct1, readerStruct1, null);
+    assertTrue(both1.hasConversion());
+    assertFalse(both1.isPPDSafeConversion(0));
+    assertTrue(both1.isPPDSafeConversion(1));
+    assertTrue(both1.isPPDSafeConversion(2));
+    assertTrue(both1.isPPDSafeConversion(3));
+    assertFalse(both1.isPPDSafeConversion(4));
+  }
+
+  @Test
+  public void testSafePpdEvaluationForInts() throws IOException {
+    // byte -> short -> int -> long
+    TypeDescription fileSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createByte());
+    SchemaEvolution schemaEvolution = new SchemaEvolution(fileSchema, null);
+    assertFalse(schemaEvolution.hasConversion());
+
+    // byte -> short
+    TypeDescription readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createShort());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertTrue(schemaEvolution.isPPDSafeConversion(1));
+
+    // byte -> int
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createInt());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertTrue(schemaEvolution.isPPDSafeConversion(1));
+
+    // byte -> long
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createLong());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertTrue(schemaEvolution.isPPDSafeConversion(1));
+
+    // short -> int -> long
+    fileSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createShort());
+    schemaEvolution = new SchemaEvolution(fileSchema, null);
+    assertFalse(schemaEvolution.hasConversion());
+
+    // unsafe conversion short -> byte
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createByte());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.isPPDSafeConversion(1));
+
+    // short -> int
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createInt());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertTrue(schemaEvolution.isPPDSafeConversion(1));
+
+    // short -> long
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createLong());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertTrue(schemaEvolution.isPPDSafeConversion(1));
+
+    // int -> long
+    fileSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createInt());
+    schemaEvolution = new SchemaEvolution(fileSchema, null);
+    assertFalse(schemaEvolution.hasConversion());
+
+    // unsafe conversion int -> byte
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createByte());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.isPPDSafeConversion(1));
+
+    // unsafe conversion int -> short
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createShort());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.isPPDSafeConversion(1));
+
+    // int -> long
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createLong());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertTrue(schemaEvolution.isPPDSafeConversion(1));
+
+    // long
+    fileSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createLong());
+    schemaEvolution = new SchemaEvolution(fileSchema, null);
+    assertTrue(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.hasConversion());
+
+    // unsafe conversion long -> byte
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createByte());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.isPPDSafeConversion(1));
+
+    // unsafe conversion long -> short
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createShort());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.isPPDSafeConversion(1));
+
+    // unsafe conversion long -> int
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createInt());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.isPPDSafeConversion(1));
+
+    // invalid
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createString());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.isPPDSafeConversion(1));
+
+    // invalid
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createFloat());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.isPPDSafeConversion(1));
+
+    // invalid
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createTimestamp());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.isPPDSafeConversion(1));
+  }
+
+  @Test
+  public void testSafePpdEvaluationForStrings() throws IOException {
+    TypeDescription fileSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createString());
+    SchemaEvolution schemaEvolution = new SchemaEvolution(fileSchema, null);
+    assertTrue(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.hasConversion());
+
+    // string -> char
+    TypeDescription readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createChar());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.isPPDSafeConversion(1));
+
+    // string -> varchar
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createVarchar());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertTrue(schemaEvolution.isPPDSafeConversion(1));
+
+    fileSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createChar());
+    schemaEvolution = new SchemaEvolution(fileSchema, null);
+    assertTrue(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.hasConversion());
+
+    // char -> string
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createString());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.isPPDSafeConversion(1));
+
+    // char -> varchar
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createVarchar());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.isPPDSafeConversion(1));
+
+    fileSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createVarchar());
+    schemaEvolution = new SchemaEvolution(fileSchema, null);
+    assertTrue(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.hasConversion());
+
+    // varchar -> string
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createString());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertTrue(schemaEvolution.isPPDSafeConversion(1));
+
+    // varchar -> char
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createChar());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.isPPDSafeConversion(1));
+
+    // invalid
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createDecimal());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.isPPDSafeConversion(1));
+
+    // invalid
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createDate());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.isPPDSafeConversion(1));
+
+    // invalid
+    readerSchema = TypeDescription.createStruct()
+        .addField("f1", TypeDescription.createInt());
+    schemaEvolution = new SchemaEvolution(fileSchema, readerSchema, null);
+    assertTrue(schemaEvolution.hasConversion());
+    assertFalse(schemaEvolution.isPPDSafeConversion(0));
+    assertFalse(schemaEvolution.isPPDSafeConversion(1));
   }
 }

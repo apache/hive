@@ -26,9 +26,12 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
-import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
+import org.apache.orc.OrcUtils;
+import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.DataReaderProperties;
 import org.apache.orc.impl.OrcIndex;
+import org.apache.orc.impl.SchemaEvolution;
+import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -703,8 +706,10 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       List<OrcProto.Type> types = fileMetadata.getTypes();
       String[] colNamesForSarg = OrcInputFormat.getSargColumnNames(
           columnNames, types, globalIncludes, fileMetadata.isOriginalFormat());
+      TypeDescription schema = OrcUtils.convertTypeFromProtobuf(types, 0);
+      SchemaEvolution schemaEvolution = new SchemaEvolution(schema, globalIncludes);
       sargApp = new RecordReaderImpl.SargApplier(sarg, colNamesForSarg,
-          rowIndexStride, types, globalIncludes.length);
+          rowIndexStride, globalIncludes.length, schemaEvolution);
     }
     boolean hasAnyData = false;
     // readState should have been initialized by this time with an empty array.

@@ -18,13 +18,10 @@
 
 package org.apache.orc.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.orc.TypeDescription;
 
 /**
@@ -32,35 +29,40 @@ import org.apache.orc.TypeDescription;
  * has been schema evolution.
  */
 public class SchemaEvolution {
+  // indexed by reader column id
   private final TypeDescription[] readerFileTypes;
+  // indexed by reader column id
   private final boolean[] included;
+  private final TypeDescription fileSchema;
   private final TypeDescription readerSchema;
   private boolean hasConversion;
-  private static final Log LOG = LogFactory.getLog(SchemaEvolution.class);
+  // indexed by reader column id
+  private final boolean[] ppdSafeConversion;
 
-  public SchemaEvolution(TypeDescription readerSchema, boolean[] included) {
-    this.included = (included == null ? null : Arrays.copyOf(included, included.length));
-    this.readerSchema = readerSchema;
-
-    hasConversion = false;
-
-    readerFileTypes = new TypeDescription[this.readerSchema.getMaximumId() + 1];
-    buildSameSchemaFileTypesArray();
+  public SchemaEvolution(TypeDescription fileSchema, boolean[] includedCols) {
+    this(fileSchema, null, includedCols);
   }
 
   public SchemaEvolution(TypeDescription fileSchema,
                          TypeDescription readerSchema,
-                         boolean[] included) throws IOException {
-    this.included = (included == null ? null : Arrays.copyOf(included, included.length));
-    if (checkAcidSchema(fileSchema)) {
-      this.readerSchema = createEventSchema(readerSchema);
+                         boolean[] includeCols) {
+    this.included = includeCols == null ? null : Arrays.copyOf(includeCols, includeCols.length);
+    this.hasConversion = false;
+    this.fileSchema = fileSchema;
+    if (readerSchema != null) {
+      if (checkAcidSchema(fileSchema)) {
+        this.readerSchema = createEventSchema(readerSchema);
+      } else {
+        this.readerSchema = readerSchema;
+      }
+      this.readerFileTypes = new TypeDescription[this.readerSchema.getMaximumId() + 1];
+      buildConversionFileTypesArray(fileSchema, this.readerSchema);
     } else {
-      this.readerSchema = readerSchema;
+      this.readerSchema = fileSchema;
+      this.readerFileTypes = new TypeDescription[this.readerSchema.getMaximumId() + 1];
+      buildSameSchemaFileTypesArray();
     }
-
-    hasConversion = false;
-    readerFileTypes = new TypeDescription[this.readerSchema.getMaximumId() + 1];
-    buildConversionFileTypesArray(fileSchema, this.readerSchema);
+    this.ppdSafeConversion = populatePpdSafeConversion();
   }
 
   public TypeDescription getReaderSchema() {
@@ -81,15 +83,114 @@ public class SchemaEvolution {
 
   /**
    * Get the file type by reader type id.
-   * @param readerType
+   * @param id reader column id
    * @return
    */
   public TypeDescription getFileType(int id) {
     return readerFileTypes[id];
   }
 
+  /**
+   * Check if column is safe for ppd evaluation
+   * @param colId reader column id
+   * @return true if the specified column is safe for ppd evaluation else false
+   */
+  public boolean isPPDSafeConversion(final int colId) {
+    if (hasConversion()) {
+      if (colId < 0 || colId >= ppdSafeConversion.length) {
+        return false;
+      }
+      return ppdSafeConversion[colId];
+    }
+
+    // when there is no schema evolution PPD is safe
+    return true;
+  }
+
+  private boolean[] populatePpdSafeConversion() {
+    if (fileSchema == null || readerSchema == null || readerFileTypes == null) {
+      return null;
+    }
+
+    boolean[] result = new boolean[readerSchema.getMaximumId() + 1];
+    boolean safePpd = validatePPDConversion(fileSchema, readerSchema);
+    result[readerSchema.getId()] = safePpd;
+    List<TypeDescription> children = readerSchema.getChildren();
+    if (children != null) {
+      for (TypeDescription child : children) {
+        TypeDescription fileType = getFileType(child.getId());
+        safePpd = validatePPDConversion(fileType, child);
+        result[child.getId()] = safePpd;
+      }
+    }
+    return result;
+  }
+
+  private boolean validatePPDConversion(final TypeDescription fileType,
+      final TypeDescription readerType) {
+    if (fileType == null) {
+      return false;
+    }
+    if (fileType.getCategory().isPrimitive()) {
+      if (fileType.getCategory().equals(readerType.getCategory())) {
+        // for decimals alone do equality check to not mess up with precision change
+        if (fileType.getCategory().equals(TypeDescription.Category.DECIMAL) &&
+            !fileType.equals(readerType)) {
+          return false;
+        }
+        return true;
+      }
+
+      // only integer and string evolutions are safe
+      // byte -> short -> int -> long
+      // string <-> char <-> varchar
+      // NOTE: Float to double evolution is not safe as floats are stored as doubles in ORC's
+      // internal index, but when doing predicate evaluation for queries like "select * from
+      // orc_float where f = 74.72" the constant on the filter is converted from string -> double
+      // so the precisions will be different and the comparison will fail.
+      // Soon, we should convert all sargs that compare equality between floats or
+      // doubles to range predicates.
+
+      // Similarly string -> char and varchar -> char and vice versa is not possible, as ORC stores
+      // char with padded spaces in its internal index.
+      switch (fileType.getCategory()) {
+        case BYTE:
+          if (readerType.getCategory().equals(TypeDescription.Category.SHORT) ||
+              readerType.getCategory().equals(TypeDescription.Category.INT) ||
+              readerType.getCategory().equals(TypeDescription.Category.LONG)) {
+            return true;
+          }
+          break;
+        case SHORT:
+          if (readerType.getCategory().equals(TypeDescription.Category.INT) ||
+              readerType.getCategory().equals(TypeDescription.Category.LONG)) {
+            return true;
+          }
+          break;
+        case INT:
+          if (readerType.getCategory().equals(TypeDescription.Category.LONG)) {
+            return true;
+          }
+          break;
+        case STRING:
+          if (readerType.getCategory().equals(TypeDescription.Category.VARCHAR)) {
+            return true;
+          }
+          break;
+        case VARCHAR:
+          if (readerType.getCategory().equals(TypeDescription.Category.STRING)) {
+            return true;
+          }
+          break;
+        default:
+          break;
+      }
+    }
+    return false;
+  }
+
   void buildConversionFileTypesArray(TypeDescription fileType,
-                                     TypeDescription readerType) throws IOException {
+                                     TypeDescription readerType) {
     // if the column isn't included, don't map it
     if (included != null && !included[readerType.getId()]) {
       return;
@@ -171,7 +272,7 @@ public class SchemaEvolution {
       }
       readerFileTypes[id] = fileType;
     } else {
-      throw new IOException(
+      throw new IllegalArgumentException(
           String.format(
               "ORC does not support type conversion from file type %s (%d) to reader type %s (%d)",
               fileType.toString(), fileType.getId(),

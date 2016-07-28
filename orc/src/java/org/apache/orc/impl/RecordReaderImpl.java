@@ -44,8 +44,6 @@ import org.apache.orc.StripeInformation;
 import org.apache.orc.TimestampColumnStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
@@ -164,21 +162,11 @@ public class RecordReaderImpl implements RecordReader {
     this.bufferSize = fileReader.bufferSize;
     this.rowIndexStride = fileReader.rowIndexStride;
     SearchArgument sarg = options.getSearchArgument();
-    // We want to use the sarg for predicate evaluation but we have data type conversion
-    // (i.e Schema Evolution), so we currently ignore it.
-    if (sarg != null && rowIndexStride != 0 && !evolution.hasConversion()) {
-      sargApp = new SargApplier(
-          sarg, options.getColumnNames(), rowIndexStride, types,
-          included.length);
+    if (sarg != null && rowIndexStride != 0) {
+      sargApp = new SargApplier(sarg, options.getColumnNames(), rowIndexStride,
+          included.length, evolution);
     } else {
       sargApp = null;
-      if (evolution.hasConversion()) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug(
-              "Skipping stripe elimination for {} since the schema has data type conversion",
-              fileReader.path);
-        }
-      }
     }
     long rows = 0;
     long skippedRows = 0;
@@ -720,9 +708,10 @@ public class RecordReaderImpl implements RecordReader {
     private final long rowIndexStride;
     // same as the above array, but indices are set to true
     private final boolean[] sargColumns;
+    private SchemaEvolution evolution;
 
     public SargApplier(SearchArgument sarg, String[] columnNames, long rowIndexStride,
-        List<OrcProto.Type> types, int includedCount) {
+        int includedCount, final SchemaEvolution evolution) {
       this.sarg = sarg;
       sargLeaves = sarg.getLeaves();
       filterColumns = mapSargColumnsToOrcInternalColIdx(sargLeaves, columnNames, 0);
@@ -735,6 +724,7 @@ public class RecordReaderImpl implements RecordReader {
           sargColumns[i] = true;
         }
       }
+      this.evolution = evolution;
     }
 
     /**
@@ -764,10 +754,14 @@ public class RecordReaderImpl implements RecordReader {
             }
             OrcProto.ColumnStatistics stats = entry.getStatistics();
             OrcProto.BloomFilter bf = null;
-            if (bloomFilterIndices != null && bloomFilterIndices[filterColumns[pred]] != null) {
-              bf = bloomFilterIndices[filterColumns[pred]].getBloomFilter(rowGroup);
+            if (bloomFilterIndices != null && bloomFilterIndices[columnIx] != null) {
+              bf = bloomFilterIndices[columnIx].getBloomFilter(rowGroup);
             }
-            leafValues[pred] = evaluatePredicateProto(stats, sargLeaves.get(pred), bf);
+            if (evolution != null && evolution.isPPDSafeConversion(columnIx)) {
+              leafValues[pred] = evaluatePredicateProto(stats, sargLeaves.get(pred), bf);
+            } else {
+              leafValues[pred] = TruthValue.YES_NO_NULL;
+            }
             if (LOG.isTraceEnabled()) {
               LOG.trace("Stats = " + stats);
               LOG.trace("Setting " + sargLeaves.get(pred) + " to " + leafValues[pred]);

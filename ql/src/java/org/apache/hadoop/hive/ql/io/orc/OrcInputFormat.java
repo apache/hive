@@ -95,7 +95,6 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -1268,24 +1267,14 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         // We can't eliminate stripes if there are deltas because the
         // deltas may change the rows making them match the predicate.
         if ((deltas == null || deltas.isEmpty()) && context.sarg != null) {
-          // Also, we currently do not use predicate evaluation when the schema has data type
-          // conversion.
-          if (evolution.hasConversion()) {
-            if (LOG.isDebugEnabled()) {
-              LOG.debug(
-                  "Skipping split elimination for {} since the schema has data type conversion",
-                  file.getPath());
-            }
+          String[] colNames =
+              extractNeededColNames((readerTypes == null ? fileTypes : readerTypes),
+                  context.conf, readerIncluded, isOriginal);
+          if (colNames == null) {
+            LOG.warn("Skipping split elimination for {} as column names is null", file.getPath());
           } else {
-            String[] colNames =
-                extractNeededColNames((readerTypes == null ? fileTypes : readerTypes),
-                    context.conf, readerIncluded, isOriginal);
-            if (colNames == null) {
-              LOG.warn("Skipping split elimination for {} as column names is null", file.getPath());
-            } else {
-              includeStripe = pickStripes(context.sarg, colNames, writerVersion, isOriginal,
-                  stripeStats, stripes.size(), file.getPath());
-            }
+            includeStripe = pickStripes(context.sarg, colNames, writerVersion, isOriginal,
+                stripeStats, stripes.size(), file.getPath(), evolution);
           }
         }
         return generateSplitsFromStripes(includeStripe);
@@ -1897,12 +1886,14 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     // eliminate stripes that doesn't satisfy the predicate condition
     List<PredicateLeaf> sargLeaves = sarg.getLeaves();
     int[] filterColumns = RecordReaderImpl.mapTranslatedSargColumns(types, sargLeaves);
-    return pickStripesInternal(sarg, filterColumns, stripeStats, stripeCount, null);
+    TypeDescription schema = OrcUtils.convertTypeFromProtobuf(types, 0);
+    SchemaEvolution evolution = new SchemaEvolution(schema, null);
+    return pickStripesInternal(sarg, filterColumns, stripeStats, stripeCount, null, evolution);
   }
 
   private static boolean[] pickStripes(SearchArgument sarg, String[] sargColNames,
       OrcFile.WriterVersion writerVersion, boolean isOriginal, List<StripeStatistics> stripeStats,
-      int stripeCount, Path filePath) {
+      int stripeCount, Path filePath, final SchemaEvolution evolution) {
     if (sarg == null || stripeStats == null || writerVersion == OrcFile.WriterVersion.ORIGINAL) {
       return null; // only do split pruning if HIVE-8732 has been fixed in the writer
     }
@@ -1910,15 +1901,16 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     List<PredicateLeaf> sargLeaves = sarg.getLeaves();
     int[] filterColumns = RecordReaderImpl.mapSargColumnsToOrcInternalColIdx(sargLeaves,
         sargColNames, getRootColumn(isOriginal));
-    return pickStripesInternal(sarg, filterColumns, stripeStats, stripeCount, filePath);
+    return pickStripesInternal(sarg, filterColumns, stripeStats, stripeCount, filePath, evolution);
   }
 
   private static boolean[] pickStripesInternal(SearchArgument sarg, int[] filterColumns,
-      List<StripeStatistics> stripeStats, int stripeCount, Path filePath) {
+      List<StripeStatistics> stripeStats, int stripeCount, Path filePath,
+      final SchemaEvolution evolution) {
     boolean[] includeStripe = new boolean[stripeCount];
     for (int i = 0; i < includeStripe.length; ++i) {
       includeStripe[i] = (i >= stripeStats.size()) ||
-          isStripeSatisfyPredicate(stripeStats.get(i), sarg, filterColumns);
+          isStripeSatisfyPredicate(stripeStats.get(i), sarg, filterColumns, evolution);
       if (isDebugEnabled && !includeStripe[i]) {
         LOG.debug("Eliminating ORC stripe-" + i + " of file '" + filePath
             + "'  as it did not satisfy predicate condition.");
@@ -1928,15 +1920,19 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   }
 
   private static boolean isStripeSatisfyPredicate(
-      StripeStatistics stripeStatistics, SearchArgument sarg, int[] filterColumns) {
+      StripeStatistics stripeStatistics, SearchArgument sarg, int[] filterColumns,
+      final SchemaEvolution evolution) {
     List<PredicateLeaf> predLeaves = sarg.getLeaves();
     TruthValue[] truthValues = new TruthValue[predLeaves.size()];
     for (int pred = 0; pred < truthValues.length; pred++) {
       if (filterColumns[pred] != -1) {
-
-        // column statistics at index 0 contains only the number of rows
-        ColumnStatistics stats = stripeStatistics.getColumnStatistics()[filterColumns[pred]];
-        truthValues[pred] = RecordReaderImpl.evaluatePredicate(stats, predLeaves.get(pred), null);
+        if (evolution != null && !evolution.isPPDSafeConversion(filterColumns[pred])) {
+          truthValues[pred] = TruthValue.YES_NO_NULL;
+        } else {
+          // column statistics at index 0 contains only the number of rows
+          ColumnStatistics stats = stripeStatistics.getColumnStatistics()[filterColumns[pred]];
+          truthValues[pred] = RecordReaderImpl.evaluatePredicate(stats, predLeaves.get(pred), null);
+        }
       } else {
 
         // parition column case.
