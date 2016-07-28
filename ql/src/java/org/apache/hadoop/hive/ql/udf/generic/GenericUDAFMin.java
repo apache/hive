@@ -26,7 +26,9 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.UDFType;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax.MaxStreamingFixedWindow;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.FullMapEqualComparer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -76,8 +78,13 @@ public class GenericUDAFMin extends AbstractGenericUDAFResolver {
     }
 
     /** class for storing the current max value */
+    @AggregationType(estimable = true)
     static class MinAgg extends AbstractAggregationBuffer {
       Object o;
+      @Override
+      public int estimate() {
+        return JavaDataModel.PRIMITIVES2;
+      }
     }
 
     @Override
@@ -139,14 +146,17 @@ public class GenericUDAFMin extends AbstractGenericUDAFResolver {
       super(wrappedEval, wFrmDef);
     }
 
+    @Override
     protected ObjectInspector inputOI() {
       return ((GenericUDAFMinEvaluator) wrappedEval).inputOI;
     }
 
+    @Override
     protected ObjectInspector outputOI() {
       return ((GenericUDAFMinEvaluator) wrappedEval).outputOI;
     }
 
+    @Override
     protected boolean removeLast(Object in, Object last) {
       return isLess(in, last);
     }

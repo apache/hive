@@ -74,11 +74,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc
-          Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select * from loc_orc limit 4
@@ -95,14 +95,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc
-          Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 4
-              Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 4 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: explain select * from loc_orc limit 16
@@ -119,14 +119,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc
-          Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 16
-              Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: explain select * from loc_orc limit 0
@@ -143,11 +143,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc
-          Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 8 Data size: 804 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 0
               Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE

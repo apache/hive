@@ -26,10 +26,10 @@ STAGE PLANS:
                   aggregations: avg(cbigint)
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: struct<count:bigint,sum:double,input:bigint>)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -37,10 +37,10 @@ STAGE PLANS:
           aggregations: avg(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

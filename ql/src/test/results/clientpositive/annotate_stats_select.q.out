@@ -262,7 +262,7 @@ STAGE PLANS:
           Select Operator
             expressions: null (type: void)
             outputColumnNames: _col0
-            Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select 11 from alltypes_orc
@@ -472,7 +472,7 @@ STAGE PLANS:
           Select Operator
             expressions: null (type: date)
             outputColumnNames: _col0
-            Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 2 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select cast("58.174" as DECIMAL) from alltypes_orc

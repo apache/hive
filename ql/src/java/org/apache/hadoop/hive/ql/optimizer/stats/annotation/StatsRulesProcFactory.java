@@ -1236,7 +1236,7 @@ public class StatsRulesProcFactory {
               ColStatistics cs = new ColStatistics(colName, colType);
               cs.setCountDistint(stats.getNumRows());
               cs.setNumNulls(0);
-              cs.setAvgColLen(StatsUtils.getAvgColLenOfFixedLengthTypes(colType));
+              cs.setAvgColLen(StatsUtils.getAvgColLenOf(conf, ci.getObjectInspector(), colType));
               aggColStats.add(cs);
             }
           }

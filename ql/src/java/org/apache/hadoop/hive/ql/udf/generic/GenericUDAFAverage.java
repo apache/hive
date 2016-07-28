@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,9 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AbstractAggregationBuffer;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationType;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -332,10 +335,16 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     }
   }
 
-  private static class AverageAggregationBuffer<TYPE> implements AggregationBuffer {
-    private Object previousValue;
-    private long count;
+  @AggregationType(estimable = true)
+  private static class AverageAggregationBuffer<TYPE> extends AbstractAggregationBuffer {
+	private Object previousValue;
+	private long count;
     private TYPE sum;
+
+    @Override
+    public int estimate() {
+      return 2*JavaDataModel.PRIMITIVES2;
+    }
   };
 
   @SuppressWarnings("unchecked")

@@ -49,7 +49,7 @@ STAGE PLANS:
           Select Operator
             expressions: 1.098612288668 (type: double), null (type: double), null (type: double), 1.098612288668 (type: double), null (type: double), null (type: double), 1.584962500721 (type: double), null (type: double), null (type: double), 0.47712125472 (type: double), null (type: double), null (type: double), 1.584962500721 (type: double), null (type: double), null (type: double), null (type: double), -1.0 (type: double), 7.389056098931 (type: double), 8.0 (type: double), 8.0 (type: double), 0.125 (type: double), 8.0 (type: double), 2.0 (type: double), NaN (type: double), 1.0 (type: double), 1.0 (type: double), 8.0 (type: double), 8.0 (type: double)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27
-            Statistics: Num rows: 1 Data size: 136 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: SELECT ROUND(LN(3.0),12), LN(0.0), LN(-1), ROUND(LOG(3.0),12), LOG(0.0),
