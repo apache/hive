@@ -89,7 +89,7 @@ public class TestFirstInFirstOutComparator {
         .build();
   }
 
-  @Test
+  @Test (timeout = 60000)
   public void testWaitQueueComparator() throws InterruptedException {
     TaskWrapper r1 = createTaskWrapper(createRequest(1, 2, 5, 100), false, 100000);
     TaskWrapper r2 = createTaskWrapper(createRequest(2, 4, 4, 200), false, 100000);
@@ -246,7 +246,7 @@ public class TestFirstInFirstOutComparator {
     assertEquals(r2, queue.take());
   }
 
-  @Test(timeout = 5000)
+  @Test(timeout = 60000)
   public void testWaitQueueComparatorWithinDagPriority() throws InterruptedException {
     TaskWrapper r1 = createTaskWrapper(createRequest(1, 1, 0, 100, 100, 10), false, 100000);
     TaskWrapper r2 = createTaskWrapper(createRequest(2, 1, 0, 100, 100, 1), false, 100000);
@@ -264,7 +264,7 @@ public class TestFirstInFirstOutComparator {
     assertEquals(r1, queue.take());
   }
 
-  @Test(timeout = 5000)
+  @Test(timeout = 60000)
   public void testWaitQueueComparatorParallelism() throws InterruptedException {
     TaskWrapper r1 = createTaskWrapper(createRequest(1, 10, 3, 100, 100, 1), false, 100000);
     TaskWrapper r2 = createTaskWrapper(createRequest(2, 10, 7, 100, 100, 1), false, 100000);
