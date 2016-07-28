@@ -536,13 +536,6 @@ public class VectorMapOperator extends AbstractMapOperator {
     for (Map.Entry<Path, ArrayList<String>> entry : conf.getPathToAliases().entrySet()) {
       Path path = entry.getKey();
       PartitionDesc partDesc = conf.getPathToPartitionInfo().get(path);
-      ArrayList<String> aliases = entry.getValue();
-
-      VectorPartitionDesc vectorPartDesc = partDesc.getVectorPartitionDesc();
-      LOG.info("VectorMapOperator path: " + path +
-          ", read type " + vectorPartDesc.getVectorMapOperatorReadType().name() +
-          ", vector deserialize type " + vectorPartDesc.getVectorDeserializeType().name() +
-          ", aliases " + aliases);
 
       VectorPartitionContext vectorPartitionContext;
       if (!partitionContextMap.containsKey(partDesc)) {
