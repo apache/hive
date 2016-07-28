@@ -3975,9 +3975,9 @@ POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_float@part=1
 POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_float@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	b
-1	1	-29.076400756835938	original
+1	1	-29.0764	original
 10	1	17.0	new
-2	1	753.7028198242188	original
+2	1	753.7028	original
 3	1	-5000.0	original
 4	1	5.2927712E7	original
 5	2	774.0	new

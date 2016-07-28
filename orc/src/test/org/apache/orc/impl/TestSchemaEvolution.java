@@ -17,15 +17,47 @@
  */
 package org.apache.orc.impl;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.orc.OrcFile;
+import org.apache.orc.Reader;
+import org.apache.orc.RecordReader;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.Writer;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 public class TestSchemaEvolution {
+
+  @Rule
+  public TestName testCaseName = new TestName();
+
+  Configuration conf;
+  Path testFilePath;
+  FileSystem fs;
+  Path workDir = new Path(System.getProperty("test.tmp.dir",
+      "target" + File.separator + "test" + File.separator + "tmp"));
+
+  @Before
+  public void setup() throws Exception {
+    conf = new Configuration();
+    fs = FileSystem.getLocal(conf);
+    testFilePath = new Path(workDir, "TestOrcFile." +
+        testCaseName.getMethodName() + ".orc");
+    fs.delete(testFilePath, false);
+  }
 
   @Test
   public void testDataTypeConversion1() throws IOException {
@@ -103,5 +135,32 @@ public class TestSchemaEvolution {
         .addField("f6", TypeDescription.createChar().withMaxLength(80));
     SchemaEvolution both2diffChar = new SchemaEvolution(fileStruct2, readerStruct2diffChar, null);
     assertTrue(both2diffChar.hasConversion());
+  }
+
+  @Test
+  public void testFloatToDoubleEvolution() throws Exception {
+    testFilePath = new Path(workDir, "TestOrcFile." +
+        testCaseName.getMethodName() + ".orc");
+    TypeDescription schema = TypeDescription.createFloat();
+    Writer writer = OrcFile.createWriter(testFilePath,
+        OrcFile.writerOptions(conf).setSchema(schema).stripeSize(100000)
+            .bufferSize(10000));
+    VectorizedRowBatch batch = new VectorizedRowBatch(1, 1024);
+    DoubleColumnVector dcv = new DoubleColumnVector(1024);
+    batch.cols[0] = dcv;
+    batch.reset();
+    batch.size = 1;
+    dcv.vector[0] = 74.72f;
+    writer.addRowBatch(batch);
+    writer.close();
+
+    Reader reader = OrcFile.createReader(testFilePath,
+        OrcFile.readerOptions(conf).filesystem(fs));
+    TypeDescription schemaOnRead = TypeDescription.createDouble();
+    RecordReader rows = reader.rows(new Reader.Options().schema(schemaOnRead));
+    batch = schemaOnRead.createRowBatch();
+    rows.nextBatch(batch);
+    assertEquals(74.72, ((DoubleColumnVector) batch.cols[0]).vector[0], 0.00000000001);
+    rows.close();
   }
 }
