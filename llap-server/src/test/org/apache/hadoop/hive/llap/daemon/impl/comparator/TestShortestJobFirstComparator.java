@@ -26,7 +26,7 @@ import org.junit.Test;
 public class TestShortestJobFirstComparator {
 
 
-  @Test(timeout = 5000)
+  @Test(timeout = 60000)
   public void testWaitQueueComparator() throws InterruptedException {
     TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 2, 100), false, 100000);
     TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 4, 200), false, 100000);
@@ -161,7 +161,7 @@ public class TestShortestJobFirstComparator {
     assertEquals(r5, queue.take());
   }
 
-  @Test(timeout = 5000)
+  @Test(timeout = 60000)
   public void testWaitQueueComparatorWithinDagPriority() throws InterruptedException {
     TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 0, 100, 10), false, 100000);
     TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 1, 0, 100, 1), false, 100000);
@@ -179,7 +179,7 @@ public class TestShortestJobFirstComparator {
     assertEquals(r1, queue.take());
   }
 
-  @Test(timeout = 5000)
+  @Test(timeout = 60000)
   public void testWaitQueueComparatorParallelism() throws InterruptedException {
     TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 10, 3, 100, 1), false, 100000); // 7 pending
     TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 10, 7, 100, 1), false, 100000); // 3 pending
