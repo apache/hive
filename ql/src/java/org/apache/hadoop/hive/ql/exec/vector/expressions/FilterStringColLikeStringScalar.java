@@ -123,7 +123,8 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
    */
   private static class ComplexCheckerFactory implements CheckerFactory {
     public Checker tryCreate(String pattern) {
-      return new ComplexChecker(UDFLike.likePatternToRegExp(pattern));
+      // anchor the pattern to the start:end of the whole string.
+      return new ComplexChecker("^" + UDFLike.likePatternToRegExp(pattern) + "$");
     }
   }
 }

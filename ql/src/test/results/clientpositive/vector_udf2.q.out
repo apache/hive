@@ -108,3 +108,55 @@ POSTHOOK: query: drop table varchar_udf_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_udf_2
 POSTHOOK: Output: default@varchar_udf_2
+PREHOOK: query: create temporary table HIVE_14349 (a string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@HIVE_14349
+POSTHOOK: query: create temporary table HIVE_14349 (a string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@HIVE_14349
+PREHOOK: query: insert into HIVE_14349 values('XYZa'), ('badXYZa')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@hive_14349
+POSTHOOK: query: insert into HIVE_14349 values('XYZa'), ('badXYZa')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@hive_14349
+POSTHOOK: Lineage: hive_14349.a SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: select * from HIVE_14349 where a LIKE 'XYZ%a%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_14349
+#### A masked pattern was here ####
+POSTHOOK: query: select * from HIVE_14349 where a LIKE 'XYZ%a%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_14349
+#### A masked pattern was here ####
+XYZa
+PREHOOK: query: insert into HIVE_14349 values ('XYZab'), ('XYZabBAD'), ('badXYZab'), ('badXYZabc')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@hive_14349
+POSTHOOK: query: insert into HIVE_14349 values ('XYZab'), ('XYZabBAD'), ('badXYZab'), ('badXYZabc')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@hive_14349
+POSTHOOK: Lineage: hive_14349.a SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: select * from HIVE_14349 where a LIKE 'XYZ%a_'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_14349
+#### A masked pattern was here ####
+POSTHOOK: query: select * from HIVE_14349 where a LIKE 'XYZ%a_'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_14349
+#### A masked pattern was here ####
+XYZab
+PREHOOK: query: drop table HIVE_14349
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive_14349
+PREHOOK: Output: default@hive_14349
+POSTHOOK: query: drop table HIVE_14349
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive_14349
+POSTHOOK: Output: default@hive_14349
