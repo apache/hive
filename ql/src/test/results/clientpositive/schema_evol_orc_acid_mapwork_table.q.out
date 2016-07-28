@@ -2891,9 +2891,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####
 insert_num	c1	b
-1	-29.076400756835938	original
+1	-29.0764	original
 10	17.0	new
-2	753.7028198242188	original
+2	753.7028	original
 3	-5000.0	original
 4	5.2927712E7	original
 5	774.0	new
