@@ -219,7 +219,7 @@ public class PartitionPruner implements Transform {
 
   private static PrunedPartitionList getAllPartsFromCacheOrServer(Table tab, String key, boolean unknownPartitions,
     Map<String, PrunedPartitionList> partsCache)  throws SemanticException {
-    PrunedPartitionList ppList = partsCache.get(key);
+    PrunedPartitionList ppList = partsCache == null ? null : partsCache.get(key);
     if (ppList != null) {
       return ppList;
     }
@@ -230,7 +230,9 @@ public class PartitionPruner implements Transform {
       throw new SemanticException(e);
     }
     ppList = new PrunedPartitionList(tab, parts, null, unknownPartitions);
-    partsCache.put(key, ppList);
+    if (partsCache != null) {
+      partsCache.put(key, ppList);
+    }
     return ppList;
   }
 
