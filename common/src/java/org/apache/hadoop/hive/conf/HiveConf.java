@@ -2134,7 +2134,12 @@ public class HiveConf extends Configuration {
       "This is only necessary if the host has mutiple network addresses and if a different network address other than " +
       "hive.server2.thrift.bind.host is to be used."),
     NWAYJOINREORDER("hive.reorder.nway.joins", true,
-      "Runs reordering of tables within single n-way join (i.e.: picks streamtable)");
+      "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
+    HIVE_MSCK_PATH_VALIDATION("hive.msck.path.validation", "throw",
+        new StringSet("throw", "skip", "ignore"), "The approach msck should take with HDFS " +
+       "directories that are partition-like but contain unsupported characters. 'throw' (an " +
+       "exception) is the default; 'skip' will skip the invalid directories and still repair the" +
+       " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)");
 
     public final String varname;
     private final String defaultExpr;

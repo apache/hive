@@ -93,7 +93,7 @@ public interface MetaDataFormatter {
   /**
    * Show the table partitions.
    */
-  public void showTablePartitons(DataOutputStream out,
+  public void showTablePartitions(DataOutputStream out,
       List<String> parts)
           throws HiveException;
 

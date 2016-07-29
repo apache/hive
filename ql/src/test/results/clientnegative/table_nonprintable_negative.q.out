@@ -1,0 +1,19 @@
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: create external table table_external (c1 int, c2 int)
+partitioned by (day string)
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_external
+POSTHOOK: query: create external table table_external (c1 int, c2 int)
+partitioned by (day string)
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_external
+PREHOOK: query: msck repair table table_external
+PREHOOK: type: MSCK
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
