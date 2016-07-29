@@ -132,11 +132,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: stats_null_part
-            Statistics: Num rows: 10 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: double), b (type: int), c (type: string), d (type: smallint)
               outputColumnNames: a, b, c, d
-              Statistics: Num rows: 10 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(), count(a), count(b), count(c), count(d)
                 mode: hash
