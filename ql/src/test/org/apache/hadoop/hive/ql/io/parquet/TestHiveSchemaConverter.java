@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.io.parquet.convert.HiveSchemaConverter;
-import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.junit.Test;
@@ -28,8 +27,7 @@ import org.junit.Test;
 import parquet.schema.MessageType;
 import parquet.schema.MessageTypeParser;
 import parquet.schema.OriginalType;
-import parquet.schema.Types;
-import parquet.schema.PrimitiveType.PrimitiveTypeName;
+import parquet.schema.Type;
 import parquet.schema.Type.Repetition;
 
 public class TestHiveSchemaConverter {
@@ -63,17 +61,38 @@ public class TestHiveSchemaConverter {
     final MessageType messageTypeFound = HiveSchemaConverter.convert(columnNames, columnTypes);
     final MessageType expectedMT = MessageTypeParser.parseMessageType(expectedSchema);
     assertEquals("converting " + columnNamesStr + ": " + columnsTypeStr + " to " + expectedSchema, expectedMT, messageTypeFound);
+
+    // Required to check the original types manually as PrimitiveType.equals does not care about it
+    List<Type> expectedFields = expectedMT.getFields();
+    List<Type> actualFields = messageTypeFound.getFields();
+    for (int i = 0, n = expectedFields.size(); i < n; ++i) {
+      OriginalType exp = expectedFields.get(i).getOriginalType();
+      OriginalType act = actualFields.get(i).getOriginalType();
+      assertEquals("Original types of the field do not match", exp, act);
+    }
   }
 
   @Test
   public void testSimpleType() throws Exception {
     testConversion(
-            "a,b,c",
-            "int,double,boolean",
+            "a,b,c,d",
+            "int,bigint,double,boolean",
             "message hive_schema {\n"
             + "  optional int32 a;\n"
-            + "  optional double b;\n"
-            + "  optional boolean c;\n"
+            + "  optional int64 b;\n"
+            + "  optional double c;\n"
+            + "  optional boolean d;\n"
+            + "}\n");
+  }
+
+  @Test
+  public void testSpecialIntType() throws Exception {
+    testConversion(
+            "a,b",
+            "tinyint,smallint",
+            "message hive_schema {\n"
+            + "  optional int32 a (INT_8);\n"
+            + "  optional int32 b (INT_16);\n"
             + "}\n");
   }
 
