@@ -12002,6 +12002,10 @@ class GetOpenTxnsResponse {
    * @var int[]
    */
   public $open_txns = null;
+  /**
+   * @var int
+   */
+  public $min_open_txn = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -12018,6 +12022,10 @@ class GetOpenTxnsResponse {
             'type' => TType::I64,
             ),
           ),
+        3 => array(
+          'var' => 'min_open_txn',
+          'type' => TType::I64,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -12026,6 +12034,9 @@ class GetOpenTxnsResponse {
       }
       if (isset($vals['open_txns'])) {
         $this->open_txns = $vals['open_txns'];
+      }
+      if (isset($vals['min_open_txn'])) {
+        $this->min_open_txn = $vals['min_open_txn'];
       }
     }
   }
@@ -12077,6 +12088,13 @@ class GetOpenTxnsResponse {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 3:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->min_open_txn);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -12114,6 +12132,11 @@ class GetOpenTxnsResponse {
         }
         $output->writeSetEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->min_open_txn !== null) {
+      $xfer += $output->writeFieldBegin('min_open_txn', TType::I64, 3);
+      $xfer += $output->writeI64($this->min_open_txn);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

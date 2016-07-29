@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,31 +58,42 @@ public class TxnUtils {
       if (currentTxn > 0 && currentTxn == txn) continue;
       exceptions[i++] = txn;
     }
-    return new ValidReadTxnList(exceptions, highWater);
+    if(txns.isSetMin_open_txn()) {
+      return new ValidReadTxnList(exceptions, highWater, txns.getMin_open_txn());
+    }
+    else {
+      return new ValidReadTxnList(exceptions, highWater);
+    }
   }
 
   /**
    * Transform a {@link org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse} to a
    * {@link org.apache.hadoop.hive.common.ValidTxnList}.  This assumes that the caller intends to
    * compact the files, and thus treats only open transactions as invalid.  Additionally any
-   * txnId > highestOpenTxnId is also invalid.  This is avoid creating something like
+   * txnId > highestOpenTxnId is also invalid.  This is to avoid creating something like
    * delta_17_120 where txnId 80, for example, is still open.
    * @param txns txn list from the metastore
    * @return a valid txn list.
    */
   public static ValidTxnList createValidCompactTxnList(GetOpenTxnsInfoResponse txns) {
-    //todo: this could be more efficient: using select min(txn_id) from TXNS where txn_state=" +
-    // quoteChar(TXN_OPEN)  to compute compute HWM...
     long highWater = txns.getTxn_high_water_mark();
     long minOpenTxn = Long.MAX_VALUE;
     long[] exceptions = new long[txns.getOpen_txnsSize()];
     int i = 0;
     for (TxnInfo txn : txns.getOpen_txns()) {
-      if (txn.getState() == TxnState.OPEN) minOpenTxn = Math.min(minOpenTxn, txn.getId());
-      exceptions[i++] = txn.getId();//todo: only add Aborted
-    }//remove all exceptions < minOpenTxn
+      if (txn.getState() == TxnState.OPEN) {
+        minOpenTxn = Math.min(minOpenTxn, txn.getId());
+      }
+      else {
+        //only need aborted since we don't consider anything above minOpenTxn
+        exceptions[i++] = txn.getId();
+      }
+    }
+    if(i < exceptions.length) {
+      exceptions = Arrays.copyOf(exceptions, i);
+    }
     highWater = minOpenTxn == Long.MAX_VALUE ? highWater : minOpenTxn - 1;
-    return new ValidCompactorTxnList(exceptions, -1, highWater);
+    return new ValidCompactorTxnList(exceptions, highWater);
   }
 
   /**
