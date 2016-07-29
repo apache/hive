@@ -1616,10 +1616,12 @@ class GetOpenTxnsResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TXN_HIGH_WATER_MARK = 1
   OPEN_TXNS = 2
+  MIN_OPEN_TXN = 3
 
   FIELDS = {
     TXN_HIGH_WATER_MARK => {:type => ::Thrift::Types::I64, :name => 'txn_high_water_mark'},
-    OPEN_TXNS => {:type => ::Thrift::Types::SET, :name => 'open_txns', :element => {:type => ::Thrift::Types::I64}}
+    OPEN_TXNS => {:type => ::Thrift::Types::SET, :name => 'open_txns', :element => {:type => ::Thrift::Types::I64}},
+    MIN_OPEN_TXN => {:type => ::Thrift::Types::I64, :name => 'min_open_txn', :optional => true}
   }
 
   def struct_fields; FIELDS; end

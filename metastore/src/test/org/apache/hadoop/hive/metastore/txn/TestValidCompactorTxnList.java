@@ -26,66 +26,74 @@ public class TestValidCompactorTxnList {
 
   @Test
   public void minTxnHigh() {
-    ValidTxnList txns = new ValidCompactorTxnList(new long[]{3, 4}, 3, 5);
+    ValidTxnList txns = new ValidCompactorTxnList(new long[]{3, 4}, 2);
     ValidTxnList.RangeResponse rsp = txns.isTxnRangeValid(7, 9);
     Assert.assertEquals(ValidTxnList.RangeResponse.NONE, rsp);
   }
 
   @Test
   public void maxTxnLow() {
-    ValidTxnList txns = new ValidCompactorTxnList(new long[]{13, 14}, 13, 15);
+    ValidTxnList txns = new ValidCompactorTxnList(new long[]{13, 14}, 12);
     ValidTxnList.RangeResponse rsp = txns.isTxnRangeValid(7, 9);
     Assert.assertEquals(ValidTxnList.RangeResponse.ALL, rsp);
   }
 
   @Test
   public void minTxnHighNoExceptions() {
-    ValidTxnList txns = new ValidCompactorTxnList(new long[0], -1, 5);
+    ValidTxnList txns = new ValidCompactorTxnList(new long[0], 5);
     ValidTxnList.RangeResponse rsp = txns.isTxnRangeValid(7, 9);
     Assert.assertEquals(ValidTxnList.RangeResponse.NONE, rsp);
   }
 
   @Test
   public void maxTxnLowNoExceptions() {
-    ValidTxnList txns = new ValidCompactorTxnList(new long[0], -1, 15);
+    ValidTxnList txns = new ValidCompactorTxnList(new long[0], 15);
     ValidTxnList.RangeResponse rsp = txns.isTxnRangeValid(7, 9);
     Assert.assertEquals(ValidTxnList.RangeResponse.ALL, rsp);
   }
 
   @Test
   public void exceptionsAllBelow() {
-    ValidTxnList txns = new ValidCompactorTxnList(new long[]{3, 6}, 3, 15);
+    ValidTxnList txns = new ValidCompactorTxnList(new long[]{3, 6}, 3);
     ValidTxnList.RangeResponse rsp = txns.isTxnRangeValid(7, 9);
     Assert.assertEquals(ValidTxnList.RangeResponse.NONE, rsp);
   }
 
   @Test
   public void exceptionsInMidst() {
-    ValidTxnList txns = new ValidCompactorTxnList(new long[]{8}, 8, 15);
+    ValidTxnList txns = new ValidCompactorTxnList(new long[]{8}, 7);
     ValidTxnList.RangeResponse rsp = txns.isTxnRangeValid(7, 9);
+    Assert.assertEquals(ValidTxnList.RangeResponse.NONE, rsp);
+  }
+  @Test
+  public void exceptionsAbveHighWaterMark() {
+    ValidTxnList txns = new ValidCompactorTxnList(new long[]{8, 11, 17, 29}, 15);
+    Assert.assertArrayEquals("", new long[]{8, 11}, txns.getInvalidTransactions());
+    ValidTxnList.RangeResponse rsp = txns.isTxnRangeValid(7, 9);
+    Assert.assertEquals(ValidTxnList.RangeResponse.ALL, rsp);
+    rsp = txns.isTxnRangeValid(12, 16);
     Assert.assertEquals(ValidTxnList.RangeResponse.NONE, rsp);
   }
 
   @Test
   public void writeToString() {
-    ValidTxnList txns = new ValidCompactorTxnList(new long[]{9, 7, 10}, 9, 37);
-    Assert.assertEquals("37:9:7:9:10", txns.writeToString());
+    ValidTxnList txns = new ValidCompactorTxnList(new long[]{9, 7, 10, Long.MAX_VALUE}, 8);
+    Assert.assertEquals("8:" + Long.MAX_VALUE + ":7", txns.writeToString());
     txns = new ValidCompactorTxnList();
-    Assert.assertEquals(Long.toString(Long.MAX_VALUE) + ":-1:", txns.writeToString());
-    txns = new ValidCompactorTxnList(new long[0], -1, 23);
-    Assert.assertEquals("23:-1:", txns.writeToString());
+    Assert.assertEquals(Long.toString(Long.MAX_VALUE) + ":" + Long.MAX_VALUE + ":", txns.writeToString());
+    txns = new ValidCompactorTxnList(new long[0], 23);
+    Assert.assertEquals("23:" + Long.MAX_VALUE + ":", txns.writeToString());
   }
 
   @Test
   public void readFromString() {
-    ValidCompactorTxnList txns = new ValidCompactorTxnList("37:9:7:9:10");
+    ValidCompactorTxnList txns = new ValidCompactorTxnList("37:" + Long.MAX_VALUE + ":7:9:10");
     Assert.assertEquals(37L, txns.getHighWatermark());
-    Assert.assertEquals(9L, txns.getMinOpenTxn());
+    Assert.assertEquals(Long.MAX_VALUE, txns.getMinOpenTxn());
     Assert.assertArrayEquals(new long[]{7L, 9L, 10L}, txns.getInvalidTransactions());
-    txns = new ValidCompactorTxnList("21:-1:");
+    txns = new ValidCompactorTxnList("21:" + Long.MAX_VALUE + ":");
     Assert.assertEquals(21L, txns.getHighWatermark());
-    Assert.assertEquals(-1L, txns.getMinOpenTxn());
+    Assert.assertEquals(Long.MAX_VALUE, txns.getMinOpenTxn());
     Assert.assertEquals(0, txns.getInvalidTransactions().length);
-
   }
 }

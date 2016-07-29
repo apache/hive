@@ -1202,6 +1202,22 @@ public class TestTxnCommands2 {
   }
 
   /**
+   * make sure Aborted txns don't red-flag a base_xxxx (HIVE-14350)
+   */
+  @Test
+  public void testNoHistory() throws Exception {
+    int[][] tableData = {{1,2},{3,4}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData));
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData));
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+    
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    runCleaner(hiveConf);
+    runStatementOnDriver("select count(*) from " + Table.ACIDTBL);
+  }
+  /**
    * takes raw data and turns it into a string as if from Driver.getResults()
    * sorts rows in dictionary order
    */

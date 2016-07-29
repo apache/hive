@@ -643,7 +643,7 @@ public class AcidUtils {
       //By definition there are no open txns with id < 1.
       return true;
     }
-    return ValidTxnList.RangeResponse.ALL == txnList.isTxnRangeValid(1, baseTxnId);
+    return txnList.isValidBase(baseTxnId);
   }
  
   /**

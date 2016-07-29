@@ -18,28 +18,43 @@
 
 package org.apache.hadoop.hive.common;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import java.util.Arrays;
 
 /**
- * An implmentation of {@link org.apache.hadoop.hive.common.ValidTxnList} for use by readers.
+ * An implementation of {@link org.apache.hadoop.hive.common.ValidTxnList} for use by readers.
  * This class will view a transaction as valid only if it is committed.  Both open and aborted
  * transactions will be seen as invalid.
  */
 public class ValidReadTxnList implements ValidTxnList {
 
   protected long[] exceptions;
+  //default value means there are no open txn in the snapshot
+  private long minOpenTxn = Long.MAX_VALUE;
   protected long highWatermark;
 
   public ValidReadTxnList() {
-    this(new long[0], Long.MAX_VALUE);
+    this(new long[0], Long.MAX_VALUE, Long.MAX_VALUE);
   }
 
+  /**
+   * Used if there are no open transactions in the snapshot
+   */
   public ValidReadTxnList(long[] exceptions, long highWatermark) {
+    this(exceptions, highWatermark, Long.MAX_VALUE);
+  }
+  public ValidReadTxnList(long[] exceptions, long highWatermark, long minOpenTxn) {
     if (exceptions.length == 0) {
       this.exceptions = exceptions;
     } else {
       this.exceptions = exceptions.clone();
       Arrays.sort(this.exceptions);
+      this.minOpenTxn = minOpenTxn;
+      if(this.exceptions[0] <= 0) {
+        //should never happen of course
+        throw new IllegalArgumentException("Invalid txnid: " + this.exceptions[0] + " found");
+      }
     }
     this.highWatermark = highWatermark;
   }
@@ -56,6 +71,14 @@ public class ValidReadTxnList implements ValidTxnList {
     return Arrays.binarySearch(exceptions, txnid) < 0;
   }
 
+  /**
+   * We cannot use a base file if its range contains an open txn.
+   * @param txnid from base_xxxx
+   */
+  @Override
+  public boolean isValidBase(long txnid) {
+    return minOpenTxn > txnid && txnid <= highWatermark;
+  }
   @Override
   public RangeResponse isTxnRangeValid(long minTxnId, long maxTxnId) {
     // check the easy cases first
@@ -92,6 +115,8 @@ public class ValidReadTxnList implements ValidTxnList {
   public String writeToString() {
     StringBuilder buf = new StringBuilder();
     buf.append(highWatermark);
+    buf.append(':');
+    buf.append(minOpenTxn);
     if (exceptions.length == 0) {
       buf.append(':');
     } else {
@@ -111,9 +136,10 @@ public class ValidReadTxnList implements ValidTxnList {
     } else {
       String[] values = src.split(":");
       highWatermark = Long.parseLong(values[0]);
-      exceptions = new long[values.length - 1];
-      for(int i = 1; i < values.length; ++i) {
-        exceptions[i-1] = Long.parseLong(values[i]);
+      minOpenTxn = Long.parseLong(values[1]);
+      exceptions = new long[values.length - 2];
+      for(int i = 2; i < values.length; ++i) {
+        exceptions[i-2] = Long.parseLong(values[i]);
       }
     }
   }
@@ -126,6 +152,10 @@ public class ValidReadTxnList implements ValidTxnList {
   @Override
   public long[] getInvalidTransactions() {
     return exceptions;
+  }
+  @VisibleForTesting
+  public long getMinOpenTxn() {
+    return minOpenTxn;
   }
 }
 

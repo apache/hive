@@ -10332,6 +10332,11 @@ void GetOpenTxnsResponse::__set_open_txns(const std::set<int64_t> & val) {
   this->open_txns = val;
 }
 
+void GetOpenTxnsResponse::__set_min_open_txn(const int64_t val) {
+  this->min_open_txn = val;
+__isset.min_open_txn = true;
+}
+
 uint32_t GetOpenTxnsResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -10384,6 +10389,14 @@ uint32_t GetOpenTxnsResponse::read(::apache::thrift::protocol::TProtocol* iprot)
           xfer += iprot->skip(ftype);
         }
         break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->min_open_txn);
+          this->__isset.min_open_txn = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -10421,6 +10434,11 @@ uint32_t GetOpenTxnsResponse::write(::apache::thrift::protocol::TProtocol* oprot
   }
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.min_open_txn) {
+    xfer += oprot->writeFieldBegin("min_open_txn", ::apache::thrift::protocol::T_I64, 3);
+    xfer += oprot->writeI64(this->min_open_txn);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -10430,15 +10448,21 @@ void swap(GetOpenTxnsResponse &a, GetOpenTxnsResponse &b) {
   using ::std::swap;
   swap(a.txn_high_water_mark, b.txn_high_water_mark);
   swap(a.open_txns, b.open_txns);
+  swap(a.min_open_txn, b.min_open_txn);
+  swap(a.__isset, b.__isset);
 }
 
 GetOpenTxnsResponse::GetOpenTxnsResponse(const GetOpenTxnsResponse& other482) {
   txn_high_water_mark = other482.txn_high_water_mark;
   open_txns = other482.open_txns;
+  min_open_txn = other482.min_open_txn;
+  __isset = other482.__isset;
 }
 GetOpenTxnsResponse& GetOpenTxnsResponse::operator=(const GetOpenTxnsResponse& other483) {
   txn_high_water_mark = other483.txn_high_water_mark;
   open_txns = other483.open_txns;
+  min_open_txn = other483.min_open_txn;
+  __isset = other483.__isset;
   return *this;
 }
 void GetOpenTxnsResponse::printTo(std::ostream& out) const {
@@ -10446,6 +10470,7 @@ void GetOpenTxnsResponse::printTo(std::ostream& out) const {
   out << "GetOpenTxnsResponse(";
   out << "txn_high_water_mark=" << to_string(txn_high_water_mark);
   out << ", " << "open_txns=" << to_string(open_txns);
+  out << ", " << "min_open_txn="; (__isset.min_open_txn ? (out << to_string(min_open_txn)) : (out << "<null>"));
   out << ")";
 }
 

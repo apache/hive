@@ -7172,17 +7172,20 @@ class GetOpenTxnsResponse:
   Attributes:
    - txn_high_water_mark
    - open_txns
+   - min_open_txn
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.I64, 'txn_high_water_mark', None, None, ), # 1
     (2, TType.SET, 'open_txns', (TType.I64,None), None, ), # 2
+    (3, TType.I64, 'min_open_txn', None, None, ), # 3
   )
 
-  def __init__(self, txn_high_water_mark=None, open_txns=None,):
+  def __init__(self, txn_high_water_mark=None, open_txns=None, min_open_txn=None,):
     self.txn_high_water_mark = txn_high_water_mark
     self.open_txns = open_txns
+    self.min_open_txn = min_open_txn
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -7208,6 +7211,11 @@ class GetOpenTxnsResponse:
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I64:
+          self.min_open_txn = iprot.readI64()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -7229,6 +7237,10 @@ class GetOpenTxnsResponse:
         oprot.writeI64(iter391)
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
+    if self.min_open_txn is not None:
+      oprot.writeFieldBegin('min_open_txn', TType.I64, 3)
+      oprot.writeI64(self.min_open_txn)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -7244,6 +7256,7 @@ class GetOpenTxnsResponse:
     value = 17
     value = (value * 31) ^ hash(self.txn_high_water_mark)
     value = (value * 31) ^ hash(self.open_txns)
+    value = (value * 31) ^ hash(self.min_open_txn)
     return value
 
   def __repr__(self):
