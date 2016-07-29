@@ -18,94 +18,61 @@
 
 package org.apache.hadoop.hive.common;
 
-import com.google.common.annotations.VisibleForTesting;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
-
 import java.util.Arrays;
 
 /**
- * And implementation of {@link org.apache.hadoop.hive.common.ValidTxnList} for use by the compactor.
- * For the purposes of {@link #isTxnRangeValid} this class will view a transaction as valid if it
- * is committed or aborted.  Additionally it will return none if there are any open transactions
- * below the max transaction given, since we don't want to compact above open transactions.  For
- * {@link #isTxnValid} it will still view a transaction as valid only if it is committed.  These
- * produce the logic we need to assure that the compactor only sees records less than the lowest
+ * An implementation of {@link org.apache.hadoop.hive.common.ValidTxnList} for use by the compactor.
+ * 
+ * Compaction should only include txns up to smallest open txn (exclussive).
+ * There may be aborted txns in the snapshot represented by this ValidCompactorTxnList.
+ * Thus {@link #isTxnRangeValid(long, long)} returns NONE for any range that inluces any unresolved
+ * transactions.  Any txn above {@code highWatermark} is unresolved.
+ * These produce the logic we need to assure that the compactor only sees records less than the lowest
  * open transaction when choosing which files to compact, but that it still ignores aborted
  * records when compacting.
+ * 
+ * See {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#createValidCompactTxnList()} for proper
+ * way to construct this.
  */
 public class ValidCompactorTxnList extends ValidReadTxnList {
-  //TODO: refactor this - minOpenTxn is not needed if we set
-  // highWatermark = Math.min(highWaterMark, minOpenTxn) (assuming there are open txns)
-
-  // The minimum open transaction id
-  private long minOpenTxn;
-
   public ValidCompactorTxnList() {
     super();
-    minOpenTxn = -1;
   }
-
   /**
-   *
-   * @param exceptions list of all open and aborted transactions
-   * @param minOpen lowest open transaction
-   * @param highWatermark highest committed transaction
+   * @param abortedTxnList list of all aborted transactions
+   * @param highWatermark highest committed transaction to be considered for compaction,
+   *                      equivalently (lowest_open_txn - 1).
    */
-  public ValidCompactorTxnList(long[] exceptions, long minOpen, long highWatermark) {
-    super(exceptions, highWatermark);
-    minOpenTxn = minOpen;
+  public ValidCompactorTxnList(long[] abortedTxnList, long highWatermark) {
+    super(abortedTxnList, highWatermark);
+    if(this.exceptions.length <= 0) {
+      return;
+    }
+    //now that exceptions (aka abortedTxnList) is sorted
+    int idx = Arrays.binarySearch(this.exceptions, highWatermark);
+    int lastElementPos;
+    if(idx < 0) {
+      int insertionPoint = -idx - 1 ;//see Arrays.binarySearch() JavaDoc
+      lastElementPos = insertionPoint - 1;
+    }
+    else {
+      lastElementPos = idx;
+    }
+    /**
+     * ensure that we throw out any exceptions above highWatermark to make
+     * {@link #isTxnValid(long)} faster 
+     */
+    this.exceptions = Arrays.copyOf(this.exceptions, lastElementPos + 1);
   }
-
   public ValidCompactorTxnList(String value) {
     super(value);
   }
-
+  /**
+   * Returns {@link org.apache.hadoop.hive.common.ValidTxnList.RangeResponse.ALL} if all txns in
+   * the range are resolved and RangeResponse.NONE otherwise
+   */
   @Override
   public RangeResponse isTxnRangeValid(long minTxnId, long maxTxnId) {
-    if (highWatermark < minTxnId) {
-      return RangeResponse.NONE;
-    } else if (minOpenTxn < 0) {
-      return highWatermark >= maxTxnId ? RangeResponse.ALL : RangeResponse.NONE;
-    } else {
-      return minOpenTxn > maxTxnId ? RangeResponse.ALL : RangeResponse.NONE;
-    }
-  }
-
-  @Override
-  public String writeToString() {
-    StringBuilder buf = new StringBuilder();
-    buf.append(highWatermark);
-    buf.append(':');
-    buf.append(minOpenTxn);
-    if (exceptions.length == 0) {
-      buf.append(':');
-    } else {
-      for(long except: exceptions) {
-        buf.append(':');
-        buf.append(except);
-      }
-    }
-    return buf.toString();
-  }
-
-  @Override
-  public void readFromString(String src) {
-    if (src == null || src.length() == 0) {
-      highWatermark = Long.MAX_VALUE;
-      exceptions = new long[0];
-    } else {
-      String[] values = src.split(":");
-      highWatermark = Long.parseLong(values[0]);
-      minOpenTxn = Long.parseLong(values[1]);
-      exceptions = new long[values.length - 2];
-      for(int i = 2; i < values.length; ++i) {
-        exceptions[i-2] = Long.parseLong(values[i]);
-      }
-    }
-  }
-
-  @VisibleForTesting
-  public long getMinOpenTxn() {
-    return minOpenTxn;
+    return highWatermark >= maxTxnId ? RangeResponse.ALL : RangeResponse.NONE;
   }
 }

@@ -360,15 +360,25 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         close(rs);
         Set<Long> openList = new HashSet<Long>();
         //need the WHERE clause below to ensure consistent results with READ_COMMITTED
-        s = "select txn_id from TXNS where txn_id <= " + hwm;
+        s = "select txn_id, txn_state from TXNS where txn_id <= " + hwm;
         LOG.debug("Going to execute query<" + s + ">");
         rs = stmt.executeQuery(s);
+        long minOpenTxn = Long.MAX_VALUE;
         while (rs.next()) {
-          openList.add(rs.getLong(1));
+          long txnId = rs.getLong(1);
+          openList.add(txnId);
+          char c = rs.getString(2).charAt(0);
+          if(c == TXN_OPEN) {
+            minOpenTxn = Math.min(minOpenTxn, txnId);
+          }
         }
         LOG.debug("Going to rollback");
         dbConn.rollback();
-        return new GetOpenTxnsResponse(hwm, openList);
+        GetOpenTxnsResponse otr = new GetOpenTxnsResponse(hwm, openList);
+        if(minOpenTxn < Long.MAX_VALUE) {
+          otr.setMin_open_txn(minOpenTxn);
+        }
+        return otr;
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);

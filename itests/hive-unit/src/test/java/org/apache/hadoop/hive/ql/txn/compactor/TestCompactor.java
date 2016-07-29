@@ -1038,6 +1038,10 @@ public class TestCompactor {
       public long[] getInvalidTransactions() {
         return new long[0];
       }
+      @Override
+      public boolean isValidBase(long txnid) {
+        return true;
+      }
     };
 
     OrcInputFormat aif = new OrcInputFormat();

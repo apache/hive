@@ -4881,28 +4881,41 @@ inline std::ostream& operator<<(std::ostream& out, const GetOpenTxnsInfoResponse
   return out;
 }
 
+typedef struct _GetOpenTxnsResponse__isset {
+  _GetOpenTxnsResponse__isset() : min_open_txn(false) {}
+  bool min_open_txn :1;
+} _GetOpenTxnsResponse__isset;
 
 class GetOpenTxnsResponse {
  public:
 
   GetOpenTxnsResponse(const GetOpenTxnsResponse&);
   GetOpenTxnsResponse& operator=(const GetOpenTxnsResponse&);
-  GetOpenTxnsResponse() : txn_high_water_mark(0) {
+  GetOpenTxnsResponse() : txn_high_water_mark(0), min_open_txn(0) {
   }
 
   virtual ~GetOpenTxnsResponse() throw();
   int64_t txn_high_water_mark;
   std::set<int64_t>  open_txns;
+  int64_t min_open_txn;
+
+  _GetOpenTxnsResponse__isset __isset;
 
   void __set_txn_high_water_mark(const int64_t val);
 
   void __set_open_txns(const std::set<int64_t> & val);
+
+  void __set_min_open_txn(const int64_t val);
 
   bool operator == (const GetOpenTxnsResponse & rhs) const
   {
     if (!(txn_high_water_mark == rhs.txn_high_water_mark))
       return false;
     if (!(open_txns == rhs.open_txns))
+      return false;
+    if (__isset.min_open_txn != rhs.__isset.min_open_txn)
+      return false;
+    else if (__isset.min_open_txn && !(min_open_txn == rhs.min_open_txn))
       return false;
     return true;
   }

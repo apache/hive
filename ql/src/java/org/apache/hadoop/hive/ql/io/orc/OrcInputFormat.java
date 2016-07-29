@@ -600,9 +600,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           footerCache = useExternalCache ? metaCache : localCache;
         }
       }
-      String value = conf.get(ValidTxnList.VALID_TXNS_KEY,
-                              Long.MAX_VALUE + ":");
-      transactionList = new ValidReadTxnList(value);
+      String value = conf.get(ValidTxnList.VALID_TXNS_KEY);
+      transactionList = value == null ? new ValidReadTxnList() : new ValidReadTxnList(value);
     }
 
     @VisibleForTesting
@@ -1802,9 +1801,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       bucket = (int) split.getStart();
       reader = null;
     }
-    String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY,
-                                Long.MAX_VALUE + ":");
-    ValidTxnList validTxnList = new ValidReadTxnList(txnString);
+    String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+    ValidTxnList validTxnList = txnString == null ? new ValidReadTxnList() :
+      new ValidReadTxnList(txnString);
     final OrcRawRecordMerger records =
         new OrcRawRecordMerger(conf, true, reader, split.isOriginal(), bucket,
             validTxnList, readOptions, deltas);

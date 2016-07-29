@@ -311,7 +311,7 @@ public class TestOrcRawRecordMerger {
   }
 
   private static ValidTxnList createMaximalTxnList() {
-    return new ValidReadTxnList(Long.MAX_VALUE + ":");
+    return new ValidReadTxnList();
   }
 
   @Test
@@ -517,7 +517,7 @@ public class TestOrcRawRecordMerger {
         .maximumTransactionId(100).finalDestination(root);
     of.getRecordUpdater(root, options).close(false);
 
-    ValidTxnList txnList = new ValidReadTxnList("200:");
+    ValidTxnList txnList = new ValidReadTxnList("200:" + Long.MAX_VALUE);
     AcidUtils.Directory directory = AcidUtils.getAcidState(root, conf, txnList);
 
     Path basePath = AcidUtils.createBucketFile(directory.getBaseDirectory(),
@@ -585,7 +585,7 @@ public class TestOrcRawRecordMerger {
     ru.delete(200, new MyRow("", 8, 0, BUCKET));
     ru.close(false);
 
-    ValidTxnList txnList = new ValidReadTxnList("200:");
+    ValidTxnList txnList = new ValidReadTxnList("200:" + Long.MAX_VALUE);
     AcidUtils.Directory directory = AcidUtils.getAcidState(root, conf, txnList);
 
     assertEquals(new Path(root, "base_0000100"), directory.getBaseDirectory());
@@ -775,7 +775,7 @@ public class TestOrcRawRecordMerger {
     merger.close();
 
     // try ignoring the 200 transaction and make sure it works still
-    ValidTxnList txns = new ValidReadTxnList("2000:200");
+    ValidTxnList txns = new ValidReadTxnList("2000:200:200");
     merger =
         new OrcRawRecordMerger(conf, true, baseReader, false, BUCKET,
             txns, new Reader.Options(),
