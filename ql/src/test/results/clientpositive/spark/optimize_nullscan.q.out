@@ -1734,7 +1734,7 @@ STAGE PLANS:
                   Filter Operator
                     isSamplingPred: false
                     predicate: false (type: boolean)
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count(1)
                       mode: hash

@@ -76,11 +76,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -94,11 +94,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -112,11 +112,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -130,11 +130,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -148,11 +148,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -166,11 +166,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -184,11 +184,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -202,11 +202,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -220,11 +220,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -238,11 +238,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -256,11 +256,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -274,11 +274,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -292,11 +292,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -310,11 +310,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -328,11 +328,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -346,11 +346,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -364,11 +364,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -382,11 +382,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -400,11 +400,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -418,11 +418,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -436,11 +436,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -454,11 +454,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -472,11 +472,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -490,11 +490,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash
@@ -508,11 +508,11 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 12500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 12500 Data size: 100000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     mode: hash

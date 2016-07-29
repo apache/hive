@@ -133,11 +133,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc
-          Statistics: Num rows: 3 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 372 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), '__HIVE_DEFAULT_PARTITION__' (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 3 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 372 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: -- basicStatState: PARTIAL colStatState: NONE
@@ -179,11 +179,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc
-          Statistics: Num rows: 7 Data size: 678 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 7 Data size: 734 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), '2001' (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 7 Data size: 678 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 7 Data size: 734 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: -- partition level analyze statistics for all partitions
@@ -216,11 +216,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc
-          Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 104 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), '__HIVE_DEFAULT_PARTITION__' (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: NONE
@@ -325,11 +325,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc
-          Statistics: Num rows: 8 Data size: 774 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 8 Data size: 838 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: zip (type: bigint)
             outputColumnNames: _col0
-            Statistics: Num rows: 8 Data size: 774 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 8 Data size: 838 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: PARTIAL
@@ -442,11 +442,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc
-          Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 104 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: state (type: string), locid (type: int)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: PARTIAL

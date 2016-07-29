@@ -197,7 +197,7 @@ public class StatsUtils {
       if (fetchColStats) {
         colStats = getTableColumnStats(table, schema, neededColumns);
         long betterDS = getDataSizeFromColumnStats(nr, colStats);
-        ds = betterDS < 1 ? ds : betterDS;
+        ds = (betterDS < 1 || colStats.isEmpty()) ? ds : betterDS;
       }
        stats.setDataSize(ds);
       // infer if any column can be primary key based on column statistics
@@ -298,7 +298,7 @@ public class StatsUtils {
           addParitionColumnStats(conf, neededColumns, referencedColumns, schema, table, partList,
               columnStats);
           long betterDS = getDataSizeFromColumnStats(nr, columnStats);
-          stats.setDataSize(betterDS < 1 ? ds : betterDS);
+          stats.setDataSize((betterDS < 1 || columnStats.isEmpty()) ? ds : betterDS);
           // infer if any column can be primary key based on column statistics
           inferAndSetPrimaryKey(stats.getNumRows(), columnStats);
 
@@ -1434,8 +1434,15 @@ public class StatsUtils {
   public static long getDataSizeFromColumnStats(long numRows, List<ColStatistics> colStats) {
     long result = 0;
 
-    if (numRows <= 0 || colStats == null || colStats.isEmpty()) {
+    if (numRows <= 0 || colStats == null) {
       return result;
+    }
+
+    if (colStats.isEmpty()) {
+      // this may happen if we are not projecting any column from current operator
+      // think count(*) where we are projecting rows without any columns
+      // in such a case we estimate empty row to be of size of empty java object.
+      return numRows * JavaDataModel.JAVA64_REF;
     }
 
     for (ColStatistics cs : colStats) {

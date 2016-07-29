@@ -158,7 +158,7 @@ STAGE PLANS:
                         1 
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 225 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                      Statistics: Num rows: 225 Data size: 1800 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count(1)
                         mode: hash
