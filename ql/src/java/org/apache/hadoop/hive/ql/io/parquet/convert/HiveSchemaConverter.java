@@ -62,10 +62,14 @@ public class HiveSchemaConverter {
       if (typeInfo.equals(TypeInfoFactory.stringTypeInfo)) {
         return Types.primitive(PrimitiveTypeName.BINARY, repetition).as(OriginalType.UTF8)
           .named(name);
-      } else if (typeInfo.equals(TypeInfoFactory.intTypeInfo) ||
-          typeInfo.equals(TypeInfoFactory.shortTypeInfo) ||
-          typeInfo.equals(TypeInfoFactory.byteTypeInfo)) {
+      } else if (typeInfo.equals(TypeInfoFactory.intTypeInfo)) {
         return Types.primitive(PrimitiveTypeName.INT32, repetition).named(name);
+      } else if (typeInfo.equals(TypeInfoFactory.shortTypeInfo)) {
+        return Types.primitive(PrimitiveTypeName.INT32, repetition)
+            .as(OriginalType.INT_16).named(name);
+      } else if (typeInfo.equals(TypeInfoFactory.byteTypeInfo)) {
+        return Types.primitive(PrimitiveTypeName.INT32, repetition)
+            .as(OriginalType.INT_8).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.longTypeInfo)) {
         return Types.primitive(PrimitiveTypeName.INT64, repetition).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.doubleTypeInfo)) {
