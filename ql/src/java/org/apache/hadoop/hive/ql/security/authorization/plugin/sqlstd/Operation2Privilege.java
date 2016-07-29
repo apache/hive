@@ -426,8 +426,11 @@ public class Operation2Privilege {
       (null, null));
     op2Priv.put(HiveOperationType.SET_AUTOCOMMIT, PrivRequirement.newIOPrivRequirement
       (null, null));
-    op2Priv.put(HiveOperationType.ALTERTABLE_EXCHANGEPARTITION,
-      PrivRequirement.newIOPrivRequirement(null, null));
+    // For alter table exchange partition, we need select & delete on input & insert on output
+    op2Priv.put(
+        HiveOperationType.ALTERTABLE_EXCHANGEPARTITION,
+        PrivRequirement.newIOPrivRequirement(
+            arr(SQLPrivTypeGrant.SELECT_NOGRANT, SQLPrivTypeGrant.DELETE_NOGRANT), INS_NOGRANT_AR));
     op2Priv.put(HiveOperationType.ABORT_TRANSACTIONS, PrivRequirement.newIOPrivRequirement
       (null, null));
   }
