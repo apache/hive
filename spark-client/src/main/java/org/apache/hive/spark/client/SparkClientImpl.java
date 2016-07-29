@@ -17,6 +17,8 @@
 
 package org.apache.hive.spark.client;
 
+import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHENTICATION;
+
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
@@ -326,7 +328,7 @@ class SparkClientImpl implements SparkClient {
 
       List<String> argv = Lists.newArrayList();
 
-      if (hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION).equalsIgnoreCase("kerberos")) {
+      if ("kerberos".equalsIgnoreCase(hiveConf.get(HADOOP_SECURITY_AUTHENTICATION))) {
           argv.add("kinit");
           String principal = SecurityUtil.getServerPrincipal(hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
               "0.0.0.0");
