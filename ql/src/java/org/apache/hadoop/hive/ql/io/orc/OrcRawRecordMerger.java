@@ -146,7 +146,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     private boolean isSameRow(ReaderKey other) {
       return compareRow(other) == 0 && currentTransactionId == other.currentTransactionId;
     }
-    
+
     public long getCurrentTransactionId() {
       return currentTransactionId;
     }
@@ -285,7 +285,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           ((LongWritable) next.getFieldValue(OrcRecordUpdater.CURRENT_TRANSACTION))
               .set(0);
           ((LongWritable) next.getFieldValue(OrcRecordUpdater.ROW_ID))
-              .set(0);
+              .set(nextRowId);
           nextRecord.setFieldValue(OrcRecordUpdater.ROW,
               recordReader.next(OrcRecordUpdater.getRow(next)));
         }
