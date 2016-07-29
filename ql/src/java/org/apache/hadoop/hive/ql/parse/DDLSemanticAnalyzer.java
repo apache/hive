@@ -761,7 +761,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       alterTableExchangePartition), conf));
 
     inputs.add(new ReadEntity(sourceTable));
-    outputs.add(new WriteEntity(sourceTable, WriteType.DDL_SHARED));
     outputs.add(new WriteEntity(destTable, WriteType.DDL_SHARED));
   }
 
