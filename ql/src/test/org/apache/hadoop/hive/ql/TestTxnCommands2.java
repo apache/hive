@@ -18,6 +18,17 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.io.File;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -36,9 +47,9 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
-import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.AcidCompactionHistoryService;
@@ -53,18 +64,6 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * TODO: this should be merged with TestTxnCommands once that is checked in
@@ -269,6 +268,35 @@ public class TestTxnCommands2 {
     List<String> rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
     runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(2,3)");
     List<String> rs1 = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
+  }
+
+  @Test
+  public void testOriginalFileReaderWhenNonAcidConvertedToAcid() throws Exception {
+    // 1. Insert five rows to Non-ACID table.
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(1,2),(3,4),(5,6),(7,8),(9,10)");
+
+    // 2. Convert NONACIDORCTBL to ACID table.
+    runStatementOnDriver("alter table " + Table.NONACIDORCTBL + " SET TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("update " + Table.NONACIDORCTBL + " set b = b*2 where b in (4,10)");
+    runStatementOnDriver("delete from " + Table.NONACIDORCTBL + " where a = 7");
+
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL + " order by a,b");
+    int[][] resultData = new int[][] {{1,2}, {3,8}, {5,6}, {9,20}};
+    Assert.assertEquals(stringifyValues(resultData), rs);
+    // 3. Perform a major compaction.
+    runStatementOnDriver("alter table "+ Table.NONACIDORCTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
+    Assert.assertEquals("Unexpected 0 compaction state", TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
+
+    // 3. Perform a delete.
+    runStatementOnDriver("delete from " + Table.NONACIDORCTBL + " where a = 1");
+
+    rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL + " order by a,b");
+    resultData = new int[][] {{3,8}, {5,6}, {9,20}};
+    Assert.assertEquals(stringifyValues(resultData), rs);
   }
 
   /**
