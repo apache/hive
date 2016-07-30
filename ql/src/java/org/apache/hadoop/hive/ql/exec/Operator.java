@@ -701,7 +701,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
         LOG.debug(id + " Close done");
       }
     } catch (HiveException e) {
-      e.printStackTrace();
+      LOG.warn("Caught exception while closing operator: " + e.getMessage(), e);
       throw e;
     }
   }
