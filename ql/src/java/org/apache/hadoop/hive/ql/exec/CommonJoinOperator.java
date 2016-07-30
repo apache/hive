@@ -682,12 +682,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   }
 
   protected void checkAndGenObject() throws HiveException {
-    if (state == State.CLOSE) {
-      LOG.warn("checkAndGenObject is called after operator " +
-          id + " " + getName() + " closed");
-      return;
-    }
-
     if (condn[0].getType() == JoinDesc.UNIQUE_JOIN) {
 
       // Check if results need to be emitted.
