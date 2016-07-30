@@ -1,0 +1,70 @@
+PREHOOK: query: create table unique_1( 
+i int, 
+d string, 
+s string) 
+row format delimited 
+fields terminated by '|' 
+stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unique_1
+POSTHOOK: query: create table unique_1( 
+i int, 
+d string, 
+s string) 
+row format delimited 
+fields terminated by '|' 
+stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unique_1
+PREHOOK: query: load data local inpath '../../data/files/unique_1.txt' into table unique_1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@unique_1
+POSTHOOK: query: load data local inpath '../../data/files/unique_1.txt' into table unique_1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@unique_1
+PREHOOK: query: create table test1 stored as orc as select * from unique_1 order by d
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@unique_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test1
+POSTHOOK: query: create table test1 stored as orc as select * from unique_1 order by d
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@unique_1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test1
+POSTHOOK: Lineage: test1.d SIMPLE [(unique_1)unique_1.FieldSchema(name:d, type:string, comment:null), ]
+POSTHOOK: Lineage: test1.i SIMPLE [(unique_1)unique_1.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test1.s SIMPLE [(unique_1)unique_1.FieldSchema(name:s, type:string, comment:null), ]
+unique_1.i	unique_1.d	unique_1.s
+PREHOOK: query: alter table test1 change column d d double
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test1
+PREHOOK: Output: default@test1
+PREHOOK: query: select s from test1 where d = -4996703.42
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+#### A masked pattern was here ####
+s
+luke quirinius
+PREHOOK: query: select s from test1 where d = -4996703.42
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+#### A masked pattern was here ####
+s
+luke quirinius
+PREHOOK: query: select s from test1 where d = -4996703.42
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+#### A masked pattern was here ####
+s
+luke quirinius
+PREHOOK: query: select s from test1 where d = -4996703.42
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+#### A masked pattern was here ####
+s
+luke quirinius

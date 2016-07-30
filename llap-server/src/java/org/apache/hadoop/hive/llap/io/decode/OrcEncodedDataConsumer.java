@@ -46,6 +46,8 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedTreeReaderFactory.Settabl
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
+import org.apache.orc.OrcUtils;
+import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.TreeReaderFactory;
 import org.apache.hadoop.hive.ql.io.orc.WriterImpl;
 import org.apache.orc.OrcProto;
@@ -59,6 +61,7 @@ public class OrcEncodedDataConsumer
   private OrcStripeMetadata[] stripes;
   private final boolean skipCorrupt; // TODO: get rid of this
   private final QueryFragmentCounters counters;
+  private boolean[] includedColumns;
 
   public OrcEncodedDataConsumer(
       Consumer<ColumnVectorBatch> consumer, int colCount, boolean skipCorrupt,
@@ -227,5 +230,19 @@ public class OrcEncodedDataConsumer
 
   private long getRowCount(OrcProto.RowIndexEntry rowIndexEntry) {
     return rowIndexEntry.getStatistics().getNumberOfValues();
+  }
+
+  @Override
+  public TypeDescription getFileSchema() {
+    return OrcUtils.convertTypeFromProtobuf(fileMetadata.getTypes(), 0);
+  }
+
+  @Override
+  public boolean[] getIncludedColumns() {
+    return includedColumns;
+  }
+
+  public void setIncludedColumns(final boolean[] includedColumns) {
+    this.includedColumns = includedColumns;
   }
 }

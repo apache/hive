@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.llap.io.decode;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -64,7 +65,7 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
   public ReadPipeline createReadPipeline(
       Consumer<ColumnVectorBatch> consumer, FileSplit split,
       List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
-      QueryFragmentCounters counters) {
+      QueryFragmentCounters counters) throws IOException {
     cacheMetrics.incrCacheReadRequests();
     OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(consumer, columnIds.size(),
         _skipCorrupt, counters, ioMetrics);

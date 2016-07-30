@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.llap.io.decode;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
@@ -32,5 +33,5 @@ import org.apache.hadoop.mapred.FileSplit;
 public interface ColumnVectorProducer {
   ReadPipeline createReadPipeline(Consumer<ColumnVectorBatch> consumer, FileSplit split,
       List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
-      QueryFragmentCounters counters);
+      QueryFragmentCounters counters) throws IOException;
 }

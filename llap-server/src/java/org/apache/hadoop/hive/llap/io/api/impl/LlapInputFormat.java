@@ -20,11 +20,17 @@
 package org.apache.hadoop.hive.llap.io.api.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.counters.FragmentCountersMap;
@@ -43,7 +49,10 @@ import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileSplit;
@@ -53,6 +62,8 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.SchemaEvolution;
 import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +104,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       InputSplit split, JobConf job, Reporter reporter) throws IOException {
     boolean useLlapIo = true;
     if (split instanceof LlapAwareSplit) {
-      useLlapIo = ((LlapAwareSplit)split).canUseLlapIo();
+      useLlapIo = ((LlapAwareSplit) split).canUseLlapIo();
     }
 
     // validate for supported types. Until we fix HIVE-14089 we need this check.
@@ -103,10 +114,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
 
     if (!useLlapIo) {
       LlapIoImpl.LOG.warn("Not using LLAP IO for an unsupported split: " + split);
-      @SuppressWarnings("unchecked")
-      RecordReader<NullWritable, VectorizedRowBatch> rr =
-          sourceInputFormat.getRecordReader(split, job, reporter);
-      return rr;
+      return sourceInputFormat.getRecordReader(split, job, reporter);
     }
     boolean isVectorMode = Utilities.getUseVectorizedInputFileFormat(job);
     if (!isVectorMode) {
@@ -118,7 +126,13 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     try {
       List<Integer> includedCols = ColumnProjectionUtils.isReadAllColumns(job)
           ? null : ColumnProjectionUtils.getReadColumnIDs(job);
-      return new LlapRecordReader(job, fileSplit, includedCols, hostName);
+      LlapRecordReader rr = new LlapRecordReader(job, fileSplit, includedCols, hostName);
+
+      if (!rr.init()) {
+        return sourceInputFormat.getRecordReader(split, job, reporter);
+      }
+
+      return rr;
     } catch (Exception ex) {
       throw new IOException(ex);
     }
@@ -148,13 +162,18 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     /** Vector that is currently being processed by our user. */
     private boolean isDone = false;
     private final boolean isClosed = false;
-    private ConsumerFeedback<ColumnVectorBatch> feedback;
+    private final ConsumerFeedback<ColumnVectorBatch> feedback;
     private final QueryFragmentCounters counters;
     private long firstReturnTime;
 
-    public LlapRecordReader(
-        JobConf job, FileSplit split, List<Integer> includedCols, String hostName)
-            throws IOException {
+    private final JobConf jobConf;
+    private final TypeDescription fileSchema;
+    private final boolean[] includedColumns;
+    private final ReadPipeline rp;
+
+    public LlapRecordReader(JobConf job, FileSplit split, List<Integer> includedCols,
+        String hostName) throws IOException, HiveException {
+      this.jobConf = job;
       this.split = split;
       this.columnIds = includedCols;
       this.sarg = ConvertAstToSearchArg.createFromConf(job);
@@ -189,7 +208,33 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
         partitionValues = null;
       }
 
-      startRead();
+      // Create the consumer of encoded data; it will coordinate decoding to CVBs.
+      rp = cvp.createReadPipeline(this, split, columnIds, sarg, columnNames, counters);
+      feedback = rp;
+      fileSchema = rp.getFileSchema();
+      includedColumns = rp.getIncludedColumns();
+    }
+
+    /**
+     * Starts the data read pipeline
+     */
+    public boolean init() {
+      boolean isAcidScan = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
+      TypeDescription readerSchema = OrcInputFormat.getDesiredRowTypeDescr(jobConf, isAcidScan,
+          Integer.MAX_VALUE);
+      SchemaEvolution schemaEvolution = new SchemaEvolution(fileSchema, readerSchema,
+          includedColumns);
+      for (Integer colId : columnIds) {
+        if (!schemaEvolution.isPPDSafeConversion(colId)) {
+          LlapIoImpl.LOG.warn("Unsupported schema evolution! Disabling Llap IO for {}", split);
+          return false;
+        }
+      }
+
+      ListenableFuture<Void> future = executor.submit(rp.getReadCallable());
+      // TODO: we should NOT do this thing with handler. Reader needs to do cleanup in most cases.
+      Futures.addCallback(future, new UncaughtErrorHandler());
+      return true;
     }
 
     @Override
@@ -251,16 +296,6 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
         LlapIoImpl.LOG.error("Unhandled error from reader thread " + t.getMessage());
         setError(t);
       }
-    }
-
-    private void startRead() {
-      // Create the consumer of encoded data; it will coordinate decoding to CVBs.
-      ReadPipeline rp = cvp.createReadPipeline(
-          this, split, columnIds, sarg, columnNames, counters);
-      feedback = rp;
-      ListenableFuture<Void> future = executor.submit(rp.getReadCallable());
-      // TODO: we should NOT do this thing with handler. Reader needs to do cleanup in most cases.
-      Futures.addCallback(future, new UncaughtErrorHandler());
     }
 
     ColumnVectorBatch nextCvb() throws InterruptedException, IOException {

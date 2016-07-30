@@ -2164,12 +2164,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    * @param isAcidRead is this an acid format?
    * @param dataColumns the desired number of data columns for vectorized read
    * @return the desired schema or null if schema evolution isn't enabled
-   * @throws IOException
+   * @throws IllegalArgumentException
    */
   public static TypeDescription getDesiredRowTypeDescr(Configuration conf,
                                                        boolean isAcidRead,
-                                                       int dataColumns
-                                                       ) throws IOException {
+                                                       int dataColumns) {
 
     String columnNameProperty = null;
     String columnTypeProperty = null;
@@ -2200,7 +2199,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           }
         }
       } else if (isAcidRead) {
-        throw new IOException(ErrorMsg.SCHEMA_REQUIRED_TO_READ_ACID_TABLES.getErrorCodedMsg());
+        throw new IllegalArgumentException(ErrorMsg.SCHEMA_REQUIRED_TO_READ_ACID_TABLES.getErrorCodedMsg());
       }
     }
 
