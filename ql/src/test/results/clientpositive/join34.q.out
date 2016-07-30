@@ -129,7 +129,7 @@ STAGE PLANS:
                         GatherStats: true
                         MultiFileSpray: false
           TableScan
-            alias: x
+            alias: x1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -280,7 +280,7 @@ STAGE PLANS:
               name: default.src1
             name: default.src1
       Truncated Path -> Alias:
-        /src [$hdt$_0-subquery1:$hdt$_0-subquery1:x, $hdt$_0-subquery2:$hdt$_0-subquery2:x]
+        /src [$hdt$_0-subquery1:$hdt$_0-subquery1:x, $hdt$_0-subquery2:$hdt$_0-subquery2:x1]
 
   Stage: Stage-0
     Move Operator
@@ -338,7 +338,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest_j1
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.val2 EXPRESSION [(src)x.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_j1.val2 EXPRESSION [(src)x.FieldSchema(name:value, type:string, comment:default), (src)x1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src1)x.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from dest_j1
 PREHOOK: type: QUERY

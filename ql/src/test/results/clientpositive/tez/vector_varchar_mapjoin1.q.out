@@ -175,7 +175,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: b
                   Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: c2 is not null (type: boolean)

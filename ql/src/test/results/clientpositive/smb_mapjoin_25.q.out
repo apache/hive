@@ -137,7 +137,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
+            alias: c
             Statistics: Num rows: 51 Data size: 206 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 5) (type: boolean)
@@ -377,13 +377,13 @@ STAGE PLANS:
   Stage: Stage-14
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_1:$hdt$_1:b 
+        $hdt$_1:$hdt$_1:c 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_1:$hdt$_1:b 
+        $hdt$_1:$hdt$_1:c 
           TableScan
-            alias: b
+            alias: c
             Statistics: Num rows: 51 Data size: 206 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 5) (type: boolean)

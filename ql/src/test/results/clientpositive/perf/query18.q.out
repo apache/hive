@@ -105,7 +105,7 @@ Stage-0
                                   Filter Operator [FIL_73] (rows=80765 width=4)
                                     predicate:cd_demo_sk is not null
                                     TableScan [TS_6] (rows=80765 width=4)
-                                      default@customer_demographics,cd1,Tbl:COMPLETE,Col:NONE,Output:["cd_demo_sk"]
+                                      default@customer_demographics,cd2,Tbl:COMPLETE,Col:NONE,Output:["cd_demo_sk"]
                             <-Reducer 2 [SIMPLE_EDGE]
                               SHUFFLE [RS_34]
                                 PartitionCols:_col1

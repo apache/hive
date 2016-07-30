@@ -29,7 +29,7 @@ STAGE PLANS:
                 value expressions: _col0 (type: string), _col1 (type: string)
                 auto parallelism: false
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator

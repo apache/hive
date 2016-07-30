@@ -81,7 +81,7 @@ Stage-3
               Filter Operator [FIL_19] (rows=1 width=0)
                 predicate:key is not null
                 TableScan [TS_8] (rows=1 width=0)
-                  default@q1,a,Tbl:PARTIAL,Col:NONE,Output:["key"]
+                  default@q1,b,Tbl:PARTIAL,Col:NONE,Output:["key"]
         Stage-2
           Dependency Collection{}
             Stage-1
@@ -231,7 +231,7 @@ Stage-3
               Filter Operator [FIL_19] (rows=1 width=0)
                 predicate:key is not null
                 TableScan [TS_8] (rows=1 width=0)
-                  default@q1,a,Tbl:PARTIAL,Col:NONE,Output:["key"]
+                  default@q1,b,Tbl:PARTIAL,Col:NONE,Output:["key"]
         Stage-2
           Dependency Collection{}
             Stage-1

@@ -26,7 +26,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                   Statistics: Num rows: 18 Data size: 191 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: a
+            alias: tab
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((UDFToDouble(key) > 10.0) and (UDFToDouble(key) > 20.0) and (UDFToDouble(value) < 200.0)) (type: boolean)

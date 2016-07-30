@@ -513,7 +513,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: e
+                  alias: e1
                   Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: deptid is not null (type: boolean)

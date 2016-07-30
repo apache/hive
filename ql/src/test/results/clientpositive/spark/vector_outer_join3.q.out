@@ -257,7 +257,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: cd
                   Statistics: Num rows: 20 Data size: 5221 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cint (type: int)
@@ -273,7 +273,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: hd
                   Statistics: Num rows: 20 Data size: 5221 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cstring1 (type: string)
@@ -411,7 +411,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: cd
                   Statistics: Num rows: 20 Data size: 5221 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cstring2 (type: string)
@@ -427,7 +427,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: hd
                   Statistics: Num rows: 20 Data size: 5221 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cstring1 (type: string)
@@ -565,7 +565,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: cd
                   Statistics: Num rows: 20 Data size: 5221 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cbigint (type: bigint), cstring2 (type: string)
@@ -581,7 +581,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: hd
                   Statistics: Num rows: 20 Data size: 5221 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cint (type: int), cstring1 (type: string)

@@ -173,7 +173,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: y
+                  alias: x
                   Statistics: Num rows: 15 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
@@ -555,7 +555,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: o1
+                  alias: o2
                   filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
                   Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -615,7 +615,7 @@ POSTHOOK: Input: default@orc_llap
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table
 POSTHOOK: Lineage: llap_temp_table.cstring1 SIMPLE [(orc_llap)o1.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: llap_temp_table.cstring2 SIMPLE [(orc_llap)o1.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cstring2 SIMPLE [(orc_llap)o2.FieldSchema(name:cstring2, type:string, comment:null), ]
 PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@llap_temp_table
@@ -983,7 +983,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: o1
+                  alias: o2
                   filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
                   Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -1043,7 +1043,7 @@ POSTHOOK: Input: default@orc_llap
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table
 POSTHOOK: Lineage: llap_temp_table.cstring1 SIMPLE [(orc_llap)o1.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: llap_temp_table.cstring2 SIMPLE [(orc_llap)o1.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cstring2 SIMPLE [(orc_llap)o2.FieldSchema(name:cstring2, type:string, comment:null), ]
 PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@llap_temp_table

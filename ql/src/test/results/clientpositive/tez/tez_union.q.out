@@ -54,7 +54,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: s1
+                  alias: s3
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -71,7 +71,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: s1
+                  alias: s2
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -109,8 +109,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ut
-POSTHOOK: Lineage: ut.key EXPRESSION [(src)s1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: ut.value EXPRESSION [(src)s1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ut.key EXPRESSION [(src)s1.FieldSchema(name:key, type:string, comment:default), (src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ut.value EXPRESSION [(src)s1.FieldSchema(name:value, type:string, comment:default), (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from ut order by key, value limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ut
@@ -365,7 +365,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: s1
+                  alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -395,7 +395,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: s1
+                  alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -448,7 +448,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ut
 POSTHOOK: Lineage: ut.skey SIMPLE [(src)s1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: ut.ukey EXPRESSION [(src)s1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ut.ukey EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select * from ut order by skey, ukey limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ut
@@ -519,7 +519,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: s1
+                  alias: s2
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -565,7 +565,7 @@ STAGE PLANS:
         Map 10 
             Map Operator Tree:
                 TableScan
-                  alias: s1
+                  alias: s8
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -592,7 +592,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: s1
+                  alias: s3
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -609,7 +609,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: s1
+                  alias: s4
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -655,7 +655,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: s1
+                  alias: s5
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -672,7 +672,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: s1
+                  alias: s6
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -718,7 +718,7 @@ STAGE PLANS:
         Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: s1
+                  alias: s7
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -805,9 +805,9 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ut
-POSTHOOK: Lineage: ut.lkey SIMPLE [(src)s1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ut.lkey SIMPLE [(src)s8.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ut.skey SIMPLE [(src)s1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: ut.ukey EXPRESSION [(src)s1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ut.ukey EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), (src)s4.FieldSchema(name:key, type:string, comment:default), (src)s6.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select * from ut order by skey, ukey, lkey limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ut
@@ -978,7 +978,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: s2
+                  alias: s3
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -995,7 +995,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: s2
+                  alias: s4
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1025,7 +1025,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: s2
+                  alias: s5
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1062,7 +1062,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ut
-POSTHOOK: Lineage: ut.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ut.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), (src)s4.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select * from ut order by key limit 30
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ut
@@ -1189,7 +1189,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: src
+                  alias: s
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -1271,7 +1271,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: src
+                  alias: s
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -1320,7 +1320,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ut
-POSTHOOK: Lineage: ut.skey SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ut.skey SIMPLE [(src)s.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ut.ukey EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select * from ut order by ukey, skey limit 20
 PREHOOK: type: QUERY

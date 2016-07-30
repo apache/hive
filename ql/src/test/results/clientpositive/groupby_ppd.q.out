@@ -43,7 +43,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
-            alias: c
+            alias: d
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (bar = 1) (type: boolean)

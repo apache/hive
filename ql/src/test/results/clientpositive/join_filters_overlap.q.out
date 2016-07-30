@@ -48,7 +48,7 @@ STAGE PLANS:
                 value expressions: _col1 (type: int)
                 auto parallelism: false
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -69,7 +69,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
                   auto parallelism: false
           TableScan
-            alias: a
+            alias: c
             Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -137,7 +137,7 @@ STAGE PLANS:
               name: default.a
             name: default.a
       Truncated Path -> Alias:
-        /a [$hdt$_0:a, $hdt$_1:a, $hdt$_2:a]
+        /a [$hdt$_0:a, $hdt$_1:b, $hdt$_2:c]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -243,7 +243,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
                   auto parallelism: false
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -260,7 +260,7 @@ STAGE PLANS:
                 value expressions: _col1 (type: int)
                 auto parallelism: false
           TableScan
-            alias: a
+            alias: c
             Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -328,7 +328,7 @@ STAGE PLANS:
               name: default.a
             name: default.a
       Truncated Path -> Alias:
-        /a [$hdt$_0:a, $hdt$_1:a, $hdt$_2:a]
+        /a [$hdt$_0:a, $hdt$_1:b, $hdt$_2:c]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -434,7 +434,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
                   auto parallelism: false
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -451,7 +451,7 @@ STAGE PLANS:
                 value expressions: _col1 (type: int)
                 auto parallelism: false
           TableScan
-            alias: a
+            alias: c
             Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -519,7 +519,7 @@ STAGE PLANS:
               name: default.a
             name: default.a
       Truncated Path -> Alias:
-        /a [$hdt$_0:a, $hdt$_1:a, $hdt$_2:a]
+        /a [$hdt$_0:a, $hdt$_1:b, $hdt$_2:c]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -621,7 +621,7 @@ STAGE PLANS:
                 value expressions: _col1 (type: int)
                 auto parallelism: false
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -638,7 +638,7 @@ STAGE PLANS:
                 value expressions: _col1 (type: int)
                 auto parallelism: false
           TableScan
-            alias: a
+            alias: c
             Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -659,7 +659,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
                   auto parallelism: false
           TableScan
-            alias: a
+            alias: d
             Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -727,7 +727,7 @@ STAGE PLANS:
               name: default.a
             name: default.a
       Truncated Path -> Alias:
-        /a [$hdt$_0:a, $hdt$_1:a, $hdt$_2:a, $hdt$_3:a]
+        /a [$hdt$_0:a, $hdt$_1:b, $hdt$_2:c, $hdt$_3:d]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -824,7 +824,7 @@ STAGE PLANS:
                 value expressions: _col1 (type: int)
                 auto parallelism: false
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -845,7 +845,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
                   auto parallelism: false
           TableScan
-            alias: a
+            alias: c
             Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -866,7 +866,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
                   auto parallelism: false
           TableScan
-            alias: a
+            alias: d
             Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -934,7 +934,7 @@ STAGE PLANS:
               name: default.a
             name: default.a
       Truncated Path -> Alias:
-        /a [$hdt$_0:a, $hdt$_1:a, $hdt$_2:a, $hdt$_3:a]
+        /a [$hdt$_0:a, $hdt$_1:b, $hdt$_2:c, $hdt$_3:d]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator

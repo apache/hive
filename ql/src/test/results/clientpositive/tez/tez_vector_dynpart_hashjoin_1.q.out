@@ -50,7 +50,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: b
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
@@ -175,7 +175,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: b
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
@@ -298,7 +298,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: b
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
@@ -445,7 +445,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: b
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
@@ -577,7 +577,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: b
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
@@ -707,7 +707,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: b
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)

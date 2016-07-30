@@ -173,7 +173,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: orderpayment
+                  alias: dim_pay_date
                   Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -240,11 +240,11 @@ STAGE PLANS:
                     name: default.orderpayment_small
                   name: default.orderpayment_small
             Truncated Path -> Alias:
-              /orderpayment_small [orderpayment]
+              /orderpayment_small [dim_pay_date]
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: orderpayment
+                  alias: deal
                   Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -311,11 +311,11 @@ STAGE PLANS:
                     name: default.orderpayment_small
                   name: default.orderpayment_small
             Truncated Path -> Alias:
-              /orderpayment_small [orderpayment]
+              /orderpayment_small [deal]
         Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: orderpayment
+                  alias: order_city
                   Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -382,7 +382,7 @@ STAGE PLANS:
                     name: default.orderpayment_small
                   name: default.orderpayment_small
             Truncated Path -> Alias:
-              /orderpayment_small [orderpayment]
+              /orderpayment_small [order_city]
         Map 9 
             Map Operator Tree:
                 TableScan

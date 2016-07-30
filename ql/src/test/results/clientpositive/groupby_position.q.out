@@ -644,7 +644,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src1
+            alias: src2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((UDFToDouble(key) > 15.0) and (UDFToDouble(key) < 25.0) and (UDFToDouble(key) > 10.0) and (UDFToDouble(key) < 20.0)) (type: boolean)
