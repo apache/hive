@@ -19,26 +19,17 @@
 
 package org.apache.hadoop.hive.llap.io.api.impl;
 
-import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.io.BatchToRowInputFormat;
 
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
-import com.google.common.base.Joiner;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -63,16 +54,13 @@ import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat.AvoidSplitCombination
 import org.apache.hadoop.hive.ql.io.LlapAwareSplit;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcOiBatchToRowReader;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -84,8 +72,9 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.SchemaEvolution;
 import org.apache.tez.common.counters.TezCounters;
-import org.apache.tez.runtime.api.impl.TaskSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -122,7 +111,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       InputSplit split, JobConf job, Reporter reporter) throws IOException {
     boolean useLlapIo = true;
     if (split instanceof LlapAwareSplit) {
-      useLlapIo = ((LlapAwareSplit)split).canUseLlapIo();
+      useLlapIo = ((LlapAwareSplit) split).canUseLlapIo();
     }
     boolean isVectorized = Utilities.getUseVectorizedInputFileFormat(job);
 
@@ -135,17 +124,28 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       LlapIoImpl.LOG.warn("Not using LLAP IO for an unsupported split: " + split);
       return sourceInputFormat.getRecordReader(split, job, reporter);
     }
-    FileSplit fileSplit = (FileSplit)split;
+    FileSplit fileSplit = (FileSplit) split;
     reporter.setStatus(fileSplit.toString());
     try {
       List<Integer> includedCols = ColumnProjectionUtils.isReadAllColumns(job)
           ? null : ColumnProjectionUtils.getReadColumnIDs(job);
       LlapRecordReader rr = new LlapRecordReader(job, fileSplit, includedCols, hostName);
-      if (isVectorized) return rr;
+
+      if (!rr.init()) {
+        return sourceInputFormat.getRecordReader(split, job, reporter);
+      }
+
+      // vectorized row batch reader
+      if (isVectorized) {
+        return rr;
+      }
+
+      // row batch to row-by-row reader
       if (sourceInputFormat instanceof BatchToRowInputFormat) {
-        return bogusCast(((BatchToRowInputFormat)sourceInputFormat).getWrapper(
+        return bogusCast(((BatchToRowInputFormat) sourceInputFormat).getWrapper(
             rr, rr.getVectorizedRowBatchCtx(), includedCols));
       }
+
       return sourceInputFormat.getRecordReader(split, job, reporter);
     } catch (Exception ex) {
       throw new IOException(ex);
@@ -182,12 +182,18 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     /** Vector that is currently being processed by our user. */
     private boolean isDone = false;
     private final boolean isClosed = false;
-    private ConsumerFeedback<ColumnVectorBatch> feedback;
+    private final ConsumerFeedback<ColumnVectorBatch> feedback;
     private final QueryFragmentCounters counters;
     private long firstReturnTime;
 
+    private final JobConf jobConf;
+    private final TypeDescription fileSchema;
+    private final boolean[] includedColumns;
+    private final ReadPipeline rp;
+
     public LlapRecordReader(JobConf job, FileSplit split, List<Integer> includedCols,
         String hostName) throws IOException, HiveException {
+      this.jobConf = job;
       this.split = split;
       this.columnIds = includedCols;
       this.sarg = ConvertAstToSearchArg.createFromConf(job);
@@ -220,7 +226,37 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
         partitionValues = null;
       }
 
-      startRead();
+      // Create the consumer of encoded data; it will coordinate decoding to CVBs.
+      rp = cvp.createReadPipeline(this, split, columnIds, sarg, columnNames, counters);
+      feedback = rp;
+      fileSchema = rp.getFileSchema();
+      includedColumns = rp.getIncludedColumns();
+    }
+
+    /**
+     * Starts the data read pipeline
+     */
+    public boolean init() {
+      boolean isAcidScan = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
+      TypeDescription readerSchema = OrcInputFormat.getDesiredRowTypeDescr(jobConf, isAcidScan,
+          Integer.MAX_VALUE);
+      SchemaEvolution schemaEvolution = new SchemaEvolution(fileSchema, readerSchema,
+          includedColumns);
+      for (Integer colId : columnIds) {
+        if (!schemaEvolution.isPPDSafeConversion(colId)) {
+          LlapIoImpl.LOG.warn("Unsupported schema evolution! Disabling Llap IO for {}", split);
+          return false;
+        }
+      }
+
+      // perform the data read asynchronously
+      if (executor instanceof StatsRecordingThreadPool) {
+        // Every thread created by this thread pool will use the same handler
+        ((StatsRecordingThreadPool) executor)
+            .setUncaughtExceptionHandler(new IOUncaughtExceptionHandler());
+      }
+      executor.submit(rp.getReadCallable());
+      return true;
     }
 
     @Override
@@ -280,19 +316,6 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
             " Message: {}", t.getName(), t.getId(), e.getMessage());
         setError(e);
       }
-    }
-
-    private void startRead() {
-      // Create the consumer of encoded data; it will coordinate decoding to CVBs.
-      ReadPipeline rp = cvp.createReadPipeline(
-          this, split, columnIds, sarg, columnNames, counters);
-      feedback = rp;
-      if (executor instanceof StatsRecordingThreadPool) {
-        // Every thread created by this thread pool will use the same handler
-        ((StatsRecordingThreadPool) executor)
-            .setUncaughtExceptionHandler(new IOUncaughtExceptionHandler());
-      }
-      executor.submit(rp.getReadCallable());
     }
 
     ColumnVectorBatch nextCvb() throws InterruptedException, IOException {
