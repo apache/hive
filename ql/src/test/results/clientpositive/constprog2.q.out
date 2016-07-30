@@ -27,7 +27,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: src1
+            alias: src2
             Statistics: Num rows: 1000 Data size: 10603 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (86 = key) (type: boolean)
@@ -99,7 +99,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: src1
+            alias: src2
             Statistics: Num rows: 1000 Data size: 10603 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) = 86.0) (type: boolean)

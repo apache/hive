@@ -117,7 +117,7 @@ Stage-0
                                                     Filter Operator [FIL_75] (rows=144002668 width=135)
                                                       predicate:ws_order_number is not null
                                                       TableScan [TS_6] (rows=144002668 width=135)
-                                                        default@web_sales,ws1,Tbl:COMPLETE,Col:NONE,Output:["ws_warehouse_sk","ws_order_number"]
+                                                        default@web_sales,ws3,Tbl:COMPLETE,Col:NONE,Output:["ws_warehouse_sk","ws_order_number"]
                                               <-Map 8 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_9]
                                                   PartitionCols:_col1
@@ -126,5 +126,5 @@ Stage-0
                                                     Filter Operator [FIL_74] (rows=144002668 width=135)
                                                       predicate:ws_order_number is not null
                                                       TableScan [TS_3] (rows=144002668 width=135)
-                                                        default@web_sales,ws1,Tbl:COMPLETE,Col:NONE,Output:["ws_warehouse_sk","ws_order_number"]
+                                                        default@web_sales,ws2,Tbl:COMPLETE,Col:NONE,Output:["ws_warehouse_sk","ws_order_number"]
 

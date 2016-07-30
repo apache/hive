@@ -599,7 +599,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: s
+                  alias: s2
                   Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint)
@@ -1269,7 +1269,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: s
+                  alias: s2
                   Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cmodtinyint (type: int)

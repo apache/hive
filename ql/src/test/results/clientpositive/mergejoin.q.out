@@ -1933,7 +1933,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: s1
+            alias: s3
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -1976,7 +1976,7 @@ STAGE PLANS:
                 Map-reduce partition columns: _col0 (type: int)
                 Statistics: Num rows: 508 Data size: 47770 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: s1
+            alias: s2
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -2357,7 +2357,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: s1
+            alias: s3
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -2400,7 +2400,7 @@ STAGE PLANS:
                 Map-reduce partition columns: _col0 (type: int)
                 Statistics: Num rows: 508 Data size: 47770 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: s1
+            alias: s2
             filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
             Filter Operator

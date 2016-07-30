@@ -1956,7 +1956,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: s1
+                  alias: s3
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -1975,7 +1975,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: s1
+                  alias: s2
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -2373,7 +2373,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: s1
+                  alias: s3
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -2392,7 +2392,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: s1
+                  alias: s2
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 242 Data size: 22748 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator

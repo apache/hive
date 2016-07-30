@@ -130,5 +130,5 @@ Stage-0
                             Filter Operator [FIL_75] (rows=40000000 width=1014)
                               predicate:ca_address_sk is not null
                               TableScan [TS_3] (rows=40000000 width=1014)
-                                default@customer_address,customer_address,Tbl:COMPLETE,Col:NONE,Output:["ca_address_sk","ca_city"]
+                                default@customer_address,current_addr,Tbl:COMPLETE,Col:NONE,Output:["ca_address_sk","ca_city"]
 

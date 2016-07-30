@@ -81,7 +81,7 @@ Stage-0
                                           Filter Operator [FIL_91] (rows=18262 width=1119)
                                             predicate:(d_moy BETWEEN 4 AND 10 and (d_year = 1998) and d_date_sk is not null)
                                             TableScan [TS_15] (rows=73049 width=1119)
-                                              default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_moy"]
+                                              default@date_dim,d2,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_moy"]
                                     <-Reducer 10 [SIMPLE_EDGE]
                                       SHUFFLE [RS_27]
                                         PartitionCols:_col6
@@ -141,5 +141,5 @@ Stage-0
                                     Filter Operator [FIL_87] (rows=18262 width=1119)
                                       predicate:(d_moy BETWEEN 4 AND 10 and (d_year = 1998) and d_date_sk is not null)
                                       TableScan [TS_3] (rows=73049 width=1119)
-                                        default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_moy"]
+                                        default@date_dim,d3,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_moy"]
 

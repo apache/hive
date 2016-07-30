@@ -27,7 +27,7 @@ STAGE PLANS:
         $hdt$_0:src1 
           Fetch Operator
             limit: -1
-        $hdt$_2:src1 
+        $hdt$_2:src3 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
@@ -46,9 +46,9 @@ STAGE PLANS:
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
-        $hdt$_2:src1 
+        $hdt$_2:src3 
           TableScan
-            alias: src1
+            alias: src3
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -66,7 +66,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src1
+            alias: src2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -130,7 +130,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest_j2
 POSTHOOK: Lineage: dest_j2.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j2.value SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_j2.value SIMPLE [(src)src3.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT sum(hash(dest_j2.key,dest_j2.value)) FROM dest_j2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j2

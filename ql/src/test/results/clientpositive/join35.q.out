@@ -400,7 +400,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: x
+            alias: x1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -474,7 +474,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0-subquery2:$hdt$_0-subquery2:$hdt$_0:x]
+        /src [$hdt$_0-subquery2:$hdt$_0-subquery2:$hdt$_0:x1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -526,7 +526,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest_j1
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.val2 EXPRESSION [(src)x.null, ]
+POSTHOOK: Lineage: dest_j1.val2 EXPRESSION [(src)x.null, (src)x1.null, ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src1)x.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from dest_j1
 PREHOOK: type: QUERY

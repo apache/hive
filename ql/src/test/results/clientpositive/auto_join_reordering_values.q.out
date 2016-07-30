@@ -117,7 +117,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: int)
                   auto parallelism: false
           TableScan
-            alias: orderpayment
+            alias: dim_pay_date
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -184,7 +184,7 @@ STAGE PLANS:
               name: default.orderpayment_small
             name: default.orderpayment_small
       Truncated Path -> Alias:
-        /orderpayment_small [$hdt$_0:orderpayment, $hdt$_1:orderpayment]
+        /orderpayment_small [$hdt$_0:orderpayment, $hdt$_1:dim_pay_date]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -228,7 +228,7 @@ STAGE PLANS:
               value expressions: _col2 (type: int), _col3 (type: int), _col4 (type: string)
               auto parallelism: false
           TableScan
-            alias: orderpayment
+            alias: deal
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -315,7 +315,7 @@ STAGE PLANS:
               name: default.orderpayment_small
             name: default.orderpayment_small
       Truncated Path -> Alias:
-        /orderpayment_small [$hdt$_2:orderpayment]
+        /orderpayment_small [$hdt$_2:deal]
 #### A masked pattern was here ####
       Needs Tagging: true
       Reduce Operator Tree:
@@ -360,7 +360,7 @@ STAGE PLANS:
               value expressions: _col3 (type: int), _col4 (type: string), _col5 (type: int)
               auto parallelism: false
           TableScan
-            alias: orderpayment
+            alias: order_city
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -447,7 +447,7 @@ STAGE PLANS:
               name: default.orderpayment_small
             name: default.orderpayment_small
       Truncated Path -> Alias:
-        /orderpayment_small [$hdt$_3:orderpayment]
+        /orderpayment_small [$hdt$_3:order_city]
 #### A masked pattern was here ####
       Needs Tagging: true
       Reduce Operator Tree:

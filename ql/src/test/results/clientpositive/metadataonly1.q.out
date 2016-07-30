@@ -500,7 +500,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a2
+            alias: test1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Select Operator
@@ -520,8 +520,8 @@ STAGE PLANS:
                   value expressions: _col0 (type: string)
                   auto parallelism: false
       Path -> Alias:
-        nullscan://null/default.test1/part_ds=1_ [$hdt$_1:$hdt$_1:a2]
-        nullscan://null/default.test1/part_ds=2_ [$hdt$_1:$hdt$_1:a2]
+        nullscan://null/default.test1/part_ds=1_ [$hdt$_1:$hdt$_1:test1]
+        nullscan://null/default.test1/part_ds=2_ [$hdt$_1:$hdt$_1:test1]
       Path -> Partition:
         nullscan://null/default.test1/part_ds=1_ 
           Partition
@@ -612,8 +612,8 @@ STAGE PLANS:
               name: default.test1
             name: default.test1
       Truncated Path -> Alias:
-        nullscan://null/default.test1/part_ds=1_ [$hdt$_1:$hdt$_1:a2]
-        nullscan://null/default.test1/part_ds=2_ [$hdt$_1:$hdt$_1:a2]
+        nullscan://null/default.test1/part_ds=1_ [$hdt$_1:$hdt$_1:test1]
+        nullscan://null/default.test1/part_ds=2_ [$hdt$_1:$hdt$_1:test1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator

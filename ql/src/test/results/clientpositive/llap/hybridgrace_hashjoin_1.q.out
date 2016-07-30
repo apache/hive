@@ -87,7 +87,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: cd
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cint < 2000000000) (type: boolean)
@@ -212,7 +212,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: cd
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cint < 2000000000) (type: boolean)
@@ -333,7 +333,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: cd
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: cint is not null (type: boolean)
@@ -454,7 +454,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: cd
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: cint is not null (type: boolean)
@@ -570,7 +570,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: cd
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cint (type: int)
@@ -683,7 +683,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: cd
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cint (type: int)
@@ -833,7 +833,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: p1
+                  alias: p2
                   Statistics: Num rows: 525 Data size: 12474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -957,7 +957,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: p1
+                  alias: p2
                   Statistics: Num rows: 525 Data size: 12474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1080,7 +1080,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: p1
+                  alias: p2
                   Statistics: Num rows: 525 Data size: 12474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1204,7 +1204,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: p1
+                  alias: p2
                   Statistics: Num rows: 525 Data size: 12474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1358,7 +1358,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: l
+                  alias: r
                   Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (6981 = cint) (type: boolean)
@@ -1556,7 +1556,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: l
+                  alias: r
                   Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (6981 = cint) (type: boolean)

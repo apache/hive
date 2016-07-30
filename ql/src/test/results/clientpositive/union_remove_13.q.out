@@ -164,13 +164,13 @@ STAGE PLANS:
   Stage: Stage-10
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        null-subquery2:$hdt$_0-subquery2:$hdt$_0:inputtbl1 
+        null-subquery2:$hdt$_0-subquery2:$hdt$_0:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        null-subquery2:$hdt$_0-subquery2:$hdt$_0:inputtbl1 
+        null-subquery2:$hdt$_0-subquery2:$hdt$_0:a 
           TableScan
-            alias: inputtbl1
+            alias: a
             Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -188,7 +188,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: inputtbl1
+            alias: b
             Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -242,8 +242,8 @@ FROM inputTbl1 a join inputTbl1 b on a.key=b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1
 POSTHOOK: Output: default@outputtbl1
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)inputtbl1.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), (inputtbl1)a.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, (inputtbl1)b.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: desc formatted outputTbl1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@outputtbl1

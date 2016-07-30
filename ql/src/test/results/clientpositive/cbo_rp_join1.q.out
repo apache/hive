@@ -43,7 +43,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: int)
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
@@ -148,7 +148,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: int)
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
@@ -253,7 +253,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: int)
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
@@ -358,7 +358,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: int)
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)

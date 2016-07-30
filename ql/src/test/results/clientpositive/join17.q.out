@@ -49,7 +49,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
                   auto parallelism: false
           TableScan
-            alias: src1
+            alias: src2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -117,7 +117,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0:src1, $hdt$_1:src1]
+        /src [$hdt$_0:src1, $hdt$_1:src2]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -206,9 +206,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.key1 EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.key2 EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.key2 EXPRESSION [(src)src2.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value1 SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value2 SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value2 SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1

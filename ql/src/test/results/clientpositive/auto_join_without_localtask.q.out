@@ -21,13 +21,13 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_1:a 
+        $hdt$_1:b 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_1:a 
+        $hdt$_1:b 
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -123,7 +123,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -169,7 +169,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -285,13 +285,13 @@ STAGE PLANS:
   Stage: Stage-14
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_1:a 
+        $hdt$_1:c 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_1:a 
+        $hdt$_1:c 
           TableScan
-            alias: a
+            alias: c
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: value is not null (type: boolean)
@@ -341,13 +341,13 @@ STAGE PLANS:
   Stage: Stage-12
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_2:a 
+        $hdt$_2:b 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_2:a 
+        $hdt$_2:b 
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -411,7 +411,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -455,7 +455,7 @@ STAGE PLANS:
               Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: string)
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -512,7 +512,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: c
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: value is not null (type: boolean)
@@ -558,7 +558,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string)
           TableScan
-            alias: a
+            alias: c
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: value is not null (type: boolean)
@@ -677,13 +677,13 @@ STAGE PLANS:
   Stage: Stage-14
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_2:a 
+        $hdt$_2:b 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_2:a 
+        $hdt$_2:b 
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0) (type: boolean)
@@ -733,13 +733,13 @@ STAGE PLANS:
   Stage: Stage-12
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:a 
+        $hdt$_0:c 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:a 
+        $hdt$_0:c 
           TableScan
-            alias: a
+            alias: c
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: value is not null (type: boolean)
@@ -803,7 +803,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: c
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: value is not null (type: boolean)
@@ -847,7 +847,7 @@ STAGE PLANS:
               Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: string)
           TableScan
-            alias: a
+            alias: c
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: value is not null (type: boolean)
@@ -904,7 +904,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0) (type: boolean)
@@ -950,7 +950,7 @@ STAGE PLANS:
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
           TableScan
-            alias: a
+            alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0) (type: boolean)

@@ -196,7 +196,7 @@ Stage-0
                                                 Filter Operator [FIL_192] (rows=73049 width=1119)
                                                   predicate:(d_week_seq is not null and d_date is not null)
                                                   TableScan [TS_74] (rows=73049 width=1119)
-                                                    default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]
+                                                    default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]
                                           <-Map 31 [SIMPLE_EDGE]
                                             SHUFFLE [RS_81]
                                               PartitionCols:_col1
@@ -205,7 +205,7 @@ Stage-0
                                                 Filter Operator [FIL_193] (rows=36524 width=1119)
                                                   predicate:((d_date = '1998-08-04') and d_week_seq is not null)
                                                   TableScan [TS_77] (rows=73049 width=1119)
-                                                    default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]
+                                                    default@date_dim,d2,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]
                   <-Reducer 6 [SIMPLE_EDGE]
                     SHUFFLE [RS_104]
                       PartitionCols:_col0
@@ -277,7 +277,7 @@ Stage-0
                                                       Filter Operator [FIL_187] (rows=73049 width=1119)
                                                         predicate:(d_week_seq is not null and d_date is not null)
                                                         TableScan [TS_36] (rows=73049 width=1119)
-                                                          default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]
+                                                          default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]
                                                 <-Map 21 [SIMPLE_EDGE]
                                                   SHUFFLE [RS_43]
                                                     PartitionCols:_col1
@@ -286,7 +286,7 @@ Stage-0
                                                       Filter Operator [FIL_188] (rows=36524 width=1119)
                                                         predicate:((d_date = '1998-08-04') and d_week_seq is not null)
                                                         TableScan [TS_39] (rows=73049 width=1119)
-                                                          default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]
+                                                          default@date_dim,d2,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]
                         <-Reducer 5 [SIMPLE_EDGE]
                           SHUFFLE [RS_66]
                             PartitionCols:_col0
@@ -351,7 +351,7 @@ Stage-0
                                                       Filter Operator [FIL_183] (rows=36524 width=1119)
                                                         predicate:((d_date = '1998-08-04') and d_week_seq is not null)
                                                         TableScan [TS_6] (rows=73049 width=1119)
-                                                          default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]
+                                                          default@date_dim,d2,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]
                                                 <-Map 9 [SIMPLE_EDGE]
                                                   SHUFFLE [RS_9]
                                                     PartitionCols:_col1
@@ -360,5 +360,5 @@ Stage-0
                                                       Filter Operator [FIL_182] (rows=73049 width=1119)
                                                         predicate:(d_week_seq is not null and d_date is not null)
                                                         TableScan [TS_3] (rows=73049 width=1119)
-                                                          default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]
+                                                          default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]
 

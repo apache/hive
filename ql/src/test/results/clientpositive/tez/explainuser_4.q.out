@@ -51,7 +51,7 @@ Stage-0
                   Filter Operator [FIL_16] (rows=6144 width=215)
                     predicate:(cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000)
                     TableScan [TS_3] (rows=12288 width=215)
-                      default@alltypesorc,a,Tbl:COMPLETE,Col:NONE,Output:["ctinyint","csmallint","cint","cbigint","cfloat","cdouble","cstring1","cstring2","ctimestamp1","ctimestamp2","cboolean1","cboolean2"]
+                      default@alltypesorc,b,Tbl:COMPLETE,Col:NONE,Output:["ctinyint","csmallint","cint","cbigint","cfloat","cdouble","cstring1","cstring2","ctimestamp1","ctimestamp2","cboolean1","cboolean2"]
 
 PREHOOK: query: select
   *
@@ -132,7 +132,7 @@ Stage-0
                     Filter Operator [FIL_18] (rows=6144 width=215)
                       predicate:(cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000)
                       TableScan [TS_3] (rows=12288 width=215)
-                        default@alltypesorc,a,Tbl:COMPLETE,Col:NONE,Output:["cint","cbigint"]
+                        default@alltypesorc,b,Tbl:COMPLETE,Col:NONE,Output:["cint","cbigint"]
 
 PREHOOK: query: select
   count(*)
@@ -212,7 +212,7 @@ Stage-0
                         Filter Operator [FIL_20] (rows=6144 width=215)
                           predicate:(cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000)
                           TableScan [TS_3] (rows=12288 width=215)
-                            default@alltypesorc,a,Tbl:COMPLETE,Col:NONE,Output:["cint","cbigint"]
+                            default@alltypesorc,b,Tbl:COMPLETE,Col:NONE,Output:["cint","cbigint"]
 
 PREHOOK: query: select
   a.csmallint, count(*) c1
@@ -283,7 +283,7 @@ Stage-0
                   Filter Operator [FIL_16] (rows=6144 width=215)
                     predicate:(cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000)
                     TableScan [TS_3] (rows=12288 width=215)
-                      default@alltypesorc,a,Tbl:COMPLETE,Col:NONE,Output:["ctinyint","csmallint","cint","cbigint","cfloat","cdouble","cstring1","cstring2","ctimestamp1","ctimestamp2","cboolean1","cboolean2"]
+                      default@alltypesorc,b,Tbl:COMPLETE,Col:NONE,Output:["ctinyint","csmallint","cint","cbigint","cfloat","cdouble","cstring1","cstring2","ctimestamp1","ctimestamp2","cboolean1","cboolean2"]
             <-Map 1 [CUSTOM_SIMPLE_EDGE]
               PARTITION_ONLY_SHUFFLE [RS_6]
                 PartitionCols:_col2
@@ -364,7 +364,7 @@ Stage-0
                     Filter Operator [FIL_18] (rows=6144 width=215)
                       predicate:(cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000)
                       TableScan [TS_3] (rows=12288 width=215)
-                        default@alltypesorc,a,Tbl:COMPLETE,Col:NONE,Output:["cint","cbigint"]
+                        default@alltypesorc,b,Tbl:COMPLETE,Col:NONE,Output:["cint","cbigint"]
               <-Map 1 [CUSTOM_SIMPLE_EDGE]
                 PARTITION_ONLY_SHUFFLE [RS_6]
                   PartitionCols:_col0
@@ -444,7 +444,7 @@ Stage-0
                         Filter Operator [FIL_20] (rows=6144 width=215)
                           predicate:(cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000)
                           TableScan [TS_3] (rows=12288 width=215)
-                            default@alltypesorc,a,Tbl:COMPLETE,Col:NONE,Output:["cint","cbigint"]
+                            default@alltypesorc,b,Tbl:COMPLETE,Col:NONE,Output:["cint","cbigint"]
                   <-Map 1 [CUSTOM_SIMPLE_EDGE]
                     PARTITION_ONLY_SHUFFLE [RS_6]
                       PartitionCols:_col1

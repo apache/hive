@@ -135,7 +135,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
       return super.explainTerms(pw)
           .item("qbid:alias", concatQbIDAlias);
     } else {
-      return super.explainTerms(pw);
+      return super.explainTerms(pw).item("table:alias", tblAlias);
     }
   }
 

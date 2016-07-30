@@ -21,9 +21,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tmp
 POSTHOOK: Lineage: tmp.c1 EXPRESSION [(src)x.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp.c2 EXPRESSION [(src)x.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp.c2 EXPRESSION [(src)y.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp.c3 SIMPLE [(src)x.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp.c4 SIMPLE [(src)x.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp.c4 SIMPLE [(src)y.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, xx.cnt, yy.cnt
 FROM 
@@ -128,7 +128,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: x
+            alias: x1
             Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((c2 > 100) and (c2 < 120)) (type: boolean)
@@ -245,7 +245,7 @@ STAGE PLANS:
                     Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: bigint)
           TableScan
-            alias: x
+            alias: x1
             Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((c2 > 100) and (c2 < 120)) (type: boolean)
@@ -461,7 +461,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: x
+            alias: x1
             Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((c2 > 100) and (c1 < 120) and c3 is not null) (type: boolean)
@@ -576,7 +576,7 @@ STAGE PLANS:
                     Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
           TableScan
-            alias: x
+            alias: x1
             Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((c2 > 100) and (c1 < 120) and c3 is not null) (type: boolean)

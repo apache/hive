@@ -95,7 +95,7 @@ Stage-0
                                               Filter Operator [FIL_130] (rows=73049 width=1119)
                                                 predicate:d_date_sk is not null
                                                 TableScan [TS_26] (rows=73049 width=1119)
-                                                  default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
+                                                  default@date_dim,d3,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
                                         <-Reducer 7 [SIMPLE_EDGE]
                                           SHUFFLE [RS_47]
                                             PartitionCols:_col1
@@ -151,7 +151,7 @@ Stage-0
                                                               Filter Operator [FIL_126] (rows=73049 width=1119)
                                                                 predicate:(d_date_sk is not null and d_week_seq is not null)
                                                                 TableScan [TS_14] (rows=73049 width=1119)
-                                                                  default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_week_seq"]
+                                                                  default@date_dim,d2,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_week_seq"]
                                                         <-Reducer 3 [SIMPLE_EDGE]
                                                           SHUFFLE [RS_35]
                                                             PartitionCols:_col8, _col14

@@ -136,5 +136,5 @@ Stage-0
                 Filter Operator [FIL_14] (rows=1 width=312)
                   predicate:((id = 2) and item is not null)
                   TableScan [TS_3] (rows=1 width=312)
-                    default@testdeci2,s,Tbl:COMPLETE,Col:COMPLETE,Output:["id","amount","sales_tax","item"]
+                    default@testdeci2,d,Tbl:COMPLETE,Col:COMPLETE,Output:["id","amount","sales_tax","item"]
 

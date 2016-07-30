@@ -380,7 +380,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string), _col3 (type: string)
                   auto parallelism: false
           TableScan
-            alias: t1
+            alias: t2
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -450,7 +450,7 @@ STAGE PLANS:
               name: default.pcr_t1
             name: default.pcr_t1
       Truncated Path -> Alias:
-        /pcr_t1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:t1, $hdt$_1:t1]
+        /pcr_t1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:t1, $hdt$_1:t2]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -595,7 +595,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string), _col3 (type: string)
                   auto parallelism: false
           TableScan
-            alias: t1
+            alias: t2
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -712,7 +712,7 @@ STAGE PLANS:
             name: default.pcr_t1
       Truncated Path -> Alias:
         /pcr_t1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:t1]
-        /pcr_t1/ds1=2000-04-09/ds2=2001-04-09 [$hdt$_1:t1]
+        /pcr_t1/ds1=2000-04-09/ds2=2001-04-09 [$hdt$_1:t2]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -852,7 +852,7 @@ STAGE PLANS:
                 value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string)
                 auto parallelism: false
           TableScan
-            alias: t1
+            alias: t2
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1012,9 +1012,9 @@ STAGE PLANS:
               name: default.pcr_t1
             name: default.pcr_t1
       Truncated Path -> Alias:
-        /pcr_t1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:t1, $hdt$_1:t1]
-        /pcr_t1/ds1=2000-04-09/ds2=2001-04-09 [$hdt$_0:t1, $hdt$_1:t1]
-        /pcr_t1/ds1=2000-04-10/ds2=2001-04-10 [$hdt$_1:t1]
+        /pcr_t1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:t1, $hdt$_1:t2]
+        /pcr_t1/ds1=2000-04-09/ds2=2001-04-09 [$hdt$_0:t1, $hdt$_1:t2]
+        /pcr_t1/ds1=2000-04-10/ds2=2001-04-10 [$hdt$_1:t2]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator

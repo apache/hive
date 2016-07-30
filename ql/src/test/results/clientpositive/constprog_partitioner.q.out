@@ -27,7 +27,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: src1
+            alias: src2
             Statistics: Num rows: 1000 Data size: 10603 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (100 = key) (type: boolean)
@@ -104,7 +104,7 @@ STAGE PLANS:
                   Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: int), _col2 (type: int)
           TableScan
-            alias: li
+            alias: lineitem
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((l_shipmode = 'AIR') and (l_linenumber = 1) and l_orderkey is not null) (type: boolean)

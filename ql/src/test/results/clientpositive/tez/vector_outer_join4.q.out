@@ -301,7 +301,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: cd
                   Statistics: Num rows: 30 Data size: 6838 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
@@ -448,7 +448,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: hd
                   Statistics: Num rows: 30 Data size: 6838 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint)
@@ -969,7 +969,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: cd
                   Statistics: Num rows: 30 Data size: 6838 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cint (type: int)
@@ -984,7 +984,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: c
+                  alias: hd
                   Statistics: Num rows: 30 Data size: 6838 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint)

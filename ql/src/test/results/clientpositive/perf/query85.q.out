@@ -82,7 +82,7 @@ Stage-0
                                             Filter Operator [FIL_101] (rows=1861800 width=385)
                                               predicate:(((cd_education_status = '4 yr Degree') or (cd_education_status = 'Primary') or (cd_education_status = 'Advanced Degree')) and ((cd_marital_status = 'M') or (cd_marital_status = 'D') or (cd_marital_status = 'U')) and cd_demo_sk is not null and cd_marital_status is not null and cd_education_status is not null)
                                               TableScan [TS_30] (rows=1861800 width=385)
-                                                default@customer_demographics,cd1,Tbl:COMPLETE,Col:NONE,Output:["cd_demo_sk","cd_marital_status","cd_education_status"]
+                                                default@customer_demographics,cd2,Tbl:COMPLETE,Col:NONE,Output:["cd_demo_sk","cd_marital_status","cd_education_status"]
                                       <-Reducer 7 [SIMPLE_EDGE]
                                         SHUFFLE [RS_36]
                                           PartitionCols:_col13, _col20, _col21

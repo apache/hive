@@ -304,7 +304,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: d
                   Statistics: Num rows: 1 Data size: 170 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Select Operator
@@ -367,7 +367,7 @@ STAGE PLANS:
                     name: default.bucket_medium
                   name: default.bucket_medium
             Truncated Path -> Alias:
-              /bucket_medium/ds=2008-04-08 [b]
+              /bucket_medium/ds=2008-04-08 [d]
 
   Stage: Stage-1
     Spark

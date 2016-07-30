@@ -141,7 +141,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src
+            alias: s1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > '9') (type: boolean)
@@ -357,7 +357,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
+            alias: s1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key > '9') and value is not null) (type: boolean)
@@ -517,7 +517,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
+            alias: part_subq
             Statistics: Num rows: 30 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: p_mfgr is not null (type: boolean)
@@ -617,7 +617,7 @@ STAGE PLANS:
                   Statistics: Num rows: 30 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: struct<count:bigint,sum:double,input:int>)
           TableScan
-            alias: b
+            alias: part_subq
             Statistics: Num rows: 30 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: p_mfgr is not null (type: boolean)
@@ -779,7 +779,7 @@ STAGE PLANS:
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
           TableScan
-            alias: b
+            alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > '8') (type: boolean)
@@ -884,7 +884,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
+            alias: s1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > '9') (type: boolean)
@@ -980,7 +980,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
+            alias: s1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > '9') (type: boolean)
@@ -1102,13 +1102,13 @@ STAGE PLANS:
   Stage: Stage-10
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_1:b 
+        $hdt$_0:$hdt$_1:src 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_1:b 
+        $hdt$_0:$hdt$_1:src 
           TableScan
-            alias: b
+            alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > '8') (type: boolean)

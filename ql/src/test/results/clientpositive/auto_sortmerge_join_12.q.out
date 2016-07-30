@@ -252,7 +252,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.bucket_medium
                   name: default.bucket_medium
-        $hdt$_3:b 
+        $hdt$_3:d 
           Fetch Operator
             limit: -1
             Partition Description:
@@ -341,9 +341,9 @@ STAGE PLANS:
                     1 _col0 (type: string)
                     2 _col0 (type: string)
                   Position of Big Table: 2
-        $hdt$_3:b 
+        $hdt$_3:d 
           TableScan
-            alias: b
+            alias: d
             Statistics: Num rows: 1 Data size: 170 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Select Operator

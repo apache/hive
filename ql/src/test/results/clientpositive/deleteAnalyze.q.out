@@ -129,7 +129,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int)
           TableScan
-            alias: s
+            alias: d
             Statistics: Num rows: 1 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((id = 2) and item is not null) (type: boolean)

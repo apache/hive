@@ -138,7 +138,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t2
             Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: bin is not null (type: boolean)
@@ -347,7 +347,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t2
             Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: i is not null (type: boolean)

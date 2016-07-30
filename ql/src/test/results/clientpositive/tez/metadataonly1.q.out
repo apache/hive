@@ -648,7 +648,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: a2
+                  alias: test1
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Select Operator
@@ -761,8 +761,8 @@ STAGE PLANS:
                     name: default.test1
                   name: default.test1
             Truncated Path -> Alias:
-              /test1/ds=1 [a2]
-              /test1/ds=2 [a2]
+              /test1/ds=1 [test1]
+              /test1/ds=2 [test1]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:

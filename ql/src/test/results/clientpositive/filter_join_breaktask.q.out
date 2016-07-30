@@ -62,7 +62,7 @@ STAGE PLANS:
                   tag: 0
                   auto parallelism: false
           TableScan
-            alias: f
+            alias: m
             Statistics: Num rows: 25 Data size: 211 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -131,7 +131,7 @@ STAGE PLANS:
               name: default.filter_join_breaktask
             name: default.filter_join_breaktask
       Truncated Path -> Alias:
-        /filter_join_breaktask/ds=2008-04-08 [$hdt$_0:f, $hdt$_1:f]
+        /filter_join_breaktask/ds=2008-04-08 [$hdt$_0:f, $hdt$_1:m]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -175,7 +175,7 @@ STAGE PLANS:
               value expressions: _col0 (type: int)
               auto parallelism: false
           TableScan
-            alias: f
+            alias: g
             Statistics: Num rows: 25 Data size: 211 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -263,7 +263,7 @@ STAGE PLANS:
               name: default.filter_join_breaktask
             name: default.filter_join_breaktask
       Truncated Path -> Alias:
-        /filter_join_breaktask/ds=2008-04-08 [$hdt$_2:f]
+        /filter_join_breaktask/ds=2008-04-08 [$hdt$_2:g]
 #### A masked pattern was here ####
       Needs Tagging: true
       Reduce Operator Tree:

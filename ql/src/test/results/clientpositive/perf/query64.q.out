@@ -95,7 +95,7 @@ Stage-0
                                           Filter Operator [FIL_602] (rows=40000000 width=1014)
                                             predicate:ca_address_sk is not null
                                             TableScan [TS_99] (rows=40000000 width=1014)
-                                              default@customer_address,ad1,Tbl:COMPLETE,Col:NONE,Output:["ca_address_sk","ca_street_number","ca_street_name","ca_city","ca_zip"]
+                                              default@customer_address,ad2,Tbl:COMPLETE,Col:NONE,Output:["ca_address_sk","ca_street_number","ca_street_name","ca_city","ca_zip"]
                                     <-Reducer 12 [SIMPLE_EDGE]
                                       SHUFFLE [RS_114]
                                         PartitionCols:_col21
@@ -174,7 +174,7 @@ Stage-0
                                                                               Filter Operator [FIL_591] (rows=1861800 width=385)
                                                                                 predicate:cd_demo_sk is not null
                                                                                 TableScan [TS_21] (rows=1861800 width=385)
-                                                                                  default@customer_demographics,cd1,Tbl:COMPLETE,Col:NONE,Output:["cd_demo_sk","cd_marital_status"]
+                                                                                  default@customer_demographics,cd2,Tbl:COMPLETE,Col:NONE,Output:["cd_demo_sk","cd_marital_status"]
                                                                         <-Reducer 17 [SIMPLE_EDGE]
                                                                           SHUFFLE [RS_58]
                                                                             PartitionCols:_col1
@@ -188,7 +188,7 @@ Stage-0
                                                                                   Filter Operator [FIL_590] (rows=73049 width=1119)
                                                                                     predicate:d_date_sk is not null
                                                                                     TableScan [TS_18] (rows=73049 width=1119)
-                                                                                      default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
+                                                                                      default@date_dim,d3,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
                                                                             <-Reducer 16 [SIMPLE_EDGE]
                                                                               SHUFFLE [RS_55]
                                                                                 PartitionCols:_col4
@@ -211,7 +211,7 @@ Stage-0
                                                                                       Filter Operator [FIL_589] (rows=73049 width=1119)
                                                                                         predicate:d_date_sk is not null
                                                                                         TableScan [TS_15] (rows=73049 width=1119)
-                                                                                          default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
+                                                                                          default@date_dim,d2,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
                                                                     <-Reducer 29 [SIMPLE_EDGE]
                                                                       SHUFFLE [RS_62]
                                                                         PartitionCols:_col4
@@ -292,7 +292,7 @@ Stage-0
                                                           Filter Operator [FIL_587] (rows=20 width=12)
                                                             predicate:ib_income_band_sk is not null
                                                             TableScan [TS_9] (rows=20 width=12)
-                                                              default@income_band,ib1,Tbl:COMPLETE,Col:NONE,Output:["ib_income_band_sk"]
+                                                              default@income_band,ib2,Tbl:COMPLETE,Col:NONE,Output:["ib_income_band_sk"]
                                                     <-Map 8 [SIMPLE_EDGE]
                                                       SHUFFLE [RS_102]
                                                         PartitionCols:_col1
@@ -301,7 +301,7 @@ Stage-0
                                                           Filter Operator [FIL_586] (rows=7200 width=107)
                                                             predicate:(hd_demo_sk is not null and hd_income_band_sk is not null)
                                                             TableScan [TS_6] (rows=7200 width=107)
-                                                              default@household_demographics,hd1,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_income_band_sk"]
+                                                              default@household_demographics,hd2,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_income_band_sk"]
                                             <-Reducer 38 [SIMPLE_EDGE]
                                               SHUFFLE [RS_109]
                                                 PartitionCols:_col0
@@ -415,7 +415,7 @@ Stage-0
                                           Filter Operator [FIL_621] (rows=40000000 width=1014)
                                             predicate:ca_address_sk is not null
                                             TableScan [TS_229] (rows=40000000 width=1014)
-                                              default@customer_address,ad1,Tbl:COMPLETE,Col:NONE,Output:["ca_address_sk","ca_street_number","ca_street_name","ca_city","ca_zip"]
+                                              default@customer_address,ad2,Tbl:COMPLETE,Col:NONE,Output:["ca_address_sk","ca_street_number","ca_street_name","ca_city","ca_zip"]
                                     <-Reducer 51 [SIMPLE_EDGE]
                                       SHUFFLE [RS_244]
                                         PartitionCols:_col21
@@ -453,7 +453,7 @@ Stage-0
                                                           Filter Operator [FIL_605] (rows=7200 width=107)
                                                             predicate:(hd_demo_sk is not null and hd_income_band_sk is not null)
                                                             TableScan [TS_136] (rows=7200 width=107)
-                                                              default@household_demographics,hd1,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_income_band_sk"]
+                                                              default@household_demographics,hd2,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_income_band_sk"]
                                                     <-Map 53 [SIMPLE_EDGE]
                                                       SHUFFLE [RS_233]
                                                         PartitionCols:_col0
@@ -462,7 +462,7 @@ Stage-0
                                                           Filter Operator [FIL_606] (rows=20 width=12)
                                                             predicate:ib_income_band_sk is not null
                                                             TableScan [TS_139] (rows=20 width=12)
-                                                              default@income_band,ib1,Tbl:COMPLETE,Col:NONE,Output:["ib_income_band_sk"]
+                                                              default@income_band,ib2,Tbl:COMPLETE,Col:NONE,Output:["ib_income_band_sk"]
                                                 <-Reducer 60 [SIMPLE_EDGE]
                                                   SHUFFLE [RS_236]
                                                     PartitionCols:_col17
@@ -517,7 +517,7 @@ Stage-0
                                                                               Filter Operator [FIL_610] (rows=1861800 width=385)
                                                                                 predicate:cd_demo_sk is not null
                                                                                 TableScan [TS_151] (rows=1861800 width=385)
-                                                                                  default@customer_demographics,cd1,Tbl:COMPLETE,Col:NONE,Output:["cd_demo_sk","cd_marital_status"]
+                                                                                  default@customer_demographics,cd2,Tbl:COMPLETE,Col:NONE,Output:["cd_demo_sk","cd_marital_status"]
                                                                         <-Reducer 56 [SIMPLE_EDGE]
                                                                           SHUFFLE [RS_188]
                                                                             PartitionCols:_col1
@@ -531,7 +531,7 @@ Stage-0
                                                                                   Filter Operator [FIL_609] (rows=73049 width=1119)
                                                                                     predicate:d_date_sk is not null
                                                                                     TableScan [TS_148] (rows=73049 width=1119)
-                                                                                      default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
+                                                                                      default@date_dim,d3,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
                                                                             <-Reducer 55 [SIMPLE_EDGE]
                                                                               SHUFFLE [RS_185]
                                                                                 PartitionCols:_col4
@@ -554,7 +554,7 @@ Stage-0
                                                                                       Filter Operator [FIL_608] (rows=73049 width=1119)
                                                                                         predicate:d_date_sk is not null
                                                                                         TableScan [TS_145] (rows=73049 width=1119)
-                                                                                          default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
+                                                                                          default@date_dim,d2,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
                                                                     <-Reducer 68 [SIMPLE_EDGE]
                                                                       SHUFFLE [RS_192]
                                                                         PartitionCols:_col4

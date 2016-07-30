@@ -122,7 +122,7 @@ Stage-0
                                                                   Filter Operator [FIL_86] (rows=1704 width=1910)
                                                                     predicate:(s_store_sk is not null and s_state is not null)
                                                                     TableScan [TS_15] (rows=1704 width=1910)
-                                                                      default@store,s,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_state"]
+                                                                      default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_state"]
                                                             <-Reducer 11 [SIMPLE_EDGE]
                                                               SHUFFLE [RS_21]
                                                                 PartitionCols:_col1
@@ -136,7 +136,7 @@ Stage-0
                                                                       Filter Operator [FIL_84] (rows=575995635 width=88)
                                                                         predicate:(ss_store_sk is not null and ss_sold_date_sk is not null)
                                                                         TableScan [TS_9] (rows=575995635 width=88)
-                                                                          default@store_sales,ss,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_store_sk","ss_net_profit"]
+                                                                          default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_store_sk","ss_net_profit"]
                                                                 <-Map 15 [SIMPLE_EDGE]
                                                                   SHUFFLE [RS_19]
                                                                     PartitionCols:_col0
@@ -145,5 +145,5 @@ Stage-0
                                                                       Filter Operator [FIL_85] (rows=36524 width=1119)
                                                                         predicate:(d_month_seq BETWEEN 1193 AND 1204 and d_date_sk is not null)
                                                                         TableScan [TS_12] (rows=73049 width=1119)
-                                                                          default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_month_seq"]
+                                                                          default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_month_seq"]
 

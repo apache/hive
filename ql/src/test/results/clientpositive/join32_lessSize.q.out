@@ -557,7 +557,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: x
+            alias: z
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -644,7 +644,7 @@ STAGE PLANS:
               name: default.src1
             name: default.src1
       Truncated Path -> Alias:
-        /src1 [$hdt$_3:x]
+        /src1 [$hdt$_3:z]
 
   Stage: Stage-12
     Map Reduce Local Work
@@ -778,13 +778,13 @@ STAGE PLANS:
   Stage: Stage-11
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:w 
+        $hdt$_0:y 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:w 
+        $hdt$_0:y 
           TableScan
-            alias: w
+            alias: y
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -972,8 +972,8 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest_j1
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(src)w.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.value SIMPLE [(src1)x.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(src)y.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_j1.value SIMPLE [(src1)z.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from dest_j1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1

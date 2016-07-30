@@ -97,7 +97,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: c
                   Statistics: Num rows: 51 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 5) (type: boolean)
@@ -250,7 +250,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: c
                   Statistics: Num rows: 51 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 5) (type: boolean)

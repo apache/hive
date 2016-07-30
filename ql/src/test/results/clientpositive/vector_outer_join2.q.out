@@ -253,16 +253,16 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_1:c 
+        $hdt$_1:cd 
           Fetch Operator
             limit: -1
-        $hdt$_2:c 
+        $hdt$_2:hd 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_1:c 
+        $hdt$_1:cd 
           TableScan
-            alias: c
+            alias: cd
             Statistics: Num rows: 20 Data size: 4182 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: cint (type: int)
@@ -272,9 +272,9 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
-        $hdt$_2:c 
+        $hdt$_2:hd 
           TableScan
-            alias: c
+            alias: hd
             Statistics: Num rows: 20 Data size: 4182 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: cbigint (type: bigint)
