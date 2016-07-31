@@ -328,17 +328,6 @@ class SparkClientImpl implements SparkClient {
 
       List<String> argv = Lists.newArrayList();
 
-      if ("kerberos".equalsIgnoreCase(hiveConf.get(HADOOP_SECURITY_AUTHENTICATION))) {
-          argv.add("kinit");
-          String principal = SecurityUtil.getServerPrincipal(hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
-              "0.0.0.0");
-          String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
-          argv.add(principal);
-          argv.add("-k");
-          argv.add("-t");
-          argv.add(keyTabFile + ";");
-      }
-
       if (sparkHome != null) {
         argv.add(new File(sparkHome, "bin/spark-submit").getAbsolutePath());
       } else {
@@ -374,6 +363,16 @@ class SparkClientImpl implements SparkClient {
         }
 
         argv.add("org.apache.spark.deploy.SparkSubmit");
+      }
+
+      if ("kerberos".equals(hiveConf.get(HADOOP_SECURITY_AUTHENTICATION))) {
+          String principal = SecurityUtil.getServerPrincipal(hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
+              "0.0.0.0");
+          String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
+          argv.add("--principal");
+          argv.add(principal);
+          argv.add("--keytab");
+          argv.add(keyTabFile);
       }
 
       if (master.equals("yarn-cluster")) {
