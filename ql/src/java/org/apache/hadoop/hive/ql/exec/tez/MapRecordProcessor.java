@@ -361,9 +361,10 @@ public class MapRecordProcessor extends RecordProcessor {
     // this sets up the map operator contexts correctly
     mapOp.initializeContexts();
     Deserializer deserializer = mapOp.getCurrentDeserializer();
+    // deserializer is null in case of VectorMapOperator
     KeyValueReader reader =
       new KeyValueInputMerger(kvReaderList, deserializer,
-          new ObjectInspector[] { deserializer.getObjectInspector() }, mapOp
+          new ObjectInspector[] { deserializer == null ? null : deserializer.getObjectInspector() }, mapOp
           .getConf()
           .getSortCols());
     return reader;
