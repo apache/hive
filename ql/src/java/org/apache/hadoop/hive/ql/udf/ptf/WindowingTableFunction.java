@@ -1356,7 +1356,13 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
             wFn.getWFnEval().aggregate(aggBuffers[j], args[j]);
             Object out = ((ISupportStreamingModeForWindowing) wFn.getWFnEval())
                 .getNextResult(aggBuffers[j]);
-            out = ObjectInspectorUtils.copyToStandardObject(out, wFn.getOI());
+            if (out != null) {
+              if (out == ISupportStreamingModeForWindowing.NULL_RESULT) {
+                out = null;
+              } else {
+                out = ObjectInspectorUtils.copyToStandardObject(out, wFn.getOI());
+              }
+            }
             output.set(j, out);
           } else {
             Range rng = getRange(wFn, currIdx, iPart, order);
