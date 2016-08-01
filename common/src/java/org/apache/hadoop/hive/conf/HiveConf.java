@@ -228,6 +228,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_CACHE_PINOBJTYPES,
       HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE,
       HiveConf.ConfVars.METASTORE_VALIDATE_TABLES,
+      HiveConf.ConfVars.METASTORE_DATANUCLEUS_INIT_COL_INFO,
       HiveConf.ConfVars.METASTORE_VALIDATE_COLUMNS,
       HiveConf.ConfVars.METASTORE_VALIDATE_CONSTRAINTS,
       HiveConf.ConfVars.METASTORE_STORE_MANAGER_TYPE,
@@ -703,6 +704,10 @@ public class HiveConf extends Configuration {
         "List of comma separated metastore object types that should be pinned in the cache"),
     METASTORE_CONNECTION_POOLING_TYPE("datanucleus.connectionPoolingType", "BONECP",
         "Specify connection pool library for datanucleus"),
+    // Workaround for DN bug on Postgres:
+    // http://www.datanucleus.org/servlet/forum/viewthread_thread,7985_offset
+    METASTORE_DATANUCLEUS_INIT_COL_INFO("datanucleus.rdbms.initializeColumnInfo", "NONE",
+        "initializeColumnInfo setting for DataNucleus; set to NONE at least on Postgres."),
     METASTORE_VALIDATE_TABLES("datanucleus.schema.validateTables", false,
         "validates existing schema against code. turn this on if you want to verify existing schema"),
     METASTORE_VALIDATE_COLUMNS("datanucleus.schema.validateColumns", false,
