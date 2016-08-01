@@ -1262,7 +1262,8 @@ public class Driver implements CommandProcessor {
     SQLState = null;
     downstreamError = null;
 
-    HiveDriverRunHookContext hookContext = new HiveDriverRunHookContextImpl(conf, command);
+    HiveDriverRunHookContext hookContext = new HiveDriverRunHookContextImpl(conf,
+        alreadyCompiled ? ctx.getCmd() : command);
     // Get all the driver run hooks and pre-execute them.
     List<HiveDriverRunHook> driverRunHooks;
     try {
