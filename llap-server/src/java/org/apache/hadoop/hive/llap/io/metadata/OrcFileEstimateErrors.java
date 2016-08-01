@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator.ObjectEstimato
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
+import org.apache.hadoop.hive.ql.io.orc.encoded.IncompleteCb;
 
 public class OrcFileEstimateErrors extends LlapCacheableBuffer {
   private final Object fileKey;
@@ -67,6 +68,7 @@ public class OrcFileEstimateErrors extends LlapCacheableBuffer {
       prev = new MutateHelper(ranges);
     }
     DiskRangeList current = ranges;
+    gotAllData.value = true; // Assume by default that we would find everything.
     while (current != null) {
       // We assume ranges in "ranges" are non-overlapping; thus, we will save next in advance.
       DiskRangeList check = current;
@@ -77,7 +79,9 @@ public class OrcFileEstimateErrors extends LlapCacheableBuffer {
         gotAllData.value = false;
         continue;
       }
-      check.removeSelf();
+      // We could just remove here and handle the missing tail during read, but that can be
+      // dangerous; let's explicitly add an incomplete CB.
+      check.replaceSelfWith(new IncompleteCb(check.getOffset(), check.getEnd()));
     }
     return prev.next;
   }

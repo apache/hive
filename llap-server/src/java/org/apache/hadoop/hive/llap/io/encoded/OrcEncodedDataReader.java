@@ -833,6 +833,11 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         long baseOffset, DiskRangeListFactory factory, BooleanRef gotAllData) {
       DiskRangeList result = (lowLevelCache == null) ? range
           : lowLevelCache.getFileData(fileKey, range, baseOffset, factory, counters, gotAllData);
+      if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
+        LlapIoImpl.ORC_LOGGER.trace("Disk ranges after data cache (file " + fileKey
+            + ", base offset " + baseOffset + "): "
+            + RecordReaderUtils.stringifyDiskRanges(range.next));
+      }
       if (gotAllData.value) return result;
       return (metadataCache == null) ? range
           : metadataCache.getIncompleteCbs(fileKey, range, baseOffset, factory, gotAllData);
