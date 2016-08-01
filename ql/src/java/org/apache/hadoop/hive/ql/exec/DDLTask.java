@@ -1865,12 +1865,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         AddPartitionDesc apd = new AddPartitionDesc(
             table.getDbName(), table.getTableName(), false);
         try {
-          for (CheckResult.PartitionResult part : partsNotInMs) {
-            apd.addPartition(Warehouse.makeSpecFromName(part.getPartitionName()), null);
-            repairOutput.add("Repair: Added partition to metastore "
-                + msckDesc.getTableName() + ':' + part.getPartitionName());
+          int batch_size = conf.getIntVar(ConfVars.HIVE_MSCK_REPAIR_BATCH_SIZE);
+          if (batch_size > 0 && partsNotInMs.size() > batch_size) {
+            int counter = 0;
+            for (CheckResult.PartitionResult part : partsNotInMs) {
+              counter++;
+              apd.addPartition(Warehouse.makeSpecFromName(part.getPartitionName()), null);
+              repairOutput.add("Repair: Added partition to metastore " + msckDesc.getTableName()
+                  + ':' + part.getPartitionName());
+              if (counter == batch_size) {
+                db.createPartitions(apd);
+                apd = new AddPartitionDesc(table.getDbName(), table.getTableName(), false);
+                counter = 0;
+              }
+            }
+          } else {
+            for (CheckResult.PartitionResult part : partsNotInMs) {
+              apd.addPartition(Warehouse.makeSpecFromName(part.getPartitionName()), null);
+              repairOutput.add("Repair: Added partition to metastore " + msckDesc.getTableName()
+                  + ':' + part.getPartitionName());
+            }
+            db.createPartitions(apd);
           }
-          db.createPartitions(apd);
         } catch (Exception e) {
           LOG.info("Could not bulk-add partitions to metastore; trying one by one", e);
           repairOutput.clear();
