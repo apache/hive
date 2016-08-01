@@ -710,6 +710,11 @@ class EncodedReaderImpl implements EncodedReader {
         ponderReleaseInitialRefcount(unlockUntilCOffset, streamOffset, cc);
         lastUncompressed = cc;
         next = current.next;
+        if (next != null && (endCOffset >= 0 && currentOffset < endCOffset)
+            && next.getOffset() >= endCOffset) {
+          throw new IOException("Expected data at " + currentOffset + " (reading until "
+            + endCOffset + "), but the next buffer starts at " + next.getOffset());
+        }
       } else if (current instanceof IncompleteCb)  {
         // 2b. This is a known incomplete CB caused by ORC CB end boundaries being estimates.
         if (isTracingEnabled) {
@@ -1121,17 +1126,6 @@ class EncodedReaderImpl implements EncodedReader {
       ranges = ranges.prev;
     }
     return ranges;
-  }
-
-  private static class IncompleteCb extends DiskRangeList {
-    public IncompleteCb(long offset, long end) {
-      super(offset, end);
-    }
-
-    @Override
-    public String toString() {
-      return "incomplete CB start: " + offset + " end: " + end;
-    }
   }
 
   /**

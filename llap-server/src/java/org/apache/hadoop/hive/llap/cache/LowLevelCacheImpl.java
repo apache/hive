@@ -171,7 +171,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
       metrics.incrCacheHitBytes(Math.min(requestedLength, currentCached.getLength()));
     }
     if (currentNotCached != null) {
-      assert !currentNotCached.hasData();
+      assert !currentNotCached.hasData(); // Assumes no ranges passed to cache to read have data.
       if (gotAllData != null) {
         gotAllData.value = false;
       }
