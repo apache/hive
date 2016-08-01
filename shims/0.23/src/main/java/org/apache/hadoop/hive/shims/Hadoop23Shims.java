@@ -32,9 +32,11 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.security.auth.Subject;
@@ -1300,11 +1302,23 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
     try {
       Subject origSubject = (Subject) getSubjectMethod.invoke(baseUgi);
+      
       Subject subject = new Subject(false, origSubject.getPrincipals(),
-          origSubject.getPublicCredentials(), origSubject.getPrivateCredentials());
+          cloneCredentials(origSubject.getPublicCredentials()),
+          cloneCredentials(origSubject.getPrivateCredentials()));
       return ugiCtor.newInstance(subject);
     } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
       throw new IOException(e);
     }
   }
+
+  private static Set<Object> cloneCredentials(Set<Object> old) {
+    Set<Object> set = new HashSet<>();
+    // Make sure Hadoop credentials objects do not reuse the maps.
+    for (Object o : old) {
+      set.add(o instanceof Credentials ? new Credentials((Credentials)o) : o);
+    }
+    return set;
+  }
+  
 }
