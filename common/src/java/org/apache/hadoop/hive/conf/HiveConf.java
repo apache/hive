@@ -2113,7 +2113,9 @@ public class HiveConf extends Configuration {
         "hive.exec.temporary.table.storage", "default", new StringSet("memory",
          "ssd", "default"), "Define the storage policy for temporary tables." +
          "Choices between memory, ssd and default"),
-
+    HIVE_QUERY_LIFETIME_HOOKS("hive.query.lifetime.hooks", "",
+        "A comma separated list of hooks which implement QueryLifeTimeHook. These will be triggered" +
+            " before/after query compilation and before/after query execution, in the order specified"),
     HIVE_DRIVER_RUN_HOOKS("hive.exec.driver.run.hooks", "",
         "A comma separated list of hooks which implement HiveDriverRunHook. Will be run at the beginning " +
         "and end of Driver.run, these will be run in the order specified."),

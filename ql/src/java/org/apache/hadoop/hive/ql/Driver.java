@@ -63,6 +63,9 @@ import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
 import org.apache.hadoop.hive.ql.hooks.PostExecute;
 import org.apache.hadoop.hive.ql.hooks.PreExecute;
+import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
+import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
+import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContextImpl;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
@@ -168,6 +171,9 @@ public class Driver implements CommandProcessor {
 
   // Query specific info
   private QueryState queryState;
+
+  // Query hooks that execute before compilation and after execution
+  List<QueryLifeTimeHook> queryHooks;
 
   private boolean checkConcurrency() {
     boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
@@ -372,6 +378,9 @@ public class Driver implements CommandProcessor {
 
     SessionState.get().setupQueryCurrentTimestamp();
 
+    // Whether any error occurred during query compilation. Used for query lifetime hook.
+    boolean compileError = false;
+
     try {
       // Initialize the transaction manager.  This must be done before analyze is called.
       final HiveTxnManager txnManager = SessionState.get().initTxnMgr(conf);
@@ -403,6 +412,17 @@ public class Driver implements CommandProcessor {
       tree = ParseUtils.findRootNonNullToken(tree);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
 
+      // Trigger query hook before compilation
+      queryHooks = getHooks(ConfVars.HIVE_QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class);
+      if (queryHooks != null && !queryHooks.isEmpty()) {
+        QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl();
+        qhc.setHiveConf(conf);
+        qhc.setCommand(command);
+
+        for (QueryLifeTimeHook hook : queryHooks) {
+          hook.beforeCompile(qhc);
+        }
+      }
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
@@ -491,8 +511,11 @@ public class Driver implements CommandProcessor {
           }
         }
       }
+
       return 0;
     } catch (Exception e) {
+      compileError = true;
+
       ErrorMsg error = ErrorMsg.getErrorMsg(e.getMessage());
       errorMessage = "FAILED: " + e.getClass().getSimpleName();
       if (error != ErrorMsg.GENERIC_ERROR) {
@@ -517,6 +540,19 @@ public class Driver implements CommandProcessor {
       return error.getErrorCode();//todo: this is bad if returned as cmd shell exit
       // since it exceeds valid range of shell return values
     } finally {
+
+      // Trigger post compilation hook. Note that if the compilation fails here then
+      // before/after execution hook will never be executed.
+      if (queryHooks != null && !queryHooks.isEmpty()) {
+        QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl();
+        qhc.setHiveConf(conf);
+        qhc.setCommand(command);
+
+        for (QueryLifeTimeHook hook : queryHooks) {
+          hook.afterCompile(qhc, compileError);
+        }
+      }
+
       double duration = perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.COMPILE)/1000.00;
       ImmutableMap<String, Long> compileHMSTimings = dumpMetaCallTimingWithoutEx("compilation");
       queryDisplay.setHmsTimings(QueryDisplay.Phase.COMPILATION, compileHMSTimings);
@@ -1513,6 +1549,9 @@ public class Driver implements CommandProcessor {
 
     HookContext hookContext = null;
 
+    // Whether there's any error occurred during query execution. Used for query lifetime hook.
+    boolean executionError = false;
+
     try {
       LOG.info("Executing command(queryId=" + queryId + "): " + queryStr);
       // compile and execute can get called from different threads in case of HS2
@@ -1549,6 +1588,19 @@ public class Driver implements CommandProcessor {
           perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
         }
       }
+
+      // Trigger query hooks before query execution.
+      if (queryHooks != null && !queryHooks.isEmpty()) {
+        QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl();
+        qhc.setHiveConf(conf);
+        qhc.setCommand(ctx.getCmd());
+        qhc.setHookContext(hookContext);
+
+        for (QueryLifeTimeHook hook : queryHooks) {
+          hook.beforeExecution(qhc);
+        }
+      }
+
       setQueryDisplays(plan.getRootTasks());
       int mrJobs = Utilities.getMRTasks(plan.getRootTasks()).size();
       int jobs = mrJobs
@@ -1715,15 +1767,16 @@ public class Driver implements CommandProcessor {
         }
       }
 
-
       if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().setQueryProperty(queryId, Keys.QUERY_RET_CODE,
             String.valueOf(0));
         SessionState.get().getHiveHistory().printRowCount(queryId);
       }
     } catch (CommandNeedRetryException e) {
+      executionError = true;
       throw e;
     } catch (Exception e) {
+      executionError = true;
       ctx.restoreOriginalTracker();
       if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().setQueryProperty(queryId, Keys.QUERY_RET_CODE,
@@ -1744,6 +1797,18 @@ public class Driver implements CommandProcessor {
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (12);
     } finally {
+      // Trigger query hooks after query completes its execution.
+      if (queryHooks != null && !queryHooks.isEmpty()) {
+        QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl();
+        qhc.setHiveConf(conf);
+        qhc.setCommand(ctx.getCmd());
+        qhc.setHookContext(hookContext);
+
+        for (QueryLifeTimeHook hook : queryHooks) {
+          hook.afterExecution(qhc, executionError);
+        }
+      }
+
       if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().endQuery(queryId);
       }
