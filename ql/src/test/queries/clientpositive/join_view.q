@@ -1,3 +1,5 @@
+set hive.mapred.mode=nonstrict;
+
 drop table invites;
 drop table invites2;
 create table invites (foo int, bar string) partitioned by (ds string);

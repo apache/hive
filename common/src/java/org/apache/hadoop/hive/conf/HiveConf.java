@@ -990,7 +990,7 @@ public class HiveConf extends Configuration {
         "Enabling strict large query checks disallows the following:\n" +
         "  Cartesian product (cross join)."),
     @Deprecated
-    HIVEMAPREDMODE("hive.mapred.mode", "nonstrict",
+    HIVEMAPREDMODE("hive.mapred.mode", null,
         "Deprecated; use hive.strict.checks.* settings instead."),
     HIVEALIAS("hive.alias", "", ""),
     HIVEMAPSIDEAGGREGATE("hive.map.aggr", true, "Whether to use map-side aggregation in Hive Group By queries"),

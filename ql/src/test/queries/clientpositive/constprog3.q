@@ -1,3 +1,5 @@
+set hive.mapred.mode=nonstrict;
+
 create temporary table table1(id int, val int, val1 int, dimid int);
 create temporary table table3(id int, val int, val1 int);
 

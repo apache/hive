@@ -1,3 +1,5 @@
+set hive.mapred.mode=nonstrict;
+
 explain
 select src1.key from src src1 join src src2 join src src3;
 

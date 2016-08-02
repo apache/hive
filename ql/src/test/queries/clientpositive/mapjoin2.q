@@ -1,3 +1,4 @@
+set hive.mapred.mode=nonstrict;
 set hive.auto.convert.join=true;
 
 create table tbl (n bigint, t string); 

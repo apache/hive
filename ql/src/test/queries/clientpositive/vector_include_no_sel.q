@@ -5,6 +5,7 @@ set hive.cbo.enable=false;
 SET hive.auto.convert.join=true;
 SET hive.auto.convert.join.noconditionaltask=true;
 SET hive.auto.convert.join.noconditionaltask.size=1000000000;
+SET hive.mapred.mode=nonstrict;
 
 -- HIVE-13872
 -- Looking for TableScan immediately followed by ReduceSink (no intervening SEL operator).
