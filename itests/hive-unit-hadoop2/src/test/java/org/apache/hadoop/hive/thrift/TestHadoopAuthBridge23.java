@@ -18,7 +18,6 @@ package org.apache.hadoop.hive.thrift;
  */
 
 
-import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -28,7 +27,6 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.thrift.DelegationTokenStore.TokenStoreException;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.SaslRpcServer;
@@ -46,6 +44,9 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.transport.TSaslServerTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -60,7 +61,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
-public class TestHadoopAuthBridge23 extends TestCase {
+public class TestHadoopAuthBridge23 {
 
   /**
    * set to true when metastore token manager has intitialized token manager
@@ -137,7 +138,7 @@ public class TestHadoopAuthBridge23 extends TestCase {
     conf.setStrings(DefaultImpersonationProvider.getTestProvider().getProxySuperuserIpConfKey(superUserShortName),
         builder.toString());
   }
-
+  @Before
   public void setup() throws Exception {
     isMetastoreTokenManagerInited = false;
     int port = findFreePort();
@@ -157,6 +158,7 @@ public class TestHadoopAuthBridge23 extends TestCase {
    * Test delegation token store/load from shared store.
    * @throws Exception
    */
+  @Test
   public void testDelegationTokenSharedStore() throws Exception {
     UserGroupInformation clientUgi = UserGroupInformation.getCurrentUser();
 
@@ -175,37 +177,37 @@ public class TestHadoopAuthBridge23 extends TestCase {
     DelegationTokenIdentifier d = new DelegationTokenIdentifier();
     d.readFields(new DataInputStream(new ByteArrayInputStream(
         t.getIdentifier())));
-    assertTrue("Usernames don't match",
+    Assert.assertTrue("Usernames don't match",
         clientUgi.getShortUserName().equals(d.getUser().getShortUserName()));
 
     DelegationTokenInformation tokenInfo = MyTokenStore.TOKEN_STORE
         .getToken(d);
-    assertNotNull("token not in store", tokenInfo);
-    assertFalse("duplicate token add",
+    Assert.assertNotNull("token not in store", tokenInfo);
+    Assert.assertFalse("duplicate token add",
         MyTokenStore.TOKEN_STORE.addToken(d, tokenInfo));
 
     // check keys are copied from token store when token is loaded
     TokenStoreDelegationTokenSecretManager anotherManager =
         new TokenStoreDelegationTokenSecretManager(0, 0, 0, 0,
             MyTokenStore.TOKEN_STORE);
-   assertEquals("master keys empty on init", 0,
+    Assert.assertEquals("master keys empty on init", 0,
         anotherManager.getAllKeys().length);
-    assertNotNull("token loaded",
+    Assert.assertNotNull("token loaded",
         anotherManager.retrievePassword(d));
     anotherManager.renewToken(t, clientUgi.getShortUserName());
-    assertEquals("master keys not loaded from store",
+    Assert.assertEquals("master keys not loaded from store",
         MyTokenStore.TOKEN_STORE.getMasterKeys().length,
         anotherManager.getAllKeys().length);
 
     // cancel the delegation token
     tokenManager.cancelDelegationToken(tokenStrForm);
-    assertNull("token not removed from store after cancel",
+    Assert.assertNull("token not removed from store after cancel",
         MyTokenStore.TOKEN_STORE.getToken(d));
-    assertFalse("token removed (again)",
+    Assert.assertFalse("token removed (again)",
         MyTokenStore.TOKEN_STORE.removeToken(d));
     try {
       anotherManager.retrievePassword(d);
-      fail("InvalidToken expected after cancel");
+      Assert.fail("InvalidToken expected after cancel");
     } catch (InvalidToken ex) {
       // expected
     }
@@ -213,9 +215,9 @@ public class TestHadoopAuthBridge23 extends TestCase {
     // token expiration
     MyTokenStore.TOKEN_STORE.addToken(d,
         new DelegationTokenInformation(0, t.getPassword()));
-    assertNotNull(MyTokenStore.TOKEN_STORE.getToken(d));
+    Assert.assertNotNull(MyTokenStore.TOKEN_STORE.getToken(d));
     anotherManager.removeExpiredTokens();
-    assertNull("Expired token not removed",
+    Assert.assertNull("Expired token not removed",
         MyTokenStore.TOKEN_STORE.getToken(d));
 
     // key expiration - create an already expired key
@@ -223,13 +225,14 @@ public class TestHadoopAuthBridge23 extends TestCase {
     anotherManager.stopThreads();
     DelegationKey expiredKey = new DelegationKey(-1, 0, anotherManager.getAllKeys()[0].getKey());
     anotherManager.logUpdateMasterKey(expiredKey); // updates key with sequence number
-    assertTrue("expired key not in allKeys",
+    Assert.assertTrue("expired key not in allKeys",
         anotherManager.reloadKeys().containsKey(expiredKey.getKeyId()));
     anotherManager.rollMasterKeyExt();
-    assertFalse("Expired key not removed",
+    Assert.assertFalse("Expired key not removed",
         anotherManager.reloadKeys().containsKey(expiredKey.getKeyId()));
   }
 
+  @Test
   public void testSaslWithHiveMetaStore() throws Exception {
     setup();
     UserGroupInformation clientUgi = UserGroupInformation.getCurrentUser();
@@ -237,6 +240,7 @@ public class TestHadoopAuthBridge23 extends TestCase {
     obtainTokenAndAddIntoUGI(clientUgi, "tokenForFooTablePartition");
   }
 
+  @Test
   public void testMetastoreProxyUser() throws Exception {
     setup();
 
@@ -264,7 +268,7 @@ public class TestHadoopAuthBridge23 extends TestCase {
         }
       }
     });
-    assertTrue("Expected the getDelegationToken call to fail",
+    Assert.assertTrue("Expected the getDelegationToken call to fail",
         tokenStrForm == null);
 
     //set the configuration up such that proxyUser can act on
@@ -283,7 +287,7 @@ public class TestHadoopAuthBridge23 extends TestCase {
         }
       }
     });
-    assertTrue("Expected the getDelegationToken call to not fail",
+    Assert.assertTrue("Expected the getDelegationToken call to not fail",
         tokenStrForm != null);
     Token<DelegationTokenIdentifier> t= new Token<DelegationTokenIdentifier>();
     t.decodeFromUrlString(tokenStrForm);
@@ -291,7 +295,7 @@ public class TestHadoopAuthBridge23 extends TestCase {
     DelegationTokenIdentifier d = new DelegationTokenIdentifier();
     d.readFields(new DataInputStream(new ByteArrayInputStream(
         t.getIdentifier())));
-    assertTrue("Usernames don't match",
+    Assert.assertTrue("Usernames don't match",
         delegationTokenUser.getShortUserName().equals(d.getUser().getShortUserName()));
 
   }
@@ -348,7 +352,7 @@ public class TestHadoopAuthBridge23 extends TestCase {
     DelegationTokenIdentifier d = new DelegationTokenIdentifier();
     d.readFields(new DataInputStream(new ByteArrayInputStream(
         t.getIdentifier())));
-    assertTrue("Usernames don't match",
+    Assert.assertTrue("Usernames don't match",
         clientUgi.getShortUserName().equals(d.getUser().getShortUserName()));
 
     if (tokenSig != null) {
@@ -369,7 +373,7 @@ public class TestHadoopAuthBridge23 extends TestCase {
         }
       });
 
-    assertTrue("Couldn't connect to metastore", hiveClient != null);
+    Assert.assertTrue("Couldn't connect to metastore", hiveClient != null);
 
     //try out some metastore operations
     createDBAndVerifyExistence(hiveClient);
@@ -384,15 +388,13 @@ public class TestHadoopAuthBridge23 extends TestCase {
       clientUgi.doAs(new PrivilegedExceptionAction<HiveMetaStoreClient>() {
         public HiveMetaStoreClient run() {
           try {
-            HiveMetaStoreClient hiveClient =
-              new HiveMetaStoreClient(conf);
-            return hiveClient;
+            return new HiveMetaStoreClient(conf);
           } catch (MetaException e) {
             return null;
           }
         }
       });
-    assertTrue("Expected metastore operations to fail", hiveClient == null);
+    Assert.assertTrue("Expected metastore operations to fail", hiveClient == null);
   }
 
   private void createDBAndVerifyExistence(HiveMetaStoreClient client)
@@ -403,7 +405,7 @@ public class TestHadoopAuthBridge23 extends TestCase {
     client.createDatabase(db);
     Database db1 = client.getDatabase(dbName);
     client.dropDatabase(dbName);
-    assertTrue("Databases do not match", db1.getName().equals(db.getName()));
+    Assert.assertTrue("Databases do not match", db1.getName().equals(db.getName()));
   }
 
   private int findFreePort() throws IOException {
