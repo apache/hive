@@ -70,6 +70,9 @@ import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
 import org.apache.hadoop.hive.ql.hooks.PostExecute;
 import org.apache.hadoop.hive.ql.hooks.PreExecute;
+import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
+import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
+import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContextImpl;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
@@ -204,6 +207,9 @@ public class Driver implements CommandProcessor {
         lds.remove();
     }
   }
+
+  // Query hooks that execute before compilation and after execution
+  List<QueryLifeTimeHook> queryHooks;
 
   private boolean checkConcurrency() {
     boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
@@ -471,7 +477,9 @@ public class Driver implements CommandProcessor {
 
     SessionState.get().setupQueryCurrentTimestamp();
 
+    // Whether any error occurred during query compilation. Used for query lifetime hook.
     boolean compileError = false;
+
     try {
       if (isInterrupted()) {
         return handleInterruption("before parsing and analysing the query");
@@ -495,6 +503,18 @@ public class Driver implements CommandProcessor {
       // submit the query.
       SessionState.get().initTxnMgr(conf);
       recordValidTxns();
+
+      // Trigger query hook before compilation
+      queryHooks = getHooks(ConfVars.HIVE_QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class);
+      if (queryHooks != null && !queryHooks.isEmpty()) {
+        QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl();
+        qhc.setHiveConf(conf);
+        qhc.setCommand(command);
+
+        for (QueryLifeTimeHook hook : queryHooks) {
+          hook.beforeCompile(qhc);
+        }
+      }
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, tree);
@@ -581,6 +601,7 @@ public class Driver implements CommandProcessor {
           }
         }
       }
+
       return 0;
     } catch (Exception e) {
       if (isInterrupted()) {
@@ -588,6 +609,7 @@ public class Driver implements CommandProcessor {
       }
 
       compileError = true;
+
       ErrorMsg error = ErrorMsg.getErrorMsg(e.getMessage());
       errorMessage = "FAILED: " + e.getClass().getSimpleName();
       if (error != ErrorMsg.GENERIC_ERROR) {
@@ -607,6 +629,19 @@ public class Driver implements CommandProcessor {
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return error.getErrorCode();
     } finally {
+
+      // Trigger post compilation hook. Note that if the compilation fails here then
+      // before/after execution hook will never be executed.
+      if (queryHooks != null && !queryHooks.isEmpty()) {
+        QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl();
+        qhc.setHiveConf(conf);
+        qhc.setCommand(command);
+
+        for (QueryLifeTimeHook hook : queryHooks) {
+          hook.afterCompile(qhc, compileError);
+        }
+      }
+
       double duration = perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.COMPILE)/1000.00;
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.COMPILE);
       ImmutableMap<String, Long> compileHMSTimings = dumpMetaCallTimingWithoutEx("compilation");
@@ -1620,7 +1655,11 @@ public class Driver implements CommandProcessor {
 
     maxthreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
 
+    HookContext hookContext = null;
+
+    // Whether there's any error occurred during query execution. Used for query lifetime hook.
     boolean executionError = false;
+
     try {
       LOG.info("Executing command(queryId=" + queryId + "): " + queryStr);
       // compile and execute can get called from different threads in case of HS2
@@ -1637,7 +1676,7 @@ public class Driver implements CommandProcessor {
       resStream = null;
 
       SessionState ss = SessionState.get();
-      HookContext hookContext = new HookContext(plan, conf, ctx.getPathToCS(), ss.getUserName(), ss.getUserIpAddress());
+      hookContext = new HookContext(plan, conf, ctx.getPathToCS(), ss.getUserName(), ss.getUserIpAddress());
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
       for (Hook peh : getHooks(HiveConf.ConfVars.PREEXECHOOKS)) {
@@ -1654,6 +1693,18 @@ public class Driver implements CommandProcessor {
               Utils.getUGI());
 
           perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
+        }
+      }
+
+      // Trigger query hooks before query execution.
+      if (queryHooks != null && !queryHooks.isEmpty()) {
+        QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl();
+        qhc.setHiveConf(conf);
+        qhc.setCommand(ctx.getCmd());
+        qhc.setHookContext(hookContext);
+
+        for (QueryLifeTimeHook hook : queryHooks) {
+          hook.beforeExecution(qhc);
         }
       }
 
@@ -1837,7 +1888,6 @@ public class Driver implements CommandProcessor {
         }
       }
 
-
       if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().setQueryProperty(queryId, Keys.QUERY_RET_CODE,
             String.valueOf(0));
@@ -1852,7 +1902,6 @@ public class Driver implements CommandProcessor {
       if (isInterrupted()) {
         return handleInterruption("during query execution: \n" + e.getMessage());
       }
-
       ctx.restoreOriginalTracker();
       if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().setQueryProperty(queryId, Keys.QUERY_RET_CODE,
@@ -1866,6 +1915,18 @@ public class Driver implements CommandProcessor {
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (12);
     } finally {
+      // Trigger query hooks after query completes its execution.
+      if (queryHooks != null && !queryHooks.isEmpty()) {
+        QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl();
+        qhc.setHiveConf(conf);
+        qhc.setCommand(ctx.getCmd());
+        qhc.setHookContext(hookContext);
+
+        for (QueryLifeTimeHook hook : queryHooks) {
+          hook.afterExecution(qhc, executionError);
+        }
+      }
+
       if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().endQuery(queryId);
       }
