@@ -1388,10 +1388,11 @@ public final class Utilities {
     Path tmpPath = Utilities.toTempPath(specPath);
     Path taskTmpPath = Utilities.toTaskTempPath(specPath);
     if (success) {
-      if (fs.exists(tmpPath)) {
+      FileStatus[] statuses = HiveStatsUtils.getFileStatusRecurse(
+          tmpPath, ((dpCtx == null) ? 1 : dpCtx.getNumDPCols()), fs);
+      if(statuses != null && statuses.length > 0) {
         // remove any tmp file or double-committed output files
-        List<Path> emptyBuckets =
-            Utilities.removeTempOrDuplicateFiles(fs, tmpPath, dpCtx, conf, hconf);
+        List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(fs, statuses, dpCtx, conf, hconf);
         // create empty buckets if necessary
         if (emptyBuckets.size() > 0) {
           createEmptyBuckets(hconf, emptyBuckets, conf, reporter);
@@ -1462,21 +1463,31 @@ public final class Utilities {
     removeTempOrDuplicateFiles(fs, path, null,null,null);
   }
 
+  public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, Path path,
+      DynamicPartitionCtx dpCtx, FileSinkDesc conf, Configuration hconf) throws IOException {
+    if (path  == null) {
+      return null;
+    }
+    FileStatus[] stats = HiveStatsUtils.getFileStatusRecurse(path,
+        ((dpCtx == null) ? 1 : dpCtx.getNumDPCols()), fs);
+    return removeTempOrDuplicateFiles(fs, stats, dpCtx, conf, hconf);
+  }
+
   /**
    * Remove all temporary files and duplicate (double-committed) files from a given directory.
    *
    * @return a list of path names corresponding to should-be-created empty buckets.
    */
-  public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, Path path,
+  public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, FileStatus[] fileStats,
       DynamicPartitionCtx dpCtx, FileSinkDesc conf, Configuration hconf) throws IOException {
-    if (path == null) {
+    if (fileStats == null) {
       return null;
     }
 
     List<Path> result = new ArrayList<Path>();
     HashMap<String, FileStatus> taskIDToFile = null;
     if (dpCtx != null) {
-      FileStatus parts[] = HiveStatsUtils.getFileStatusRecurse(path, dpCtx.getNumDPCols(), fs);
+      FileStatus parts[] = fileStats;
 
       for (int i = 0; i < parts.length; ++i) {
         assert parts[i].isDir() : "dynamic partition " + parts[i].getPath()
@@ -1512,7 +1523,10 @@ public final class Utilities {
         }
       }
     } else {
-      FileStatus[] items = fs.listStatus(path);
+      FileStatus[] items = fileStats;
+      if (items.length == 0) {
+        return result;
+      }
       taskIDToFile = removeTempOrDuplicateFiles(items, fs);
       if(taskIDToFile != null && taskIDToFile.size() > 0 && conf != null && conf.getTable() != null
           && (conf.getTable().getNumBuckets() > taskIDToFile.size()) && !"tez".equalsIgnoreCase(hconf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname))) {
@@ -2253,12 +2267,13 @@ public final class Utilities {
 
   public static boolean isEmptyPath(JobConf job, Path dirPath) throws Exception {
     FileSystem inpFs = dirPath.getFileSystem(job);
-
-    if (inpFs.exists(dirPath)) {
+    try {
       FileStatus[] fStats = inpFs.listStatus(dirPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
       if (fStats.length > 0) {
         return false;
       }
+    } catch(FileNotFoundException fnf) {
+      return true;
     }
     return true;
   }

@@ -3191,20 +3191,20 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (oldPath != null) {
         boolean oldPathDeleted = false;
         boolean isOldPathUnderDestf = false;
+        FileStatus[] statuses = null;
         try {
           FileSystem fs2 = oldPath.getFileSystem(conf);
-          if (fs2.exists(oldPath)) {
-            // Do not delete oldPath if:
-            //  - destf is subdir of oldPath
-            //if ( !(fs2.equals(destf.getFileSystem(conf)) && FileUtils.isSubDir(oldPath, destf, fs2)))
-            isOldPathUnderDestf = FileUtils.isSubDir(oldPath, destf, fs2);
-            if (isOldPathUnderDestf) {
-              // if oldPath is destf or its subdir, its should definitely be deleted, otherwise its
-              // existing content might result in incorrect (extra) data.
-              // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
-              // not the destf or its subdir?
-              oldPathDeleted = trashFilesUnderDir(fs2, oldPath, conf);
-            }
+          statuses = fs2.listStatus(oldPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
+          // Do not delete oldPath if:
+          //  - destf is subdir of oldPath
+          //if ( !(fs2.equals(destf.getFileSystem(conf)) && FileUtils.isSubDir(oldPath, destf, fs2)))
+          isOldPathUnderDestf = FileUtils.isSubDir(oldPath, destf, fs2);
+          if (isOldPathUnderDestf) {
+            // if oldPath is destf or its subdir, its should definitely be deleted, otherwise its
+            // existing content might result in incorrect (extra) data.
+            // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
+            // not the destf or its subdir?
+            oldPathDeleted = trashFiles(fs2, statuses, conf);
           }
         } catch (IOException e) {
           if (isOldPathUnderDestf) {
@@ -3216,14 +3216,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
             LOG.warn("Directory " + oldPath.toString() + " cannot be cleaned: " + e, e);
           }
         }
-        if (isOldPathUnderDestf && !oldPathDeleted) {
-          throw new HiveException("Destination directory " + destf + " has not be cleaned up.");
+        if (statuses != null && statuses.length > 0) {
+          if (isOldPathUnderDestf && !oldPathDeleted) {
+            throw new HiveException("Destination directory " + destf + " has not be cleaned up.");
+          }
         }
       }
 
       // first call FileUtils.mkdir to make sure that destf directory exists, if not, it creates
       // destf with inherited permissions
-      boolean destfExist = FileUtils.mkdir(destFs, destf, true, conf);
+      boolean inheritPerms = HiveConf.getBoolVar(conf, HiveConf.ConfVars
+          .HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
+      boolean destfExist = FileUtils.mkdir(destFs, destf, inheritPerms, conf);
       if(!destfExist) {
         throw new IOException("Directory " + destf.toString()
             + " does not exist and could not be created.");
@@ -3255,16 +3259,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
   /**
    * Trashes or deletes all files under a directory. Leaves the directory as is.
    * @param fs FileSystem to use
-   * @param f path of directory
+   * @param statuses fileStatuses of files to be deleted
    * @param conf hive configuration
-   * @param forceDelete whether to force delete files if trashing does not succeed
    * @return true if deletion successful
    * @throws IOException
    */
-  private boolean trashFilesUnderDir(final FileSystem fs, Path f, final Configuration conf)
+  private boolean trashFiles(final FileSystem fs, final FileStatus[] statuses, final Configuration conf)
       throws IOException {
-    FileStatus[] statuses = fs.listStatus(f, FileUtils.HIDDEN_FILES_PATH_FILTER);
     boolean result = true;
+
+    if (statuses == null || statuses.length == 0) {
+      return false;
+    }
     final List<Future<Boolean>> futures = new LinkedList<>();
     final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ?
         Executors.newFixedThreadPool(conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
