@@ -204,7 +204,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"year\":\"true\",\"month\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"month\":\"true\",\"year\":\"true\"}}
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	21                  

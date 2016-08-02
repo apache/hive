@@ -25,6 +25,7 @@ import org.json.JSONObject;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,59 +143,34 @@ public class StatsSetupConst {
     COLUMN_STATS_ACCURATE, NUM_FILES, TOTAL_SIZE,ROW_COUNT, RAW_DATA_SIZE, NUM_PARTITIONS};
 
   public static boolean areBasicStatsUptoDate(Map<String, String> params) {
-    String statsAcc = params.get(COLUMN_STATS_ACCURATE);
-    if (statsAcc == null) {
-      return false;
+    JSONObject stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
+    if (stats != null && stats.has(BASIC_STATS)) {
+      return true;
     } else {
-      JSONObject jsonObj;
-      try {
-        jsonObj = new JSONObject(statsAcc);
-        if (jsonObj != null && jsonObj.has(BASIC_STATS)) {
-          return true;
-        } else {
-          return false;
-        }
-      } catch (JSONException e) {
-        // For backward compatibility, if previous value can not be parsed to a
-        // json object, it will come here.
-        LOG.debug("In StatsSetupConst, JsonParser can not parse " + BASIC_STATS + ".");
-        // We try to parse it as TRUE or FALSE
-        if (statsAcc.equals(TRUE)) {
-          setBasicStatsState(params, TRUE);
-          return true;
-        } else {
-          setBasicStatsState(params, FALSE);
-          return false;
-        }
-      }
+      return false;
     }
   }
 
   public static boolean areColumnStatsUptoDate(Map<String, String> params, String colName) {
-    String statsAcc = params.get(COLUMN_STATS_ACCURATE);
-    if (statsAcc == null) {
-      return false;
-    } else {
-      JSONObject jsonObj;
-      try {
-        jsonObj = new JSONObject(statsAcc);
-        if (jsonObj == null || !jsonObj.has(COLUMN_STATS)) {
-          return false;
-        } else {
-          JSONObject columns = jsonObj.getJSONObject(COLUMN_STATS);
-          if (columns != null && columns.has(colName)) {
-            return true;
-          } else {
-            return false;
-          }
-        }
-      } catch (JSONException e) {
-        // For backward compatibility, if previous value can not be parsed to a
-        // json object, it will come here.
-        LOG.debug("In StatsSetupConst, JsonParser can not parse COLUMN_STATS.");
+    JSONObject stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
+    try {
+      if (!stats.has(COLUMN_STATS)) {
         return false;
+      } else {
+        JSONObject columns = stats.getJSONObject(COLUMN_STATS);
+        if (columns != null && columns.has(colName)) {
+          return true;
+        } else {
+          return false;
+        }
       }
+    } catch (JSONException e) {
+      // For backward compatibility, if previous value can not be parsed to a
+      // json object, it will come here.
+      LOG.debug("In StatsSetupConst, JsonParser can not parse COLUMN_STATS.");
+      return false;
     }
+
   }
 
   // It will only throw JSONException when stats.put(BASIC_STATS, TRUE)
@@ -206,94 +182,37 @@ public class StatsSetupConst {
         params.remove(COLUMN_STATS_ACCURATE);
       }
     } else {
-      String statsAcc = params.get(COLUMN_STATS_ACCURATE);
-      if (statsAcc == null) {
-        JSONObject stats = new JSONObject(new LinkedHashMap());
-        // duplicate key is not possible
-        try {
-          stats.put(BASIC_STATS, TRUE);
-        } catch (JSONException e) {
-          // impossible to throw any json exceptions.
-          LOG.trace(e.getMessage());
-        }
-        params.put(COLUMN_STATS_ACCURATE, stats.toString());
-      } else {
-        // statsAcc may not be jason format, which will throw exception
-        JSONObject stats;
-        try {
-          stats = new JSONObject(statsAcc);
-        } catch (JSONException e) {
-          // old format of statsAcc, e.g., TRUE or FALSE
-          LOG.debug("In StatsSetupConst, JsonParser can not parse statsAcc.");
-          stats = new JSONObject(new LinkedHashMap());
-        }
-        if (!stats.has(BASIC_STATS)) {
-          // duplicate key is not possible
-          try {
-            stats.put(BASIC_STATS, TRUE);
-          } catch (JSONException e) {
-            // impossible to throw any json exceptions.
-            LOG.trace(e.getMessage());
-          }
-        }
-        params.put(COLUMN_STATS_ACCURATE, stats.toString());
+      JSONObject stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
+      
+      try {
+        stats.put(BASIC_STATS, TRUE);
+      } catch (JSONException e) {
+        // impossible to throw any json exceptions.
+        LOG.trace(e.getMessage());
       }
+      params.put(COLUMN_STATS_ACCURATE, stats.toString());
     }
   }
 
   public static void setColumnStatsState(Map<String, String> params, List<String> colNames) {
     try {
-      String statsAcc = params.get(COLUMN_STATS_ACCURATE);
-      JSONObject colStats = new JSONObject(new LinkedHashMap());
-      // duplicate key is not possible
-      for (String colName : colNames) {
-        colStats.put(colName.toLowerCase(), TRUE);
-      }
-      if (statsAcc == null) {
-        JSONObject stats = new JSONObject(new LinkedHashMap());
-        // duplicate key is not possible
-        stats.put(COLUMN_STATS, colStats);
-        params.put(COLUMN_STATS_ACCURATE, stats.toString());
+      JSONObject stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
+
+      JSONObject colStats;
+      if (stats.has(COLUMN_STATS)) {
+        colStats = stats.getJSONObject(COLUMN_STATS);
       } else {
-        // statsAcc may not be jason format, which will throw exception
-        JSONObject stats;
-        try {
-          stats = new JSONObject(statsAcc);
-        } catch (JSONException e) {
-          // old format of statsAcc, e.g., TRUE or FALSE
-          LOG.debug("In StatsSetupConst, JsonParser can not parse statsAcc.");
-          stats = new JSONObject(new LinkedHashMap());
-          try {
-            if (statsAcc.equals(TRUE)) {
-              stats.put(BASIC_STATS, TRUE);
-            } else {
-              stats.put(BASIC_STATS, FALSE);
-            }
-          } catch (JSONException e1) {
-            // impossible to throw any json exceptions.
-            LOG.trace(e1.getMessage());
-          }
-        }
-        if (!stats.has(COLUMN_STATS)) {
-          // duplicate key is not possible
-          stats.put(COLUMN_STATS, colStats);
-        } else {
-          // getJSONObject(COLUMN_STATS) should be found.
-          JSONObject allColumnStats = stats.getJSONObject(COLUMN_STATS);
-          for (String colName : colNames) {
-            if (!allColumnStats.has(colName)) {
-              // duplicate key is not possible
-              allColumnStats.put(colName, TRUE);
-            }
-          }
-          stats.remove(COLUMN_STATS);
-          // duplicate key is not possible
-          stats.put(COLUMN_STATS, allColumnStats);
-        }
-        params.put(COLUMN_STATS_ACCURATE, stats.toString());
+        colStats = new JSONObject(new TreeMap<String,String>());
       }
+      for (String colName : colNames) {
+        if (!colStats.has(colName)) {
+          colStats.put(colName, TRUE);
+        }
+      }
+      stats.put(COLUMN_STATS, colStats);
+      params.put(COLUMN_STATS_ACCURATE, stats.toString());
     } catch (JSONException e) {
-      //impossible to throw any json exceptions.
+      // impossible to throw any json exceptions.
       LOG.trace(e.getMessage());
     }
   }
@@ -302,24 +221,8 @@ public class StatsSetupConst {
     String statsAcc;
     if (params != null && (statsAcc = params.get(COLUMN_STATS_ACCURATE)) != null) {
       // statsAcc may not be jason format, which will throw exception
-      JSONObject stats;
-      try {
-        stats = new JSONObject(statsAcc);
-      } catch (JSONException e) {
-        // old format of statsAcc, e.g., TRUE or FALSE
-        LOG.debug("In StatsSetupConst, JsonParser can not parse statsAcc.");
-        stats = new JSONObject(new LinkedHashMap());
-        try {
-          if (statsAcc.equals(TRUE)) {
-            stats.put(BASIC_STATS, TRUE);
-          } else {
-            stats.put(BASIC_STATS, FALSE);
-          }
-        } catch (JSONException e1) {
-          // impossible to throw any json exceptions.
-          LOG.trace(e1.getMessage());
-        }
-      }
+      JSONObject stats = parseStatsAcc(statsAcc);
+      
       if (stats.has(COLUMN_STATS)) {
         stats.remove(COLUMN_STATS);
       }
@@ -335,4 +238,35 @@ public class StatsSetupConst {
     }
     setBasicStatsState(params, setting);
   }
+  
+  private static JSONObject parseStatsAcc(String statsAcc) {
+    if (statsAcc == null) {
+      return new JSONObject(new LinkedHashMap<String,Object>());
+    } else {
+      try {
+        return new JSONObject(statsAcc);
+      } catch (JSONException e) {
+        return statsAccUpgrade(statsAcc);
+      }
+    }
+  }
+
+  private static JSONObject statsAccUpgrade(String statsAcc) {
+    JSONObject stats;
+    // old format of statsAcc, e.g., TRUE or FALSE
+    LOG.debug("In StatsSetupConst, JsonParser can not parse statsAcc.");
+    stats = new JSONObject(new LinkedHashMap<String,Object>());
+    try {
+      if (statsAcc.equals(TRUE)) {
+        stats.put(BASIC_STATS, TRUE);
+      } else {
+        stats.put(BASIC_STATS, FALSE);
+      }
+    } catch (JSONException e1) {
+      // impossible to throw any json exceptions.
+      LOG.trace(e1.getMessage());
+    }
+    return stats;
+  }
+
 }

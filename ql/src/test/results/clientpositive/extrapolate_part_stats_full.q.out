@@ -104,7 +104,7 @@ STAGE PLANS:
             partition values:
               year 2000
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"state":"true","locid":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"locid":"true","state":"true"}}
               bucket_count -1
               columns state,locid,zip
               columns.comments 
@@ -147,7 +147,7 @@ STAGE PLANS:
             partition values:
               year 2001
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"state":"true","locid":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"locid":"true","state":"true"}}
               bucket_count -1
               columns state,locid,zip
               columns.comments 
@@ -217,7 +217,7 @@ STAGE PLANS:
             partition values:
               year 2000
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"state":"true","locid":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"locid":"true","state":"true"}}
               bucket_count -1
               columns state,locid,zip
               columns.comments 
@@ -260,7 +260,7 @@ STAGE PLANS:
             partition values:
               year 2001
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"state":"true","locid":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"locid":"true","state":"true"}}
               bucket_count -1
               columns state,locid,zip
               columns.comments 
@@ -400,7 +400,7 @@ STAGE PLANS:
               year 2000
               zip 94086
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"state":"true","locid":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"locid":"true","state":"true"}}
               bucket_count -1
               columns state,locid
               columns.comments 
@@ -444,7 +444,7 @@ STAGE PLANS:
               year 2001
               zip 94086
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"state":"true","locid":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"locid":"true","state":"true"}}
               bucket_count -1
               columns state,locid
               columns.comments 
@@ -488,7 +488,7 @@ STAGE PLANS:
               year 2000
               zip 94087
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"state":"true","locid":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"locid":"true","state":"true"}}
               bucket_count -1
               columns state,locid
               columns.comments 
@@ -532,7 +532,7 @@ STAGE PLANS:
               year 2001
               zip 94087
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"state":"true","locid":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"locid":"true","state":"true"}}
               bucket_count -1
               columns state,locid
               columns.comments 
@@ -599,7 +599,7 @@ STAGE PLANS:
               year 2000
               zip 94086
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"state":"true","locid":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"locid":"true","state":"true"}}
               bucket_count -1
               columns state,locid
               columns.comments 
@@ -643,7 +643,7 @@ STAGE PLANS:
               year 2001
               zip 94086
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"state":"true","locid":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"locid":"true","state":"true"}}
               bucket_count -1
               columns state,locid
               columns.comments 
@@ -687,7 +687,7 @@ STAGE PLANS:
               year 2000
               zip 94087
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"state":"true","locid":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"locid":"true","state":"true"}}
               bucket_count -1
               columns state,locid
               columns.comments 
@@ -731,7 +731,7 @@ STAGE PLANS:
               year 2001
               zip 94087
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"state":"true","locid":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"locid":"true","state":"true"}}
               bucket_count -1
               columns state,locid
               columns.comments 

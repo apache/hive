@@ -92,9 +92,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Stored As SubDirectories:	Yes                 	 
 Skewed Columns:     	[key, value]        	 
-Skewed Values:      	[[484, val_484], [238, val_238]]	 
+Skewed Values:      	[[238, val_238], [484, val_484]]	 
 #### A masked pattern was here ####
-Skewed Value to Truncated Path:	{[484, val_484]=/fact_daily/ds=1/hr=4/key=484/value=val_484, [238, val_238]=/fact_daily/ds=1/hr=4/key=238/value=val_238}	 
+Skewed Value to Truncated Path:	{[238, val_238]=/fact_daily/ds=1/hr=4/key=238/value=val_238, [484, val_484]=/fact_daily/ds=1/hr=4/key=484/value=val_484}	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: SELECT count(1) FROM fact_daily WHERE ds='1' and hr='4'

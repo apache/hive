@@ -226,9 +226,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Stored As SubDirectories:	Yes                 	 
 Skewed Columns:     	[value]             	 
-Skewed Values:      	[[val_466], [val_287], [val_82]]	 
+Skewed Values:      	[[val_287], [val_466], [val_82]]	 
 #### A masked pattern was here ####
-Skewed Value to Truncated Path:	{[val_287]=/list_bucketing_static_part/ds=2008-04-08/hr=11/value=val_287, [val_82]=/list_bucketing_static_part/ds=2008-04-08/hr=11/value=val_82, [val_466]=/list_bucketing_static_part/ds=2008-04-08/hr=11/value=val_466}	 
+Skewed Value to Truncated Path:	{[val_287]=/list_bucketing_static_part/ds=2008-04-08/hr=11/value=val_287, [val_466]=/list_bucketing_static_part/ds=2008-04-08/hr=11/value=val_466, [val_82]=/list_bucketing_static_part/ds=2008-04-08/hr=11/value=val_82}	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain extended

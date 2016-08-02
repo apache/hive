@@ -303,7 +303,7 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Stored As SubDirectories:	Yes                 	 
 Skewed Columns:     	[key]               	 
-Skewed Values:      	[[484], [103]]      	 
+Skewed Values:      	[[103], [484]]      	 
 #### A masked pattern was here ####
 Skewed Value to Truncated Path:	{[103]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=103, [484]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=484}	 
 Storage Desc Params:	 	 
@@ -671,7 +671,7 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Stored As SubDirectories:	Yes                 	 
 Skewed Columns:     	[key]               	 
-Skewed Values:      	[[484], [103]]      	 
+Skewed Values:      	[[103], [484]]      	 
 #### A masked pattern was here ####
 Skewed Value to Truncated Path:	{[103]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=103, [484]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=484}	 
 Storage Desc Params:	 	 

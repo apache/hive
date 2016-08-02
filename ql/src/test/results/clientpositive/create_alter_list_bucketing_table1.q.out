@@ -52,7 +52,7 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Stored As SubDirectories:	Yes                 	 
 Skewed Columns:     	[col1, col2]        	 
-Skewed Values:      	[[s1, 1], [s3, 3], [s13, 13], [s78, 78]]	 
+Skewed Values:      	[[s1, 1], [s13, 13], [s3, 3], [s78, 78]]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- 2. turn off stored as directories but table is still a skewed table
@@ -100,7 +100,7 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 Skewed Columns:     	[col1, col2]        	 
-Skewed Values:      	[[s1, 1], [s3, 3], [s13, 13], [s78, 78]]	 
+Skewed Values:      	[[s1, 1], [s13, 13], [s3, 3], [s78, 78]]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- 3. turn off skewed

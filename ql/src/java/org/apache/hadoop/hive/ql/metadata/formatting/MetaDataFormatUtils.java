@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.metadata.formatting;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -53,12 +52,13 @@ import org.apache.hive.common.util.HiveStringUtils;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 
 /**
@@ -393,22 +393,23 @@ public final class MetaDataFormatUtils {
     }
 
     if (null != storageDesc.getSkewedInfo()) {
-      List<String> skewedColNames = storageDesc.getSkewedInfo().getSkewedColNames();
+      List<String> skewedColNames = sortedList(storageDesc.getSkewedInfo().getSkewedColNames());
       if ((skewedColNames != null) && (skewedColNames.size() > 0)) {
         formatOutput("Skewed Columns:", skewedColNames.toString(), tableInfo);
       }
 
-      List<List<String>> skewedColValues = storageDesc.getSkewedInfo().getSkewedColValues();
+      List<List<String>> skewedColValues = sortedList(
+          storageDesc.getSkewedInfo().getSkewedColValues(), new VectorComparator<String>());
       if ((skewedColValues != null) && (skewedColValues.size() > 0)) {
         formatOutput("Skewed Values:", skewedColValues.toString(), tableInfo);
       }
 
-      Map<List<String>, String> skewedColMap = storageDesc.getSkewedInfo()
-          .getSkewedColValueLocationMaps();
+      Map<List<String>, String> skewedColMap = new TreeMap<>(new VectorComparator<String>());
+      skewedColMap.putAll(storageDesc.getSkewedInfo().getSkewedColValueLocationMaps());
       if ((skewedColMap!=null) && (skewedColMap.size() > 0)) {
         formatOutput("Skewed Value to Path:", skewedColMap.toString(),
             tableInfo);
-        Map<List<String>, String> truncatedSkewedColMap = new HashMap<List<String>, String>();
+        Map<List<String>, String> truncatedSkewedColMap = new TreeMap<List<String>, String>(new VectorComparator<String>());
         // walk through existing map to truncate path so that test won't mask it
         // then we can verify location is right
         Set<Entry<List<String>, String>> entries = skewedColMap.entrySet();
@@ -487,7 +488,60 @@ public final class MetaDataFormatUtils {
   static String getComment(FieldSchema col) {
     return col.getComment() != null ? col.getComment() : "";
   }
+  
+  /**
+   * Compares to lists of object T as vectors
+   * 
+   * @param <T> the base object type. Must be {@link Comparable}
+   */
+  private static class VectorComparator<T extends Comparable<T>>  implements Comparator<List<T>>{
 
+    @Override
+    public int compare(List<T> listA, List<T> listB) {
+      for (int i = 0; i < listA.size() && i < listB.size(); i++) {
+        T valA = listA.get(i);
+        T valB = listB.get(i);
+        if (valA != null) {
+          int ret = valA.compareTo(valB);
+          if (ret != 0) {
+            return ret;
+          }
+        } else {
+          if (valB != null) {
+            return -1;
+          }
+        }
+      }
+      return Integer.compare(listA.size(), listB.size());
+    }
+  }
+  
+  /**
+   * Returns a sorted version of the given list
+   */
+  static <T extends Comparable<T>> List<T> sortedList(List<T> list){
+    if (list == null || list.size() <= 1) {
+      return list;
+    }
+    ArrayList<T> ret = new ArrayList<>();
+    ret.addAll(list);
+    Collections.sort(ret);
+    return ret;
+  }
+
+  /**
+   * Returns a sorted version of the given list, using the provided comparator
+   */
+  static <T> List<T> sortedList(List<T> list, Comparator<T> comp) {
+    if (list == null || list.size() <= 1) {
+      return list;
+    }
+    ArrayList<T> ret = new ArrayList<>();
+    ret.addAll(list);
+    Collections.sort(ret,comp);
+    return ret;
+  }
+  
   private static String formatDate(long timeInSeconds) {
     if (timeInSeconds != 0) {
       Date date = new Date(timeInSeconds * 1000);
