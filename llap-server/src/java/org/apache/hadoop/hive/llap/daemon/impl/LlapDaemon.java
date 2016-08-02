@@ -434,7 +434,9 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
       int numExecutors = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
 
-      String localDirList = LlapUtil.getDaemonLocalDirList(daemonConf);
+      String workDirsString = System.getenv(ApplicationConstants.Environment.LOCAL_DIRS.name());
+
+      String localDirList = LlapUtil.getDaemonLocalDirString(daemonConf, workDirsString);
       String[] localDirs = (localDirList == null || localDirList.isEmpty()) ?
           new String[0] : StringUtils.getTrimmedStrings(localDirList);
       int rpcPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_PORT);
