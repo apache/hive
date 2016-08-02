@@ -245,7 +245,9 @@ public class Context {
 
       if (mkdir) {
         try {
-          if (!FileUtils.mkdir(fs, dir, true, conf)) {
+          boolean inheritPerms = HiveConf.getBoolVar(conf,
+              HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
+          if (!FileUtils.mkdir(fs, dir, inheritPerms, conf)) {
             throw new IllegalStateException("Cannot create staging directory  '" + dir.toString() + "'");
           }
 
@@ -380,10 +382,9 @@ public class Context {
       Path location = materializedTable.getDataLocation();
       try {
         FileSystem fs = location.getFileSystem(conf);
-        if (fs.exists(location)) {
-          fs.delete(location, true);
-          LOG.info("Removed " + location + " for materialized " + materializedTable.getTableName());
-        }
+        boolean status = fs.delete(location, true);
+        LOG.info("Removed " + location + " for materialized "
+            + materializedTable.getTableName() + ", status=" + status);
       } catch (IOException e) {
         // ignore
         LOG.warn("Error removing " + location + " for materialized " + materializedTable.getTableName() +

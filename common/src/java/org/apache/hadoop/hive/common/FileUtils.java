@@ -542,7 +542,11 @@ public final class FileUtils {
       } else {
         try {
           //set on the entire subtree
-          HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, fs, lastExistingParent), fs, firstNonExistentParent, true);
+          if (inheritPerms) {
+            HdfsUtils.setFullFileStatus(conf,
+                new HdfsUtils.HadoopFileStatus(conf, fs, lastExistingParent), fs,
+                firstNonExistentParent, true);
+          }
         } catch (Exception e) {
           LOG.warn("Error setting permissions of " + firstNonExistentParent, e);
         }
