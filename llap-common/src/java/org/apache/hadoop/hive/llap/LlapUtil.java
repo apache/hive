@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -32,10 +33,25 @@ import org.slf4j.LoggerFactory;
 public class LlapUtil {
   private static final Logger LOG = LoggerFactory.getLogger(LlapUtil.class);
 
-  public static String getDaemonLocalDirList(Configuration conf) {
+  public static String getDaemonLocalDirString(Configuration conf, String workDirsEnvString) {
     String localDirList = HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_WORK_DIRS);
-    if (localDirList != null && !localDirList.isEmpty()) return localDirList;
-    return conf.get("yarn.nodemanager.local-dirs");
+    if (localDirList != null && !localDirList.isEmpty()) {
+      LOG.info("Local dirs from Configuration: {}", localDirList);
+      if (!localDirList.equalsIgnoreCase("useYarnEnvDirs") &&
+          !StringUtils.isBlank(localDirList)) {
+        LOG.info("Using local dirs from Configuration");
+        return localDirList;
+      }
+    }
+    // Fallback to picking up the value from environment.
+    if (StringUtils.isNotBlank(workDirsEnvString)) {
+      LOG.info("Using local dirs from environment: {}", workDirsEnvString);
+      return workDirsEnvString;
+    } else {
+      throw new RuntimeException(
+          "Cannot determined local dirs from specified configuration and env. ValueFromConf=" +
+              localDirList + ", ValueFromEnv=" + workDirsEnvString);
+    }
   }
 
   public static UserGroupInformation loginWithKerberos(
