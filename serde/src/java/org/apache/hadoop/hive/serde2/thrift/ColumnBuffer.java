@@ -81,7 +81,7 @@ public class ColumnBuffer extends AbstractList {
     } else if (type == Type.BIGINT_TYPE) {
       longVars = (long[]) values;
       size = longVars.length;
-    } else if (type == Type.DOUBLE_TYPE) {
+    } else if (type == Type.DOUBLE_TYPE || type == Type.FLOAT_TYPE) {
       doubleVars = (double[]) values;
       size = doubleVars.length;
     } else if (type == Type.BINARY_TYPE) {
@@ -114,6 +114,9 @@ public class ColumnBuffer extends AbstractList {
         longVars = new long[DEFAULT_SIZE];
         break;
       case FLOAT_TYPE:
+          type = Type.FLOAT_TYPE;
+          doubleVars = new double[DEFAULT_SIZE];
+          break;
       case DOUBLE_TYPE:
         type = Type.DOUBLE_TYPE;
         doubleVars = new double[DEFAULT_SIZE];
@@ -216,7 +219,7 @@ public class ColumnBuffer extends AbstractList {
       size = longVars.length;
       return subset;
     }
-    if (type == Type.DOUBLE_TYPE) {
+    if (type == Type.DOUBLE_TYPE || type == Type.FLOAT_TYPE) {
       ColumnBuffer subset =
           new ColumnBuffer(type, subNulls, Arrays.copyOfRange(doubleVars, start, end));
       doubleVars = Arrays.copyOfRange(doubleVars, end, size);
@@ -282,6 +285,7 @@ public class ColumnBuffer extends AbstractList {
         return intVars[index];
       case BIGINT_TYPE:
         return longVars[index];
+      case FLOAT_TYPE:
       case DOUBLE_TYPE:
         return doubleVars[index];
       case STRING_TYPE:
@@ -320,6 +324,7 @@ public class ColumnBuffer extends AbstractList {
       value
           .setI64Val(new TI64Column(Longs.asList(Arrays.copyOfRange(longVars, 0, size)), nullMasks));
       break;
+    case FLOAT_TYPE:
     case DOUBLE_TYPE:
       value.setDoubleVal(new TDoubleColumn(Doubles.asList(Arrays.copyOfRange(doubleVars, 0, size)),
           nullMasks));

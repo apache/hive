@@ -80,7 +80,7 @@ public class TestColumn {
     floatColumn.addValue(Type.FLOAT_TYPE, 2.033f);
 
     // FLOAT_TYPE is treated as DOUBLE_TYPE
-    assertEquals(Type.DOUBLE_TYPE, floatColumn.getType());
+    assertEquals(Type.FLOAT_TYPE, floatColumn.getType());
     assertEquals(2, floatColumn.size());
     assertEquals(1.1, floatColumn.get(0));
     assertEquals(2.033, floatColumn.get(1));

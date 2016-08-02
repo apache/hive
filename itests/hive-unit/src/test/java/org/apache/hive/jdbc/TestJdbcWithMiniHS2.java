@@ -542,6 +542,66 @@ public class TestJdbcWithMiniHS2 {
     stmt.close();
   }
 
+  @Test
+  public void testEmptyResultsetThriftSerializeInTasks() throws Exception {
+    //stop HiveServer2
+    if (miniHS2.isStarted()) {
+      miniHS2.stop();
+    }
+
+    HiveConf conf = new HiveConf();
+    String userName;
+    setSerializeInTasksInConf(conf);
+    miniHS2 = new MiniHS2(conf);
+    Map<String, String> confOverlay = new HashMap<String, String>();
+    miniHS2.start(confOverlay);
+
+    userName = System.getProperty("user.name");
+    hs2Conn = getConnection(miniHS2.getJdbcURL(), userName, "password");
+    Statement stmt = hs2Conn.createStatement();
+    stmt.execute("drop table if exists testThriftSerializeShow1");
+    stmt.execute("drop table if exists testThriftSerializeShow2");
+    stmt.execute("create table testThriftSerializeShow1 (a int)");
+    stmt.execute("create table testThriftSerializeShow2 (b int)");
+    stmt.execute("insert into testThriftSerializeShow1 values (1)");
+    stmt.execute("insert into testThriftSerializeShow2 values (2)");
+    ResultSet rs = stmt.executeQuery("select * from testThriftSerializeShow1 inner join testThriftSerializeShow2 where testThriftSerializeShow1.a=testThriftSerializeShow2.b");
+    assertTrue(!rs.next());
+    stmt.execute("drop table testThriftSerializeShow1");
+    stmt.execute("drop table testThriftSerializeShow2");
+    stmt.close();
+  }
+
+  @Test
+  public void testFloatCast2DoubleThriftSerializeInTasks() throws Exception {
+    //stop HiveServer2
+    if (miniHS2.isStarted()) {
+      miniHS2.stop();
+    }
+
+    HiveConf conf = new HiveConf();
+    String userName;
+    setSerializeInTasksInConf(conf);
+    miniHS2 = new MiniHS2(conf);
+    Map<String, String> confOverlay = new HashMap<String, String>();
+    miniHS2.start(confOverlay);
+
+    userName = System.getProperty("user.name");
+    hs2Conn = getConnection(miniHS2.getJdbcURL(), userName, "password");
+    Statement stmt = hs2Conn.createStatement();
+    stmt.execute("drop table if exists testThriftSerializeShow1");
+    stmt.execute("drop table if exists testThriftSerializeShow2");
+    stmt.execute("create table testThriftSerializeShow1 (a float)");
+    stmt.execute("create table testThriftSerializeShow2 (b double)");
+    stmt.execute("insert into testThriftSerializeShow1 values (1.1), (2.2), (3.3)");
+    stmt.execute("insert into testThriftSerializeShow2 values (2.2), (3.3), (4.4)");
+    ResultSet rs = stmt.executeQuery("select * from testThriftSerializeShow1 inner join testThriftSerializeShow2 where testThriftSerializeShow1.a=testThriftSerializeShow2.b");
+    assertTrue(!rs.next());
+    stmt.execute("drop table testThriftSerializeShow1");
+    stmt.execute("drop table testThriftSerializeShow2");
+    stmt.close();
+  }
+
   /**
    * Tests the creation of the 3 scratch dirs: hdfs, local, downloaded resources (which is also local).
    * 1. Test with doAs=false: open a new JDBC session and verify the presence of directories/permissions
