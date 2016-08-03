@@ -492,7 +492,7 @@ public final class BytesBytesMultiHashMap {
 
   /** Not thread-safe! Use createGetterForThread. */
   public byte getValueResult(byte[] key, int offset, int length, Result hashMapResult) {
-    return getValueResult(key, offset, length, hashMapResult, writeBuffers.getReadPosition());
+    return getValueResult(key, offset, length, hashMapResult, writeBuffers.getUnsafeReadPosition());
   }
 
   /**
