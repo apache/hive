@@ -42,6 +42,7 @@ import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
@@ -211,7 +212,7 @@ public class SessionState {
   /**
    * Gets information about HDFS encryption
    */
-  private HadoopShims.HdfsEncryptionShim hdfsEncryptionShim;
+  private Map<URI, HadoopShims.HdfsEncryptionShim> hdfsEncryptionShims = Maps.newHashMap();
 
   /**
    * Lineage state.
@@ -438,20 +439,31 @@ public class SessionState {
   }
 
   public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim() throws HiveException {
-    if (hdfsEncryptionShim == null) {
+    try {
+      return getHdfsEncryptionShim(FileSystem.get(sessionConf));
+    }
+    catch(HiveException hiveException) {
+      throw hiveException;
+    }
+    catch(Exception exception) {
+      throw new HiveException(exception);
+    }
+  }
+
+  public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim(FileSystem fs) throws HiveException {
+    if (!hdfsEncryptionShims.containsKey(fs.getUri())) {
       try {
-        FileSystem fs = FileSystem.get(sessionConf);
         if ("hdfs".equals(fs.getUri().getScheme())) {
-          hdfsEncryptionShim = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, sessionConf);
+          hdfsEncryptionShims.put(fs.getUri(), ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, sessionConf));
         } else {
-          LOG.debug("Could not get hdfsEncryptionShim, it is only applicable to hdfs filesystem.");
+          LOG.info("Could not get hdfsEncryptionShim, it is only applicable to hdfs filesystem.");
         }
       } catch (Exception e) {
         throw new HiveException(e);
       }
     }
 
-    return hdfsEncryptionShim;
+    return hdfsEncryptionShims.get(fs.getUri());
   }
 
   // SessionState is not available in runtime and Hive.get().getConf() is not safe to call

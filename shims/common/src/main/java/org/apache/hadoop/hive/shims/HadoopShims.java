@@ -512,6 +512,17 @@ public interface HadoopShims {
     public boolean arePathsOnSameEncryptionZone(Path path1, Path path2) throws IOException;
 
     /**
+     * Checks if two HDFS paths are on the same encrypted or unencrypted zone.
+     *
+     * @param path1 Path to HDFS file system
+     * @param path2 Path to HDFS file system
+     * @param encryptionShim2 The encryption-shim corresponding to path2.
+     * @return True if both paths are in the same zone; False otherwise.
+     * @throws IOException If an error occurred attempting to get encryption information
+     */
+    public boolean arePathsOnSameEncryptionZone(Path path1, Path path2, HdfsEncryptionShim encryptionShim2) throws IOException;
+
+    /**
      * Compares two encrypted path strengths.
      *
      * @param path1 HDFS path to compare.
@@ -562,6 +573,12 @@ public interface HadoopShims {
     @Override
     public boolean arePathsOnSameEncryptionZone(Path path1, Path path2) throws IOException {
     /* not supported */
+      return true;
+    }
+
+    @Override
+    public boolean arePathsOnSameEncryptionZone(Path path1, Path path2, HdfsEncryptionShim encryptionShim2) throws IOException {
+      // Not supported.
       return true;
     }
 
