@@ -501,6 +501,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
     vectorMapJoinHashTable = VectorMapJoinOptimizedCreateHashTable.createHashTable(conf,
         smallTable);
     needHashTableSetup = true;
+    LOG.info("Created " + vectorMapJoinHashTable.getClass().getSimpleName() + " from " + this.getClass().getSimpleName());
 
     if (LOG.isDebugEnabled()) {
       LOG.debug(CLASS_NAME + " reloadHashTable!");

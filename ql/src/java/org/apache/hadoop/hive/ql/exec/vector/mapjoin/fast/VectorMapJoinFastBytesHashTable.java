@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashTable;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.WriteBuffers;
 import org.apache.hadoop.io.BytesWritable;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -84,7 +85,7 @@ public abstract class VectorMapJoinFastBytesHashTable
         break;
       }
       if (hashCode == slotTriples[tripleIndex + 1] &&
-          keyStore.equalKey(slotTriples[tripleIndex], keyBytes, keyStart, keyLength)) {
+          keyStore.unsafeEqualKey(slotTriples[tripleIndex], keyBytes, keyStart, keyLength)) {
         // LOG.debug("VectorMapJoinFastBytesHashMap findWriteSlot slot " + slot + " tripleIndex " + tripleIndex + " existing");
         isNewKey = false;
         break;
@@ -173,7 +174,8 @@ public abstract class VectorMapJoinFastBytesHashTable
     // LOG.debug("VectorMapJoinFastLongHashTable expandAndRehash new logicalHashBucketCount " + logicalHashBucketCount + " resizeThreshold " + resizeThreshold + " metricExpands " + metricExpands);
   }
 
-  protected long findReadSlot(byte[] keyBytes, int keyStart, int keyLength, long hashCode) {
+  protected final long findReadSlot(
+      byte[] keyBytes, int keyStart, int keyLength, long hashCode, WriteBuffers.Position readPos) {
 
     int intHashCode = (int) hashCode;
     int slot = (intHashCode & logicalHashBucketMask);
@@ -185,7 +187,7 @@ public abstract class VectorMapJoinFastBytesHashTable
       if (slotTriples[tripleIndex] != 0 && hashCode == slotTriples[tripleIndex + 1]) {
         // Finally, verify the key bytes match.
 
-        if (keyStore.equalKey(slotTriples[tripleIndex], keyBytes, keyStart, keyLength)) {
+        if (keyStore.equalKey(slotTriples[tripleIndex], keyBytes, keyStart, keyLength, readPos)) {
           return slotTriples[tripleIndex + 2];
         }
       }

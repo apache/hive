@@ -72,7 +72,7 @@ public abstract class VectorMapJoinFastBytesHashMap
     optimizedHashMapResult.forget();
 
     long hashCode = VectorMapJoinFastBytesHashUtil.hashKey(keyBytes, keyStart, keyLength);
-    long valueRefWord = findReadSlot(keyBytes, keyStart, keyLength, hashCode);
+    long valueRefWord = findReadSlot(keyBytes, keyStart, keyLength, hashCode, hashMapResult.getReadPos());
     JoinUtil.JoinResult joinResult;
     if (valueRefWord == -1) {
       joinResult = JoinUtil.JoinResult.NOMATCH;

@@ -45,13 +45,13 @@ public abstract class VectorMapJoinFastLongHashTable
 
   public static final Log LOG = LogFactory.getLog(VectorMapJoinFastLongHashTable.class);
 
-  private HashTableKeyType hashTableKeyType;
+  private final HashTableKeyType hashTableKeyType;
 
-  private boolean isOuterJoin;
+  private final boolean isOuterJoin;
 
-  private BinarySortableDeserializeRead keyBinarySortableDeserializeRead;
+  private final BinarySortableDeserializeRead keyBinarySortableDeserializeRead;
 
-  private boolean useMinMax;
+  private final boolean useMinMax;
   private long min;
   private long max;
 
