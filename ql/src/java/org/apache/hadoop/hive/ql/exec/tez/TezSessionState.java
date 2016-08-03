@@ -419,6 +419,15 @@ public class TezSessionState {
         //ignore
       }
       isSuccessful = true;
+      // sessionState.getQueueName() comes from cluster wide configured queue names.
+      // sessionState.getConf().get("tez.queue.name") is explicitly set by user in a session.
+      // TezSessionPoolManager sets tez.queue.name if user has specified one or use the one from
+      // cluster wide queue names.
+      // There is no way to differentiate how this was set (user vs system).
+      // Unset this after opening the session so that reopening of session uses the correct queue
+      // names i.e, if client has not died and if the user has explicitly set a queue name
+      // then reopened session will use user specified queue name else default cluster queue names.
+      conf.unset(TezConfiguration.TEZ_QUEUE_NAME);
       return session;
     } finally {
       if (isOnThread && !isSuccessful) {

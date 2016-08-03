@@ -285,8 +285,9 @@ public class TezSessionPoolManager {
      */
     if (forceCreate || nonDefaultUser || !hasInitialSessions
         || ((queueName != null) && !queueName.isEmpty())) {
-      LOG.info("QueueName: " + queueName + " nonDefaultUser: " + nonDefaultUser +
-          " defaultQueuePool: " + defaultQueuePool + " hasInitialSessions: " + hasInitialSessions);
+      LOG.info("QueueName: {} nonDefaultUser: {} defaultQueuePool: {} hasInitialSessions: {}" +
+              " forceCreate: {}", queueName, nonDefaultUser, defaultQueuePool, hasInitialSessions,
+          forceCreate);
       return getNewSessionState(conf, queueName, doOpen);
     }
 
@@ -463,7 +464,13 @@ public class TezSessionPoolManager {
       String[] additionalFiles, boolean keepTmpDir) throws Exception {
     HiveConf sessionConf = sessionState.getConf();
     if (sessionConf != null && sessionConf.get(TezConfiguration.TEZ_QUEUE_NAME) != null) {
+      // user has explicitly specified queue name
       conf.set(TezConfiguration.TEZ_QUEUE_NAME, sessionConf.get(TezConfiguration.TEZ_QUEUE_NAME));
+    } else {
+      // default queue name when the initial session was created
+      if (sessionState.getQueueName() != null) {
+        conf.set(TezConfiguration.TEZ_QUEUE_NAME, sessionState.getQueueName());
+      }
     }
     // TODO: close basically resets the object to a bunch of nulls.
     //       We should ideally not reuse the object because it's pointless and error-prone.
