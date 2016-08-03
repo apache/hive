@@ -1572,14 +1572,24 @@ public class Hive {
               StatsSetupConst.TRUE);
         }
         MetaStoreUtils.populateQuickStats(HiveStatsUtils.getFileStatusRecurse(newPartPath, -1, newPartPath.getFileSystem(conf)), newTPart.getParameters());
-        getMSC().add_partition(newTPart.getTPartition());
-      } else {
-        EnvironmentContext environmentContext = null;
-        if (hasFollowingStatsTask) {
-          environmentContext = new EnvironmentContext();
-          environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+        try {
+          getMSC().add_partition(newTPart.getTPartition());
+        } catch (AlreadyExistsException aee) {
+          // With multiple users concurrently issuing insert statements on the same partition has
+          // a side effect that some queries may not see a partition at the time when they're issued,
+          // but will realize the partition is actually there when it is trying to add such partition
+          // to the metastore and thus get AlreadyExistsException, because some earlier query just created it (race condition).
+          // For example, imagine such a table is created:
+          //  create table T (name char(50)) partitioned by (ds string);
+          // and the following two queries are launched at the same time, from different sessions:
+          //  insert into table T partition (ds) values ('Bob', 'today'); -- creates the partition 'today'
+          //  insert into table T partition (ds) values ('Joe', 'today'); -- will fail with AlreadyExistsException
+          // In that case, we want to retry with alterPartition.
+          LOG.debug("Caught AlreadyExistsException, trying to alter partition instead");
+          setStatsPropAndAlterPartition(hasFollowingStatsTask, tbl, newTPart);
         }
-        alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newTPart.getTPartition()), environmentContext);
+      } else {
+        setStatsPropAndAlterPartition(hasFollowingStatsTask, tbl, newTPart);
       }
       return newTPart;
     } catch (IOException e) {
@@ -1595,6 +1605,17 @@ public class Hive {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
+  }
+
+  private void setStatsPropAndAlterPartition(boolean hasFollowingStatsTask, Table tbl,
+      Partition newTPart) throws HiveException, InvalidOperationException {
+    EnvironmentContext environmentContext = null;
+    if (hasFollowingStatsTask) {
+      environmentContext = new EnvironmentContext();
+      environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+    }
+    alterPartition(tbl.getDbName(), tbl.getTableName(), new Partition(tbl, newTPart.getTPartition()),
+        environmentContext);
   }
 
   /**
