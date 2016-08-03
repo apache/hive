@@ -90,8 +90,8 @@ public class TestQueryDisplay {
     historicSqlOperations = sessionManager.getOperationManager().getHistoricalSQLOperations();
     Assert.assertEquals(liveSqlOperations.size(), 0);
     Assert.assertEquals(historicSqlOperations.size(), 2);
-    verifyDDL(historicSqlOperations.get(0),"show databases", opHandle1.getHandleIdentifier().toString(), true);
-    verifyDDL(historicSqlOperations.get(1),"show tables", opHandle2.getHandleIdentifier().toString(), true);
+    verifyDDL(historicSqlOperations.get(1),"show databases", opHandle1.getHandleIdentifier().toString(), true);
+    verifyDDL(historicSqlOperations.get(0),"show tables", opHandle2.getHandleIdentifier().toString(), true);
 
     session.close();
   }

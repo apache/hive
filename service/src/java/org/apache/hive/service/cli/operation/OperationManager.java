@@ -383,13 +383,14 @@ public class OperationManager extends AbstractService {
 
   /**
    * @return displays representing a number of historical SQLOperations, at max number of
-   * hive.server2.webui.max.historic.queries
+   * hive.server2.webui.max.historic.queries. Newest items will be first.
    */
   public List<SQLOperationDisplay> getHistoricalSQLOperations() {
     List<SQLOperationDisplay> result = new LinkedList<>();
     synchronized (webuiLock) {
       if (historicSqlOperations != null) {
         result.addAll(historicSqlOperations.values());
+        Collections.reverse(result);
       }
     }
     return result;
