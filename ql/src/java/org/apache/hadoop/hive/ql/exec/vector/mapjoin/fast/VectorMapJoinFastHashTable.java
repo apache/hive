@@ -29,7 +29,7 @@ public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTab
   protected int logicalHashBucketMask;
 
   protected float loadFactor;
-  protected int writeBuffersSize;
+  protected final int writeBuffersSize;
 
   protected int metricPutConflict;
   protected int largestNumberOfSteps;

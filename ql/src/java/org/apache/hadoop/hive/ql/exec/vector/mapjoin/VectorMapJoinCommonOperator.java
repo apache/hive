@@ -636,6 +636,7 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
     default:
       throw new RuntimeException("Unknown vector map join hash table implementation type " + hashTableImplementationType.name());
     }
+    LOG.info("Using " + vectorMapJoinHashTable.getClass().getSimpleName() + " from " + this.getClass().getSimpleName());
   }
 
   /*

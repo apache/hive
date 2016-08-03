@@ -702,14 +702,15 @@ public class VectorizedBatchUtil {
 
   public static void debugDisplayOneRow(VectorizedRowBatch batch, int index, String prefix) {
     StringBuilder sb = new StringBuilder();
+    LOG.info(debugFormatOneRow(batch, index, prefix, sb).toString());
+  }
+
+  public static StringBuilder debugFormatOneRow(VectorizedRowBatch batch,
+      int index, String prefix, StringBuilder sb) {
     sb.append(prefix + " row " + index + " ");
     for (int p = 0; p < batch.projectionSize; p++) {
       int column = batch.projectedColumns[p];
-      if (p == column) {
-        sb.append("(col " + p + ") ");
-      } else {
-        sb.append("(proj col " + p + " col " + column + ") ");
-      }
+      sb.append("(" + p + "," + column + ") ");
       ColumnVector colVector = batch.cols[column];
       if (colVector == null) {
         sb.append("(null ColumnVector)");
@@ -752,7 +753,7 @@ public class VectorizedBatchUtil {
       }
       sb.append(" ");
     }
-    LOG.info(sb.toString());
+    return sb;
   }
 
   public static void debugDisplayBatch(VectorizedRowBatch batch, String prefix) {

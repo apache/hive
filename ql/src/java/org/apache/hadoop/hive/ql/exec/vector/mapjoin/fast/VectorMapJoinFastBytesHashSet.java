@@ -65,7 +65,7 @@ public abstract class VectorMapJoinFastBytesHashSet
     optimizedHashSetResult.forget();
 
     long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
-    long existance = findReadSlot(keyBytes, keyStart, keyLength, hashCode);
+    long existance = findReadSlot(keyBytes, keyStart, keyLength, hashCode, hashSetResult.getReadPos());
     JoinUtil.JoinResult joinResult;
     if (existance == -1) {
       joinResult = JoinUtil.JoinResult.NOMATCH;
