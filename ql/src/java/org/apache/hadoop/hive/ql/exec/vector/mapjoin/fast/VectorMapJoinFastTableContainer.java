@@ -58,7 +58,7 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
   private final long keyCount;
 
 
-  private final VectorMapJoinFastHashTable VectorMapJoinFastHashTable;
+  private final VectorMapJoinFastHashTable vectorMapJoinFastHashTable;
 
   public VectorMapJoinFastTableContainer(MapJoinDesc desc, Configuration hconf,
       long keyCount) throws SerDeException {
@@ -83,12 +83,12 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
 
     // LOG.debug("VectorMapJoinFastTableContainer load newThreshold " + newThreshold);
 
-    VectorMapJoinFastHashTable = createHashTable(newThreshold);
+    vectorMapJoinFastHashTable = createHashTable(newThreshold);
   }
 
   @Override
   public VectorMapJoinHashTable vectorMapJoinHashTable() {
-    return VectorMapJoinFastHashTable;
+    return vectorMapJoinFastHashTable;
   }
 
   private VectorMapJoinFastHashTable createHashTable(int newThreshold) {
@@ -178,7 +178,7 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
       throws SerDeException, HiveException, IOException {
 
     // We are not using the key and value contexts, nor do we support a MapJoinKey.
-    VectorMapJoinFastHashTable.putRow((BytesWritable) currentKey, (BytesWritable) currentValue);
+    vectorMapJoinFastHashTable.putRow((BytesWritable) currentKey, (BytesWritable) currentValue);
     return null;
   }
 
@@ -214,7 +214,7 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
 
   @Override
   public int size() {
-    return VectorMapJoinFastHashTable.size();
+    return vectorMapJoinFastHashTable.size();
   }
 
   @Override

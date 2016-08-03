@@ -30,7 +30,7 @@ public class VectorMapJoinFastKeyStore {
 
   private WriteBuffers writeBuffers;
 
-  private WriteBuffers.Position readPos;
+  private WriteBuffers.Position unsafeReadPos; // Thread-unsafe position used at write time.
 
   /**
    * A store for arbitrary length keys in memory.
@@ -115,7 +115,13 @@ public class VectorMapJoinFastKeyStore {
     return keyRefWord;
   }
 
-  public boolean equalKey(long keyRefWord, byte[] keyBytes, int keyStart, int keyLength) {
+  /** THIS METHOD IS NOT THREAD-SAFE. Use only at load time (or be mindful of thread safety). */
+  public boolean unsafeEqualKey(long keyRefWord, byte[] keyBytes, int keyStart, int keyLength) {
+    return equalKey(keyRefWord, keyBytes, keyStart, keyLength, unsafeReadPos);
+  }
+
+  public boolean equalKey(long keyRefWord, byte[] keyBytes, int keyStart, int keyLength,
+      WriteBuffers.Position readPos) {
 
     int storedKeyLengthLength =
         (int) ((keyRefWord & SmallKeyLength.bitMask) >> SmallKeyLength.bitShift);
@@ -151,14 +157,12 @@ public class VectorMapJoinFastKeyStore {
 
   public VectorMapJoinFastKeyStore(int writeBuffersSize) {
     writeBuffers = new WriteBuffers(writeBuffersSize, AbsoluteKeyOffset.maxSize);
-
-    readPos = new WriteBuffers.Position();
+    unsafeReadPos = new WriteBuffers.Position();
   }
 
   public VectorMapJoinFastKeyStore(WriteBuffers writeBuffers) {
     // TODO: Check if maximum size compatible with AbsoluteKeyOffset.maxSize.
     this.writeBuffers = writeBuffers;
-
-    readPos = new WriteBuffers.Position();
+    unsafeReadPos = new WriteBuffers.Position();
   }
 }

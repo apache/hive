@@ -449,7 +449,7 @@ public final class BytesBytesMultiHashMap {
 
     kv.writeKey(writeBuffers);
     int keyLength = (int)(writeBuffers.getWritePoint() - keyOffset);
-    int hashCode = (keyHashCode == -1) ? writeBuffers.hashCode(keyOffset, keyLength) : keyHashCode;
+    int hashCode = (keyHashCode == -1) ? writeBuffers.unsafeHashCode(keyOffset, keyLength) : keyHashCode;
 
     int slot = findKeySlotToWrite(keyOffset, keyLength, hashCode);
     // LOG.info("Write hash code is " + Integer.toBinaryString(hashCode) + " - " + slot);
@@ -683,8 +683,8 @@ public final class BytesBytesMultiHashMap {
     if (!compareHashBits(ref, hashCode)) {
       return false; // Hash bits in ref don't match.
     }
-    writeBuffers.setReadPoint(getFirstRecordLengthsOffset(ref, null));
-    int valueLength = (int)writeBuffers.readVLong(), keyLength = (int)writeBuffers.readVLong();
+    writeBuffers.setUnsafeReadPoint(getFirstRecordLengthsOffset(ref, null));
+    int valueLength = (int)writeBuffers.unsafeReadVLong(), keyLength = (int)writeBuffers.unsafeReadVLong();
     if (keyLength != cmpLength) {
       return false;
     }
@@ -730,7 +730,7 @@ public final class BytesBytesMultiHashMap {
   private long getFirstRecordLengthsOffset(long ref, WriteBuffers.Position readPos) {
     long tailOffset = Ref.getOffset(ref);
     if (Ref.hasList(ref)) {
-      long relativeOffset = (readPos == null) ? writeBuffers.readNByteLong(tailOffset, 5)
+      long relativeOffset = (readPos == null) ? writeBuffers.unsafeReadNByteLong(tailOffset, 5)
           : writeBuffers.readNByteLong(tailOffset, 5, readPos);
       tailOffset += relativeOffset;
     }
@@ -763,10 +763,10 @@ public final class BytesBytesMultiHashMap {
       // TODO: we could actually store a bit flag in ref indicating whether this is a hash
       //       match or a probe, and in the former case use hash bits (for a first few resizes).
       // int hashCodeOrPart = oldSlot | Ref.getNthHashBit(oldRef, startingHashBitCount, newHashBitCount);
-      writeBuffers.setReadPoint(getFirstRecordLengthsOffset(oldRef, null));
+      writeBuffers.setUnsafeReadPoint(getFirstRecordLengthsOffset(oldRef, null));
       // Read the value and key length for the first record.
-      int hashCode = (int)writeBuffers.readNByteLong(Ref.getOffset(oldRef)
-          - writeBuffers.readVLong() - writeBuffers.readVLong() - 4, 4);
+      int hashCode = (int)writeBuffers.unsafeReadNByteLong(Ref.getOffset(oldRef)
+          - writeBuffers.unsafeReadVLong() - writeBuffers.unsafeReadVLong() - 4, 4);
       int probeSteps = relocateKeyRef(newRefs, oldRef, hashCode);
       maxSteps = Math.max(probeSteps, maxSteps);
     }
@@ -785,16 +785,16 @@ public final class BytesBytesMultiHashMap {
   private long createOrGetListRecord(long ref) {
     if (Ref.hasList(ref)) {
       // LOG.info("Found list record at " + writeBuffers.getReadPoint());
-      return writeBuffers.getReadPoint(); // Assumes we are here after key compare.
+      return writeBuffers.getUnsafeReadPoint(); // Assumes we are here after key compare.
     }
     long firstTailOffset = Ref.getOffset(ref);
     // LOG.info("First tail offset to create list record is " + firstTailOffset);
 
     // Determine the length of storage for value and key lengths of the first record.
-    writeBuffers.setReadPoint(firstTailOffset);
-    writeBuffers.skipVLong();
-    writeBuffers.skipVLong();
-    int lengthsLength = (int)(writeBuffers.getReadPoint() - firstTailOffset);
+    writeBuffers.setUnsafeReadPoint(firstTailOffset);
+    writeBuffers.unsafeSkipVLong();
+    writeBuffers.unsafeSkipVLong();
+    int lengthsLength = (int)(writeBuffers.getUnsafeReadPoint() - firstTailOffset);
 
     // Create the list record, copy first record value/key lengths there.
     writeBuffers.writeBytes(firstTailOffset, lengthsLength);
@@ -816,7 +816,7 @@ public final class BytesBytesMultiHashMap {
    */
   private void addRecordToList(long lrPtrOffset, long tailOffset) {
     // Now, insert this record into the list.
-    long prevHeadOffset = writeBuffers.readNByteLong(lrPtrOffset, 5);
+    long prevHeadOffset = writeBuffers.unsafeReadNByteLong(lrPtrOffset, 5);
     // LOG.info("Reading offset " + prevHeadOffset + " at " + lrPtrOffset);
     assert prevHeadOffset < tailOffset; // We replace an earlier element, must have lower offset.
     writeBuffers.writeFiveByteULong(lrPtrOffset, tailOffset);
@@ -885,10 +885,10 @@ public final class BytesBytesMultiHashMap {
       ++examined;
       long recOffset = getFirstRecordLengthsOffset(ref, null);
       long tailOffset = Ref.getOffset(ref);
-      writeBuffers.setReadPoint(recOffset);
-      int valueLength = (int)writeBuffers.readVLong(),
-          keyLength = (int)writeBuffers.readVLong();
-      long ptrOffset = writeBuffers.getReadPoint();
+      writeBuffers.setUnsafeReadPoint(recOffset);
+      int valueLength = (int)writeBuffers.unsafeReadVLong(),
+          keyLength = (int)writeBuffers.unsafeReadVLong();
+      long ptrOffset = writeBuffers.getUnsafeReadPoint();
       if (Ref.hasList(ref)) {
         byteIntervals.put(recOffset, (int)(ptrOffset + 5 - recOffset));
       }

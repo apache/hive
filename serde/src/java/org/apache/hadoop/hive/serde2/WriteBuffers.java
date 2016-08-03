@@ -21,11 +21,8 @@ package org.apache.hadoop.hive.serde2;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
-import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
-import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hive.common.util.HashCodeUtil;
 
@@ -53,7 +50,7 @@ public final class WriteBuffers implements RandomAccessOutput {
   }
 
   Position writePos = new Position(); // Position where we'd write
-  Position defaultReadPos = new Position(); // Position where we'd read (by default).
+  Position unsafeReadPos = new Position(); // Position where we'd read (unsafely at write time).
 
 
   public WriteBuffers(int wbSize, long maxSize) {
@@ -64,16 +61,18 @@ public final class WriteBuffers implements RandomAccessOutput {
     writePos.bufferIndex = -1;
   }
 
-  public int readVInt() {
-    return (int) readVLong(defaultReadPos);
+  /** THIS METHOD IS NOT THREAD-SAFE. Use only at load time (or be mindful of thread safety). */
+  public int unsafeReadVInt() {
+    return (int) readVLong(unsafeReadPos);
   }
 
   public int readVInt(Position readPos) {
     return (int) readVLong(readPos);
   }
 
-  public long readVLong() {
-    return readVLong(defaultReadPos);
+  /** THIS METHOD IS NOT THREAD-SAFE. Use only at load time (or be mindful of thread safety). */
+  public long unsafeReadVLong() {
+    return readVLong(unsafeReadPos);
   }
 
   public long readVLong(Position readPos) {
@@ -97,8 +96,9 @@ public final class WriteBuffers implements RandomAccessOutput {
     return (WritableUtils.isNegativeVInt(firstByte) ? (i ^ -1L) : i);
   }
 
-  public void skipVLong() {
-    skipVLong(defaultReadPos);
+  /** THIS METHOD IS NOT THREAD-SAFE. Use only at load time (or be mindful of thread safety). */
+  public void unsafeSkipVLong() {
+    skipVLong(unsafeReadPos);
   }
 
   public void skipVLong(Position readPos) {
@@ -117,8 +117,9 @@ public final class WriteBuffers implements RandomAccessOutput {
     }
   }
 
-  public void setReadPoint(long offset) {
-    setReadPoint(offset, defaultReadPos);
+  /** THIS METHOD IS NOT THREAD-SAFE. Use only at load time (or be mindful of thread safety). */
+  public void setUnsafeReadPoint(long offset) {
+    setReadPoint(offset, unsafeReadPos);
   }
 
   public void setReadPoint(long offset, Position readPos) {
@@ -127,8 +128,9 @@ public final class WriteBuffers implements RandomAccessOutput {
     readPos.offset = getOffset(offset);
   }
 
-  public int hashCode(long offset, int length) {
-    return hashCode(offset, length, defaultReadPos);
+  /** THIS METHOD IS NOT THREAD-SAFE. Use only at load time (or be mindful of thread safety). */
+  public int unsafeHashCode(long offset, int length) {
+    return hashCode(offset, length, unsafeReadPos);
   }
 
   public int hashCode(long offset, int length, Position readPos) {
@@ -352,7 +354,7 @@ public final class WriteBuffers implements RandomAccessOutput {
  
   private void clearState() {
     writePos.clear();
-    defaultReadPos.clear();
+    unsafeReadPos.clear();
   }
 
 
@@ -363,8 +365,9 @@ public final class WriteBuffers implements RandomAccessOutput {
     return ((long)writePos.bufferIndex << wbSizeLog2) + writePos.offset;
   }
 
-  public long getReadPoint() {
-    return getReadPoint(defaultReadPos);
+  /** THIS METHOD IS NOT THREAD-SAFE. Use only at load time (or be mindful of thread safety). */
+  public long getUnsafeReadPoint() {
+    return getReadPoint(unsafeReadPos);
   }
 
   public long getReadPoint(Position readPos) {
@@ -518,8 +521,9 @@ public final class WriteBuffers implements RandomAccessOutput {
     clearState();
   }
 
-  public long readNByteLong(long offset, int bytes) {
-    return readNByteLong(offset, bytes, defaultReadPos);
+  /** THIS METHOD IS NOT THREAD-SAFE. Use only at load time (or be mindful of thread safety). */
+  public long unsafeReadNByteLong(long offset, int bytes) {
+    return readNByteLong(offset, bytes, unsafeReadPos);
   }
 
   public long readNByteLong(long offset, int bytes, Position readPos) {
@@ -561,7 +565,7 @@ public final class WriteBuffers implements RandomAccessOutput {
   }
 
   public int readInt(long offset) {
-    return (int)readNByteLong(offset, 4);
+    return (int)unsafeReadNByteLong(offset, 4);
   }
 
   @Override
@@ -606,7 +610,8 @@ public final class WriteBuffers implements RandomAccessOutput {
     return writeBuffers.size() * (long) wbSize;
   }
 
-  public Position getReadPosition() {
-    return defaultReadPos;
+  /** THIS METHOD IS NOT THREAD-SAFE. Use only at load time (or be mindful of thread safety). */
+  public Position getUnsafeReadPosition() {
+    return unsafeReadPos;
   }
 }

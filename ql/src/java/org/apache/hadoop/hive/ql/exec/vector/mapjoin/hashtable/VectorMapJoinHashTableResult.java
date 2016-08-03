@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable;
 
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
+import org.apache.hadoop.hive.serde2.WriteBuffers;
 
 /*
  * Root abstract class for a hash table result.
@@ -29,9 +30,12 @@ public abstract class VectorMapJoinHashTableResult {
 
   private int spillPartitionId;
 
+  private final WriteBuffers.Position readPos;
+
   public VectorMapJoinHashTableResult() {
     joinResult = JoinUtil.JoinResult.NOMATCH;
     spillPartitionId = -1;
+    readPos = new WriteBuffers.Position();
   }
 
   /**
@@ -77,5 +81,9 @@ public abstract class VectorMapJoinHashTableResult {
     StringBuilder sb = new StringBuilder();
     sb.append("joinResult " + joinResult.name());
     return sb.toString();
+  }
+
+  public WriteBuffers.Position getReadPos() {
+    return readPos;
   }
 }
