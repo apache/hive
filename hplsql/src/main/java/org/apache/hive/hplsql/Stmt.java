@@ -976,24 +976,39 @@ public class Stmt {
     int end = evalPop(ctx.expr(1)).intValue();
     int step = evalPop(ctx.expr(2), 1L).intValue();
     exec.enterScope(Scope.Type.LOOP);
-    Var index = new Var(ctx.L_ID().getText(), new Long(start));       
+    Var index = setIndex(start, end, ctx);
     exec.addVariable(index);     
-    if (ctx.T_REVERSE() == null) {
       for (int i = start; i <= end; i += step) {
         visit(ctx.block());
-        index.increment(new Long(step));
-      } 
-    } else {
-      for (int i = start; i >= end; i -= step) {
-        visit(ctx.block());
-        index.decrement(new Long(step));
-      }    
-    }
+        updateIndex(step, index, ctx);
+      }
     exec.leaveScope();
     trace(ctx, "FOR RANGE - LEFT");
     return 0; 
-  }  
-  
+  }
+
+  /**
+   * To set the Value index for FOR Statement
+   */
+  private Var setIndex(int start, int end, HplsqlParser.For_range_stmtContext ctx) {
+
+    if (ctx.T_REVERSE() == null)
+      return new Var(ctx.L_ID().getText(), new Long(start));
+    else
+      return new Var(ctx.L_ID().getText(), new Long(end));
+  }
+
+  /**
+   * To update the value of index for FOR Statement
+   */
+  private void updateIndex(int step, Var index, HplsqlParser.For_range_stmtContext ctx) {
+
+    if (ctx.T_REVERSE() == null)
+      index.increment(new Long(step));
+    else
+      index.decrement(new Long(step));
+  }
+
   /**
    * EXEC, EXECUTE and EXECUTE IMMEDIATE statement to execute dynamic SQL or stored procedure
    */
