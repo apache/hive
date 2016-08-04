@@ -48,7 +48,7 @@ STAGE PLANS:
             alias: grpby_test
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions: int_col_7 (type: int), int_col_7 (type: int), least(COALESCE(int_col_5,-279),COALESCE(int_col_7,476)) (type: int)
+              expressions: int_col_7 (type: int), int_col_7 (type: int), least(CASE WHEN (int_col_5 is not null) THEN (int_col_5) ELSE (-279) END,CASE WHEN (int_col_7 is not null) THEN (int_col_7) ELSE (476) END) (type: int)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Group By Operator

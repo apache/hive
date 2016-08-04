@@ -55,13 +55,13 @@ STAGE PLANS:
                 native: true
                 vectorizationSchemaColumns: [0:a:int, 1:b:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
-              expressions: COALESCE(a,b) (type: int), a (type: int), b (type: int)
+              expressions: CASE WHEN (a is not null) THEN (a) ELSE (b) END (type: int), a (type: int), b (type: int)
               outputColumnNames: _col0, _col1, _col2
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumnNums: [3, 0, 1]
-                  selectExpressions: VectorCoalesce(columns [0, 1])(children: col 0:int, col 1:int) -> 3:int
+                  projectedOutputColumnNums: [4, 0, 1]
+                  selectExpressions: IfExprLongColumnLongColumn(col 3:boolean, col 0:int, col 1:int)(children: IsNotNull(col 0:int) -> 3:boolean) -> 4:int
               Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col1 (type: int), _col2 (type: int)
@@ -88,7 +88,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: a:int, b:int
               partitionColumnCount: 0
-              scratchColumnTypeNames: [bigint]
+              scratchColumnTypeNames: [bigint, bigint]
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
