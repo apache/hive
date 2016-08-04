@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.plan.RelOptCluster;
@@ -109,6 +110,7 @@ import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 
 public class RexNodeConverter {
 
@@ -354,6 +356,12 @@ public class RexNodeConverter {
           childRexNodeLst = rewriteInClauseChildren(calciteOp, childRexNodeLst);
           calciteOp = SqlStdOperatorTable.OR;
         }
+      } else if (calciteOp.getKind() == SqlKind.COALESCE &&
+          childRexNodeLst.size() > 1 ) {
+        // Rewrite COALESCE as a CASE
+        // This allows to be further reduced to OR, if possible
+        calciteOp = SqlStdOperatorTable.CASE;
+        childRexNodeLst = rewriteCoalesceChildren(func, childRexNodeLst);
       } else if (calciteOp == HiveToDateSqlOperator.INSTANCE) {
         childRexNodeLst = rewriteToDateChildren(childRexNodeLst);
       }
@@ -537,7 +545,6 @@ public class RexNodeConverter {
     return newChildRexNodeLst;
   }
 
-
   private List<RexNode> rewriteToDateChildren(List<RexNode> childRexNodeLst) {
     List<RexNode> newChildRexNodeLst = new ArrayList<RexNode>();
     assert childRexNodeLst.size() == 1;
@@ -564,6 +571,25 @@ public class RexNodeConverter {
               SqlStdOperatorTable.EQUALS, firstPred, childRexNodeLst.get(i)));
     }
     return newChildRexNodeLst;
+  }
+
+  private List<RexNode> rewriteCoalesceChildren(
+          ExprNodeGenericFuncDesc func, List<RexNode> childRexNodeLst) {
+    final List<RexNode> convertedChildList = Lists.newArrayList();
+    assert childRexNodeLst.size() > 0;
+    final RexBuilder rexBuilder = cluster.getRexBuilder();
+    int i=0;
+    for (; i < childRexNodeLst.size()-1; ++i ) {
+      // WHEN child not null THEN child
+      final RexNode child = childRexNodeLst.get(i);
+      RexNode childCond = rexBuilder.makeCall(
+              SqlStdOperatorTable.IS_NOT_NULL, child);
+      convertedChildList.add(childCond);
+      convertedChildList.add(child);
+    }
+    // Add the last child as the ELSE element
+    convertedChildList.add(childRexNodeLst.get(i));
+    return convertedChildList;
   }
 
   private static boolean checkForStatefulFunctions(List<ExprNodeDesc> list) {
