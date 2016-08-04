@@ -54,11 +54,10 @@ POSTHOOK: Input: default@table_1_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-6
+  Stage-2 depends on stages: Stage-1, Stage-5
   Stage-3 depends on stages: Stage-2
-  Stage-4 depends on stages: Stage-3
-  Stage-6 is a root stage
-  Stage-0 depends on stages: Stage-4
+  Stage-5 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -150,7 +149,7 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               key expressions: (_col7 + UDFToInteger(_col5)) (type: int), floor(_col3) (type: bigint)
-              sort order: +-
+              sort order: --
               Map-reduce partition columns: (_col7 + UDFToInteger(_col5)) (type: int)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               value expressions: _col3 (type: double), _col5 (type: smallint), _col7 (type: int)
@@ -169,66 +168,19 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: (_col7 + UDFToInteger(_col5)) ASC NULLS FIRST, floor(_col3) DESC NULLS LAST
+                  order by: (_col7 + UDFToInteger(_col5)) DESC NULLS LAST, floor(_col3) DESC NULLS LAST
                   partition by: (_col7 + UDFToInteger(_col5))
                   raw input shape:
                   window functions:
                       window function definition
-                        alias: LEAD_window_0
-                        arguments: -973
-                        name: LEAD
-                        window function: GenericUDAFLeadEvaluator
-                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
-                        isPivotResult: true
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            Select Operator
-              expressions: LEAD_window_0 (type: int), _col3 (type: double), _col5 (type: smallint), _col7 (type: int)
-              outputColumnNames: LEAD_window_0, _col3, _col5, _col7
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              File Output Operator
-                compressed: false
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-4
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: (_col7 + UDFToInteger(_col5)) (type: int), floor(_col3) (type: bigint)
-              sort order: --
-              Map-reduce partition columns: (_col7 + UDFToInteger(_col5)) (type: int)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              value expressions: LEAD_window_0 (type: int), _col3 (type: double), _col5 (type: smallint), _col7 (type: int)
-      Reduce Operator Tree:
-        Select Operator
-          expressions: VALUE._col0 (type: int), VALUE._col4 (type: double), VALUE._col6 (type: smallint), VALUE._col8 (type: int)
-          outputColumnNames: _col0, _col4, _col6, _col8
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-          PTF Operator
-            Function definitions:
-                Input definition
-                  input alias: ptf_0
-                  output shape: _col0: int, _col4: double, _col6: smallint, _col8: int
-                  type: WINDOWING
-                Windowing table definition
-                  input alias: ptf_1
-                  name: windowingtablefunction
-                  order by: (_col8 + UDFToInteger(_col6)) DESC NULLS LAST, floor(_col4) DESC NULLS LAST
-                  partition by: (_col8 + UDFToInteger(_col6))
-                  raw input shape:
-                  window functions:
-                      window function definition
-                        alias: sum_window_1
+                        alias: sum_window_0
                         arguments: 62
                         name: sum
                         window function: GenericUDAFSumLong
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(48)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions: COALESCE(498,_col0,524) (type: int), (_col8 + UDFToInteger(_col6)) (type: int), floor(_col4) (type: bigint), COALESCE(sum_window_1,704) (type: bigint)
+              expressions: 498 (type: int), (_col7 + UDFToInteger(_col5)) (type: int), floor(_col3) (type: bigint), CASE WHEN (sum_window_0 is not null) THEN (sum_window_0) ELSE (704) END (type: bigint)
               outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               File Output Operator
@@ -239,7 +191,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-  Stage: Stage-6
+  Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan

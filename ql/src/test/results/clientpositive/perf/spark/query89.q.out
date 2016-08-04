@@ -127,7 +127,7 @@ STAGE PLANS:
                   alias: item
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((((i_category = 'Home') or (i_category = 'Books') or (i_category = 'Electronics')) and ((i_class = 'wallpaper') or (i_class = 'parenting') or (i_class = 'musical'))) or (((i_category = 'Shoes') or (i_category = 'Jewelry') or (i_category = 'Men')) and ((i_class = 'womens') or (i_class = 'birdal') or (i_class = 'pants')))) and (i_category) IN ('Home', 'Books', 'Electronics', 'Shoes', 'Jewelry', 'Men') and (i_class) IN ('wallpaper', 'parenting', 'musical', 'womens', 'birdal', 'pants') and i_item_sk is not null) (type: boolean)
+                    predicate: ((((i_category) IN ('Home', 'Books', 'Electronics') and (i_class) IN ('wallpaper', 'parenting', 'musical')) or ((i_category) IN ('Shoes', 'Jewelry', 'Men') and (i_class) IN ('womens', 'birdal', 'pants'))) and (i_category) IN ('Home', 'Books', 'Electronics', 'Shoes', 'Jewelry', 'Men') and (i_class) IN ('wallpaper', 'parenting', 'musical', 'womens', 'birdal', 'pants') and i_item_sk is not null) (type: boolean)
                     Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_item_sk (type: int), i_brand (type: string), i_class (type: string), i_category (type: string)

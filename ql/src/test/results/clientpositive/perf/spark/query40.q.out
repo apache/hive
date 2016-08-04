@@ -236,7 +236,7 @@ STAGE PLANS:
                     1 Map 9
                   Statistics: Num rows: 421645953 Data size: 57099332415 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: _col14 (type: string), _col11 (type: string), CASE WHEN ((CAST( _col9 AS DATE) < DATE'1998-04-08')) THEN ((_col4 - COALESCE(_col7,0))) ELSE (0) END (type: decimal(13,2)), CASE WHEN ((CAST( _col9 AS DATE) >= DATE'1998-04-08')) THEN ((_col4 - COALESCE(_col7,0))) ELSE (0) END (type: decimal(13,2))
+                    expressions: _col14 (type: string), _col11 (type: string), CASE WHEN ((CAST( _col9 AS DATE) < DATE'1998-04-08')) THEN ((_col4 - CASE WHEN (_col7 is not null) THEN (_col7) ELSE (0) END)) ELSE (0) END (type: decimal(13,2)), CASE WHEN ((CAST( _col9 AS DATE) >= DATE'1998-04-08')) THEN ((_col4 - CASE WHEN (_col7 is not null) THEN (_col7) ELSE (0) END)) ELSE (0) END (type: decimal(13,2))
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 421645953 Data size: 57099332415 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator

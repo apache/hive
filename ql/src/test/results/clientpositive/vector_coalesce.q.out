@@ -35,8 +35,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [6, 2, 4, 1, 17]
-                    selectExpressions: VectorCoalesce(columns [13, 6, 14, 15, 16])(children: ConstantVectorExpression(val null) -> 13:string, col 6:string, CastLongToString(col 2:int) -> 14:string, CastFloatToString(col 4:float) -> 15:string, CastLongToString(col 1:smallint) -> 16:string) -> 17:string
+                    projectedOutputColumnNums: [6, 2, 4, 1, 21]
+                    selectExpressions: IfExprColumnCondExpr(col 13:boolean, col 6:stringcol 20:string)(children: IsNotNull(col 6:string) -> 13:boolean, col 6:string, IfExprCondExprCondExpr(col 14:boolean, col 15:stringcol 19:string)(children: IsNotNull(col 2:int) -> 14:boolean, CastLongToString(col 2:int) -> 15:string, IfExprCondExprCondExpr(col 16:boolean, col 17:stringcol 18:string)(children: IsNotNull(col 4:float) -> 16:boolean, CastFloatToString(col 4:float) -> 17:string, CastLongToString(col 1:smallint) -> 18:string) -> 19:string) -> 20:string) -> 21:string
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
@@ -124,8 +124,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [5, 2, 16]
-                    selectExpressions: VectorCoalesce(columns [13, 15, 14])(children: ConstantVectorExpression(val null) -> 13:double, DoubleColAddDoubleColumn(col 5:double, col 14:double)(children: FuncLog2LongToDouble(col 2:int) -> 14:double) -> 15:double, ConstantVectorExpression(val 0.0) -> 14:double) -> 16:double
+                    projectedOutputColumnNums: [5, 2, 18]
+                    selectExpressions: IfExprCondExprCondExpr(col 16:boolean, col 17:doublecol 14:double)(children: ColAndCol(col 13:boolean, col 15:boolean)(children: IsNotNull(col 5:double) -> 13:boolean, IsNotNull(col 14:double)(children: FuncLog2LongToDouble(col 2:int) -> 14:double) -> 15:boolean) -> 16:boolean, DoubleColAddDoubleColumn(col 5:double, col 14:double)(children: FuncLog2LongToDouble(col 2:int) -> 14:double) -> 17:double, ConstantVectorExpression(val 0.0) -> 14:double) -> 18:double
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
@@ -298,8 +298,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [8, 9, 13]
-                    selectExpressions: VectorCoalesce(columns [8, 9])(children: col 8:timestamp, col 9:timestamp) -> 13:timestamp
+                    projectedOutputColumnNums: [8, 9, 14]
+                    selectExpressions: IfExprTimestampColumnColumn(col 13:boolean, col 8:timestampcol 9:timestamp)(children: IsNotNull(col 8:timestamp) -> 13:boolean) -> 14:timestamp
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
@@ -470,8 +470,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [13, 0, 15]
-                    selectExpressions: ConstantVectorExpression(val null) -> 13:bigint, VectorCoalesce(columns [14, 0])(children: ConstantVectorExpression(val null) -> 14:bigint, col 0:tinyint) -> 15:bigint
+                    projectedOutputColumnNums: [13, 0, 0]
+                    selectExpressions: ConstantVectorExpression(val null) -> 13:bigint
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true

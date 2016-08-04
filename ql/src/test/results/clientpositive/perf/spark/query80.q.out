@@ -660,7 +660,7 @@ STAGE PLANS:
                 outputColumnNames: _col5, _col6, _col9, _col10, _col18
                 Statistics: Num rows: 463810558 Data size: 62809267017 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col18 (type: string), _col5 (type: decimal(7,2)), COALESCE(_col9,0) (type: decimal(12,2)), (_col6 - COALESCE(_col10,0)) (type: decimal(13,2))
+                  expressions: _col18 (type: string), _col5 (type: decimal(7,2)), CASE WHEN (_col9 is not null) THEN (_col9) ELSE (0) END (type: decimal(12,2)), (_col6 - CASE WHEN (_col10 is not null) THEN (_col10) ELSE (0) END) (type: decimal(13,2))
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 463810558 Data size: 62809267017 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
@@ -790,7 +790,7 @@ STAGE PLANS:
                       1 Map 30
                     Statistics: Num rows: 231917759 Data size: 31534108438 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: _col18 (type: string), _col5 (type: decimal(7,2)), COALESCE(_col9,0) (type: decimal(12,2)), (_col6 - COALESCE(_col10,0)) (type: decimal(13,2))
+                      expressions: _col18 (type: string), _col5 (type: decimal(7,2)), CASE WHEN (_col9 is not null) THEN (_col9) ELSE (0) END (type: decimal(12,2)), (_col6 - CASE WHEN (_col10 is not null) THEN (_col10) ELSE (0) END) (type: decimal(13,2))
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 231917759 Data size: 31534108438 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
@@ -864,7 +864,7 @@ STAGE PLANS:
                       1 Map 11
                     Statistics: Num rows: 927646829 Data size: 81837272625 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: _col18 (type: string), _col5 (type: decimal(7,2)), COALESCE(_col9,0) (type: decimal(12,2)), (_col6 - COALESCE(_col10,0)) (type: decimal(13,2))
+                      expressions: _col18 (type: string), _col5 (type: decimal(7,2)), CASE WHEN (_col9 is not null) THEN (_col9) ELSE (0) END (type: decimal(12,2)), (_col6 - CASE WHEN (_col10 is not null) THEN (_col10) ELSE (0) END) (type: decimal(13,2))
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 927646829 Data size: 81837272625 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
