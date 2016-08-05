@@ -126,6 +126,10 @@ public class NullScanTaskDispatcher implements Dispatcher {
     for (TableScanOperator tso : tableScans) {
       // use LinkedHashMap<String, Operator<? extends OperatorDesc>>
       // getAliasToWork()
+	  // should not apply this for non-native table
+      if (tso.getConf().getTableMetadata().getStorageHandler() != null) {
+        continue;
+      }
       String alias = getAliasForTableScanOperator(work, tso);
       aliases.add(alias);
       tso.getConf().setIsMetadataOnly(true);
