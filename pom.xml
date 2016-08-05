@@ -129,7 +129,7 @@
     <commons-dbcp.version>1.4</commons-dbcp.version>
     <derby.version>10.10.2.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
-    <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.0</dropwizard-metrics-hadoop-metrics2-reporter.version>
+    <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.1</dropwizard-metrics-hadoop-metrics2-reporter.version>
     <guava.version>14.0.1</guava.version>
     <groovy.version>2.4.4</groovy.version>
     <hadoop.version>2.6.0</hadoop.version>
