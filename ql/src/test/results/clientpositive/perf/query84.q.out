@@ -39,11 +39,11 @@ Stage-0
                 <-Map 4 [SIMPLE_EDGE]
                   SHUFFLE [RS_30]
                     PartitionCols:_col0
-                    Select Operator [SEL_5] (rows=80765 width=4)
+                    Select Operator [SEL_5] (rows=1861800 width=385)
                       Output:["_col0"]
-                      Filter Operator [FIL_59] (rows=80765 width=4)
+                      Filter Operator [FIL_59] (rows=1861800 width=385)
                         predicate:cd_demo_sk is not null
-                        TableScan [TS_3] (rows=80765 width=4)
+                        TableScan [TS_3] (rows=1861800 width=385)
                           default@customer_demographics,customer_demographics,Tbl:COMPLETE,Col:NONE,Output:["cd_demo_sk"]
                 <-Reducer 7 [SIMPLE_EDGE]
                   SHUFFLE [RS_31]

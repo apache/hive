@@ -2104,8 +2104,8 @@ public class QTestUtil {
       for (Map.Entry<String, Integer> entry : tableNameToID.entrySet()) {
         String toReplace1 = ",_" + entry.getKey() + "_" ;
         String replacementString1 = ","+entry.getValue();
-        String toReplace2 = "_" + entry.getKey() + "_," ;
-        String replacementString2 = ""+entry.getValue()+",";
+        String toReplace2 = "_" + entry.getKey() + "_@" ;
+        String replacementString2 = ""+entry.getValue()+"@";
         try {
           String content1 = FileUtils.readFileToString(tmpFileLoc1, "UTF-8");
           content1 = content1.replaceAll(toReplace1, replacementString1);
@@ -2124,7 +2124,7 @@ public class QTestUtil {
         "', ',', null, 'UTF-8', 1)";
       String importStatement2 =  "CALL SYSCS_UTIL.SYSCS_IMPORT_TABLE_LOBS_FROM_EXTFILE(null, '" + "TABLE_PARAMS" +
         "', '" + tmpFileLoc2.getAbsolutePath() +
-        "', ',', null, 'UTF-8', 1)";
+        "', '@', null, 'UTF-8', 1)";
       try {
         PreparedStatement psImport1 = conn.prepareStatement(importStatement1);
         if (LOG.isDebugEnabled()) {
