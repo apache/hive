@@ -66,12 +66,13 @@ public class VectorMapJoinOptimizedHashMap
 
     @Override
     public boolean isCappedCountAvailable() {
-      return false;
+      return true;
     }
 
     @Override
     public int cappedCount() {
-      return 0;
+      // the return values are capped to return ==0, ==1 and >= 2
+      return hasRows() ? (isSingleRow() ? 1 : 2) : 0;
     }
 
     @Override
