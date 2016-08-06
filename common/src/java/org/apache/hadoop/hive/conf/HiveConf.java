@@ -383,7 +383,7 @@ public class HiveConf extends Configuration {
     METASTOREURIS("hive.metastore.uris", "",
         "Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore."),
 
-    METASTORE_FS_HANDLER_THREADS_COUNT("hive.metastore.fshandler.threads", 20,
+    METASTORE_FS_HANDLER_THREADS_COUNT("hive.metastore.fshandler.threads", 15,
         "Number of threads to be allocated for metastore handler for fs operations."),
     METASTORETHRIFTCONNECTIONRETRIES("hive.metastore.connect.retries", 3,
         "Number of retries while opening a connection to metastore"),
