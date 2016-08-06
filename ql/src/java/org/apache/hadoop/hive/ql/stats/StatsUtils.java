@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -27,7 +28,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -588,18 +596,42 @@ public class StatsUtils {
    *          - partition list
    * @return sizes of partitions
    */
-  public static List<Long> getFileSizeForPartitions(HiveConf conf, List<Partition> parts) {
-    List<Long> sizes = Lists.newArrayList();
-    for (Partition part : parts) {
-      Path path = part.getDataLocation();
-      long size = 0;
-      try {
-        FileSystem fs = path.getFileSystem(conf);
-        size = fs.getContentSummary(path).getLength();
-      } catch (Exception e) {
-        size = 0;
+  public static List<Long> getFileSizeForPartitions(final HiveConf conf, List<Partition> parts) {
+    LOG.info("Number of partitions : " + parts.size());
+    ArrayList<Future<Long>> futures = new ArrayList<>();
+
+    int threads = Math.max(1, conf.getIntVar(ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT));
+    final ExecutorService pool = Executors.newFixedThreadPool(threads,
+                new ThreadFactoryBuilder()
+                    .setDaemon(true)
+                    .setNameFormat("Get-Partitions-Size-%d")
+                    .build());
+
+    final ArrayList<Long> sizes = new ArrayList<>(parts.size());
+    for (final Partition part : parts) {
+      final Path path = part.getDataLocation();
+      futures.add(pool.submit(new Callable<Long>() {
+        @Override
+        public Long call() throws Exception {
+          try {
+            LOG.debug("Partition path : " + path);
+            FileSystem fs = path.getFileSystem(conf);
+            return fs.getContentSummary(path).getLength();
+          } catch (IOException e) {
+            return 0L;
+          }
+        }
+      }));
+    }
+
+    try {
+      for(int i = 0; i < futures.size(); i++) {
+        sizes.add(i, futures.get(i).get());
       }
-      sizes.add(size);
+    } catch (InterruptedException | ExecutionException e) {
+      LOG.warn("Exception in processing files ", e);
+    } finally {
+      pool.shutdownNow();
     }
     return sizes;
   }
