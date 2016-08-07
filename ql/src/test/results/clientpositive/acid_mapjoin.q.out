@@ -1,0 +1,157 @@
+PREHOOK: query: drop table if exists acid1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists acid1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists acid2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists acid2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table acid1 (key int, value string) clustered by (key) into 2 buckets stored as orc tblproperties ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid1
+POSTHOOK: query: create table acid1 (key int, value string) clustered by (key) into 2 buckets stored as orc tblproperties ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid1
+PREHOOK: query: create table acid2 (key int, value string) clustered by (key) into 2 buckets stored as orc tblproperties ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid2
+POSTHOOK: query: create table acid2 (key int, value string) clustered by (key) into 2 buckets stored as orc tblproperties ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid2
+PREHOOK: query: insert into acid1 values (1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (5, 'e'), (6, 'f'), (7, 'g'), (8, 'h')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@acid1
+POSTHOOK: query: insert into acid1 values (1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (5, 'e'), (6, 'f'), (7, 'g'), (8, 'h')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@acid1
+POSTHOOK: Lineage: acid1.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acid1.value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: insert into acid2 values (1,'a'),(3,'c'),(5,'e'),(7,'g')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@acid2
+POSTHOOK: query: insert into acid2 values (1,'a'),(3,'c'),(5,'e'),(7,'g')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@acid2
+POSTHOOK: Lineage: acid2.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acid2.value SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: explain
+select count(*) from acid1 join acid2 on acid1.key = acid2.key
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(*) from acid1 join acid2 on acid1.key = acid2.key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:acid2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:acid2 
+          TableScan
+            alias: acid2
+            Statistics: Num rows: 209 Data size: 839 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 209 Data size: 839 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 209 Data size: 839 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: acid1
+            Statistics: Num rows: 312 Data size: 1251 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 312 Data size: 1251 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 312 Data size: 1251 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  Statistics: Num rows: 343 Data size: 1376 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: bigint)
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from acid1 join acid2 on acid1.key = acid2.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid1
+PREHOOK: Input: default@acid2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid1 join acid2 on acid1.key = acid2.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid1
+POSTHOOK: Input: default@acid2
+#### A masked pattern was here ####
+4
+PREHOOK: query: drop table acid1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@acid1
+PREHOOK: Output: default@acid1
+POSTHOOK: query: drop table acid1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@acid1
+POSTHOOK: Output: default@acid1
+PREHOOK: query: drop table acid2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@acid2
+PREHOOK: Output: default@acid2
+POSTHOOK: query: drop table acid2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@acid2
+POSTHOOK: Output: default@acid2
