@@ -39,6 +39,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
@@ -1195,6 +1198,17 @@ public class Driver implements CommandProcessor {
   private static final ReentrantLock globalCompileLock = new ReentrantLock();
   private int compileInternal(String command) {
     int ret;
+
+    Metrics metrics = MetricsFactory.getInstance();
+    if (metrics != null) {
+      try {
+        metrics.incrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
+      } catch (IOException e) {
+        // This won't happen if we are using the newer CodaHale metrics. Same for below.
+        LOG.warn("Error while incrementing metrics counter.", e);
+      }
+    }
+
     final ReentrantLock compileLock = tryAcquireCompileLock(isParallelEnabled,
       command);
     if (compileLock == null) {
@@ -1202,6 +1216,13 @@ public class Driver implements CommandProcessor {
     }
 
     try {
+      if (metrics != null) {
+        try {
+          metrics.decrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
+        } catch (IOException e) {
+          LOG.warn("Error while decrementing metrics counter.", e);
+        }
+      }
       ret = compile(command);
     } finally {
       compileLock.unlock();

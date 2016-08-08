@@ -57,4 +57,8 @@ public class MetricsConstant {
   public static final String DELETE_TOTAL_PARTITIONS = "delete_total_count_partitions";
 
   public static final String DIRECTSQL_ERRORS = "directsql_errors";
+
+  // The number of Hive operations that are waiting to enter the compile block
+  public static final String WAITING_COMPILE_OPS = "waiting_compile_ops";
+
 }
