@@ -17,23 +17,23 @@
  */
 package org.apache.hadoop.hive.ql.metadata;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Result class used by the HiveMetaStoreChecker.
  */
 public class CheckResult {
 
-  private List<String> tablesNotOnFs = new ArrayList<String>();
-  private List<String> tablesNotInMs = new ArrayList<String>();
-  private List<PartitionResult> partitionsNotOnFs = new ArrayList<PartitionResult>();
-  private List<PartitionResult> partitionsNotInMs = new ArrayList<PartitionResult>();
+  private Set<String> tablesNotOnFs = new TreeSet<String>();
+  private Set<String> tablesNotInMs = new TreeSet<String>();
+  private Set<PartitionResult> partitionsNotOnFs = new TreeSet<PartitionResult>();
+  private Set<PartitionResult> partitionsNotInMs = new TreeSet<PartitionResult>();
 
   /**
    * @return a list of tables not found on the filesystem.
    */
-  public List<String> getTablesNotOnFs() {
+  public Set<String> getTablesNotOnFs() {
     return tablesNotOnFs;
   }
 
@@ -41,14 +41,14 @@ public class CheckResult {
    * @param tablesNotOnFs
    *          a list of tables not found on the filesystem.
    */
-  public void setTablesNotOnFs(List<String> tablesNotOnFs) {
+  public void setTablesNotOnFs(Set<String> tablesNotOnFs) {
     this.tablesNotOnFs = tablesNotOnFs;
   }
 
   /**
    * @return a list of tables not found in the metastore.
    */
-  public List<String> getTablesNotInMs() {
+  public Set<String> getTablesNotInMs() {
     return tablesNotInMs;
   }
 
@@ -56,14 +56,14 @@ public class CheckResult {
    * @param tablesNotInMs
    *          a list of tables not found in the metastore.
    */
-  public void setTablesNotInMs(List<String> tablesNotInMs) {
+  public void setTablesNotInMs(Set<String> tablesNotInMs) {
     this.tablesNotInMs = tablesNotInMs;
   }
 
   /**
    * @return a list of partitions not found on the fs
    */
-  public List<PartitionResult> getPartitionsNotOnFs() {
+  public Set<PartitionResult> getPartitionsNotOnFs() {
     return partitionsNotOnFs;
   }
 
@@ -71,14 +71,14 @@ public class CheckResult {
    * @param partitionsNotOnFs
    *          a list of partitions not found on the fs
    */
-  public void setPartitionsNotOnFs(List<PartitionResult> partitionsNotOnFs) {
+  public void setPartitionsNotOnFs(Set<PartitionResult> partitionsNotOnFs) {
     this.partitionsNotOnFs = partitionsNotOnFs;
   }
 
   /**
    * @return a list of partitions not found in the metastore
    */
-  public List<PartitionResult> getPartitionsNotInMs() {
+  public Set<PartitionResult> getPartitionsNotInMs() {
     return partitionsNotInMs;
   }
 
@@ -86,7 +86,7 @@ public class CheckResult {
    * @param partitionsNotInMs
    *          a list of partitions not found in the metastore
    */
-  public void setPartitionsNotInMs(List<PartitionResult> partitionsNotInMs) {
+  public void setPartitionsNotInMs(Set<PartitionResult> partitionsNotInMs) {
     this.partitionsNotInMs = partitionsNotInMs;
   }
 

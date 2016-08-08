@@ -33,6 +33,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -113,10 +115,10 @@ public class HiveMetaStoreChecker {
         // check the specified partitions
         checkTable(dbName, tableName, partitions, result);
       }
-      Collections.sort(result.getPartitionsNotInMs());
-      Collections.sort(result.getPartitionsNotOnFs());
-      Collections.sort(result.getTablesNotInMs());
-      Collections.sort(result.getTablesNotOnFs());
+      LOG.info("Number of partitionsNotInMs=" + result.getPartitionsNotInMs()
+              + ", partitionsNotOnFs=" + result.getPartitionsNotOnFs()
+              + ", tablesNotInMs=" + result.getTablesNotInMs()
+              + ", tablesNotOnFs=" + result.getTablesNotOnFs());
     } catch (MetaException e) {
       throw new HiveException(e);
     } catch (TException e) {
@@ -317,11 +319,17 @@ public class HiveMetaStoreChecker {
     // remove the partition paths we know about
     allPartDirs.removeAll(partPaths);
 
+    Set<String> partColNames = Sets.newHashSet();
+    for(FieldSchema fSchema : table.getPartCols()) {
+      partColNames.add(fSchema.getName());
+    }
+
     // we should now only have the unexpected folders left
     for (Path partPath : allPartDirs) {
       FileSystem fs = partPath.getFileSystem(conf);
       String partitionName = getPartitionName(fs.makeQualified(tablePath),
-          partPath);
+          partPath, partColNames);
+      LOG.debug("PartitionName: " + partitionName);
 
       if (partitionName != null) {
         PartitionResult pr = new PartitionResult();
@@ -331,6 +339,7 @@ public class HiveMetaStoreChecker {
         result.getPartitionsNotInMs().add(pr);
       }
     }
+    LOG.debug("Number of partitions not in metastore : " + result.getPartitionsNotInMs().size());
   }
 
   /**
@@ -340,19 +349,37 @@ public class HiveMetaStoreChecker {
    *          Path of the table.
    * @param partitionPath
    *          Path of the partition.
+   * @param partCols
+   *          Set of partition columns from table definition
    * @return Partition name, for example partitiondate=2008-01-01
    */
-  private String getPartitionName(Path tablePath, Path partitionPath) {
+  static String getPartitionName(Path tablePath, Path partitionPath,
+      Set<String> partCols) {
     String result = null;
     Path currPath = partitionPath;
-    while (currPath != null && !tablePath.equals(currPath)) {
-      if (result == null) {
-        result = currPath.getName();
-      } else {
-        result = currPath.getName() + Path.SEPARATOR + result;
-      }
+    LOG.debug("tablePath:" + tablePath + ", partCols: " + partCols);
 
+    while (currPath != null && !tablePath.equals(currPath)) {
+      // format: partition=p_val
+      // Add only when table partition colName matches
+      String[] parts = currPath.getName().split("=");
+      if (parts != null && parts.length > 0) {
+        if (parts.length != 2) {
+          LOG.warn(currPath.getName() + " is not a valid partition name");
+          return result;
+        }
+
+        String partitionName = parts[0];
+        if (partCols.contains(partitionName)) {
+          if (result == null) {
+            result = currPath.getName();
+          } else {
+            result = currPath.getName() + Path.SEPARATOR + result;
+          }
+        }
+      }
       currPath = currPath.getParent();
+      LOG.debug("currPath=" + currPath);
     }
     return result;
   }
