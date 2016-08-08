@@ -317,9 +317,8 @@ public class TezSessionState {
     fs.mkdirs(tezDir, fsPermission);
     // Make sure the path is normalized (we expect validation to pass since we just created it).
     tezDir = DagUtils.validateTargetDir(tezDir, conf).getPath();
-    // don't keep the directory around on non-clean exit
-    fs.deleteOnExit(tezDir);
 
+    // Directory removal will be handled by cleanup at the SessionState level.
     return tezDir;
   }
 

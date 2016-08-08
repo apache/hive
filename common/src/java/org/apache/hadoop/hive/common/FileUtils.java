@@ -828,6 +828,9 @@ public final class FileUtils {
   /**
    * create temporary file and register it to delete-on-exit hook.
    * File.deleteOnExit is not used for possible memory leakage.
+   *
+   * Make sure to use {@link #deleteTmpFile(File)} after the file is no longer required,
+   * and has been deleted to avoid a memory leak.
    */
   public static File createTempFile(String lScratchDir, String prefix, String suffix) throws IOException {
     File tmpDir = lScratchDir == null ? null : new File(lScratchDir);
