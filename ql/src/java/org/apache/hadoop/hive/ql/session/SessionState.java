@@ -659,7 +659,9 @@ public class SessionState {
     conf.set(LOCAL_SESSION_PATH_KEY, localSessionPath.toUri().toString());
     // 7. HDFS temp table space
     hdfsTmpTableSpace = new Path(hdfsSessionPath, TMP_PREFIX);
-    createPath(conf, hdfsTmpTableSpace, scratchDirPermission, false, true);
+    // This is a sub-dir under the hdfsSessionPath. Will be removed along with that dir.
+    // Don't register with deleteOnExit
+    createPath(conf, hdfsTmpTableSpace, scratchDirPermission, false, false);
     conf.set(TMP_TABLE_SPACE_KEY, hdfsTmpTableSpace.toUri().toString());
   }
 
@@ -782,17 +784,36 @@ public class SessionState {
   private void dropSessionPaths(Configuration conf) throws IOException {
     if (hdfsSessionPath != null) {
       if (hdfsSessionPathLockFile != null) {
-        hdfsSessionPathLockFile.close();
+        try {
+          hdfsSessionPathLockFile.close();
+        } catch (IOException e) {
+          LOG.error("Failed while closing remoteFsSessionLockFile", e);
+        }
       }
-      hdfsSessionPath.getFileSystem(conf).delete(hdfsSessionPath, true);
-      LOG.info("Deleted HDFS directory: " + hdfsSessionPath);
+      dropPathAndUnregisterDeleteOnExit(hdfsSessionPath, conf, false);
     }
     if (localSessionPath != null) {
-      FileSystem.getLocal(conf).delete(localSessionPath, true);
-      LOG.info("Deleted local directory: " + localSessionPath);
+      dropPathAndUnregisterDeleteOnExit(localSessionPath, conf, true);
     }
     deleteTmpOutputFile();
     deleteTmpErrOutputFile();
+  }
+
+  private void dropPathAndUnregisterDeleteOnExit(Path path, Configuration conf, boolean localFs) {
+    FileSystem fs = null;
+    try {
+      if (localFs) {
+        fs = FileSystem.getLocal(conf);
+      } else {
+        fs = path.getFileSystem(conf);
+      }
+      fs.cancelDeleteOnExit(path);
+      fs.delete(path, true);
+      LOG.info("Deleted directory: {} on fs with scheme {}", path, fs.getScheme());
+    } catch (IOException e) {
+      LOG.error("Failed to delete path at {} on fs with scheme {}", path,
+          (fs == null ? "Unknown-null" : fs.getScheme()), e);
+    }
   }
 
   /**
