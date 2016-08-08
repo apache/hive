@@ -2129,8 +2129,8 @@ class TOpenSessionReq {
 
   TOpenSessionReq(const TOpenSessionReq&);
   TOpenSessionReq& operator=(const TOpenSessionReq&);
-  TOpenSessionReq() : client_protocol((TProtocolVersion::type)7), username(), password() {
-    client_protocol = (TProtocolVersion::type)7;
+  TOpenSessionReq() : client_protocol((TProtocolVersion::type)8), username(), password() {
+    client_protocol = (TProtocolVersion::type)8;
 
   }
 
@@ -2199,8 +2199,8 @@ class TOpenSessionResp {
 
   TOpenSessionResp(const TOpenSessionResp&);
   TOpenSessionResp& operator=(const TOpenSessionResp&);
-  TOpenSessionResp() : serverProtocolVersion((TProtocolVersion::type)7) {
-    serverProtocolVersion = (TProtocolVersion::type)7;
+  TOpenSessionResp() : serverProtocolVersion((TProtocolVersion::type)8) {
+    serverProtocolVersion = (TProtocolVersion::type)8;
 
   }
 
