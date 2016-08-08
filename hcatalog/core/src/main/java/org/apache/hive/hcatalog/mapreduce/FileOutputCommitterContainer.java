@@ -122,6 +122,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
   @Override
   public void abortTask(TaskAttemptContext context) throws IOException {
     if (!dynamicPartitioningUsed) {
+      FileOutputFormatContainer.setWorkOutputPath(context);
       getBaseOutputCommitter().abortTask(HCatMapRedUtil.createTaskAttemptContext(context));
     } else {
       try {
@@ -152,6 +153,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
   @Override
   public boolean needsTaskCommit(TaskAttemptContext context) throws IOException {
     if (!dynamicPartitioningUsed) {
+      FileOutputFormatContainer.setWorkOutputPath(context);
       return getBaseOutputCommitter().needsTaskCommit(HCatMapRedUtil.createTaskAttemptContext(context));
     } else {
       // called explicitly through FileRecordWriterContainer.close() if dynamic - return false by default
