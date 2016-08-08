@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.llap.daemon.impl.LlapConstants;
 import org.apache.hadoop.hive.llap.daemon.impl.StaticPermanentFunctionChecker;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
+import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -320,6 +321,7 @@ public class LlapServiceDriver {
         LlapInputFormat.class, // llap-server
         HiveInputFormat.class, // hive-exec
         SslSocketConnector.class, // hive-common (https deps)
+        RegistryUtils.ServiceRecordMarshal.class, // ZK registry
         // log4j2
         com.lmax.disruptor.RingBuffer.class, // disruptor
         org.apache.logging.log4j.Logger.class, // log4j-api
