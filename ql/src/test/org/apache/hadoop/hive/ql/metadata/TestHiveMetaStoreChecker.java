@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Lists;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -111,19 +112,19 @@ public class TestHiveMetaStoreChecker extends TestCase {
     CheckResult result = new CheckResult();
     checker.checkMetastore(dbName, null, null, result);
     // we haven't added anything so should return an all ok
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotInMs());
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotInMs());
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotInMs());
 
     // check table only, should not exist in ms
     result = new CheckResult();
     checker.checkMetastore(dbName, tableName, null, result);
     assertEquals(1, result.getTablesNotInMs().size());
-    assertEquals(tableName, result.getTablesNotInMs().get(0));
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotInMs());
+    assertEquals(tableName, result.getTablesNotInMs().iterator().next());
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotInMs());
 
     Database db = new Database();
     db.setName(dbName);
@@ -139,18 +140,18 @@ public class TestHiveMetaStoreChecker extends TestCase {
     // first check all (1) tables
     result = new CheckResult();
     checker.checkMetastore(dbName, null, null, result);
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotInMs());
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotInMs());
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotInMs());
 
     // then let's check the one we know about
     result = new CheckResult();
     checker.checkMetastore(dbName, tableName, null, result);
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotInMs());
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotInMs());
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotInMs());
 
     // remove the table folder
     fs = table.getPath().getFileSystem(hive.getConf());
@@ -159,11 +160,11 @@ public class TestHiveMetaStoreChecker extends TestCase {
     // now this shouldn't find the path on the fs
     result = new CheckResult();
     checker.checkMetastore(dbName, tableName, null, result);
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotInMs());;
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());;
     assertEquals(1, result.getTablesNotOnFs().size());
-    assertEquals(tableName, result.getTablesNotOnFs().get(0));
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotInMs());
+    assertEquals(tableName, result.getTablesNotOnFs().iterator().next());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotInMs());
 
     // put it back and one additional table
     fs.mkdirs(table.getPath());
@@ -176,10 +177,10 @@ public class TestHiveMetaStoreChecker extends TestCase {
     result = new CheckResult();
     checker.checkMetastore(dbName, null, null, result);
     assertEquals(1, result.getTablesNotInMs().size());
-    assertEquals(fakeTable.getName(), result.getTablesNotInMs().get(0));
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotInMs());
+    assertEquals(fakeTable.getName(), Lists.newArrayList(result.getTablesNotInMs()).get(0));
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotInMs());
 
     // create a new external table
     hive.dropTable(dbName, tableName);
@@ -189,10 +190,10 @@ public class TestHiveMetaStoreChecker extends TestCase {
     // should return all ok
     result = new CheckResult();
     checker.checkMetastore(dbName, null, null, result);
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotInMs());
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotInMs());
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotInMs());
   }
 
   public void testPartitionsCheck() throws HiveException, MetaException,
@@ -218,13 +219,26 @@ public class TestHiveMetaStoreChecker extends TestCase {
     CheckResult result = new CheckResult();
     checker.checkMetastore(dbName, tableName, null, result);
     // all is well
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotInMs());
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotInMs());
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotInMs());
 
     List<Partition> partitions = hive.getPartitions(table);
     assertEquals(2, partitions.size());
+    // add a fake partition dir on fs to ensure that it does not get added
+    fs = partitions.get(0).getDataLocation().getFileSystem(hive.getConf());
+    Path fakePart = new Path(table.getDataLocation().toString(),
+        "fakedate=2009-01-01/fakecity=sanjose");
+    fs.mkdirs(fakePart);
+    fs.deleteOnExit(fakePart);
+    checker.checkMetastore(dbName, tableName, null, result);
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
+    assertEquals(0, result.getPartitionsNotOnFs().size());
+    assertEquals(0, result.getPartitionsNotInMs().size());
+    assertEquals(2, partitions.size()); //no additional partitions got added
+
     Partition partToRemove = partitions.get(0);
     // As this partition (partdate=2008-01-01/partcity=london) is the only
     // partition under (partdate=2008-01-01)
@@ -236,27 +250,24 @@ public class TestHiveMetaStoreChecker extends TestCase {
     result = new CheckResult();
     checker.checkMetastore(dbName, tableName, null, result);
     // missing one partition on fs
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotInMs());
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
     assertEquals(1, result.getPartitionsNotOnFs().size());
-    assertEquals(partToRemove.getName(), result.getPartitionsNotOnFs().get(0)
+    assertEquals(partToRemove.getName(), result.getPartitionsNotOnFs().iterator().next()
         .getPartitionName());
-    assertEquals(partToRemove.getTable().getTableName(), result
-        .getPartitionsNotOnFs().get(0).getTableName());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotInMs());
+    assertEquals(partToRemove.getTable().getTableName(),
+        result.getPartitionsNotOnFs().iterator().next().getTableName());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotInMs());
 
     List<Map<String, String>> partsCopy = new ArrayList<Map<String, String>>();
     partsCopy.add(partitions.get(1).getSpec());
     // check only the partition that exists, all should be well
     result = new CheckResult();
     checker.checkMetastore(dbName, tableName, partsCopy, result);
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotInMs());
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotInMs());
-
-    // put the other one back
-    fs.mkdirs(partToRemovePath);
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotInMs());
 
     // old test is moved to msck_repair_2.q
 
@@ -265,12 +276,11 @@ public class TestHiveMetaStoreChecker extends TestCase {
     hive.createTable(table);
     result = new CheckResult();
     checker.checkMetastore(dbName, null, null, result);
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotInMs());
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotInMs()); //--0e
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotOnFs());
+    assertEquals(Collections.<String>emptySet(), result.getPartitionsNotInMs()); //--0e
     System.err.println("Test completed - partition check");
-
   }
 
   public void testDataDeletion() throws HiveException, MetaException,
