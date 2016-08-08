@@ -264,3 +264,253 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@abcd
 #### A masked pattern was here ####
 7	7	6	6	6	7	3	3	6	7	4	5	6	6	5	6	4	5	5	5	4
+PREHOOK: query: explain select count(distinct b) from abcd group by a
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select count(distinct b) from abcd group by a
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: abcd
+            Statistics: Num rows: 9 Data size: 78 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: a (type: int), b (type: int)
+              outputColumnNames: a, b
+              Statistics: Num rows: 9 Data size: 78 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: a (type: int), b (type: int)
+                sort order: ++
+                Map-reduce partition columns: a (type: int)
+                Statistics: Num rows: 9 Data size: 78 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(DISTINCT KEY._col1:0._col0)
+          keys: KEY._col0 (type: int)
+          mode: complete
+          outputColumnNames: a, $f1
+          Statistics: Num rows: 4 Data size: 34 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: $f1 (type: bigint)
+            outputColumnNames: _o__c0
+            Statistics: Num rows: 4 Data size: 34 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 4 Data size: 34 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(distinct b) from abcd group by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@abcd
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct b) from abcd group by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abcd
+#### A masked pattern was here ####
+1
+1
+1
+2
+PREHOOK: query: explain select count(distinct b) from abcd group by b
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select count(distinct b) from abcd group by b
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: abcd
+            Statistics: Num rows: 19 Data size: 78 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: b (type: int)
+              outputColumnNames: b
+              Statistics: Num rows: 19 Data size: 78 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: b (type: int)
+                sort order: ++
+                Map-reduce partition columns: b (type: int)
+                Statistics: Num rows: 19 Data size: 78 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(DISTINCT KEY._col1:0._col0)
+          keys: KEY._col0 (type: int)
+          mode: complete
+          outputColumnNames: b, $f1
+          Statistics: Num rows: 9 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: $f1 (type: bigint)
+            outputColumnNames: _o__c0
+            Statistics: Num rows: 9 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 9 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(distinct b) from abcd group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@abcd
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct b) from abcd group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abcd
+#### A masked pattern was here ####
+0
+1
+1
+1
+PREHOOK: query: explain select count(distinct b) from abcd group by c
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select count(distinct b) from abcd group by c
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: abcd
+            Statistics: Num rows: 9 Data size: 78 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: b (type: int), c (type: int)
+              outputColumnNames: b, c
+              Statistics: Num rows: 9 Data size: 78 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: c (type: int), b (type: int)
+                sort order: ++
+                Map-reduce partition columns: c (type: int)
+                Statistics: Num rows: 9 Data size: 78 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(DISTINCT KEY._col1:0._col0)
+          keys: KEY._col0 (type: int)
+          mode: complete
+          outputColumnNames: c, $f1
+          Statistics: Num rows: 4 Data size: 34 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: $f1 (type: bigint)
+            outputColumnNames: _o__c0
+            Statistics: Num rows: 4 Data size: 34 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 4 Data size: 34 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(distinct b) from abcd group by c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@abcd
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct b) from abcd group by c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abcd
+#### A masked pattern was here ####
+0
+1
+1
+1
+1
+1
+1
+PREHOOK: query: explain select count(b), count(distinct c) from abcd group by d
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select count(b), count(distinct c) from abcd group by d
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: abcd
+            Statistics: Num rows: 9 Data size: 78 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: c (type: int), d (type: int)
+              outputColumnNames: c, d
+              Statistics: Num rows: 9 Data size: 78 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: d (type: int), c (type: int)
+                sort order: ++
+                Map-reduce partition columns: d (type: int)
+                Statistics: Num rows: 9 Data size: 78 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(KEY._col1:0._col0), count(DISTINCT KEY._col1:0._col0)
+          keys: KEY._col0 (type: int)
+          mode: complete
+          outputColumnNames: d, $f1, $f2
+          Statistics: Num rows: 4 Data size: 34 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: $f1 (type: bigint), $f2 (type: bigint)
+            outputColumnNames: _o__c0, _o__c1
+            Statistics: Num rows: 4 Data size: 34 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 4 Data size: 34 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(b), count(distinct c) from abcd group by d
+PREHOOK: type: QUERY
+PREHOOK: Input: default@abcd
+#### A masked pattern was here ####
+POSTHOOK: query: select count(b), count(distinct c) from abcd group by d
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abcd
+#### A masked pattern was here ####
+0	0
+1	1
+1	1
+1	1
+1	1
+1	1
+1	1

@@ -18,3 +18,19 @@ select a, count(distinct b), count(distinct c), sum(d) from abcd group by a;
 
 explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd;
 select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd;
+
+set hive.cbo.returnpath.hiveop=true;
+
+explain select count(distinct b) from abcd group by a;
+select count(distinct b) from abcd group by a;
+
+explain select count(distinct b) from abcd group by b;
+select count(distinct b) from abcd group by b;
+
+explain select count(distinct b) from abcd group by c;
+select count(distinct b) from abcd group by c;
+
+explain select count(b), count(distinct c) from abcd group by d;
+select count(b), count(distinct c) from abcd group by d;
+
+set hive.cbo.returnpath.hiveop=false;

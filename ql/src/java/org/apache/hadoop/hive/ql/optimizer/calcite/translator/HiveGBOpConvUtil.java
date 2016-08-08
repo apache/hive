@@ -703,8 +703,18 @@ public class HiveGBOpConvUtil {
     String outputColName;
 
     // 1. Add GB Keys to reduce keys
-    ArrayList<ExprNodeDesc> reduceKeys = getReduceKeysForRS(inputOpAf.inputs.get(0), 0,
-        gbInfo.gbKeys.size() - 1, outputKeyColumnNames, false, colInfoLst, colExprMap, false, false);
+    ArrayList<ExprNodeDesc> reduceKeys= new ArrayList<ExprNodeDesc>();
+    for (int i = 0; i < gbInfo.gbKeys.size(); i++) {
+      //gbInfo already has ExprNode for gbkeys
+      reduceKeys.add(gbInfo.gbKeys.get(i));
+      String colOutputName = SemanticAnalyzer.getColumnInternalName(i);
+      outputKeyColumnNames.add(colOutputName);
+      colInfoLst.add(new ColumnInfo(Utilities.ReduceField.KEY.toString() + "." + colOutputName, gbInfo.gbKeyTypes.get(i), "", false));
+      colExprMap.put(colOutputName, gbInfo.gbKeys.get(i));
+    }
+
+    // Note: GROUPING SETS are not allowed with map side aggregation set to false so we don't have to worry about it
+
     int keyLength = reduceKeys.size();
 
     // 2. Add Dist UDAF args to reduce keys
@@ -1002,7 +1012,7 @@ public class HiveGBOpConvUtil {
     int udafColStartPosInOriginalGB = gbInfo.gbKeys.size();
     // the positions in rsColInfoLst are as follows
     // --grpkey--,--distkey--,--values--
-    // but distUDAF may be before/after some non-distUDAF, 
+    // but distUDAF may be before/after some non-distUDAF,
     // i.e., their positions can be mixed.
     // so we first process distUDAF and then non-distUDAF.
     // But we need to remember the sequence of udafs.
