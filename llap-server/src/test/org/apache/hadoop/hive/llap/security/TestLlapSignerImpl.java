@@ -169,7 +169,6 @@ public class TestLlapSignerImpl {
     implements SigningSecretManager {
 
     public FakeSecretManager() {
-      // The keys instantly expire and are rolled.
       super(10000000, 10000000, 10000000, 10000000);
     }
 

@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 import javax.net.SocketFactory;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.security.PrivilegedExceptionAction;
 
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
@@ -37,22 +38,30 @@ import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.hive.llap.protocol.LlapProtocolBlockingPB;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // TODO Change all this to be based on a regular interface instead of relying on the Proto service - Exception signatures cannot be controlled without this for the moment.
 
 
 public class LlapProtocolClientImpl implements LlapProtocolBlockingPB {
+  private final static Logger LOG = LoggerFactory.getLogger(LlapProtocolClientImpl.class);
 
   private final Configuration conf;
   private final InetSocketAddress serverAddr;
   private final RetryPolicy retryPolicy;
   private final SocketFactory socketFactory;
-  LlapProtocolBlockingPB proxy;
+  private LlapProtocolBlockingPB proxy;
+  private final UserGroupInformation ugi;
 
 
   public LlapProtocolClientImpl(Configuration conf, String hostname, int port,
+                                UserGroupInformation ugi,
                                 @Nullable RetryPolicy retryPolicy,
                                 @Nullable SocketFactory socketFactory) {
+    // Technically, methods run on a threadpool that is created externally with the UGI.
+    // However, that is brittle, so we'd save the UGI explicitly here.
+    this.ugi = ugi;
     this.conf = conf;
     this.serverAddr = NetUtils.createSocketAddr(hostname, port);
     this.retryPolicy = retryPolicy;
@@ -116,6 +125,21 @@ public class LlapProtocolClientImpl implements LlapProtocolBlockingPB {
 
   public LlapProtocolBlockingPB createProxy() throws IOException {
     RPC.setProtocolEngine(conf, LlapProtocolBlockingPB.class, ProtobufRpcEngine.class);
+    LOG.info("Creating protocol proxy as " + ugi);
+    if (ugi == null) return createProxyInternal();
+    try {
+      return ugi.doAs(new PrivilegedExceptionAction<LlapProtocolBlockingPB>() {
+        @Override
+        public LlapProtocolBlockingPB run() throws IOException {
+          return createProxyInternal();
+        }
+      });
+    } catch (InterruptedException e) {
+      throw new IOException(e);
+    }
+  }
+
+  private LlapProtocolBlockingPB createProxyInternal() throws IOException {
     ProtocolProxy<LlapProtocolBlockingPB> proxy =
         RPC.getProtocolProxy(LlapProtocolBlockingPB.class, 0, serverAddr,
             UserGroupInformation.getCurrentUser(), conf, NetUtils.getDefaultSocketFactory(conf), 0,
