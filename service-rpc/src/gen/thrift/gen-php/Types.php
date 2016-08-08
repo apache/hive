@@ -4510,7 +4510,7 @@ class TOpenSessionReq {
   /**
    * @var int
    */
-  public $client_protocol =   7;
+  public $client_protocol =   8;
   /**
    * @var string
    */
@@ -4692,7 +4692,7 @@ class TOpenSessionResp {
   /**
    * @var int
    */
-  public $serverProtocolVersion =   7;
+  public $serverProtocolVersion =   8;
   /**
    * @var \TSessionHandle
    */
