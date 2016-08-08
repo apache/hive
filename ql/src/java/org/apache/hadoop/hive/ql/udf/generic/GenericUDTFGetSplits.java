@@ -356,6 +356,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         // We put the query user, not LLAP user, into the message and token.
         Token<LlapTokenIdentifier> token = tokenClient.createToken(
             applicationId.toString(), queryUser, true);
+        LOG.info("Created the token for remote user: {}", token);
         bos.reset();
         token.write(dos);
         tokenBytes = bos.toByteArray();

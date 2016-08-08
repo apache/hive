@@ -59,7 +59,7 @@ public class TestLlapDaemonProtocolServerImpl {
 
       LlapProtocolBlockingPB client =
           new LlapProtocolClientImpl(new Configuration(), serverAddr.getHostName(),
-              serverAddr.getPort(), null, null);
+              serverAddr.getPort(), null, null, null);
       SubmitWorkResponseProto responseProto = client.submitWork(null,
           SubmitWorkRequestProto.newBuilder()
               .setAmHost("amhost")

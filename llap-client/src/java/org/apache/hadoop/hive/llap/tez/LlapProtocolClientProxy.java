@@ -81,6 +81,7 @@ public class LlapProtocolClientProxy extends AbstractService {
   private final ListeningExecutorService requestManagerExecutor;
   private volatile ListenableFuture<Void> requestManagerFuture;
   private final Token<LlapTokenIdentifier> llapToken;
+  private final String llapTokenUser;
 
   public LlapProtocolClientProxy(
       int numThreads, Configuration conf, Token<LlapTokenIdentifier> llapToken) {
@@ -88,6 +89,15 @@ public class LlapProtocolClientProxy extends AbstractService {
     this.hostProxies = new ConcurrentHashMap<>();
     this.socketFactory = NetUtils.getDefaultSocketFactory(conf);
     this.llapToken = llapToken;
+    if (llapToken != null) {
+      try {
+        llapTokenUser = llapToken.decodeIdentifier().getOwner().toString();
+      } catch (IOException e) {
+        throw new RuntimeException("Cannot determine the user from token " + llapToken, e);
+      }
+    } else {
+      llapTokenUser = null;
+    }
 
     long connectionTimeout = HiveConf.getTimeVar(conf,
         ConfVars.LLAP_TASK_COMMUNICATOR_CONNECTION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
@@ -474,14 +484,10 @@ public class LlapProtocolClientProxy extends AbstractService {
           LOG.debug("Creating a client without a token for " + nodeId);
         }
         proxy = new LlapProtocolClientImpl(getConfig(), nodeId.getHostname(),
-            nodeId.getPort(), retryPolicy, socketFactory);
+            nodeId.getPort(), null, retryPolicy, socketFactory);
       } else {
-        UserGroupInformation ugi;
-        try {
-          ugi = UserGroupInformation.getCurrentUser();
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
+        final UserGroupInformation ugi = UserGroupInformation.createRemoteUser(llapTokenUser);
+        // Clone the token as we'd need to set the service to the one we are talking to.
         Token<LlapTokenIdentifier> nodeToken = new Token<LlapTokenIdentifier>(llapToken);
         SecurityUtil.setTokenService(nodeToken, NetUtils.createSocketAddrForHost(
             nodeId.getHostname(), nodeId.getPort()));
@@ -493,7 +499,7 @@ public class LlapProtocolClientProxy extends AbstractService {
           @Override
           public LlapProtocolBlockingPB run() {
            return new LlapProtocolClientImpl(getConfig(), nodeId.getHostname(),
-               nodeId.getPort(), retryPolicy, socketFactory);
+               nodeId.getPort(), ugi, retryPolicy, socketFactory);
           }
         });
       }

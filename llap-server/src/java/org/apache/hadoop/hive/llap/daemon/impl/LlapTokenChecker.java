@@ -53,7 +53,23 @@ public final class LlapTokenChecker {
     if ((tokens == null || tokens.isEmpty()) && kerberosName == null) {
       throw new SecurityException("No tokens or kerberos for " + current);
     }
+    warnMultipleTokens(tokens);
     return getTokenInfoInternal(kerberosName, tokens);
+  }
+
+  public static void warnMultipleTokens(List<LlapTokenIdentifier> tokens) {
+    if (tokens != null && tokens.size() > 1) {
+      StringBuilder sb = new StringBuilder("Found multiple LLAP tokens: [");
+      boolean isFirst = true;
+      for (LlapTokenIdentifier ti : tokens) {
+        if (!isFirst) {
+          sb.append(", ");
+        }
+        isFirst = false;
+        sb.append(ti);
+      }
+      LOG.warn(sb.append("]").toString());
+    }
   }
 
   private static List<LlapTokenIdentifier> getLlapTokens(
