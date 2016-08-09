@@ -261,7 +261,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
   private static class CleanerThread extends Thread {
     private RawStore rs;
     private int ttl;
-
+    static private long sleepTime = 60000;
 
     CleanerThread(HiveConf conf, RawStore rs) {
       super("CleanerThread");
@@ -275,8 +275,9 @@ public class DbNotificationListener extends MetaStoreEventListener {
     public void run() {
       while (true) {
         rs.cleanNotificationEvents(ttl);
+        LOG.debug("Cleaner thread done");
         try {
-          Thread.sleep(60000);
+          Thread.sleep(sleepTime);
         } catch (InterruptedException e) {
           LOG.info("Cleaner thread sleep interupted", e);
         }
