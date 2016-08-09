@@ -870,6 +870,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         if (metrics != null) {
           metrics.setDisabledNodeCount(disabledNodesQueue.size());
         }
+        // Trigger a scheduling run - in case there's some task which was waiting for this node to
+        // become available.
+        trySchedulingPendingTasks();
       }
     } finally {
       writeLock.unlock();

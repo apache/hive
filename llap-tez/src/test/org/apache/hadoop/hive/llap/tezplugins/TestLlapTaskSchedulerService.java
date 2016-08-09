@@ -773,7 +773,7 @@ public class TestLlapTaskSchedulerService {
       // At this point. one p=2 task and task3(p=1) running. Ask for another p1 task.
       while (true) {
         tsWrapper.signalSchedulerRun();
-        tsWrapper.awaitSchedulerRun();
+        tsWrapper.awaitSchedulerRun(1000l);
         if (tsWrapper.ts.dagStats.numPreemptedTasks == 2) {
           break;
         }
@@ -1174,6 +1174,9 @@ public class TestLlapTaskSchedulerService {
       assertEquals(task2, argumentCaptor.getAllValues().get(1));
 
       reset(tsWrapper.mockAppCallback);
+      // Flush any pending scheduler runs which may be blocked. Wait 2 seconds for the run to complete.
+      tsWrapper.signalSchedulerRun();
+      tsWrapper.awaitSchedulerRun(2000l);
 
       // Mark a task as failed due to a comm failure.
       tsWrapper.deallocateTask(task1, false, TaskAttemptEndReason.COMMUNICATION_ERROR);
