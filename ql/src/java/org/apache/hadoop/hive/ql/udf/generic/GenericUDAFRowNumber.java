@@ -27,7 +27,10 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFRank.GenericUDAFAbstractRankEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFRank.RankBuffer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -59,22 +62,36 @@ public class GenericUDAFRowNumber extends AbstractGenericUDAFResolver {
 
     ArrayList<IntWritable> rowNums;
     int nextRow;
+    boolean supportsStreaming;
 
     void init() {
       rowNums = new ArrayList<IntWritable>();
+      nextRow = 1;
+      if (supportsStreaming) {
+        rowNums.add(null);
+      }
     }
 
-    RowNumberBuffer() {
+    RowNumberBuffer(boolean supportsStreaming) {
+      this.supportsStreaming = supportsStreaming;
       init();
-      nextRow = 1;
     }
 
     void incr() {
-      rowNums.add(new IntWritable(nextRow++));
+      if (supportsStreaming) {
+        rowNums.set(0,new IntWritable(nextRow++));
+      } else {
+        rowNums.add(new IntWritable(nextRow++));
+      }
     }
   }
 
-  public static class GenericUDAFRowNumberEvaluator extends GenericUDAFEvaluator {
+  public static class GenericUDAFAbstractRowNumberEvaluator extends GenericUDAFEvaluator {
+    boolean isStreamingMode = false;
+
+    protected boolean isStreaming() {
+      return isStreamingMode;
+    }
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
@@ -89,7 +106,7 @@ public class GenericUDAFRowNumber extends AbstractGenericUDAFResolver {
 
     @Override
     public AggregationBuffer getNewAggregationBuffer() throws HiveException {
-      return new RowNumberBuffer();
+      return new RowNumberBuffer(isStreamingMode);
     }
 
     @Override
@@ -118,5 +135,26 @@ public class GenericUDAFRowNumber extends AbstractGenericUDAFResolver {
     }
 
   }
+
+  public static class GenericUDAFRowNumberEvaluator extends GenericUDAFAbstractRowNumberEvaluator
+  implements ISupportStreamingModeForWindowing {
+
+    @Override
+    public Object getNextResult(AggregationBuffer agg) throws HiveException {
+      return ((RowNumberBuffer) agg).rowNums.get(0);
+    }
+
+    @Override
+    public GenericUDAFEvaluator getWindowingEvaluator(WindowFrameDef wFrmDef) {
+      isStreamingMode = true;
+      return this;
+    }
+
+    @Override
+    public int getRowsRemainingAfterTerminate() throws HiveException {
+      return 0;
+    }
+  }
+
 }
 

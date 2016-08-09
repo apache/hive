@@ -43,6 +43,12 @@ select *
 from (select t, f, rank() over(partition by t order by f) r from over10k) a 
 where r < 6 and t < 5;
 
+set hive.cbo.enable=false;
+select *
+from (select t, f, row_number() over(partition by t order by f) r from over10k) a
+where r < 8 and t < 0;
+set hive.cbo.enable=true;
+
 set hive.vectorized.execution.enabled=false;
 set hive.limit.pushdown.memory.usage=0.8;
 
