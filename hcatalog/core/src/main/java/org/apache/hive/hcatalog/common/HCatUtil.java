@@ -573,15 +573,10 @@ public class HCatUtil {
    */
   @Deprecated
   public static HiveMetaStoreClient getHiveClient(HiveConf hiveConf) throws MetaException, IOException {
-    IMetaStoreClient imsc = getHiveMetastoreClient(hiveConf);
-    // Try piggybacking on the function that returns IMSC. Current implementation of the IMSC cache
-    // has CacheableMetaStoreClients, which are HMSC, so we can return them as-is. If not, it's okay
-    // for us to ignore the caching aspect and return a vanilla HMSC.
-    if (imsc instanceof HiveMetaStoreClient){
-      return (HiveMetaStoreClient)imsc;
-    } else {
-      return new HiveMetaStoreClient(hiveConf);
-    }
+    LOG.warn("HCatUtil.getHiveClient is unsafe and can be a resource leak depending on HMSC "
+        + "implementation and caching mechanism. Use HCatUtil.getHiveMetastoreClient instead.");
+
+    return new HiveMetaStoreClient(hiveConf);
   }
 
   public static void closeHiveClientQuietly(IMetaStoreClient client) {

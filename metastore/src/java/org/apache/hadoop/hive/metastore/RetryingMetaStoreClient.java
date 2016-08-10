@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TApplicationException;
@@ -139,13 +140,20 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     Object ret = null;
     int retriesMade = 0;
     TException caughtException = null;
+
+    boolean allowReconnect = ! method.isAnnotationPresent(NoReconnect.class);
+
     while (true) {
       try {
         reloginExpiringKeytabUser();
-        if (retriesMade > 0 || hasConnectionLifeTimeReached(method)) {
-          base.reconnect();
-          lastConnectionTime = System.currentTimeMillis();
+
+        if (allowReconnect) {
+          if (retriesMade > 0 || hasConnectionLifeTimeReached(method)) {
+            base.reconnect();
+            lastConnectionTime = System.currentTimeMillis();
+          }
         }
+
         if (metaCallTimeMap == null) {
           ret = method.invoke(base, args);
         } else {
@@ -228,10 +236,10 @@ public class RetryingMetaStoreClient implements InvocationHandler {
   }
 
   private boolean hasConnectionLifeTimeReached(Method method) {
-    if (connectionLifeTimeInMillis <= 0 || localMetaStore ||
-        method.getName().equalsIgnoreCase("close")) {
+    if (connectionLifeTimeInMillis <= 0 || localMetaStore) {
       return false;
     }
+
     boolean shouldReconnect =
         (System.currentTimeMillis() - lastConnectionTime) >= connectionLifeTimeInMillis;
     if (LOG.isDebugEnabled()) {
