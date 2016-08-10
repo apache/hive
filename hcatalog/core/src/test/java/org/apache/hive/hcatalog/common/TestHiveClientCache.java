@@ -41,6 +41,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -77,14 +78,15 @@ public class TestHiveClientCache {
   @Test
   public void testCacheHit() throws IOException, MetaException, LoginException {
     HiveClientCache cache = new HiveClientCache(1000);
-    HiveClientCache.ICacheableMetaStoreClient client = cache.get(hiveConf);
+    HiveClientCache.ICacheableMetaStoreClient client = (HiveClientCache.ICacheableMetaStoreClient) cache.get(hiveConf);
     assertNotNull(client);
     client.close(); // close shouldn't matter
 
     // Setting a non important configuration should return the same client only
     hiveConf.setIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS, 10);
-    HiveClientCache.ICacheableMetaStoreClient client2 = cache.get(hiveConf);
+    HiveClientCache.ICacheableMetaStoreClient client2 = (HiveClientCache.ICacheableMetaStoreClient) cache.get(hiveConf);
     assertNotNull(client2);
+    assertSame(client, client2);
     assertEquals(client.getUsers(), client2.getUsers());
     client2.close();
   }
@@ -109,11 +111,11 @@ public class TestHiveClientCache {
   @Test
   public void testCacheExpiry() throws IOException, MetaException, LoginException, InterruptedException {
     HiveClientCache cache = new HiveClientCache(1);
-    HiveClientCache.ICacheableMetaStoreClient client = cache.get(hiveConf);
+    HiveClientCache.ICacheableMetaStoreClient client = (HiveClientCache.ICacheableMetaStoreClient) cache.get(hiveConf);
     assertNotNull(client);
 
     Thread.sleep(2500);
-    HiveClientCache.ICacheableMetaStoreClient client2 = cache.get(hiveConf);
+    HiveClientCache.ICacheableMetaStoreClient client2 = (HiveClientCache.ICacheableMetaStoreClient) cache.get(hiveConf);
     client.close();
     assertTrue(client.isClosed()); // close() after *expiry time* and *a cache access* should  have tore down the client
 
@@ -154,9 +156,9 @@ public class TestHiveClientCache {
   @Test
   public void testCloseAllClients() throws IOException, MetaException, LoginException {
     final HiveClientCache cache = new HiveClientCache(1000);
-    HiveClientCache.ICacheableMetaStoreClient client1 = cache.get(hiveConf);
+    HiveClientCache.ICacheableMetaStoreClient client1 = (HiveClientCache.ICacheableMetaStoreClient) cache.get(hiveConf);
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, " "); // URIs are checked for string equivalence, even spaces make them different
-    HiveClientCache.ICacheableMetaStoreClient client2 = cache.get(hiveConf);
+    HiveClientCache.ICacheableMetaStoreClient client2 = (HiveClientCache.ICacheableMetaStoreClient) cache.get(hiveConf);
     cache.closeAllClientsQuietly();
     assertTrue(client1.isClosed());
     assertTrue(client2.isClosed());

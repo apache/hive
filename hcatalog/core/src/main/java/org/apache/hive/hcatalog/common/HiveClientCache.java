@@ -32,11 +32,13 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -55,8 +57,11 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 class HiveClientCache {
   public final static int DEFAULT_HIVE_CACHE_EXPIRY_TIME_SECONDS = 2 * 60;
+  public final static int DEFAULT_HIVE_CACHE_INITIAL_CAPACITY = 50;
+  public final static int DEFAULT_HIVE_CACHE_MAX_CAPACITY = 50;
+  public final static boolean DEFAULT_HIVE_CLIENT_CACHE_STATS_ENABLED = false;
 
-  final private Cache<HiveClientCacheKey, ICacheableMetaStoreClient> hiveCache;
+  private final Cache<HiveClientCacheKey, ICacheableMetaStoreClient> hiveCache;
   private static final Logger LOG = LoggerFactory.getLogger(HiveClientCache.class);
   private final int timeout;
   // This lock is used to make sure removalListener won't close a client that is being contemplated for returning by get()
@@ -65,6 +70,8 @@ class HiveClientCache {
   private static final AtomicInteger nextId = new AtomicInteger(0);
 
   private final ScheduledFuture<?> cleanupHandle; // used to cleanup cache
+
+  private boolean enableStats;
 
   // Since HiveMetaStoreClient is not threadsafe, hive clients are not  shared across threads.
   // Thread local variable containing each thread's unique ID, is used as one of the keys for the cache
@@ -86,20 +93,78 @@ class HiveClientCache {
   }
 
   public HiveClientCache(HiveConf hiveConf) {
-    this(hiveConf.getInt(HCatConstants.HCAT_HIVE_CLIENT_EXPIRY_TIME,
-        DEFAULT_HIVE_CACHE_EXPIRY_TIME_SECONDS));
+    this(hiveConf.getInt(HCatConstants.HCAT_HIVE_CLIENT_EXPIRY_TIME, DEFAULT_HIVE_CACHE_EXPIRY_TIME_SECONDS),
+        hiveConf.getInt(HCatConstants.HCAT_HIVE_CLIENT_CACHE_INITIAL_CAPACITY, DEFAULT_HIVE_CACHE_INITIAL_CAPACITY),
+        hiveConf.getInt(HCatConstants.HCAT_HIVE_CLIENT_CACHE_MAX_CAPACITY, DEFAULT_HIVE_CACHE_MAX_CAPACITY),
+        hiveConf.getBoolean(HCatConstants.HCAT_HIVE_CLIENT_CACHE_STATS_ENABLED, DEFAULT_HIVE_CLIENT_CACHE_STATS_ENABLED));
+
   }
+
+  /**
+   * @deprecated This constructor will be made private or removed as more configuration properties are required.
+   */
+  @Deprecated
+  public HiveClientCache(final int timeout) {
+    this(timeout, DEFAULT_HIVE_CACHE_INITIAL_CAPACITY, DEFAULT_HIVE_CACHE_MAX_CAPACITY, DEFAULT_HIVE_CLIENT_CACHE_STATS_ENABLED);
+  }
+
   /**
    * @param timeout the length of time in seconds after a client is created that it should be automatically removed
    */
-  public HiveClientCache(final int timeout) {
+  private HiveClientCache(final int timeout, final int initialCapacity, final int maxCapacity, final boolean enableStats) {
     this.timeout = timeout;
-    RemovalListener<HiveClientCacheKey, ICacheableMetaStoreClient> removalListener =
+    this.enableStats = enableStats;
+
+    LOG.info("Initializing cache: eviction-timeout=" + timeout + " initial-capacity=" + initialCapacity + " maximum-capacity=" + maxCapacity);
+
+    CacheBuilder builder = CacheBuilder.newBuilder()
+      .initialCapacity(initialCapacity)
+      .maximumSize(maxCapacity)
+      .expireAfterAccess(timeout, TimeUnit.SECONDS)
+      .removalListener(createRemovalListener());
+
+    /*
+     * Guava versions <12.0 have stats collection enabled by default and do not expose a recordStats method.
+     * Check for newer versions of the library and ensure that stats collection is enabled by default.
+     */
+    try {
+      java.lang.reflect.Method m = builder.getClass().getMethod("recordStats", null);
+      m.invoke(builder, null);
+    } catch (NoSuchMethodException e) {
+      LOG.debug("Using a version of guava <12.0. Stats collection is enabled by default.");
+    } catch (Exception e) {
+      LOG.warn("Unable to invoke recordStats method.", e);
+    }
+
+    this.hiveCache = builder.build();
+
+    /*
+     * We need to use a cleanup interval, which is how often the cleanup thread will kick in
+     * and go do a check to see if any of the connections can be expired. We don't want to
+     * do this too often, because it'd be like having a mini-GC going off every so often,
+     * so we limit it to a minimum of DEFAULT_HIVE_CACHE_EXPIRY_TIME_SECONDS. If the client
+     * has explicitly set a larger timeout on the cache, though, we respect that, and use that
+     */
+    long cleanupInterval = timeout > DEFAULT_HIVE_CACHE_EXPIRY_TIME_SECONDS ? timeout : DEFAULT_HIVE_CACHE_EXPIRY_TIME_SECONDS;
+
+    this.cleanupHandle = createCleanupThread(cleanupInterval);
+
+    createShutdownHook();
+  }
+
+  private RemovalListener<HiveClientCacheKey, ICacheableMetaStoreClient> createRemovalListener() {
+    RemovalListener<HiveClientCacheKey, ICacheableMetaStoreClient> listener =
       new RemovalListener<HiveClientCacheKey, ICacheableMetaStoreClient>() {
         @Override
         public void onRemoval(RemovalNotification<HiveClientCacheKey, ICacheableMetaStoreClient> notification) {
           ICacheableMetaStoreClient hiveMetaStoreClient = notification.getValue();
           if (hiveMetaStoreClient != null) {
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Evicting client: " + Integer.toHexString(System.identityHashCode(hiveMetaStoreClient)));
+            }
+
+            // TODO: This global lock may not be necessary as all concurrent methods in ICacheableMetaStoreClient
+            // are synchronized.
             synchronized (CACHE_TEARDOWN_LOCK) {
               hiveMetaStoreClient.setExpiredFromCache();
               hiveMetaStoreClient.tearDownIfUnused();
@@ -107,31 +172,18 @@ class HiveClientCache {
           }
         }
       };
-    hiveCache = CacheBuilder.newBuilder()
-      .expireAfterWrite(timeout, TimeUnit.SECONDS)
-      .removalListener(removalListener)
-      .build();
 
+    return listener;
+  }
+
+  private ScheduledFuture<?> createCleanupThread(long interval) {
     // Add a maintenance thread that will attempt to trigger a cache clean continuously
     Runnable cleanupThread = new Runnable() {
       @Override
       public void run() {
-        hiveCache.cleanUp();
+        cleanup();
       }
     };
-
-    /**
-     * We need to use a cleanup interval, which is how often the cleanup thread will kick in
-     * and go do a check to see if any of the connections can be expired. We don't want to
-     * do this too often, because it'd be like having a mini-GC going off every so often,
-     * so we limit it to a minimum of DEFAULT_HIVE_CACHE_EXPIRY_TIME_SECONDS. If the client
-     * has explicitly set a larger timeout on the cache, though, we respect that, and use that
-     */
-    long cleanupInterval = DEFAULT_HIVE_CACHE_EXPIRY_TIME_SECONDS;
-
-    if (timeout > cleanupInterval){
-      cleanupInterval = timeout;
-    }
 
     /**
      * Create the cleanup handle. In addition to cleaning up every cleanupInterval, we add
@@ -142,13 +194,14 @@ class HiveClientCache {
      * it can be cleaned every max(DEFAULT_HIVE_CACHE_EXPIRY_TIME_SECONDS,timeout) seconds
      */
     ThreadFactory daemonThreadFactory = (new ThreadFactoryBuilder()).setDaemon(true)
-        .setNameFormat("HiveClientCache-cleaner-%d").build();
+      .setNameFormat("HiveClientCache-cleaner-%d")
+      .build();
 
-    cleanupHandle = Executors.newScheduledThreadPool(1, daemonThreadFactory).scheduleWithFixedDelay(
-        cleanupThread,
-        timeout + 5, cleanupInterval, TimeUnit.SECONDS);
+    return Executors.newScheduledThreadPool(1, daemonThreadFactory)
+      .scheduleWithFixedDelay(cleanupThread, timeout + 5, interval, TimeUnit.SECONDS);
+  }
 
-
+  private void createShutdownHook() {
     // Add a shutdown hook for cleanup, if there are elements remaining in the cache which were not cleaned up.
     // This is the best effort approach. Ignore any error while doing so. Notice that most of the clients
     // would get cleaned up via either the removalListener or the close() call, only the active clients
@@ -163,6 +216,7 @@ class HiveClientCache {
         closeAllClientsQuietly();
       }
     };
+
     Runtime.getRuntime().addShutdownHook(cleanupHiveClientShutdownThread);
   }
 
@@ -178,10 +232,19 @@ class HiveClientCache {
     } catch (Exception e) {
       LOG.warn("Clean up of hive clients in the cache failed. Ignored", e);
     }
+
+    if (this.enableStats) {
+      LOG.info("Cache statistics after shutdown: size=" + hiveCache.size() + " " + hiveCache.stats());
+    }
   }
 
   public void cleanup() {
+    // TODO: periodically reload a new HiveConf to check if stats reporting is enabled.
     hiveCache.cleanUp();
+
+    if (enableStats) {
+      LOG.info("Cache statistics after cleanup: size=" + hiveCache.size() + " " + hiveCache.stats());
+    }
   }
 
   /**
@@ -193,9 +256,10 @@ class HiveClientCache {
    * @throws IOException
    * @throws LoginException
    */
-  public ICacheableMetaStoreClient get(final HiveConf hiveConf) throws MetaException, IOException, LoginException {
+  public IMetaStoreClient get(final HiveConf hiveConf) throws MetaException, IOException, LoginException {
     final HiveClientCacheKey cacheKey = HiveClientCacheKey.fromHiveConf(hiveConf, getThreadId());
     ICacheableMetaStoreClient cacheableHiveMetaStoreClient = null;
+
     // the hmsc is not shared across threads. So the only way it could get closed while we are doing healthcheck
     // is if removalListener closes it. The synchronization takes care that removalListener won't do it
     synchronized (CACHE_TEARDOWN_LOCK) {
@@ -255,7 +319,7 @@ class HiveClientCache {
    * UserGroupInformation and metaStoreURIs are same. This function can evolve to express
    * the cases when HiveConf is different but the same hiveMetaStoreClient can be used
    */
-  public static class HiveClientCacheKey {
+  static class HiveClientCacheKey {
     final private String metaStoreURIs;
     final private UserGroupInformation ugi;
     final private HiveConf hiveConf;
@@ -295,24 +359,38 @@ class HiveClientCache {
         append(ugi).
         append(threadId).toHashCode();
     }
+
+    @Override
+    public String toString() {
+      return "HiveClientCacheKey: uri=" + this.metaStoreURIs + " ugi=" + this.ugi + " thread=" + this.threadId; 
+    }
   }
 
+  @InterfaceAudience.Private
   public interface ICacheableMetaStoreClient extends IMetaStoreClient {
-
+    @NoReconnect
     void acquire();
 
-    void release();
-
+    @NoReconnect
     void setExpiredFromCache();
 
+    @NoReconnect
     AtomicInteger getUsers();
 
+    @NoReconnect
     boolean isClosed();
 
+    /**
+     * @deprecated This method is not used internally and should not be visible through HCatClient.create.
+     */
+    @Deprecated
+    @NoReconnect
     boolean isOpen();
 
+    @NoReconnect
     void tearDownIfUnused();
 
+    @NoReconnect
     void tearDown();
   }
 
@@ -324,26 +402,48 @@ class HiveClientCache {
     private final AtomicInteger users = new AtomicInteger(0);
     private volatile boolean expiredFromCache = false;
     private boolean isClosed = false;
-    private final long expiryTime;
-    private static final int EXPIRY_TIME_EXTENSION_IN_MILLIS = 60 * 1000;
 
     CacheableHiveMetaStoreClient(final HiveConf conf, final Integer timeout, Boolean allowEmbedded)
         throws MetaException {
       super(conf, null, allowEmbedded);
-      // Extend the expiry time with some extra time on top of guava expiry time to make sure
-      // that items closed() are for sure expired and would never be returned by guava.
-      this.expiryTime = System.currentTimeMillis() + timeout * 1000 + EXPIRY_TIME_EXTENSION_IN_MILLIS;
     }
 
-    public void acquire() {
+    /**
+     * Increments the user count and optionally renews the expiration time.
+     * <code>renew</code> should correspond with the expiration policy of the cache.
+     * When the policy is <code>expireAfterAccess</code>, the expiration time should be extended.
+     * When the policy is <code>expireAfterWrite</code>, the expiration time should not be extended.
+     * A mismatch with the policy will lead to closing the connection unnecessarily after the initial
+     * expiration time is generated.
+     * @param renew whether the expiration time should be extended.
+     */
+    public synchronized void acquire() {
       users.incrementAndGet();
+      if (users.get() > 1) {
+        LOG.warn("Unexpected increment of user count beyond one: " + users.get() + " " + this);
+      }
     }
 
-    public void release() {
-      users.decrementAndGet();
+    /**
+     * Decrements the user count.
+     */
+    private void release() {
+      if (users.get() > 0) {
+        users.decrementAndGet();
+      } else {
+        LOG.warn("Unexpected attempt to decrement user count of zero: " + users.get() + " " + this);
+      }
     }
 
-    public void setExpiredFromCache() {
+    /**
+     * Communicate to the client that it is no longer in the cache.
+     * The expiration time should be voided to allow the connection to be closed at the first opportunity.
+     */
+    public synchronized void setExpiredFromCache() {
+      if (users.get() != 0) {
+        LOG.warn("Evicted client has non-zero user count: " + users.get());
+      }
+
       expiredFromCache = true;
     }
 
@@ -363,6 +463,7 @@ class HiveClientCache {
      * invalid data renders the client unusable for future use (example: create a table with very long table name)
      * @return
      */
+    @Deprecated
     public boolean isOpen() {
       try {
         // Look for an unlikely database name and see if either MetaException or TException is thrown
@@ -378,28 +479,31 @@ class HiveClientCache {
      * This *MUST* be called by anyone who uses this client.
      */
     @Override
-    public void close() {
+    public synchronized void close() {
       release();
-      if (System.currentTimeMillis() >= expiryTime)
-        setExpiredFromCache();
       tearDownIfUnused();
     }
 
     /**
-     * Tear down only if
-     *  1. There are no active user
-     *  2. It has expired from the cache
+     * Attempt to tear down the client connection.
+     * The connection will be closed if the following conditions hold:
+     *  1. There are no active user holding the client.
+     *  2. The client has been evicted from the cache.
      */
-    public void tearDownIfUnused() {
+    public synchronized void tearDownIfUnused() {
+      if (users.get() != 0) {
+        LOG.warn("Non-zero user count preventing client tear down: users=" + users.get() + " expired=" + expiredFromCache);
+      }
+
       if (users.get() == 0 && expiredFromCache) {
         this.tearDown();
       }
     }
 
     /**
-     * Close if not closed already
+     * Close the underlying objects irrespective of whether they are in use or not.
      */
-    public synchronized void tearDown() {
+    public void tearDown() {
       try {
         if (!isClosed) {
           super.close();
@@ -410,12 +514,23 @@ class HiveClientCache {
       }
     }
 
+    @Override
+    public String toString() {
+      return "HCatClient: thread: " + Thread.currentThread().getId() + " users=" + users.get()
+        + " expired=" + expiredFromCache + " closed=" + isClosed;
+    }
+
     /**
-     * Last effort to clean up, may not even get called.
+     * GC is attempting to destroy the object.
+     * No one references this client anymore, so it can be torn down without worrying about user counts.
      * @throws Throwable
      */
     @Override
     protected void finalize() throws Throwable {
+      if (users.get() != 0) {
+        LOG.warn("Closing client with non-zero user count: users=" + users.get() + " expired=" + expiredFromCache);
+      }
+
       try {
         this.tearDown();
       } finally {
