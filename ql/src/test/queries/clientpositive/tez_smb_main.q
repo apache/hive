@@ -53,6 +53,7 @@ from tab a join tab_part b on a.key = b.key;
 select count(*)
 from tab a join tab_part b on a.key = b.key;
 
+set hive.stats.fetch.column.stats=false;
 set hive.auto.convert.join.noconditionaltask.size=1000;
 set hive.mapjoin.hybridgrace.minwbsize=250;
 set hive.mapjoin.hybridgrace.minnumpartitions=4;
@@ -63,7 +64,7 @@ from tab a join tab_part b on a.key = b.key;
 select count(*)
 from tab a join tab_part b on a.key = b.key;
 
-set hive.stats.fetch.column.stats=false;
+
 set hive.auto.convert.join.noconditionaltask.size=500;
 set hive.mapjoin.hybridgrace.minwbsize=125;
 set hive.mapjoin.hybridgrace.minnumpartitions=4;
