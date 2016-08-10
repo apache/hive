@@ -2840,16 +2840,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           checkTrashPurgeCombination(archiveParentDir, db_name + "." + tbl_name + "." + part_vals,
               mustPurge, deleteData && !isExternalTbl);
         }
-        if (!ms.dropPartition(db_name, tbl_name, part_vals)) {
-          throw new MetaException("Unable to drop partition");
-        }
-        success = ms.commitTransaction();
+
         if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
           partPath = new Path(part.getSd().getLocation());
           verifyIsWritablePath(partPath);
           checkTrashPurgeCombination(partPath, db_name + "." + tbl_name + "." + part_vals,
               mustPurge, deleteData && !isExternalTbl);
         }
+
+        if (!ms.dropPartition(db_name, tbl_name, part_vals)) {
+          throw new MetaException("Unable to drop partition");
+        }
+        success = ms.commitTransaction();
       } finally {
         if (!success) {
           ms.rollbackTransaction();
