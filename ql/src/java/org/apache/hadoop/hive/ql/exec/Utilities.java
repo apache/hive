@@ -2509,13 +2509,9 @@ public final class Utilities {
   public static List<String> getColumnTypes(Properties props) {
     List<String> names = new ArrayList<String>();
     String colNames = props.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    String[] cols = colNames.trim().split(",");
-    if (cols != null) {
-      for (String col : cols) {
-        if (col != null && !col.trim().equals("")) {
-          names.add(col);
-        }
-      }
+    ArrayList<TypeInfo> cols = TypeInfoUtils.getTypeInfosFromTypeString(colNames);
+    for (TypeInfo col : cols) {
+      names.add(col.getTypeName());
     }
     return names;
   }
