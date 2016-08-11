@@ -83,10 +83,22 @@ public class GenericUDFStringToMap extends GenericUDF {
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     ret.clear();
     String text = (String) soi_text.convert(arguments[0].get());
+    if (text == null) {
+      return ret;
+    }
+
     String delimiter1 = (soi_de1 == null) ?
       default_de1 : (String) soi_de1.convert(arguments[1].get());
     String delimiter2 = (soi_de2 == null) ?
       default_de2 : (String) soi_de2.convert(arguments[2].get());
+
+    if (delimiter1 == null) {
+      delimiter1 = default_de1;
+    }
+
+    if (delimiter2 == null) {
+      delimiter2 = default_de2;
+    }
 
     String[] keyValuePairs = text.split(delimiter1);
 
