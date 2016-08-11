@@ -172,39 +172,32 @@ POSTHOOK: Lineage: table_add_int_permute_select.c EXPRESSION [(values__tmp__tabl
 POSTHOOK: Lineage: table_add_int_permute_select.insert_num EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3
 PREHOOK: query: explain
-select insert_num,a,b from table_add_int_permute_select order by insert_num
+select insert_num,a,b from table_add_int_permute_select
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,a,b from table_add_int_permute_select order by insert_num
+select insert_num,a,b from table_add_int_permute_select
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=100)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=100)
           Output:["_col0","_col1","_col2"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=100)
-              Output:["_col0","_col1","_col2"]
-              TableScan [TS_0] (rows=4 width=100)
-                default@table_add_int_permute_select,table_add_int_permute_select,Tbl:COMPLETE,Col:NONE,Output:["insert_num","a","b"]
+          TableScan [TS_0] (rows=4 width=100)
+            default@table_add_int_permute_select,table_add_int_permute_select,Tbl:COMPLETE,Col:NONE,Output:["insert_num","a","b"]
 
 PREHOOK: query: -- SELECT permutation columns to make sure NULL defaulting works right
-select insert_num,a,b from table_add_int_permute_select order by insert_num
+select insert_num,a,b from table_add_int_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_permute_select
 #### A masked pattern was here ####
 POSTHOOK: query: -- SELECT permutation columns to make sure NULL defaulting works right
-select insert_num,a,b from table_add_int_permute_select order by insert_num
+select insert_num,a,b from table_add_int_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_permute_select
 #### A masked pattern was here ####
@@ -219,11 +212,11 @@ insert_num	a	b
 7	3	new
 8	4	new
 9	5	new
-PREHOOK: query: select insert_num,a,b,c from table_add_int_permute_select order by insert_num
+PREHOOK: query: select insert_num,a,b,c from table_add_int_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,a,b,c from table_add_int_permute_select order by insert_num
+POSTHOOK: query: select insert_num,a,b,c from table_add_int_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_permute_select
 #### A masked pattern was here ####
@@ -238,11 +231,11 @@ insert_num	a	b	c
 7	3	new	30
 8	4	new	40
 9	5	new	100
-PREHOOK: query: select insert_num,c from table_add_int_permute_select order by insert_num
+PREHOOK: query: select insert_num,c from table_add_int_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c from table_add_int_permute_select order by insert_num
+POSTHOOK: query: select insert_num,c from table_add_int_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_permute_select
 #### A masked pattern was here ####
@@ -426,39 +419,32 @@ POSTHOOK: Lineage: table_add_int_string_permute_select.d SIMPLE [(values__tmp__t
 POSTHOOK: Lineage: table_add_int_string_permute_select.insert_num EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,a,b from table_add_int_string_permute_select order by insert_num
+select insert_num,a,b from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,a,b from table_add_int_string_permute_select order by insert_num
+select insert_num,a,b from table_add_int_string_permute_select
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=100)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=100)
           Output:["_col0","_col1","_col2"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=100)
-              Output:["_col0","_col1","_col2"]
-              TableScan [TS_0] (rows=4 width=100)
-                default@table_add_int_string_permute_select,table_add_int_string_permute_select,Tbl:COMPLETE,Col:NONE,Output:["insert_num","a","b"]
+          TableScan [TS_0] (rows=4 width=100)
+            default@table_add_int_string_permute_select,table_add_int_string_permute_select,Tbl:COMPLETE,Col:NONE,Output:["insert_num","a","b"]
 
 PREHOOK: query: -- SELECT permutation columns to make sure NULL defaulting works right
-select insert_num,a,b from table_add_int_string_permute_select order by insert_num
+select insert_num,a,b from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
 POSTHOOK: query: -- SELECT permutation columns to make sure NULL defaulting works right
-select insert_num,a,b from table_add_int_string_permute_select order by insert_num
+select insert_num,a,b from table_add_int_string_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
@@ -473,11 +459,11 @@ insert_num	a	b
 7	3	new
 8	4	new
 9	5	new
-PREHOOK: query: select insert_num,a,b,c from table_add_int_string_permute_select order by insert_num
+PREHOOK: query: select insert_num,a,b,c from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,a,b,c from table_add_int_string_permute_select order by insert_num
+POSTHOOK: query: select insert_num,a,b,c from table_add_int_string_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
@@ -492,11 +478,11 @@ insert_num	a	b	c
 7	3	new	30
 8	4	new	40
 9	5	new	100
-PREHOOK: query: select insert_num,a,b,c,d from table_add_int_string_permute_select order by insert_num
+PREHOOK: query: select insert_num,a,b,c,d from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,a,b,c,d from table_add_int_string_permute_select order by insert_num
+POSTHOOK: query: select insert_num,a,b,c,d from table_add_int_string_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
@@ -511,11 +497,11 @@ insert_num	a	b	c	d
 7	3	new	30	thirty
 8	4	new	40	forty
 9	5	new	100	hundred
-PREHOOK: query: select insert_num,a,c,d from table_add_int_string_permute_select order by insert_num
+PREHOOK: query: select insert_num,a,c,d from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,a,c,d from table_add_int_string_permute_select order by insert_num
+POSTHOOK: query: select insert_num,a,c,d from table_add_int_string_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
@@ -530,11 +516,11 @@ insert_num	a	c	d
 7	3	30	thirty
 8	4	40	forty
 9	5	100	hundred
-PREHOOK: query: select insert_num,a,d from table_add_int_string_permute_select order by insert_num
+PREHOOK: query: select insert_num,a,d from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,a,d from table_add_int_string_permute_select order by insert_num
+POSTHOOK: query: select insert_num,a,d from table_add_int_string_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
@@ -549,11 +535,11 @@ insert_num	a	d
 7	3	thirty
 8	4	forty
 9	5	hundred
-PREHOOK: query: select insert_num,c from table_add_int_string_permute_select order by insert_num
+PREHOOK: query: select insert_num,c from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c from table_add_int_string_permute_select order by insert_num
+POSTHOOK: query: select insert_num,c from table_add_int_string_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
@@ -568,11 +554,11 @@ insert_num	c
 7	30
 8	40
 9	100
-PREHOOK: query: select insert_num,d from table_add_int_string_permute_select order by insert_num
+PREHOOK: query: select insert_num,d from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,d from table_add_int_string_permute_select order by insert_num
+POSTHOOK: query: select insert_num,d from table_add_int_string_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
@@ -690,37 +676,30 @@ POSTHOOK: Lineage: table_change_string_group_double.c3 EXPRESSION [(values__tmp_
 POSTHOOK: Lineage: table_change_string_group_double.insert_num EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_string_group_double order by insert_num
+select insert_num,c1,c2,c3,b from table_change_string_group_double
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_string_group_double order by insert_num
+select insert_num,c1,c2,c3,b from table_change_string_group_double
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=414)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=414)
           Output:["_col0","_col1","_col2","_col3","_col4"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=414)
-              Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=4 width=414)
-                default@table_change_string_group_double,table_change_string_group_double,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
+          TableScan [TS_0] (rows=4 width=414)
+            default@table_change_string_group_double,table_change_string_group_double,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_double order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_double
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_string_group_double
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_double order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_double
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_string_group_double
 #### A masked pattern was here ####
@@ -842,37 +821,30 @@ POSTHOOK: Lineage: table_change_date_group_string_group_timestamp.c5 EXPRESSION 
 POSTHOOK: Lineage: table_change_date_group_string_group_timestamp.insert_num EXPRESSION [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp order by insert_num
+select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp order by insert_num
+select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=3 width=296)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=3 width=296)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=3 width=296)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-              TableScan [TS_0] (rows=3 width=296)
-                default@table_change_date_group_string_group_timestamp,table_change_date_group_string_group_timestamp,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","b"]
+          TableScan [TS_0] (rows=3 width=296)
+            default@table_change_date_group_string_group_timestamp,table_change_date_group_string_group_timestamp,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_date_group_string_group_timestamp
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_date_group_string_group_timestamp
 #### A masked pattern was here ####
@@ -1010,37 +982,30 @@ POSTHOOK: Lineage: table_change_date_group_string_group_date.c5 EXPRESSION [(val
 POSTHOOK: Lineage: table_change_date_group_string_group_date.insert_num EXPRESSION [(values__tmp__table__14)values__tmp__table__14.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date order by insert_num
+select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date order by insert_num
+select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=3 width=376)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=3 width=376)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=3 width=376)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-              TableScan [TS_0] (rows=3 width=376)
-                default@table_change_date_group_string_group_date,table_change_date_group_string_group_date,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","b"]
+          TableScan [TS_0] (rows=3 width=376)
+            default@table_change_date_group_string_group_date,table_change_date_group_string_group_date,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_date_group_string_group_date
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_date_group_string_group_date
 #### A masked pattern was here ####
@@ -1107,11 +1072,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string.c3 
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string.c4 EXPRESSION [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string.insert_num EXPRESSION [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string
 #### A masked pattern was here ####
@@ -1158,37 +1123,30 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string.c4 
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string.insert_num EXPRESSION [(values__tmp__table__16)values__tmp__table__16.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=115)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=115)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=115)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-              TableScan [TS_0] (rows=4 width=115)
-                default@table_change_numeric_group_string_group_multi_ints_string,table_change_numeric_group_string_group_multi_ints_string,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
+          TableScan [TS_0] (rows=4 width=115)
+            default@table_change_numeric_group_string_group_multi_ints_string,table_change_numeric_group_string_group_multi_ints_string,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string
 #### A masked pattern was here ####
@@ -1248,11 +1206,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char.c3 EX
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char.c4 EXPRESSION [(values__tmp__table__17)values__tmp__table__17.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char.insert_num EXPRESSION [(values__tmp__table__17)values__tmp__table__17.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char
 #### A masked pattern was here ####
@@ -1299,37 +1257,30 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char.c4 EX
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char.insert_num EXPRESSION [(values__tmp__table__18)values__tmp__table__18.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=115)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=115)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=115)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-              TableScan [TS_0] (rows=4 width=115)
-                default@table_change_numeric_group_string_group_multi_ints_char,table_change_numeric_group_string_group_multi_ints_char,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
+          TableScan [TS_0] (rows=4 width=115)
+            default@table_change_numeric_group_string_group_multi_ints_char,table_change_numeric_group_string_group_multi_ints_char,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char
 #### A masked pattern was here ####
@@ -1389,11 +1340,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char_trunc
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char_trunc.c4 EXPRESSION [(values__tmp__table__19)values__tmp__table__19.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char_trunc.insert_num EXPRESSION [(values__tmp__table__19)values__tmp__table__19.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char_trunc
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char_trunc
 #### A masked pattern was here ####
@@ -1440,37 +1391,30 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char_trunc
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char_trunc.insert_num EXPRESSION [(values__tmp__table__20)values__tmp__table__20.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=115)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=115)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=115)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-              TableScan [TS_0] (rows=4 width=115)
-                default@table_change_numeric_group_string_group_multi_ints_char_trunc,table_change_numeric_group_string_group_multi_ints_char_trunc,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
+          TableScan [TS_0] (rows=4 width=115)
+            default@table_change_numeric_group_string_group_multi_ints_char_trunc,table_change_numeric_group_string_group_multi_ints_char_trunc,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char_trunc
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char_trunc
 #### A masked pattern was here ####
@@ -1530,11 +1474,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar.c3
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar.c4 EXPRESSION [(values__tmp__table__21)values__tmp__table__21.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar.insert_num EXPRESSION [(values__tmp__table__21)values__tmp__table__21.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar
 #### A masked pattern was here ####
@@ -1581,37 +1525,30 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar.c4
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar.insert_num EXPRESSION [(values__tmp__table__22)values__tmp__table__22.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=115)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=115)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=115)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-              TableScan [TS_0] (rows=4 width=115)
-                default@table_change_numeric_group_string_group_multi_ints_varchar,table_change_numeric_group_string_group_multi_ints_varchar,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
+          TableScan [TS_0] (rows=4 width=115)
+            default@table_change_numeric_group_string_group_multi_ints_varchar,table_change_numeric_group_string_group_multi_ints_varchar,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar
 #### A masked pattern was here ####
@@ -1671,11 +1608,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar_tr
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar_trunc.c4 EXPRESSION [(values__tmp__table__23)values__tmp__table__23.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar_trunc.insert_num EXPRESSION [(values__tmp__table__23)values__tmp__table__23.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar_trunc
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar_trunc
 #### A masked pattern was here ####
@@ -1722,37 +1659,30 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar_tr
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar_trunc.insert_num EXPRESSION [(values__tmp__table__24)values__tmp__table__24.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=115)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=115)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=115)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-              TableScan [TS_0] (rows=4 width=115)
-                default@table_change_numeric_group_string_group_multi_ints_varchar_trunc,table_change_numeric_group_string_group_multi_ints_varchar_trunc,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
+          TableScan [TS_0] (rows=4 width=115)
+            default@table_change_numeric_group_string_group_multi_ints_varchar_trunc,table_change_numeric_group_string_group_multi_ints_varchar_trunc,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar_trunc
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar_trunc
 #### A masked pattern was here ####
@@ -1811,11 +1741,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string.c2 EX
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string.c3 EXPRESSION [(values__tmp__table__25)values__tmp__table__25.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string.insert_num EXPRESSION [(values__tmp__table__25)values__tmp__table__25.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string
 #### A masked pattern was here ####
@@ -1861,37 +1791,30 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string.c3 SI
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string.insert_num EXPRESSION [(values__tmp__table__26)values__tmp__table__26.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=220)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=220)
           Output:["_col0","_col1","_col2","_col3","_col4"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=220)
-              Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=4 width=220)
-                default@table_change_numeric_group_string_group_floating_string,table_change_numeric_group_string_group_floating_string,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
+          TableScan [TS_0] (rows=4 width=220)
+            default@table_change_numeric_group_string_group_floating_string,table_change_numeric_group_string_group_floating_string,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string
 #### A masked pattern was here ####
@@ -1950,11 +1873,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char.c2 EXPR
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char.c3 EXPRESSION [(values__tmp__table__27)values__tmp__table__27.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char.insert_num EXPRESSION [(values__tmp__table__27)values__tmp__table__27.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_char
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char
 #### A masked pattern was here ####
@@ -2000,37 +1923,30 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char.c3 EXPR
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char.insert_num EXPRESSION [(values__tmp__table__28)values__tmp__table__28.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=220)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=220)
           Output:["_col0","_col1","_col2","_col3","_col4"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=220)
-              Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=4 width=220)
-                default@table_change_numeric_group_string_group_floating_char,table_change_numeric_group_string_group_floating_char,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
+          TableScan [TS_0] (rows=4 width=220)
+            default@table_change_numeric_group_string_group_floating_char,table_change_numeric_group_string_group_floating_char,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_char
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char
 #### A masked pattern was here ####
@@ -2089,11 +2005,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char_trunc.c
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char_trunc.c3 EXPRESSION [(values__tmp__table__29)values__tmp__table__29.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char_trunc.insert_num EXPRESSION [(values__tmp__table__29)values__tmp__table__29.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_char_trunc
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char_trunc
 #### A masked pattern was here ####
@@ -2139,37 +2055,30 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char_trunc.c
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char_trunc.insert_num EXPRESSION [(values__tmp__table__30)values__tmp__table__30.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=220)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=220)
           Output:["_col0","_col1","_col2","_col3","_col4"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=220)
-              Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=4 width=220)
-                default@table_change_numeric_group_string_group_floating_char_trunc,table_change_numeric_group_string_group_floating_char_trunc,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
+          TableScan [TS_0] (rows=4 width=220)
+            default@table_change_numeric_group_string_group_floating_char_trunc,table_change_numeric_group_string_group_floating_char_trunc,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_char_trunc
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char_trunc
 #### A masked pattern was here ####
@@ -2228,11 +2137,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar.c2 E
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar.c3 EXPRESSION [(values__tmp__table__31)values__tmp__table__31.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar.insert_num EXPRESSION [(values__tmp__table__31)values__tmp__table__31.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar
 #### A masked pattern was here ####
@@ -2278,37 +2187,30 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar.c3 E
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar.insert_num EXPRESSION [(values__tmp__table__32)values__tmp__table__32.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=220)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=220)
           Output:["_col0","_col1","_col2","_col3","_col4"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=220)
-              Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=4 width=220)
-                default@table_change_numeric_group_string_group_floating_varchar,table_change_numeric_group_string_group_floating_varchar,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
+          TableScan [TS_0] (rows=4 width=220)
+            default@table_change_numeric_group_string_group_floating_varchar,table_change_numeric_group_string_group_floating_varchar,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar
 #### A masked pattern was here ####
@@ -2367,11 +2269,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar_trun
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar_trunc.c3 EXPRESSION [(values__tmp__table__33)values__tmp__table__33.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar_trunc.insert_num EXPRESSION [(values__tmp__table__33)values__tmp__table__33.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar_trunc
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar_trunc
 #### A masked pattern was here ####
@@ -2417,37 +2319,30 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar_trun
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar_trunc.insert_num EXPRESSION [(values__tmp__table__34)values__tmp__table__34.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=220)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=220)
           Output:["_col0","_col1","_col2","_col3","_col4"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=220)
-              Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=4 width=220)
-                default@table_change_numeric_group_string_group_floating_varchar_trunc,table_change_numeric_group_string_group_floating_varchar_trunc,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
+          TableScan [TS_0] (rows=4 width=220)
+            default@table_change_numeric_group_string_group_floating_varchar_trunc,table_change_numeric_group_string_group_floating_varchar_trunc,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar_trunc
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar_trunc
 #### A masked pattern was here ####
@@ -2515,11 +2410,11 @@ POSTHOOK: Lineage: table_change_string_group_string_group_string.c3 SIMPLE [(val
 POSTHOOK: Lineage: table_change_string_group_string_group_string.c4 SIMPLE [(values__tmp__table__35)values__tmp__table__35.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_string_group_string_group_string.insert_num EXPRESSION [(values__tmp__table__35)values__tmp__table__35.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_string_group_string_group_string
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_string_group_string_group_string
 #### A masked pattern was here ####
@@ -2566,37 +2461,30 @@ POSTHOOK: Lineage: table_change_string_group_string_group_string.c4 EXPRESSION [
 POSTHOOK: Lineage: table_change_string_group_string_group_string.insert_num EXPRESSION [(values__tmp__table__36)values__tmp__table__36.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=476)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=476)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=476)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-              TableScan [TS_0] (rows=4 width=476)
-                default@table_change_string_group_string_group_string,table_change_string_group_string_group_string,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
+          TableScan [TS_0] (rows=4 width=476)
+            default@table_change_string_group_string_group_string,table_change_string_group_string_group_string,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_string_group_string_group_string
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_string_group_string_group_string
 #### A masked pattern was here ####
@@ -2655,11 +2543,11 @@ POSTHOOK: Lineage: table_change_string_group_string_group_char.c2 EXPRESSION [(v
 POSTHOOK: Lineage: table_change_string_group_string_group_char.c3 EXPRESSION [(values__tmp__table__37)values__tmp__table__37.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_string_group_string_group_char.insert_num EXPRESSION [(values__tmp__table__37)values__tmp__table__37.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_string_group_string_group_char
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_string_group_string_group_char
 #### A masked pattern was here ####
@@ -2705,37 +2593,30 @@ POSTHOOK: Lineage: table_change_string_group_string_group_char.c3 SIMPLE [(value
 POSTHOOK: Lineage: table_change_string_group_string_group_char.insert_num EXPRESSION [(values__tmp__table__38)values__tmp__table__38.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char order by insert_num
+select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char order by insert_num
+select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=498)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=498)
           Output:["_col0","_col1","_col2","_col3","_col4"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=498)
-              Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=4 width=498)
-                default@table_change_string_group_string_group_char,table_change_string_group_string_group_char,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
+          TableScan [TS_0] (rows=4 width=498)
+            default@table_change_string_group_string_group_char,table_change_string_group_string_group_char,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_string_group_string_group_char
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_string_group_string_group_char
 #### A masked pattern was here ####
@@ -2794,11 +2675,11 @@ POSTHOOK: Lineage: table_change_string_group_string_group_varchar.c2 EXPRESSION 
 POSTHOOK: Lineage: table_change_string_group_string_group_varchar.c3 EXPRESSION [(values__tmp__table__39)values__tmp__table__39.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_string_group_string_group_varchar.insert_num EXPRESSION [(values__tmp__table__39)values__tmp__table__39.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_string_group_string_group_varchar
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_string_group_string_group_varchar
 #### A masked pattern was here ####
@@ -2844,37 +2725,30 @@ POSTHOOK: Lineage: table_change_string_group_string_group_varchar.c3 SIMPLE [(va
 POSTHOOK: Lineage: table_change_string_group_string_group_varchar.insert_num EXPRESSION [(values__tmp__table__40)values__tmp__table__40.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar order by insert_num
+select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar order by insert_num
+select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=381)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=381)
           Output:["_col0","_col1","_col2","_col3","_col4"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=381)
-              Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=4 width=381)
-                default@table_change_string_group_string_group_varchar,table_change_string_group_string_group_varchar,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
+          TableScan [TS_0] (rows=4 width=381)
+            default@table_change_string_group_string_group_varchar,table_change_string_group_string_group_varchar,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_string_group_string_group_varchar
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_string_group_string_group_varchar
 #### A masked pattern was here ####
@@ -2944,11 +2818,11 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint.c5 EXPRESS
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint.c6 EXPRESSION [(values__tmp__table__41)values__tmp__table__41.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint.insert_num EXPRESSION [(values__tmp__table__41)values__tmp__table__41.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7
-PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
 #### A masked pattern was here ####
@@ -2997,37 +2871,30 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint.c6 EXPRESS
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint.insert_num EXPRESSION [(values__tmp__table__42)values__tmp__table__42.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint order by insert_num
+select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint order by insert_num
+select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=114)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=114)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=114)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
-              TableScan [TS_0] (rows=4 width=114)
-                default@table_change_lower_to_higher_numeric_group_tinyint,table_change_lower_to_higher_numeric_group_tinyint,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","b"]
+          TableScan [TS_0] (rows=4 width=114)
+            default@table_change_lower_to_higher_numeric_group_tinyint,table_change_lower_to_higher_numeric_group_tinyint,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
 #### A masked pattern was here ####
@@ -3088,11 +2955,11 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_smallint.c4 EXPRES
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_smallint.c5 EXPRESSION [(values__tmp__table__43)values__tmp__table__43.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_smallint.insert_num EXPRESSION [(values__tmp__table__43)values__tmp__table__43.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6
-PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
 #### A masked pattern was here ####
@@ -3140,37 +3007,30 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_smallint.c5 EXPRES
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_smallint.insert_num EXPRESSION [(values__tmp__table__44)values__tmp__table__44.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint order by insert_num
+select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint order by insert_num
+select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=116)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=116)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=116)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-              TableScan [TS_0] (rows=4 width=116)
-                default@table_change_lower_to_higher_numeric_group_smallint,table_change_lower_to_higher_numeric_group_smallint,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","b"]
+          TableScan [TS_0] (rows=4 width=116)
+            default@table_change_lower_to_higher_numeric_group_smallint,table_change_lower_to_higher_numeric_group_smallint,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
 #### A masked pattern was here ####
@@ -3230,11 +3090,11 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_int.c3 EXPRESSION 
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_int.c4 EXPRESSION [(values__tmp__table__45)values__tmp__table__45.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_int.insert_num EXPRESSION [(values__tmp__table__45)values__tmp__table__45.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
 #### A masked pattern was here ####
@@ -3281,37 +3141,30 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_int.c4 EXPRESSION 
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_int.insert_num EXPRESSION [(values__tmp__table__46)values__tmp__table__46.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=112)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=112)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=112)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-              TableScan [TS_0] (rows=4 width=112)
-                default@table_change_lower_to_higher_numeric_group_int,table_change_lower_to_higher_numeric_group_int,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
+          TableScan [TS_0] (rows=4 width=112)
+            default@table_change_lower_to_higher_numeric_group_int,table_change_lower_to_higher_numeric_group_int,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
 #### A masked pattern was here ####
@@ -3370,11 +3223,11 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_bigint.c2 EXPRESSI
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_bigint.c3 EXPRESSION [(values__tmp__table__47)values__tmp__table__47.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_bigint.insert_num EXPRESSION [(values__tmp__table__47)values__tmp__table__47.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
 #### A masked pattern was here ####
@@ -3420,37 +3273,30 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_bigint.c3 EXPRESSI
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_bigint.insert_num EXPRESSION [(values__tmp__table__48)values__tmp__table__48.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint order by insert_num
+select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint order by insert_num
+select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=120)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=120)
           Output:["_col0","_col1","_col2","_col3","_col4"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=120)
-              Output:["_col0","_col1","_col2","_col3","_col4"]
-              TableScan [TS_0] (rows=4 width=120)
-                default@table_change_lower_to_higher_numeric_group_bigint,table_change_lower_to_higher_numeric_group_bigint,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
+          TableScan [TS_0] (rows=4 width=120)
+            default@table_change_lower_to_higher_numeric_group_bigint,table_change_lower_to_higher_numeric_group_bigint,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","b"]
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
 #### A masked pattern was here ####
@@ -3508,11 +3354,11 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.c1 EXPRESS
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.c2 EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.insert_num EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3
-PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
 #### A masked pattern was here ####
@@ -3557,37 +3403,30 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.c2 EXPRESS
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.insert_num EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3
 PREHOOK: query: explain
-select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=320)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=320)
           Output:["_col0","_col1","_col2","_col3"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=320)
-              Output:["_col0","_col1","_col2","_col3"]
-              TableScan [TS_0] (rows=4 width=320)
-                default@table_change_lower_to_higher_numeric_group_decimal,table_change_lower_to_higher_numeric_group_decimal,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","b"]
+          TableScan [TS_0] (rows=4 width=320)
+            default@table_change_lower_to_higher_numeric_group_decimal,table_change_lower_to_higher_numeric_group_decimal,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","b"]
 
-PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
 #### A masked pattern was here ####
@@ -3644,11 +3483,11 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.b SIMPLE [(v
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.c1 EXPRESSION [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.insert_num EXPRESSION [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2
-PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+POSTHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####
@@ -3692,37 +3531,30 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.c1 EXPRESSIO
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.insert_num EXPRESSION [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2
 PREHOOK: query: explain
-select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=4 width=100)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=4 width=100)
           Output:["_col0","_col1","_col2"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=4 width=100)
-              Output:["_col0","_col1","_col2"]
-              TableScan [TS_0] (rows=4 width=100)
-                default@table_change_lower_to_higher_numeric_group_float,table_change_lower_to_higher_numeric_group_float,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","b"]
+          TableScan [TS_0] (rows=4 width=100)
+            default@table_change_lower_to_higher_numeric_group_float,table_change_lower_to_higher_numeric_group_float,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","b"]
 
-PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+POSTHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####

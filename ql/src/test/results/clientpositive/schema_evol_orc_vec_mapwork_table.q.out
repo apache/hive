@@ -172,10 +172,10 @@ POSTHOOK: Lineage: table_add_int_permute_select.c EXPRESSION [(values__tmp__tabl
 POSTHOOK: Lineage: table_add_int_permute_select.insert_num EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3
 PREHOOK: query: explain
-select insert_num,a,b from table_add_int_permute_select order by insert_num
+select insert_num,a,b from table_add_int_permute_select
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,a,b from table_add_int_permute_select order by insert_num
+select insert_num,a,b from table_add_int_permute_select
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -193,24 +193,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), a (type: int), b (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: int), _col2 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: string)
-          outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -219,12 +209,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: -- SELECT permutation columns to make sure NULL defaulting works right
-select insert_num,a,b from table_add_int_permute_select order by insert_num
+select insert_num,a,b from table_add_int_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_permute_select
 #### A masked pattern was here ####
 POSTHOOK: query: -- SELECT permutation columns to make sure NULL defaulting works right
-select insert_num,a,b from table_add_int_permute_select order by insert_num
+select insert_num,a,b from table_add_int_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_permute_select
 #### A masked pattern was here ####
@@ -239,11 +229,11 @@ insert_num	a	b
 7	3	new
 8	4	new
 9	5	new
-PREHOOK: query: select insert_num,a,b,c from table_add_int_permute_select order by insert_num
+PREHOOK: query: select insert_num,a,b,c from table_add_int_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,a,b,c from table_add_int_permute_select order by insert_num
+POSTHOOK: query: select insert_num,a,b,c from table_add_int_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_permute_select
 #### A masked pattern was here ####
@@ -258,11 +248,11 @@ insert_num	a	b	c
 7	3	new	30
 8	4	new	40
 9	5	new	100
-PREHOOK: query: select insert_num,c from table_add_int_permute_select order by insert_num
+PREHOOK: query: select insert_num,c from table_add_int_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c from table_add_int_permute_select order by insert_num
+POSTHOOK: query: select insert_num,c from table_add_int_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_permute_select
 #### A masked pattern was here ####
@@ -446,10 +436,10 @@ POSTHOOK: Lineage: table_add_int_string_permute_select.d SIMPLE [(values__tmp__t
 POSTHOOK: Lineage: table_add_int_string_permute_select.insert_num EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,a,b from table_add_int_string_permute_select order by insert_num
+select insert_num,a,b from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,a,b from table_add_int_string_permute_select order by insert_num
+select insert_num,a,b from table_add_int_string_permute_select
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -467,24 +457,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), a (type: int), b (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: int), _col2 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: string)
-          outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -493,12 +473,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: -- SELECT permutation columns to make sure NULL defaulting works right
-select insert_num,a,b from table_add_int_string_permute_select order by insert_num
+select insert_num,a,b from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
 POSTHOOK: query: -- SELECT permutation columns to make sure NULL defaulting works right
-select insert_num,a,b from table_add_int_string_permute_select order by insert_num
+select insert_num,a,b from table_add_int_string_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
@@ -513,11 +493,11 @@ insert_num	a	b
 7	3	new
 8	4	new
 9	5	new
-PREHOOK: query: select insert_num,a,b,c from table_add_int_string_permute_select order by insert_num
+PREHOOK: query: select insert_num,a,b,c from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,a,b,c from table_add_int_string_permute_select order by insert_num
+POSTHOOK: query: select insert_num,a,b,c from table_add_int_string_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
@@ -532,11 +512,11 @@ insert_num	a	b	c
 7	3	new	30
 8	4	new	40
 9	5	new	100
-PREHOOK: query: select insert_num,a,b,c,d from table_add_int_string_permute_select order by insert_num
+PREHOOK: query: select insert_num,a,b,c,d from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,a,b,c,d from table_add_int_string_permute_select order by insert_num
+POSTHOOK: query: select insert_num,a,b,c,d from table_add_int_string_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
@@ -551,11 +531,11 @@ insert_num	a	b	c	d
 7	3	new	30	thirty
 8	4	new	40	forty
 9	5	new	100	hundred
-PREHOOK: query: select insert_num,a,c,d from table_add_int_string_permute_select order by insert_num
+PREHOOK: query: select insert_num,a,c,d from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,a,c,d from table_add_int_string_permute_select order by insert_num
+POSTHOOK: query: select insert_num,a,c,d from table_add_int_string_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
@@ -570,11 +550,11 @@ insert_num	a	c	d
 7	3	30	thirty
 8	4	40	forty
 9	5	100	hundred
-PREHOOK: query: select insert_num,a,d from table_add_int_string_permute_select order by insert_num
+PREHOOK: query: select insert_num,a,d from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,a,d from table_add_int_string_permute_select order by insert_num
+POSTHOOK: query: select insert_num,a,d from table_add_int_string_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
@@ -589,11 +569,11 @@ insert_num	a	d
 7	3	thirty
 8	4	forty
 9	5	hundred
-PREHOOK: query: select insert_num,c from table_add_int_string_permute_select order by insert_num
+PREHOOK: query: select insert_num,c from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c from table_add_int_string_permute_select order by insert_num
+POSTHOOK: query: select insert_num,c from table_add_int_string_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
@@ -608,11 +588,11 @@ insert_num	c
 7	30
 8	40
 9	100
-PREHOOK: query: select insert_num,d from table_add_int_string_permute_select order by insert_num
+PREHOOK: query: select insert_num,d from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,d from table_add_int_string_permute_select order by insert_num
+POSTHOOK: query: select insert_num,d from table_add_int_string_permute_select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
@@ -730,10 +710,10 @@ POSTHOOK: Lineage: table_change_string_group_double.c3 EXPRESSION [(values__tmp_
 POSTHOOK: Lineage: table_change_string_group_double.insert_num EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_string_group_double order by insert_num
+select insert_num,c1,c2,c3,b from table_change_string_group_double
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_string_group_double order by insert_num
+select insert_num,c1,c2,c3,b from table_change_string_group_double
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -751,24 +731,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: double), c2 (type: double), c3 (type: double), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
               Statistics: Num rows: 4 Data size: 1656 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 1656 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: double), _col4 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: double), VALUE._col1 (type: double), VALUE._col2 (type: double), VALUE._col3 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 4 Data size: 1656 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 1656 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -776,11 +746,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_double order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_double
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_string_group_double
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_double order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_double
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_string_group_double
 #### A masked pattern was here ####
@@ -902,10 +872,10 @@ POSTHOOK: Lineage: table_change_date_group_string_group_timestamp.c5 EXPRESSION 
 POSTHOOK: Lineage: table_change_date_group_string_group_timestamp.insert_num EXPRESSION [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp order by insert_num
+select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp order by insert_num
+select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -923,24 +893,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: string), c2 (type: char(50)), c3 (type: char(15)), c4 (type: varchar(50)), c5 (type: varchar(15)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
               Statistics: Num rows: 3 Data size: 888 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 3 Data size: 888 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: string), _col2 (type: char(50)), _col3 (type: char(15)), _col4 (type: varchar(50)), _col5 (type: varchar(15)), _col6 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), VALUE._col1 (type: char(50)), VALUE._col2 (type: char(15)), VALUE._col3 (type: varchar(50)), VALUE._col4 (type: varchar(15)), VALUE._col5 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-          Statistics: Num rows: 3 Data size: 888 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 3 Data size: 888 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -948,11 +908,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_date_group_string_group_timestamp
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_date_group_string_group_timestamp
 #### A masked pattern was here ####
@@ -1090,10 +1050,10 @@ POSTHOOK: Lineage: table_change_date_group_string_group_date.c5 EXPRESSION [(val
 POSTHOOK: Lineage: table_change_date_group_string_group_date.insert_num EXPRESSION [(values__tmp__table__14)values__tmp__table__14.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date order by insert_num
+select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date order by insert_num
+select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -1111,24 +1071,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: string), c2 (type: char(50)), c3 (type: char(15)), c4 (type: varchar(50)), c5 (type: varchar(15)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
               Statistics: Num rows: 3 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 3 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: string), _col2 (type: char(50)), _col3 (type: char(15)), _col4 (type: varchar(50)), _col5 (type: varchar(15)), _col6 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), VALUE._col1 (type: char(50)), VALUE._col2 (type: char(15)), VALUE._col3 (type: varchar(50)), VALUE._col4 (type: varchar(15)), VALUE._col5 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-          Statistics: Num rows: 3 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 3 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1136,11 +1086,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_date_group_string_group_date
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_date_group_string_group_date
 #### A masked pattern was here ####
@@ -1207,11 +1157,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string.c3 
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string.c4 EXPRESSION [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string.insert_num EXPRESSION [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string
 #### A masked pattern was here ####
@@ -1258,10 +1208,10 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string.c4 
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string.insert_num EXPRESSION [(values__tmp__table__16)values__tmp__table__16.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -1279,24 +1229,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: string), c2 (type: string), c3 (type: string), c4 (type: string), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
               Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: string), VALUE._col4 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1304,11 +1244,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string
 #### A masked pattern was here ####
@@ -1368,11 +1308,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char.c3 EX
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char.c4 EXPRESSION [(values__tmp__table__17)values__tmp__table__17.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char.insert_num EXPRESSION [(values__tmp__table__17)values__tmp__table__17.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char
 #### A masked pattern was here ####
@@ -1419,10 +1359,10 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char.c4 EX
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char.insert_num EXPRESSION [(values__tmp__table__18)values__tmp__table__18.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -1440,24 +1380,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: char(50)), c2 (type: char(50)), c3 (type: char(50)), c4 (type: char(50)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
               Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: char(50)), _col2 (type: char(50)), _col3 (type: char(50)), _col4 (type: char(50)), _col5 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(50)), VALUE._col1 (type: char(50)), VALUE._col2 (type: char(50)), VALUE._col3 (type: char(50)), VALUE._col4 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1465,11 +1395,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char
 #### A masked pattern was here ####
@@ -1529,11 +1459,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char_trunc
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char_trunc.c4 EXPRESSION [(values__tmp__table__19)values__tmp__table__19.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char_trunc.insert_num EXPRESSION [(values__tmp__table__19)values__tmp__table__19.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char_trunc
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char_trunc
 #### A masked pattern was here ####
@@ -1580,10 +1510,10 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char_trunc
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_char_trunc.insert_num EXPRESSION [(values__tmp__table__20)values__tmp__table__20.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -1601,24 +1531,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: char(5)), c2 (type: char(5)), c3 (type: char(5)), c4 (type: char(5)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
               Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: char(5)), _col2 (type: char(5)), _col3 (type: char(5)), _col4 (type: char(5)), _col5 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(5)), VALUE._col1 (type: char(5)), VALUE._col2 (type: char(5)), VALUE._col3 (type: char(5)), VALUE._col4 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1626,11 +1546,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char_trunc
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char_trunc
 #### A masked pattern was here ####
@@ -1690,11 +1610,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar.c3
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar.c4 EXPRESSION [(values__tmp__table__21)values__tmp__table__21.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar.insert_num EXPRESSION [(values__tmp__table__21)values__tmp__table__21.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar
 #### A masked pattern was here ####
@@ -1741,10 +1661,10 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar.c4
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar.insert_num EXPRESSION [(values__tmp__table__22)values__tmp__table__22.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -1762,24 +1682,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: varchar(50)), c2 (type: varchar(50)), c3 (type: varchar(50)), c4 (type: varchar(50)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
               Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: varchar(50)), _col2 (type: varchar(50)), _col3 (type: varchar(50)), _col4 (type: varchar(50)), _col5 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(50)), VALUE._col1 (type: varchar(50)), VALUE._col2 (type: varchar(50)), VALUE._col3 (type: varchar(50)), VALUE._col4 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1787,11 +1697,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar
 #### A masked pattern was here ####
@@ -1851,11 +1761,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar_tr
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar_trunc.c4 EXPRESSION [(values__tmp__table__23)values__tmp__table__23.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar_trunc.insert_num EXPRESSION [(values__tmp__table__23)values__tmp__table__23.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar_trunc
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar_trunc
 #### A masked pattern was here ####
@@ -1902,10 +1812,10 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar_tr
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_varchar_trunc.insert_num EXPRESSION [(values__tmp__table__24)values__tmp__table__24.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -1923,24 +1833,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: varchar(5)), c2 (type: varchar(5)), c3 (type: varchar(5)), c4 (type: varchar(5)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
               Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: varchar(5)), _col2 (type: varchar(5)), _col3 (type: varchar(5)), _col4 (type: varchar(5)), _col5 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(5)), VALUE._col1 (type: varchar(5)), VALUE._col2 (type: varchar(5)), VALUE._col3 (type: varchar(5)), VALUE._col4 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 460 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1948,11 +1848,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar_trunc
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar_trunc
 #### A masked pattern was here ####
@@ -2011,11 +1911,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string.c2 EX
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string.c3 EXPRESSION [(values__tmp__table__25)values__tmp__table__25.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string.insert_num EXPRESSION [(values__tmp__table__25)values__tmp__table__25.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string
 #### A masked pattern was here ####
@@ -2061,10 +1961,10 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string.c3 SI
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string.insert_num EXPRESSION [(values__tmp__table__26)values__tmp__table__26.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -2082,24 +1982,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: string), c2 (type: string), c3 (type: string), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
               Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -2107,11 +1997,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string
 #### A masked pattern was here ####
@@ -2170,11 +2060,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char.c2 EXPR
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char.c3 EXPRESSION [(values__tmp__table__27)values__tmp__table__27.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char.insert_num EXPRESSION [(values__tmp__table__27)values__tmp__table__27.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_char
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char
 #### A masked pattern was here ####
@@ -2220,10 +2110,10 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char.c3 EXPR
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char.insert_num EXPRESSION [(values__tmp__table__28)values__tmp__table__28.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -2241,24 +2131,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: char(50)), c2 (type: char(50)), c3 (type: char(50)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
               Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: char(50)), _col2 (type: char(50)), _col3 (type: char(50)), _col4 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(50)), VALUE._col1 (type: char(50)), VALUE._col2 (type: char(50)), VALUE._col3 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -2266,11 +2146,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_char
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char
 #### A masked pattern was here ####
@@ -2329,11 +2209,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char_trunc.c
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char_trunc.c3 EXPRESSION [(values__tmp__table__29)values__tmp__table__29.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char_trunc.insert_num EXPRESSION [(values__tmp__table__29)values__tmp__table__29.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_char_trunc
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char_trunc
 #### A masked pattern was here ####
@@ -2379,10 +2259,10 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char_trunc.c
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_char_trunc.insert_num EXPRESSION [(values__tmp__table__30)values__tmp__table__30.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -2400,24 +2280,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: char(7)), c2 (type: char(7)), c3 (type: char(7)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
               Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: char(7)), _col2 (type: char(7)), _col3 (type: char(7)), _col4 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(7)), VALUE._col1 (type: char(7)), VALUE._col2 (type: char(7)), VALUE._col3 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -2425,11 +2295,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_char_trunc
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char_trunc
 #### A masked pattern was here ####
@@ -2488,11 +2358,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar.c2 E
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar.c3 EXPRESSION [(values__tmp__table__31)values__tmp__table__31.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar.insert_num EXPRESSION [(values__tmp__table__31)values__tmp__table__31.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar
 #### A masked pattern was here ####
@@ -2538,10 +2408,10 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar.c3 E
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar.insert_num EXPRESSION [(values__tmp__table__32)values__tmp__table__32.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -2559,24 +2429,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: varchar(50)), c2 (type: varchar(50)), c3 (type: varchar(50)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
               Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: varchar(50)), _col2 (type: varchar(50)), _col3 (type: varchar(50)), _col4 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(50)), VALUE._col1 (type: varchar(50)), VALUE._col2 (type: varchar(50)), VALUE._col3 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -2584,11 +2444,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar
 #### A masked pattern was here ####
@@ -2647,11 +2507,11 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar_trun
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar_trunc.c3 EXPRESSION [(values__tmp__table__33)values__tmp__table__33.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar_trunc.insert_num EXPRESSION [(values__tmp__table__33)values__tmp__table__33.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar_trunc
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar_trunc
 #### A masked pattern was here ####
@@ -2697,10 +2557,10 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar_trun
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_varchar_trunc.insert_num EXPRESSION [(values__tmp__table__34)values__tmp__table__34.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc order by insert_num
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -2718,24 +2578,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: varchar(7)), c2 (type: varchar(7)), c3 (type: varchar(7)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
               Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: varchar(7)), _col2 (type: varchar(7)), _col3 (type: varchar(7)), _col4 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(7)), VALUE._col1 (type: varchar(7)), VALUE._col2 (type: varchar(7)), VALUE._col3 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -2743,11 +2593,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar_trunc
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar_trunc
 #### A masked pattern was here ####
@@ -2815,11 +2665,11 @@ POSTHOOK: Lineage: table_change_string_group_string_group_string.c3 SIMPLE [(val
 POSTHOOK: Lineage: table_change_string_group_string_group_string.c4 SIMPLE [(values__tmp__table__35)values__tmp__table__35.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_string_group_string_group_string.insert_num EXPRESSION [(values__tmp__table__35)values__tmp__table__35.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_string_group_string_group_string
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_string_group_string_group_string
 #### A masked pattern was here ####
@@ -2866,10 +2716,10 @@ POSTHOOK: Lineage: table_change_string_group_string_group_string.c4 EXPRESSION [
 POSTHOOK: Lineage: table_change_string_group_string_group_string.insert_num EXPRESSION [(values__tmp__table__36)values__tmp__table__36.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -2887,24 +2737,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: char(50)), c2 (type: char(9)), c3 (type: varchar(50)), c4 (type: char(9)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
               Statistics: Num rows: 4 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: char(50)), _col2 (type: char(9)), _col3 (type: varchar(50)), _col4 (type: char(9)), _col5 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(50)), VALUE._col1 (type: char(9)), VALUE._col2 (type: varchar(50)), VALUE._col3 (type: char(9)), VALUE._col4 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 4 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -2912,11 +2752,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_string_group_string_group_string
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_string_group_string_group_string
 #### A masked pattern was here ####
@@ -2975,11 +2815,11 @@ POSTHOOK: Lineage: table_change_string_group_string_group_char.c2 EXPRESSION [(v
 POSTHOOK: Lineage: table_change_string_group_string_group_char.c3 EXPRESSION [(values__tmp__table__37)values__tmp__table__37.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_string_group_string_group_char.insert_num EXPRESSION [(values__tmp__table__37)values__tmp__table__37.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_string_group_string_group_char
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_string_group_string_group_char
 #### A masked pattern was here ####
@@ -3025,10 +2865,10 @@ POSTHOOK: Lineage: table_change_string_group_string_group_char.c3 SIMPLE [(value
 POSTHOOK: Lineage: table_change_string_group_string_group_char.insert_num EXPRESSION [(values__tmp__table__38)values__tmp__table__38.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char order by insert_num
+select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char order by insert_num
+select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -3046,24 +2886,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: varchar(50)), c2 (type: varchar(9)), c3 (type: string), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
               Statistics: Num rows: 4 Data size: 1992 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 1992 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: varchar(50)), _col2 (type: varchar(9)), _col3 (type: string), _col4 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(50)), VALUE._col1 (type: varchar(9)), VALUE._col2 (type: string), VALUE._col3 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 4 Data size: 1992 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 1992 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -3071,11 +2901,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_string_group_string_group_char
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_string_group_string_group_char
 #### A masked pattern was here ####
@@ -3134,11 +2964,11 @@ POSTHOOK: Lineage: table_change_string_group_string_group_varchar.c2 EXPRESSION 
 POSTHOOK: Lineage: table_change_string_group_string_group_varchar.c3 EXPRESSION [(values__tmp__table__39)values__tmp__table__39.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_string_group_string_group_varchar.insert_num EXPRESSION [(values__tmp__table__39)values__tmp__table__39.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_string_group_string_group_varchar
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_string_group_string_group_varchar
 #### A masked pattern was here ####
@@ -3184,10 +3014,10 @@ POSTHOOK: Lineage: table_change_string_group_string_group_varchar.c3 SIMPLE [(va
 POSTHOOK: Lineage: table_change_string_group_string_group_varchar.insert_num EXPRESSION [(values__tmp__table__40)values__tmp__table__40.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar order by insert_num
+select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar order by insert_num
+select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -3205,24 +3035,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: char(50)), c2 (type: char(9)), c3 (type: string), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
               Statistics: Num rows: 4 Data size: 1524 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 1524 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: char(50)), _col2 (type: char(9)), _col3 (type: string), _col4 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(50)), VALUE._col1 (type: char(9)), VALUE._col2 (type: string), VALUE._col3 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 4 Data size: 1524 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 1524 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -3230,11 +3050,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_string_group_string_group_varchar
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_string_group_string_group_varchar
 #### A masked pattern was here ####
@@ -3304,11 +3124,11 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint.c5 EXPRESS
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint.c6 EXPRESSION [(values__tmp__table__41)values__tmp__table__41.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint.insert_num EXPRESSION [(values__tmp__table__41)values__tmp__table__41.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7
-PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
 #### A masked pattern was here ####
@@ -3357,10 +3177,10 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint.c6 EXPRESS
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint.insert_num EXPRESSION [(values__tmp__table__42)values__tmp__table__42.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint order by insert_num
+select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint order by insert_num
+select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -3378,24 +3198,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: smallint), c2 (type: int), c3 (type: bigint), c4 (type: decimal(38,18)), c5 (type: float), c6 (type: double), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
               Statistics: Num rows: 4 Data size: 456 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 456 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: decimal(38,18)), _col5 (type: float), _col6 (type: double), _col7 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: decimal(38,18)), VALUE._col4 (type: float), VALUE._col5 (type: double), VALUE._col6 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-          Statistics: Num rows: 4 Data size: 456 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 456 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -3403,11 +3213,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
 #### A masked pattern was here ####
@@ -3468,11 +3278,11 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_smallint.c4 EXPRES
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_smallint.c5 EXPRESSION [(values__tmp__table__43)values__tmp__table__43.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_smallint.insert_num EXPRESSION [(values__tmp__table__43)values__tmp__table__43.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6
-PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
 #### A masked pattern was here ####
@@ -3520,10 +3330,10 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_smallint.c5 EXPRES
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_smallint.insert_num EXPRESSION [(values__tmp__table__44)values__tmp__table__44.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint order by insert_num
+select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint order by insert_num
+select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -3541,24 +3351,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: int), c2 (type: bigint), c3 (type: decimal(38,18)), c4 (type: float), c5 (type: double), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
               Statistics: Num rows: 4 Data size: 464 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 464 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: int), _col2 (type: bigint), _col3 (type: decimal(38,18)), _col4 (type: float), _col5 (type: double), _col6 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: decimal(38,18)), VALUE._col3 (type: float), VALUE._col4 (type: double), VALUE._col5 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-          Statistics: Num rows: 4 Data size: 464 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 464 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -3566,11 +3366,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
 #### A masked pattern was here ####
@@ -3630,11 +3430,11 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_int.c3 EXPRESSION 
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_int.c4 EXPRESSION [(values__tmp__table__45)values__tmp__table__45.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_int.insert_num EXPRESSION [(values__tmp__table__45)values__tmp__table__45.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
 #### A masked pattern was here ####
@@ -3681,10 +3481,10 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_int.c4 EXPRESSION 
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_int.insert_num EXPRESSION [(values__tmp__table__46)values__tmp__table__46.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int order by insert_num
+select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -3702,24 +3502,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: bigint), c2 (type: decimal(38,18)), c3 (type: float), c4 (type: double), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
               Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: bigint), _col2 (type: decimal(38,18)), _col3 (type: float), _col4 (type: double), _col5 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: bigint), VALUE._col1 (type: decimal(38,18)), VALUE._col2 (type: float), VALUE._col3 (type: double), VALUE._col4 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -3727,11 +3517,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
 #### A masked pattern was here ####
@@ -3790,11 +3580,11 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_bigint.c2 EXPRESSI
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_bigint.c3 EXPRESSION [(values__tmp__table__47)values__tmp__table__47.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_bigint.insert_num EXPRESSION [(values__tmp__table__47)values__tmp__table__47.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
 #### A masked pattern was here ####
@@ -3840,10 +3630,10 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_bigint.c3 EXPRESSI
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_bigint.insert_num EXPRESSION [(values__tmp__table__48)values__tmp__table__48.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint order by insert_num
+select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint order by insert_num
+select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -3861,24 +3651,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: decimal(38,18)), c2 (type: float), c3 (type: double), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
               Statistics: Num rows: 4 Data size: 480 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 480 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: decimal(38,18)), _col2 (type: float), _col3 (type: double), _col4 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: decimal(38,18)), VALUE._col1 (type: float), VALUE._col2 (type: double), VALUE._col3 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 4 Data size: 480 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 480 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -3886,11 +3666,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint order by insert_num
+PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
 #### A masked pattern was here ####
@@ -3948,11 +3728,11 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.c1 EXPRESS
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.c2 EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.insert_num EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3
-PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
 #### A masked pattern was here ####
@@ -3997,10 +3777,10 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.c2 EXPRESS
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.insert_num EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3
 PREHOOK: query: explain
-select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -4018,24 +3798,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: float), c2 (type: double), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 4 Data size: 1280 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 1280 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: float), _col2 (type: double), _col3 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: float), VALUE._col1 (type: double), VALUE._col2 (type: string)
-          outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 4 Data size: 1280 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 1280 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -4043,11 +3813,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
 #### A masked pattern was here ####
@@ -4104,11 +3874,11 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.b SIMPLE [(v
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.c1 EXPRESSION [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.insert_num EXPRESSION [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2
-PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+POSTHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####
@@ -4152,10 +3922,10 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.c1 EXPRESSIO
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.insert_num EXPRESSION [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2
 PREHOOK: query: explain
-select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -4173,24 +3943,14 @@ STAGE PLANS:
               expressions: insert_num (type: int), c1 (type: double), b (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: int)
-                sort order: +
+              File Output Operator
+                compressed: false
                 Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: double), _col2 (type: string)
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: double), VALUE._col1 (type: string)
-          outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -4198,11 +3958,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+POSTHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####

@@ -56,12 +56,12 @@ POSTHOOK: Lineage: part_change_various_various_boolean PARTITION(part=1).c8 SIMP
 POSTHOOK: Lineage: part_change_various_various_boolean PARTITION(part=1).c9 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_boolean PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,b from part_change_various_various_boolean order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,b from part_change_various_various_boolean
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_boolean
 PREHOOK: Input: default@part_change_various_various_boolean@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,b from part_change_various_various_boolean order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,b from part_change_various_various_boolean
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_boolean
 POSTHOOK: Input: default@part_change_various_various_boolean@part=1
@@ -126,39 +126,32 @@ POSTHOOK: Lineage: part_change_various_various_boolean PARTITION(part=1).c9 EXPR
 POSTHOOK: Lineage: part_change_various_various_boolean PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10
 PREHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,b from part_change_various_various_boolean order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,b from part_change_various_various_boolean
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,b from part_change_various_various_boolean order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,b from part_change_various_various_boolean
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=6 width=96)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=6 width=96)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=6 width=96)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11"]
-              TableScan [TS_0] (rows=6 width=96)
-                default@part_change_various_various_boolean,part_change_various_various_boolean,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","b"]
+          TableScan [TS_0] (rows=6 width=96)
+            default@part_change_various_various_boolean,part_change_various_various_boolean,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","b"]
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,b from part_change_various_various_boolean order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,b from part_change_various_various_boolean
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_boolean
 PREHOOK: Input: default@part_change_various_various_boolean@part=1
 PREHOOK: Input: default@part_change_various_various_boolean@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,b from part_change_various_various_boolean order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,b from part_change_various_various_boolean
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_boolean
 POSTHOOK: Input: default@part_change_various_various_boolean@part=1
@@ -227,12 +220,12 @@ POSTHOOK: Lineage: part_change_various_various_tinyint PARTITION(part=1).c8 SIMP
 POSTHOOK: Lineage: part_change_various_various_tinyint PARTITION(part=1).c9 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_tinyint PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_tinyint order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_tinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_tinyint
 PREHOOK: Input: default@part_change_various_various_tinyint@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_tinyint order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_tinyint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_tinyint
 POSTHOOK: Input: default@part_change_various_various_tinyint@part=1
@@ -302,39 +295,32 @@ POSTHOOK: Lineage: part_change_various_various_tinyint PARTITION(part=1).c9 EXPR
 POSTHOOK: Lineage: part_change_various_various_tinyint PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_tinyint order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_tinyint
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_tinyint order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_tinyint
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=7 width=119)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=7 width=119)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=7 width=119)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
-              TableScan [TS_0] (rows=7 width=119)
-                default@part_change_various_various_tinyint,part_change_various_various_tinyint,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","b"]
+          TableScan [TS_0] (rows=7 width=119)
+            default@part_change_various_various_tinyint,part_change_various_various_tinyint,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","b"]
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_tinyint order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_tinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_tinyint
 PREHOOK: Input: default@part_change_various_various_tinyint@part=1
 PREHOOK: Input: default@part_change_various_various_tinyint@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_tinyint order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_tinyint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_tinyint
 POSTHOOK: Input: default@part_change_various_various_tinyint@part=1
@@ -404,12 +390,12 @@ POSTHOOK: Lineage: part_change_various_various_smallint PARTITION(part=1).c8 SIM
 POSTHOOK: Lineage: part_change_various_various_smallint PARTITION(part=1).c9 EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_smallint PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_smallint order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_smallint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_smallint
 PREHOOK: Input: default@part_change_various_various_smallint@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_smallint order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_smallint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_smallint
 POSTHOOK: Input: default@part_change_various_various_smallint@part=1
@@ -479,39 +465,32 @@ POSTHOOK: Lineage: part_change_various_various_smallint PARTITION(part=1).c9 EXP
 POSTHOOK: Lineage: part_change_various_various_smallint PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_smallint order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_smallint
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_smallint order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_smallint
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=7 width=126)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=7 width=126)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=7 width=126)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
-              TableScan [TS_0] (rows=7 width=126)
-                default@part_change_various_various_smallint,part_change_various_various_smallint,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","b"]
+          TableScan [TS_0] (rows=7 width=126)
+            default@part_change_various_various_smallint,part_change_various_various_smallint,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","b"]
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_smallint order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_smallint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_smallint
 PREHOOK: Input: default@part_change_various_various_smallint@part=1
 PREHOOK: Input: default@part_change_various_various_smallint@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_smallint order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_smallint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_smallint
 POSTHOOK: Input: default@part_change_various_various_smallint@part=1
@@ -581,12 +560,12 @@ POSTHOOK: Lineage: part_change_various_various_int PARTITION(part=1).c8 SIMPLE [
 POSTHOOK: Lineage: part_change_various_various_int PARTITION(part=1).c9 EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_int PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_int order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_int
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_int
 PREHOOK: Input: default@part_change_various_various_int@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_int order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_int
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_int
 POSTHOOK: Input: default@part_change_various_various_int@part=1
@@ -656,39 +635,32 @@ POSTHOOK: Lineage: part_change_various_various_int PARTITION(part=1).c9 EXPRESSI
 POSTHOOK: Lineage: part_change_various_various_int PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_int order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_int
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_int order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_int
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=7 width=130)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=7 width=130)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=7 width=130)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
-              TableScan [TS_0] (rows=7 width=130)
-                default@part_change_various_various_int,part_change_various_various_int,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","b"]
+          TableScan [TS_0] (rows=7 width=130)
+            default@part_change_various_various_int,part_change_various_various_int,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","b"]
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_int order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_int
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_int
 PREHOOK: Input: default@part_change_various_various_int@part=1
 PREHOOK: Input: default@part_change_various_various_int@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_int order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_int
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_int
 POSTHOOK: Input: default@part_change_various_various_int@part=1
@@ -758,12 +730,12 @@ POSTHOOK: Lineage: part_change_various_various_bigint PARTITION(part=1).c8 SIMPL
 POSTHOOK: Lineage: part_change_various_various_bigint PARTITION(part=1).c9 EXPRESSION [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_bigint PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_bigint order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_bigint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_bigint
 PREHOOK: Input: default@part_change_various_various_bigint@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_bigint order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_bigint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_bigint
 POSTHOOK: Input: default@part_change_various_various_bigint@part=1
@@ -833,39 +805,32 @@ POSTHOOK: Lineage: part_change_various_various_bigint PARTITION(part=1).c9 EXPRE
 POSTHOOK: Lineage: part_change_various_various_bigint PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_bigint order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_bigint
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_bigint order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_bigint
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=7 width=135)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=7 width=135)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=7 width=135)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
-              TableScan [TS_0] (rows=7 width=135)
-                default@part_change_various_various_bigint,part_change_various_various_bigint,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","b"]
+          TableScan [TS_0] (rows=7 width=135)
+            default@part_change_various_various_bigint,part_change_various_various_bigint,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","b"]
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_bigint order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_bigint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_bigint
 PREHOOK: Input: default@part_change_various_various_bigint@part=1
 PREHOOK: Input: default@part_change_various_various_bigint@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_bigint order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_bigint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_bigint
 POSTHOOK: Input: default@part_change_various_various_bigint@part=1
@@ -933,12 +898,12 @@ POSTHOOK: Lineage: part_change_various_various_float PARTITION(part=1).c8 SIMPLE
 POSTHOOK: Lineage: part_change_various_various_float PARTITION(part=1).c9 EXPRESSION [(values__tmp__table__16)values__tmp__table__16.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_float PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__16)values__tmp__table__16.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_float order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_float
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_float
 PREHOOK: Input: default@part_change_various_various_float@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_float order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_float
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_float
 POSTHOOK: Input: default@part_change_various_various_float@part=1
@@ -1008,39 +973,32 @@ POSTHOOK: Lineage: part_change_various_various_float PARTITION(part=1).c9 EXPRES
 POSTHOOK: Lineage: part_change_various_various_float PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__18)values__tmp__table__18.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_float order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_float
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_float order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_float
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=7 width=134)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=7 width=134)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=7 width=134)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
-              TableScan [TS_0] (rows=7 width=134)
-                default@part_change_various_various_float,part_change_various_various_float,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","b"]
+          TableScan [TS_0] (rows=7 width=134)
+            default@part_change_various_various_float,part_change_various_various_float,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","b"]
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_float order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_float
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_float
 PREHOOK: Input: default@part_change_various_various_float@part=1
 PREHOOK: Input: default@part_change_various_various_float@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_float order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_float
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_float
 POSTHOOK: Input: default@part_change_various_various_float@part=1
@@ -1108,12 +1066,12 @@ POSTHOOK: Lineage: part_change_various_various_double PARTITION(part=1).c8 SIMPL
 POSTHOOK: Lineage: part_change_various_various_double PARTITION(part=1).c9 EXPRESSION [(values__tmp__table__19)values__tmp__table__19.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_double PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__19)values__tmp__table__19.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_double order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_double
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_double
 PREHOOK: Input: default@part_change_various_various_double@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_double order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_double
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_double
 POSTHOOK: Input: default@part_change_various_various_double@part=1
@@ -1183,39 +1141,32 @@ POSTHOOK: Lineage: part_change_various_various_double PARTITION(part=1).c9 EXPRE
 POSTHOOK: Lineage: part_change_various_various_double PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__21)values__tmp__table__21.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_double order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_double
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_double order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_double
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=7 width=141)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=7 width=141)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=7 width=141)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
-              TableScan [TS_0] (rows=7 width=141)
-                default@part_change_various_various_double,part_change_various_various_double,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","b"]
+          TableScan [TS_0] (rows=7 width=141)
+            default@part_change_various_various_double,part_change_various_various_double,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","b"]
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_double order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_double
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_double
 PREHOOK: Input: default@part_change_various_various_double@part=1
 PREHOOK: Input: default@part_change_various_various_double@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_double order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_double
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_double
 POSTHOOK: Input: default@part_change_various_various_double@part=1
@@ -1283,12 +1234,12 @@ POSTHOOK: Lineage: part_change_various_various_decimal PARTITION(part=1).c8 SIMP
 POSTHOOK: Lineage: part_change_various_various_decimal PARTITION(part=1).c9 EXPRESSION [(values__tmp__table__22)values__tmp__table__22.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_decimal PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__22)values__tmp__table__22.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_decimal order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_decimal
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_decimal
 PREHOOK: Input: default@part_change_various_various_decimal@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_decimal order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_decimal
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_decimal
 POSTHOOK: Input: default@part_change_various_various_decimal@part=1
@@ -1358,39 +1309,32 @@ POSTHOOK: Lineage: part_change_various_various_decimal PARTITION(part=1).c9 EXPR
 POSTHOOK: Lineage: part_change_various_various_decimal PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__24)values__tmp__table__24.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_decimal order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_decimal
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_decimal order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_decimal
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=7 width=174)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=7 width=174)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=7 width=174)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
-              TableScan [TS_0] (rows=7 width=174)
-                default@part_change_various_various_decimal,part_change_various_various_decimal,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","b"]
+          TableScan [TS_0] (rows=7 width=174)
+            default@part_change_various_various_decimal,part_change_various_various_decimal,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","b"]
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_decimal order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_decimal
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_decimal
 PREHOOK: Input: default@part_change_various_various_decimal@part=1
 PREHOOK: Input: default@part_change_various_various_decimal@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_decimal order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,b from part_change_various_various_decimal
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_decimal
 POSTHOOK: Input: default@part_change_various_various_decimal@part=1
@@ -1460,12 +1404,12 @@ POSTHOOK: Lineage: part_change_various_various_string PARTITION(part=1).c8 EXPRE
 POSTHOOK: Lineage: part_change_various_various_string PARTITION(part=1).c9 EXPRESSION [(values__tmp__table__25)values__tmp__table__25.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_string PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__25)values__tmp__table__25.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_string order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_string
 PREHOOK: Input: default@part_change_various_various_string@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_string order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_string
 POSTHOOK: Input: default@part_change_various_various_string@part=1
@@ -1539,39 +1483,32 @@ POSTHOOK: Lineage: part_change_various_various_string PARTITION(part=1).c9 SIMPL
 POSTHOOK: Lineage: part_change_various_various_string PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__27)values__tmp__table__27.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14
 PREHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_string order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_string
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_string order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_string
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=7 width=141)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=7 width=141)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=7 width=141)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15"]
-              TableScan [TS_0] (rows=7 width=141)
-                default@part_change_various_various_string,part_change_various_various_string,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12","c13","b"]
+          TableScan [TS_0] (rows=7 width=141)
+            default@part_change_various_various_string,part_change_various_various_string,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12","c13","b"]
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_string order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_string
 PREHOOK: Input: default@part_change_various_various_string@part=1
 PREHOOK: Input: default@part_change_various_various_string@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_string order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_string
 POSTHOOK: Input: default@part_change_various_various_string@part=1
@@ -1641,12 +1578,12 @@ POSTHOOK: Lineage: part_change_various_various_char PARTITION(part=1).c8 EXPRESS
 POSTHOOK: Lineage: part_change_various_various_char PARTITION(part=1).c9 SIMPLE [(values__tmp__table__28)values__tmp__table__28.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_char PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__28)values__tmp__table__28.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_char
 PREHOOK: Input: default@part_change_various_various_char@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_char
 POSTHOOK: Input: default@part_change_various_various_char@part=1
@@ -1720,39 +1657,32 @@ POSTHOOK: Lineage: part_change_various_various_char PARTITION(part=1).c9 EXPRESS
 POSTHOOK: Lineage: part_change_various_various_char PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__30)values__tmp__table__30.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14
 PREHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=7 width=193)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=7 width=193)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=7 width=193)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15"]
-              TableScan [TS_0] (rows=7 width=193)
-                default@part_change_various_various_char,part_change_various_various_char,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12","c13","b"]
+          TableScan [TS_0] (rows=7 width=193)
+            default@part_change_various_various_char,part_change_various_various_char,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12","c13","b"]
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_char
 PREHOOK: Input: default@part_change_various_various_char@part=1
 PREHOOK: Input: default@part_change_various_various_char@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_char
 POSTHOOK: Input: default@part_change_various_various_char@part=1
@@ -1822,12 +1752,12 @@ POSTHOOK: Lineage: part_change_various_various_char_trunc PARTITION(part=1).c8 E
 POSTHOOK: Lineage: part_change_various_various_char_trunc PARTITION(part=1).c9 SIMPLE [(values__tmp__table__31)values__tmp__table__31.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_char_trunc PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__31)values__tmp__table__31.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char_trunc order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_char_trunc
 PREHOOK: Input: default@part_change_various_various_char_trunc@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char_trunc order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_char_trunc
 POSTHOOK: Input: default@part_change_various_various_char_trunc@part=1
@@ -1901,39 +1831,32 @@ POSTHOOK: Lineage: part_change_various_various_char_trunc PARTITION(part=1).c9 E
 POSTHOOK: Lineage: part_change_various_various_char_trunc PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__33)values__tmp__table__33.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14
 PREHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char_trunc order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char_trunc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char_trunc order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char_trunc
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=7 width=129)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=7 width=129)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=7 width=129)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15"]
-              TableScan [TS_0] (rows=7 width=129)
-                default@part_change_various_various_char_trunc,part_change_various_various_char_trunc,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12","c13","b"]
+          TableScan [TS_0] (rows=7 width=129)
+            default@part_change_various_various_char_trunc,part_change_various_various_char_trunc,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12","c13","b"]
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char_trunc order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_char_trunc
 PREHOOK: Input: default@part_change_various_various_char_trunc@part=1
 PREHOOK: Input: default@part_change_various_various_char_trunc@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char_trunc order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_char_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_char_trunc
 POSTHOOK: Input: default@part_change_various_various_char_trunc@part=1
@@ -2003,12 +1926,12 @@ POSTHOOK: Lineage: part_change_various_various_varchar PARTITION(part=1).c8 EXPR
 POSTHOOK: Lineage: part_change_various_various_varchar PARTITION(part=1).c9 SIMPLE [(values__tmp__table__34)values__tmp__table__34.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_varchar PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__34)values__tmp__table__34.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_varchar
 PREHOOK: Input: default@part_change_various_various_varchar@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_varchar
 POSTHOOK: Input: default@part_change_various_various_varchar@part=1
@@ -2082,39 +2005,32 @@ POSTHOOK: Lineage: part_change_various_various_varchar PARTITION(part=1).c9 EXPR
 POSTHOOK: Lineage: part_change_various_various_varchar PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__36)values__tmp__table__36.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14
 PREHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=7 width=143)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=7 width=143)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=7 width=143)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15"]
-              TableScan [TS_0] (rows=7 width=143)
-                default@part_change_various_various_varchar,part_change_various_various_varchar,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12","c13","b"]
+          TableScan [TS_0] (rows=7 width=143)
+            default@part_change_various_various_varchar,part_change_various_various_varchar,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12","c13","b"]
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_varchar
 PREHOOK: Input: default@part_change_various_various_varchar@part=1
 PREHOOK: Input: default@part_change_various_various_varchar@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_varchar
 POSTHOOK: Input: default@part_change_various_various_varchar@part=1
@@ -2184,12 +2100,12 @@ POSTHOOK: Lineage: part_change_various_various_varchar_trunc PARTITION(part=1).c
 POSTHOOK: Lineage: part_change_various_various_varchar_trunc PARTITION(part=1).c9 SIMPLE [(values__tmp__table__37)values__tmp__table__37.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_varchar_trunc PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__37)values__tmp__table__37.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar_trunc order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_varchar_trunc
 PREHOOK: Input: default@part_change_various_various_varchar_trunc@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar_trunc order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_varchar_trunc
 POSTHOOK: Input: default@part_change_various_various_varchar_trunc@part=1
@@ -2263,39 +2179,32 @@ POSTHOOK: Lineage: part_change_various_various_varchar_trunc PARTITION(part=1).c
 POSTHOOK: Lineage: part_change_various_various_varchar_trunc PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__39)values__tmp__table__39.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14
 PREHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar_trunc order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar_trunc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar_trunc order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar_trunc
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=7 width=138)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=7 width=138)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=7 width=138)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15"]
-              TableScan [TS_0] (rows=7 width=138)
-                default@part_change_various_various_varchar_trunc,part_change_various_various_varchar_trunc,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12","c13","b"]
+          TableScan [TS_0] (rows=7 width=138)
+            default@part_change_various_various_varchar_trunc,part_change_various_various_varchar_trunc,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12","c13","b"]
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar_trunc order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar_trunc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_varchar_trunc
 PREHOOK: Input: default@part_change_various_various_varchar_trunc@part=1
 PREHOOK: Input: default@part_change_various_various_varchar_trunc@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar_trunc order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,b from part_change_various_various_varchar_trunc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_varchar_trunc
 POSTHOOK: Input: default@part_change_various_various_varchar_trunc@part=1
@@ -2364,12 +2273,12 @@ POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c8 EX
 POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c9 SIMPLE [(values__tmp__table__40)values__tmp__table__40.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__40)values__tmp__table__40.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_timestamp
 PREHOOK: Input: default@part_change_various_various_timestamp@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_timestamp
 POSTHOOK: Input: default@part_change_various_various_timestamp@part=1
@@ -2441,39 +2350,32 @@ POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c9 EX
 POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__42)values__tmp__table__42.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13
 PREHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=7 width=131)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=7 width=131)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=7 width=131)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"]
-              TableScan [TS_0] (rows=7 width=131)
-                default@part_change_various_various_timestamp,part_change_various_various_timestamp,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12","b"]
+          TableScan [TS_0] (rows=7 width=131)
+            default@part_change_various_various_timestamp,part_change_various_various_timestamp,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12","b"]
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_timestamp
 PREHOOK: Input: default@part_change_various_various_timestamp@part=1
 PREHOOK: Input: default@part_change_various_various_timestamp@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_timestamp
 POSTHOOK: Input: default@part_change_various_various_timestamp@part=1
@@ -2532,12 +2434,12 @@ POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).c3 EXPRESS
 POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).c4 EXPRESSION [(values__tmp__table__43)values__tmp__table__43.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__43)values__tmp__table__43.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_date
 PREHOOK: Input: default@part_change_various_various_date@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_date
 POSTHOOK: Input: default@part_change_various_various_date@part=1
@@ -2592,39 +2494,32 @@ POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).c4 EXPRESS
 POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__45)values__tmp__table__45.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5
 PREHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date order by insert_num
+select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date order by insert_num
+select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=6 width=96)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=6 width=96)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=6 width=96)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-              TableScan [TS_0] (rows=6 width=96)
-                default@part_change_various_various_date,part_change_various_various_date,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
+          TableScan [TS_0] (rows=6 width=96)
+            default@part_change_various_various_date,part_change_various_various_date,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","b"]
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_various_various_date
 PREHOOK: Input: default@part_change_various_various_date@part=1
 PREHOOK: Input: default@part_change_various_various_date@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_various_various_date
 POSTHOOK: Input: default@part_change_various_various_date@part=1
@@ -2710,12 +2605,12 @@ POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).c5 S
 POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).c6 SIMPLE [(same_type1_a_txt)same_type1_a_txt.FieldSchema(name:c6, type:decimal(20,10), comment:null), ]
 POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).insert_num SIMPLE [(same_type1_a_txt)same_type1_a_txt.FieldSchema(name:insert_num, type:int, comment:null), ]
 same_type1_a_txt.insert_num	same_type1_a_txt.c1	same_type1_a_txt.c2	same_type1_a_txt.c3	same_type1_a_txt.c4	same_type1_a_txt.c5	same_type1_a_txt.c6	same_type1_a_txt.b
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_same_type_different_params
 PREHOOK: Input: default@part_change_same_type_different_params@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_same_type_different_params
 POSTHOOK: Input: default@part_change_same_type_different_params@part=1
@@ -2837,39 +2732,32 @@ POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=2).c6 S
 POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=2).insert_num SIMPLE [(same_type1_c_txt)same_type1_c_txt.FieldSchema(name:insert_num, type:int, comment:null), ]
 same_type1_c_txt.insert_num	same_type1_c_txt.c1	same_type1_c_txt.c2	same_type1_c_txt.c3	same_type1_c_txt.c4	same_type1_c_txt.c5	same_type1_c_txt.c6	same_type1_c_txt.b
 PREHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params order by insert_num
+select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
-
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 2 llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=13 width=105)
+      Map 1 llap
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=13 width=105)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=13 width=105)
-              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
-              TableScan [TS_0] (rows=13 width=105)
-                default@part_change_same_type_different_params,part_change_same_type_different_params,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","b"]
+          TableScan [TS_0] (rows=13 width=105)
+            default@part_change_same_type_different_params,part_change_same_type_different_params,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","c3","c4","c5","c6","b"]
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params order by insert_num
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_same_type_different_params
 PREHOOK: Input: default@part_change_same_type_different_params@part=1
 PREHOOK: Input: default@part_change_same_type_different_params@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params order by insert_num
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_change_same_type_different_params
 POSTHOOK: Input: default@part_change_same_type_different_params@part=1

@@ -47,9 +47,9 @@ insert into table table_add_int_permute_select
            (10, 6, 'new', 200);
 
 -- SELECT permutation columns to make sure NULL defaulting works right
-select insert_num,a,b from table_add_int_permute_select order by insert_num;
-select insert_num,a,b,c from table_add_int_permute_select order by insert_num;
-select insert_num,c from table_add_int_permute_select order by insert_num;
+select insert_num,a,b from table_add_int_permute_select;
+select insert_num,a,b,c from table_add_int_permute_select;
+select insert_num,c from table_add_int_permute_select;
 
 drop table table_add_int_permute_select;
 
@@ -79,13 +79,13 @@ insert into table table_add_int_string_permute_select
            (10, 6, 'new', 200, 'two hundred');
 
 -- SELECT permutation columns to make sure NULL defaulting works right
-select insert_num,a,b from table_add_int_string_permute_select order by insert_num;
-select insert_num,a,b,c from table_add_int_string_permute_select order by insert_num;
-select insert_num,a,b,c,d from table_add_int_string_permute_select order by insert_num;
-select insert_num,a,c,d from table_add_int_string_permute_select order by insert_num;
-select insert_num,a,d from table_add_int_string_permute_select order by insert_num;
-select insert_num,c from table_add_int_string_permute_select order by insert_num;
-select insert_num,d from table_add_int_string_permute_select order by insert_num;
+select insert_num,a,b from table_add_int_string_permute_select;
+select insert_num,a,b,c from table_add_int_string_permute_select;
+select insert_num,a,b,c,d from table_add_int_string_permute_select;
+select insert_num,a,c,d from table_add_int_string_permute_select;
+select insert_num,a,d from table_add_int_string_permute_select;
+select insert_num,c from table_add_int_string_permute_select;
+select insert_num,d from table_add_int_string_permute_select;
 
 drop table table_add_int_string_permute_select;
 
@@ -119,7 +119,7 @@ insert into table table_change_string_group_double
     values (9, 17808.963785, 17808.963785, 17808.963785, 'new'),
            (10, 9250340.75 , 9250340.75 , 9250340.75 , 'new');
 
-select insert_num,c1,c2,c3,b from table_change_string_group_double order by insert_num;
+select insert_num,c1,c2,c3,b from table_change_string_group_double;
 
 drop table table_change_string_group_double;
 
@@ -149,7 +149,7 @@ insert into table table_change_date_group_string_group_timestamp
     values (8, '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179', 'new'),
            (9, '5966-07-09 03:30:50.597', '5966-07-09 03:30:50.597', '5966-07-09 03:30:50.597', '5966-07-09 03:30:50.597', '5966-07-09 03:30:50.597', 'new');
 
-select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp order by insert_num;
+select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_timestamp;
 
 drop table table_change_date_group_string_group_timestamp;
 
@@ -176,7 +176,7 @@ insert into table table_change_date_group_string_group_date
            (8, '6229-06-28', '6229-06-28', '6229-06-28', '6229-06-28', '6229-06-28', 'new'),
            (9, '5966-07-09', '5966-07-09', '5966-07-09', '5966-07-09', '5966-07-09', 'new');
 
-select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date order by insert_num;
+select insert_num,c1,c2,c3,c4,c5,b from table_change_date_group_string_group_date;
 
 drop table table_change_date_group_string_group_date;
 
@@ -197,7 +197,7 @@ insert into table table_change_numeric_group_string_group_multi_ints_string
            (3, -255, 4957, 832222222, 9000000000, 'original'),
            (4, 0, 20435, 847492223, -999999999999, 'original');
 
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string order by insert_num;
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_numeric_group_string_group_multi_ints_string replace columns (insert_num int, c1 STRING, c2 STRING, c3 STRING, c4 STRING, b STRING) ;
@@ -210,7 +210,7 @@ insert into table table_change_numeric_group_string_group_multi_ints_string
            (9, '100', '5000', '5443', '0', 'new'),
            (10, '17', '90000', '754072151', '3289094', 'new');
 
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string order by insert_num;
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_string;
 
 drop table table_change_numeric_group_string_group_multi_ints_string;
 
@@ -227,7 +227,7 @@ insert into table table_change_numeric_group_string_group_multi_ints_char
            (3, -255, 4957, 832222222, 9000000000, 'original'),
            (4, 0, 20435, 847492223, -999999999999, 'original');
 
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char order by insert_num;
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_numeric_group_string_group_multi_ints_char replace columns (insert_num int, c1 CHAR(50), c2 CHAR(50), c3 CHAR(50), c4 CHAR(50), b STRING) ;
@@ -240,7 +240,7 @@ insert into table table_change_numeric_group_string_group_multi_ints_char
            (9, '100', '5000', '5443', '0', 'new'),
            (10, '17', '90000', '754072151', '3289094', 'new');
 
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char order by insert_num;
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char;
 
 drop table table_change_numeric_group_string_group_multi_ints_char;
 
@@ -256,7 +256,7 @@ insert into table table_change_numeric_group_string_group_multi_ints_char_trunc
            (3, -255, 4957, 832222222, 9000000000, 'original'),
            (4, 0, 20435, 847492223, -999999999999, 'original');
 
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc order by insert_num;
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_numeric_group_string_group_multi_ints_char_trunc replace columns (insert_num int, c1 CHAR(5), c2 CHAR(5), c3 CHAR(5), c4 CHAR(5), b STRING) ;
@@ -269,7 +269,7 @@ insert into table table_change_numeric_group_string_group_multi_ints_char_trunc
            (9, '100', '5000', '5443', '0', 'new'),
            (10, '17', '90000', '754072151', '3289094', 'new');
 
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc order by insert_num;
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_char_trunc;
 
 drop table table_change_numeric_group_string_group_multi_ints_char_trunc;
 
@@ -286,7 +286,7 @@ insert into table table_change_numeric_group_string_group_multi_ints_varchar
            (3, -255, 4957, 832222222, 9000000000, 'original'),
            (4, 0, 20435, 847492223, -999999999999, 'original');
 
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar order by insert_num;
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_numeric_group_string_group_multi_ints_varchar replace columns (insert_num int, c1 VARCHAR(50), c2 VARCHAR(50), c3 VARCHAR(50), c4 VARCHAR(50), b STRING) ;
@@ -299,7 +299,7 @@ insert into table table_change_numeric_group_string_group_multi_ints_varchar
            (9, '100', '5000', '5443', '0', 'new'),
            (10, '17', '90000', '754072151', '3289094', 'new');
 
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar order by insert_num;
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar;
 
 drop table table_change_numeric_group_string_group_multi_ints_varchar;
 
@@ -315,7 +315,7 @@ insert into table table_change_numeric_group_string_group_multi_ints_varchar_tru
            (3, -255, 4957, 832222222, 9000000000, 'original'),
            (4, 0, 20435, 847492223, -999999999999, 'original');
 
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc order by insert_num;
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_numeric_group_string_group_multi_ints_varchar_trunc replace columns (insert_num int, c1 VARCHAR(5), c2 VARCHAR(5), c3 VARCHAR(5), c4 VARCHAR(5), b STRING) ;
@@ -328,7 +328,7 @@ insert into table table_change_numeric_group_string_group_multi_ints_varchar_tru
            (9, '100', '5000', '5443', '0', 'new'),
            (10, '17', '90000', '754072151', '3289094', 'new');
 
-select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc order by insert_num;
+select insert_num,c1,c2,c3,c4,b from table_change_numeric_group_string_group_multi_ints_varchar_trunc;
 
 drop table table_change_numeric_group_string_group_multi_ints_varchar_trunc;
 
@@ -344,7 +344,7 @@ insert into table table_change_numeric_group_string_group_floating_string
            (3, - 832222222, 255, 4957,'original'),
            (4, 847492223, 0, 20435, 'original');
 
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string order by insert_num;
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_numeric_group_string_group_floating_string replace columns (insert_num int, c1 STRING, c2 STRING, c3 STRING, b STRING) ;
@@ -357,7 +357,7 @@ insert into table table_change_numeric_group_string_group_floating_string
            (9, '100', '5000', '5443', 'new'),
            (10, '17', '90000', '754072151', 'new');
 
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string order by insert_num;
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_string;
 
 drop table table_change_numeric_group_string_group_floating_string;
 
@@ -373,7 +373,7 @@ insert into table table_change_numeric_group_string_group_floating_char
            (3,  9000000000, -255, 4957,'original'),
            (4, -999999999999, 0, 20435, 'original');
 
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char order by insert_num;
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_numeric_group_string_group_floating_char replace columns (insert_num int, c1 CHAR(50), c2 CHAR(50), c3 CHAR(50), b STRING) ;
@@ -386,7 +386,7 @@ insert into table table_change_numeric_group_string_group_floating_char
            (9, '100', '5000', '5443', 'new'),
            (10, '17', '90000', '754072151', 'new');
 
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char order by insert_num;
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char;
 
 drop table table_change_numeric_group_string_group_floating_char;
 
@@ -402,7 +402,7 @@ insert into table table_change_numeric_group_string_group_floating_char_trunc
            (3, 832222222, -255, 4957, 'original'),
            (4, 847492223, 0, 20435, 'original');
 
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc order by insert_num;
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_numeric_group_string_group_floating_char_trunc replace columns (insert_num int, c1 CHAR(7), c2 CHAR(7), c3 CHAR(7), b STRING) ;
@@ -415,7 +415,7 @@ insert into table table_change_numeric_group_string_group_floating_char_trunc
            (9, '100', '5000', '5443', 'new'),
            (10, '17', '90000', '754072151', 'new');
 
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc order by insert_num;
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_char_trunc;
 
 drop table table_change_numeric_group_string_group_floating_char_trunc;
 
@@ -431,7 +431,7 @@ insert into table table_change_numeric_group_string_group_floating_varchar
            (3, 9000000000, -255, 4957, 'original'),
            (4, -999999999999, 0, 20435, 'original');
 
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar order by insert_num;
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_numeric_group_string_group_floating_varchar replace columns (insert_num int, c1 VARCHAR(50), c2 VARCHAR(50), c3 VARCHAR(50), b STRING) ;
@@ -444,7 +444,7 @@ insert into table table_change_numeric_group_string_group_floating_varchar
            (9, '100', '5000', '5443', 'new'),
            (10, '17', '90000', '754072151', 'new');
 
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar order by insert_num;
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar;
 
 drop table table_change_numeric_group_string_group_floating_varchar;
 
@@ -460,7 +460,7 @@ insert into table table_change_numeric_group_string_group_floating_varchar_trunc
            (3, 9000000000, -255, 4957, 'original'),
            (4, -999999999999, 0, 20435, 'original');
 
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc order by insert_num;
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_numeric_group_string_group_floating_varchar_trunc replace columns (insert_num int, c1 VARCHAR(7), c2 VARCHAR(7), c3 VARCHAR(7), b STRING) ;
@@ -473,7 +473,7 @@ insert into table table_change_numeric_group_string_group_floating_varchar_trunc
            (9, '100', '5000', '5443', 'new'),
            (10, '17', '90000', '754072151', 'new');
 
-select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc order by insert_num;
+select insert_num,c1,c2,c3,b from table_change_numeric_group_string_group_floating_varchar_trunc;
 
 drop table table_change_numeric_group_string_group_floating_varchar_trunc;
 
@@ -493,7 +493,7 @@ insert into table table_change_string_group_string_group_string
            (3, 'dynamic reptile', 'dynamic reptile', 'dynamic reptile', 'dynamic reptile', 'original'),
            (4, 'blank pads   ', 'blank pads   ', 'blank pads   ', 'blank pads   ', 'original');
 
-select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string order by insert_num;
+select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_string_group_string_group_string replace columns (insert_num int, c1 CHAR(50), c2 CHAR(9), c3 VARCHAR(50), c4 CHAR(9), b STRING) ;
@@ -506,7 +506,7 @@ insert into table table_change_string_group_string_group_string
            (9, 'hangar paralysed companion ', 'hangar paralysed companion ', 'hangar paralysed companion ', 'hangar paralysed companion ', 'new'),
            (10, 'bottom  ', 'bottom  ', 'bottom  ', 'bottom  ', 'new');
 
-select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string order by insert_num;
+select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string;
 
 drop table table_change_string_group_string_group_string;
 
@@ -523,7 +523,7 @@ insert into table table_change_string_group_string_group_char
            (3, 'dynamic reptile', 'dynamic reptile', 'dynamic reptile', 'original'),
            (4, 'blank pads   ', 'blank pads   ', 'blank pads   ', 'original');
 
-select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char order by insert_num;
+select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_string_group_string_group_char replace columns (insert_num int, c1 VARCHAR(50), c2 VARCHAR(9), c3 STRING, b STRING) ;
@@ -536,7 +536,7 @@ insert into table table_change_string_group_string_group_char
            (9, 'hangar paralysed companion ', 'hangar paralysed companion ', 'hangar paralysed companion ', 'new'),
            (10, 'bottom  ', 'bottom  ', 'bottom  ', 'new');
 
-select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char order by insert_num;
+select insert_num,c1,c2,c3,b from table_change_string_group_string_group_char;
 
 drop table table_change_string_group_string_group_char;
 
@@ -553,7 +553,7 @@ insert into table table_change_string_group_string_group_varchar
            (3, 'dynamic reptile', 'dynamic reptile', 'dynamic reptile', 'original'),
            (4, 'blank pads   ', 'blank pads   ', 'blank pads   ', 'original');
 
-select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar order by insert_num;
+select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_string_group_string_group_varchar replace columns (insert_num int, c1 CHAR(50), c2 CHAR(9), c3 STRING, b STRING) ;
@@ -566,7 +566,7 @@ insert into table table_change_string_group_string_group_varchar
            (9, 'hangar paralysed companion ', 'hangar paralysed companion ', 'hangar paralysed companion ', 'new'),
            (10, 'bottom  ', 'bottom  ', 'bottom  ', 'new');
 
-select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar order by insert_num;
+select insert_num,c1,c2,c3,b from table_change_string_group_string_group_varchar;
 
 drop table table_change_string_group_string_group_varchar;
 
@@ -587,7 +587,7 @@ insert into table table_change_lower_to_higher_numeric_group_tinyint
            (3, -255, -255, -255, -255, -255, -255, 'original'),
            (4, 100, 100, 100, 100, 100, 100, 'original');
 
-select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint order by insert_num;
+select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_lower_to_higher_numeric_group_tinyint replace columns (insert_num int, c1 SMALLINT, c2 INT, c3 BIGINT, c4 decimal(38,18), c5 FLOAT, c6 DOUBLE, b STRING);
@@ -600,7 +600,7 @@ insert into table table_change_lower_to_higher_numeric_group_tinyint
            (9, '100', '5000', '5443', '22', '2', '-2', 'new'),
            (10, '17', '90000', '754072151', '95', '20', '18', 'new');
 
-select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint order by insert_num;
+select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint;
 
 drop table table_change_lower_to_higher_numeric_group_tinyint;
 
@@ -616,7 +616,7 @@ insert into table table_change_lower_to_higher_numeric_group_smallint
            (3, -5000, -5000, -5000, -5000, -5000, 'original'),
            (4, 100, 100, 100, 100, 100, 'original');
 
-select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint order by insert_num;
+select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_lower_to_higher_numeric_group_smallint replace columns (insert_num int, c1 INT, c2 BIGINT, c3 decimal(38,18), c4 FLOAT, c5 DOUBLE, b STRING) ;
@@ -629,7 +629,7 @@ insert into table table_change_lower_to_higher_numeric_group_smallint
            (9, '100', '5000', '5443', '22', '2', 'new'),
            (10, '17', '90000', '754072151', '95', '20', 'new');
 
-select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint order by insert_num;
+select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint;
 
 drop table table_change_lower_to_higher_numeric_group_smallint;
 
@@ -646,7 +646,7 @@ insert into table table_change_lower_to_higher_numeric_group_int
            (3, -5000, -5000, -5000, -5000, 'original'),
            (4, 52927714, 52927714, 52927714, 52927714, 'original');
 
-select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int order by insert_num;
+select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_lower_to_higher_numeric_group_int replace columns (insert_num int, c1 BIGINT, c2 decimal(38,18), c3 FLOAT, c4 DOUBLE,  b STRING) ;
@@ -659,7 +659,7 @@ insert into table table_change_lower_to_higher_numeric_group_int
            (9, '100', '5000', '5443', '22', 'new'),
            (10, '17', '90000', '754072151', '95', 'new');
 
-select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int order by insert_num;
+select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int;
 
 drop table table_change_lower_to_higher_numeric_group_int;
 
@@ -675,7 +675,7 @@ insert into table table_change_lower_to_higher_numeric_group_bigint
            (3, -5000, -5000, -5000, 'original'),
            (4, 52927714, 52927714, 52927714, 'original');
 
-select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint order by insert_num;
+select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_lower_to_higher_numeric_group_bigint replace columns (insert_num int, c1 decimal(38,18), c2 FLOAT, c3 DOUBLE, b STRING) ;
@@ -688,7 +688,7 @@ insert into table table_change_lower_to_higher_numeric_group_bigint
            (9, '100', '5000', '5443', 'new'),
            (10, '17', '90000', '754072151', 'new');
 
-select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint order by insert_num;
+select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint;
 
 drop table table_change_lower_to_higher_numeric_group_bigint;
 
@@ -704,7 +704,7 @@ insert into table table_change_lower_to_higher_numeric_group_decimal
            (3, -5000, -5000, 'original'),
            (4, 52927714, 52927714, 'original');
 
-select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num;
+select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_lower_to_higher_numeric_group_decimal replace columns (insert_num int, c1 float, c2 double, b STRING) ;
@@ -717,7 +717,7 @@ insert into table table_change_lower_to_higher_numeric_group_decimal
            (9, '10.0', '0.100', 'new'),
            (10, '1.7', '17.8888', 'new');
 
-select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num;
+select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal;
 
 drop table table_change_lower_to_higher_numeric_group_decimal;
 
@@ -734,7 +734,7 @@ insert into table table_change_lower_to_higher_numeric_group_float
            (3, -5000, 'original'),
            (4, 52927714, 'original');
 
-select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num;
+select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 DOUBLE, b STRING) ;
@@ -747,7 +747,7 @@ insert into table table_change_lower_to_higher_numeric_group_float
            (9, '100', 'new'),
            (10, '17', 'new');
 
-select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num;
+select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float;
 
 drop table table_change_lower_to_higher_numeric_group_float;
 
