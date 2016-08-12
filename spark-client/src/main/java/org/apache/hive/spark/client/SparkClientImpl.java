@@ -235,12 +235,12 @@ class SparkClientImpl implements SparkClient {
       // If a Spark installation is provided, use the spark-submit script. Otherwise, call the
       // SparkSubmit class directly, which has some caveats (like having to provide a proper
       // version of Guava on the classpath depending on the deploy mode).
-      String sparkHome = conf.get(SPARK_HOME_KEY);
+      String sparkHome = Strings.emptyToNull(conf.get(SPARK_HOME_KEY));
       if (sparkHome == null) {
-        sparkHome = System.getenv(SPARK_HOME_ENV);
+        sparkHome = Strings.emptyToNull(System.getenv(SPARK_HOME_ENV));
       }
       if (sparkHome == null) {
-        sparkHome = System.getProperty(SPARK_HOME_KEY);
+        sparkHome = Strings.emptyToNull(System.getProperty(SPARK_HOME_KEY));
       }
       String sparkLogDir = conf.get("hive.spark.log.dir");
       if (sparkLogDir == null) {
