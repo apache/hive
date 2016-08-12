@@ -56,7 +56,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -156,6 +155,7 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFrameSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
@@ -9787,11 +9787,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // is the table already present
     TableScanOperator top = topOps.get(alias_id);
 
+    // Obtain table props in query
+    Map<String, String> properties = qb.getTabPropsForAlias(alias);
+
     if (top == null) {
       // Determine row schema for TSOP.
       // Include column names from SerDe, the partition and virtual columns.
       rwsch = new RowResolver();
       try {
+        // Including parameters passed in the query
+        if (properties != null) {
+          for (Entry<String, String> prop : properties.entrySet()) {
+            if (tab.getSerdeParam(prop.getKey()) != null) {
+              LOG.warn("SerDe property in input query overrides stored SerDe property");
+            }
+            tab.setSerdeParam(prop.getKey(), prop.getValue());
+          }
+        }
+        // Obtain inspector for schema
         StructObjectInspector rowObjectInspector = (StructObjectInspector) tab
             .getDeserializer().getObjectInspector();
         List<? extends StructField> fields = rowObjectInspector
@@ -9852,10 +9865,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Add a mapping from the table scan operator to Table
       topToTable.put(top, tab);
 
-      Map<String, String> props = qb.getTabPropsForAlias(alias);
-      if (props != null) {
-        topToTableProps.put(top, props);
-        tsDesc.setOpProps(props);
+      if (properties != null) {
+        topToTableProps.put(top, properties);
+        tsDesc.setOpProps(properties);
       }
     } else {
       rwsch = opParseCtx.get(top).getRowResolver();

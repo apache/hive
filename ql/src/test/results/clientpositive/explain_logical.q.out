@@ -263,6 +263,8 @@ LOGICAL PLAN:
 src 
   TableScan (TS_0)
     alias: src
+    properties:
+      insideView TRUE
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
     Select Operator (SEL_1)
       expressions: key (type: string), value (type: string)
@@ -278,6 +280,8 @@ LOGICAL PLAN:
 srcpart 
   TableScan (TS_0)
     alias: srcpart
+    properties:
+      insideView TRUE
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
     Select Operator (SEL_2)
       expressions: ds (type: string), key (type: string), value (type: string)
@@ -293,6 +297,8 @@ LOGICAL PLAN:
 $hdt$_0:srcpart 
   TableScan (TS_0)
     alias: srcpart
+    properties:
+      insideView TRUE
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
     Filter Operator (FIL_11)
       predicate: key is not null (type: boolean)
@@ -328,6 +334,8 @@ $hdt$_0:srcpart
 $hdt$_1:src2 
   TableScan (TS_3)
     alias: src2
+    properties:
+      insideView TRUE
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
     Filter Operator (FIL_12)
       predicate: key is not null (type: boolean)
@@ -359,6 +367,8 @@ LOGICAL PLAN:
 $hdt$_0:src 
   TableScan (TS_0)
     alias: src
+    properties:
+      insideView TRUE
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
     Filter Operator (FIL_15)
       predicate: key is not null (type: boolean)
@@ -396,6 +406,8 @@ $hdt$_0:src
 $hdt$_1:srcpart 
   TableScan (TS_3)
     alias: srcpart
+    properties:
+      insideView TRUE
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
     Filter Operator (FIL_16)
       predicate: key is not null (type: boolean)
@@ -423,6 +435,8 @@ $hdt$_1:srcpart
 $hdt$_2:src3 
   TableScan (TS_6)
     alias: src3
+    properties:
+      insideView TRUE
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
     Filter Operator (FIL_17)
       predicate: key is not null (type: boolean)
@@ -470,6 +484,8 @@ LOGICAL PLAN:
 srcpart 
   TableScan (TS_0)
     alias: srcpart
+    properties:
+      insideView TRUE
     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
     Filter Operator (FIL_4)
       predicate: (ds = '10') (type: boolean)

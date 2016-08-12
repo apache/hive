@@ -60,6 +60,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HdfsUtils;
@@ -4468,12 +4469,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   public static boolean doesTableNeedLocation(Table tbl) {
-    // If we are ok with breaking compatibility of existing 3rd party StorageHandlers,
+    // TODO: If we are ok with breaking compatibility of existing 3rd party StorageHandlers,
     // this method could be moved to the HiveStorageHandler interface.
     boolean retval = true;
     if (tbl.getStorageHandler() != null) {
-      retval = !tbl.getStorageHandler().toString().equals(
-          "org.apache.hadoop.hive.hbase.HBaseStorageHandler");
+      String sh = tbl.getStorageHandler().toString();
+      retval = !sh.equals("org.apache.hadoop.hive.hbase.HBaseStorageHandler")
+              && !sh.equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID);
     }
     return retval;
   }

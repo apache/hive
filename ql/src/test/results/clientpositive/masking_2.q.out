@@ -22,6 +22,8 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            properties:
+              insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10)) (type: boolean)
@@ -74,6 +76,8 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            properties:
+              insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0)) (type: boolean)
@@ -139,6 +143,8 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: src
+            properties:
+              insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0) and reverse(value) is not null) (type: boolean)
@@ -190,6 +196,8 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            properties:
+              insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10)) (type: boolean)
@@ -206,6 +214,8 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col1 (type: string)
           TableScan
             alias: src
+            properties:
+              insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0) and reverse(value) is not null) (type: boolean)
@@ -257,6 +267,8 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            properties:
+              insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10)) (type: boolean)
@@ -279,6 +291,8 @@ STAGE PLANS:
                       Statistics: Num rows: 110 Data size: 1167 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src
+            properties:
+              insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToInteger(key) % 2) = 0) and (UDFToInteger(key) < 10) and (UDFToInteger(key) > 0)) (type: boolean)

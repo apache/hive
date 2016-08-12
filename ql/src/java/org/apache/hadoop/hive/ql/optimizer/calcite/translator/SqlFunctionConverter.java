@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunc
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveDateGranularity;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -206,6 +207,7 @@ public class SqlFunctionConverter {
         case IS_NOT_NULL:
         case IS_NULL:
         case CASE:
+        case OTHER_FUNCTION:
           node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
           node.addChild((ASTNode) ParseDriver.adaptor.create(hToken.type, hToken.text));
           break;
@@ -311,8 +313,8 @@ public class SqlFunctionConverter {
       registerFunction("+", SqlStdOperatorTable.PLUS, hToken(HiveParser.PLUS, "+"));
       registerFunction("-", SqlStdOperatorTable.MINUS, hToken(HiveParser.MINUS, "-"));
       registerFunction("*", SqlStdOperatorTable.MULTIPLY, hToken(HiveParser.STAR, "*"));
-      registerFunction("/", SqlStdOperatorTable.DIVIDE, hToken(HiveParser.STAR, "/"));
-      registerFunction("%", SqlStdOperatorTable.MOD, hToken(HiveParser.STAR, "%"));
+      registerFunction("/", SqlStdOperatorTable.DIVIDE, hToken(HiveParser.DIVIDE, "/"));
+      registerFunction("%", SqlStdOperatorTable.MOD, hToken(HiveParser.Identifier, "%"));
       registerFunction("and", SqlStdOperatorTable.AND, hToken(HiveParser.KW_AND, "and"));
       registerFunction("or", SqlStdOperatorTable.OR, hToken(HiveParser.KW_OR, "or"));
       registerFunction("=", SqlStdOperatorTable.EQUALS, hToken(HiveParser.EQUAL, "="));
@@ -334,6 +336,23 @@ public class SqlFunctionConverter {
       registerFunction("isnull", SqlStdOperatorTable.IS_NULL, hToken(HiveParser.TOK_ISNULL, "TOK_ISNULL"));
       registerFunction("when", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       registerDuplicateFunction("case", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
+      // timebased
+      registerFunction("floor_year", HiveDateGranularity.YEAR,
+          hToken(HiveParser.Identifier, "floor_year"));
+      registerFunction("floor_quarter", HiveDateGranularity.QUARTER,
+          hToken(HiveParser.Identifier, "floor_quarter"));
+      registerFunction("floor_month", HiveDateGranularity.MONTH,
+          hToken(HiveParser.Identifier, "floor_month"));
+      registerFunction("floor_week", HiveDateGranularity.WEEK,
+          hToken(HiveParser.Identifier, "floor_week"));
+      registerFunction("floor_day", HiveDateGranularity.DAY,
+          hToken(HiveParser.Identifier, "floor_day"));
+      registerFunction("floor_hour", HiveDateGranularity.HOUR,
+          hToken(HiveParser.Identifier, "floor_hour"));
+      registerFunction("floor_minute", HiveDateGranularity.MINUTE,
+          hToken(HiveParser.Identifier, "floor_minute"));
+      registerFunction("floor_second", HiveDateGranularity.SECOND,
+          hToken(HiveParser.Identifier, "floor_second"));
     }
 
     private void registerFunction(String name, SqlOperator calciteFn, HiveToken hiveToken) {

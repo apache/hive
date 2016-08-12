@@ -32,7 +32,7 @@ public class HiveSqlMinMaxAggFunction extends SqlAggFunction {
       SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker, boolean isMin) {
     super(
         isMin ? "min" : "max",
-        SqlKind.OTHER_FUNCTION,
+        isMin ? SqlKind.MIN : SqlKind.MAX,
         returnTypeInference,
         operandTypeInference,
         operandTypeChecker,

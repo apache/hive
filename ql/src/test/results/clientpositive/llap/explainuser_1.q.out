@@ -1951,7 +1951,7 @@ Stage-0
               Filter Operator [FIL_15] (rows=166 width=178)
                 predicate:((value > 'val_9') and key is not null)
                 TableScan [TS_0] (rows=500 width=178)
-                  default@src_cbo,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                  default@src_cbo,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"],properties:{"insideView":"TRUE"}
         <-Map 3 [SIMPLE_EDGE] llap
           SHUFFLE [RS_9]
             PartitionCols:_col0, _col1

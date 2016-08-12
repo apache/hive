@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollationTraitDef;
@@ -46,6 +47,10 @@ public class HiveProjectSortTransposeRule extends RelOptRule {
         operand(
             HiveProject.class,
             operand(HiveSortLimit.class, any())));
+  }
+
+  protected HiveProjectSortTransposeRule(RelOptRuleOperand operand) {
+    super(operand);
   }
 
   //~ Methods ----------------------------------------------------------------
