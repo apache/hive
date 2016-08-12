@@ -123,8 +123,8 @@ partitions = {
       "objectClass: ExtensibleObject",
       "givenName: Group2",
       "ou: Groups",
-      "cn: group1",
-      "sn: group1",
+      "cn: group2",
+      "sn: group2",
       "member: uid=user2,ou=People,dc=example,dc=com",
 
       "dn: cn=group3,ou=Groups,dc=example,dc=com",
@@ -859,14 +859,14 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
                        + USER1.getUID() + ")(uid=" + USER4.getUID() + ")))");
     initLdapAtn(ldapProperties);
 
-      user = USER1.getDN();
+    user = USER1.getDN();
     try {
       ldapProvider.Authenticate(user, USER1.getPassword());
       assertTrue("testCustomQueryPositive: Authentication succeeded for " + user + " as expected", true);
 
-     user = USER1.getUID();
-       ldapProvider.Authenticate(user, USER1.getPassword());
-       assertTrue("testCustomQueryPositive: Authentication succeeded for " + user + " as expected", true);
+      user = USER1.getUID();
+      ldapProvider.Authenticate(user, USER1.getPassword());
+      assertTrue("testCustomQueryPositive: Authentication succeeded for " + user + " as expected", true);
 
       user = USER4.getDN();
       ldapProvider.Authenticate(user, USER4.getPassword());
@@ -897,6 +897,105 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     try {
       user = USER2.getUID();
       ldapProvider.Authenticate(user, USER2.getPassword());
+      Assert.fail("testCustomQueryNegative: Authentication succeeded for " + user + ",user expected to fail custom LDAP Query");
+    } catch (AuthenticationException e) {
+      assertTrue("testCustomQueryNegative: Authentication failed for " + user + " as expected", true);
+    }
+  }
+
+  /**
+   Test to test the LDAP Atn to use a custom LDAP query that returns
+   a) A set of group DNs
+   b) A combination of group(s) DN and user DN
+   LDAP atn is expected to extract the members of the group using the attribute value for
+   "hive.server2.authentication.ldap.groupMembershipKey"
+   */
+  @Test
+  public void testCustomQueryWithGroupsPositive() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com:uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery",
+                         "(&(objectClass=groupOfNames)(|(cn=group1)(cn=group2)))");
+    initLdapAtn(ldapProperties);
+
+    user = USER1.getDN();
+    try {
+      ldapProvider.Authenticate(user, USER1.getPassword());
+      assertTrue("testCustomQueryWithGroupsPositive: Authentication succeeded for " + user + " as expected", true);
+
+       user = USER2.getUID();
+       ldapProvider.Authenticate(user, USER2.getPassword());
+       assertTrue("testCustomQueryWithGroupsPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testCustomQueryWithGroupsPositive: Authentication failed for " + user + ",user expected to pass custom LDAP Query");
+    }
+
+    /* the following test uses a query that returns a group and a user entry.
+       the ldap atn should use the groupMembershipKey to identify the users for the returned group
+       and the authentication should succeed for the users of that group as well as the lone user4 in this case
+    */
+    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com:uid=%s,ou=People,dc=example,dc=com");
+    // following query should return group1 and user2
+    ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery",
+                         "(|(&(objectClass=groupOfNames)(cn=group1))(&(objectClass=person)(sn=user4)))");
+    initLdapAtn(ldapProperties);
+
+    user = USER1.getUID();
+    try {
+      ldapProvider.Authenticate(user, USER1.getPassword());
+      assertTrue("testCustomQueryWithGroupsPositive: Authentication succeeded for " + user + " as expected", true);
+
+       user = USER4.getUID();
+       ldapProvider.Authenticate(user, USER4.getPassword());
+       assertTrue("testCustomQueryWithGroupsPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testCustomQueryWithGroupsPositive: Authentication failed for " + user + ",user expected to pass custom LDAP Query");
+    }
+
+    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com:uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.groupMembershipKey", "uniqueMember");
+    ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery",
+                         "(&(objectClass=groupOfUniqueNames)(cn=group4))");
+    initLdapAtn(ldapProperties);
+
+    user = USER4.getDN();
+    try {
+      ldapProvider.Authenticate(user, USER4.getPassword());
+      assertTrue("testCustomQueryWithGroupsPositive: Authentication succeeded for " + user + " as expected", true);
+
+      user = USER4.getUID();
+      ldapProvider.Authenticate(user, USER4.getPassword());
+      assertTrue("testCustomQueryWithGroupsPositive: Authentication succeeded for " + user + " as expected", true);
+    } catch (AuthenticationException e) {
+      Assert.fail("testCustomQueryWithGroupsPositive: Authentication failed for " + user + ",user expected to pass custom LDAP Query");
+    }
+  }
+
+  @Test
+  public void testCustomQueryWithGroupsNegative() throws Exception {
+    String user;
+    Map<String, String> ldapProperties = new HashMap<String, String>();
+    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com:uid=%s,ou=People,dc=example,dc=com");
+    ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery",
+                         "(&(objectClass=groupOfNames)(|(cn=group1)(cn=group2)))");
+    initLdapAtn(ldapProperties);
+
+    user = USER3.getDN();
+    try {
+      ldapProvider.Authenticate(user, USER3.getPassword());
+      Assert.fail("testCustomQueryNegative: Authentication succeeded for " + user + ",user expected to fail custom LDAP Query");
+    } catch (AuthenticationException e) {
+      assertTrue("testCustomQueryNegative: Authentication failed for " + user + " as expected", true);
+    }
+
+    try {
+      user = USER3.getUID();
+      ldapProvider.Authenticate(user, USER3.getPassword());
       Assert.fail("testCustomQueryNegative: Authentication succeeded for " + user + ",user expected to fail custom LDAP Query");
     } catch (AuthenticationException e) {
       assertTrue("testCustomQueryNegative: Authentication failed for " + user + " as expected", true);
