@@ -63,7 +63,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
   private MergeFileWork mfWork;
   MRInputLegacy mrInput = null;
   private final Object[] row = new Object[2];
-  ObjectCache cache;
+  org.apache.hadoop.hive.ql.exec.ObjectCache cache;
 
   public MergeFileRecordProcessor(final JobConf jconf, final ProcessorContext context) {
     super(jconf, context);
@@ -95,8 +95,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
     }
 
     String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
-    org.apache.hadoop.hive.ql.exec.ObjectCache cache = ObjectCacheFactory
-      .getCache(jconf, queryId);
+    cache = ObjectCacheFactory.getCache(jconf, queryId, true);
 
     try {
       execContext.setJc(jconf);

@@ -89,14 +89,8 @@ public class ReduceRecordProcessor  extends RecordProcessor{
   public ReduceRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
     super(jconf, context);
 
-    ObjectCache cache;
-
     String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
-    if (LlapProxy.isDaemon()) { // don't cache plan
-      cache = new org.apache.hadoop.hive.ql.exec.mr.ObjectCache();
-    } else {
-      cache = ObjectCacheFactory.getCache(jconf, queryId);
-    }
+    cache = ObjectCacheFactory.getCache(jconf, queryId, true);
 
     String cacheKey = processorContext.getTaskVertexName() + REDUCE_PLAN_KEY;
     cacheKeys = Lists.newArrayList(cacheKey);
