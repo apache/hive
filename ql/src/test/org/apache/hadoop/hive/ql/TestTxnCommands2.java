@@ -180,7 +180,7 @@ public class TestTxnCommands2 {
              Select Operator,
              ...
        */
-      assertPredicateIsPushed("filterExpr: (a = 3)", explain);
+      assertExplainHasString("filterExpr: (a = 3)", explain, "PPD wasn't pushed");
     }
     //create delta_0002_0002_0000 (can't push predicate)
     runStatementOnDriver(query);
@@ -191,7 +191,7 @@ public class TestTxnCommands2 {
       * push into the 'update' delta, we'd filter out {3,5} before doing merge and thus
      * produce {3,4} as the value for 2nd row.  The right result is 0-rows.*/
       explain = runStatementOnDriver("explain " + query);
-      assertPredicateIsPushed("filterExpr: (b = 4)", explain);
+      assertExplainHasString("filterExpr: (b = 4)", explain, "PPD wasn't pushed");
     }
     List<String> rs0 = runStatementOnDriver(query);
     Assert.assertEquals("Read failed", 0, rs0.size());
@@ -210,7 +210,7 @@ public class TestTxnCommands2 {
     //now we have delta_0003_0003_0000 with inserts only (ok to push predicate)
     if (enablePPD) {
       explain = runStatementOnDriver("explain delete from " + Table.ACIDTBL + " where a=7 and b=8");
-      assertPredicateIsPushed("filterExpr: ((a = 7) and (b = 8))", explain);
+      assertExplainHasString("filterExpr: ((a = 7) and (b = 8))", explain, "PPD wasn't pushed");
     }
     runStatementOnDriver("delete from " + Table.ACIDTBL + " where a=7 and b=8");
     //now we have delta_0004_0004_0000 with delete events
@@ -221,20 +221,22 @@ public class TestTxnCommands2 {
     query = "select a,b from " + Table.ACIDTBL + " where a > 1 order by a,b";
     if(enablePPD) {
       explain = runStatementOnDriver("explain " + query);
-      assertPredicateIsPushed("filterExpr: (a > 1)", explain);
+      assertExplainHasString("filterExpr: (a > 1)", explain, "PPD wasn't pushed");
     }
     List<String> rs1 = runStatementOnDriver(query);
     int [][] resultData = new int[][] {{3, 5}, {5, 6}, {9, 10}};
     Assert.assertEquals("Update failed", stringifyValues(resultData), rs1);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER, originalPpd);
   }
-  private static void assertPredicateIsPushed(String ppd, List<String> queryPlan) {
+
+  static void assertExplainHasString(String string, List<String> queryPlan, String errMsg) {
     for(String line : queryPlan) {
-      if(line != null && line.contains(ppd)) {
+      if(line != null && line.contains(string)) {
         return;
       }
     }
-    Assert.assertFalse("PPD '" + ppd + "' wasn't pushed", true);
+
+    Assert.assertFalse(errMsg, true);
   }
   @Test
   public void testAlterTable() throws Exception {
@@ -1221,7 +1223,7 @@ public class TestTxnCommands2 {
    * takes raw data and turns it into a string as if from Driver.getResults()
    * sorts rows in dictionary order
    */
-  private List<String> stringifyValues(int[][] rowsIn) {
+  static List<String> stringifyValues(int[][] rowsIn) {
     assert rowsIn.length > 0;
     int[][] rows = rowsIn.clone();
     Arrays.sort(rows, new RowComp());
