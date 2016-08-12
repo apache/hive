@@ -1,0 +1,8 @@
+PREHOOK: query: CREATE EXTERNAL TABLE druid_table_1
+PARTITIONED BY (dt string)
+STORED BY 'org.apache.hadoop.hive.druid.QTestDruidStorageHandler'
+TBLPROPERTIES ("druid.datasource" = "wikipedia")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@druid_table_1
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:PARTITIONED BY may not be specified for Druid)

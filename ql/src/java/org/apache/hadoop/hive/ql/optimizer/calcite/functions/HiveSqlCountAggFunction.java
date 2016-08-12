@@ -41,7 +41,7 @@ public class HiveSqlCountAggFunction extends SqlAggFunction implements CanAggreg
       SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker) {
     super(
         "count",
-        SqlKind.OTHER_FUNCTION,
+        SqlKind.COUNT,
         returnTypeInference,
         operandTypeInference,
         operandTypeChecker,

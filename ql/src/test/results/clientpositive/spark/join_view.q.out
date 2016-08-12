@@ -58,6 +58,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: invites
+                  properties:
+                    insideView TRUE
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: (ds = '2011-09-01') (type: boolean)
@@ -74,6 +76,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: invites2
+                  properties:
+                    insideView TRUE
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: (ds = '2011-09-01') (type: boolean)
