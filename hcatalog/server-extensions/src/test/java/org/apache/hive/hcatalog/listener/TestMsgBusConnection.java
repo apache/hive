@@ -48,7 +48,7 @@ public class TestMsgBusConnection extends TestCase {
   private Driver driver;
   private BrokerService broker;
   private MessageConsumer consumer;
-
+  private static final int TIMEOUT = 2000;
   @Override
   protected void setUp() throws Exception {
 
@@ -88,7 +88,7 @@ public class TestMsgBusConnection extends TestCase {
 
     try {
       driver.run("create database testconndb");
-      Message msg = consumer.receive();
+      Message msg = consumer.receive(TIMEOUT);
       assertTrue("Expected TextMessage", msg instanceof TextMessage);
       assertEquals(HCatConstants.HCAT_CREATE_DATABASE_EVENT,
           msg.getStringProperty(HCatConstants.HCAT_EVENT));
@@ -100,13 +100,13 @@ public class TestMsgBusConnection extends TestCase {
       broker.start(true);
       connectClient();
       driver.run("create database testconndb");
-      msg = consumer.receive();
+      msg = consumer.receive(TIMEOUT);
       assertEquals(HCatConstants.HCAT_CREATE_DATABASE_EVENT,
           msg.getStringProperty(HCatConstants.HCAT_EVENT));
       assertEquals("topic://planetlab.hcat", msg.getJMSDestination().toString());
       assertEquals("testconndb", messageObject.getDB());
       driver.run("drop database testconndb cascade");
-      msg = consumer.receive();
+      msg = consumer.receive(TIMEOUT);
       assertEquals(HCatConstants.HCAT_DROP_DATABASE_EVENT,
           msg.getStringProperty(HCatConstants.HCAT_EVENT));
       assertEquals("topic://planetlab.hcat", msg.getJMSDestination().toString());
