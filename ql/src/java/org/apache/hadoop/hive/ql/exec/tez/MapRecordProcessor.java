@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.exec.tez.tools.KeyValueInputMerger;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -94,14 +93,12 @@ public class MapRecordProcessor extends RecordProcessor {
   public MapRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
     super(jconf, context);
     String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
-    if (LlapProxy.isDaemon()) { // do not cache plan
+    if (LlapProxy.isDaemon()) {
       String id = queryId + "_" + context.getTaskIndex();
       l4j.info("LLAP_OF_ID: "+id);
       jconf.set(LlapOutputFormat.LLAP_OF_ID_KEY, id);
-      cache = new org.apache.hadoop.hive.ql.exec.mr.ObjectCache();
-    } else {
-      cache = ObjectCacheFactory.getCache(jconf, queryId);
     }
+    cache = ObjectCacheFactory.getCache(jconf, queryId, true);
     execContext = new ExecMapperContext(jconf);
     execContext.setJc(jconf);
     cacheKeys = new ArrayList<String>();

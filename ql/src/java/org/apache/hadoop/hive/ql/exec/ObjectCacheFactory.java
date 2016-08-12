@@ -44,10 +44,11 @@ public class ObjectCacheFactory {
   /**
    * Returns the appropriate cache
    */
-  public static ObjectCache getCache(Configuration conf, String queryId) {
+  public static ObjectCache getCache(Configuration conf, String queryId, boolean isPlanCache) {
     if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
       if (LlapProxy.isDaemon()) { // daemon
-        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_OBJECT_CACHE_ENABLED)) {
+        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_OBJECT_CACHE_ENABLED)
+            && !isPlanCache) {
           // LLAP object cache, unlike others, does not use globals. Thus, get the existing one.
           return getLlapObjectCache(queryId);
         } else { // no cache

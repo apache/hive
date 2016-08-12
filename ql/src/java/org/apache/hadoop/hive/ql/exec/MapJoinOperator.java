@@ -145,7 +145,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     // the task in. On MR: The cache is a no-op.
     String queryId = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVEQUERYID);
     cacheKey = "HASH_MAP_" + this.getOperatorId() + "_container";
-    cache = ObjectCacheFactory.getCache(hconf, queryId);
+    cache = ObjectCacheFactory.getCache(hconf, queryId, false);
     loader = getHashTableLoader(hconf);
 
     hashMapRowGetters = null;
