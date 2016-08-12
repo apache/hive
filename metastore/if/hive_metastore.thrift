@@ -1475,5 +1475,6 @@ const string FILE_OUTPUT_FORMAT   = "file.outputformat",
 const string META_TABLE_STORAGE   = "storage_handler",
 const string TABLE_IS_TRANSACTIONAL = "transactional",
 const string TABLE_NO_AUTO_COMPACT = "no_auto_compaction",
+const string TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties",
 
 

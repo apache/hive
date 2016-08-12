@@ -82,4 +82,6 @@ public class hive_metastoreConstants {
 
   public static final String TABLE_NO_AUTO_COMPACT = "no_auto_compaction";
 
+  public static final String TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties";
+
 }

@@ -38,6 +38,7 @@ class hive_metastoreConstants {
   std::string META_TABLE_STORAGE;
   std::string TABLE_IS_TRANSACTIONAL;
   std::string TABLE_NO_AUTO_COMPACT;
+  std::string TABLE_TRANSACTIONAL_PROPERTIES;
 };
 
 extern const hive_metastoreConstants g_hive_metastore_constants;

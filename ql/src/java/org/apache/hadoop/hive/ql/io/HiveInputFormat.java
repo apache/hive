@@ -637,6 +637,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         pushFilters(jobConf, ts);
 
         AcidUtils.setTransactionalTableScan(job, ts.getConf().isAcidTable());
+        AcidUtils.setAcidOperationalProperties(job, ts.getConf().getAcidOperationalProperties());
       }
     }
   }

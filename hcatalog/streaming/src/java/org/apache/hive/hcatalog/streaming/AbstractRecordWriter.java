@@ -48,6 +48,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 
 
 public abstract class AbstractRecordWriter implements RecordWriter {
@@ -265,10 +266,16 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   private RecordUpdater createRecordUpdater(int bucketId, Long minTxnId, Long maxTxnID)
           throws IOException, SerializationError {
     try {
+      // Initialize table properties from the table parameters. This is required because the table
+      // may define certain table parameters that may be required while writing. The table parameter
+      // 'transactional_properties' is one such example.
+      Properties tblProperties = new Properties();
+      tblProperties.putAll(tbl.getParameters());
       return  outf.getRecordUpdater(partitionPath,
               new AcidOutputFormat.Options(conf)
                       .inspector(getSerde().getObjectInspector())
                       .bucket(bucketId)
+                      .tableProperties(tblProperties)
                       .minimumTransactionId(minTxnId)
                       .maximumTransactionId(maxTxnID)
                       .statementId(-1)

@@ -101,6 +101,8 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   private boolean isAcidTable;
 
+  private AcidUtils.AcidOperationalProperties acidOperationalProperties = null;
+
   private transient TableSample tableSample;
 
   private transient Table tableMetadata;
@@ -127,6 +129,9 @@ public class TableScanDesc extends AbstractOperatorDesc {
     this.virtualCols = vcs;
     this.tableMetadata = tblMetadata;
     isAcidTable = AcidUtils.isAcidTable(this.tableMetadata);
+    if (isAcidTable) {
+      acidOperationalProperties = AcidUtils.getAcidOperationalProperties(this.tableMetadata);
+    }
   }
 
   @Override
@@ -157,6 +162,10 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public boolean isAcidTable() {
     return isAcidTable;
+  }
+
+  public AcidUtils.AcidOperationalProperties getAcidOperationalProperties() {
+    return acidOperationalProperties;
   }
 
   @Explain(displayName = "Output", explainLevels = { Level.USER })

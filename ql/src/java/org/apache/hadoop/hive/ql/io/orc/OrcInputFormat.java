@@ -80,7 +80,10 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.AcidBaseFileInfo;
+import org.apache.hadoop.hive.ql.io.AcidUtils.AcidOperationalProperties;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Directory;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta;
 import org.apache.hadoop.hive.ql.io.BatchToRowInputFormat;
 import org.apache.hadoop.hive.ql.io.BatchToRowReader;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
@@ -525,6 +528,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private final ValidTxnList transactionList;
     private SplitStrategyKind splitStrategyKind;
     private final SearchArgument sarg;
+    private final AcidOperationalProperties acidOperationalProperties;
 
     Context(Configuration conf) throws IOException {
       this(conf, 1, null);
@@ -606,6 +610,15 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       }
       String value = conf.get(ValidTxnList.VALID_TXNS_KEY);
       transactionList = value == null ? new ValidReadTxnList() : new ValidReadTxnList(value);
+
+      // Determine the transactional_properties of the table from the job conf stored in context.
+      // The table properties are copied to job conf at HiveInputFormat::addSplitsForGroup(),
+      // & therefore we should be able to retrieve them here and determine appropriate behavior.
+      // Note that this will be meaningless for non-acid tables & will be set to null.
+      boolean isTableTransactional = conf.getBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, false);
+      String transactionalProperties = conf.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+      this.acidOperationalProperties = isTableTransactional ?
+          AcidOperationalProperties.parseString(transactionalProperties) : null;
     }
 
     @VisibleForTesting
@@ -639,17 +652,20 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   @VisibleForTesting
   static final class AcidDirInfo {
     public AcidDirInfo(FileSystem fs, Path splitPath, Directory acidInfo,
-        List<HdfsFileStatusWithId> baseOrOriginalFiles) {
+        List<AcidBaseFileInfo> baseFiles,
+        List<ParsedDelta> parsedDeltas) {
       this.splitPath = splitPath;
       this.acidInfo = acidInfo;
-      this.baseOrOriginalFiles = baseOrOriginalFiles;
+      this.baseFiles = baseFiles;
       this.fs = fs;
+      this.parsedDeltas = parsedDeltas;
     }
 
     final FileSystem fs;
     final Path splitPath;
     final AcidUtils.Directory acidInfo;
-    final List<HdfsFileStatusWithId> baseOrOriginalFiles;
+    final List<AcidBaseFileInfo> baseFiles;
+    final List<ParsedDelta> parsedDeltas;
   }
 
   @VisibleForTesting
@@ -672,7 +688,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     SplitInfo(Context context, FileSystem fs, HdfsFileStatusWithId fileWithId, OrcTail orcTail,
         List<OrcProto.Type> readerTypes, boolean isOriginal, List<DeltaMetaData> deltas,
         boolean hasBase, Path dir, boolean[] covered, ByteBuffer ppdResult) throws IOException {
-      super(dir, context.numBuckets, deltas, covered);
+      super(dir, context.numBuckets, deltas, covered, context.acidOperationalProperties);
       this.context = context;
       this.fs = fs;
       this.fileWithId = fileWithId;
@@ -916,7 +932,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     public BISplitStrategy(Context context, FileSystem fs,
         Path dir, List<HdfsFileStatusWithId> fileStatuses, boolean isOriginal,
         List<DeltaMetaData> deltas, boolean[] covered, boolean allowSyntheticFileIds) {
-      super(dir, context.numBuckets, deltas, covered);
+      super(dir, context.numBuckets, deltas, covered, context.acidOperationalProperties);
       this.fileStatuses = fileStatuses;
       this.isOriginal = isOriginal;
       this.deltas = deltas;
@@ -964,20 +980,33 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     List<DeltaMetaData> deltas;
     boolean[] covered;
     int numBuckets;
+    AcidOperationalProperties acidOperationalProperties;
 
-    public ACIDSplitStrategy(Path dir, int numBuckets, List<DeltaMetaData> deltas, boolean[] covered) {
+    public ACIDSplitStrategy(Path dir, int numBuckets, List<DeltaMetaData> deltas, boolean[] covered,
+        AcidOperationalProperties acidOperationalProperties) {
       this.dir = dir;
       this.numBuckets = numBuckets;
       this.deltas = deltas;
       this.covered = covered;
+      this.acidOperationalProperties = acidOperationalProperties;
     }
 
     @Override
     public List<OrcSplit> getSplits() throws IOException {
+      List<OrcSplit> splits = Lists.newArrayList();
+
+      // When split-update is enabled, we do not need to account for buckets that aren't covered.
+      // This is a huge performance benefit of split-update. And the reason why we are able to
+      // do so is because the 'deltas' here are actually only the delete_deltas. All the insert_deltas
+      // with valid user payload data has already been considered as base for the covered buckets.
+      // Hence, the uncovered buckets do not have any relevant data and we can just ignore them.
+      if (acidOperationalProperties != null && acidOperationalProperties.isSplitUpdate()) {
+        return splits; // return an empty list.
+      }
+
       // Generate a split for any buckets that weren't covered.
       // This happens in the case where a bucket just has deltas and no
       // base.
-      List<OrcSplit> splits = Lists.newArrayList();
       if (!deltas.isEmpty()) {
         for (int b = 0; b < numBuckets; ++b) {
           if (!covered[b]) {
@@ -1032,13 +1061,70 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     private AcidDirInfo callInternal() throws IOException {
-      AcidUtils.Directory dirInfo = AcidUtils.getAcidState(dir,
-          context.conf, context.transactionList, useFileIds, true);
+      AcidUtils.Directory dirInfo = AcidUtils.getAcidState(dir, context.conf,
+          context.transactionList, useFileIds, true);
       Path base = dirInfo.getBaseDirectory();
       // find the base files (original or new style)
-      List<HdfsFileStatusWithId> children = (base == null)
-          ? dirInfo.getOriginalFiles() : findBaseFiles(base, useFileIds);
-      return new AcidDirInfo(fs, dir, dirInfo, children);
+      List<AcidBaseFileInfo> baseFiles = new ArrayList<AcidBaseFileInfo>();
+      if (base == null) {
+        for (HdfsFileStatusWithId fileId : dirInfo.getOriginalFiles()) {
+          baseFiles.add(new AcidBaseFileInfo(fileId, AcidUtils.AcidBaseFileType.ORIGINAL_BASE));
+        }
+      } else {
+        List<HdfsFileStatusWithId> compactedBaseFiles = findBaseFiles(base, useFileIds);
+        for (HdfsFileStatusWithId fileId : compactedBaseFiles) {
+          baseFiles.add(new AcidBaseFileInfo(fileId, AcidUtils.AcidBaseFileType.COMPACTED_BASE));
+        }
+      }
+
+      // Find the parsed deltas- some of them containing only the insert delta events
+      // may get treated as base if split-update is enabled for ACID. (See HIVE-14035 for details)
+      List<ParsedDelta> parsedDeltas = new ArrayList<ParsedDelta>();
+
+      if (context.acidOperationalProperties != null &&
+          context.acidOperationalProperties.isSplitUpdate()) {
+        // If we have split-update turned on for this table, then the delta events have already been
+        // split into two directories- delta_x_y/ and delete_delta_x_y/.
+        // When you have split-update turned on, the insert events go to delta_x_y/ directory and all
+        // the delete events go to delete_x_y/. An update event will generate two events-
+        // a delete event for the old record that is put into delete_delta_x_y/,
+        // followed by an insert event for the updated record put into the usual delta_x_y/.
+        // Therefore, everything inside delta_x_y/ is an insert event and all the files in delta_x_y/
+        // can be treated like base files. Hence, each of these are added to baseOrOriginalFiles list.
+
+        for (ParsedDelta parsedDelta : dirInfo.getCurrentDirectories()) {
+          if (parsedDelta.isDeleteDelta()) {
+            parsedDeltas.add(parsedDelta);
+          } else {
+            // This is a normal insert delta, which only has insert events and hence all the files
+            // in this delta directory can be considered as a base.
+            if (useFileIds) {
+              try {
+                List<HdfsFileStatusWithId> insertDeltaFiles =
+                    SHIMS.listLocatedHdfsStatus(fs, parsedDelta.getPath(), AcidUtils.hiddenFileFilter);
+                for (HdfsFileStatusWithId fileId : insertDeltaFiles) {
+                  baseFiles.add(new AcidBaseFileInfo(fileId, AcidUtils.AcidBaseFileType.INSERT_DELTA));
+                }
+                continue; // move on to process to the next parsedDelta.
+              } catch (Throwable t) {
+                LOG.error("Failed to get files with ID; using regular API: " + t.getMessage());
+              }
+            }
+            // Fall back to regular API and create statuses without ID.
+            List<FileStatus> children = HdfsUtils.listLocatedStatus(fs, parsedDelta.getPath(), AcidUtils.hiddenFileFilter);
+            for (FileStatus child : children) {
+              HdfsFileStatusWithId fileId = AcidUtils.createOriginalObj(null, child);
+              baseFiles.add(new AcidBaseFileInfo(fileId, AcidUtils.AcidBaseFileType.INSERT_DELTA));
+            }
+          }
+        }
+
+      } else {
+        // When split-update is not enabled, then all the deltas in the current directories
+        // should be considered as usual.
+        parsedDeltas.addAll(dirInfo.getCurrentDirectories());
+      }
+      return new AcidDirInfo(fs, dir, dirInfo, baseFiles, parsedDeltas);
     }
 
     private List<HdfsFileStatusWithId> findBaseFiles(
@@ -1526,26 +1612,32 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           continue;
         }
 
-        // We have received a new directory information, make a split strategy.
+        // We have received a new directory information, make split strategies.
         --resultsLeft;
-        SplitStrategy<?> splitStrategy = determineSplitStrategy(combinedCtx, context, adi.fs,
-            adi.splitPath, adi.acidInfo, adi.baseOrOriginalFiles, readerTypes, ugi,
+
+        // The reason why we can get a list of split strategies here is because for ACID split-update
+        // case when we have a mix of original base files & insert deltas, we will produce two
+        // independent split strategies for them. There is a global flag 'isOriginal' that is set
+        // on a per split strategy basis and it has to be same for all the files in that strategy.
+        List<SplitStrategy<?>> splitStrategies = determineSplitStrategies(combinedCtx, context, adi.fs,
+            adi.splitPath, adi.acidInfo, adi.baseFiles, adi.parsedDeltas, readerTypes, ugi,
             allowSyntheticFileIds);
-        if (splitStrategy == null) continue; // Combined.
 
-        if (isDebugEnabled) {
-          LOG.debug("Split strategy: {}", splitStrategy);
-        }
+        for (SplitStrategy<?> splitStrategy : splitStrategies) {
+          if (isDebugEnabled) {
+            LOG.debug("Split strategy: {}", splitStrategy);
+          }
 
-        // Hack note - different split strategies return differently typed lists, yay Java.
-        // This works purely by magic, because we know which strategy produces which type.
-        if (splitStrategy instanceof ETLSplitStrategy) {
-          scheduleSplits((ETLSplitStrategy)splitStrategy,
-              context, splitFutures, strategyFutures, splits);
-        } else {
-          @SuppressWarnings("unchecked")
-          List<OrcSplit> readySplits = (List<OrcSplit>)splitStrategy.getSplits();
-          splits.addAll(readySplits);
+          // Hack note - different split strategies return differently typed lists, yay Java.
+          // This works purely by magic, because we know which strategy produces which type.
+          if (splitStrategy instanceof ETLSplitStrategy) {
+            scheduleSplits((ETLSplitStrategy)splitStrategy,
+                context, splitFutures, strategyFutures, splits);
+          } else {
+            @SuppressWarnings("unchecked")
+            List<OrcSplit> readySplits = (List<OrcSplit>)splitStrategy.getSplits();
+            splits.addAll(readySplits);
+          }
         }
       }
 
@@ -1763,6 +1855,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     final OrcSplit split = (OrcSplit) inputSplit;
     final Path path = split.getPath();
+
     Path root;
     if (split.hasBase()) {
       if (split.isOriginal()) {
@@ -1773,7 +1866,20 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     } else {
       root = path;
     }
-    final Path[] deltas = AcidUtils.deserializeDeltas(root, split.getDeltas());
+
+    // Retrieve the acidOperationalProperties for the table, initialized in HiveInputFormat.
+    AcidUtils.AcidOperationalProperties acidOperationalProperties
+            = AcidUtils.getAcidOperationalProperties(options.getConfiguration());
+
+    // The deltas are decided based on whether split-update has been turned on for the table or not.
+    // When split-update is turned off, everything in the delta_x_y/ directory should be treated
+    // as delta. However if split-update is turned on, only the files in delete_delta_x_y/ directory
+    // need to be considered as delta, because files in delta_x_y/ will be processed as base files
+    // since they only have insert events in them.
+    final Path[] deltas =
+        acidOperationalProperties.isSplitUpdate() ?
+            AcidUtils.deserializeDeleteDeltas(root, split.getDeltas())
+            : AcidUtils.deserializeDeltas(root, split.getDeltas());
     final Configuration conf = options.getConfiguration();
 
 
@@ -1793,7 +1899,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     setSearchArgument(readOptions, schemaTypes, conf, SCHEMA_TYPES_IS_ORIGINAL);
 
     if (split.hasBase()) {
-      bucket = AcidUtils.parseBaseBucketFilename(split.getPath(), conf)
+      bucket = AcidUtils.parseBaseOrDeltaBucketFilename(split.getPath(), conf)
           .getBucket();
       OrcFile.ReaderOptions readerOptions = OrcFile.readerOptions(conf)
           .maxLength(split.getFileLength());
@@ -1948,23 +2054,76 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   }
 
   @VisibleForTesting
+  static List<SplitStrategy<?>> determineSplitStrategies(CombinedCtx combinedCtx, Context context,
+      FileSystem fs, Path dir, AcidUtils.Directory dirInfo,
+      List<AcidBaseFileInfo> baseFiles,
+      List<ParsedDelta> parsedDeltas,
+      List<OrcProto.Type> readerTypes,
+      UserGroupInformation ugi, boolean allowSyntheticFileIds) {
+    List<SplitStrategy<?>> splitStrategies = new ArrayList<SplitStrategy<?>>();
+    SplitStrategy<?> splitStrategy;
+
+    // When no baseFiles, we will just generate a single split strategy and return.
+    List<HdfsFileStatusWithId> acidSchemaFiles = new ArrayList<HdfsFileStatusWithId>();
+    if (baseFiles.isEmpty()) {
+      splitStrategy = determineSplitStrategy(combinedCtx, context, fs, dir, dirInfo,
+          acidSchemaFiles, false, parsedDeltas, readerTypes, ugi, allowSyntheticFileIds);
+      if (splitStrategy != null) {
+        splitStrategies.add(splitStrategy);
+      }
+      return splitStrategies; // return here
+    }
+
+    List<HdfsFileStatusWithId> originalSchemaFiles = new ArrayList<HdfsFileStatusWithId>();
+    // Separate the base files into acid schema and non-acid(original) schema files.
+    for (AcidBaseFileInfo acidBaseFileInfo : baseFiles) {
+      if (acidBaseFileInfo.isOriginal()) {
+        originalSchemaFiles.add(acidBaseFileInfo.getHdfsFileStatusWithId());
+      } else {
+        acidSchemaFiles.add(acidBaseFileInfo.getHdfsFileStatusWithId());
+      }
+    }
+
+    // Generate split strategy for non-acid schema original files, if any.
+    if (!originalSchemaFiles.isEmpty()) {
+      splitStrategy = determineSplitStrategy(combinedCtx, context, fs, dir, dirInfo,
+          originalSchemaFiles, true, parsedDeltas, readerTypes, ugi, allowSyntheticFileIds);
+      if (splitStrategy != null) {
+        splitStrategies.add(splitStrategy);
+      }
+    }
+
+    // Generate split strategy for acid schema files, if any.
+    if (!acidSchemaFiles.isEmpty()) {
+      splitStrategy = determineSplitStrategy(combinedCtx, context, fs, dir, dirInfo,
+          acidSchemaFiles, false, parsedDeltas, readerTypes, ugi, allowSyntheticFileIds);
+      if (splitStrategy != null) {
+        splitStrategies.add(splitStrategy);
+      }
+    }
+
+    return splitStrategies;
+  }
+
+  @VisibleForTesting
   static SplitStrategy<?> determineSplitStrategy(CombinedCtx combinedCtx, Context context,
       FileSystem fs, Path dir, AcidUtils.Directory dirInfo,
-      List<HdfsFileStatusWithId> baseOrOriginalFiles, List<OrcProto.Type> readerTypes,
+      List<HdfsFileStatusWithId> baseFiles,
+      boolean isOriginal,
+      List<ParsedDelta> parsedDeltas,
+      List<OrcProto.Type> readerTypes,
       UserGroupInformation ugi, boolean allowSyntheticFileIds) {
-    Path base = dirInfo.getBaseDirectory();
-    List<HdfsFileStatusWithId> original = dirInfo.getOriginalFiles();
-    List<DeltaMetaData> deltas = AcidUtils.serializeDeltas(dirInfo.getCurrentDirectories());
+    List<DeltaMetaData> deltas = AcidUtils.serializeDeltas(parsedDeltas);
     boolean[] covered = new boolean[context.numBuckets];
-    boolean isOriginal = base == null;
 
     // if we have a base to work from
-    if (base != null || !original.isEmpty()) {
+    if (!baseFiles.isEmpty()) {
       long totalFileSize = 0;
-      for (HdfsFileStatusWithId child : baseOrOriginalFiles) {
+      for (HdfsFileStatusWithId child : baseFiles) {
         totalFileSize += child.getFileStatus().getLen();
-        AcidOutputFormat.Options opts = AcidUtils.parseBaseBucketFilename
+        AcidOutputFormat.Options opts = AcidUtils.parseBaseOrDeltaBucketFilename
             (child.getFileStatus().getPath(), context.conf);
+        opts.writingBase(true);
         int b = opts.getBucket();
         // If the bucket is in the valid range, mark it as covered.
         // I wish Hive actually enforced bucketing all of the time.
@@ -1973,31 +2132,32 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         }
       }
 
-      int numFiles = baseOrOriginalFiles.size();
+      int numFiles = baseFiles.size();
       long avgFileSize = totalFileSize / numFiles;
       int totalFiles = context.numFilesCounter.addAndGet(numFiles);
       switch(context.splitStrategyKind) {
         case BI:
           // BI strategy requested through config
-          return new BISplitStrategy(context, fs, dir, baseOrOriginalFiles,
+          return new BISplitStrategy(context, fs, dir, baseFiles,
               isOriginal, deltas, covered, allowSyntheticFileIds);
         case ETL:
           // ETL strategy requested through config
-          return combineOrCreateETLStrategy(combinedCtx, context, fs, dir, baseOrOriginalFiles,
+          return combineOrCreateETLStrategy(combinedCtx, context, fs, dir, baseFiles,
               deltas, covered, readerTypes, isOriginal, ugi, allowSyntheticFileIds);
         default:
           // HYBRID strategy
           if (avgFileSize > context.maxSize || totalFiles <= context.etlFileThreshold) {
-            return combineOrCreateETLStrategy(combinedCtx, context, fs, dir, baseOrOriginalFiles,
+            return combineOrCreateETLStrategy(combinedCtx, context, fs, dir, baseFiles,
                 deltas, covered, readerTypes, isOriginal, ugi, allowSyntheticFileIds);
           } else {
-            return new BISplitStrategy(context, fs, dir, baseOrOriginalFiles,
+            return new BISplitStrategy(context, fs, dir, baseFiles,
                 isOriginal, deltas, covered, allowSyntheticFileIds);
           }
       }
     } else {
       // no base, only deltas
-      return new ACIDSplitStrategy(dir, context.numBuckets, deltas, covered);
+      return new ACIDSplitStrategy(dir, context.numBuckets, deltas, covered,
+          context.acidOperationalProperties);
     }
   }
 

@@ -57,6 +57,8 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   TABLE_NO_AUTO_COMPACT = "no_auto_compaction";
 
+  TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties";
+
 }
 
 }}} // namespace

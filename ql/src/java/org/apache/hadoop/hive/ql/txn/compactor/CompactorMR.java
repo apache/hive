@@ -17,9 +17,16 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.hadoop.hive.common.ValidCompactorTxnList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.regex.Matcher;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
@@ -27,6 +34,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StringableMap;
+import org.apache.hadoop.hive.common.ValidCompactorTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -61,12 +69,8 @@ import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
 import org.apache.hadoop.util.StringUtils;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.*;
-import java.util.regex.Matcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class to do compactions via an MR job.  This has to be in the ql package rather than metastore
@@ -129,7 +133,7 @@ public class CompactorMR {
     job.setInt(NUM_BUCKETS, sd.getNumBuckets());
     job.set(ValidTxnList.VALID_TXNS_KEY, txns.toString());
     overrideMRProps(job, t.getParameters()); // override MR properties from tblproperties if applicable
-    if (ci.properties != null) { // override MR properties and general tblproperties if applicable
+    if (ci.properties != null) {
       overrideTblProps(job, t.getParameters(), ci.properties);
     }
     setColumnTypes(job, sd.getCols());
@@ -137,6 +141,11 @@ public class CompactorMR {
     //to generate the target dir in the Map task, there is no easy way to pass it to OutputCommitter
     //to do the final move
     job.setBoolean("mapreduce.map.speculative", false);
+
+    // Set appropriate Acid readers/writers based on the table properties.
+    AcidUtils.setAcidOperationalProperties(job,
+            AcidUtils.getAcidOperationalProperties(t.getParameters()));
+
     return job;
   }
 
@@ -501,12 +510,18 @@ public class CompactorMR {
       Map<Integer, BucketTracker> splitToBucketMap = new HashMap<Integer, BucketTracker>();
       for (Path dir : dirsToSearch) {
         FileSystem fs = dir.getFileSystem(entries);
+        // When we have split-update and there are two kinds of delta directories-
+        // the delta_x_y/ directory one which has only insert events and
+        // the delete_delta_x_y/ directory which has only the delete events.
+        // The clever thing about this kind of splitting is that everything in the delta_x_y/
+        // directory can be processed as base files. However, this is left out currently
+        // as an improvement for the future.
 
-        // If this is a base or delta directory, then we need to be looking for the bucket files.
-        // But if it's a legacy file then we need to add it directly.
         if (dir.getName().startsWith(AcidUtils.BASE_PREFIX) ||
-            dir.getName().startsWith(AcidUtils.DELTA_PREFIX)) {
+            dir.getName().startsWith(AcidUtils.DELTA_PREFIX) ||
+            dir.getName().startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
           boolean sawBase = dir.getName().startsWith(AcidUtils.BASE_PREFIX);
+
           FileStatus[] files = fs.listStatus(dir, AcidUtils.bucketFileFilter);
           for(FileStatus f : files) {
             // For each file, figure out which bucket it is.
@@ -519,6 +534,8 @@ public class CompactorMR {
           addFileToMap(matcher, dir, true, splitToBucketMap);
         }
       }
+
+
       List<InputSplit> splits = new ArrayList<InputSplit>(splitToBucketMap.size());
       for (Map.Entry<Integer, BucketTracker> e : splitToBucketMap.entrySet()) {
         BucketTracker bt = e.getValue();
@@ -613,7 +630,8 @@ public class CompactorMR {
       implements Mapper<WritableComparable, CompactorInputSplit,  NullWritable,  NullWritable> {
 
     JobConf jobConf;
-    RecordWriter writer;
+    RecordWriter writer = null;
+    RecordWriter deleteEventWriter = null;
 
     @Override
     public void map(WritableComparable key, CompactorInputSplit split,
@@ -636,10 +654,30 @@ public class CompactorMR {
       RecordIdentifier identifier = reader.createKey();
       V value = reader.createValue();
       getWriter(reporter, reader.getObjectInspector(), split.getBucket());
+
+      AcidUtils.AcidOperationalProperties acidOperationalProperties
+          = AcidUtils.getAcidOperationalProperties(jobConf);
+
+      if (!isMajor && acidOperationalProperties.isSplitUpdate()) {
+        // When split-update is enabled for ACID, we initialize a separate deleteEventWriter
+        // that is used to write all the delete events (in case of minor compaction only). For major
+        // compaction, history is not required to be maintained hence the delete events are processed
+        // but not re-written separately.
+        getDeleteEventWriter(reporter, reader.getObjectInspector(), split.getBucket());
+      }
+
       while (reader.next(identifier, value)) {
-        if (isMajor && reader.isDelete(value)) continue;
-        writer.write(value);
-        reporter.progress();
+        boolean sawDeleteRecord = reader.isDelete(value);
+        if (isMajor && sawDeleteRecord) continue;
+        if (sawDeleteRecord && deleteEventWriter != null) {
+          // When minor compacting, write delete events to a separate file when split-update is
+          // turned on.
+          deleteEventWriter.write(value);
+          reporter.progress();
+        } else {
+          writer.write(value);
+          reporter.progress();
+        }
       }
     }
 
@@ -652,6 +690,9 @@ public class CompactorMR {
     public void close() throws IOException {
       if (writer != null) {
         writer.close(false);
+      }
+      if (deleteEventWriter != null) {
+        deleteEventWriter.close(false);
       }
     }
 
@@ -679,6 +720,30 @@ public class CompactorMR {
       }
     }
 
+    private void getDeleteEventWriter(Reporter reporter, ObjectInspector inspector,
+        int bucket) throws IOException {
+      if (deleteEventWriter == null) {
+        AcidOutputFormat.Options options = new AcidOutputFormat.Options(jobConf);
+        options.inspector(inspector)
+          .writingBase(false)
+          .writingDeleteDelta(true)   // this is the option which will make it a delete writer
+          .isCompressed(jobConf.getBoolean(IS_COMPRESSED, false))
+          .tableProperties(new StringableMap(jobConf.get(TABLE_PROPS)).toProperties())
+          .reporter(reporter)
+          .minimumTransactionId(jobConf.getLong(MIN_TXN, Long.MAX_VALUE))
+          .maximumTransactionId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE))
+          .bucket(bucket)
+          .statementId(-1);//setting statementId == -1 makes compacted delta files use
+        //delta_xxxx_yyyy format
+
+        // Instantiate the underlying output format
+        @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
+        AcidOutputFormat<WritableComparable, V> aof =
+          instantiate(AcidOutputFormat.class, jobConf.get(OUTPUT_FORMAT_CLASS_NAME));
+
+        deleteEventWriter = aof.getRawRecordWriter(new Path(jobConf.get(TMP_LOCATION)), options);
+      }
+    }
   }
 
   static class StringableList extends ArrayList<Path> {

@@ -18,10 +18,14 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Pattern;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -30,21 +34,18 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.regex.Pattern;
 
 /**
  * Utilities that are shared by all of the ACID input and output formats. They
@@ -61,11 +62,18 @@ public class AcidUtils {
     }
   };
   public static final String DELTA_PREFIX = "delta_";
+  public static final String DELETE_DELTA_PREFIX = "delete_delta_";
   public static final String DELTA_SIDE_FILE_SUFFIX = "_flush_length";
   public static final PathFilter deltaFileFilter = new PathFilter() {
     @Override
     public boolean accept(Path path) {
       return path.getName().startsWith(DELTA_PREFIX);
+    }
+  };
+  public static final PathFilter deleteEventDeltaDirFilter = new PathFilter() {
+    @Override
+    public boolean accept(Path path) {
+      return path.getName().startsWith(DELETE_DELTA_PREFIX);
     }
   };
   public static final String BUCKET_PREFIX = "bucket_";
@@ -142,6 +150,25 @@ public class AcidUtils {
     return deltaSubdir(min, max) + "_" + String.format(STATEMENT_DIGITS, statementId);
   }
 
+  /**
+   * This is format of delete delta dir name prior to Hive 2.2.x
+   */
+  @VisibleForTesting
+  static String deleteDeltaSubdir(long min, long max) {
+    return DELETE_DELTA_PREFIX + String.format(DELTA_DIGITS, min) + "_" +
+        String.format(DELTA_DIGITS, max);
+  }
+
+  /**
+   * Each write statement in a transaction creates its own delete delta dir,
+   * when split-update acid operational property is turned on.
+   * @since 2.2.x
+   */
+  @VisibleForTesting
+  static String deleteDeltaSubdir(long min, long max, int statementId) {
+    return deleteDeltaSubdir(min, max) + "_" + String.format(STATEMENT_DIGITS, statementId);
+  }
+
   public static String baseDir(long txnId) {
     return BASE_PREFIX + String.format(DELTA_DIGITS, txnId);
   }
@@ -163,12 +190,19 @@ public class AcidUtils {
     } else if(options.getStatementId() == -1) {
       //when minor compaction runs, we collapse per statement delta files inside a single
       //transaction so we no longer need a statementId in the file name
-      subdir = deltaSubdir(options.getMinimumTransactionId(),
-        options.getMaximumTransactionId());
+      subdir = options.isWritingDeleteDelta() ?
+          deleteDeltaSubdir(options.getMinimumTransactionId(),
+                            options.getMaximumTransactionId())
+          : deltaSubdir(options.getMinimumTransactionId(),
+                        options.getMaximumTransactionId());
     } else {
-      subdir = deltaSubdir(options.getMinimumTransactionId(),
-        options.getMaximumTransactionId(),
-        options.getStatementId());
+      subdir = options.isWritingDeleteDelta() ?
+          deleteDeltaSubdir(options.getMinimumTransactionId(),
+                            options.getMaximumTransactionId(),
+                            options.getStatementId())
+          : deltaSubdir(options.getMinimumTransactionId(),
+                        options.getMaximumTransactionId(),
+                        options.getStatementId());
     }
     return createBucketFile(new Path(directory, subdir), options.getBucket());
   }
@@ -195,11 +229,10 @@ public class AcidUtils {
    * @return the options used to create that filename
    */
   public static AcidOutputFormat.Options
-                    parseBaseBucketFilename(Path bucketFile,
-                                            Configuration conf) {
+                    parseBaseOrDeltaBucketFilename(Path bucketFile,
+                                                   Configuration conf) {
     AcidOutputFormat.Options result = new AcidOutputFormat.Options(conf);
     String filename = bucketFile.getName();
-    result.writingBase(true);
     if (ORIGINAL_PATTERN.matcher(filename).matches()) {
       int bucket =
           Integer.parseInt(filename.substring(0, filename.indexOf('_')));
@@ -207,15 +240,33 @@ public class AcidUtils {
           .setOldStyle(true)
           .minimumTransactionId(0)
           .maximumTransactionId(0)
-          .bucket(bucket);
+          .bucket(bucket)
+          .writingBase(true);
     } else if (filename.startsWith(BUCKET_PREFIX)) {
       int bucket =
           Integer.parseInt(filename.substring(filename.indexOf('_') + 1));
-      result
-          .setOldStyle(false)
-          .minimumTransactionId(0)
-          .maximumTransactionId(parseBase(bucketFile.getParent()))
-          .bucket(bucket);
+      if (bucketFile.getParent().getName().startsWith(BASE_PREFIX)) {
+        result
+            .setOldStyle(false)
+            .minimumTransactionId(0)
+            .maximumTransactionId(parseBase(bucketFile.getParent()))
+            .bucket(bucket)
+            .writingBase(true);
+      } else if (bucketFile.getParent().getName().startsWith(DELTA_PREFIX)) {
+        ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), DELTA_PREFIX);
+        result
+            .setOldStyle(false)
+            .minimumTransactionId(parsedDelta.minTransaction)
+            .maximumTransactionId(parsedDelta.maxTransaction)
+            .bucket(bucket);
+      } else if (bucketFile.getParent().getName().startsWith(DELETE_DELTA_PREFIX)) {
+        ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), DELETE_DELTA_PREFIX);
+        result
+            .setOldStyle(false)
+            .minimumTransactionId(parsedDelta.minTransaction)
+            .maximumTransactionId(parsedDelta.maxTransaction)
+            .bucket(bucket);
+      }
     } else {
       result.setOldStyle(true).bucket(-1).minimumTransactionId(0)
           .maximumTransactionId(0);
@@ -245,6 +296,179 @@ public class AcidUtils {
         return DataOperationType.DELETE;
       default:
         throw new IllegalArgumentException("Unexpected Operation: " + op);
+    }
+  }
+
+  public enum AcidBaseFileType {
+    COMPACTED_BASE, // a regular base file generated through major compaction
+    ORIGINAL_BASE, // a non-acid schema file for tables that got converted to acid
+    INSERT_DELTA; // a delta file with only insert events that can be treated as base for split-update
+  }
+
+  /**
+   * A simple wrapper class that stores the information about a base file and its type.
+   * Orc splits can be generated on three kinds of base files: an original file (non-acid converted
+   * files), a regular base file (created by major compaction) or an insert delta (which can be
+   * treated as a base when split-update is enabled for acid).
+   */
+  public static class AcidBaseFileInfo {
+    final private HdfsFileStatusWithId fileId;
+    final private AcidBaseFileType acidBaseFileType;
+
+    public AcidBaseFileInfo(HdfsFileStatusWithId fileId, AcidBaseFileType acidBaseFileType) {
+      this.fileId = fileId;
+      this.acidBaseFileType = acidBaseFileType;
+    }
+
+    public boolean isCompactedBase() {
+      return this.acidBaseFileType == AcidBaseFileType.COMPACTED_BASE;
+    }
+
+    public boolean isOriginal() {
+      return this.acidBaseFileType == AcidBaseFileType.ORIGINAL_BASE;
+    }
+
+    public boolean isInsertDelta() {
+      return this.acidBaseFileType == AcidBaseFileType.INSERT_DELTA;
+    }
+
+    public HdfsFileStatusWithId getHdfsFileStatusWithId() {
+      return this.fileId;
+    }
+  }
+
+  public static class AcidOperationalProperties {
+    private int description = 0x00;
+    public static final int SPLIT_UPDATE_BIT = 0x01;
+    public static final String SPLIT_UPDATE_STRING = "split_update";
+    public static final int HASH_BASED_MERGE_BIT = 0x02;
+    public static final String HASH_BASED_MERGE_STRING = "hash_merge";
+    public static final String DEFAULT_VALUE_STRING = TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
+    public static final String LEGACY_VALUE_STRING = TransactionalValidationListener.LEGACY_TRANSACTIONAL_PROPERTY;
+
+    private AcidOperationalProperties() {
+    }
+
+    /**
+     * Returns an acidOperationalProperties object that represents ACID behavior for legacy tables
+     * that were created before ACID type system using operational properties was put in place.
+     * @return the acidOperationalProperties object
+     */
+    public static AcidOperationalProperties getLegacy() {
+      AcidOperationalProperties obj = new AcidOperationalProperties();
+      // In legacy mode, none of these properties are turned on.
+      return obj;
+    }
+
+    /**
+     * Returns an acidOperationalProperties object that represents default ACID behavior for tables
+     * that do no explicitly specify/override the default behavior.
+     * @return the acidOperationalProperties object.
+     */
+    public static AcidOperationalProperties getDefault() {
+      AcidOperationalProperties obj = new AcidOperationalProperties();
+      obj.setSplitUpdate(true);
+      obj.setHashBasedMerge(false);
+      return obj;
+    }
+
+    /**
+     * Returns an acidOperationalProperties object that is represented by an encoded string.
+     * @param propertiesStr an encoded string representing the acidOperationalProperties.
+     * @return the acidOperationalProperties object.
+     */
+    public static AcidOperationalProperties parseString(String propertiesStr) {
+      if (propertiesStr == null) {
+        return AcidOperationalProperties.getLegacy();
+      }
+      if (propertiesStr.equalsIgnoreCase(DEFAULT_VALUE_STRING)) {
+        return AcidOperationalProperties.getDefault();
+      }
+      if (propertiesStr.equalsIgnoreCase(LEGACY_VALUE_STRING)) {
+        return AcidOperationalProperties.getLegacy();
+      }
+      AcidOperationalProperties obj = new AcidOperationalProperties();
+      String[] options = propertiesStr.split("\\|");
+      for (String option : options) {
+        if (option.trim().length() == 0) continue; // ignore empty strings
+        switch (option) {
+          case SPLIT_UPDATE_STRING:
+            obj.setSplitUpdate(true);
+            break;
+          case HASH_BASED_MERGE_STRING:
+            obj.setHashBasedMerge(true);
+            break;
+          default:
+            throw new IllegalArgumentException(
+                "Unexpected value " + option + " for ACID operational properties!");
+        }
+      }
+      return obj;
+    }
+
+    /**
+     * Returns an acidOperationalProperties object that is represented by an encoded 32-bit integer.
+     * @param properties an encoded 32-bit representing the acidOperationalProperties.
+     * @return the acidOperationalProperties object.
+     */
+    public static AcidOperationalProperties parseInt(int properties) {
+      AcidOperationalProperties obj = new AcidOperationalProperties();
+      if ((properties & SPLIT_UPDATE_BIT)  > 0) {
+        obj.setSplitUpdate(true);
+      }
+      if ((properties & HASH_BASED_MERGE_BIT)  > 0) {
+        obj.setHashBasedMerge(true);
+      }
+      return obj;
+    }
+
+    /**
+     * Sets the split update property for ACID operations based on the boolean argument.
+     * When split update is turned on, an update ACID event is interpreted as a combination of
+     * delete event followed by an update event.
+     * @param isSplitUpdate a boolean property that turns on split update when true.
+     * @return the acidOperationalProperties object.
+     */
+    public AcidOperationalProperties setSplitUpdate(boolean isSplitUpdate) {
+      description = (isSplitUpdate
+              ? (description | SPLIT_UPDATE_BIT) : (description & ~SPLIT_UPDATE_BIT));
+      return this;
+    }
+
+    /**
+     * Sets the hash-based merge property for ACID operations that combines delta files using
+     * GRACE hash join based approach, when turned on. (Currently unimplemented!)
+     * @param isHashBasedMerge a boolean property that turns on hash-based merge when true.
+     * @return the acidOperationalProperties object.
+     */
+    public AcidOperationalProperties setHashBasedMerge(boolean isHashBasedMerge) {
+      description = (isHashBasedMerge
+              ? (description | HASH_BASED_MERGE_BIT) : (description & ~HASH_BASED_MERGE_BIT));
+      return this;
+    }
+
+    public boolean isSplitUpdate() {
+      return (description & SPLIT_UPDATE_BIT) > 0;
+    }
+
+    public boolean isHashBasedMerge() {
+      return (description & HASH_BASED_MERGE_BIT) > 0;
+    }
+
+    public int toInt() {
+      return description;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder str = new StringBuilder();
+      if (isSplitUpdate()) {
+        str.append("|" + SPLIT_UPDATE_STRING);
+      }
+      if (isHashBasedMerge()) {
+        str.append("|" + HASH_BASED_MERGE_STRING);
+      }
+      return str.toString();
     }
   }
 
@@ -287,18 +511,20 @@ public class AcidUtils {
     //-1 is for internal (getAcidState()) purposes and means the delta dir
     //had no statement ID
     private final int statementId;
+    private final boolean isDeleteDelta; // records whether delta dir is of type 'delete_delta_x_y...'
 
     /**
      * for pre 1.3.x delta files
      */
-    ParsedDelta(long min, long max, FileStatus path) {
-      this(min, max, path, -1);
+    ParsedDelta(long min, long max, FileStatus path, boolean isDeleteDelta) {
+      this(min, max, path, -1, isDeleteDelta);
     }
-    ParsedDelta(long min, long max, FileStatus path, int statementId) {
+    ParsedDelta(long min, long max, FileStatus path, int statementId, boolean isDeleteDelta) {
       this.minTransaction = min;
       this.maxTransaction = max;
       this.path = path;
       this.statementId = statementId;
+      this.isDeleteDelta = isDeleteDelta;
     }
 
     public long getMinTransaction() {
@@ -315,6 +541,10 @@ public class AcidUtils {
 
     public int getStatementId() {
       return statementId == -1 ? 0 : statementId;
+    }
+
+    public boolean isDeleteDelta() {
+      return isDeleteDelta;
     }
 
     /**
@@ -418,15 +648,49 @@ public class AcidUtils {
     return results.toArray(new Path[results.size()]);
   }
 
-  private static ParsedDelta parseDelta(FileStatus path) {
-    ParsedDelta p = parsedDelta(path.getPath());
-    return new ParsedDelta(p.getMinTransaction(),
-      p.getMaxTransaction(), path, p.statementId);
+  /**
+   * Convert the list of begin/end transaction id pairs to a list of delete delta
+   * directories.  Note that there may be multiple delete_delta files for the exact same txn range starting
+   * with 2.2.x;
+   * see {@link org.apache.hadoop.hive.ql.io.AcidUtils#deltaSubdir(long, long, int)}
+   * @param root the root directory
+   * @param deleteDeltas list of begin/end transaction id pairs
+   * @return the list of delta paths
+   */
+  public static Path[] deserializeDeleteDeltas(Path root, final List<AcidInputFormat.DeltaMetaData> deleteDeltas) throws IOException {
+    List<Path> results = new ArrayList<Path>(deleteDeltas.size());
+    for(AcidInputFormat.DeltaMetaData dmd : deleteDeltas) {
+      if(dmd.getStmtIds().isEmpty()) {
+        results.add(new Path(root, deleteDeltaSubdir(dmd.getMinTxnId(), dmd.getMaxTxnId())));
+        continue;
+      }
+      for(Integer stmtId : dmd.getStmtIds()) {
+        results.add(new Path(root, deleteDeltaSubdir(dmd.getMinTxnId(), dmd.getMaxTxnId(), stmtId)));
+      }
+    }
+    return results.toArray(new Path[results.size()]);
   }
+
   public static ParsedDelta parsedDelta(Path deltaDir) {
+    String deltaDirName = deltaDir.getName();
+    if (deltaDirName.startsWith(DELETE_DELTA_PREFIX)) {
+      return parsedDelta(deltaDir, DELETE_DELTA_PREFIX);
+    }
+    return parsedDelta(deltaDir, DELTA_PREFIX); // default prefix is delta_prefix
+  }
+
+  private static ParsedDelta parseDelta(FileStatus path, String deltaPrefix) {
+    ParsedDelta p = parsedDelta(path.getPath(), deltaPrefix);
+    boolean isDeleteDelta = deltaPrefix.equals(DELETE_DELTA_PREFIX);
+    return new ParsedDelta(p.getMinTransaction(),
+        p.getMaxTransaction(), path, p.statementId, isDeleteDelta);
+  }
+
+  public static ParsedDelta parsedDelta(Path deltaDir, String deltaPrefix) {
     String filename = deltaDir.getName();
-    if (filename.startsWith(DELTA_PREFIX)) {
-      String rest = filename.substring(DELTA_PREFIX.length());
+    boolean isDeleteDelta = deltaPrefix.equals(DELETE_DELTA_PREFIX);
+    if (filename.startsWith(deltaPrefix)) {
+      String rest = filename.substring(deltaPrefix.length());
       int split = rest.indexOf('_');
       int split2 = rest.indexOf('_', split + 1);//may be -1 if no statementId
       long min = Long.parseLong(rest.substring(0, split));
@@ -434,13 +698,13 @@ public class AcidUtils {
         Long.parseLong(rest.substring(split + 1)) :
         Long.parseLong(rest.substring(split + 1, split2));
       if(split2 == -1) {
-        return new ParsedDelta(min, max, null);
+        return new ParsedDelta(min, max, null, isDeleteDelta);
       }
       int statementId = Integer.parseInt(rest.substring(split2 + 1));
-      return new ParsedDelta(min, max, null, statementId);
+      return new ParsedDelta(min, max, null, statementId, isDeleteDelta);
     }
     throw new IllegalArgumentException(deltaDir + " does not start with " +
-                                       DELTA_PREFIX);
+                                       deltaPrefix);
   }
 
   /**
@@ -456,7 +720,8 @@ public class AcidUtils {
     for(FileStatus file: fs.listStatus(directory)) {
       String filename = file.getPath().getName();
       if (filename.startsWith(BASE_PREFIX) ||
-          filename.startsWith(DELTA_PREFIX)) {
+          filename.startsWith(DELTA_PREFIX) ||
+          filename.startsWith(DELETE_DELTA_PREFIX)) {
         if (file.isDir()) {
           return true;
         }
@@ -499,6 +764,7 @@ public class AcidUtils {
                                        boolean ignoreEmptyFiles
                                        ) throws IOException {
     FileSystem fs = directory.getFileSystem(conf);
+    // The following 'deltas' includes all kinds of delta files including insert & delete deltas.
     final List<ParsedDelta> deltas = new ArrayList<ParsedDelta>();
     List<ParsedDelta> working = new ArrayList<ParsedDelta>();
     List<FileStatus> originalDirectories = new ArrayList<FileStatus>();
@@ -553,6 +819,7 @@ public class AcidUtils {
     //subject to list of 'exceptions' in 'txnList' (not show in above example).
     long current = bestBase.txn;
     int lastStmtId = -1;
+    ParsedDelta prev = null;
     for(ParsedDelta next: working) {
       if (next.maxTransaction > current) {
         // are any of the new transactions ones that we care about?
@@ -561,6 +828,7 @@ public class AcidUtils {
           deltas.add(next);
           current = next.maxTransaction;
           lastStmtId = next.statementId;
+          prev = next;
         }
       }
       else if(next.maxTransaction == current && lastStmtId >= 0) {
@@ -568,6 +836,24 @@ public class AcidUtils {
         //generate multiple delta files with the same txnId range
         //of course, if maxTransaction has already been minor compacted, all per statement deltas are obsolete
         deltas.add(next);
+        prev = next;
+      }
+      else if (prev != null && next.maxTransaction == prev.maxTransaction
+                  && next.minTransaction == prev.minTransaction
+                  && next.statementId == prev.statementId) {
+        // The 'next' parsedDelta may have everything equal to the 'prev' parsedDelta, except
+        // the path. This may happen when we have split update and we have two types of delta
+        // directories- 'delta_x_y' and 'delete_delta_x_y' for the SAME txn range.
+
+        // Also note that any delete_deltas in between a given delta_x_y range would be made
+        // obsolete. For example, a delta_30_50 would make delete_delta_40_40 obsolete.
+        // This is valid because minor compaction always compacts the normal deltas and the delete
+        // deltas for the same range. That is, if we had 3 directories, delta_30_30,
+        // delete_delta_40_40 and delta_50_50, then running minor compaction would produce
+        // delta_30_50 and delete_delta_30_50.
+
+        deltas.add(next);
+        prev = next;
       }
       else {
         obsolete.add(next.path);
@@ -638,7 +924,8 @@ public class AcidUtils {
   }
   private static void getChildState(FileStatus child, HdfsFileStatusWithId childWithId,
       ValidTxnList txnList, List<ParsedDelta> working, List<FileStatus> originalDirectories,
-      List<HdfsFileStatusWithId> original, List<FileStatus> obsolete, TxnBase bestBase, boolean ignoreEmptyFiles) {
+      List<HdfsFileStatusWithId> original, List<FileStatus> obsolete, TxnBase bestBase,
+      boolean ignoreEmptyFiles) throws IOException {
     Path p = child.getPath();
     String fn = p.getName();
     if (fn.startsWith(BASE_PREFIX) && child.isDir()) {
@@ -662,8 +949,11 @@ public class AcidUtils {
       } else {
         obsolete.add(child);
       }
-    } else if (fn.startsWith(DELTA_PREFIX) && child.isDir()) {
-      ParsedDelta delta = parseDelta(child);
+    } else if ((fn.startsWith(DELTA_PREFIX) || fn.startsWith(DELETE_DELTA_PREFIX))
+                    && child.isDir()) {
+      String deltaPrefix =
+              (fn.startsWith(DELTA_PREFIX)) ? DELTA_PREFIX : DELETE_DELTA_PREFIX;
+      ParsedDelta delta = parseDelta(child, deltaPrefix);
       if (txnList.isTxnRangeValid(delta.minTransaction,
           delta.maxTransaction) !=
           ValidTxnList.RangeResponse.NONE) {
@@ -790,5 +1080,85 @@ public class AcidUtils {
     }
 
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
+  }
+
+  /**
+   * Sets the acidOperationalProperties in the configuration object argument.
+   * @param conf Mutable configuration object
+   * @param properties An acidOperationalProperties object to initialize from.
+   */
+  public static void setAcidOperationalProperties(Configuration conf,
+          AcidOperationalProperties properties) {
+    if (properties != null) {
+      HiveConf.setIntVar(conf, ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES, properties.toInt());
+    }
+  }
+
+  /**
+   * Sets the acidOperationalProperties in the map object argument.
+   * @param parameters Mutable map object
+   * @param properties An acidOperationalProperties object to initialize from.
+   */
+  public static void setAcidOperationalProperties(
+          Map<String, String> parameters, AcidOperationalProperties properties) {
+    if (properties != null) {
+      parameters.put(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname, properties.toString());
+    }
+  }
+
+  /**
+   * Returns the acidOperationalProperties for a given table.
+   * @param table A table object
+   * @return the acidOperationalProperties object for the corresponding table.
+   */
+  public static AcidOperationalProperties getAcidOperationalProperties(Table table) {
+    String transactionalProperties = table.getProperty(
+            hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    if (transactionalProperties == null) {
+      // If the table does not define any transactional properties, we return a legacy type.
+      return AcidOperationalProperties.getLegacy();
+    }
+    return AcidOperationalProperties.parseString(transactionalProperties);
+  }
+
+  /**
+   * Returns the acidOperationalProperties for a given configuration.
+   * @param conf A configuration object
+   * @return the acidOperationalProperties object for the corresponding configuration.
+   */
+  public static AcidOperationalProperties getAcidOperationalProperties(Configuration conf) {
+    // If the conf does not define any transactional properties, the parseInt() should receive
+    // a value of zero, which will set AcidOperationalProperties to a legacy type and return that.
+    return AcidOperationalProperties.parseInt(
+            HiveConf.getIntVar(conf, ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES));
+  }
+
+  /**
+   * Returns the acidOperationalProperties for a given set of properties.
+   * @param props A properties object
+   * @return the acidOperationalProperties object for the corresponding properties.
+   */
+  public static AcidOperationalProperties getAcidOperationalProperties(Properties props) {
+    String resultStr = props.getProperty(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    if (resultStr == null) {
+      // If the properties does not define any transactional properties, we return a legacy type.
+      return AcidOperationalProperties.getLegacy();
+    }
+    return AcidOperationalProperties.parseString(resultStr);
+  }
+
+  /**
+   * Returns the acidOperationalProperties for a given map.
+   * @param parameters A parameters object
+   * @return the acidOperationalProperties object for the corresponding map.
+   */
+  public static AcidOperationalProperties getAcidOperationalProperties(
+          Map<String, String> parameters) {
+    String resultStr = parameters.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    if (resultStr == null) {
+      // If the parameters does not define any transactional properties, we return a legacy type.
+      return AcidOperationalProperties.getLegacy();
+    }
+    return AcidOperationalProperties.parseString(resultStr);
   }
 }

@@ -133,6 +133,9 @@ public class FosterStorageHandler extends DefaultStorageHandler {
 
         boolean isAcidTable = AcidUtils.isTablePropertyTransactional(tableProperties);
         AcidUtils.setTransactionalTableScan(jobProperties, isAcidTable);
+        AcidUtils.AcidOperationalProperties acidOperationalProperties =
+                AcidUtils.getAcidOperationalProperties(tableProperties);
+        AcidUtils.setAcidOperationalProperties(jobProperties, acidOperationalProperties);
       }
     } catch (IOException e) {
       throw new IllegalStateException("Failed to set output path", e);

@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Properties;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -25,10 +29,6 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.Reporter;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.Properties;
 
 /**
  * An extension for OutputFormats that want to implement ACID transactions.
@@ -44,6 +44,7 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     private FileSystem fs;
     private ObjectInspector inspector;
     private boolean writingBase = false;
+    private boolean writingDeleteDelta = false;
     private boolean isCompressed = false;
     private Properties properties;
     private Reporter reporter;
@@ -94,6 +95,16 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
      */
     public Options writingBase(boolean val) {
       this.writingBase = val;
+      return this;
+    }
+
+    /**
+     * Is this writing a delete delta directory?
+     * @param val is this a delete delta file?
+     * @return this
+     */
+    public Options writingDeleteDelta(boolean val) {
+      this.writingDeleteDelta = val;
       return this;
     }
 
@@ -223,7 +234,7 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
       this.finalDestination = p;
       return this;
     }
-    
+
     public Configuration getConfiguration() {
       return configuration;
     }
@@ -258,6 +269,10 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
 
     public boolean isWritingBase() {
       return writingBase;
+    }
+
+    public boolean isWritingDeleteDelta() {
+      return writingDeleteDelta;
     }
 
     public int getBucket() {
