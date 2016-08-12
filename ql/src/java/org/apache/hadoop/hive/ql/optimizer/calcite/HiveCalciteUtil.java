@@ -918,8 +918,11 @@ public class HiveCalciteUtil {
       // The following check is only a guard against failures.
       // TODO: Knowing which expr is constant in GBY's aggregation function
       // arguments could be better done using Metadata provider of Calcite.
-      if (exprs != null && index < exprs.size() && exprs.get(index) instanceof RexLiteral) {
-        ExprNodeDesc exprNodeDesc = exprConv.visitLiteral((RexLiteral) exprs.get(index));
+      //check the corresponding expression in exprs to see if it is literal
+      if (exprs != null && index < exprs.size() && exprs.get(inputRefs.get(index)) instanceof RexLiteral) {
+        //because rexInputRefs represent ref expr corresponding to value in inputRefs it is used to get
+        //  corresponding index
+        ExprNodeDesc exprNodeDesc = exprConv.visitLiteral((RexLiteral) exprs.get(inputRefs.get(index)));
         exprNodes.add(exprNodeDesc);
       } else {
         RexNode iRef = rexInputRefs.get(index);
