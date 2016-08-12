@@ -595,7 +595,13 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
 
     SearchControls searchControls = new SearchControls();
     List<String> list             = new ArrayList<String>();
-    String[] returnAttributes     = new String[0]; //empty set
+    String[] returnAttributes;
+    if (groupMembership_attr != null) {
+      // retrieve the attributes that are meant to desginate user DNs
+      returnAttributes = new String[] { groupMembership_attr };
+    } else {
+      returnAttributes = new String[0]; //empty set
+    }
 
     searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     searchControls.setReturningAttributes(returnAttributes);
@@ -605,6 +611,14 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
     SearchResult searchResult = null;
     while(results.hasMoreElements()) {
       searchResult = results.nextElement();
+      if (groupMembership_attr != null) {
+        Attribute userAttribute = searchResult.getAttributes().get(groupMembership_attr);
+        if (userAttribute != null) {
+          list.add((String)userAttribute.get());
+          continue;
+        }
+      }
+
       list.add(searchResult.getNameInNamespace());
       LOG.debug("LDAPAtn:executeLDAPQuery()::Return set size " + list.get(list.size() - 1));
     }
@@ -633,5 +647,4 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
     }
     return null;
   }
-
 }
