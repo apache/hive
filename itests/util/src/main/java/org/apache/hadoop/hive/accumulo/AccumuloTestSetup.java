@@ -40,14 +40,13 @@ import org.apache.hadoop.hive.conf.HiveConf;
 /**
  * Start and stop an AccumuloMiniCluster for testing purposes
  */
-public class AccumuloTestSetup extends TestSetup {
+public class AccumuloTestSetup  {
   public static final String PASSWORD = "password";
   public static final String TABLE_NAME = "accumuloHiveTable";
 
   protected MiniAccumuloCluster miniCluster;
 
-  public AccumuloTestSetup(Test test) {
-    super(test);
+  public AccumuloTestSetup() {
   }
 
   protected void setupWithHiveConf(HiveConf conf) throws Exception {
@@ -117,8 +116,7 @@ public class AccumuloTestSetup extends TestSetup {
     }
   }
 
-  @Override
-  protected void tearDown() throws Exception {
+  public void tearDown() throws Exception {
     if (null != miniCluster) {
       miniCluster.stop();
       miniCluster = null;

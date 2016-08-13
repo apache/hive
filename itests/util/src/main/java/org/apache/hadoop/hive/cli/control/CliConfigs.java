@@ -411,11 +411,9 @@ public class CliConfigs {
     }
   }
 
-  // XXX: pending merge of ACC ; and upgrade of executor
   public static class AccumuloCliConfig extends AbstractCliConfig {
     public AccumuloCliConfig() {
-      super(null);
-      // super(CoreAccumuloCliDriver.class);
+      super(CoreAccumuloCliDriver.class);
       try {
         setQueryDir("accumulo-handler/src/test/queries/positive");
 
