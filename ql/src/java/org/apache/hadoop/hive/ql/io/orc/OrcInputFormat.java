@@ -1069,7 +1069,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private final long blockSize;
     private final TreeMap<Long, BlockLocation> locations;
     private OrcTail orcTail;
-    private final List<OrcProto.Type> readerTypes;
+    private List<OrcProto.Type> readerTypes;
     private List<StripeInformation> stripes;
     private List<StripeStatistics> stripeStats;
     private List<OrcProto.Type> fileTypes;
@@ -1402,6 +1402,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         }
         TypeDescription readerSchema = OrcUtils.convertTypeFromProtobuf(readerTypes, 0);
         evolution = new SchemaEvolution(fileSchema, readerSchema, readerIncluded);
+        if (!isOriginal) {
+          // The SchemaEvolution class has added the ACID metadata columns.  Let's update our
+          // readerTypes so PPD code will work correctly.
+          readerTypes = OrcUtils.getOrcTypes(evolution.getReaderSchema());
+        }
       }
       writerVersion = orcTail.getWriterVersion();
       List<OrcProto.ColumnStatistics> fileColStats = orcTail.getFooter().getStatisticsList();
@@ -1418,21 +1423,24 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           }
         }
       }
-      projColsUncompressedSize = computeProjectionSize(fileTypes, fileColStats, fileIncluded,
-          isOriginal);
+      projColsUncompressedSize = computeProjectionSize(fileTypes, fileColStats, fileIncluded);
       if (!context.footerInSplits) {
         orcTail = null;
       }
     }
 
     private long computeProjectionSize(List<OrcProto.Type> fileTypes,
-        List<OrcProto.ColumnStatistics> stats, boolean[] fileIncluded, boolean isOriginal) {
-      final int rootIdx = getRootColumn(isOriginal);
+        List<OrcProto.ColumnStatistics> stats, boolean[] fileIncluded) {
       List<Integer> internalColIds = Lists.newArrayList();
-      if (fileIncluded != null) {
+      if (fileIncluded == null) {
+        // Add all.
+        for (int i = 0; i < fileTypes.size(); i++) {
+          internalColIds.add(i);
+        }
+      } else {
         for (int i = 0; i < fileIncluded.length; i++) {
           if (fileIncluded[i]) {
-            internalColIds.add(rootIdx + i);
+            internalColIds.add(i);
           }
         }
       }

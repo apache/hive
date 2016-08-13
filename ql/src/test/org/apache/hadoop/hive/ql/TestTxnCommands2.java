@@ -1223,6 +1223,102 @@ public class TestTxnCommands2 {
     runCleaner(hiveConf);
     runStatementOnDriver("select count(*) from " + Table.ACIDTBL);
   }
+
+  @Test
+  public void testACIDwithSchemaEvolutionAndCompaction() throws Exception {
+    testACIDwithSchemaEvolutionForVariousTblProperties("'transactional'='true'");
+  }
+
+  protected void testACIDwithSchemaEvolutionForVariousTblProperties(String tblProperties) throws Exception {
+    String tblName = "acidWithSchemaEvol";
+    int numBuckets = 1;
+    runStatementOnDriver("drop table if exists " + tblName);
+    runStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+      " CLUSTERED BY(a) INTO " + numBuckets +" BUCKETS" + //currently ACID requires table to be bucketed
+      " STORED AS ORC  TBLPROPERTIES ( " + tblProperties + " )");
+
+    // create some data
+    runStatementOnDriver("insert into " + tblName + " values(1, 'foo'),(2, 'bar'),(3, 'baz')");
+    runStatementOnDriver("update " + tblName + " set b = 'blah' where a = 3");
+
+    // apply schema evolution by adding some columns
+    runStatementOnDriver("alter table " + tblName + " add columns(c int, d string)");
+
+    // insert some data in new schema
+    runStatementOnDriver("insert into " + tblName + " values(4, 'acid', 100, 'orc'),"
+        + "(5, 'llap', 200, 'tez')");
+
+    // update old data with values for the new schema columns
+    runStatementOnDriver("update " + tblName + " set d = 'hive' where a <= 3");
+    runStatementOnDriver("update " + tblName + " set c = 999 where a <= 3");
+
+    // read the entire data back and see if did everything right
+    List<String> rs = runStatementOnDriver("select * from " + tblName + " order by a");
+    String[] expectedResult = { "1\tfoo\t999\thive", "2\tbar\t999\thive", "3\tblah\t999\thive", "4\tacid\t100\torc", "5\tllap\t200\ttez" };
+    Assert.assertEquals(Arrays.asList(expectedResult), rs);
+
+    // now compact and see if compaction still preserves the data correctness
+    runStatementOnDriver("alter table "+ tblName + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    runCleaner(hiveConf); // Cleaner would remove the obsolete files.
+
+    // Verify that there is now only 1 new directory: base_xxxxxxx and the rest have have been cleaned.
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] status;
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" + tblName.toString().toLowerCase()),
+        FileUtils.STAGING_DIR_PATH_FILTER);
+    Assert.assertEquals(1, status.length);
+    boolean sawNewBase = false;
+    for (int i = 0; i < status.length; i++) {
+      if (status[i].getPath().getName().matches("base_.*")) {
+        sawNewBase = true;
+        FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.STAGING_DIR_PATH_FILTER);
+        Assert.assertEquals(numBuckets, buckets.length);
+        Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_00000"));
+      }
+    }
+    Assert.assertTrue(sawNewBase);
+
+    rs = runStatementOnDriver("select * from " + tblName + " order by a");
+    Assert.assertEquals(Arrays.asList(expectedResult), rs);
+  }
+
+  @Test
+  public void testETLSplitStrategyForACID() throws Exception {
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY, "ETL");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER, true);
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " values(1,2)");
+    runStatementOnDriver("alter table " + Table.ACIDTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    List<String> rs = runStatementOnDriver("select * from " +  Table.ACIDTBL  + " where a = 1");
+    int[][] resultData = new int[][] {{1,2}};
+    Assert.assertEquals(stringifyValues(resultData), rs);
+  }
+
+  @Test
+  public void testAcidWithSchemaEvolution() throws Exception {
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY, "ETL");
+    String tblName = "acidTblWithSchemaEvol";
+    runStatementOnDriver("drop table if exists " + tblName);
+    runStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+      " CLUSTERED BY(a) INTO 2 BUCKETS" + //currently ACID requires table to be bucketed
+      " STORED AS ORC TBLPROPERTIES ('transactional'='true')");
+
+    runStatementOnDriver("INSERT INTO " + tblName + " VALUES (1, 'foo'), (2, 'bar')");
+
+    // Major compact to create a base that has ACID schema.
+    runStatementOnDriver("ALTER TABLE " + tblName + " COMPACT 'MAJOR'");
+    runWorker(hiveConf);
+
+    // Alter table for perform schema evolution.
+    runStatementOnDriver("ALTER TABLE " + tblName + " ADD COLUMNS(c int)");
+
+    // Validate there is an added NULL for column c.
+    List<String> rs = runStatementOnDriver("SELECT * FROM " + tblName + " ORDER BY a");
+    String[] expectedResult = { "1\tfoo\tNULL", "2\tbar\tNULL" };
+    Assert.assertEquals(Arrays.asList(expectedResult), rs);
+  }
+
   /**
    * takes raw data and turns it into a string as if from Driver.getResults()
    * sorts rows in dictionary order
