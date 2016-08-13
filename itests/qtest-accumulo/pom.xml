@@ -431,15 +431,13 @@
                 <echo message="${test.classpath}"/>
                 <taskdef resource="net/sf/antcontrib/antcontrib.properties"
                   classpathref="maven.plugin.classpath" />
-                <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
-                  classpath="${test.classpath}" />
 
                 <!-- Accumulo Positive -->
                 <if>
                   <equals arg1="${skip.accumulo.tests}" arg2="false" />
                     <then>
                       <mkdir dir="${project.build.directory}/qfile-results/accumulo-handler/positive/" />
-                      <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
+<!-- HIVE-14444       <qtestgen hiveRootDirectory="${basedir}/${hive.path.to.root}/"
                       outputDirectory="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/cli/"
                       templatePath="${basedir}/${hive.path.to.root}/accumulo-handler/src/test/templates/" template="TestAccumuloCliDriver.vm"
                       queryDirectory="${basedir}/${hive.path.to.root}/accumulo-handler/src/test/queries/positive/"
@@ -451,6 +449,7 @@
                       logDirectory="${project.build.directory}/qfile-results/accumulo-handler/positive/"
                       initScript="q_test_init.sql"
                       cleanupScript="q_test_cleanup.sql"/>
+-->
                     </then>
                 </if>
               </target>

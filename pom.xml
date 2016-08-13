@@ -1044,6 +1044,11 @@
             <java.security.krb5.conf>${test.tmp.dir}/conf/krb5.conf</java.security.krb5.conf>
             <!-- Required by spark to work around SPARK-14958 -->
             <antlr.version>${antlr.version}</antlr.version>
+            <qfile>${qfile}</qfile>
+            <initScript>${initScript}</initScript>
+            <clustermode>${clustermode}</clustermode>
+            <qfile_regex>${qfile_regex}</qfile_regex>
+            <run_disabled>${run_disabled}</run_disabled>
           </systemPropertyVariables>
         </configuration>
       </plugin>

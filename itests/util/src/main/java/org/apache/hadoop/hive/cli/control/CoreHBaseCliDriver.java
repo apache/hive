@@ -15,34 +15,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.cli;
+package org.apache.hadoop.hive.cli.control;
 
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
-import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
-import org.apache.hadoop.hive.hbase.HBaseTestSetup;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Before;
-import org.junit.Test;
-
+import static org.apache.hadoop.hive.cli.control.AbstractCliConfig.HIVE_ROOT;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class $className {
+import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
+import org.apache.hadoop.hive.hbase.HBaseTestSetup;
+import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 
-  private static final String HIVE_ROOT = HBaseQTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
-  private static HBaseQTestUtil qt;
-  private static HBaseTestSetup setup = new HBaseTestSetup();
+public class CoreHBaseCliDriver extends CliAdapter {
 
+  private HBaseQTestUtil qt;
+  private HBaseTestSetup setup = new HBaseTestSetup();
+
+  public CoreHBaseCliDriver(AbstractCliConfig testCliConfig) {
+    super(testCliConfig);
+  }
+
+  @Override
   @BeforeClass
-  public static void systemSetUp() {
-        MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
-        String initScript = "$initScript";
-        String cleanupScript = "$cleanupScript";
+  public void beforeClass() {
+        MiniClusterType miniMR = cliConfig.getClusterType();
+        String initScript = cliConfig.getInitScript();
+        String cleanupScript =cliConfig.getCleanupScript();
 
         try {
-          qt = new HBaseQTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR,
+          qt = new HBaseQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
           setup, initScript, cleanupScript);
           qt.cleanUp(null);
           qt.createSources(null);
@@ -56,6 +60,7 @@ public class $className {
 
   }
 
+  @Override
   @Before
   public void setUp() {
     try {
@@ -67,6 +72,7 @@ public class $className {
       fail("Unexpected exception in setup");
     }
   }
+  @Override
   @After
   public void tearDown() {
     try {
@@ -79,10 +85,13 @@ public class $className {
     }
   }
 
+  @Override
   @AfterClass
-  public static void shutdown() throws Exception {
+  public void shutdown() throws Exception {
     try {
+      // FIXME: there were 2 afterclass methods...i guess this is the right order...maybe not
       qt.shutdown();
+      setup.tearDown();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -91,24 +100,8 @@ public class $className {
     }
   }
 
-  @AfterClass
-  public static void closeHBaseConnections() throws Exception {
-    setup.tearDown();
-  }
-
-#foreach ($qf in $qfiles)
-  #set ($fname = $qf.getName())
-  #set ($eidx = $fname.indexOf('.'))
-  #set ($tname = $fname.substring(0, $eidx))
-  #set ($fpath = $qfilesMap.get($fname))
-  @Test
-  public void testCliDriver_$tname() throws Exception {
-    runTest("$tname", "$fname", (HIVE_ROOT + "$fpath"));
-  }
-
-#end
-
-  private void runTest(String tname, String fname, String fpath) throws Exception {
+  @Override
+  public void runTest(String tname, String fname, String fpath) throws Exception {
     long startTime = System.currentTimeMillis();
     try {
       System.err.println("Begin query: " + fname);

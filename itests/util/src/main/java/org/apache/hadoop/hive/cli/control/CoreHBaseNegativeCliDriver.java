@@ -16,34 +16,42 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.cli;
-
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
-import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
-import org.apache.hadoop.hive.hbase.HBaseTestSetup;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+package org.apache.hadoop.hive.cli.control;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class $className {
+import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
+import org.apache.hadoop.hive.hbase.HBaseTestSetup;
+import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
 
-  private static final String HIVE_ROOT = HBaseQTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
+public class CoreHBaseNegativeCliDriver extends CliAdapter {
+
   private HBaseQTestUtil qt;
   private static HBaseTestSetup setup = new HBaseTestSetup();
 
+  public CoreHBaseNegativeCliDriver(AbstractCliConfig testCliConfig) {
+    super(testCliConfig);
+  }
+
+  @Override
+  public void beforeClass() throws Exception {
+  }
+
+  // hmm..this looks a bit wierd...setup boots qtestutil...this part used to be in beforeclass
+  @Override
   @Before
   public void setUp() {
 
-    MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
-    String initScript = "$initScript";
-    String cleanupScript = "$cleanupScript";
+    MiniClusterType miniMR = cliConfig.getClusterType();
+    String initScript = cliConfig.getInitScript();
+    String cleanupScript = cliConfig.getCleanupScript();
 
     try {
-      qt = new HBaseQTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR,
+      qt = new HBaseQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
       setup, initScript, cleanupScript);
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
@@ -53,6 +61,7 @@ public class $className {
     }
   }
 
+  @Override
   @After
   public void tearDown() {
     try {
@@ -65,24 +74,15 @@ public class $className {
     }
   }
 
+  @Override
   @AfterClass
-  public static void closeHBaseConnections() throws Exception {
+  public void shutdown() throws Exception {
+    // closeHBaseConnections
     setup.tearDown();
   }
 
-#foreach ($qf in $qfiles)
-  #set ($fname = $qf.getName())
-  #set ($eidx = $fname.indexOf('.'))
-  #set ($tname = $fname.substring(0, $eidx))
-  #set ($fpath = $qfilesMap.get($fname))
-  @Test
-  public void testCliDriver_$tname() throws Exception {
-    runTest("$tname", "$fname", (HIVE_ROOT + "$fpath"));
-  }
-
-#end
-
-  private void runTest(String tname, String fname, String fpath) throws Exception {
+  @Override
+  public void runTest(String tname, String fname, String fpath) throws Exception {
     long startTime = System.currentTimeMillis();
     try {
       System.err.println("Begin query: " + fname);
@@ -115,5 +115,7 @@ public class $className {
     System.err.println("Done query: " + fname + " elapsedTime=" + elapsedTime/1000 + "s");
     assertTrue("Test passed", true);
   }
+
+
 }
 
