@@ -1298,6 +1298,41 @@ public class TestTxnCommands2 {
     Assert.assertEquals(Arrays.asList(expectedResult), rs);
   }
 
+  @Test
+  public void testETLSplitStrategyForACID() throws Exception {
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY, "ETL");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER, true);
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " values(1,2)");
+    runStatementOnDriver("alter table " + Table.ACIDTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    List<String> rs = runStatementOnDriver("select * from " +  Table.ACIDTBL  + " where a = 1");
+    int[][] resultData = new int[][] {{1,2}};
+    Assert.assertEquals(stringifyValues(resultData), rs);
+  }
+
+  @Test
+  public void testAcidWithSchemaEvolution() throws Exception {
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY, "ETL");
+    String tblName = "acidTblWithSchemaEvol";
+    runStatementOnDriver("drop table if exists " + tblName);
+    runStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+      " CLUSTERED BY(a) INTO 2 BUCKETS" + //currently ACID requires table to be bucketed
+      " STORED AS ORC TBLPROPERTIES ('transactional'='true')");
+
+    runStatementOnDriver("INSERT INTO " + tblName + " VALUES (1, 'foo'), (2, 'bar')");
+
+    // Major compact to create a base that has ACID schema.
+    runStatementOnDriver("ALTER TABLE " + tblName + " COMPACT 'MAJOR'");
+    runWorker(hiveConf);
+
+    // Alter table for perform schema evolution.
+    runStatementOnDriver("ALTER TABLE " + tblName + " ADD COLUMNS(c int)");
+
+    // Validate there is an added NULL for column c.
+    List<String> rs = runStatementOnDriver("SELECT * FROM " + tblName + " ORDER BY a");
+    String[] expectedResult = { "1\tfoo\tNULL", "2\tbar\tNULL" };
+    Assert.assertEquals(Arrays.asList(expectedResult), rs);
+  }
 
   /**
    * takes raw data and turns it into a string as if from Driver.getResults()
