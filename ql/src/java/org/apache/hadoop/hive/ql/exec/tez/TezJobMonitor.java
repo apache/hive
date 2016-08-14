@@ -635,17 +635,6 @@ public class TezJobMonitor {
     }
   }
 
-
-  private String humanReadableByteCount(long bytes) {
-    int unit = 1000; // use binary units instead?
-    if (bytes < unit) {
-      return bytes + "B";
-    }
-    int exp = (int) (Math.log(bytes) / Math.log(unit));
-    String suffix = "KMGTPE".charAt(exp-1) + "";
-    return String.format("%.2f%sB", bytes / Math.pow(unit, exp), suffix);
-  }
-
   private void printLlapIOSummary(Map<String, Progress> progressMap, LogHelper console,
       DAGClient dagClient) {
     SortedSet<String> keys = new TreeSet<>(progressMap.keySet());
@@ -697,10 +686,10 @@ public class TezJobMonitor {
             selectedRowgroups,
             metadataCacheHit,
             metadataCacheMiss,
-            humanReadableByteCount(cacheHitBytes),
-            humanReadableByteCount(cacheMissBytes),
-            humanReadableByteCount(allocatedBytes),
-            humanReadableByteCount(allocatedUsedBytes),
+            Utilities.humanReadableByteCount(cacheHitBytes),
+            Utilities.humanReadableByteCount(cacheMissBytes),
+            Utilities.humanReadableByteCount(allocatedBytes),
+            Utilities.humanReadableByteCount(allocatedUsedBytes),
             secondsFormat.format(totalIoTime / 1000_000_000.0) + "s");
         console.printInfo(queryFragmentStats);
       }
@@ -750,10 +739,10 @@ public class TezJobMonitor {
 
           String fsCountersSummary = String.format(FS_COUNTERS_HEADER_FORMAT,
               vertexName,
-              humanReadableByteCount(bytesRead),
+              Utilities.humanReadableByteCount(bytesRead),
               readOps,
               largeReadOps,
-              humanReadableByteCount(bytesWritten),
+              Utilities.humanReadableByteCount(bytesWritten),
               writeOps);
           console.printInfo(fsCountersSummary);
         }
