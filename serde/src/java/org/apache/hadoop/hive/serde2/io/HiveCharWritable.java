@@ -73,7 +73,8 @@ public class HiveCharWritable extends HiveBaseCharWritable
   }
 
   public void enforceMaxLength(int maxLength) {
-    set(getHiveChar(), maxLength);
+    if (getCharacterLength()!=maxLength)
+      set(getHiveChar(), maxLength);
   }
 
   public Text getStrippedValue() {
