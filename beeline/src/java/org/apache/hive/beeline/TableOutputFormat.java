@@ -59,7 +59,9 @@ class TableOutputFormat implements OutputFormat {
           for (int k = 0; k < row.sizes[j]; k++) {
             sb.append('-');
           }
-          sb.append("-+-");
+          if (j < row.sizes.length - 1) {
+              sb.append("-+-");
+          }
         }
 
         headerCols = cbuf;
