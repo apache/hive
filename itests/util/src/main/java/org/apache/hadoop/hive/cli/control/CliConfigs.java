@@ -116,6 +116,8 @@ public class CliConfigs {
 
         includesFrom(testConfigProps, "minitez.query.files");
         includesFrom(testConfigProps, "minitez.query.files.shared");
+        excludesFrom(testConfigProps, "minillap.query.files");
+        excludesFrom(testConfigProps, "minillap.shared.query.files");
 
         setResultsDir("ql/src/test/results/clientpositive/tez");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
