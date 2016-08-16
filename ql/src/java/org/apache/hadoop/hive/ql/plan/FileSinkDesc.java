@@ -112,6 +112,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.partitionCols = partitionCols;
     this.dpCtx = dpCtx;
     this.dpSortState = DPSortState.NONE;
+    this.destPath = destPath;
   }
 
   public FileSinkDesc(final Path dirName, final TableDesc tableInfo,
