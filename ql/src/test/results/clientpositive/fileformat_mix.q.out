@@ -44,14 +44,10 @@ POSTHOOK: Output: default@fileformat_mix_test
 PREHOOK: query: select count(1) from fileformat_mix_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fileformat_mix_test
-PREHOOK: Input: default@fileformat_mix_test@ds=1
-PREHOOK: Input: default@fileformat_mix_test@ds=2
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from fileformat_mix_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fileformat_mix_test
-POSTHOOK: Input: default@fileformat_mix_test@ds=1
-POSTHOOK: Input: default@fileformat_mix_test@ds=2
 #### A masked pattern was here ####
 500
 PREHOOK: query: select src from fileformat_mix_test

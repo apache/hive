@@ -132,12 +132,10 @@ POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
 PREHOOK: query: select count(1) from hive_test_dst
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive_test_dst
-PREHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from hive_test_dst
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hive_test_dst
-POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
 #### A masked pattern was here ####
 6
 PREHOOK: query: insert overwrite table hive_test_dst partition ( pCol1='test_part', pcol2='test_Part') select col1 from hive_test_src
@@ -160,12 +158,10 @@ POSTHOOK: Input: default@hive_test_dst
 PREHOOK: query: select count(1) from hive_test_dst
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive_test_dst
-PREHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from hive_test_dst
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hive_test_dst
-POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
 #### A masked pattern was here ####
 6
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part'

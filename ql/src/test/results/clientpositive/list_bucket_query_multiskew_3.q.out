@@ -319,127 +319,22 @@ POSTHOOK: query: explain extended
 select count(*) from fact_daily where ds = '1' and  hr='1'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: fact_daily
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            GatherStats: false
-            Select Operator
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Group By Operator
-                aggregations: count()
-                mode: hash
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  null sort order: 
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  tag: -1
-                  value expressions: _col0 (type: bigint)
-                  auto parallelism: false
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
-#### A masked pattern was here ####
-          Partition
-            base file name: hr=1
-            input format: org.apache.hadoop.mapred.TextInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            partition values:
-              ds 1
-              hr 1
-            properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
-              bucket_count -1
-              columns key,value
-              columns.comments 
-              columns.types string:string
-#### A masked pattern was here ####
-              name default.fact_daily
-              numFiles 1
-              numRows 500
-              partition_columns ds/hr
-              partition_columns.types string:string
-              rawDataSize 5312
-              serialization.ddl struct fact_daily { string key, string value}
-              serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 5812
-#### A masked pattern was here ####
-            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              properties:
-                bucket_count -1
-                columns key,value
-                columns.comments 
-                columns.types string:string
-#### A masked pattern was here ####
-                name default.fact_daily
-                partition_columns ds/hr
-                partition_columns.types string:string
-                serialization.ddl struct fact_daily { string key, string value}
-                serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.fact_daily
-            name: default.fact_daily
-      Truncated Path -> Alias:
-        /fact_daily/ds=1/hr=1 [fact_daily]
-      Needs Tagging: false
-      Reduce Operator Tree:
-        Group By Operator
-          aggregations: count(VALUE._col0)
-          mode: mergepartial
-          outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-#### A masked pattern was here ####
-            NumFilesPerFileSink: 1
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                properties:
-                  columns _col0
-                  columns.types bigint
-                  escape.delim \
-                  hive.serialization.extend.additional.nesting.levels true
-                  serialization.escape.crlf true
-                  serialization.format 1
-                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            TotalFiles: 1
-            GatherStats: false
-            MultiFileSpray: false
-
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 1
       Processor Tree:
         ListSink
 
 PREHOOK: query: select count(*) from fact_daily where ds = '1' and  hr='1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fact_daily
-PREHOOK: Input: default@fact_daily@ds=1/hr=1
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from fact_daily where ds = '1' and  hr='1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
-POSTHOOK: Input: default@fact_daily@ds=1/hr=1
 #### A masked pattern was here ####
 500
 PREHOOK: query: -- query skewed partition

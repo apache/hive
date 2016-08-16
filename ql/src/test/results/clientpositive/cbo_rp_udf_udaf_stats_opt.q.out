@@ -54,12 +54,10 @@ POSTHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: query: select f,a,e,b from (select count(*) as a, count(c_int) as b, sum(c_int) as c, avg(c_int) as d, max(c_int) as e, min(c_int) as f from cbo_t1) cbo_t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
-PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: select f,a,e,b from (select count(*) as a, count(c_int) as b, sum(c_int) as c, avg(c_int) as d, max(c_int) as e, min(c_int) as f from cbo_t1) cbo_t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
-POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 1	20	1	18
 PREHOOK: query: select f,a,e,b from (select count(*) as a, count(distinct c_int) as b, sum(distinct c_int) as c, avg(distinct c_int) as d, max(distinct c_int) as e, min(distinct c_int) as f from cbo_t1) cbo_t1

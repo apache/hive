@@ -95,56 +95,44 @@ PREHOOK: query: -- 15
 select count(*) from partition_varchar_1 where dt = '2000-01-01'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_varchar_1
-PREHOOK: Input: default@partition_varchar_1@dt=2000-01-01/region=1
-PREHOOK: Input: default@partition_varchar_1@dt=2000-01-01/region=2
 #### A masked pattern was here ####
 POSTHOOK: query: -- 15
 select count(*) from partition_varchar_1 where dt = '2000-01-01'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_varchar_1
-POSTHOOK: Input: default@partition_varchar_1@dt=2000-01-01/region=1
-POSTHOOK: Input: default@partition_varchar_1@dt=2000-01-01/region=2
 #### A masked pattern was here ####
 15
 PREHOOK: query: -- 5
 select count(*) from partition_varchar_1 where dt = '2000-01-01' and region = 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_varchar_1
-PREHOOK: Input: default@partition_varchar_1@dt=2000-01-01/region=2
 #### A masked pattern was here ####
 POSTHOOK: query: -- 5
 select count(*) from partition_varchar_1 where dt = '2000-01-01' and region = 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_varchar_1
-POSTHOOK: Input: default@partition_varchar_1@dt=2000-01-01/region=2
 #### A masked pattern was here ####
 5
 PREHOOK: query: -- 11
 select count(*) from partition_varchar_1 where dt = '2013-08-08' and region = 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_varchar_1
-PREHOOK: Input: default@partition_varchar_1@dt=2013-08-08/region=10
 #### A masked pattern was here ####
 POSTHOOK: query: -- 11
 select count(*) from partition_varchar_1 where dt = '2013-08-08' and region = 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_varchar_1
-POSTHOOK: Input: default@partition_varchar_1@dt=2013-08-08/region=10
 #### A masked pattern was here ####
 11
 PREHOOK: query: -- 30
 select count(*) from partition_varchar_1 where region = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_varchar_1
-PREHOOK: Input: default@partition_varchar_1@dt=2000-01-01/region=1
-PREHOOK: Input: default@partition_varchar_1@dt=2013-08-08/region=1
 #### A masked pattern was here ####
 POSTHOOK: query: -- 30
 select count(*) from partition_varchar_1 where region = 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_varchar_1
-POSTHOOK: Input: default@partition_varchar_1@dt=2000-01-01/region=1
-POSTHOOK: Input: default@partition_varchar_1@dt=2013-08-08/region=1
 #### A masked pattern was here ####
 30
 PREHOOK: query: -- 0
@@ -175,7 +163,6 @@ PREHOOK: query: -- Try other comparison operations
 select count(*) from partition_varchar_1 where dt > '2000-01-01' and region = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_varchar_1
-PREHOOK: Input: default@partition_varchar_1@dt=2013-08-08/region=1
 #### A masked pattern was here ####
 POSTHOOK: query: -- Try other comparison operations
 
@@ -183,59 +170,50 @@ POSTHOOK: query: -- Try other comparison operations
 select count(*) from partition_varchar_1 where dt > '2000-01-01' and region = 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_varchar_1
-POSTHOOK: Input: default@partition_varchar_1@dt=2013-08-08/region=1
 #### A masked pattern was here ####
 20
 PREHOOK: query: -- 10
 select count(*) from partition_varchar_1 where dt < '2000-01-02' and region = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_varchar_1
-PREHOOK: Input: default@partition_varchar_1@dt=2000-01-01/region=1
 #### A masked pattern was here ####
 POSTHOOK: query: -- 10
 select count(*) from partition_varchar_1 where dt < '2000-01-02' and region = 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_varchar_1
-POSTHOOK: Input: default@partition_varchar_1@dt=2000-01-01/region=1
 #### A masked pattern was here ####
 10
 PREHOOK: query: -- 20
 select count(*) from partition_varchar_1 where dt >= '2000-01-02' and region = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_varchar_1
-PREHOOK: Input: default@partition_varchar_1@dt=2013-08-08/region=1
 #### A masked pattern was here ####
 POSTHOOK: query: -- 20
 select count(*) from partition_varchar_1 where dt >= '2000-01-02' and region = 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_varchar_1
-POSTHOOK: Input: default@partition_varchar_1@dt=2013-08-08/region=1
 #### A masked pattern was here ####
 20
 PREHOOK: query: -- 10
 select count(*) from partition_varchar_1 where dt <= '2000-01-01' and region = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_varchar_1
-PREHOOK: Input: default@partition_varchar_1@dt=2000-01-01/region=1
 #### A masked pattern was here ####
 POSTHOOK: query: -- 10
 select count(*) from partition_varchar_1 where dt <= '2000-01-01' and region = 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_varchar_1
-POSTHOOK: Input: default@partition_varchar_1@dt=2000-01-01/region=1
 #### A masked pattern was here ####
 10
 PREHOOK: query: -- 20
 select count(*) from partition_varchar_1 where dt <> '2000-01-01' and region = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_varchar_1
-PREHOOK: Input: default@partition_varchar_1@dt=2013-08-08/region=1
 #### A masked pattern was here ####
 POSTHOOK: query: -- 20
 select count(*) from partition_varchar_1 where dt <> '2000-01-01' and region = 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_varchar_1
-POSTHOOK: Input: default@partition_varchar_1@dt=2013-08-08/region=1
 #### A masked pattern was here ####
 20
 PREHOOK: query: drop table partition_varchar_1

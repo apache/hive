@@ -1,3 +1,4 @@
+set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
 set hive.exec.max.dynamic.partitions.pernode=200;

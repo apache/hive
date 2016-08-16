@@ -1,3 +1,5 @@
+set hive.compute.query.using.stats=false;
+set hive.compute.query.using.stats=false;
 set hive.cli.print.header=true;
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;

@@ -1,3 +1,4 @@
+set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
 set mapred.max.split.size = 32000000;
 

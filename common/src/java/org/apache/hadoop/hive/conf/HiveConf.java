@@ -1912,7 +1912,7 @@ public class HiveConf extends Configuration {
         "final aggregations in single reduce task. If this is set true, Hive delegates final aggregation\n" +
         "stage to fetch task, possibly decreasing the query time."),
 
-    HIVEOPTIMIZEMETADATAQUERIES("hive.compute.query.using.stats", false,
+    HIVEOPTIMIZEMETADATAQUERIES("hive.compute.query.using.stats", true,
         "When set to true Hive will answer a few queries like count(1) purely using stats\n" +
         "stored in metastore. For basic stats collection turn on the config hive.stats.autogather to true.\n" +
         "For more advanced stats collection need to run analyze table queries."),

@@ -42,7 +42,7 @@ POSTHOOK: query: -- select from a partitioned table which involves a map-reduce 
 -- and some partitions are being selected
 EXPLAIN DEPENDENCY SELECT count(*) FROM srcpart where ds is not null
 POSTHOOK: type: QUERY
-{"input_tables":[{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE"}],"input_partitions":[{"partitionName":"default@srcpart@ds=2008-04-08/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-08/hr=12"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=12"}]}
+{"input_tables":[{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE"}],"input_partitions":[]}
 PREHOOK: query: -- select from a partitioned table which involves a map-reduce job
 -- and none of the partitions are being selected
 EXPLAIN DEPENDENCY SELECT count(*) FROM srcpart where ds = '1'

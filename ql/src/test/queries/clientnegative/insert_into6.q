@@ -1,3 +1,4 @@
+set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
 DROP TABLE IF EXISTS insert_into6_neg;
 

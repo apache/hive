@@ -10,6 +10,7 @@ set hive.stats.dbclass=custom;
 set hive.stats.default.publisher=org.apache.hadoop.hive.ql.stats.DummyStatsPublisher;
 set hive.stats.default.aggregator=org.apache.hadoop.hive.ql.stats.DummyStatsAggregator;
 set hive.stats.reliable=false;
+set hive.compute.query.using.stats=false;
 
 set hive.test.dummystats.publisher=connect;
 

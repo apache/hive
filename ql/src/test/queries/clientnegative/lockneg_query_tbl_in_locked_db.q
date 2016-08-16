@@ -1,3 +1,4 @@
+set hive.compute.query.using.stats=false;
 create database lockneg1;
 use lockneg1;
 

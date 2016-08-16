@@ -400,40 +400,28 @@ POSTHOOK: Input: default@orcfile_merge1c@ds=1/part=1
 PREHOOK: query: select count(*) from orcfile_merge1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orcfile_merge1
-PREHOOK: Input: default@orcfile_merge1@ds=1/part=0
-PREHOOK: Input: default@orcfile_merge1@ds=1/part=1
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from orcfile_merge1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orcfile_merge1
-POSTHOOK: Input: default@orcfile_merge1@ds=1/part=0
-POSTHOOK: Input: default@orcfile_merge1@ds=1/part=1
 #### A masked pattern was here ####
 500
 PREHOOK: query: select count(*) from orcfile_merge1b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orcfile_merge1b
-PREHOOK: Input: default@orcfile_merge1b@ds=1/part=0
-PREHOOK: Input: default@orcfile_merge1b@ds=1/part=1
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from orcfile_merge1b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orcfile_merge1b
-POSTHOOK: Input: default@orcfile_merge1b@ds=1/part=0
-POSTHOOK: Input: default@orcfile_merge1b@ds=1/part=1
 #### A masked pattern was here ####
 500
 PREHOOK: query: select count(*) from orcfile_merge1c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orcfile_merge1c
-PREHOOK: Input: default@orcfile_merge1c@ds=1/part=0
-PREHOOK: Input: default@orcfile_merge1c@ds=1/part=1
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from orcfile_merge1c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orcfile_merge1c
-POSTHOOK: Input: default@orcfile_merge1c@ds=1/part=0
-POSTHOOK: Input: default@orcfile_merge1c@ds=1/part=1
 #### A masked pattern was here ####
 500
 PREHOOK: query: DROP TABLE orcfile_merge1
