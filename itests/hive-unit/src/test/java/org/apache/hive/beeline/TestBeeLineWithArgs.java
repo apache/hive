@@ -863,4 +863,12 @@ public class TestBeeLineWithArgs {
     testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList, true, false);
 
   }
+
+  @Test
+  public void testBeelineShellCommandWithoutConn() throws Throwable {
+    List<String> argList = new ArrayList<String>();
+    final String SCRIPT_TEXT = "!sh echo hello world";
+    final String EXPECTED_PATTERN = "hello world";
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList,true,false);
+  }
 }
