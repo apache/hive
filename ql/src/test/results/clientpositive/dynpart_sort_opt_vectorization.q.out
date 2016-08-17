@@ -1158,37 +1158,53 @@ Storage Desc Params:
 PREHOOK: query: select count(*) from over1k_part_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part_orc
+PREHOOK: Input: default@over1k_part_orc@ds=foo/t=27
+PREHOOK: Input: default@over1k_part_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from over1k_part_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part_orc
+POSTHOOK: Input: default@over1k_part_orc@ds=foo/t=27
+POSTHOOK: Input: default@over1k_part_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 38
 PREHOOK: query: select count(*) from over1k_part_limit_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part_limit_orc
+PREHOOK: Input: default@over1k_part_limit_orc@ds=foo/t=27
+PREHOOK: Input: default@over1k_part_limit_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from over1k_part_limit_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part_limit_orc
+POSTHOOK: Input: default@over1k_part_limit_orc@ds=foo/t=27
+POSTHOOK: Input: default@over1k_part_limit_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 20
 PREHOOK: query: select count(*) from over1k_part_buck_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part_buck_orc
+PREHOOK: Input: default@over1k_part_buck_orc@t=27
+PREHOOK: Input: default@over1k_part_buck_orc@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from over1k_part_buck_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part_buck_orc
+POSTHOOK: Input: default@over1k_part_buck_orc@t=27
+POSTHOOK: Input: default@over1k_part_buck_orc@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 38
 PREHOOK: query: select count(*) from over1k_part_buck_sort_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part_buck_sort_orc
+PREHOOK: Input: default@over1k_part_buck_sort_orc@t=27
+PREHOOK: Input: default@over1k_part_buck_sort_orc@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from over1k_part_buck_sort_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part_buck_sort_orc
+POSTHOOK: Input: default@over1k_part_buck_sort_orc@t=27
+POSTHOOK: Input: default@over1k_part_buck_sort_orc@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 38
 PREHOOK: query: -- tests for HIVE-6883
@@ -1689,10 +1705,14 @@ POSTHOOK: Input: default@over1k_part2_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: select count(*) from over1k_part2_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part2_orc
+PREHOOK: Input: default@over1k_part2_orc@ds=foo/t=27
+PREHOOK: Input: default@over1k_part2_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from over1k_part2_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part2_orc
+POSTHOOK: Input: default@over1k_part2_orc@ds=foo/t=27
+POSTHOOK: Input: default@over1k_part2_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 19
 PREHOOK: query: insert overwrite table over1k_part2_orc partition(ds="foo",t) select si,i,b,f,t from over1k_orc where t is null or t=27 order by i
@@ -1832,10 +1852,14 @@ POSTHOOK: Input: default@over1k_part2_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: select count(*) from over1k_part2_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part2_orc
+PREHOOK: Input: default@over1k_part2_orc@ds=foo/t=27
+PREHOOK: Input: default@over1k_part2_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from over1k_part2_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part2_orc
+POSTHOOK: Input: default@over1k_part2_orc@ds=foo/t=27
+POSTHOOK: Input: default@over1k_part2_orc@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 19
 PREHOOK: query: -- hadoop-1 does not honor number of reducers in local mode. There is always only 1 reducer irrespective of the number of buckets.
@@ -2140,22 +2164,58 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select count(*) from over1k_part_buck_sort2_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: over1k_part_buck_sort2_orc
+            Statistics: Num rows: 19 Data size: 493 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              Statistics: Num rows: 19 Data size: 493 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count()
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
   Stage: Stage-0
     Fetch Operator
-      limit: 1
+      limit: -1
       Processor Tree:
         ListSink
 
 PREHOOK: query: select count(*) from over1k_part_buck_sort2_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part_buck_sort2_orc
+PREHOOK: Input: default@over1k_part_buck_sort2_orc@t=27
+PREHOOK: Input: default@over1k_part_buck_sort2_orc@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from over1k_part_buck_sort2_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part_buck_sort2_orc
+POSTHOOK: Input: default@over1k_part_buck_sort2_orc@t=27
+POSTHOOK: Input: default@over1k_part_buck_sort2_orc@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 19
 PREHOOK: query: insert overwrite table over1k_part_buck_sort2_orc partition(t) select si,i,b,f,t from over1k_orc where t is null or t=27
@@ -2314,21 +2374,57 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select count(*) from over1k_part_buck_sort2_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: over1k_part_buck_sort2_orc
+            Statistics: Num rows: 19 Data size: 493 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              Statistics: Num rows: 19 Data size: 493 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count()
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
   Stage: Stage-0
     Fetch Operator
-      limit: 1
+      limit: -1
       Processor Tree:
         ListSink
 
 PREHOOK: query: select count(*) from over1k_part_buck_sort2_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part_buck_sort2_orc
+PREHOOK: Input: default@over1k_part_buck_sort2_orc@t=27
+PREHOOK: Input: default@over1k_part_buck_sort2_orc@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from over1k_part_buck_sort2_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part_buck_sort2_orc
+POSTHOOK: Input: default@over1k_part_buck_sort2_orc@t=27
+POSTHOOK: Input: default@over1k_part_buck_sort2_orc@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 19

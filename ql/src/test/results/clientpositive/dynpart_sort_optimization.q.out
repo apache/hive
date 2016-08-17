@@ -1107,37 +1107,53 @@ Storage Desc Params:
 PREHOOK: query: select count(*) from over1k_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part
+PREHOOK: Input: default@over1k_part@ds=foo/t=27
+PREHOOK: Input: default@over1k_part@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from over1k_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part
+POSTHOOK: Input: default@over1k_part@ds=foo/t=27
+POSTHOOK: Input: default@over1k_part@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 38
 PREHOOK: query: select count(*) from over1k_part_limit
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part_limit
+PREHOOK: Input: default@over1k_part_limit@ds=foo/t=27
+PREHOOK: Input: default@over1k_part_limit@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from over1k_part_limit
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part_limit
+POSTHOOK: Input: default@over1k_part_limit@ds=foo/t=27
+POSTHOOK: Input: default@over1k_part_limit@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 20
 PREHOOK: query: select count(*) from over1k_part_buck
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part_buck
+PREHOOK: Input: default@over1k_part_buck@t=27
+PREHOOK: Input: default@over1k_part_buck@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from over1k_part_buck
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part_buck
+POSTHOOK: Input: default@over1k_part_buck@t=27
+POSTHOOK: Input: default@over1k_part_buck@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 38
 PREHOOK: query: select count(*) from over1k_part_buck_sort
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part_buck_sort
+PREHOOK: Input: default@over1k_part_buck_sort@t=27
+PREHOOK: Input: default@over1k_part_buck_sort@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from over1k_part_buck_sort
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part_buck_sort
+POSTHOOK: Input: default@over1k_part_buck_sort@t=27
+POSTHOOK: Input: default@over1k_part_buck_sort@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 38
 PREHOOK: query: -- tests for HIVE-6883
@@ -1633,10 +1649,14 @@ POSTHOOK: Input: default@over1k_part2@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: select count(*) from over1k_part2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part2
+PREHOOK: Input: default@over1k_part2@ds=foo/t=27
+PREHOOK: Input: default@over1k_part2@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from over1k_part2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part2
+POSTHOOK: Input: default@over1k_part2@ds=foo/t=27
+POSTHOOK: Input: default@over1k_part2@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 19
 PREHOOK: query: insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 order by i
@@ -1776,10 +1796,14 @@ POSTHOOK: Input: default@over1k_part2@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: select count(*) from over1k_part2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part2
+PREHOOK: Input: default@over1k_part2@ds=foo/t=27
+PREHOOK: Input: default@over1k_part2@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from over1k_part2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part2
+POSTHOOK: Input: default@over1k_part2@ds=foo/t=27
+POSTHOOK: Input: default@over1k_part2@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 19
 PREHOOK: query: -- hadoop-1 does not honor number of reducers in local mode. There is always only 1 reducer irrespective of the number of buckets.
@@ -2059,10 +2083,14 @@ POSTHOOK: Input: default@over1k_part_buck_sort2@t=__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: select count(*) from over1k_part_buck_sort2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part_buck_sort2
+PREHOOK: Input: default@over1k_part_buck_sort2@t=27
+PREHOOK: Input: default@over1k_part_buck_sort2@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from over1k_part_buck_sort2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part_buck_sort2
+POSTHOOK: Input: default@over1k_part_buck_sort2@t=27
+POSTHOOK: Input: default@over1k_part_buck_sort2@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 19
 PREHOOK: query: insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k where t is null or t=27
@@ -2198,10 +2226,14 @@ POSTHOOK: Input: default@over1k_part_buck_sort2@t=__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: select count(*) from over1k_part_buck_sort2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part_buck_sort2
+PREHOOK: Input: default@over1k_part_buck_sort2@t=27
+PREHOOK: Input: default@over1k_part_buck_sort2@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from over1k_part_buck_sort2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part_buck_sort2
+POSTHOOK: Input: default@over1k_part_buck_sort2@t=27
+POSTHOOK: Input: default@over1k_part_buck_sort2@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 19
 PREHOOK: query: create table over1k_part3(
