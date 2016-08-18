@@ -8,8 +8,6 @@ SET hive.optimize.bucketmapjoin = true;
 SET hive.optimize.bucketmapjoin.sortedmerge = true;
 SET hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 
-SET hive.outerjoin.supports.filters = false;
-
 EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b on a.key = 40 AND b.key = 40;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b on a.key = 40 AND b.key = 40;
 

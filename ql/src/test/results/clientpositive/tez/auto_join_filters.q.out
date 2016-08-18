@@ -310,7 +310,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
 3078400
-Warning: Map Join MAPJOIN[19][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[16][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -319,8 +319,8 @@ POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a L
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-3078400
-Warning: Map Join MAPJOIN[19][bigTable=?] in task 'Map 2' is a cross product
+4937935
+Warning: Map Join MAPJOIN[16][bigTable=?] in task 'Map 2' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -329,8 +329,8 @@ POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a R
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-3078400
-Warning: Shuffle Join MERGEJOIN[20][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+3080335
+Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -339,7 +339,7 @@ POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a F
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-3078400
+4939870
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -384,7 +384,7 @@ POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a L
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-3078400
+4937935
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -393,7 +393,7 @@ POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a L
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-3078400
+4937935
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -402,7 +402,7 @@ POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a L
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-3078400
+4937935
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -411,7 +411,7 @@ POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a L
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-3078400
+4937935
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -420,7 +420,7 @@ POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a R
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-3078400
+3080335
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -429,7 +429,7 @@ POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a R
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-3078400
+3080335
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -438,7 +438,7 @@ POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a R
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-3078400
+3080335
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -447,7 +447,7 @@ POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a R
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-3078400
+3080335
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -456,7 +456,7 @@ POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a F
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-3078400
+4939870
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -465,7 +465,7 @@ POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a F
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-3078400
+4939870
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -474,7 +474,7 @@ POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a F
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-3078400
+4939870
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -483,7 +483,7 @@ POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a F
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-3078400
+4939870
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -501,7 +501,7 @@ POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1 a R
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-3078400
+3080335
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
@@ -528,7 +528,7 @@ POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1 a R
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-3078400
+3080335
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1

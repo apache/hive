@@ -53,7 +53,7 @@ public class SetProcessor implements CommandProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(SetProcessor.class);
 
   private static final String prefix = "set: ";
-  private static final Set<String> removedConfigs = Sets.newHashSet("hive.mapred.supports.subdirectories","hive.enforce.sorting","hive.enforce.bucketing");
+  private static final Set<String> removedConfigs = Sets.newHashSet("hive.mapred.supports.subdirectories","hive.enforce.sorting","hive.enforce.bucketing", "hive.outerjoin.supports.filters");
 
   public static boolean getBoolean(String value) {
     if (value.equals("on") || value.equals("true")) {

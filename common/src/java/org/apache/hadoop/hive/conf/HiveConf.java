@@ -1892,8 +1892,6 @@ public class HiveConf extends Configuration {
     HIVEOPTGBYUSINGINDEX("hive.optimize.index.groupby", false,
         "Whether to enable optimization of group-by queries using Aggregate indexes."),
 
-    HIVEOUTERJOINSUPPORTSFILTERS("hive.outerjoin.supports.filters", true, ""),
-
     HIVEFETCHTASKCONVERSION("hive.fetch.task.conversion", "more", new StringSet("none", "minimal", "more"),
         "Some select queries can be converted to single FETCH task minimizing latency.\n" +
         "Currently the query should be single sourced not having any subquery and should not have\n" +

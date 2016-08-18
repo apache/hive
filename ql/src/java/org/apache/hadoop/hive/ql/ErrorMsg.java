@@ -191,8 +191,6 @@ public enum ErrorMsg {
   ARCHIVE_ON_TABLE(10110, "ARCHIVE can only be run on partitions"),
   RESERVED_PART_VAL(10111, "Partition value contains a reserved substring"),
   OFFLINE_TABLE_OR_PARTITION(10113, "Query against an offline table or partition"),
-  OUTERJOIN_USES_FILTERS(10114, "The query results could be wrong. " +
-                         "Turn on hive.outerjoin.supports.filters"),
   NEED_PARTITION_SPECIFICATION(10115, "Table is partitioned and partition specification is needed"),
   INVALID_METADATA(10116, "The metadata file could not be parsed "),
   NEED_TABLE_SPECIFICATION(10117, "Table name could be determined; It should be specified "),
