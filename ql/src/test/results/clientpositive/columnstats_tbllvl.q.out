@@ -55,8 +55,8 @@ STAGE PLANS:
           TableScan
             alias: uservisits_web_text_none
             Select Operator
-              expressions: sourceip (type: string), avgtimeonsite (type: int), adrevenue (type: float)
-              outputColumnNames: sourceip, avgtimeonsite, adrevenue
+              expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
+              outputColumnNames: sourceip, adrevenue, avgtimeonsite
               Group By Operator
                 aggregations: compute_stats(sourceip, 16), compute_stats(avgtimeonsite, 16), compute_stats(adrevenue, 16)
                 mode: hash
@@ -114,8 +114,8 @@ STAGE PLANS:
             alias: uservisits_web_text_none
             GatherStats: false
             Select Operator
-              expressions: sourceip (type: string), avgtimeonsite (type: int), adrevenue (type: float)
-              outputColumnNames: sourceip, avgtimeonsite, adrevenue
+              expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
+              outputColumnNames: sourceip, adrevenue, avgtimeonsite
               Group By Operator
                 aggregations: compute_stats(sourceip, 16), compute_stats(avgtimeonsite, 16), compute_stats(adrevenue, 16)
                 mode: hash
@@ -456,8 +456,8 @@ STAGE PLANS:
           TableScan
             alias: uservisits_in_dummy_db
             Select Operator
-              expressions: sourceip (type: string), avgtimeonsite (type: int), adrevenue (type: float)
-              outputColumnNames: sourceip, avgtimeonsite, adrevenue
+              expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
+              outputColumnNames: sourceip, adrevenue, avgtimeonsite
               Group By Operator
                 aggregations: compute_stats(sourceip, 16), compute_stats(avgtimeonsite, 16), compute_stats(adrevenue, 16)
                 mode: hash
@@ -516,8 +516,8 @@ STAGE PLANS:
             alias: uservisits_in_dummy_db
             GatherStats: false
             Select Operator
-              expressions: sourceip (type: string), avgtimeonsite (type: int), adrevenue (type: float)
-              outputColumnNames: sourceip, avgtimeonsite, adrevenue
+              expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
+              outputColumnNames: sourceip, adrevenue, avgtimeonsite
               Group By Operator
                 aggregations: compute_stats(sourceip, 16), compute_stats(avgtimeonsite, 16), compute_stats(adrevenue, 16)
                 mode: hash

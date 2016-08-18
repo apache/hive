@@ -156,8 +156,8 @@ STAGE PLANS:
                 Union
                   Statistics: Num rows: 2 Data size: 34 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: _col2 (type: int), _col1 (type: string)
-                    outputColumnNames: _col2, _col1
+                    expressions: _col1 (type: string), _col2 (type: int)
+                    outputColumnNames: _col1, _col2
                     Statistics: Num rows: 2 Data size: 34 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: _col2 (type: int), _col1 (type: string)
@@ -182,8 +182,8 @@ STAGE PLANS:
                 Union
                   Statistics: Num rows: 2 Data size: 34 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: _col2 (type: int), _col1 (type: string)
-                    outputColumnNames: _col2, _col1
+                    expressions: _col1 (type: string), _col2 (type: int)
+                    outputColumnNames: _col1, _col2
                     Statistics: Num rows: 2 Data size: 34 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: _col2 (type: int), _col1 (type: string)

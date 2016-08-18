@@ -83,8 +83,8 @@ STAGE PLANS:
           TableScan
             alias: employee_part
             Select Operator
-              expressions: 4000.0 (type: double), country (type: string), employeename (type: string), employeeid (type: int)
-              outputColumnNames: employeesalary, country, employeename, employeeid
+              expressions: employeeid (type: int), employeename (type: string), 4000.0 (type: double), country (type: string)
+              outputColumnNames: employeeid, employeename, employeesalary, country
               Group By Operator
                 aggregations: compute_stats(employeename, 16), compute_stats(employeeid, 16)
                 keys: employeesalary (type: double), country (type: string)
@@ -154,8 +154,8 @@ STAGE PLANS:
           TableScan
             alias: employee_part
             Select Operator
-              expressions: 2000.0 (type: double), country (type: string), employeeid (type: int)
-              outputColumnNames: employeesalary, country, employeeid
+              expressions: employeeid (type: int), 2000.0 (type: double), country (type: string)
+              outputColumnNames: employeeid, employeesalary, country
               Group By Operator
                 aggregations: compute_stats(employeeid, 16)
                 keys: employeesalary (type: double), country (type: string)
@@ -236,8 +236,8 @@ STAGE PLANS:
           TableScan
             alias: employee_part
             Select Operator
-              expressions: employeesalary (type: double), country (type: string), employeeid (type: int)
-              outputColumnNames: employeesalary, country, employeeid
+              expressions: employeeid (type: int), employeesalary (type: double), country (type: string)
+              outputColumnNames: employeeid, employeesalary, country
               Group By Operator
                 aggregations: compute_stats(employeeid, 16)
                 keys: employeesalary (type: double), country (type: string)
@@ -317,8 +317,8 @@ STAGE PLANS:
           TableScan
             alias: employee_part
             Select Operator
-              expressions: employeesalary (type: double), country (type: string), employeeid (type: int), employeename (type: string)
-              outputColumnNames: employeesalary, country, employeeid, employeename
+              expressions: employeeid (type: int), employeename (type: string), employeesalary (type: double), country (type: string)
+              outputColumnNames: employeeid, employeename, employeesalary, country
               Group By Operator
                 aggregations: compute_stats(employeeid, 16), compute_stats(employeename, 16)
                 keys: employeesalary (type: double), country (type: string)

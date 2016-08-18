@@ -125,8 +125,8 @@ STAGE PLANS:
                   alias: vectortab2korc
                   Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: bo (type: boolean), b (type: bigint)
-                    outputColumnNames: bo, b
+                    expressions: b (type: bigint), bo (type: boolean)
+                    outputColumnNames: b, bo
                     Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: max(b)

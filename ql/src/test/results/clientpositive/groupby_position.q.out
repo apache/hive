@@ -246,22 +246,18 @@ STAGE PLANS:
             Filter Operator
               predicate: (key < 20) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: value (type: string), key (type: string)
-                outputColumnNames: value, key
+              Group By Operator
+                aggregations: count(DISTINCT substr(value, 5))
+                keys: value (type: string), key (type: string), substr(value, 5) (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(DISTINCT substr(value, 5))
-                  keys: value (type: string), key (type: string), substr(value, 5) (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(DISTINCT KEY._col1:0._col0)

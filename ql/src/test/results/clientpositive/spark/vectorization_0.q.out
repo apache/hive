@@ -991,8 +991,8 @@ STAGE PLANS:
                     predicate: (((cstring2 like '%b%') or ((79.553 <> cint) or (cbigint < cdouble))) or ((ctinyint >= csmallint) and ((cboolean2 = 1) and (3569.0 = ctinyint)))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: cbigint (type: bigint), cfloat (type: float), ctinyint (type: tinyint)
-                      outputColumnNames: cbigint, cfloat, ctinyint
+                      expressions: ctinyint (type: tinyint), cbigint (type: bigint), cfloat (type: float)
+                      outputColumnNames: ctinyint, cbigint, cfloat
                       Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: avg(cbigint), stddev_pop(cbigint), var_samp(cbigint), count(), sum(cfloat), min(ctinyint)
