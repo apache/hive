@@ -379,8 +379,8 @@ STAGE PLANS:
             predicate: ((_col1 = _col1) and ((_col2 - _col1) > 600.0)) (type: boolean)
             Statistics: Num rows: 2 Data size: 242 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col1 (type: double), _col0 (type: string)
-              outputColumnNames: _col1, _col0
+              expressions: _col0 (type: string), _col1 (type: double)
+              outputColumnNames: _col0, _col1
               Statistics: Num rows: 2 Data size: 242 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(), count(_col0)

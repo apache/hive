@@ -1278,8 +1278,8 @@ STAGE PLANS:
             alias: decimal_udf
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: value (type: int), key (type: decimal(20,10))
-              outputColumnNames: value, key
+              expressions: key (type: decimal(20,10)), value (type: int)
+              outputColumnNames: key, value
               Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(key), count(key), avg(key)
@@ -1849,8 +1849,8 @@ STAGE PLANS:
             alias: decimal_udf
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: value (type: int), key (type: decimal(20,10))
-              outputColumnNames: value, key
+              expressions: key (type: decimal(20,10)), value (type: int)
+              outputColumnNames: key, value
               Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: stddev(key), variance(key)
@@ -1926,8 +1926,8 @@ STAGE PLANS:
             alias: decimal_udf
             Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: value (type: int), key (type: decimal(20,10))
-              outputColumnNames: value, key
+              expressions: key (type: decimal(20,10)), value (type: int)
+              outputColumnNames: key, value
               Statistics: Num rows: 3 Data size: 359 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: stddev_samp(key), var_samp(key)

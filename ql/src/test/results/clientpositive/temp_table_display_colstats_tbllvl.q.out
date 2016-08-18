@@ -76,8 +76,8 @@ STAGE PLANS:
             alias: uservisits_web_text_none
             Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: sourceip (type: string), avgtimeonsite (type: int), adrevenue (type: float)
-              outputColumnNames: sourceip, avgtimeonsite, adrevenue
+              expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
+              outputColumnNames: sourceip, adrevenue, avgtimeonsite
               Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(sourceip, 16), compute_stats(avgtimeonsite, 16), compute_stats(adrevenue, 16)
@@ -128,8 +128,8 @@ STAGE PLANS:
             Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
-              expressions: sourceip (type: string), avgtimeonsite (type: int), adrevenue (type: float)
-              outputColumnNames: sourceip, avgtimeonsite, adrevenue
+              expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
+              outputColumnNames: sourceip, adrevenue, avgtimeonsite
               Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(sourceip, 16), compute_stats(avgtimeonsite, 16), compute_stats(adrevenue, 16)

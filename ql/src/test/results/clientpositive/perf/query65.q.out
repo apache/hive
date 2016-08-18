@@ -144,28 +144,26 @@ Stage-0
                                       PartitionCols:_col0
                                       Group By Operator [GBY_24] (rows=633595212 width=88)
                                         Output:["_col0","_col1","_col2"],aggregations:["sum(_col3)"],keys:_col2, _col1
-                                        Select Operator [SEL_23] (rows=633595212 width=88)
-                                          Output:["_col2","_col1","_col3"]
-                                          Merge Join Operator [MERGEJOIN_80] (rows=633595212 width=88)
-                                            Conds:RS_20._col0=RS_21._col0(Inner),Output:["_col1","_col2","_col3"]
-                                          <-Map 11 [SIMPLE_EDGE]
-                                            SHUFFLE [RS_21]
-                                              PartitionCols:_col0
-                                              Select Operator [SEL_19] (rows=8116 width=1119)
-                                                Output:["_col0"]
-                                                Filter Operator [FIL_76] (rows=8116 width=1119)
-                                                  predicate:(d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null)
-                                                  TableScan [TS_17] (rows=73049 width=1119)
-                                                    default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_month_seq"]
-                                          <-Map 8 [SIMPLE_EDGE]
-                                            SHUFFLE [RS_20]
-                                              PartitionCols:_col0
-                                              Select Operator [SEL_16] (rows=575995635 width=88)
-                                                Output:["_col0","_col1","_col2","_col3"]
-                                                Filter Operator [FIL_75] (rows=575995635 width=88)
-                                                  predicate:(ss_sold_date_sk is not null and ss_store_sk is not null)
-                                                  TableScan [TS_14] (rows=575995635 width=88)
-                                                    default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_item_sk","ss_store_sk","ss_sales_price"]
+                                        Merge Join Operator [MERGEJOIN_80] (rows=633595212 width=88)
+                                          Conds:RS_20._col0=RS_21._col0(Inner),Output:["_col1","_col2","_col3"]
+                                        <-Map 11 [SIMPLE_EDGE]
+                                          SHUFFLE [RS_21]
+                                            PartitionCols:_col0
+                                            Select Operator [SEL_19] (rows=8116 width=1119)
+                                              Output:["_col0"]
+                                              Filter Operator [FIL_76] (rows=8116 width=1119)
+                                                predicate:(d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null)
+                                                TableScan [TS_17] (rows=73049 width=1119)
+                                                  default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_month_seq"]
+                                        <-Map 8 [SIMPLE_EDGE]
+                                          SHUFFLE [RS_20]
+                                            PartitionCols:_col0
+                                            Select Operator [SEL_16] (rows=575995635 width=88)
+                                              Output:["_col0","_col1","_col2","_col3"]
+                                              Filter Operator [FIL_75] (rows=575995635 width=88)
+                                                predicate:(ss_sold_date_sk is not null and ss_store_sk is not null)
+                                                TableScan [TS_14] (rows=575995635 width=88)
+                                                  default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_item_sk","ss_store_sk","ss_sales_price"]
                         <-Reducer 3 [SIMPLE_EDGE]
                           SHUFFLE [RS_39]
                             PartitionCols:_col0
@@ -176,26 +174,24 @@ Stage-0
                                 PartitionCols:_col0, _col1
                                 Group By Operator [GBY_10] (rows=633595212 width=88)
                                   Output:["_col0","_col1","_col2"],aggregations:["sum(_col3)"],keys:_col2, _col1
-                                  Select Operator [SEL_9] (rows=633595212 width=88)
-                                    Output:["_col2","_col1","_col3"]
-                                    Merge Join Operator [MERGEJOIN_79] (rows=633595212 width=88)
-                                      Conds:RS_6._col0=RS_7._col0(Inner),Output:["_col1","_col2","_col3"]
-                                    <-Map 1 [SIMPLE_EDGE]
-                                      SHUFFLE [RS_6]
-                                        PartitionCols:_col0
-                                        Select Operator [SEL_2] (rows=575995635 width=88)
-                                          Output:["_col0","_col1","_col2","_col3"]
-                                          Filter Operator [FIL_73] (rows=575995635 width=88)
-                                            predicate:(ss_sold_date_sk is not null and ss_store_sk is not null and ss_item_sk is not null)
-                                            TableScan [TS_0] (rows=575995635 width=88)
-                                              default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_item_sk","ss_store_sk","ss_sales_price"]
-                                    <-Map 7 [SIMPLE_EDGE]
-                                      SHUFFLE [RS_7]
-                                        PartitionCols:_col0
-                                        Select Operator [SEL_5] (rows=8116 width=1119)
-                                          Output:["_col0"]
-                                          Filter Operator [FIL_74] (rows=8116 width=1119)
-                                            predicate:(d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null)
-                                            TableScan [TS_3] (rows=73049 width=1119)
-                                              default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_month_seq"]
+                                  Merge Join Operator [MERGEJOIN_79] (rows=633595212 width=88)
+                                    Conds:RS_6._col0=RS_7._col0(Inner),Output:["_col1","_col2","_col3"]
+                                  <-Map 1 [SIMPLE_EDGE]
+                                    SHUFFLE [RS_6]
+                                      PartitionCols:_col0
+                                      Select Operator [SEL_2] (rows=575995635 width=88)
+                                        Output:["_col0","_col1","_col2","_col3"]
+                                        Filter Operator [FIL_73] (rows=575995635 width=88)
+                                          predicate:(ss_sold_date_sk is not null and ss_store_sk is not null and ss_item_sk is not null)
+                                          TableScan [TS_0] (rows=575995635 width=88)
+                                            default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_item_sk","ss_store_sk","ss_sales_price"]
+                                  <-Map 7 [SIMPLE_EDGE]
+                                    SHUFFLE [RS_7]
+                                      PartitionCols:_col0
+                                      Select Operator [SEL_5] (rows=8116 width=1119)
+                                        Output:["_col0"]
+                                        Filter Operator [FIL_74] (rows=8116 width=1119)
+                                          predicate:(d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null)
+                                          TableScan [TS_3] (rows=73049 width=1119)
+                                            default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_month_seq"]
 

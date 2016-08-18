@@ -167,7 +167,7 @@ Stage-0
                             SHUFFLE [RS_64]
                               PartitionCols:_col0
                               Select Operator [SEL_49] (rows=191662558 width=88)
-                                Output:["_col0","_col10","_col6","_col7","_col8","_col9"]
+                                Output:["_col0","_col6","_col7","_col8","_col9","_col10"]
                                 Filter Operator [FIL_48] (rows=191662558 width=88)
                                   predicate:_col13 is null
                                   Select Operator [SEL_47] (rows=383325116 width=88)

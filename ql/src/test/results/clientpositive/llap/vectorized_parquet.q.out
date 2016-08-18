@@ -143,8 +143,8 @@ STAGE PLANS:
                   alias: alltypes_parquet
                   Statistics: Num rows: 12288 Data size: 73728 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: ctinyint (type: tinyint), cint (type: int), csmallint (type: smallint), cstring1 (type: string), cfloat (type: float), cdouble (type: double)
-                    outputColumnNames: ctinyint, cint, csmallint, cstring1, cfloat, cdouble
+                    expressions: cint (type: int), ctinyint (type: tinyint), csmallint (type: smallint), cfloat (type: float), cdouble (type: double), cstring1 (type: string)
+                    outputColumnNames: cint, ctinyint, csmallint, cfloat, cdouble, cstring1
                     Statistics: Num rows: 12288 Data size: 73728 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: max(cint), min(csmallint), count(cstring1), avg(cfloat), stddev_pop(cdouble)

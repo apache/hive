@@ -59,12 +59,12 @@ STAGE PLANS:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3]
                   Select Operator
-                    expressions: cint (type: int), cdecimal1 (type: decimal(20,10)), cdecimal2 (type: decimal(23,14))
-                    outputColumnNames: cint, cdecimal1, cdecimal2
+                    expressions: cdecimal1 (type: decimal(20,10)), cdecimal2 (type: decimal(23,14)), cint (type: int)
+                    outputColumnNames: cdecimal1, cdecimal2, cint
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [3, 1, 2]
+                        projectedOutputColumns: [1, 2, 3]
                     Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(cdecimal1), max(cdecimal1), min(cdecimal1), sum(cdecimal1), count(cdecimal2), max(cdecimal2), min(cdecimal2), sum(cdecimal2), count()
@@ -219,12 +219,12 @@ STAGE PLANS:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3]
                   Select Operator
-                    expressions: cint (type: int), cdecimal1 (type: decimal(20,10)), cdecimal2 (type: decimal(23,14))
-                    outputColumnNames: cint, cdecimal1, cdecimal2
+                    expressions: cdecimal1 (type: decimal(20,10)), cdecimal2 (type: decimal(23,14)), cint (type: int)
+                    outputColumnNames: cdecimal1, cdecimal2, cint
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [3, 1, 2]
+                        projectedOutputColumns: [1, 2, 3]
                     Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(cdecimal1), max(cdecimal1), min(cdecimal1), sum(cdecimal1), avg(cdecimal1), stddev_pop(cdecimal1), stddev_samp(cdecimal1), count(cdecimal2), max(cdecimal2), min(cdecimal2), sum(cdecimal2), avg(cdecimal2), stddev_pop(cdecimal2), stddev_samp(cdecimal2), count()

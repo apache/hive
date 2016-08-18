@@ -43,7 +43,7 @@ Stage-0
                           SHUFFLE [RS_38]
                             PartitionCols:_col3
                             Select Operator [SEL_30] (rows=383314495 width=135)
-                              Output:["_col1","_col10","_col16","_col3","_col6","_col7","_col8","_col9"]
+                              Output:["_col1","_col3","_col6","_col7","_col8","_col9","_col10","_col16"]
                               Merge Join Operator [MERGEJOIN_82] (rows=383314495 width=135)
                                 Conds:RS_27._col3=RS_28._col0(Inner),Output:["_col1","_col4","_col5","_col6","_col7","_col8","_col14","_col16"]
                               <-Map 15 [SIMPLE_EDGE]

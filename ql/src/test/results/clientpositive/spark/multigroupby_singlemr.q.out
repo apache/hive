@@ -224,8 +224,8 @@ STAGE PLANS:
                   alias: tbl
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Select Operator
-                    expressions: c2 (type: int), c1 (type: int), c3 (type: int)
-                    outputColumnNames: c2, c1, c3
+                    expressions: c1 (type: int), c2 (type: int), c3 (type: int)
+                    outputColumnNames: c1, c2, c3
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Group By Operator
                       aggregations: count(c3)

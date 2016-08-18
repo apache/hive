@@ -333,8 +333,8 @@ STAGE PLANS:
                   Statistics Aggregation Key Prefix: default.spart/
                   GatherStats: true
                   Select Operator
-                    expressions: ds (type: string), hr (type: string), key (type: string), value (type: string)
-                    outputColumnNames: ds, hr, key, value
+                    expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
+                    outputColumnNames: key, value, ds, hr
                     Statistics: Num rows: 2 Data size: 1076 Basic stats: COMPLETE Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(key, 16), compute_stats(value, 16)
@@ -738,8 +738,8 @@ STAGE PLANS:
                   Statistics Aggregation Key Prefix: default.spart/
                   GatherStats: true
                   Select Operator
-                    expressions: ds (type: string), key (type: string), value (type: string)
-                    outputColumnNames: ds, key, value
+                    expressions: key (type: string), value (type: string), ds (type: string)
+                    outputColumnNames: key, value, ds
                     Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(key, 16), compute_stats(value, 16)

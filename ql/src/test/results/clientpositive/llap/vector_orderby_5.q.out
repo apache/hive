@@ -133,12 +133,12 @@ STAGE PLANS:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
                   Select Operator
-                    expressions: bo (type: boolean), b (type: bigint)
-                    outputColumnNames: bo, b
+                    expressions: b (type: bigint), bo (type: boolean)
+                    outputColumnNames: b, bo
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [7, 3]
+                        projectedOutputColumns: [3, 7]
                     Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: max(b)

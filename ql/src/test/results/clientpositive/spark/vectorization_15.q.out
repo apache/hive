@@ -85,8 +85,8 @@ STAGE PLANS:
                     predicate: ((cstring2 like '%ss%') or (cstring1 like '10%') or ((cint >= -75) and (UDFToShort(ctinyint) = csmallint) and (cdouble >= -3728.0))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: cfloat (type: float), cboolean1 (type: boolean), cdouble (type: double), cstring1 (type: string), ctinyint (type: tinyint), cint (type: int), ctimestamp1 (type: timestamp)
-                      outputColumnNames: cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
+                      expressions: ctinyint (type: tinyint), cint (type: int), cfloat (type: float), cdouble (type: double), cstring1 (type: string), ctimestamp1 (type: timestamp), cboolean1 (type: boolean)
+                      outputColumnNames: ctinyint, cint, cfloat, cdouble, cstring1, ctimestamp1, cboolean1
                       Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: stddev_samp(cfloat), min(cdouble), stddev_samp(ctinyint), var_pop(ctinyint), var_samp(cint), stddev_pop(cint)

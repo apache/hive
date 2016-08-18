@@ -610,38 +610,30 @@ STAGE PLANS:
                   predicateExpression: SelectColumnIsNotNull(col 0) -> boolean
               predicate: ctinyint is not null (type: boolean)
               Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: cdouble (type: double), ctinyint (type: tinyint)
-                outputColumnNames: cdouble, ctinyint
-                Select Vectorization:
-                    className: VectorSelectOperator
-                    native: true
-                    projectedOutputColumns: [5, 0]
+              Group By Operator
+                aggregations: sum(ctinyint)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumLong(col 0) -> bigint
+                    className: VectorGroupByOperator
+                    vectorOutput: true
+                    keyExpressions: col 5
+                    native: false
+                    projectedOutputColumns: [0]
+                keys: cdouble (type: double)
+                mode: hash
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: sum(ctinyint)
-                  Group By Vectorization:
-                      aggregators: VectorUDAFSumLong(col 0) -> bigint
-                      className: VectorGroupByOperator
-                      vectorOutput: true
-                      keyExpressions: col 5
+                Reduce Output Operator
+                  key expressions: _col0 (type: double)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: double)
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkOperator
                       native: false
-                      projectedOutputColumns: [0]
-                  keys: cdouble (type: double)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: double)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: double)
-                    Reduce Sink Vectorization:
-                        className: VectorReduceSinkOperator
-                        native: false
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                    Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+                  value expressions: _col1 (type: bigint)
       Execution mode: vectorized
       Map Vectorization:
           enabled: true

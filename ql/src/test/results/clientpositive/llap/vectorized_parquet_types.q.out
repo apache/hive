@@ -279,12 +279,12 @@ STAGE PLANS:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
                   Select Operator
-                    expressions: ctinyint (type: tinyint), cint (type: int), csmallint (type: smallint), cstring1 (type: string), cfloat (type: float), cdouble (type: double), cdecimal (type: decimal(4,2))
-                    outputColumnNames: ctinyint, cint, csmallint, cstring1, cfloat, cdouble, cdecimal
+                    expressions: cint (type: int), ctinyint (type: tinyint), csmallint (type: smallint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cdecimal (type: decimal(4,2))
+                    outputColumnNames: cint, ctinyint, csmallint, cfloat, cdouble, cstring1, cdecimal
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [1, 0, 2, 5, 3, 4, 10]
+                        projectedOutputColumns: [0, 1, 2, 3, 4, 5, 10]
                     Statistics: Num rows: 22 Data size: 242 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: max(cint), min(csmallint), count(cstring1), avg(cfloat), stddev_pop(cdouble), max(cdecimal)

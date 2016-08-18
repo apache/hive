@@ -557,8 +557,8 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Select Operator
-              expressions: robot (type: string), language (type: string), __time (type: timestamp), added (type: float), delta (type: float)
-              outputColumnNames: robot, language, __time, added, delta
+              expressions: __time (type: timestamp), robot (type: string), language (type: string), added (type: float), delta (type: float)
+              outputColumnNames: __time, robot, language, added, delta
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: max(added), sum(delta)
@@ -771,8 +771,8 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Select Operator
-              expressions: robot (type: string), language (type: string), __time (type: timestamp), added (type: float), delta (type: float)
-              outputColumnNames: robot, language, __time, added, delta
+              expressions: __time (type: timestamp), robot (type: string), language (type: string), added (type: float), delta (type: float)
+              outputColumnNames: __time, robot, language, added, delta
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: max(added), sum(delta)

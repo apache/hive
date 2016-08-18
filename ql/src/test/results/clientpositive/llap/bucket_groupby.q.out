@@ -1569,8 +1569,8 @@ STAGE PLANS:
                   alias: clustergroupby
                   Statistics: Num rows: 500 Data size: 9312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col1, _col0
+                    expressions: value (type: string), key (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 500 Data size: 9312 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(1)

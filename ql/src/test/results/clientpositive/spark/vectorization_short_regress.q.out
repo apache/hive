@@ -103,12 +103,12 @@ STAGE PLANS:
                     predicate: ((762 = cbigint) or ((UDFToFloat(csmallint) < cfloat) and (UDFToDouble(ctimestamp2) > -5.0) and (cdouble <> UDFToDouble(cint))) or (cstring1 = 'a') or ((CAST( cbigint AS decimal(22,3)) <= -1.389) and (cstring2 <> 'a') and (79.553 <> CAST( cint AS decimal(13,3))) and (cboolean2 <> cboolean1))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: cint (type: int), cdouble (type: double), csmallint (type: smallint), cfloat (type: float), ctinyint (type: tinyint)
-                      outputColumnNames: cint, cdouble, csmallint, cfloat, ctinyint
+                      expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cfloat (type: float), cdouble (type: double)
+                      outputColumnNames: ctinyint, csmallint, cint, cfloat, cdouble
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [2, 5, 1, 4, 0]
+                          projectedOutputColumns: [0, 1, 2, 4, 5]
                       Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: avg(cint), sum(cdouble), stddev_pop(cint), stddev_samp(csmallint), var_samp(cint), avg(cfloat), stddev_samp(cint), min(ctinyint), count(csmallint)
@@ -341,12 +341,12 @@ STAGE PLANS:
                     predicate: (((cbigint <= 197) and (UDFToLong(cint) < cbigint)) or ((cdouble >= -26.28) and (UDFToDouble(csmallint) > cdouble)) or ((UDFToFloat(ctinyint) > cfloat) and cstring1 regexp '.*ss.*') or ((cfloat > 79.553) and (cstring2 like '10%'))) (type: boolean)
                     Statistics: Num rows: 6826 Data size: 209555 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: cint (type: int), cbigint (type: bigint), csmallint (type: smallint), cdouble (type: double), ctinyint (type: tinyint)
-                      outputColumnNames: cint, cbigint, csmallint, cdouble, ctinyint
+                      expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cdouble (type: double)
+                      outputColumnNames: ctinyint, csmallint, cint, cbigint, cdouble
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [2, 3, 1, 5, 0]
+                          projectedOutputColumns: [0, 1, 2, 3, 5]
                       Statistics: Num rows: 6826 Data size: 209555 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: max(cint), var_pop(cbigint), stddev_pop(csmallint), max(cdouble), avg(ctinyint), min(cint), min(cdouble), stddev_samp(csmallint), var_samp(cint)
@@ -571,12 +571,12 @@ STAGE PLANS:
                     predicate: ((ctimestamp1 = ctimestamp2) or (762 = cfloat) or (cstring1 = 'ss') or ((UDFToLong(csmallint) <= cbigint) and (1 = cboolean2)) or (cboolean1 is not null and ctimestamp2 is not null and (cstring2 > 'a'))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: cbigint (type: bigint), ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cdouble (type: double)
-                      outputColumnNames: cbigint, ctinyint, csmallint, cint, cdouble
+                      expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cdouble (type: double)
+                      outputColumnNames: ctinyint, csmallint, cint, cbigint, cdouble
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [3, 0, 1, 2, 5]
+                          projectedOutputColumns: [0, 1, 2, 3, 5]
                       Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: var_pop(cbigint), count(), max(ctinyint), stddev_pop(csmallint), max(cint), stddev_samp(cdouble), count(ctinyint), avg(ctinyint)
@@ -780,12 +780,12 @@ STAGE PLANS:
                     predicate: (((ctimestamp2 <= ctimestamp1) and (UDFToDouble(cbigint) <> cdouble) and ('ss' <= cstring1)) or ((csmallint < UDFToShort(ctinyint)) and (UDFToDouble(ctimestamp1) >= 0.0)) or (cfloat = 17)) (type: boolean)
                     Statistics: Num rows: 8874 Data size: 272428 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ctinyint (type: tinyint), cbigint (type: bigint), cint (type: int), cfloat (type: float)
-                      outputColumnNames: ctinyint, cbigint, cint, cfloat
+                      expressions: ctinyint (type: tinyint), cint (type: int), cbigint (type: bigint), cfloat (type: float)
+                      outputColumnNames: ctinyint, cint, cbigint, cfloat
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 3, 2, 4]
+                          projectedOutputColumns: [0, 2, 3, 4]
                       Statistics: Num rows: 8874 Data size: 272428 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: avg(ctinyint), max(cbigint), stddev_samp(cint), var_pop(cint), var_pop(cbigint), max(cfloat)
@@ -2090,12 +2090,12 @@ STAGE PLANS:
                     predicate: ((UDFToInteger(csmallint) >= -257) and ((-6432 = UDFToInteger(csmallint)) or ((UDFToDouble(cint) >= cdouble) and (UDFToInteger(ctinyint) <= cint)))) (type: boolean)
                     Statistics: Num rows: 2503 Data size: 76841 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: csmallint (type: smallint), cbigint (type: bigint), ctinyint (type: tinyint)
-                      outputColumnNames: csmallint, cbigint, ctinyint
+                      expressions: ctinyint (type: tinyint), csmallint (type: smallint), cbigint (type: bigint)
+                      outputColumnNames: ctinyint, csmallint, cbigint
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [1, 3, 0]
+                          projectedOutputColumns: [0, 1, 3]
                       Statistics: Num rows: 2503 Data size: 76841 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: stddev_samp(csmallint), sum(cbigint), var_pop(ctinyint), count()
@@ -2342,12 +2342,12 @@ STAGE PLANS:
                     predicate: ((cdouble > 2563.58) and (((cbigint >= UDFToLong(cint)) and (UDFToInteger(csmallint) < cint) and (cfloat < -5638.15)) or (2563.58 = CAST( ctinyint AS decimal(6,2))) or ((cdouble <= UDFToDouble(cbigint)) and (-5638.15 > CAST( cbigint AS decimal(21,2)))))) (type: boolean)
                     Statistics: Num rows: 2654 Data size: 81476 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: cdouble (type: double), cfloat (type: float)
-                      outputColumnNames: cdouble, cfloat
+                      expressions: cfloat (type: float), cdouble (type: double)
+                      outputColumnNames: cfloat, cdouble
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [5, 4]
+                          projectedOutputColumns: [4, 5]
                       Statistics: Num rows: 2654 Data size: 81476 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: var_samp(cdouble), count(cfloat), sum(cfloat), var_pop(cdouble), stddev_pop(cdouble), sum(cdouble)
@@ -2392,8 +2392,8 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
                 Statistics: Num rows: 1327 Data size: 40738 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: double), _col1 (type: double), _col5 (type: double), (_col0 + _col1) (type: double), (_col0 * 762.0) (type: double), _col6 (type: double), (-863.257 % (_col0 * 762.0)) (type: double), (2563.58 * _col1) (type: double), (- _col1) (type: double), _col2 (type: bigint), ((2563.58 * _col1) + -5638.15) (type: double), ((- _col1) * ((2563.58 * _col1) + -5638.15)) (type: double), _col3 (type: double), _col4 (type: double), (_col0 - (- _col1)) (type: double)
-                  outputColumnNames: _col0, _col1, _col10, _col11, _col12, _col13, _col14, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                  expressions: _col0 (type: double), _col1 (type: double), (2563.58 * _col1) (type: double), (- _col1) (type: double), _col2 (type: bigint), ((2563.58 * _col1) + -5638.15) (type: double), ((- _col1) * ((2563.58 * _col1) + -5638.15)) (type: double), _col3 (type: double), _col4 (type: double), (_col0 - (- _col1)) (type: double), _col5 (type: double), (_col0 + _col1) (type: double), (_col0 * 762.0) (type: double), _col6 (type: double), (-863.257 % (_col0 * 762.0)) (type: double)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
                   Statistics: Num rows: 1327 Data size: 40738 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: double)
@@ -2638,12 +2638,12 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(ctimestamp1) <> 0.0) and (((-257 <> UDFToInteger(ctinyint)) and cboolean2 is not null and cstring1 regexp '.*ss' and (-3.0 < UDFToDouble(ctimestamp1))) or (UDFToDouble(ctimestamp2) = -5.0) or ((UDFToDouble(ctimestamp1) < 0.0) and (cstring2 like '%b%')) or (cdouble = UDFToDouble(cint)) or (cboolean1 is null and (cfloat < UDFToFloat(cint))))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ctimestamp1 (type: timestamp), cstring1 (type: string), cint (type: int), csmallint (type: smallint), ctinyint (type: tinyint), cfloat (type: float), cdouble (type: double)
-                      outputColumnNames: ctimestamp1, cstring1, cint, csmallint, ctinyint, cfloat, cdouble
+                      expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cfloat (type: float), cdouble (type: double), cstring1 (type: string), ctimestamp1 (type: timestamp)
+                      outputColumnNames: ctinyint, csmallint, cint, cfloat, cdouble, cstring1, ctimestamp1
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [8, 6, 2, 1, 0, 4, 5]
+                          projectedOutputColumns: [0, 1, 2, 4, 5, 6, 8]
                       Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: stddev_pop(cint), avg(csmallint), count(), min(ctinyint), var_samp(csmallint), var_pop(cfloat), avg(cint), var_samp(cfloat), avg(cfloat), min(cdouble), var_pop(csmallint), stddev_pop(ctinyint), sum(cint)
@@ -3015,12 +3015,12 @@ STAGE PLANS:
                     predicate: ((((cdouble < UDFToDouble(csmallint)) and (cboolean2 = cboolean1) and (CAST( cbigint AS decimal(22,3)) <= -863.257)) or ((cint >= -257) and cstring1 is not null and (cboolean1 >= 1)) or cstring2 regexp 'b' or ((csmallint >= UDFToShort(ctinyint)) and ctimestamp2 is null)) and cboolean1 is not null) (type: boolean)
                     Statistics: Num rows: 10239 Data size: 314333 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: cboolean1 (type: boolean), cfloat (type: float), cbigint (type: bigint), cint (type: int), cdouble (type: double), ctinyint (type: tinyint), csmallint (type: smallint)
-                      outputColumnNames: cboolean1, cfloat, cbigint, cint, cdouble, ctinyint, csmallint
+                      expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cboolean1 (type: boolean)
+                      outputColumnNames: ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cboolean1
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [10, 4, 3, 2, 5, 0, 1]
+                          projectedOutputColumns: [0, 1, 2, 3, 4, 5, 10]
                       Statistics: Num rows: 10239 Data size: 314333 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: max(cfloat), sum(cbigint), var_samp(cint), avg(cdouble), min(cbigint), var_pop(cbigint), sum(cint), stddev_samp(ctinyint), stddev_pop(csmallint), avg(cint)
@@ -3065,8 +3065,8 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
                 Statistics: Num rows: 5119 Data size: 157151 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: boolean), _col1 (type: float), (UDFToDouble((CAST( _col2 AS decimal(19,0)) - 10.175)) + _col3) (type: double), _col5 (type: bigint), _col6 (type: double), (- (10.175 + (- _col1))) (type: float), (79.553 / _col6) (type: double), (_col3 % (79.553 / _col6)) (type: double), _col7 (type: bigint), _col8 (type: double), (-1.389 * CAST( _col5 AS decimal(19,0))) (type: decimal(24,3)), (- _col1) (type: float), (CAST( _col7 AS decimal(19,0)) - (-1.389 * CAST( _col5 AS decimal(19,0)))) (type: decimal(25,3)), _col9 (type: double), (- (CAST( _col7 AS decimal(19,0)) - (-1.389 * CAST( _col5 AS decimal(19,0))))) (type: decimal(25,3)), _col10 (type: double), (- _col10) (type: double), (_col10 * UDFToDouble(_col7)) (type: double), (-26.28 / UDFToDouble(_col1)) (type: double), _col2 (type: bigint), (CAST( _col2 AS decimal(19,0)) - 10.175) (type: decimal(23,3)), _col3 (type: double), (_col3 % UDFToDouble(_col1)) (type: double), (10.175 + (- _col1)) (type: float), _col4 (type: double)
-                  outputColumnNames: _col0, _col1, _col10, _col11, _col12, _col13, _col14, _col15, _col17, _col18, _col19, _col2, _col20, _col21, _col22, _col23, _col24, _col25, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                  expressions: _col0 (type: boolean), _col1 (type: float), (- _col1) (type: float), (-26.28 / UDFToDouble(_col1)) (type: double), _col2 (type: bigint), (CAST( _col2 AS decimal(19,0)) - 10.175) (type: decimal(23,3)), _col3 (type: double), (_col3 % UDFToDouble(_col1)) (type: double), (10.175 + (- _col1)) (type: float), _col4 (type: double), (UDFToDouble((CAST( _col2 AS decimal(19,0)) - 10.175)) + _col3) (type: double), _col5 (type: bigint), _col6 (type: double), (- (10.175 + (- _col1))) (type: float), (79.553 / _col6) (type: double), (_col3 % (79.553 / _col6)) (type: double), _col7 (type: bigint), _col8 (type: double), (-1.389 * CAST( _col5 AS decimal(19,0))) (type: decimal(24,3)), (CAST( _col7 AS decimal(19,0)) - (-1.389 * CAST( _col5 AS decimal(19,0)))) (type: decimal(25,3)), _col9 (type: double), (- (CAST( _col7 AS decimal(19,0)) - (-1.389 * CAST( _col5 AS decimal(19,0))))) (type: decimal(25,3)), _col10 (type: double), (- _col10) (type: double), (_col10 * UDFToDouble(_col7)) (type: double)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25
                   Statistics: Num rows: 5119 Data size: 157151 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: boolean)

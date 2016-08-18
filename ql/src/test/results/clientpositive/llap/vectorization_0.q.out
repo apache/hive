@@ -1456,12 +1456,12 @@ STAGE PLANS:
                     predicate: ((cstring2 like '%b%') or (79.553 <> CAST( cint AS decimal(13,3))) or (UDFToDouble(cbigint) < cdouble) or ((UDFToShort(ctinyint) >= csmallint) and (cboolean2 = 1) and (3569 = UDFToInteger(ctinyint)))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 1210980 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: cbigint (type: bigint), cfloat (type: float), ctinyint (type: tinyint)
-                      outputColumnNames: cbigint, cfloat, ctinyint
+                      expressions: ctinyint (type: tinyint), cbigint (type: bigint), cfloat (type: float)
+                      outputColumnNames: ctinyint, cbigint, cfloat
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [3, 4, 0]
+                          projectedOutputColumns: [0, 3, 4]
                       Statistics: Num rows: 12288 Data size: 1210980 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: avg(cbigint), stddev_pop(cbigint), var_samp(cbigint), count(), sum(cfloat), min(ctinyint)

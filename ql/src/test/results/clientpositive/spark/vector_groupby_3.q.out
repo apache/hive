@@ -131,12 +131,12 @@ STAGE PLANS:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
                   Select Operator
-                    expressions: t (type: tinyint), s (type: string), b (type: bigint)
-                    outputColumnNames: t, s, b
+                    expressions: t (type: tinyint), b (type: bigint), s (type: string)
+                    outputColumnNames: t, b, s
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 8, 3]
+                        projectedOutputColumns: [0, 3, 8]
                     Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: max(b)

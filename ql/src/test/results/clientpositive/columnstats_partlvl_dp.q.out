@@ -84,8 +84,8 @@ STAGE PLANS:
             alias: employee_part
             Statistics: Num rows: 1 Data size: 64 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions: country (type: string), employeename (type: string), employeeid (type: int)
-              outputColumnNames: country, employeename, employeeid
+              expressions: employeeid (type: int), employeename (type: string), country (type: string)
+              outputColumnNames: employeeid, employeename, country
               Statistics: Num rows: 1 Data size: 64 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(employeename, 16), compute_stats(employeeid, 16)
@@ -162,8 +162,8 @@ STAGE PLANS:
             alias: employee_part
             Statistics: Num rows: 42 Data size: 169 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: country (type: string), employeeid (type: int)
-              outputColumnNames: country, employeeid
+              expressions: employeeid (type: int), country (type: string)
+              outputColumnNames: employeeid, country
               Statistics: Num rows: 42 Data size: 169 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(employeeid, 16)
@@ -251,8 +251,8 @@ STAGE PLANS:
             alias: employee_part
             Statistics: Num rows: 116 Data size: 466 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: employeesalary (type: double), country (type: string), employeeid (type: int)
-              outputColumnNames: employeesalary, country, employeeid
+              expressions: employeeid (type: int), employeesalary (type: double), country (type: string)
+              outputColumnNames: employeeid, employeesalary, country
               Statistics: Num rows: 116 Data size: 466 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(employeeid, 16)
@@ -339,8 +339,8 @@ STAGE PLANS:
             alias: employee_part
             Statistics: Num rows: 2 Data size: 466 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions: employeesalary (type: double), country (type: string), employeeid (type: int), employeename (type: string)
-              outputColumnNames: employeesalary, country, employeeid, employeename
+              expressions: employeeid (type: int), employeename (type: string), employeesalary (type: double), country (type: string)
+              outputColumnNames: employeeid, employeename, employeesalary, country
               Statistics: Num rows: 2 Data size: 466 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(employeeid, 16), compute_stats(employeename, 16)
