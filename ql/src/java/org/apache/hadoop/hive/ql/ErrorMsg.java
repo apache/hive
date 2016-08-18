@@ -449,6 +449,7 @@ public enum ErrorMsg {
   INVALID_PK_SYNTAX(10326, "Invalid Primary Key syntax"),
   ACID_NOT_ENOUGH_HISTORY(10327, "Not enough history available for ({0},{1}).  " +
     "Oldest available base: {2}", true),
+  INVALID_COLUMN_NAME(10328, "Invalid column name"),
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "

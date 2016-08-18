@@ -58,11 +58,7 @@ import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
-import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -670,6 +666,7 @@ public abstract class BaseSemanticAnalyzer {
        throw new SemanticException(
          ErrorMsg.INVALID_PK_SYNTAX.getMsg(" VALIDATE feature not supported yet"));
      }
+      checkColumnName(grandChild.getText());
      pkInfos.add(
        new PKInfo(
          unescapeIdentifier(grandChild.getText().toLowerCase()),
@@ -783,6 +780,7 @@ public abstract class BaseSemanticAnalyzer {
     for (int j = 0; j < child.getChild(fkIndex).getChildCount(); j++) {
       SQLForeignKey sqlForeignKey = new SQLForeignKey();
       Tree fkgrandChild = child.getChild(fkIndex).getChild(j);
+      checkColumnName(fkgrandChild.getText());
       boolean rely = child.getChild(relyIndex).getType() == HiveParser.TOK_VALIDATE;
       boolean enable =  child.getChild(relyIndex+1).getType() == HiveParser.TOK_ENABLE;
       boolean validate =  child.getChild(relyIndex+2).getType() == HiveParser.TOK_VALIDATE;
@@ -807,6 +805,12 @@ public abstract class BaseSemanticAnalyzer {
         sqlForeignKey.setFk_name(unescapeIdentifier(child.getChild(0).getText().toLowerCase()));
       }
       foreignKeys.add(sqlForeignKey);
+    }
+  }
+
+  private static void checkColumnName(String columnName) throws SemanticException {
+    if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(columnName.toUpperCase())) {
+      throw new SemanticException(ErrorMsg.INVALID_COLUMN_NAME.getMsg(columnName));
     }
   }
 
@@ -837,6 +841,7 @@ public abstract class BaseSemanticAnalyzer {
           if(lowerCase) {
             name = name.toLowerCase();
           }
+          checkColumnName(name);
           // child 0 is the name of the column
           col.setName(unescapeIdentifier(name));
           // child 1 is the type of the column
