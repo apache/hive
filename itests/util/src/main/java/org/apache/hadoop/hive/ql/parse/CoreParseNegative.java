@@ -36,7 +36,7 @@ public class CoreParseNegative extends CliAdapter{
   private static QTestUtil qt;
 
   static CliConfigs.ParseNegativeConfig cliConfig = new CliConfigs.ParseNegativeConfig();
-
+  static boolean firstRun;
   public CoreParseNegative(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
   }
@@ -47,7 +47,7 @@ public class CoreParseNegative extends CliAdapter{
     MiniClusterType miniMR = cliConfig.getClusterType();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
-
+    firstRun = true;
     try {
       String hadoopVer = cliConfig.getHadoopVersion();
       qt = new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR, null,
@@ -68,26 +68,21 @@ public class CoreParseNegative extends CliAdapter{
   @Override
   @After
   public void tearDown() {
-    try {
-      qt.clearPostTestEffects();
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in tearDown");
-    }
   }
 
   @Override
   @AfterClass
   public void shutdown() throws Exception {
+    String reason = "clear post test effects";
     try {
+      qt.clearPostTestEffects();
+      reason = "shutdown";
       qt.shutdown();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      throw new RuntimeException("Unexpected exception in shutdown",e);
+      throw new RuntimeException("Unexpected exception in " + reason,e);
     }
   }
 
@@ -102,8 +97,10 @@ public class CoreParseNegative extends CliAdapter{
       System.err.println("Begin query: " + fname);
 
       qt.addFile(fpath);
-
-      qt.init(fname);
+      if (firstRun) {
+        qt.init(fname);
+        firstRun = false;
+      }
       ASTNode tree = qt.parseQuery(fname);
       List<Task<? extends Serializable>> tasks = qt.analyzeAST(tree);
       fail("Unexpected success for query: " + fname + debugHint);
