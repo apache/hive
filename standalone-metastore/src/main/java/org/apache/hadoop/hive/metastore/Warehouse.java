@@ -206,8 +206,9 @@ public class Warehouse {
         // location, we should make a copy of the files to cmroot instead of moving it.
         cm.recycle(sourcePath, RecycleType.COPY, true);
       }
-      FileSystem fs = getFs(sourcePath);
-      return FileUtils.rename(fs, sourcePath, destPath);
+      FileSystem srcFs = getFs(sourcePath);
+      FileSystem destFs = getFs(destPath);
+      return FileUtils.rename(srcFs, destFs, sourcePath, destPath);
     } catch (Exception ex) {
       MetaStoreUtils.logAndThrowMetaException(ex);
     }

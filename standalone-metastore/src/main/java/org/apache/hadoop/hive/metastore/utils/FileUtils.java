@@ -153,23 +153,35 @@ public class FileUtils {
    * Rename a file.  Unlike {@link FileSystem#rename(Path, Path)}, if the destPath already exists
    * and is a directory, this will NOT move the sourcePath into it.  It will throw an IOException
    * instead.
-   * @param fs file system paths are on
+   * @param srcfs file system src paths are on
+   * @param destfs file system dest paths are on
    * @param sourcePath source file or directory to move
    * @param destPath destination file name.  This must be a file and not an existing directory.
    * @return result of fs.rename.
    * @throws IOException if fs.rename throws it, or if destPath already exists.
    */
-  public static boolean rename(FileSystem fs, Path sourcePath, Path destPath) throws IOException {
-    LOG.info("Renaming " + sourcePath + " to " + destPath);
+   public static boolean rename(FileSystem srcFs, FileSystem destFs, Path srcPath,
+                               Path destPath) throws IOException {
+   LOG.info("Renaming " + srcPath + " to " + destPath);
 
-    // If destPath directory exists, rename call will move the sourcePath
-    // into destPath without failing. So check it before renaming.
-    if (fs.exists(destPath)) {
-      throw new IOException("Cannot rename the source path. The destination "
-          + "path already exists.");
-    }
-    return fs.rename(sourcePath, destPath);
-  }
+   // If destPath directory exists, rename call will move the srcPath
+   // into destPath without failing. So check it before renaming.
+   if(destFs.exists(destPath)) {
+     throw new IOException("Cannot rename the source path. The destination "
+         + "path already exists.");
+   }
+
+   if (equalsFileSystem(srcFs, destFs)) {
+       //just rename the directory
+       return srcFs.rename(srcPath, destPath);
+     } else {
+         Configuration conf = new Configuration();
+         return copy(srcFs, srcPath, destFs, destPath,
+         true,    // delete source
+         false, // overwrite destination
+         conf);
+     }
+   }
 
   // NOTE: This is for generating the internal path name for partitions. Users
   // should always use the MetaStore API to get the path name for a partition.
