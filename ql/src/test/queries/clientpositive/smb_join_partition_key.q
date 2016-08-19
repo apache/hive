@@ -1,4 +1,3 @@
-SET hive.execution.engine=mr; 
 SET hive.enforce.sortmergebucketmapjoin=false; 
 SET hive.auto.convert.sortmerge.join=true; 
 SET hive.optimize.bucketmapjoin = true; 
