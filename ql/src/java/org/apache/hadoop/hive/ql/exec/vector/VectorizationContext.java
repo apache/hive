@@ -1082,9 +1082,9 @@ public class VectorizationContext {
     case STRING:
       return new ConstantVectorExpression(outCol, ((String) constantValue).getBytes());
     case CHAR:
-      return new ConstantVectorExpression(outCol, ((HiveChar) constantValue));
+      return new ConstantVectorExpression(outCol, ((HiveChar) constantValue), typeName);
     case VARCHAR:
-      return new ConstantVectorExpression(outCol, ((HiveVarchar) constantValue));
+      return new ConstantVectorExpression(outCol, ((HiveVarchar) constantValue), typeName);
     default:
       throw new HiveException("Unsupported constant type: " + typeName + ", object class " + constantValue.getClass().getSimpleName());
     }
