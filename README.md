@@ -1,12 +1,14 @@
-Apache Hive (TM) @VERSION@
-======================
+Apache Hive (TM)
+================
+[![Master Build Status](https://travis-ci.org/apache/hive.svg?branch=master)](https://travis-ci.org/apache/hive/branches)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.hive/hive/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.hive%22)
 
-The Apache Hive (TM) data warehouse software facilitates reading, 
+The Apache Hive (TM) data warehouse software facilitates reading,
 writing, and managing large datasets residing in distributed storage
 using SQL. Built on top of Apache Hadoop (TM), it provides:
 
-* Tools to enable easy access to data via SQL, thus enabling data 
-  warehousing tasks such as extract/transform/load (ETL), reporting, 
+* Tools to enable easy access to data via SQL, thus enabling data
+  warehousing tasks such as extract/transform/load (ETL), reporting,
   and data analysis
 
 * A mechanism to impose structure on a variety of data formats
@@ -18,7 +20,7 @@ using SQL. Built on top of Apache Hadoop (TM), it provides:
   or Apache Spark frameworks.
 
 Hive provides standard SQL functionality, including many of the later
-2003 and 2011 features for analytics.  These include OLAP functions, 
+2003 and 2011 features for analytics.  These include OLAP functions,
 subqueries, common table expressions, and more.  Hive's SQL can also be
 extended with user code via user defined functions (UDFs), user defined
 aggregates (UDAFs), and user defined table functions (UDTFs).
@@ -81,7 +83,7 @@ Requirements
 Upgrading from older versions of Hive
 =====================================
 
-- Hive @VERSION@ includes changes to the MetaStore schema. If
+- Hive includes changes to the MetaStore schema. If
   you are upgrading from an earlier version of Hive it is imperative
   that you upgrade the MetaStore schema by running the appropriate
   schema upgrade scripts located in the scripts/metastore/upgrade
