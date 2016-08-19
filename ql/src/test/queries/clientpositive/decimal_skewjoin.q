@@ -1,5 +1,3 @@
-
-set hive.execution.engine=mr;
 set hive.optimize.skewjoin=true;
 set hive.auto.convert.join=false;
 

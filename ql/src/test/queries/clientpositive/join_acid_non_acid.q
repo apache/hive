@@ -15,7 +15,6 @@ STORED AS ORC;
 INSERT OVERWRITE TABLE orc_table VALUES (1, 'x');
 
 set hive.cbo.enable=true;
-SET hive.execution.engine=mr;
 SET hive.auto.convert.join=false;
 SET hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 SET hive.conf.validation=false;

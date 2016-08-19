@@ -1,5 +1,4 @@
 set hive.mapred.mode=nonstrict;
-set hive.execution.engine=tez;
 set hive.optimize.constant.propagation=true;
 set hive.tez.dynamic.partition.pruning=true;
 set hive.explain.user=true;

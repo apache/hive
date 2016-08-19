@@ -7,7 +7,6 @@ insert overwrite table test.test_orc_src select 1,2,3 from src limit 1;
 insert overwrite table test.test_orc_src2 select 1,2,4 from src limit 1;
 
 set hive.auto.convert.join = false;
-set hive.execution.engine = mr;
 
 select
     tb.c
