@@ -490,7 +490,8 @@ public class HiveOpConverter {
     // 2. If we need to generate limit
     if (sortRel.fetch != null) {
       int limit = RexLiteral.intValue(sortRel.fetch);
-      LimitDesc limitDesc = new LimitDesc(limit);
+      int offset = sortRel.offset == null ? 0 : RexLiteral.intValue(sortRel.offset);
+      LimitDesc limitDesc = new LimitDesc(offset,limit);
       // Because we are visiting the operators recursively, the last limit op that
       // calls the following function will set the global property.
       if (this.semanticAnalyzer != null && semanticAnalyzer.getQB() != null
