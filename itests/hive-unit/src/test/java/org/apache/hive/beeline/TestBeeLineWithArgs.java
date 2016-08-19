@@ -73,6 +73,7 @@ public class TestBeeLineWithArgs {
     HiveConf hiveConf = new HiveConf();
     // Set to non-zk lock manager to prevent HS2 from trying to connect
     hiveConf.setVar(HiveConf.ConfVars.HIVE_LOCK_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
     miniHS2 = new MiniHS2(hiveConf);
     miniHS2.start(new HashMap<String,  String>());
     createTable();
@@ -775,10 +776,10 @@ public class TestBeeLineWithArgs {
     String embeddedJdbcURL = Utils.URL_PREFIX+"/Default";
     List<String> argList = getBaseArgs(embeddedJdbcURL);
     // Set to non-zk lock manager to avoid trying to connect to zookeeper
-    final String SCRIPT_TEXT =
-        "set hive.lock.manager=org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager;\n" +
-        "create table if not exists embeddedBeelineOutputs(d int);\n" +
-        "set a=1;\nselect count(*) from embeddedBeelineOutputs;\n";
+    final String SCRIPT_TEXT = "set hive.lock.manager=org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager;\n"
+        + "set hive.compute.query.using.stats=false;\n"
+        + "create table if not exists embeddedBeelineOutputs(d int);\n"
+        + "set a=1;\nselect count(*) from embeddedBeelineOutputs;\n";
     final String EXPECTED_PATTERN = "Stage-1 map =";
     testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
   }

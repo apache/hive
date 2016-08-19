@@ -1,0 +1,23 @@
+PREHOOK: query: explain select count(key) from (select null as key from src)src
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select count(key) from (select null as key from src)src
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(key) from (select null as key from src)src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(key) from (select null as key from src)src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0

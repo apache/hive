@@ -371,20 +371,37 @@ public class StatsOptimizer extends Transform {
           else if (udaf instanceof GenericUDAFCount) {
             // always long
             Long rowCnt = 0L;
-            if (aggr.getParameters().isEmpty() || aggr.getParameters().get(0) instanceof
-                ExprNodeConstantDesc || ((aggr.getParameters().get(0) instanceof ExprNodeColumnDesc) &&
-                    exprMap.get(((ExprNodeColumnDesc)aggr.getParameters().get(0)).getColumn()) instanceof ExprNodeConstantDesc)) {
-              // Its either count (*) or count(1) case
+            if (aggr.getParameters().isEmpty()) {
+              // Its either count (*) or count() case
               rowCnt = getRowCnt(pctx, tsOp, tbl);
-              if(rowCnt == null) {
+              if (rowCnt == null) {
                 return null;
+              }
+            } else if (aggr.getParameters().get(0) instanceof ExprNodeConstantDesc) {
+              if (((ExprNodeConstantDesc) aggr.getParameters().get(0)).getValue() != null) {
+                // count (1)
+                rowCnt = getRowCnt(pctx, tsOp, tbl);
+                if (rowCnt == null) {
+                  return null;
+                }
+              }
+              // otherwise it is count(null), should directly return 0.
+            } else if ((aggr.getParameters().get(0) instanceof ExprNodeColumnDesc)
+                && exprMap.get(((ExprNodeColumnDesc) aggr.getParameters().get(0)).getColumn()) instanceof ExprNodeConstantDesc) {
+              if (((ExprNodeConstantDesc) (exprMap.get(((ExprNodeColumnDesc) aggr.getParameters()
+                  .get(0)).getColumn()))).getValue() != null) {
+                rowCnt = getRowCnt(pctx, tsOp, tbl);
+                if (rowCnt == null) {
+                  return null;
+                }
               }
             } else {
               // Its count(col) case
-              ExprNodeColumnDesc desc = (ExprNodeColumnDesc)exprMap.get(((ExprNodeColumnDesc)aggr.getParameters().get(0)).getColumn());
+              ExprNodeColumnDesc desc = (ExprNodeColumnDesc) exprMap.get(((ExprNodeColumnDesc) aggr
+                  .getParameters().get(0)).getColumn());
               String colName = desc.getColumn();
               StatType type = getType(desc.getTypeString());
-              if(!tbl.isPartitioned()) {
+              if (!tbl.isPartitioned()) {
                 if (!StatsSetupConst.areBasicStatsUptoDate(tbl.getParameters())) {
                   Logger.debug("Stats for table : " + tbl.getTableName() + " are not up to date.");
                   return null;
@@ -400,47 +417,48 @@ public class StatsOptimizer extends Transform {
                   return null;
                 }
                 List<ColumnStatisticsObj> stats = hive.getMSC().getTableColumnStatistics(
-                    tbl.getDbName(),tbl.getTableName(), Lists.newArrayList(colName));
+                    tbl.getDbName(), tbl.getTableName(), Lists.newArrayList(colName));
                 if (stats.isEmpty()) {
                   Logger.debug("No stats for " + tbl.getTableName() + " column " + colName);
                   return null;
                 }
                 Long nullCnt = getNullcountFor(type, stats.get(0).getStatsData());
                 if (null == nullCnt) {
-                  Logger.debug("Unsupported type: " + desc.getTypeString() + " encountered in " +
-                      "metadata optimizer for column : " + colName);
+                  Logger.debug("Unsupported type: " + desc.getTypeString() + " encountered in "
+                      + "metadata optimizer for column : " + colName);
                   return null;
                 } else {
                   rowCnt -= nullCnt;
                 }
               } else {
-                Set<Partition> parts = pctx.getPrunedPartitions(
-                    tsOp.getConf().getAlias(), tsOp).getPartitions();
+                Set<Partition> parts = pctx.getPrunedPartitions(tsOp.getConf().getAlias(), tsOp)
+                    .getPartitions();
                 for (Partition part : parts) {
                   if (!StatsSetupConst.areBasicStatsUptoDate(part.getParameters())) {
                     Logger.debug("Stats for part : " + part.getSpec() + " are not up to date.");
                     return null;
                   }
-                  Long partRowCnt = Long.parseLong(part.getParameters()
-                      .get(StatsSetupConst.ROW_COUNT));
+                  Long partRowCnt = Long.parseLong(part.getParameters().get(
+                      StatsSetupConst.ROW_COUNT));
                   if (partRowCnt == null) {
                     Logger.debug("Partition doesn't have up to date stats " + part.getSpec());
                     return null;
                   }
                   rowCnt += partRowCnt;
                 }
-                Collection<List<ColumnStatisticsObj>> result =
-                    verifyAndGetPartColumnStats(hive, tbl, colName, parts);
+                Collection<List<ColumnStatisticsObj>> result = verifyAndGetPartColumnStats(hive,
+                    tbl, colName, parts);
                 if (result == null) {
                   return null; // logging inside
                 }
                 for (List<ColumnStatisticsObj> statObj : result) {
                   ColumnStatisticsData statData = validateSingleColStat(statObj);
-                  if (statData == null) return null;
+                  if (statData == null)
+                    return null;
                   Long nullCnt = getNullcountFor(type, statData);
                   if (nullCnt == null) {
-                    Logger.debug("Unsupported type: " + desc.getTypeString() + " encountered in " +
-                        "metadata optimizer for column : " + colName);
+                    Logger.debug("Unsupported type: " + desc.getTypeString() + " encountered in "
+                        + "metadata optimizer for column : " + colName);
                     return null;
                   } else {
                     rowCnt -= nullCnt;
