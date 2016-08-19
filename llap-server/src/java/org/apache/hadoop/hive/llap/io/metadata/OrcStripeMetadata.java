@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TimeZone;
+
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator.ObjectEstimator;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
@@ -37,6 +39,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
   private final OrcBatchKey stripeKey;
   private final List<OrcProto.ColumnEncoding> encodings;
   private final List<OrcProto.Stream> streams;
+  private final String writerTimezone;
   private final long rowCount;
   private OrcIndex rowIndex;
 
@@ -60,6 +63,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
     OrcProto.StripeFooter footer = mr.readStripeFooter(stripe);
     streams = footer.getStreamsList();
     encodings = footer.getColumnsList();
+    writerTimezone = footer.getWriterTimezone();
     rowCount = stripe.getNumberOfRows();
     rowIndex = mr.readRowIndex(stripe, footer, includes, null, sargColumns, null);
 
@@ -70,6 +74,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
     stripeKey = new OrcBatchKey(id, 0, 0);
     encodings = new ArrayList<>();
     streams = new ArrayList<>();
+    writerTimezone = "";
     rowCount = estimatedMemUsage = 0;
   }
 
@@ -123,6 +128,9 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
     return streams;
   }
 
+  public String getWriterTimezone() {
+    return writerTimezone;
+  }
   @Override
   public long getMemoryUsage() {
     return estimatedMemUsage;

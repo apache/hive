@@ -39,7 +39,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     void setBuffers(ColumnStreamData[] streamBuffers, boolean sameStripe) throws IOException;
   }
 
-  protected static class TimestampStreamReader extends TimestampTreeReader
+  public static class TimestampStreamReader extends TimestampTreeReader
       implements SettableTreeReader {
     private boolean isFileCompressed;
     private SettableUncompressedStream _presentStream;
@@ -47,9 +47,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     private SettableUncompressedStream _nanosStream;
 
     private TimestampStreamReader(int columnId, SettableUncompressedStream present,
-        SettableUncompressedStream data, SettableUncompressedStream nanos, boolean isFileCompressed,
-        OrcProto.ColumnEncoding encoding, boolean skipCorrupt) throws IOException {
-      super(columnId, present, data, nanos, encoding, skipCorrupt);
+                                  SettableUncompressedStream data, SettableUncompressedStream nanos,
+                                  boolean isFileCompressed, OrcProto.ColumnEncoding encoding,
+                                  boolean skipCorrupt, String writerTimezoneId) throws IOException {
+      super(columnId, present, data, nanos, encoding, skipCorrupt, writerTimezoneId);
       this.isFileCompressed = isFileCompressed;
       this._presentStream = present;
       this._secondsStream = data;
@@ -96,6 +97,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       }
     }
 
+    public void updateTimezone(String writerTimezoneId) throws IOException {
+      base_timestamp = getBaseTimestamp(writerTimezoneId);
+    }
+
     public static class StreamReaderBuilder {
       private int columnIndex;
       private ColumnStreamData presentStream;
@@ -104,6 +109,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
       private boolean skipCorrupt;
+      private String writerTimezone;
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -135,6 +141,11 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         return this;
       }
 
+      public StreamReaderBuilder setWriterTimezone(String writerTimezoneId) {
+        this.writerTimezone = writerTimezoneId;
+        return this;
+      }
+
       public StreamReaderBuilder skipCorrupt(boolean skipCorrupt) {
         this.skipCorrupt = skipCorrupt;
         return this;
@@ -155,7 +166,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
         boolean isFileCompressed = compressionCodec != null;
         return new TimestampStreamReader(columnIndex, present, data, nanos,
-            isFileCompressed, columnEncoding, skipCorrupt);
+            isFileCompressed, columnEncoding, skipCorrupt, writerTimezone);
       }
     }
 
@@ -1663,10 +1674,11 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
   }
 
   public static TreeReader[] createEncodedTreeReader(int numCols,
-      List<OrcProto.Type> types,
-      List<OrcProto.ColumnEncoding> encodings,
-      EncodedColumnBatch<OrcBatchKey> batch,
-      CompressionCodec codec, boolean skipCorrupt) throws IOException {
+                                                     List<OrcProto.Type> types,
+                                                     List<OrcProto.ColumnEncoding> encodings,
+                                                     EncodedColumnBatch<OrcBatchKey> batch,
+                                                     CompressionCodec codec, boolean skipCorrupt,
+                                                     String writerTimezone) throws IOException {
     TreeReader[] treeReaders = new TreeReader[numCols];
     for (int i = 0; i < numCols; i++) {
       int columnIndex = batch.getColumnIxs()[i];
@@ -1814,6 +1826,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
               .setNanosStream(secondary)
               .setCompressionCodec(codec)
               .setColumnEncoding(columnEncoding)
+              .setWriterTimezone(writerTimezone)
               .skipCorrupt(skipCorrupt)
               .build();
           break;

@@ -160,7 +160,8 @@ public class OrcEncodedDataConsumer
       int numCols = batch.getColumnIxs().length;
       if (columnReaders == null || !sameStripe) {
         this.columnReaders = EncodedTreeReaderFactory.createEncodedTreeReader(numCols,
-            fileMetadata.getTypes(), stripeMetadata.getEncodings(), batch, codec, skipCorrupt);
+            fileMetadata.getTypes(), stripeMetadata.getEncodings(), batch, codec, skipCorrupt,
+                stripeMetadata.getWriterTimezone());
         positionInStreams(columnReaders, batch, numCols, stripeMetadata);
       } else {
         repositionInStreams(this.columnReaders, batch, sameStripe, numCols, stripeMetadata);
@@ -224,6 +225,12 @@ public class OrcEncodedDataConsumer
       OrcProto.RowIndex rowIndex = stripeMetadata.getRowIndexes()[columnIndex];
       OrcProto.RowIndexEntry rowIndexEntry = rowIndex.getEntry(rowGroupIndex);
       ((SettableTreeReader)columnReaders[i]).setBuffers(streamBuffers, sameStripe);
+      // TODO: When hive moves to java8, make updateTimezone() as default method in SettableTreeReader so that we can
+      // avoid this check
+      if (columnReaders[i] instanceof EncodedTreeReaderFactory.TimestampStreamReader && !sameStripe) {
+        ((EncodedTreeReaderFactory.TimestampStreamReader) columnReaders[i])
+                .updateTimezone(stripeMetadata.getWriterTimezone());
+      }
       columnReaders[i].seek(new RecordReaderImpl.PositionProviderImpl(rowIndexEntry));
     }
   }
