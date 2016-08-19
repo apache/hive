@@ -477,6 +477,7 @@ public class TestJdbcWithMiniHS2 {
     HiveConf conf = new HiveConf();
     String userName;
     setSerializeInTasksInConf(conf);
+    conf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
     miniHS2 = new MiniHS2(conf);
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
