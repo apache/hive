@@ -57,7 +57,7 @@ public abstract class VectorMapJoinHashMapResult extends VectorMapJoinHashTableR
   public abstract ByteSegmentRef next();
 
   /**
-   * @return Whether reading is at the end.
+   * Get detailed HashMap result position information to help diagnose exceptions.
    */
-  public abstract boolean isEof();
+  public abstract String getDetailedHashMapResultPositionString();
 }

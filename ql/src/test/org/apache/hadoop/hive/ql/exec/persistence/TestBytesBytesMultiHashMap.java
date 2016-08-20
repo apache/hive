@@ -133,8 +133,6 @@ public class TestBytesBytesMultiHashMap {
         hs.add(ref.copy());
         ref = hashMapResult.next();
       }
-    } else {
-      assertTrue(hashMapResult.isEof());
     }
     assertEquals(state, count);
     assertEquals(values.length, count);

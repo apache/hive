@@ -25,10 +25,10 @@ import java.util.Random;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.SerdeRandomRowSource;
 import org.apache.hadoop.hive.serde2.VerifyFast;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeserializeRead;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
-import org.apache.hadoop.hive.serde2.fast.RandomRowObjectSource;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -39,8 +39,11 @@ import junit.framework.TestCase;
 
 public class TestBinarySortableFast extends TestCase {
 
+  private static String debugDetailedReadPositionString;
+  private static StackTraceElement[] debugStackTrace;
+
   private void testBinarySortableFast(
-          RandomRowObjectSource source, Object[][] rows,
+          SerdeRandomRowSource source, Object[][] rows,
           boolean[] columnSortOrderIsDesc, byte[] columnNullMarker, byte[] columnNotNullMarker,
           SerDe serde, StructObjectInspector rowOI,
           SerDe serde_fewer, StructObjectInspector writeRowOI,
@@ -134,11 +137,6 @@ public class TestBinarySortableFast extends TestCase {
       }
       binarySortableDeserializeRead.extraFieldsCheck();
       TestCase.assertTrue(!binarySortableDeserializeRead.readBeyondConfiguredFieldsWarned());
-      if (doWriteFewerColumns) {
-        TestCase.assertTrue(binarySortableDeserializeRead.readBeyondBufferRangeWarned());
-      } else {
-        TestCase.assertTrue(!binarySortableDeserializeRead.readBeyondBufferRangeWarned());
-      }
       TestCase.assertTrue(!binarySortableDeserializeRead.bufferRangeHasExtraDataWarned());
 
       /*
@@ -161,6 +159,8 @@ public class TestBinarySortableFast extends TestCase {
           try {
             VerifyFast.verifyDeserializeRead(binarySortableDeserializeRead2, primitiveTypeInfos[index], writable);
           } catch (EOFException e) {
+//          debugDetailedReadPositionString = binarySortableDeserializeRead2.getDetailedReadPositionString();
+//          debugStackTrace = e.getStackTrace();
             threw = true;
           }
           TestCase.assertTrue(threw);
@@ -268,11 +268,6 @@ public class TestBinarySortableFast extends TestCase {
       }
       binarySortableDeserializeRead.extraFieldsCheck();
       TestCase.assertTrue(!binarySortableDeserializeRead.readBeyondConfiguredFieldsWarned());
-      if (doWriteFewerColumns) {
-        TestCase.assertTrue(binarySortableDeserializeRead.readBeyondBufferRangeWarned());
-      } else {
-        TestCase.assertTrue(!binarySortableDeserializeRead.readBeyondBufferRangeWarned());
-      }
       TestCase.assertTrue(!binarySortableDeserializeRead.bufferRangeHasExtraDataWarned());
     }
   }
@@ -280,7 +275,7 @@ public class TestBinarySortableFast extends TestCase {
   private void testBinarySortableFastCase(int caseNum, boolean doNonRandomFill, Random r)
       throws Throwable {
 
-    RandomRowObjectSource source = new RandomRowObjectSource();
+    SerdeRandomRowSource source = new SerdeRandomRowSource();
     source.init(r);
 
     int rowCount = 1000;

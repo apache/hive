@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeserializeRead;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
-import org.apache.hadoop.hive.serde2.fast.RandomRowObjectSource;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazy.fast.LazySimpleDeserializeRead;
@@ -85,7 +84,7 @@ public class TestVectorSerDeRow extends TestCase {
   }
 
   void deserializeAndVerify(Output output, DeserializeRead deserializeRead,
-              RandomRowObjectSource source, Object[] expectedRow)
+              VectorRandomRowSource source, Object[] expectedRow)
               throws HiveException, IOException {
     deserializeRead.set(output.getData(),  0, output.getLength());
     PrimitiveCategory[] primitiveCategories = source.primitiveCategories();
@@ -281,12 +280,11 @@ public class TestVectorSerDeRow extends TestCase {
     }
     deserializeRead.extraFieldsCheck();
     TestCase.assertTrue(!deserializeRead.readBeyondConfiguredFieldsWarned());
-    TestCase.assertTrue(!deserializeRead.readBeyondBufferRangeWarned());
     TestCase.assertTrue(!deserializeRead.bufferRangeHasExtraDataWarned());
   }
 
   void serializeBatch(VectorizedRowBatch batch, VectorSerializeRow vectorSerializeRow,
-           DeserializeRead deserializeRead, RandomRowObjectSource source, Object[][] randomRows,
+           DeserializeRead deserializeRead, VectorRandomRowSource source, Object[][] randomRows,
            int firstRandomRowIndex) throws HiveException, IOException {
 
     Output output = new Output();
@@ -311,7 +309,7 @@ public class TestVectorSerDeRow extends TestCase {
 
     String[] emptyScratchTypeNames = new String[0];
 
-    RandomRowObjectSource source = new RandomRowObjectSource();
+    VectorRandomRowSource source = new VectorRandomRowSource();
     source.init(r);
 
     VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();
@@ -389,7 +387,7 @@ public class TestVectorSerDeRow extends TestCase {
     }
   }
 
-  private Output serializeRow(Object[] row, RandomRowObjectSource source, SerializeWrite serializeWrite) throws HiveException, IOException {
+  private Output serializeRow(Object[] row, VectorRandomRowSource source, SerializeWrite serializeWrite) throws HiveException, IOException {
     Output output = new Output();
     serializeWrite.set(output);
     PrimitiveTypeInfo[] primitiveTypeInfos = source.primitiveTypeInfos();
@@ -542,7 +540,7 @@ public class TestVectorSerDeRow extends TestCase {
 
     String[] emptyScratchTypeNames = new String[0];
 
-    RandomRowObjectSource source = new RandomRowObjectSource();
+    VectorRandomRowSource source = new VectorRandomRowSource();
     source.init(r);
 
     VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();

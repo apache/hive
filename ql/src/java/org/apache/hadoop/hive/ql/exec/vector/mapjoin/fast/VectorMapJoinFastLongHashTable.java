@@ -78,8 +78,15 @@ public abstract class VectorMapJoinFastLongHashTable
     byte[] keyBytes = currentKey.getBytes();
     int keyLength = currentKey.getLength();
     keyBinarySortableDeserializeRead.set(keyBytes, 0, keyLength);
-    if (keyBinarySortableDeserializeRead.readCheckNull()) {
-      return;
+    try {
+      if (keyBinarySortableDeserializeRead.readCheckNull()) {
+        return;
+      }
+    } catch (Exception e) {
+      throw new HiveException(
+          "\nDeserializeRead details: " +
+              keyBinarySortableDeserializeRead.getDetailedReadPositionString() +
+          "\nException: " + e.toString());
     }
 
     long key = VectorMapJoinFastLongHashUtil.deserializeLongKey(

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.serde2.lazy.fast;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.CharacterCodingException;
 import java.sql.Date;
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +74,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
   private int end;
   private int fieldCount;
   private int fieldIndex;
+  private int parseFieldIndex;
   private int fieldStart;
   private int fieldLength;
 
@@ -124,6 +126,41 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     fieldIndex = -1;
   }
 
+  /*
+   * Get detailed read position information to help diagnose exceptions.
+   */
+  public String getDetailedReadPositionString() {
+    StringBuffer sb = new StringBuffer();
+
+    sb.append("Reading byte[] of length ");
+    sb.append(bytes.length);
+    sb.append(" at start offset ");
+    sb.append(start);
+    sb.append(" for length ");
+    sb.append(end - start);
+    sb.append(" to read ");
+    sb.append(fieldCount);
+    sb.append(" fields with types ");
+    sb.append(Arrays.toString(typeInfos));
+    sb.append(".  ");
+    if (fieldIndex == -1) {
+      sb.append("Error during field delimitor parsing of field #");
+      sb.append(parseFieldIndex);
+    } else {
+      sb.append("Read field #");
+      sb.append(fieldIndex);
+      sb.append(" at field start position ");
+      sb.append(startPosition[fieldIndex]);
+      int currentFieldLength = startPosition[fieldIndex + 1] - startPosition[fieldIndex] - 1;
+      sb.append(" for field length ");
+      sb.append(currentFieldLength);
+      sb.append(" current read offset ");
+      sb.append(offset);
+    }
+
+    return sb.toString();
+  }
+
   /**
    * Parse the byte[] and fill each field.
    *
@@ -133,27 +170,29 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
   private void parse() {
 
     int structByteEnd = end;
-    int fieldId = 0;
     int fieldByteBegin = start;
     int fieldByteEnd = start;
+
+    // Kept as a member variable to support getDetailedReadPositionString.
+    parseFieldIndex = 0;
 
     // Go through all bytes in the byte[]
     while (fieldByteEnd <= structByteEnd) {
       if (fieldByteEnd == structByteEnd || bytes[fieldByteEnd] == separator) {
         // Reached the end of a field?
-        if (lastColumnTakesRest && fieldId == fieldCount - 1) {
+        if (lastColumnTakesRest && parseFieldIndex == fieldCount - 1) {
           fieldByteEnd = structByteEnd;
         }
-        startPosition[fieldId] = fieldByteBegin;
-        fieldId++;
-        if (fieldId == fieldCount || fieldByteEnd == structByteEnd) {
+        startPosition[parseFieldIndex] = fieldByteBegin;
+        parseFieldIndex++;
+        if (parseFieldIndex == fieldCount || fieldByteEnd == structByteEnd) {
           // All fields have been parsed, or bytes have been parsed.
           // We need to set the startPosition of fields.length to ensure we
           // can use the same formula to calculate the length of each field.
           // For missing fields, their starting positions will all be the same,
           // which will make their lengths to be -1 and uncheckedGetField will
           // return these fields as NULLs.
-          for (int i = fieldId; i <= fieldCount; i++) {
+          for (int i = parseFieldIndex; i <= fieldCount; i++) {
             startPosition[i] = fieldByteEnd + 1;
           }
           break;
@@ -177,8 +216,8 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     }
 
     // Missing fields?
-    if (!missingFieldWarned && fieldId < fieldCount) {
-      doMissingFieldWarned(fieldId);
+    if (!missingFieldWarned && parseFieldIndex < fieldCount) {
+      doMissingFieldWarned(parseFieldIndex);
     }
   }
 
@@ -518,12 +557,8 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     return missingFieldWarned;
   }
   @Override
-  public boolean readBeyondBufferRangeWarned() {
-    return extraFieldWarned;
-  }
-  @Override
   public boolean bufferRangeHasExtraDataWarned() {
-    return false;  // UNDONE: Get rid of...
+    return false;
   }
 
   private void doExtraFieldWarned() {

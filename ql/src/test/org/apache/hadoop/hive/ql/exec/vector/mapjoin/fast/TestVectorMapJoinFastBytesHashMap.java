@@ -269,4 +269,19 @@ public class TestVectorMapJoinFastBytesHashMap extends CommonFastHashTable {
     int keyCount = 1000;
     addAndVerifyMultipleKeyMultipleValue(keyCount, map, verifyTable);
   }
+
+  @Test
+  public void testReallyBig() throws Exception {
+    random = new Random(42662);
+
+    // Use a large capacity that doesn't require expansion, yet.
+    VectorMapJoinFastMultiKeyHashMap map =
+        new VectorMapJoinFastMultiKeyHashMap(
+            false,LARGE_CAPACITY, LOAD_FACTOR, MODERATE_WB_SIZE);
+
+    VerifyFastBytesHashMap verifyTable = new VerifyFastBytesHashMap();
+
+    int keyCount = 1000000;
+    addAndVerifyMultipleKeyMultipleValue(keyCount, map, verifyTable);
+  }
 }

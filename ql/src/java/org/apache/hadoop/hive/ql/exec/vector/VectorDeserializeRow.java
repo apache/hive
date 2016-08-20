@@ -650,38 +650,26 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
   /**
    * Deserialize a row from the range of bytes specified by setBytes.
    *
+   * Use getDetailedReadPositionString to get detailed read position information to help
+   * diagnose exceptions that are thrown...
+   *
    * @param batch
    * @param batchIndex
    * @throws IOException
    */
   public void deserialize(VectorizedRowBatch batch, int batchIndex) throws IOException {
     final int count = isConvert.length;
-    int i = 0;
-    try {
-      while (i < count) {
-        if (isConvert[i]) {
-          deserializeConvertRowColumn(batch, batchIndex, i);
-        } else {
-          deserializeRowColumn(batch, batchIndex, i);
-        }
-        i++;    // Increment after the apply which could throw an exception.
+    for (int i = 0; i < count; i++) {
+      if (isConvert[i]) {
+        deserializeConvertRowColumn(batch, batchIndex, i);
+      } else {
+        deserializeRowColumn(batch, batchIndex, i);
       }
-    } catch (EOFException e) {
-      throwMoreDetailedException(e, i);
     }
     deserializeRead.extraFieldsCheck();
   }
 
-  private void throwMoreDetailedException(IOException e, int index) throws EOFException {
-    StringBuilder sb = new StringBuilder();
-    sb.append("Detail: \"" + e.toString() + "\" occured for field " + index + " of " +  sourceTypeInfos.length + " fields (");
-    for (int i = 0; i < sourceTypeInfos.length; i++) {
-      if (i > 0) {
-        sb.append(", ");
-      }
-      sb.append(((PrimitiveTypeInfo) sourceTypeInfos[i]).getPrimitiveCategory().name());
-    }
-    sb.append(")");
-    throw new EOFException(sb.toString());
+  public String getDetailedReadPositionString() {
+    return deserializeRead.getDetailedReadPositionString();
   }
 }

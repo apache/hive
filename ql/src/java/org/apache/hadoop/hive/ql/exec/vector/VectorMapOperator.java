@@ -820,7 +820,15 @@ public class VectorMapOperator extends AbstractMapOperator {
               currentDeserializeRead.set(binComp.getBytes(), 0, binComp.getLength());
 
               // Deserialize and append new row using the current batch size as the index.
-              currentVectorDeserializeRow.deserialize(deserializerBatch, deserializerBatch.size++);
+              try {
+                currentVectorDeserializeRow.deserialize(
+                    deserializerBatch, deserializerBatch.size++);
+              } catch (Exception e) {
+                throw new HiveException(
+                    "\nDeserializeRead detail: " +
+                        currentVectorDeserializeRow.getDetailedReadPositionString(),
+                    e);
+              }
             }
             break;
 

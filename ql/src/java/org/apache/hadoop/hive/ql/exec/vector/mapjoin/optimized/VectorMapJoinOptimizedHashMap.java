@@ -89,11 +89,6 @@ public class VectorMapJoinOptimizedHashMap
     }
 
     @Override
-    public boolean isEof() {
-      return bytesBytesMultiHashMapResult.isEof();
-    }
-
-    @Override
     public void forget() {
       bytesBytesMultiHashMapResult.forget();
       super.forget();
@@ -105,6 +100,11 @@ public class VectorMapJoinOptimizedHashMap
       sb.append("(" + super.toString() + ", ");
       sb.append("isSingleRow " + (joinResult() == JoinUtil.JoinResult.MATCH ? isSingleRow() : "<none>") + ")");
       return sb.toString();
+    }
+
+    @Override
+    public String getDetailedHashMapResultPositionString() {
+      return "(Not supported yet)";
     }
  }
 
