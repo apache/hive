@@ -143,8 +143,12 @@ public abstract class DeserializeRead {
    * Read integrity warning flags.
    */
   public abstract boolean readBeyondConfiguredFieldsWarned();
-  public abstract boolean readBeyondBufferRangeWarned();
   public abstract boolean bufferRangeHasExtraDataWarned();
+
+  /*
+   * Get detailed read position information to help diagnose exceptions.
+   */
+  public abstract String getDetailedReadPositionString();
 
   /*
    * These members hold the current value that was read when readCheckNull return false.

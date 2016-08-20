@@ -122,9 +122,7 @@ public class VectorMapJoinFastValueStore {
     private boolean isSingleRow;
     private int cappedCount;
 
-    private boolean haveReadCurrent;
     private int readIndex;
-    private boolean isEof;
 
     private boolean isNextEof;
     private boolean isNextLast;
@@ -153,9 +151,48 @@ public class VectorMapJoinFastValueStore {
       cappedCount =
           (int) ((valueRefWord & CappedCount.bitMask) >> CappedCount.bitShift);
       // Position to beginning.
-      haveReadCurrent = false;
       readIndex = 0;
-      isEof = false;
+    }
+
+    /**
+     * Get detailed HashMap result position information to help diagnose exceptions.
+     */
+    @Override
+    public String getDetailedHashMapResultPositionString() {
+      StringBuffer sb = new StringBuffer();
+
+      sb.append("Read index ");
+      sb.append(readIndex);
+      if (isSingleRow) {
+        sb.append(" single row");
+      } else {
+        sb.append(" capped count ");
+        sb.append(cappedCount);
+      }
+
+      if (readIndex > 0) {
+        sb.append(" byteSegmentRef is byte[] of length ");
+        sb.append(byteSegmentRef.getBytes().length);
+        sb.append(" at offset ");
+        sb.append(byteSegmentRef.getOffset());
+        sb.append(" for length ");
+        sb.append(byteSegmentRef.getLength());
+        if (!isSingleRow) {
+          sb.append(" (isNextEof ");
+          sb.append(isNextEof);
+          sb.append(" isNextLast ");
+          sb.append(isNextLast);
+          sb.append(" nextAbsoluteValueOffset ");
+          sb.append(nextAbsoluteValueOffset);
+          sb.append(" isNextValueLengthSmall ");
+          sb.append(isNextValueLengthSmall);
+          sb.append(" nextSmallValueLength ");
+          sb.append(nextSmallValueLength);
+          sb.append(")");
+        }
+      }
+
+      return sb.toString();
     }
 
     @Override
@@ -193,9 +230,7 @@ public class VectorMapJoinFastValueStore {
       }
 
       // Position to beginning.
-      haveReadCurrent = false;
       readIndex = 0;
-      isEof = false;
 
       return internalRead();
     }
@@ -363,17 +398,8 @@ public class VectorMapJoinFastValueStore {
     }
 
     @Override
-    public boolean isEof() {
-      if (!hasRows) {
-        return true;
-      }
-      return isEof;
-    }
-
-    @Override
     public void forget() {
     }
-
 
     @Override
     public String toString() {

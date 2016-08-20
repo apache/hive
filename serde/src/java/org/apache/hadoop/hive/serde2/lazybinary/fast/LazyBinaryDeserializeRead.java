@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.serde2.lazybinary.fast;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.Arrays;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -31,6 +33,7 @@ import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VLong;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.io.WritableUtils;
 
 /*
  * Directly deserialize with the caller reading field-by-field the LazyBinary serialization format.
@@ -54,6 +57,7 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
   private int offset;
   private int end;
   private int fieldCount;
+  private int fieldStart;
   private int fieldIndex;
   private byte nullByte;
 
@@ -62,7 +66,6 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
   private VLong tempVLong;
 
   private boolean readBeyondConfiguredFieldsWarned;
-  private boolean readBeyondBufferRangeWarned;
   private boolean bufferRangeHasExtraDataWarned;
 
   public LazyBinaryDeserializeRead(TypeInfo[] typeInfos) {
@@ -71,7 +74,6 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
     tempVInt = new VInt();
     tempVLong = new VLong();
     readBeyondConfiguredFieldsWarned = false;
-    readBeyondBufferRangeWarned = false;
     bufferRangeHasExtraDataWarned = false;
   }
 
@@ -93,6 +95,32 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
   }
 
   /*
+   * Get detailed read position information to help diagnose exceptions.
+   */
+  public String getDetailedReadPositionString() {
+    StringBuffer sb = new StringBuffer();
+
+    sb.append("Reading byte[] of length ");
+    sb.append(bytes.length);
+    sb.append(" at start offset ");
+    sb.append(start);
+    sb.append(" for length ");
+    sb.append(end - start);
+    sb.append(" to read ");
+    sb.append(fieldCount);
+    sb.append(" fields with types ");
+    sb.append(Arrays.toString(typeInfos));
+    sb.append(".  Read field #");
+    sb.append(fieldIndex);
+    sb.append(" at field start position ");
+    sb.append(fieldStart);
+    sb.append(" current read offset ");
+    sb.append(offset);
+
+    return sb.toString();
+  }
+
+  /*
    * Reads the NULL information for a field.
    *
    * @return Returns true when the field is NULL; reading is positioned to the next field.
@@ -111,11 +139,13 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
       return true;
     }
 
+    fieldStart = offset;
+
     if (fieldIndex == 0) {
       // The rest of the range check for fields after the first is below after checking
       // the NULL byte.
       if (offset >= end) {
-        warnBeyondEof();
+        throw new EOFException();
       }
       nullByte = bytes[offset++];
     }
@@ -129,9 +159,7 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
 
       // Make sure there is at least one byte that can be read for a value.
       if (offset >= end) {
-        // Careful: since we may be dealing with NULLs in the final NULL byte, we check after
-        // the NULL byte check..
-        warnBeyondEof();
+        throw new EOFException();
       }
 
       /*
@@ -149,33 +177,33 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
       case SHORT:
         // Last item -- ok to be at end.
         if (offset + 2 > end) {
-          warnBeyondEof();
+          throw new EOFException();
         }
         currentShort = LazyBinaryUtils.byteArrayToShort(bytes, offset);
         offset += 2;
         break;
       case INT:
+        // Parse the first byte of a vint/vlong to determine the number of bytes.
+        if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
+          throw new EOFException();
+        }
         LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
         offset += tempVInt.length;
-        // Last item -- ok to be at end.
-        if (offset > end) {
-          warnBeyondEof();
-        }
         currentInt = tempVInt.value;
         break;
       case LONG:
+        // Parse the first byte of a vint/vlong to determine the number of bytes.
+        if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
+          throw new EOFException();
+        }
         LazyBinaryUtils.readVLong(bytes, offset, tempVLong);
         offset += tempVLong.length;
-        // Last item -- ok to be at end.
-        if (offset > end) {
-          warnBeyondEof();
-        }
         currentLong = tempVLong.value;
         break;
       case FLOAT:
         // Last item -- ok to be at end.
         if (offset + 4 > end) {
-          warnBeyondEof();
+          throw new EOFException();
         }
         currentFloat = Float.intBitsToFloat(LazyBinaryUtils.byteArrayToInt(bytes, offset));
         offset += 4;
@@ -183,7 +211,7 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
       case DOUBLE:
         // Last item -- ok to be at end.
         if (offset + 8 > end) {
-          warnBeyondEof();
+          throw new EOFException();
         }
         currentDouble = Double.longBitsToDouble(LazyBinaryUtils.byteArrayToLong(bytes, offset));
         offset += 8;
@@ -195,18 +223,19 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
       case VARCHAR:
         {
           // using vint instead of 4 bytes
+          // Parse the first byte of a vint/vlong to determine the number of bytes.
+          if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
+            throw new EOFException();
+          }
           LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
           offset += tempVInt.length;
-          // Could be last item for empty string -- ok to be at end.
-          if (offset > end) {
-            warnBeyondEof();
-          }
+
           int saveStart = offset;
           int length = tempVInt.value;
           offset += length;
           // Last item -- ok to be at end.
           if (offset > end) {
-            warnBeyondEof();
+            throw new EOFException();
           }
 
           currentBytes = bytes;
@@ -215,12 +244,12 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
         }
         break;
       case DATE:
+        // Parse the first byte of a vint/vlong to determine the number of bytes.
+        if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
+          throw new EOFException();
+        }
         LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
         offset += tempVInt.length;
-        // Last item -- ok to be at end.
-        if (offset > end) {
-          warnBeyondEof();
-        }
 
         currentDateWritable.set(tempVInt.value);
         break;
@@ -231,34 +260,37 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
           offset += length;
           // Last item -- ok to be at end.
           if (offset > end) {
-            warnBeyondEof();
+            throw new EOFException();
           }
 
           currentTimestampWritable.set(bytes, saveStart);
         }
         break;
       case INTERVAL_YEAR_MONTH:
+        // Parse the first byte of a vint/vlong to determine the number of bytes.
+        if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
+          throw new EOFException();
+        }
         LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
         offset += tempVInt.length;
-        // Last item -- ok to be at end.
-        if (offset > end) {
-          warnBeyondEof();
-        }
+
         currentHiveIntervalYearMonthWritable.set(tempVInt.value);
         break;
       case INTERVAL_DAY_TIME:
+        // The first bounds check requires at least one more byte beyond for 2nd int (hence >=).
+        // Parse the first byte of a vint/vlong to determine the number of bytes.
+        if (offset + WritableUtils.decodeVIntSize(bytes[offset]) >= end) {
+          throw new EOFException();
+        }
         LazyBinaryUtils.readVLong(bytes, offset, tempVLong);
         offset += tempVLong.length;
-        if (offset >= end) {
-          // Overshoot or not enough for next item.
-          warnBeyondEof();
+
+        // Parse the first byte of a vint/vlong to determine the number of bytes.
+        if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
+          throw new EOFException();
         }
         LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
         offset += tempVInt.length;
-        // Last item -- ok to be at end.
-        if (offset > end) {
-          warnBeyondEof();
-        }
 
         currentHiveIntervalDayTimeWritable.set(tempVLong.value, tempVInt.value);
         break;
@@ -269,23 +301,27 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
 
           // These calls are to see how much data there is. The setFromBytes call below will do the same
           // readVInt reads but actually unpack the decimal.
+
+          // The first bounds check requires at least one more byte beyond for 2nd int (hence >=).
+          // Parse the first byte of a vint/vlong to determine the number of bytes.
+          if (offset + WritableUtils.decodeVIntSize(bytes[offset]) >= end) {
+            throw new EOFException();
+          }
           LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
           int saveStart = offset;
           offset += tempVInt.length;
-          if (offset >= end) {
-            // Overshoot or not enough for next item.
-            warnBeyondEof();
+
+          // Parse the first byte of a vint/vlong to determine the number of bytes.
+          if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
+            throw new EOFException();
           }
           LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
           offset += tempVInt.length;
-          if (offset >= end) {
-            // Overshoot or not enough for next item.
-            warnBeyondEof();
-          }
+
           offset += tempVInt.value;
           // Last item -- ok to be at end.
           if (offset > end) {
-            warnBeyondEof();
+            throw new EOFException();
           }
           int length = offset - saveStart;
 
@@ -327,7 +363,7 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
       if ((fieldIndex % 8) == 0) {
         // Get next null byte.
         if (offset >= end) {
-          warnBeyondEof();
+          throw new EOFException();
         }
         nullByte = bytes[offset++];
       }
@@ -363,23 +399,7 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
     return readBeyondConfiguredFieldsWarned;
   }
   @Override
-  public boolean readBeyondBufferRangeWarned() {
-    return readBeyondBufferRangeWarned;
-  }
-  @Override
   public boolean bufferRangeHasExtraDataWarned() {
     return bufferRangeHasExtraDataWarned;
-  }
-
-  private void warnBeyondEof() throws EOFException {
-    if (!readBeyondBufferRangeWarned) {
-      // Warn only once.
-      int length = end - start;
-      LOG.info("Reading beyond buffer range! Buffer range " +  start
-          + " for length " + length + " but reading more... "
-          + "(total buffer length " + bytes.length + ")"
-          + "  Ignoring similar problems.");
-      readBeyondBufferRangeWarned = true;
-    }
   }
 }

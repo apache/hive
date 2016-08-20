@@ -45,8 +45,15 @@ public class VectorMapJoinFastStringCommon {
     byte[] keyBytes = currentKey.getBytes();
     int keyLength = currentKey.getLength();
     keyBinarySortableDeserializeRead.set(keyBytes, 0, keyLength);
-    if (keyBinarySortableDeserializeRead.readCheckNull()) {
-      return;
+    try {
+      if (keyBinarySortableDeserializeRead.readCheckNull()) {
+        return;
+      }
+    } catch (Exception e) {
+      throw new HiveException(
+          "\nDeserializeRead details: " +
+              keyBinarySortableDeserializeRead.getDetailedReadPositionString() +
+          "\nException: " + e.toString());
     }
 
     hashTable.add(
@@ -59,6 +66,7 @@ public class VectorMapJoinFastStringCommon {
   public VectorMapJoinFastStringCommon(boolean isOuterJoin) {
     this.isOuterJoin = isOuterJoin;
     PrimitiveTypeInfo[] primitiveTypeInfos = { TypeInfoFactory.stringTypeInfo };
-    keyBinarySortableDeserializeRead = new BinarySortableDeserializeRead(primitiveTypeInfos);
+    keyBinarySortableDeserializeRead =
+        new BinarySortableDeserializeRead(primitiveTypeInfos);
   }
 }

@@ -298,8 +298,8 @@ public final class BytesBytesMultiHashMap {
     }
 
     /**
-     * Read the current value.  
-     * 
+     * Read the current value.
+     *
      * @return
      *           The ByteSegmentRef to the current value read.
      */
@@ -377,29 +377,6 @@ public final class BytesBytesMultiHashMap {
       nextTailOffset = newTailOffset;
       readIndex++;
       return byteSegmentRef;
-    }
-
-    /**
-     * @return Whether we have read all the values or not.
-     */
-    public boolean isEof() {
-      // LOG.info("BytesBytesMultiHashMap isEof hasRows " + hasRows + " hasList " + hasList + " readIndex " + readIndex + " nextTailOffset " + nextTailOffset);
-      if (!hasRows) {
-        return true;
-      }
-
-      if (!hasList) {
-        return (readIndex > 0);
-      } else {
-        // Multiple values.
-        if (readIndex <= 1) {
-          // Careful: We have not read the list record and 2nd value yet, so nextTailOffset
-          // is not valid yet.
-          return false;
-        } else {
-          return (nextTailOffset <= 0);
-        }
-      }
     }
 
     /**
@@ -741,7 +718,7 @@ public final class BytesBytesMultiHashMap {
     long capacity = refs.length << 1;
     expandAndRehashImpl(capacity);
   }
-  
+
   private void expandAndRehashImpl(long capacity) {
     long expandTime = System.currentTimeMillis();
     final long[] oldRefs = refs;

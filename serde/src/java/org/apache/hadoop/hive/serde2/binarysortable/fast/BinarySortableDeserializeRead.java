@@ -42,7 +42,7 @@ import org.apache.hadoop.io.Text;
  *
  * Reading some fields require a results object to receive value information.  A separate
  * results object is created by the caller at initialization per different field even for the same
- * type. 
+ * type.
  *
  * Some type values are by reference to either bytes in the deserialization buffer or to
  * other type specific buffers.  So, those references are only valid until the next time set is
@@ -61,6 +61,8 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
   private int fieldCount;
 
   private int start;
+  private int end;
+  private int fieldStart;
 
   private byte[] tempTimestampBytes;
   private Text tempText;
@@ -68,7 +70,6 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
   private byte[] tempDecimalBuffer;
 
   private boolean readBeyondConfiguredFieldsWarned;
-  private boolean readBeyondBufferRangeWarned;
   private boolean bufferRangeHasExtraDataWarned;
 
   private InputByteBuffer inputByteBuffer = new InputByteBuffer();
@@ -92,7 +93,6 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
     }
     inputByteBuffer = new InputByteBuffer();
     readBeyondConfiguredFieldsWarned = false;
-    readBeyondBufferRangeWarned = false;
     bufferRangeHasExtraDataWarned = false;
   }
 
@@ -107,8 +107,40 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
   @Override
   public void set(byte[] bytes, int offset, int length) {
     fieldIndex = -1;
-    inputByteBuffer.reset(bytes, offset, offset + length);
     start = offset;
+    end = offset + length;
+    inputByteBuffer.reset(bytes, start, end);
+  }
+
+  /*
+   * Get detailed read position information to help diagnose exceptions.
+   */
+  public String getDetailedReadPositionString() {
+    StringBuffer sb = new StringBuffer();
+
+    sb.append("Reading inputByteBuffer of length ");
+    sb.append(inputByteBuffer.getEnd());
+    sb.append(" at start offset ");
+    sb.append(start);
+    sb.append(" for length ");
+    sb.append(end - start);
+    sb.append(" to read ");
+    sb.append(fieldCount);
+    sb.append(" fields with types ");
+    sb.append(Arrays.toString(typeInfos));
+    sb.append(".  ");
+    if (fieldIndex == -1) {
+      sb.append("Before first field?");
+    } else {
+      sb.append("Read field #");
+      sb.append(fieldIndex);
+      sb.append(" at field start position ");
+      sb.append(fieldStart);
+      sb.append(" current read offset ");
+      sb.append(inputByteBuffer.tell());
+    }
+
+    return sb.toString();
   }
 
   /*
@@ -133,12 +165,11 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
     }
     if (inputByteBuffer.isEof()) {
       // Also, reading beyond our byte range produces NULL.
-      if (!readBeyondBufferRangeWarned) {
-        doReadBeyondBufferRangeWarned();
-      }
-      // We cannot read beyond so we must return NULL here.
       return true;
     }
+
+    fieldStart = inputByteBuffer.tell();
+
     byte isNullByte = inputByteBuffer.read(columnSortOrderIsDesc[fieldIndex]);
 
     if (isNullByte == 0) {
@@ -298,7 +329,7 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
           factor = -factor;
         }
 
-        int start = inputByteBuffer.tell();
+        int decimalStart = inputByteBuffer.tell();
         int length = 0;
 
         do {
@@ -317,7 +348,7 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
           tempDecimalBuffer = new byte[length];
         }
 
-        inputByteBuffer.seek(start);
+        inputByteBuffer.seek(decimalStart);
         for (int i = 0; i < length; ++i) {
           tempDecimalBuffer[i] = inputByteBuffer.read(positive ? invert : !invert);
         }
@@ -392,10 +423,6 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
     return readBeyondConfiguredFieldsWarned;
   }
   @Override
-  public boolean readBeyondBufferRangeWarned() {
-    return readBeyondBufferRangeWarned;
-  }
-  @Override
   public boolean bufferRangeHasExtraDataWarned() {
     return bufferRangeHasExtraDataWarned;
   }
@@ -409,15 +436,5 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
     LOG.info("Reading beyond configured fields! Configured " + fieldCount + " fields but "
         + " reading more (NULLs returned).  Ignoring similar problems.");
     readBeyondConfiguredFieldsWarned = true;
-  }
-
-  private void doReadBeyondBufferRangeWarned() {
-    // Warn only once.
-    int length = inputByteBuffer.tell() - start;
-    LOG.info("Reading beyond buffer range! Buffer range " +  start 
-        + " for length " + length + " but reading more... "
-        + "(total buffer length " + inputByteBuffer.getData().length + ")"
-        + "  Ignoring similar problems.");
-    readBeyondBufferRangeWarned = true;
   }
 }

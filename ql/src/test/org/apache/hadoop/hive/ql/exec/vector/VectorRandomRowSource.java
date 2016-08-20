@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.serde2.fast;
+package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -64,7 +64,7 @@ import org.apache.hive.common.util.DateUtils;
 /**
  * Generate object inspector and random row object[].
  */
-public class RandomRowObjectSource {
+public class VectorRandomRowSource {
 
   private Random r;
 
@@ -226,6 +226,29 @@ public class RandomRowObjectSource {
     return row;
   }
 
+  public Object[] randomRow(int columnCount) {
+    return randomRow(columnCount, r, primitiveObjectInspectorList, primitiveCategories,
+        primitiveTypeInfos);
+  }
+
+  public static Object[] randomRow(int columnCount, Random r,
+      List<ObjectInspector> primitiveObjectInspectorList, PrimitiveCategory[] primitiveCategories,
+      PrimitiveTypeInfo[] primitiveTypeInfos) {
+    Object row[] = new Object[columnCount];
+    for (int c = 0; c < columnCount; c++) {
+      Object object = randomObject(c, r, primitiveCategories, primitiveTypeInfos);
+      if (object == null) {
+        throw new Error("Unexpected null for column " + c);
+      }
+      row[c] = getWritableObject(c, object, primitiveObjectInspectorList,
+          primitiveCategories, primitiveTypeInfos);
+      if (row[c] == null) {
+        throw new Error("Unexpected null for writable for column " + c);
+      }
+    }
+    return row;
+  }
+
   public static void sort(Object[][] rows, ObjectInspector oi) {
     for (int i = 0; i < rows.length; i++) {
       for (int j = i + 1; j < rows.length; j++) {
@@ -239,10 +262,17 @@ public class RandomRowObjectSource {
   }
 
   public void sort(Object[][] rows) {
-    RandomRowObjectSource.sort(rows, rowStructObjectInspector);
+    VectorRandomRowSource.sort(rows, rowStructObjectInspector);
   }
 
   public Object getWritableObject(int column, Object object) {
+    return getWritableObject(column, object, primitiveObjectInspectorList,
+        primitiveCategories, primitiveTypeInfos);
+  }
+
+  public static Object getWritableObject(int column, Object object,
+      List<ObjectInspector> primitiveObjectInspectorList, PrimitiveCategory[] primitiveCategories,
+      PrimitiveTypeInfo[] primitiveTypeInfos) {
     ObjectInspector objectInspector = primitiveObjectInspectorList.get(column);
     PrimitiveCategory primitiveCategory = primitiveCategories[column];
     PrimitiveTypeInfo primitiveTypeInfo = primitiveTypeInfos[column];
@@ -297,6 +327,11 @@ public class RandomRowObjectSource {
   }
 
   public Object randomObject(int column) {
+    return randomObject(column, r, primitiveCategories, primitiveTypeInfos);
+  }
+
+  public static Object randomObject(int column, Random r, PrimitiveCategory[] primitiveCategories,
+      PrimitiveTypeInfo[] primitiveTypeInfos) {
     PrimitiveCategory primitiveCategory = primitiveCategories[column];
     PrimitiveTypeInfo primitiveTypeInfo = primitiveTypeInfos[column];
     switch (primitiveCategory) {

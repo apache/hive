@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 import java.util.TreeMap;
 
@@ -43,12 +44,14 @@ import static org.junit.Assert.*;
 
 public class CheckFastHashTable {
 
-  public static boolean findMatch(byte[] valueBytes, List<byte[]> actualValues, int actualCount, boolean[] taken) {
+  public static boolean findMatch(int valueIndex, byte[] valueBytes, List<byte[]> actualValues,
+      int actualCount, boolean[] actualTaken, int[] actualToValueMap) {
     for (int i = 0; i < actualCount; i++) {
-      if (!taken[i]) {
+      if (!actualTaken[i]) {
         byte[] actualBytes = actualValues.get(i);
         if (StringExpr.compare(valueBytes, 0, valueBytes.length, actualBytes, 0, actualBytes.length) == 0) {
-          taken[i] = true;
+          actualToValueMap[i] = valueIndex;
+          actualTaken[i] = true;
           return true;
         }
       }
@@ -56,7 +59,7 @@ public class CheckFastHashTable {
     return false;
   }
 
-  public static void verifyHashMapValues(VectorMapJoinHashMapResult hashMapResult,
+  public static int[] verifyHashMapValues(VectorMapJoinHashMapResult hashMapResult,
       List<byte[]> values) {
 
     int valueCount = values.size();
@@ -87,15 +90,16 @@ public class CheckFastHashTable {
       TestCase.fail("values.size() " + valueCount + " does not match actualCount " + actualCount);
     }
 
-    boolean[] taken = new boolean[actualCount];
+    boolean[] actualTaken = new boolean[actualCount];
+    int[] actualToValueMap = new int[actualCount];
 
     for (int i = 0; i < actualCount; i++) {
       byte[] valueBytes = values.get(i);
 
-      if (!findMatch(valueBytes, actualValues, actualCount, taken)) {
+      if (!findMatch(i, valueBytes, actualValues, actualCount, actualTaken, actualToValueMap)) {
         List<Integer> availableLengths = new ArrayList<Integer>();
         for (int a = 0; a < actualCount; a++) {
-          if (!taken[a]) {
+          if (!actualTaken[a]) {
             availableLengths.add(actualValues.get(a).length);
           }
         }
@@ -103,6 +107,7 @@ public class CheckFastHashTable {
             ", availableLengths " + availableLengths.toString() + " of " + actualCount + " total)");
       }
     }
+    return actualToValueMap;
   }
 
   /*

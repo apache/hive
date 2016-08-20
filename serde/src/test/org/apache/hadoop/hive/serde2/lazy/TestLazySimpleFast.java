@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
-import java.io.EOFException;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.Random;
@@ -25,19 +24,14 @@ import java.util.Random;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
-import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.SerdeRandomRowSource;
 import org.apache.hadoop.hive.serde2.VerifyFast;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestClass;
-import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass;
-import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass.ExtraTypeInfo;
-import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeserializeRead;
-import org.apache.hadoop.hive.serde2.fast.RandomRowObjectSource;
 import org.apache.hadoop.hive.serde2.lazy.fast.LazySimpleDeserializeRead;
 import org.apache.hadoop.hive.serde2.lazy.fast.LazySimpleSerializeWrite;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
@@ -49,7 +43,7 @@ import junit.framework.TestCase;
 public class TestLazySimpleFast extends TestCase {
 
   private void testLazySimpleFast(
-    RandomRowObjectSource source, Object[][] rows,
+    SerdeRandomRowSource source, Object[][] rows,
     LazySimpleSerDe serde, StructObjectInspector rowOI,
     LazySimpleSerDe serde_fewer, StructObjectInspector writeRowOI,
     byte separator, LazySerDeParameters serdeParams, LazySerDeParameters serdeParams_fewer,
@@ -131,11 +125,6 @@ public class TestLazySimpleFast extends TestCase {
       }
       lazySimpleDeserializeRead.extraFieldsCheck();
       TestCase.assertTrue(!lazySimpleDeserializeRead.readBeyondConfiguredFieldsWarned());
-      if (doWriteFewerColumns) {
-        TestCase.assertTrue(lazySimpleDeserializeRead.readBeyondBufferRangeWarned());
-      } else {
-        TestCase.assertTrue(!lazySimpleDeserializeRead.readBeyondBufferRangeWarned());
-      }
       TestCase.assertTrue(!lazySimpleDeserializeRead.bufferRangeHasExtraDataWarned());
 
     }
@@ -219,11 +208,6 @@ public class TestLazySimpleFast extends TestCase {
       }
       lazySimpleDeserializeRead.extraFieldsCheck();
       TestCase.assertTrue(!lazySimpleDeserializeRead.readBeyondConfiguredFieldsWarned());
-      if (doWriteFewerColumns) {
-        TestCase.assertTrue(lazySimpleDeserializeRead.readBeyondBufferRangeWarned());
-      } else {
-        TestCase.assertTrue(!lazySimpleDeserializeRead.readBeyondBufferRangeWarned());
-      }
       TestCase.assertTrue(!lazySimpleDeserializeRead.bufferRangeHasExtraDataWarned());
     }
   }
@@ -266,7 +250,7 @@ public class TestLazySimpleFast extends TestCase {
   public void testLazySimpleFastCase(int caseNum, boolean doNonRandomFill, Random r)
       throws Throwable {
 
-    RandomRowObjectSource source = new RandomRowObjectSource();
+    SerdeRandomRowSource source = new SerdeRandomRowSource();
     source.init(r);
 
     int rowCount = 1000;

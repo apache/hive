@@ -96,7 +96,7 @@ public interface SerializeWrite {
 
   /*
    * STRING.
-   * 
+   *
    * Can be used to write CHAR and VARCHAR when the caller takes responsibility for
    * truncation/padding issues.
    */

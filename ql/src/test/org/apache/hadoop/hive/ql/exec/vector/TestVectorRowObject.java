@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.Random;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.fast.RandomRowObjectSource;
 
 import junit.framework.TestCase;
 
@@ -51,7 +50,7 @@ public class TestVectorRowObject extends TestCase {
 
     String[] emptyScratchTypeNames = new String[0];
 
-    RandomRowObjectSource source = new RandomRowObjectSource();
+    VectorRandomRowSource source = new VectorRandomRowSource();
     source.init(r);
 
     VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();
