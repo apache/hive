@@ -146,6 +146,17 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@v
 #### A masked pattern was here ####
 1
+PREHOOK: query: select * from v
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v
+#### A masked pattern was here ####
+1
 PREHOOK: query: drop view v
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@v

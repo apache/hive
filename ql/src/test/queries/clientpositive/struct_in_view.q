@@ -32,6 +32,10 @@ desc extended v;
 
 select * from v;
 
+set hive.cbo.returnpath.hiveop=true;
+select * from v;
+set hive.cbo.returnpath.hiveop=false;
+
 drop view v;
 
 create view v as select named_struct('end', 1).`end` from src limit 1;
