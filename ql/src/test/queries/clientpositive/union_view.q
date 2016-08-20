@@ -63,12 +63,13 @@ SELECT key, value, ds FROM src_union_3
 EXPLAIN SELECT key, value, ds FROM src_union_view WHERE key=86 AND ds ='1';
 EXPLAIN SELECT key, value, ds FROM src_union_view WHERE key=86 AND ds ='2';
 EXPLAIN SELECT key, value, ds FROM src_union_view WHERE key=86 AND ds ='3';
-EXPLAIN SELECT key, value, ds FROM src_union_view WHERE key=86 AND ds IS NOT NULL order by ds;
+EXPLAIN SELECT key, value, ds FROM src_union_view WHERE key=86 AND ds IS NOT NULL;
 
 SELECT key, value, ds FROM src_union_view WHERE key=86 AND ds ='1';
 SELECT key, value, ds FROM src_union_view WHERE key=86 AND ds ='2';
 SELECT key, value, ds FROM src_union_view WHERE key=86 AND ds ='3';
-SELECT key, value, ds FROM src_union_view WHERE key=86 AND ds IS NOT NULL order by ds;
+-- SORT_BEFORE_DIFF
+SELECT key, value, ds FROM src_union_view WHERE key=86 AND ds IS NOT NULL;
 
 EXPLAIN SELECT count(1) from src_union_view WHERE ds ='1';
 EXPLAIN SELECT count(1) from src_union_view WHERE ds ='2';

@@ -1,4 +1,5 @@
-PREHOOK: query: -- This is to test the union->selectstar->filesink optimization
+PREHOOK: query: -- SORT_QUERY_RESULTS
+-- This is to test the union->selectstar->filesink optimization
 -- Union of 2 map-reduce subqueries is performed followed by select star and a file sink
 -- There is no need to write the temporary results of the sub-queries, and then read them 
 -- again to process the union. The union can be removed completely.
@@ -14,7 +15,8 @@ create table inputTbl1(key string, ds string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@inputTbl1
-POSTHOOK: query: -- This is to test the union->selectstar->filesink optimization
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+-- This is to test the union->selectstar->filesink optimization
 -- Union of 2 map-reduce subqueries is performed followed by select star and a file sink
 -- There is no need to write the temporary results of the sub-queries, and then read them 
 -- again to process the union. The union can be removed completely.
@@ -234,31 +236,31 @@ ds=13
 ds=17
 ds=18
 ds=28
-PREHOOK: query: select * from outputTbl1 where ds = '11' order by key, `values`
+PREHOOK: query: select * from outputTbl1 where ds = '11'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1
 PREHOOK: Input: default@outputtbl1@ds=11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl1 where ds = '11' order by key, `values`
+POSTHOOK: query: select * from outputTbl1 where ds = '11'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 POSTHOOK: Input: default@outputtbl1@ds=11
 #### A masked pattern was here ####
 1	1	11
 1	1	11
-PREHOOK: query: select * from outputTbl1 where ds = '18' order by key, `values`
+PREHOOK: query: select * from outputTbl1 where ds = '18'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1
 PREHOOK: Input: default@outputtbl1@ds=18
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl1 where ds = '18' order by key, `values`
+POSTHOOK: query: select * from outputTbl1 where ds = '18'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 POSTHOOK: Input: default@outputtbl1@ds=18
 #### A masked pattern was here ####
 8	1	18
 8	1	18
-PREHOOK: query: select * from outputTbl1 where ds is not null order by key, `values`, ds
+PREHOOK: query: select * from outputTbl1 where ds is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1
 PREHOOK: Input: default@outputtbl1@ds=11
@@ -268,7 +270,7 @@ PREHOOK: Input: default@outputtbl1@ds=17
 PREHOOK: Input: default@outputtbl1@ds=18
 PREHOOK: Input: default@outputtbl1@ds=28
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl1 where ds is not null order by key, `values`, ds
+POSTHOOK: query: select * from outputTbl1 where ds is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 POSTHOOK: Input: default@outputtbl1@ds=11

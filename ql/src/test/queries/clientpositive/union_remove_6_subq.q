@@ -43,8 +43,8 @@ insert overwrite table outputTbl1 select *
 insert overwrite table outputTbl2 select *;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-select * from outputTbl1 order by key, `values`;
-select * from outputTbl2 order by key, `values`;
+select * from outputTbl1;
+select * from outputTbl2;
 
 -- The following queries guarantee the correctness.
 explain

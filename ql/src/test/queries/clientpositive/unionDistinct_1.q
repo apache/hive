@@ -386,16 +386,14 @@ from (
   select transform(key, value) using 'cat' as (key2, value2)
   from src
   UNION DISTINCT 
-  select key as key2, value as value2 from src) s
-order by s.key2, s.value2;
+  select key as key2, value as value2 from src) s;
 
 select s.key2, s.value2
 from (
   select transform(key, value) using 'cat' as (key2, value2)
   from src
   UNION DISTINCT 
-  select key as key2, value as value2 from src) s
-order by s.key2, s.value2;
+  select key as key2, value as value2 from src) s;
 
 -- union24.q
 
@@ -874,8 +872,7 @@ EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key FROM t1
 UNION DISTINCT
-SELECT CAST(key AS BIGINT) AS key FROM t2) a
-ORDER BY key;
+SELECT CAST(key AS BIGINT) AS key FROM t2) a;
 
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key FROM t1
@@ -1013,13 +1010,13 @@ SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION DISTINCT
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION DISTINCT SELECT * FROM src10_4 ) alias0
-) alias1 order by key;
+) alias1;
 
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION DISTINCT
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION DISTINCT SELECT * FROM src10_4 ) alias0
-) alias1 order by key;
+) alias1;
 
 set hive.auto.convert.join=false;
 -- When we do not convert the Join of sub1 and sub0 into a MapJoin,
@@ -1031,13 +1028,13 @@ SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION DISTINCT
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION DISTINCT SELECT * FROM src10_4 ) alias0
-) alias1 order by key;
+) alias1;
 
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION DISTINCT
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION DISTINCT SELECT * FROM src10_4 ) alias0
-) alias1 order by key;
+) alias1;
 -- union4.q
 
  

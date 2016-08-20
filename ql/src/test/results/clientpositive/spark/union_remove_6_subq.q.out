@@ -203,11 +203,11 @@ POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(n
 POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, ]
 POSTHOOK: Lineage: outputtbl2.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl2.values EXPRESSION [(inputtbl1)inputtbl1.null, ]
-PREHOOK: query: select * from outputTbl1 order by key, `values`
+PREHOOK: query: select * from outputTbl1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl1 order by key, `values`
+POSTHOOK: query: select * from outputTbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####
@@ -221,11 +221,11 @@ POSTHOOK: Input: default@outputtbl1
 7	1
 8	2
 8	2
-PREHOOK: query: select * from outputTbl2 order by key, `values`
+PREHOOK: query: select * from outputTbl2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl2 order by key, `values`
+POSTHOOK: query: select * from outputTbl2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl2
 #### A masked pattern was here ####

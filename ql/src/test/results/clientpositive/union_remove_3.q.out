@@ -1,4 +1,5 @@
-PREHOOK: query: -- This is to test the union->remove->filesink optimization
+PREHOOK: query: -- SORT_QUERY_RESULTS
+-- This is to test the union->remove->filesink optimization
 -- Union of 3 subqueries is performed (all of which are map-only queries)
 -- followed by select star and a file sink.
 -- There is no need for any optimization, since the whole query can be processed in
@@ -13,7 +14,8 @@ create table inputTbl1(key string, val string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@inputTbl1
-POSTHOOK: query: -- This is to test the union->remove->filesink optimization
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+-- This is to test the union->remove->filesink optimization
 -- Union of 3 subqueries is performed (all of which are map-only queries)
 -- followed by select star and a file sink.
 -- There is no need for any optimization, since the whole query can be processed in
@@ -206,11 +208,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select * from outputTbl1 order by key, `values`
+PREHOOK: query: select * from outputTbl1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl1 order by key, `values`
+POSTHOOK: query: select * from outputTbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####

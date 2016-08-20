@@ -38,7 +38,6 @@ SELECT * FROM
 (SELECT CAST(key AS DOUBLE) AS key FROM t1
 UNION ALL
 SELECT CAST(key AS BIGINT) AS key FROM t2) a
-ORDER BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- Test simple union with double
 EXPLAIN
@@ -46,7 +45,6 @@ SELECT * FROM
 (SELECT CAST(key AS DOUBLE) AS key FROM t1
 UNION ALL
 SELECT CAST(key AS BIGINT) AS key FROM t2) a
-ORDER BY key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -65,10 +63,13 @@ STAGE PLANS:
               Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Union
                 Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: double)
-                  sort order: +
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             alias: t2
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
@@ -78,22 +79,13 @@ STAGE PLANS:
               Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Union
                 Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: double)
-                  sort order: +
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: double)
-          outputColumnNames: _col0
-          Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 20 Data size: 140 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

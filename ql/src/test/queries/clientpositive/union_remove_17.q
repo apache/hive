@@ -10,6 +10,7 @@ set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
 set mapred.input.dir.recursive=true;
 
+-- SORT_QUERY_RESULTS
 -- This is to test the union->selectstar->filesink optimization
 -- Union of 2 map-reduce subqueries is performed followed by select star and a file sink
 -- and the results are written to a table using dynamic partitions.
@@ -46,5 +47,5 @@ desc formatted outputTbl1;
 show partitions outputTbl1;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-select * from outputTbl1 where ds = '1' order by key, `values`;
-select * from outputTbl1 where ds = '2' order by key, `values`;
+select * from outputTbl1 where ds = '1';
+select * from outputTbl1 where ds = '2';
