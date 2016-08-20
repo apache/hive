@@ -9,6 +9,7 @@ set hive.auto.convert.join=true;
 set hive.merge.smallfiles.avgsize=1;
 set mapred.input.dir.recursive=true;
 
+-- SORT_QUERY_RESULTS
 -- This is to test the union->selectstar->filesink optimization
 -- Union of 2 subqueries is performed (one of which is a map-only query, and the
 -- other one contains a join, which should be performed as a map-join query at runtime),
@@ -50,4 +51,4 @@ FROM inputTbl1 a join inputTbl1 b on a.key=b.key
 desc formatted outputTbl1;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-select * from outputTbl1 order by key, `values`;
+select * from outputTbl1;

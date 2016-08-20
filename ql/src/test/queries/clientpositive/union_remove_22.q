@@ -63,4 +63,4 @@ FROM (
 ) a;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-select * from outputTbl1 order by key, `values`;
+select * from outputTbl1;

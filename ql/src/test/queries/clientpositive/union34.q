@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+-- SORT_QUERY_RESULTS
 create table src10_1 (key string, value string);
 create table src10_2 (key string, value string);
 create table src10_3 (key string, value string);
@@ -18,13 +19,13 @@ SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION ALL
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
-) alias1 order by key;
+) alias1;
 
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION ALL
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
-) alias1 order by key;
+) alias1;
 
 set hive.auto.convert.join=false;
 -- When we do not convert the Join of sub1 and sub0 into a MapJoin,
@@ -36,10 +37,10 @@ SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION ALL
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
-) alias1 order by key;
+) alias1;
 
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION ALL
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
-) alias1 order by key;
+) alias1;

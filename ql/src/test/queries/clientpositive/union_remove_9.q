@@ -8,6 +8,7 @@ set hive.merge.mapredfiles=true;
 set hive.merge.smallfiles.avgsize=1;
 set mapred.input.dir.recursive=true;
 
+-- SORT_QUERY_RESULTS
 -- This is to test the union->selectstar->filesink optimization
 -- Union of 2 subqueries is performed (one of which contains a union and is map-only),
 -- and the other one is a map-reduce query followed by select star and a file sink.
@@ -53,4 +54,4 @@ select * FROM (
 desc formatted outputTbl1;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-select * from outputTbl1 order by key, `values`;
+select * from outputTbl1;

@@ -7,6 +7,7 @@ set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 set mapred.input.dir.recursive=true;
 
+-- SORT_QUERY_RESULTS
 -- This is to test the union->selectstar->filesink optimization
 -- Union of 2 subqueries is performed (all of which are mapred queries)
 -- followed by select star and a file sink in 2 output tables.
@@ -38,5 +39,5 @@ insert overwrite table outputTbl1 select *
 insert overwrite table outputTbl2 select *;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-select * from outputTbl1 order by key, `values`;
-select * from outputTbl2 order by key, `values`;;
+select * from outputTbl1;
+select * from outputTbl2;
