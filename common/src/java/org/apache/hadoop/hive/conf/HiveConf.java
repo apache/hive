@@ -1934,7 +1934,15 @@ public class HiveConf extends Configuration {
         "hive.security.authenticator.manager,hive.security.authorization.manager,hive.users.in.admin.role",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
-        METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname,
+        METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
+        // Adding the S3 credentials from Hadoop config to be hidden
+        + ",fs.s3.awsAccessKeyId"
+        + ",fs.s3.awsSecretAccessKey"
+        + ",fs.s3n.awsAccessKeyId"
+        + ",fs.s3n.awsSecretAccessKey"
+        + ",fs.s3a.access.key"
+        + ",fs.s3a.secret.key"
+        + ",fs.s3a.proxy.password",
         "Comma separated list of configuration options which should not be read by normal user like passwords"),
     HIVE_MOVE_FILES_THREAD_COUNT("hive.mv.files.thread", 25, "Number of threads"
          + " used to move files in move task. Set it to 0 to disable multi-threaded file moves. This parameter is also used by"
