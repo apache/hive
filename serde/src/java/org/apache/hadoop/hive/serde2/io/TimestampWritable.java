@@ -554,7 +554,11 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   public static void setTimestamp(Timestamp t, byte[] bytes, int offset) {
     long seconds = getSeconds(bytes, offset);
     t.setTime(seconds * 1000);
-    t.setNanos(getNanos(bytes, offset + 4));
+    if (hasDecimalOrSecondVInt(bytes[offset])) {
+      t.setNanos(getNanos(bytes, offset + 4));
+    } else {
+      t.setNanos(0);
+    }
   }
 
   public static Timestamp createTimestamp(byte[] bytes, int offset) {
