@@ -493,4 +493,15 @@ public class TestTimestampWritable {
     }
   }
 
+  @Test
+  public void testSetTimestamp() {
+    // make sure we need a 2nd VInt
+    Timestamp t1 = new Timestamp((long) Integer.MAX_VALUE * 1000 + 1234);
+    TimestampWritable writable = new TimestampWritable(t1);
+    byte[] bytes = writable.getBytes();
+    Timestamp t2 = new Timestamp(0);
+    TimestampWritable.setTimestamp(t2, bytes, 0);
+    assertEquals(t1, t2);
+  }
+
 }
