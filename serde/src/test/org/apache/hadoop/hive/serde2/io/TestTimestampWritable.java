@@ -493,4 +493,28 @@ public class TestTimestampWritable {
     }
   }
 
+  @Test
+  public void testSetTimestamp() {
+    // one VInt without nanos
+    verifySetTimestamp(1000);
+
+    // one VInt with nanos
+    verifySetTimestamp(1001);
+
+    // two VInt without nanos
+    verifySetTimestamp((long) Integer.MAX_VALUE * 1000 + 1000);
+
+    // two VInt with nanos
+    verifySetTimestamp((long) Integer.MAX_VALUE * 1000 + 1234);
+  }
+
+  private static void verifySetTimestamp(long time) {
+    Timestamp t1 = new Timestamp(time);
+    TimestampWritable writable = new TimestampWritable(t1);
+    byte[] bytes = writable.getBytes();
+    Timestamp t2 = new Timestamp(0);
+    TimestampWritable.setTimestamp(t2, bytes, 0);
+    assertEquals(t1, t2);
+  }
+
 }

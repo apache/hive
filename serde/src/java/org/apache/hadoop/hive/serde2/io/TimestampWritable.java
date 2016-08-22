@@ -567,8 +567,10 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
       }
     }
     t.setTime(seconds * 1000);
-    if (nanos != 0) {
-      t.setNanos(nanos);
+    if (hasDecimalOrSecondVInt(bytes[offset])) {
+      t.setNanos(getNanos(bytes, offset + 4));
+    } else {
+      t.setNanos(0);
     }
   }
 
