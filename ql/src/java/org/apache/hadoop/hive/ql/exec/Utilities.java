@@ -1683,6 +1683,16 @@ public final class Utilities {
       }
       return Integer.parseInt(m.group(2));
     }
+    // Check to see if the bucketName matches the pattern "bucket_([0-9]+).*"
+    // This can happen in ACID cases when we have splits on delta files, where the filenames
+    // are of the form delta_x_y/bucket_a.
+    if (bucketName.startsWith(AcidUtils.BUCKET_PREFIX)) {
+      m = AcidUtils.BUCKET_DIGIT_PATTERN.matcher(bucketName);
+      if (m.find()) {
+          return Integer.parseInt(m.group());
+      }
+      // Note that legacy bucket digit pattern are being ignored here.
+    }
     return -1;
   }
 
