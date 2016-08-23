@@ -226,7 +226,10 @@ public class TestHiveMetaStoreChecker extends TestCase {
     List<Partition> partitions = hive.getPartitions(table);
     assertEquals(2, partitions.size());
     Partition partToRemove = partitions.get(0);
-    Path partToRemovePath = partToRemove.getDataLocation();
+    // As this partition (partdate=2008-01-01/partcity=london) is the only
+    // partition under (partdate=2008-01-01)
+    // we also need to delete partdate=2008-01-01 to make it consistent.
+    Path partToRemovePath = partToRemove.getDataLocation().getParent();
     fs = partToRemovePath.getFileSystem(hive.getConf());
     fs.delete(partToRemovePath, true);
 
@@ -255,20 +258,7 @@ public class TestHiveMetaStoreChecker extends TestCase {
     // put the other one back
     fs.mkdirs(partToRemovePath);
 
-    // add a partition dir on fs
-    Path fakePart = new Path(table.getDataLocation().toString(),
-        "fakepartition=fakevalue");
-    fs.mkdirs(fakePart);
-    fs.deleteOnExit(fakePart);
-
-    checker.checkMetastore(dbName, tableName, null, result);
-    // one extra partition
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotInMs());
-    assertEquals(Collections.<String>emptyList(), result.getTablesNotOnFs());
-    assertEquals(Collections.<String>emptyList(), result.getPartitionsNotOnFs());
-    assertEquals(1, result.getPartitionsNotInMs().size());
-    assertEquals(fakePart.getName(), result.getPartitionsNotInMs().get(0)
-        .getPartitionName());
+    // old test is moved to msck_repair_2.q
 
     // cleanup
     hive.dropTable(dbName, tableName, true, true);
