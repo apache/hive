@@ -325,6 +325,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     } catch (Exception e) {
       LOG.error("Unable to create a znode for this server instance", e);
       CloseableUtils.closeQuietly(znode);
+      throw (e instanceof IOException) ? (IOException)e : new IOException(e);
     }
 
     if (LOG.isDebugEnabled()) {
