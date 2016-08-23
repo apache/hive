@@ -1112,7 +1112,22 @@ public class Commands {
     }
 
     line = line.trim();
-    List<String> cmdList = getCmdList(line, entireLineAsCommand);
+    List<String> cmdList = new ArrayList<String>();
+    if (entireLineAsCommand) {
+      cmdList.add(line);
+    } else {
+      StringBuffer command = new StringBuffer();
+      for (String cmdpart: line.split(";")) {
+        if (cmdpart.endsWith("\\")) {
+          command.append(cmdpart.substring(0, cmdpart.length() -1)).append(";");
+          continue;
+        } else {
+          command.append(cmdpart);
+        }
+        cmdList.add(command.toString());
+        command.setLength(0);
+      }
+    }
     for (int i = 0; i < cmdList.size(); i++) {
       String sql = cmdList.get(i).trim();
       if (sql.length() != 0) {
@@ -1122,79 +1137,6 @@ public class Commands {
       }
     }
     return true;
-  }
-
-  /**
-   * Helper method to parse input from Beeline and convert it to a {@link List} of commands that
-   * can be executed. This method contains logic for handling semicolons that are placed within
-   * quotations. It iterates through each character in the line and checks to see if it is a ;, ',
-   * or "
-   */
-  private List<String> getCmdList(String line, boolean entireLineAsCommand) {
-    List<String> cmdList = new ArrayList<String>();
-    if (entireLineAsCommand) {
-      cmdList.add(line);
-    } else {
-      StringBuffer command = new StringBuffer();
-
-      boolean hasUnterminatedDoubleQuote = false;
-      boolean hasUntermindatedSingleQuote = false;
-
-      int lastSemiColonIndex = 0;
-      char[] lineChars = line.toCharArray();
-
-      boolean wasPrevEscape = false;
-      int index = 0;
-      for (; index < lineChars.length; index++) {
-        switch (lineChars[index]) {
-          case '\'':
-            if (!hasUnterminatedDoubleQuote && !wasPrevEscape) {
-              hasUntermindatedSingleQuote = !hasUntermindatedSingleQuote;
-            }
-            wasPrevEscape = false;
-            break;
-          case '\"':
-            if (!hasUntermindatedSingleQuote && !wasPrevEscape) {
-              hasUnterminatedDoubleQuote = !hasUnterminatedDoubleQuote;
-            }
-            wasPrevEscape = false;
-            break;
-          case ';':
-            if (!hasUnterminatedDoubleQuote && !hasUntermindatedSingleQuote) {
-              addCmdPart(cmdList, command, line.substring(lastSemiColonIndex, index));
-              lastSemiColonIndex = index + 1;
-            }
-            wasPrevEscape = false;
-            break;
-          case '\\':
-            wasPrevEscape = true;
-            break;
-          default:
-            wasPrevEscape = false;
-            break;
-        }
-      }
-      // if the line doesn't end with a ; or if the line is empty, add the cmd part
-      if (lastSemiColonIndex != index || lineChars.length == 0) {
-        addCmdPart(cmdList, command, line.substring(lastSemiColonIndex, index));
-      }
-    }
-    return cmdList;
-  }
-
-  /**
-   * Given a cmdpart (e.g. if a command spans multiple lines), add to the current command, and if
-   * applicable add that command to the {@link List} of commands
-   */
-  private void addCmdPart(List<String> cmdList, StringBuffer command, String cmdpart) {
-    if (cmdpart.endsWith("\\")) {
-      command.append(cmdpart.substring(0, cmdpart.length() - 1)).append(";");
-      return;
-    } else {
-      command.append(cmdpart);
-    }
-    cmdList.add(command.toString());
-    command.setLength(0);
   }
 
   private Runnable createLogRunnable(Statement statement) {

@@ -789,25 +789,4 @@ public class TestBeeLineWithArgs {
 
     testScriptFile( SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
   }
-
-  /**
-   * Test that Beeline queries don't treat semicolons inside quotations as query-ending characters.
-   */
-  @Test
-  public void testQueryNonEscapedSemiColon() throws Throwable {
-    String SCRIPT_TEXT = "drop table if exists nonEscapedSemiColon;create table nonEscapedSemiColon "
-            + "(key int) ROW FORMAT DELIMITED FIELDS TERMINATED BY ';';show tables;";
-    final String EXPECTED_PATTERN = " nonEscapedSemiColon ";
-    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
-    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
-  }
-
-  @Test
-  public void testSelectQueryWithNonEscapedSemiColon() throws Throwable {
-    String SCRIPT_TEXT = "select ';', \"';'\", '\";\"', '\\';', ';\\'', '\\\";', ';\\\"' from " + tableName + ";";
-    final String EXPECTED_PATTERN = ";\t';'\t\";\"\t';\t;'\t\";\t;\"";
-    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
-    argList.add("--outputformat=tsv2");
-    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
-  }
 }
