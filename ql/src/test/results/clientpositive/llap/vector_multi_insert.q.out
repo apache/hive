@@ -32,6 +32,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc1
+POSTHOOK: Lineage: orc1.rn EXPRESSION []
 PREHOOK: query: create table orc_rn1 (rn int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -140,6 +141,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.orc_rn3
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-4
     Dependency Collection

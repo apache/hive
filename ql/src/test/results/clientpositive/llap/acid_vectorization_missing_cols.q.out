@@ -1,0 +1,56 @@
+PREHOOK: query: drop table if exists newtable
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists newtable
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table newtable(
+            a string,
+            b int,
+            c double)
+row format delimited
+fields terminated by '\t'
+stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@newtable
+POSTHOOK: query: create table newtable(
+            a string,
+            b int,
+            c double)
+row format delimited
+fields terminated by '\t'
+stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@newtable
+PREHOOK: query: drop table if exists newtable_acid
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists newtable_acid
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table newtable_acid (b int, a varchar(50),c decimal(3,2), d int)
+clustered by (b) into 2 buckets
+stored as orc
+tblproperties ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@newtable_acid
+POSTHOOK: query: create table newtable_acid (b int, a varchar(50),c decimal(3,2), d int)
+clustered by (b) into 2 buckets
+stored as orc
+tblproperties ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@newtable_acid
+PREHOOK: query: insert into newtable_acid(a,b,c)
+select * from newtable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtable
+PREHOOK: Output: default@newtable_acid
+POSTHOOK: query: insert into newtable_acid(a,b,c)
+select * from newtable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtable
+POSTHOOK: Output: default@newtable_acid
+POSTHOOK: Lineage: newtable_acid.a EXPRESSION [(newtable)newtable.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: newtable_acid.b SIMPLE [(newtable)newtable.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: newtable_acid.c EXPRESSION [(newtable)newtable.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: newtable_acid.d SIMPLE []

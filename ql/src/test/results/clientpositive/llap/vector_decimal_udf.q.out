@@ -76,10 +76,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -95,44 +96,44 @@ POSTHOOK: query: SELECT key + key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--8800
+-8800.0000000000
 NULL
-0
-0
-200
-20
-2
-0.2
-0.02
-400
-40
-4
-0
-0.4
-0.04
-0.6
-0.66
-0.666
--0.6
--0.66
--0.666
-2
-4
-6.28
--2.24
--2.24
--2.244
-2.24
-2.244
-248
-250.4
--2510.98
-6.28
-6.28
-6.28
-2
--2469135780.246913578
-2469135780.24691356
+0.0000000000
+0.0000000000
+200.0000000000
+20.0000000000
+2.0000000000
+0.2000000000
+0.0200000000
+400.0000000000
+40.0000000000
+4.0000000000
+0.0000000000
+0.4000000000
+0.0400000000
+0.6000000000
+0.6600000000
+0.6660000000
+-0.6000000000
+-0.6600000000
+-0.6660000000
+2.0000000000
+4.0000000000
+6.2800000000
+-2.2400000000
+-2.2400000000
+-2.2440000000
+2.2400000000
+2.2440000000
+248.0000000000
+250.4000000000
+-2510.9800000000
+6.2800000000
+6.2800000000
+6.2800000000
+2.0000000000
+-2469135780.2469135780
+2469135780.2469135600
 PREHOOK: query: EXPLAIN SELECT key + value FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key + value FROM DECIMAL_UDF
@@ -159,10 +160,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -178,44 +180,44 @@ POSTHOOK: query: SELECT key + value FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-0
+0.0000000000
 NULL
-0
-0
-200
-20
-2
-0.1
-0.01
-400
-40
-4
-0
-0.2
-0.02
-0.3
-0.33
-0.333
--0.3
--0.33
--0.333
-2
-4
-6.14
--2.12
--2.12
--12.122
-2.12
-2.122
-248
-250.2
--2510.49
-6.14
-6.14
-7.14
-2
--2469135780.123456789
-2469135780.12345678
+0.0000000000
+0.0000000000
+200.0000000000
+20.0000000000
+2.0000000000
+0.1000000000
+0.0100000000
+400.0000000000
+40.0000000000
+4.0000000000
+0.0000000000
+0.2000000000
+0.0200000000
+0.3000000000
+0.3300000000
+0.3330000000
+-0.3000000000
+-0.3300000000
+-0.3330000000
+2.0000000000
+4.0000000000
+6.1400000000
+-2.1200000000
+-2.1200000000
+-12.1220000000
+2.1200000000
+2.1220000000
+248.0000000000
+250.2000000000
+-2510.4900000000
+6.1400000000
+6.1400000000
+7.1400000000
+2.0000000000
+-2469135780.1234567890
+2469135780.1234567800
 PREHOOK: query: EXPLAIN SELECT key + (value/2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key + (value/2) FROM DECIMAL_UDF
@@ -242,10 +244,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -325,10 +328,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -410,10 +414,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -429,44 +434,44 @@ POSTHOOK: query: SELECT key - key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-0
+0.0000000000
 NULL
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
 PREHOOK: query: EXPLAIN SELECT key - value FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key - value FROM DECIMAL_UDF
@@ -493,10 +498,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -512,44 +518,44 @@ POSTHOOK: query: SELECT key - value FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--8800
+-8800.0000000000
 NULL
-0
-0
-0
-0
-0
-0.1
-0.01
-0
-0
-0
-0
-0.2
-0.02
-0.3
-0.33
-0.333
--0.3
--0.33
--0.333
-0
-0
-0.14
--0.12
--0.12
-9.878
-0.12
-0.122
-0
-0.2
--0.49
-0.14
-0.14
--0.86
-0
--0.123456789
-0.12345678
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.1000000000
+0.0100000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.2000000000
+0.0200000000
+0.3000000000
+0.3300000000
+0.3330000000
+-0.3000000000
+-0.3300000000
+-0.3330000000
+0.0000000000
+0.0000000000
+0.1400000000
+-0.1200000000
+-0.1200000000
+9.8780000000
+0.1200000000
+0.1220000000
+0.0000000000
+0.2000000000
+-0.4900000000
+0.1400000000
+0.1400000000
+-0.8600000000
+0.0000000000
+-0.1234567890
+0.1234567800
 PREHOOK: query: EXPLAIN SELECT key - (value/2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key - (value/2) FROM DECIMAL_UDF
@@ -576,10 +582,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -659,10 +666,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -744,10 +752,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -763,42 +772,42 @@ POSTHOOK: query: SELECT key * key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-19360000
+19360000.00000000000000000000
 NULL
-0
-0
-10000
-100
-1
-0.01
-0.0001
-40000
-400
-4
-0
-0.04
-0.0004
-0.09
-0.1089
-0.110889
-0.09
-0.1089
-0.110889
-1
-4
-9.8596
-1.2544
-1.2544
-1.258884
-1.2544
-1.258884
-15376
-15675.04
-1576255.1401
-9.8596
-9.8596
-9.8596
-1
+0.00000000000000000000
+0.00000000000000000000
+10000.00000000000000000000
+100.00000000000000000000
+1.00000000000000000000
+0.01000000000000000000
+0.00010000000000000000
+40000.00000000000000000000
+400.00000000000000000000
+4.00000000000000000000
+0.00000000000000000000
+0.04000000000000000000
+0.00040000000000000000
+0.09000000000000000000
+0.10890000000000000000
+0.11088900000000000000
+0.09000000000000000000
+0.10890000000000000000
+0.11088900000000000000
+1.00000000000000000000
+4.00000000000000000000
+9.85960000000000000000
+1.25440000000000000000
+1.25440000000000000000
+1.25888400000000000000
+1.25440000000000000000
+1.25888400000000000000
+15376.00000000000000000000
+15675.04000000000000000000
+1576255.14010000000000000000
+9.85960000000000000000
+9.85960000000000000000
+9.85960000000000000000
+1.00000000000000000000
 NULL
 NULL
 PREHOOK: query: EXPLAIN SELECT key, value FROM DECIMAL_UDF where key * value > 0
@@ -830,10 +839,11 @@ STAGE PLANS:
                         compressed: false
                         Statistics: Num rows: 12 Data size: 1356 Basic stats: COMPLETE Column stats: NONE
                         table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -849,29 +859,29 @@ POSTHOOK: query: SELECT key, value FROM DECIMAL_UDF where key * value > 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-100	100
-10	10
-1	1
-200	200
-20	20
-2	2
-1	1
-2	2
-3.14	3
--1.12	-1
--1.12	-1
--1.122	-11
-1.12	1
-1.122	1
-124	124
-125.2	125
--1255.49	-1255
-3.14	3
-3.14	3
-3.14	4
-1	1
--1234567890.123456789	-1234567890
-1234567890.12345678	1234567890
+100.0000000000	100
+10.0000000000	10
+1.0000000000	1
+200.0000000000	200
+20.0000000000	20
+2.0000000000	2
+1.0000000000	1
+2.0000000000	2
+3.1400000000	3
+-1.1200000000	-1
+-1.1200000000	-1
+-1.1220000000	-11
+1.1200000000	1
+1.1220000000	1
+124.0000000000	124
+125.2000000000	125
+-1255.4900000000	-1255
+3.1400000000	3
+3.1400000000	3
+3.1400000000	4
+1.0000000000	1
+-1234567890.1234567890	-1234567890
+1234567890.1234567800	1234567890
 PREHOOK: query: EXPLAIN SELECT key * value FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key * value FROM DECIMAL_UDF
@@ -898,10 +908,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -917,44 +928,44 @@ POSTHOOK: query: SELECT key * value FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--19360000
+-19360000.0000000000
 NULL
-0
-0
-10000
-100
-1
-0
-0
-40000
-400
-4
-0
-0
-0
-0
-0
-0
-0
-0
-0
-1
-4
-9.42
-1.12
-1.12
-12.342
-1.12
-1.122
-15376
-15650
-1575639.95
-9.42
-9.42
-12.56
-1
-1524157875171467887.50190521
-1524157875171467876.3907942
+0.0000000000
+0.0000000000
+10000.0000000000
+100.0000000000
+1.0000000000
+0.0000000000
+0.0000000000
+40000.0000000000
+400.0000000000
+4.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+1.0000000000
+4.0000000000
+9.4200000000
+1.1200000000
+1.1200000000
+12.3420000000
+1.1200000000
+1.1220000000
+15376.0000000000
+15650.0000000000
+1575639.9500000000
+9.4200000000
+9.4200000000
+12.5600000000
+1.0000000000
+1524157875171467887.5019052100
+1524157875171467876.3907942000
 PREHOOK: query: EXPLAIN SELECT key * (value/2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key * (value/2) FROM DECIMAL_UDF
@@ -981,10 +992,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -1064,10 +1076,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -1142,7 +1155,7 @@ STAGE PLANS:
                   alias: decimal_udf
                   Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: (key / 0) (type: decimal(22,12))
+                    expressions: (key / 0) (type: decimal(28,18))
                     outputColumnNames: _col0
                     Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                     Limit
@@ -1152,10 +1165,11 @@ STAGE PLANS:
                         compressed: false
                         Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: NONE
                         table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -1201,10 +1215,11 @@ STAGE PLANS:
                         compressed: false
                         Statistics: Num rows: 1 Data size: 113 Basic stats: COMPLETE Column stats: NONE
                         table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -1240,20 +1255,21 @@ STAGE PLANS:
                   alias: decimal_udf
                   Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key is not null and (key <> 0)) (type: boolean)
-                    Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key <> 0) (type: boolean)
+                    Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (key / key) (type: decimal(38,24))
                       outputColumnNames: _col0
-                      Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                         table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -1269,40 +1285,40 @@ POSTHOOK: query: SELECT key / key FROM DECIMAL_UDF WHERE key is not null and key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
+1.000000000000000000000000
 PREHOOK: query: EXPLAIN SELECT key / value FROM DECIMAL_UDF WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key / value FROM DECIMAL_UDF WHERE value is not null and value <> 0
@@ -1322,20 +1338,21 @@ STAGE PLANS:
                   alias: decimal_udf
                   Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (value is not null and (value <> 0)) (type: boolean)
-                    Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (value <> 0) (type: boolean)
+                    Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (key / CAST( value AS decimal(10,0))) (type: decimal(31,21))
                       outputColumnNames: _col0
-                      Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                         table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -1351,30 +1368,30 @@ POSTHOOK: query: SELECT key / value FROM DECIMAL_UDF WHERE value is not null and
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--1
-1
-1
-1
-1
-1
-1
-1
-1
+-1.000000000000000000000
+1.000000000000000000000
+1.000000000000000000000
+1.000000000000000000000
+1.000000000000000000000
+1.000000000000000000000
+1.000000000000000000000
+1.000000000000000000000
+1.000000000000000000000
 1.046666666666666666667
-1.12
-1.12
-0.102
-1.12
-1.122
-1
-1.0016
+1.120000000000000000000
+1.120000000000000000000
+0.102000000000000000000
+1.120000000000000000000
+1.122000000000000000000
+1.000000000000000000000
+1.001600000000000000000
 1.000390438247011952191
 1.046666666666666666667
 1.046666666666666666667
-0.785
-1
-1.0000000001
-1.00000000009999999271
+0.785000000000000000000
+1.000000000000000000000
+1.000000000100000000000
+1.000000000099999992710
 PREHOOK: query: EXPLAIN SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0
@@ -1394,20 +1411,21 @@ STAGE PLANS:
                   alias: decimal_udf
                   Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (value is not null and (value <> 0)) (type: boolean)
-                    Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (value <> 0) (type: boolean)
+                    Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (UDFToDouble(key) / (UDFToDouble(value) / 2.0)) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                         table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -1473,10 +1491,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -1558,10 +1577,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -1577,44 +1597,44 @@ POSTHOOK: query: SELECT abs(key) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-4400
+4400.0000000000
 NULL
-0
-0
-100
-10
-1
-0.1
-0.01
-200
-20
-2
-0
-0.2
-0.02
-0.3
-0.33
-0.333
-0.3
-0.33
-0.333
-1
-2
-3.14
-1.12
-1.12
-1.122
-1.12
-1.122
-124
-125.2
-1255.49
-3.14
-3.14
-3.14
-1
-1234567890.123456789
-1234567890.12345678
+0.0000000000
+0.0000000000
+100.0000000000
+10.0000000000
+1.0000000000
+0.1000000000
+0.0100000000
+200.0000000000
+20.0000000000
+2.0000000000
+0.0000000000
+0.2000000000
+0.0200000000
+0.3000000000
+0.3300000000
+0.3330000000
+0.3000000000
+0.3300000000
+0.3330000000
+1.0000000000
+2.0000000000
+3.1400000000
+1.1200000000
+1.1200000000
+1.1220000000
+1.1200000000
+1.1220000000
+124.0000000000
+125.2000000000
+1255.4900000000
+3.1400000000
+3.1400000000
+3.1400000000
+1.0000000000
+1234567890.1234567890
+1234567890.1234567800
 PREHOOK: query: -- avg
 EXPLAIN SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
 PREHOOK: type: QUERY
@@ -1628,6 +1648,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
@@ -1655,6 +1676,7 @@ STAGE PLANS:
                         Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: decimal(30,10)), _col2 (type: bigint), _col3 (type: struct<count:bigint,sum:decimal(30,10),input:decimal(20,10)>)
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1674,7 +1696,7 @@ STAGE PLANS:
                     Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: decimal(38,23)), _col2 (type: decimal(24,14)), _col3 (type: decimal(30,10))
         Reducer 3 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: decimal(38,23)), VALUE._col1 (type: decimal(24,14)), VALUE._col2 (type: decimal(30,10))
@@ -1684,8 +1706,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -1702,23 +1724,23 @@ POSTHOOK: query: SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DE
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--1234567890	-1234567890.123456789	-1234567890.123456789	-1234567890.123456789
--1255	-1255.49	-1255.49	-1255.49
--11	-1.122	-1.122	-1.122
--1	-1.12	-1.12	-2.24
-0	0.02538461538461538461538	0.02538461538462	0.33
-1	1.0484	1.0484	5.242
-2	2	2	4
-3	3.14	3.14	9.42
-4	3.14	3.14	3.14
-10	10	10	10
-20	20	20	20
-100	100	100	100
-124	124	124	124
-125	125.2	125.2	125.2
-200	200	200	200
-4400	-4400	-4400	-4400
-1234567890	1234567890.12345678	1234567890.12345678	1234567890.12345678
+-1234567890	-1234567890.12345678900000000000000	-1234567890.12345678900000	-1234567890.1234567890
+-1255	-1255.49000000000000000000000	-1255.49000000000000	-1255.4900000000
+-11	-1.12200000000000000000000	-1.12200000000000	-1.1220000000
+-1	-1.12000000000000000000000	-1.12000000000000	-2.2400000000
+0	0.02538461538461538461538	0.02538461538462	0.3300000000
+1	1.04840000000000000000000	1.04840000000000	5.2420000000
+2	2.00000000000000000000000	2.00000000000000	4.0000000000
+3	3.14000000000000000000000	3.14000000000000	9.4200000000
+4	3.14000000000000000000000	3.14000000000000	3.1400000000
+10	10.00000000000000000000000	10.00000000000000	10.0000000000
+20	20.00000000000000000000000	20.00000000000000	20.0000000000
+100	100.00000000000000000000000	100.00000000000000	100.0000000000
+124	124.00000000000000000000000	124.00000000000000	124.0000000000
+125	125.20000000000000000000000	125.20000000000000	125.2000000000
+200	200.00000000000000000000000	200.00000000000000	200.0000000000
+4400	-4400.00000000000000000000000	-4400.00000000000000	-4400.0000000000
+1234567890	1234567890.12345678000000000000000	1234567890.12345678000000	1234567890.1234567800
 PREHOOK: query: -- negative
 EXPLAIN SELECT -key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -1747,10 +1769,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -1766,44 +1789,44 @@ POSTHOOK: query: SELECT -key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-4400
+4400.0000000000
 NULL
-0
-0
--100
--10
--1
--0.1
--0.01
--200
--20
--2
-0
--0.2
--0.02
--0.3
--0.33
--0.333
-0.3
-0.33
-0.333
--1
--2
--3.14
-1.12
-1.12
-1.122
--1.12
--1.122
--124
--125.2
-1255.49
--3.14
--3.14
--3.14
--1
-1234567890.123456789
--1234567890.12345678
+0.0000000000
+0.0000000000
+-100.0000000000
+-10.0000000000
+-1.0000000000
+-0.1000000000
+-0.0100000000
+-200.0000000000
+-20.0000000000
+-2.0000000000
+0.0000000000
+-0.2000000000
+-0.0200000000
+-0.3000000000
+-0.3300000000
+-0.3330000000
+0.3000000000
+0.3300000000
+0.3330000000
+-1.0000000000
+-2.0000000000
+-3.1400000000
+1.1200000000
+1.1200000000
+1.1220000000
+-1.1200000000
+-1.1220000000
+-124.0000000000
+-125.2000000000
+1255.4900000000
+-3.1400000000
+-3.1400000000
+-3.1400000000
+-1.0000000000
+1234567890.1234567890
+-1234567890.1234567800
 PREHOOK: query: -- positive
 EXPLAIN SELECT +key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -1833,44 +1856,44 @@ POSTHOOK: query: SELECT +key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--4400
+-4400.0000000000
 NULL
-0
-0
-100
-10
-1
-0.1
-0.01
-200
-20
-2
-0
-0.2
-0.02
-0.3
-0.33
-0.333
--0.3
--0.33
--0.333
-1
-2
-3.14
--1.12
--1.12
--1.122
-1.12
-1.122
-124
-125.2
--1255.49
-3.14
-3.14
-3.14
-1
--1234567890.123456789
-1234567890.12345678
+0.0000000000
+0.0000000000
+100.0000000000
+10.0000000000
+1.0000000000
+0.1000000000
+0.0100000000
+200.0000000000
+20.0000000000
+2.0000000000
+0.0000000000
+0.2000000000
+0.0200000000
+0.3000000000
+0.3300000000
+0.3330000000
+-0.3000000000
+-0.3300000000
+-0.3330000000
+1.0000000000
+2.0000000000
+3.1400000000
+-1.1200000000
+-1.1200000000
+-1.1220000000
+1.1200000000
+1.1220000000
+124.0000000000
+125.2000000000
+-1255.4900000000
+3.1400000000
+3.1400000000
+3.1400000000
+1.0000000000
+-1234567890.1234567890
+1234567890.1234567800
 PREHOOK: query: -- ceiling
 EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -1899,10 +1922,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -1984,10 +2008,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -2069,10 +2094,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -2088,42 +2114,42 @@ POSTHOOK: query: SELECT ROUND(key, 2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--4400
+-4400.00
 NULL
-0
-0
-100
-10
-1
-0.1
+0.00
+0.00
+100.00
+10.00
+1.00
+0.10
 0.01
-200
-20
-2
-0
-0.2
+200.00
+20.00
+2.00
+0.00
+0.20
 0.02
-0.3
+0.30
 0.33
 0.33
--0.3
+-0.30
 -0.33
 -0.33
-1
-2
+1.00
+2.00
 3.14
 -1.12
 -1.12
 -1.12
 1.12
 1.12
-124
-125.2
+124.00
+125.20
 -1255.49
 3.14
 3.14
 3.14
-1
+1.00
 -1234567890.12
 1234567890.12
 PREHOOK: query: -- power
@@ -2154,10 +2180,11 @@ STAGE PLANS:
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -2232,17 +2259,18 @@ STAGE PLANS:
                   alias: decimal_udf
                   Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: ((key + 1) % (key / 2)) (type: decimal(22,12))
+                    expressions: ((key + 1) % (key / 2)) (type: decimal(28,18))
                     outputColumnNames: _col0
                     Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                       table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -2258,44 +2286,44 @@ POSTHOOK: query: SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--2199
+-2199.000000000000000000
 NULL
 NULL
 NULL
-1
-1
-0
-0
-0
-1
-1
-0
+1.000000000000000000
+1.000000000000000000
+0.000000000000000000
+0.000000000000000000
+0.000000000000000000
+1.000000000000000000
+1.000000000000000000
+0.000000000000000000
 NULL
-0
-0
-0.1
-0.01
-0.001
-0.1
-0.01
-0.001
-0
-0
-1
--0.12
--0.12
--0.122
-0.44
-0.439
-1
-1
--626.745
-1
-1
-1
-0
--617283944.0617283945
-1
+0.000000000000000000
+0.000000000000000000
+0.100000000000000000
+0.010000000000000000
+0.001000000000000000
+0.100000000000000000
+0.010000000000000000
+0.001000000000000000
+0.000000000000000000
+0.000000000000000000
+1.000000000000000000
+-0.120000000000000000
+-0.120000000000000000
+-0.122000000000000000
+0.440000000000000000
+0.439000000000000000
+1.000000000000000000
+1.000000000000000000
+-626.745000000000000000
+1.000000000000000000
+1.000000000000000000
+1.000000000000000000
+0.000000000000000000
+-617283944.061728394500000000
+1.000000000000000000
 PREHOOK: query: -- stddev, var
 EXPLAIN SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF GROUP BY value
 PREHOOK: type: QUERY
@@ -2309,6 +2337,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -2335,8 +2364,9 @@ STAGE PLANS:
                         Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>)
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: stddev(VALUE._col0), variance(VALUE._col1)
@@ -2348,8 +2378,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -2396,6 +2426,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -2422,8 +2453,9 @@ STAGE PLANS:
                         Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>)
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: stddev_samp(VALUE._col0), var_samp(VALUE._col1)
@@ -2435,8 +2467,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 19 Data size: 2148 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -2483,6 +2515,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -2500,26 +2533,27 @@ STAGE PLANS:
                       aggregations: histogram_numeric(_col0, 3)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: array<double>)
             Execution mode: llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: histogram_numeric(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 720 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 720 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -2550,6 +2584,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -2573,8 +2608,9 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: decimal(20,10))
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -2585,8 +2621,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -2603,7 +2639,7 @@ POSTHOOK: query: SELECT MIN(key) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--1234567890.123456789
+-1234567890.1234567890
 PREHOOK: query: -- max
 EXPLAIN SELECT MAX(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -2617,6 +2653,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -2640,8 +2677,9 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: decimal(20,10))
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -2652,8 +2690,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -2670,7 +2708,7 @@ POSTHOOK: query: SELECT MAX(key) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-1234567890.12345678
+1234567890.1234567800
 PREHOOK: query: -- count
 EXPLAIN SELECT COUNT(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -2684,6 +2722,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -2707,8 +2746,9 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2719,8 +2759,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0

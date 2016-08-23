@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.optimize.cte.materialize.threshold=2;
+set hive.explain.user=true;
 
 create temporary table q1 (a int, b string);
 insert into q1 values (1, 'A');

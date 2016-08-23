@@ -1,3 +1,4 @@
+set hive.explain.user=true;
 create table bug_201_input_a (
        userid                                       int
 ) clustered by (userid) sorted by (userid) into 64 BUCKETS ;

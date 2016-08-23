@@ -117,6 +117,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -136,8 +137,9 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean), _col10 (type: boolean), _col11 (type: boolean), _col12 (type: boolean), _col13 (type: boolean), _col14 (type: boolean), _col15 (type: boolean), _col16 (type: boolean), _col17 (type: boolean), _col18 (type: boolean), _col19 (type: boolean), _col20 (type: boolean), _col21 (type: boolean), _col22 (type: boolean), _col23 (type: boolean), _col24 (type: boolean)
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: boolean), VALUE._col1 (type: boolean), VALUE._col2 (type: boolean), VALUE._col3 (type: boolean), VALUE._col4 (type: boolean), VALUE._col5 (type: boolean), VALUE._col6 (type: boolean), VALUE._col7 (type: boolean), VALUE._col8 (type: boolean), VALUE._col9 (type: boolean), VALUE._col10 (type: boolean), VALUE._col11 (type: boolean), VALUE._col12 (type: boolean), VALUE._col13 (type: boolean), VALUE._col14 (type: boolean), VALUE._col15 (type: boolean), VALUE._col16 (type: boolean), VALUE._col17 (type: boolean), VALUE._col18 (type: boolean), VALUE._col19 (type: boolean), VALUE._col20 (type: boolean), VALUE._col21 (type: boolean), VALUE._col22 (type: boolean), VALUE._col23 (type: boolean)
@@ -147,8 +149,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -284,6 +286,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -303,8 +306,9 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean), _col10 (type: boolean), _col11 (type: boolean), _col13 (type: boolean), _col14 (type: boolean), _col15 (type: boolean), _col16 (type: boolean), _col17 (type: boolean)
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: boolean), VALUE._col1 (type: boolean), VALUE._col2 (type: boolean), VALUE._col3 (type: boolean), VALUE._col4 (type: boolean), VALUE._col0 (type: boolean), VALUE._col5 (type: boolean), VALUE._col6 (type: boolean), VALUE._col7 (type: boolean), VALUE._col8 (type: boolean), VALUE._col9 (type: boolean), VALUE._col5 (type: boolean), VALUE._col10 (type: boolean), VALUE._col11 (type: boolean), VALUE._col12 (type: boolean), VALUE._col13 (type: boolean), VALUE._col14 (type: boolean), VALUE._col10 (type: boolean)
@@ -314,8 +318,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -451,6 +455,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -470,8 +475,9 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean), _col10 (type: boolean), _col11 (type: boolean), _col12 (type: boolean), _col13 (type: boolean), _col14 (type: boolean), _col15 (type: boolean), _col16 (type: boolean), _col17 (type: boolean), _col18 (type: boolean), _col19 (type: boolean), _col20 (type: boolean), _col21 (type: boolean), _col22 (type: boolean), _col23 (type: boolean), _col24 (type: boolean)
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: boolean), VALUE._col1 (type: boolean), VALUE._col2 (type: boolean), VALUE._col3 (type: boolean), VALUE._col4 (type: boolean), VALUE._col5 (type: boolean), VALUE._col6 (type: boolean), VALUE._col7 (type: boolean), VALUE._col8 (type: boolean), VALUE._col9 (type: boolean), VALUE._col10 (type: boolean), VALUE._col11 (type: boolean), VALUE._col12 (type: boolean), VALUE._col13 (type: boolean), VALUE._col14 (type: boolean), VALUE._col15 (type: boolean), VALUE._col16 (type: boolean), VALUE._col17 (type: boolean), VALUE._col18 (type: boolean), VALUE._col19 (type: boolean), VALUE._col20 (type: boolean), VALUE._col21 (type: boolean), VALUE._col22 (type: boolean), VALUE._col23 (type: boolean)
@@ -481,8 +487,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -618,6 +624,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -637,8 +644,9 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean), _col10 (type: boolean), _col11 (type: boolean), _col13 (type: boolean), _col14 (type: boolean), _col15 (type: boolean), _col16 (type: boolean), _col17 (type: boolean)
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: boolean), VALUE._col1 (type: boolean), VALUE._col2 (type: boolean), VALUE._col3 (type: boolean), VALUE._col4 (type: boolean), VALUE._col0 (type: boolean), VALUE._col5 (type: boolean), VALUE._col6 (type: boolean), VALUE._col7 (type: boolean), VALUE._col8 (type: boolean), VALUE._col9 (type: boolean), VALUE._col5 (type: boolean), VALUE._col10 (type: boolean), VALUE._col11 (type: boolean), VALUE._col12 (type: boolean), VALUE._col13 (type: boolean), VALUE._col14 (type: boolean), VALUE._col10 (type: boolean)
@@ -648,8 +656,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -773,6 +781,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -783,7 +792,7 @@ STAGE PLANS:
                   alias: vector_interval_2
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((((((((((((((((CAST( str1 AS INTERVAL YEAR TO MONTH) = CAST( str1 AS INTERVAL YEAR TO MONTH)) and (CAST( str1 AS INTERVAL YEAR TO MONTH) <> CAST( str2 AS INTERVAL YEAR TO MONTH))) and (CAST( str1 AS INTERVAL YEAR TO MONTH) <= CAST( str2 AS INTERVAL YEAR TO MONTH))) and (CAST( str1 AS INTERVAL YEAR TO MONTH) < CAST( str2 AS INTERVAL YEAR TO MONTH))) and (CAST( str2 AS INTERVAL YEAR TO MONTH) >= CAST( str1 AS INTERVAL YEAR TO MONTH))) and (CAST( str2 AS INTERVAL YEAR TO MONTH) > CAST( str1 AS INTERVAL YEAR TO MONTH))) and (CAST( str1 AS INTERVAL YEAR TO MONTH) = 1-2)) and (CAST( str1 AS INTERVAL YEAR TO MONTH) <> 1-3)) and (CAST( str1 AS INTERVAL YEAR TO MONTH) <= 1-3)) and (CAST( str1 AS INTERVAL YEAR TO MONTH) < 1-3)) and (CAST( str2 AS INTERVAL YEAR TO MONTH) >= 1-2)) and (CAST( str2 AS INTERVAL YEAR TO MONTH) > 1-2)) and (1-2 = CAST( str1 AS INTERVAL YEAR TO MONTH))) and (1-2 <> CAST( str2 AS INTERVAL YEAR TO MONTH))) and (1-2 <= CAST( str2 AS INTERVAL YEAR TO MONTH))) and (1-2 < CAST( str2 AS INTERVAL YEAR TO MONTH))) and (1-3 >= CAST( str1 AS INTERVAL YEAR TO MONTH))) and (1-3 > CAST( str1 AS INTERVAL YEAR TO MONTH))) (type: boolean)
+                    predicate: ((CAST( str1 AS INTERVAL YEAR TO MONTH) = CAST( str1 AS INTERVAL YEAR TO MONTH)) and (CAST( str1 AS INTERVAL YEAR TO MONTH) <> CAST( str2 AS INTERVAL YEAR TO MONTH)) and (CAST( str1 AS INTERVAL YEAR TO MONTH) <= CAST( str2 AS INTERVAL YEAR TO MONTH)) and (CAST( str1 AS INTERVAL YEAR TO MONTH) < CAST( str2 AS INTERVAL YEAR TO MONTH)) and (CAST( str2 AS INTERVAL YEAR TO MONTH) >= CAST( str1 AS INTERVAL YEAR TO MONTH)) and (CAST( str2 AS INTERVAL YEAR TO MONTH) > CAST( str1 AS INTERVAL YEAR TO MONTH)) and (CAST( str1 AS INTERVAL YEAR TO MONTH) = 1-2) and (CAST( str1 AS INTERVAL YEAR TO MONTH) <> 1-3) and (CAST( str1 AS INTERVAL YEAR TO MONTH) <= 1-3) and (CAST( str1 AS INTERVAL YEAR TO MONTH) < 1-3) and (CAST( str2 AS INTERVAL YEAR TO MONTH) >= 1-2) and (CAST( str2 AS INTERVAL YEAR TO MONTH) > 1-2) and (1-2 = CAST( str1 AS INTERVAL YEAR TO MONTH)) and (1-2 <> CAST( str2 AS INTERVAL YEAR TO MONTH)) and (1-2 <= CAST( str2 AS INTERVAL YEAR TO MONTH)) and (1-2 < CAST( str2 AS INTERVAL YEAR TO MONTH)) and (1-3 >= CAST( str1 AS INTERVAL YEAR TO MONTH)) and (1-3 > CAST( str1 AS INTERVAL YEAR TO MONTH))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ts (type: timestamp)
@@ -794,8 +803,9 @@ STAGE PLANS:
                         sort order: +
                         Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp)
@@ -805,8 +815,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -925,6 +935,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -935,7 +946,7 @@ STAGE PLANS:
                   alias: vector_interval_2
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((((((((((((((((CAST( str3 AS INTERVAL DAY TO SECOND) = CAST( str3 AS INTERVAL DAY TO SECOND)) and (CAST( str3 AS INTERVAL DAY TO SECOND) <> CAST( str4 AS INTERVAL DAY TO SECOND))) and (CAST( str3 AS INTERVAL DAY TO SECOND) <= CAST( str4 AS INTERVAL DAY TO SECOND))) and (CAST( str3 AS INTERVAL DAY TO SECOND) < CAST( str4 AS INTERVAL DAY TO SECOND))) and (CAST( str4 AS INTERVAL DAY TO SECOND) >= CAST( str3 AS INTERVAL DAY TO SECOND))) and (CAST( str4 AS INTERVAL DAY TO SECOND) > CAST( str3 AS INTERVAL DAY TO SECOND))) and (CAST( str3 AS INTERVAL DAY TO SECOND) = 1 02:03:04.000000000)) and (CAST( str3 AS INTERVAL DAY TO SECOND) <> 1 02:03:05.000000000)) and (CAST( str3 AS INTERVAL DAY TO SECOND) <= 1 02:03:05.000000000)) and (CAST( str3 AS INTERVAL DAY TO SECOND) < 1 02:03:05.000000000)) and (CAST( str4 AS INTERVAL DAY TO SECOND) >= 1 02:03:04.000000000)) and (CAST( str4 AS INTERVAL DAY TO SECOND) > 1 02:03:04.000000000)) and (1 02:03:04.000000000 = CAST( str3 AS INTERVAL DAY TO SECOND))) and (1 02:03:04.000000000 <> CAST( str4 AS INTERVAL DAY TO SECOND))) and (1 02:03:04.000000000 <= CAST( str4 AS INTERVAL DAY TO SECOND))) and (1 02:03:04.000000000 < CAST( str4 AS INTERVAL DAY TO SECOND))) and (1 02:03:05.000000000 >= CAST( str3 AS INTERVAL DAY TO SECOND))) and (1 02:03:05.000000000 > CAST( str3 AS INTERVAL DAY TO SECOND))) (type: boolean)
+                    predicate: ((CAST( str3 AS INTERVAL DAY TO SECOND) = CAST( str3 AS INTERVAL DAY TO SECOND)) and (CAST( str3 AS INTERVAL DAY TO SECOND) <> CAST( str4 AS INTERVAL DAY TO SECOND)) and (CAST( str3 AS INTERVAL DAY TO SECOND) <= CAST( str4 AS INTERVAL DAY TO SECOND)) and (CAST( str3 AS INTERVAL DAY TO SECOND) < CAST( str4 AS INTERVAL DAY TO SECOND)) and (CAST( str4 AS INTERVAL DAY TO SECOND) >= CAST( str3 AS INTERVAL DAY TO SECOND)) and (CAST( str4 AS INTERVAL DAY TO SECOND) > CAST( str3 AS INTERVAL DAY TO SECOND)) and (CAST( str3 AS INTERVAL DAY TO SECOND) = 1 02:03:04.000000000) and (CAST( str3 AS INTERVAL DAY TO SECOND) <> 1 02:03:05.000000000) and (CAST( str3 AS INTERVAL DAY TO SECOND) <= 1 02:03:05.000000000) and (CAST( str3 AS INTERVAL DAY TO SECOND) < 1 02:03:05.000000000) and (CAST( str4 AS INTERVAL DAY TO SECOND) >= 1 02:03:04.000000000) and (CAST( str4 AS INTERVAL DAY TO SECOND) > 1 02:03:04.000000000) and (1 02:03:04.000000000 = CAST( str3 AS INTERVAL DAY TO SECOND)) and (1 02:03:04.000000000 <> CAST( str4 AS INTERVAL DAY TO SECOND)) and (1 02:03:04.000000000 <= CAST( str4 AS INTERVAL DAY TO SECOND)) and (1 02:03:04.000000000 < CAST( str4 AS INTERVAL DAY TO SECOND)) and (1 02:03:05.000000000 >= CAST( str3 AS INTERVAL DAY TO SECOND)) and (1 02:03:05.000000000 > CAST( str3 AS INTERVAL DAY TO SECOND))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ts (type: timestamp)
@@ -946,8 +957,9 @@ STAGE PLANS:
                         sort order: +
                         Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp)
@@ -957,8 +969,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -1067,6 +1079,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -1077,7 +1090,7 @@ STAGE PLANS:
                   alias: vector_interval_2
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((((((((((((2002-03-01 = (dt + CAST( str1 AS INTERVAL YEAR TO MONTH))) and (2002-03-01 <= (dt + CAST( str1 AS INTERVAL YEAR TO MONTH)))) and (2002-03-01 >= (dt + CAST( str1 AS INTERVAL YEAR TO MONTH)))) and ((dt + CAST( str1 AS INTERVAL YEAR TO MONTH)) = 2002-03-01)) and ((dt + CAST( str1 AS INTERVAL YEAR TO MONTH)) <= 2002-03-01)) and ((dt + CAST( str1 AS INTERVAL YEAR TO MONTH)) >= 2002-03-01)) and (dt <> (dt + CAST( str1 AS INTERVAL YEAR TO MONTH)))) and (2002-03-01 = (dt + 1-2))) and (2002-03-01 <= (dt + 1-2))) and (2002-03-01 >= (dt + 1-2))) and ((dt + 1-2) = 2002-03-01)) and ((dt + 1-2) <= 2002-03-01)) and ((dt + 1-2) >= 2002-03-01)) and (dt <> (dt + 1-2))) (type: boolean)
+                    predicate: ((2002-03-01 = (dt + CAST( str1 AS INTERVAL YEAR TO MONTH))) and (2002-03-01 <= (dt + CAST( str1 AS INTERVAL YEAR TO MONTH))) and (2002-03-01 >= (dt + CAST( str1 AS INTERVAL YEAR TO MONTH))) and ((dt + CAST( str1 AS INTERVAL YEAR TO MONTH)) = 2002-03-01) and ((dt + CAST( str1 AS INTERVAL YEAR TO MONTH)) <= 2002-03-01) and ((dt + CAST( str1 AS INTERVAL YEAR TO MONTH)) >= 2002-03-01) and (dt <> (dt + CAST( str1 AS INTERVAL YEAR TO MONTH))) and (2002-03-01 = (dt + 1-2)) and (2002-03-01 <= (dt + 1-2)) and (2002-03-01 >= (dt + 1-2)) and ((dt + 1-2) = 2002-03-01) and ((dt + 1-2) <= 2002-03-01) and ((dt + 1-2) >= 2002-03-01) and (dt <> (dt + 1-2))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ts (type: timestamp)
@@ -1088,8 +1101,9 @@ STAGE PLANS:
                         sort order: +
                         Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp)
@@ -1099,8 +1113,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -1209,6 +1223,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -1219,7 +1234,7 @@ STAGE PLANS:
                   alias: vector_interval_2
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((((((((((((((((2002-03-01 01:02:03.0 = (ts + 1-2)) and (2002-03-01 01:02:03.0 <= (ts + 1-2))) and (2002-03-01 01:02:03.0 >= (ts + 1-2))) and (2002-04-01 01:02:03.0 <> (ts + 1-2))) and (2002-02-01 01:02:03.0 < (ts + 1-2))) and (2002-04-01 01:02:03.0 > (ts + 1-2))) and ((ts + 1-2) = 2002-03-01 01:02:03.0)) and ((ts + 1-2) >= 2002-03-01 01:02:03.0)) and ((ts + 1-2) <= 2002-03-01 01:02:03.0)) and ((ts + 1-2) <> 2002-04-01 01:02:03.0)) and ((ts + 1-2) > 2002-02-01 01:02:03.0)) and ((ts + 1-2) < 2002-04-01 01:02:03.0)) and (ts = (ts + 0-0))) and (ts <> (ts + 1-0))) and (ts <= (ts + 1-0))) and (ts < (ts + 1-0))) and (ts >= (ts - 1-0))) and (ts > (ts - 1-0))) (type: boolean)
+                    predicate: ((2002-03-01 01:02:03.0 = (ts + 1-2)) and (2002-03-01 01:02:03.0 <= (ts + 1-2)) and (2002-03-01 01:02:03.0 >= (ts + 1-2)) and (2002-04-01 01:02:03.0 <> (ts + 1-2)) and (2002-02-01 01:02:03.0 < (ts + 1-2)) and (2002-04-01 01:02:03.0 > (ts + 1-2)) and ((ts + 1-2) = 2002-03-01 01:02:03.0) and ((ts + 1-2) >= 2002-03-01 01:02:03.0) and ((ts + 1-2) <= 2002-03-01 01:02:03.0) and ((ts + 1-2) <> 2002-04-01 01:02:03.0) and ((ts + 1-2) > 2002-02-01 01:02:03.0) and ((ts + 1-2) < 2002-04-01 01:02:03.0) and (ts = (ts + 0-0)) and (ts <> (ts + 1-0)) and (ts <= (ts + 1-0)) and (ts < (ts + 1-0)) and (ts >= (ts - 1-0)) and (ts > (ts - 1-0))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ts (type: timestamp)
@@ -1230,8 +1245,9 @@ STAGE PLANS:
                         sort order: +
                         Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp)
@@ -1241,8 +1257,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -1363,6 +1379,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -1373,7 +1390,7 @@ STAGE PLANS:
                   alias: vector_interval_2
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((((((((((((((((2001-01-01 01:02:03.0 = (dt + 0 01:02:03.000000000)) and (2001-01-01 01:02:03.0 <> (dt + 0 01:02:04.000000000))) and (2001-01-01 01:02:03.0 <= (dt + 0 01:02:03.000000000))) and (2001-01-01 01:02:03.0 < (dt + 0 01:02:04.000000000))) and (2001-01-01 01:02:03.0 >= (dt - 0 01:02:03.000000000))) and (2001-01-01 01:02:03.0 > (dt - 0 01:02:04.000000000))) and ((dt + 0 01:02:03.000000000) = 2001-01-01 01:02:03.0)) and ((dt + 0 01:02:04.000000000) <> 2001-01-01 01:02:03.0)) and ((dt + 0 01:02:03.000000000) >= 2001-01-01 01:02:03.0)) and ((dt + 0 01:02:04.000000000) > 2001-01-01 01:02:03.0)) and ((dt - 0 01:02:03.000000000) <= 2001-01-01 01:02:03.0)) and ((dt - 0 01:02:04.000000000) < 2001-01-01 01:02:03.0)) and (ts = (dt + 0 01:02:03.000000000))) and (ts <> (dt + 0 01:02:04.000000000))) and (ts <= (dt + 0 01:02:03.000000000))) and (ts < (dt + 0 01:02:04.000000000))) and (ts >= (dt - 0 01:02:03.000000000))) and (ts > (dt - 0 01:02:04.000000000))) (type: boolean)
+                    predicate: ((2001-01-01 01:02:03.0 = (dt + 0 01:02:03.000000000)) and (2001-01-01 01:02:03.0 <> (dt + 0 01:02:04.000000000)) and (2001-01-01 01:02:03.0 <= (dt + 0 01:02:03.000000000)) and (2001-01-01 01:02:03.0 < (dt + 0 01:02:04.000000000)) and (2001-01-01 01:02:03.0 >= (dt - 0 01:02:03.000000000)) and (2001-01-01 01:02:03.0 > (dt - 0 01:02:04.000000000)) and ((dt + 0 01:02:03.000000000) = 2001-01-01 01:02:03.0) and ((dt + 0 01:02:04.000000000) <> 2001-01-01 01:02:03.0) and ((dt + 0 01:02:03.000000000) >= 2001-01-01 01:02:03.0) and ((dt + 0 01:02:04.000000000) > 2001-01-01 01:02:03.0) and ((dt - 0 01:02:03.000000000) <= 2001-01-01 01:02:03.0) and ((dt - 0 01:02:04.000000000) < 2001-01-01 01:02:03.0) and (ts = (dt + 0 01:02:03.000000000)) and (ts <> (dt + 0 01:02:04.000000000)) and (ts <= (dt + 0 01:02:03.000000000)) and (ts < (dt + 0 01:02:04.000000000)) and (ts >= (dt - 0 01:02:03.000000000)) and (ts > (dt - 0 01:02:04.000000000))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ts (type: timestamp)
@@ -1384,8 +1401,9 @@ STAGE PLANS:
                         sort order: +
                         Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp)
@@ -1395,8 +1413,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -1515,6 +1533,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -1525,7 +1544,7 @@ STAGE PLANS:
                   alias: vector_interval_2
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((((((((((((((((((2001-01-01 01:02:03.0 = (ts + 0 00:00:00.000000000)) and (2001-01-01 01:02:03.0 <> (ts + 1 00:00:00.000000000))) and (2001-01-01 01:02:03.0 <= (ts + 1 00:00:00.000000000))) and (2001-01-01 01:02:03.0 < (ts + 1 00:00:00.000000000))) and (2001-01-01 01:02:03.0 >= (ts - 1 00:00:00.000000000))) and (2001-01-01 01:02:03.0 > (ts - 1 00:00:00.000000000))) and ((ts + 0 00:00:00.000000000) = 2001-01-01 01:02:03.0)) and ((ts + 1 00:00:00.000000000) <> 2001-01-01 01:02:03.0)) and ((ts + 1 00:00:00.000000000) >= 2001-01-01 01:02:03.0)) and ((ts + 1 00:00:00.000000000) > 2001-01-01 01:02:03.0)) and ((ts - 1 00:00:00.000000000) <= 2001-01-01 01:02:03.0)) and ((ts - 1 00:00:00.000000000) < 2001-01-01 01:02:03.0)) and (ts = (ts + 0 00:00:00.000000000))) and (ts <> (ts + 1 00:00:00.000000000))) and (ts <= (ts + 1 00:00:00.000000000))) and (ts < (ts + 1 00:00:00.000000000))) and (ts >= (ts - 1 00:00:00.000000000))) and (ts > (ts - 1 00:00:00.000000000))) (type: boolean)
+                    predicate: ((2001-01-01 01:02:03.0 = (ts + 0 00:00:00.000000000)) and (2001-01-01 01:02:03.0 <> (ts + 1 00:00:00.000000000)) and (2001-01-01 01:02:03.0 <= (ts + 1 00:00:00.000000000)) and (2001-01-01 01:02:03.0 < (ts + 1 00:00:00.000000000)) and (2001-01-01 01:02:03.0 >= (ts - 1 00:00:00.000000000)) and (2001-01-01 01:02:03.0 > (ts - 1 00:00:00.000000000)) and ((ts + 0 00:00:00.000000000) = 2001-01-01 01:02:03.0) and ((ts + 1 00:00:00.000000000) <> 2001-01-01 01:02:03.0) and ((ts + 1 00:00:00.000000000) >= 2001-01-01 01:02:03.0) and ((ts + 1 00:00:00.000000000) > 2001-01-01 01:02:03.0) and ((ts - 1 00:00:00.000000000) <= 2001-01-01 01:02:03.0) and ((ts - 1 00:00:00.000000000) < 2001-01-01 01:02:03.0) and (ts = (ts + 0 00:00:00.000000000)) and (ts <> (ts + 1 00:00:00.000000000)) and (ts <= (ts + 1 00:00:00.000000000)) and (ts < (ts + 1 00:00:00.000000000)) and (ts >= (ts - 1 00:00:00.000000000)) and (ts > (ts - 1 00:00:00.000000000))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ts (type: timestamp)
@@ -1536,8 +1555,9 @@ STAGE PLANS:
                         sort order: +
                         Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp)
@@ -1547,8 +1567,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0

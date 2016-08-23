@@ -10,6 +10,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@small_alltypesorc1a
+POSTHOOK: Lineage: small_alltypesorc1a.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: create table small_alltypesorc2a as select * from alltypesorc where cint is null and cbigint is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
@@ -20,6 +32,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@small_alltypesorc2a
+POSTHOOK: Lineage: small_alltypesorc2a.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a.cint SIMPLE []
+POSTHOOK: Lineage: small_alltypesorc2a.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: create table small_alltypesorc3a as select * from alltypesorc where cint is not null and cbigint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
@@ -30,6 +54,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@small_alltypesorc3a
+POSTHOOK: Lineage: small_alltypesorc3a.cbigint SIMPLE []
+POSTHOOK: Lineage: small_alltypesorc3a.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: create table small_alltypesorc4a as select * from alltypesorc where cint is null and cbigint is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
@@ -40,6 +76,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@small_alltypesorc4a
+POSTHOOK: Lineage: small_alltypesorc4a.cbigint SIMPLE []
+POSTHOOK: Lineage: small_alltypesorc4a.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a.cint SIMPLE []
+POSTHOOK: Lineage: small_alltypesorc4a.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: select * from small_alltypesorc1a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc1a
@@ -122,6 +170,18 @@ POSTHOOK: Input: default@small_alltypesorc3a
 POSTHOOK: Input: default@small_alltypesorc4a
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@small_alltypesorc_a
+POSTHOOK: Lineage: small_alltypesorc_a.cbigint EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cbigint, type:bigint, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:cbigint, type:bigint, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:cbigint, type:bigint, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cboolean1 EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cboolean1, type:boolean, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:cboolean1, type:boolean, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:cboolean1, type:boolean, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cboolean2 EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cboolean2, type:boolean, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:cboolean2, type:boolean, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:cboolean2, type:boolean, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cdouble EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cdouble, type:double, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:cdouble, type:double, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:cdouble, type:double, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cfloat EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cfloat, type:float, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:cfloat, type:float, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:cfloat, type:float, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cint EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cint, type:int, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:cint, type:int, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:cint, type:int, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.csmallint EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:csmallint, type:smallint, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:csmallint, type:smallint, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:csmallint, type:smallint, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cstring1 EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cstring1, type:string, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:cstring1, type:string, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:cstring1, type:string, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.cstring2 EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cstring2, type:string, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:cstring2, type:string, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:cstring2, type:string, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.ctimestamp1 EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.ctimestamp2 EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a.ctinyint EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:ctinyint, type:tinyint, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:ctinyint, type:tinyint, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:ctinyint, type:tinyint, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a
@@ -191,6 +251,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -200,11 +261,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 132 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: cint (type: int), cbigint (type: bigint)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 132 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
@@ -214,8 +275,7 @@ STAGE PLANS:
                       outputColumnNames: _col1
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 22 Data size: 4874 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
+                      Statistics: Num rows: 57 Data size: 456 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Left Outer Join0 to 1
@@ -225,62 +285,64 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 24 Data size: 5361 Basic stats: COMPLETE Column stats: NONE
-                        HybridGraceHashJoin: true
+                        Statistics: Num rows: 162 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count(), sum(_col1)
                           mode: hash
                           outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: bigint), _col1 (type: bigint)
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: c
-                  Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
+                  alias: cd
+                  Statistics: Num rows: 20 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: cint (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 20 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: c
-                  Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
+                  alias: hd
+                  Statistics: Num rows: 20 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: cbigint (type: bigint)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: bigint)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: bigint)
-                      Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 20 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), sum(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0

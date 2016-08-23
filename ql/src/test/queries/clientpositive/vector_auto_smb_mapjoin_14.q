@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+set hive.explain.user=true;
 SET hive.vectorized.execution.enabled=true;
 ;
 

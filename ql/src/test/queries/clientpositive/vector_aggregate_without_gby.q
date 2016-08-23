@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+set hive.explain.user=true;
 create table testvec(id int, dt int, greg_dt string) stored as orc;
 insert into table testvec
 values 

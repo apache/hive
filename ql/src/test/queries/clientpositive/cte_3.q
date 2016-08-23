@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.optimize.cte.materialize.threshold=1;
+set hive.explain.user=true;
 
 explain
 with q1 as ( select key from src where key = '5')

@@ -93,6 +93,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Map 2 (BROADCAST_EDGE)
 #### A masked pattern was here ####
@@ -102,43 +103,53 @@ STAGE PLANS:
                 TableScan
                   alias: tjoin1
                   Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Left Outer Join0 to 1
-                    filter predicates:
-                      0 {(c2 > 15)}
-                      1 
-                    keys:
-                      0 c1 (type: int)
-                      1 c1 (type: int)
-                    outputColumnNames: _col0, _col1, _col2, _col8
-                    input vertices:
-                      1 Map 2
-                    Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col8 (type: char(2))
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                  Select Operator
+                    expressions: rnum (type: int), c1 (type: int), c2 (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join0 to 1
+                      filter predicates:
+                        0 {(_col2 > 15)}
+                        1 
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col0 (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col4
+                      input vertices:
+                        1 Map 2
                       Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col4 (type: char(2))
+                        outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
                   alias: tjoin2
                   Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: c1 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: c1 (type: int)
+                  Select Operator
+                    expressions: c1 (type: int), c2 (type: char(2))
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: c2 (type: char(2))
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: char(2))
             Execution mode: llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -172,6 +183,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Map 2 (BROADCAST_EDGE)
 #### A masked pattern was here ####
@@ -181,44 +193,53 @@ STAGE PLANS:
                 TableScan
                   alias: tjoin1
                   Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Left Outer Join0 to 1
-                    filter predicates:
-                      0 {(c2 > 15)}
-                      1 
-                    keys:
-                      0 c1 (type: int)
-                      1 c1 (type: int)
-                    outputColumnNames: _col0, _col1, _col2, _col8
-                    input vertices:
-                      1 Map 2
-                    Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                    HybridGraceHashJoin: true
-                    Select Operator
-                      expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col8 (type: char(2))
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                  Select Operator
+                    expressions: rnum (type: int), c1 (type: int), c2 (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join0 to 1
+                      filter predicates:
+                        0 {(_col2 > 15)}
+                        1 
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col0 (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col4
+                      input vertices:
+                        1 Map 2
                       Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col4 (type: char(2))
+                        outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
                   alias: tjoin2
                   Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: c1 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: c1 (type: int)
+                  Select Operator
+                    expressions: c1 (type: int), c2 (type: char(2))
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: c2 (type: char(2))
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: char(2))
             Execution mode: llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -252,6 +273,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Map 2 (BROADCAST_EDGE)
 #### A masked pattern was here ####
@@ -261,43 +283,53 @@ STAGE PLANS:
                 TableScan
                   alias: tjoin1
                   Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Left Outer Join0 to 1
-                    filter predicates:
-                      0 {(c2 > 15)}
-                      1 
-                    keys:
-                      0 c1 (type: int)
-                      1 c1 (type: int)
-                    outputColumnNames: _col0, _col1, _col2, _col8
-                    input vertices:
-                      1 Map 2
-                    Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col8 (type: char(2))
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                  Select Operator
+                    expressions: rnum (type: int), c1 (type: int), c2 (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join0 to 1
+                      filter predicates:
+                        0 {(_col2 > 15)}
+                        1 
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col0 (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col4
+                      input vertices:
+                        1 Map 2
                       Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col4 (type: char(2))
+                        outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
                   alias: tjoin2
                   Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: c1 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: c1 (type: int)
+                  Select Operator
+                    expressions: c1 (type: int), c2 (type: char(2))
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: c2 (type: char(2))
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: char(2))
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -331,6 +363,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Map 2 (BROADCAST_EDGE)
 #### A masked pattern was here ####
@@ -340,44 +373,53 @@ STAGE PLANS:
                 TableScan
                   alias: tjoin1
                   Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Left Outer Join0 to 1
-                    filter predicates:
-                      0 {(c2 > 15)}
-                      1 
-                    keys:
-                      0 c1 (type: int)
-                      1 c1 (type: int)
-                    outputColumnNames: _col0, _col1, _col2, _col8
-                    input vertices:
-                      1 Map 2
-                    Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                    HybridGraceHashJoin: true
-                    Select Operator
-                      expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col8 (type: char(2))
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                  Select Operator
+                    expressions: rnum (type: int), c1 (type: int), c2 (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join0 to 1
+                      filter predicates:
+                        0 {(_col2 > 15)}
+                        1 
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col0 (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col4
+                      input vertices:
+                        1 Map 2
                       Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col4 (type: char(2))
+                        outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
                   alias: tjoin2
                   Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: c1 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: c1 (type: int)
+                  Select Operator
+                    expressions: c1 (type: int), c2 (type: char(2))
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: c2 (type: char(2))
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: char(2))
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -411,6 +453,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Map 2 (BROADCAST_EDGE)
 #### A masked pattern was here ####
@@ -420,43 +463,53 @@ STAGE PLANS:
                 TableScan
                   alias: tjoin1
                   Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Left Outer Join0 to 1
-                    filter predicates:
-                      0 {(c2 > 15)}
-                      1 
-                    keys:
-                      0 c1 (type: int)
-                      1 c1 (type: int)
-                    outputColumnNames: _col0, _col1, _col2, _col8
-                    input vertices:
-                      1 Map 2
-                    Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col8 (type: char(2))
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                  Select Operator
+                    expressions: rnum (type: int), c1 (type: int), c2 (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join0 to 1
+                      filter predicates:
+                        0 {(_col2 > 15)}
+                        1 
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col0 (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col4
+                      input vertices:
+                        1 Map 2
                       Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col4 (type: char(2))
+                        outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
                   alias: tjoin2
                   Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: c1 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: c1 (type: int)
+                  Select Operator
+                    expressions: c1 (type: int), c2 (type: char(2))
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: c2 (type: char(2))
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: char(2))
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -490,6 +543,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Map 1 <- Map 2 (BROADCAST_EDGE)
 #### A masked pattern was here ####
@@ -499,44 +553,53 @@ STAGE PLANS:
                 TableScan
                   alias: tjoin1
                   Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Left Outer Join0 to 1
-                    filter predicates:
-                      0 {(c2 > 15)}
-                      1 
-                    keys:
-                      0 c1 (type: int)
-                      1 c1 (type: int)
-                    outputColumnNames: _col0, _col1, _col2, _col8
-                    input vertices:
-                      1 Map 2
-                    Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                    HybridGraceHashJoin: true
-                    Select Operator
-                      expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col8 (type: char(2))
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                  Select Operator
+                    expressions: rnum (type: int), c1 (type: int), c2 (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join0 to 1
+                      filter predicates:
+                        0 {(_col2 > 15)}
+                        1 
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col0 (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col4
+                      input vertices:
+                        1 Map 2
                       Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col4 (type: char(2))
+                        outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 4 Data size: 409 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
                   alias: tjoin2
                   Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: c1 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: c1 (type: int)
+                  Select Operator
+                    expressions: c1 (type: int), c2 (type: char(2))
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: c2 (type: char(2))
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 4 Data size: 372 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: char(2))
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator

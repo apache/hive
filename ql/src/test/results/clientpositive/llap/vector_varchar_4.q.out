@@ -156,6 +156,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe
                           name: default.varchar_lazy_binary_columnar
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-2
     Dependency Collection

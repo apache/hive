@@ -108,6 +108,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -125,10 +126,12 @@ STAGE PLANS:
                       key expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int)
                       sort order: +++
                       Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
                       value expressions: _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: boolean), _col7 (type: string), _col8 (type: timestamp), _col9 (type: decimal(4,2)), _col10 (type: binary)
             Execution mode: llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: tinyint), KEY.reducesinkkey1 (type: smallint), KEY.reducesinkkey2 (type: int), VALUE._col0 (type: bigint), VALUE._col1 (type: float), VALUE._col2 (type: double), VALUE._col3 (type: boolean), VALUE._col4 (type: string), VALUE._col5 (type: timestamp), VALUE._col6 (type: decimal(4,2)), VALUE._col7 (type: binary)
@@ -141,8 +144,8 @@ STAGE PLANS:
                     compressed: false
                     Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
                     table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -161,7 +164,7 @@ POSTHOOK: Input: default@over1korc
 #### A masked pattern was here ####
 NULL	374	65560	4294967516	65.43	22.48	true	oscar quirinius	2013-03-01 09:11:58.703316	16.86	mathematics
 NULL	409	65536	4294967490	46.97	25.92	false	fred miller	2013-03-01 09:11:58.703116	33.45	history
-NULL	473	65720	4294967324	80.74	40.6	false	holly falkner	2013-03-01 09:11:58.703111	18.8	mathematics
+NULL	473	65720	4294967324	80.74	40.6	false	holly falkner	2013-03-01 09:11:58.703111	18.80	mathematics
 -3	275	65622	4294967302	71.78	8.49	false	wendy robinson	2013-03-01 09:11:58.703294	95.39	undecided
 -3	344	65733	4294967363	0.56	11.96	true	rachel thompson	2013-03-01 09:11:58.703276	88.46	wind surfing
 -3	376	65548	4294967431	96.78	43.23	false	fred ellison	2013-03-01 09:11:58.703233	75.39	education
@@ -201,6 +204,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -218,10 +222,12 @@ STAGE PLANS:
                       key expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int)
                       sort order: +++
                       Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
                       value expressions: _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: boolean), _col7 (type: string), _col8 (type: timestamp), _col9 (type: decimal(4,2)), _col10 (type: binary)
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: tinyint), KEY.reducesinkkey1 (type: smallint), KEY.reducesinkkey2 (type: int), VALUE._col0 (type: bigint), VALUE._col1 (type: float), VALUE._col2 (type: double), VALUE._col3 (type: boolean), VALUE._col4 (type: string), VALUE._col5 (type: timestamp), VALUE._col6 (type: decimal(4,2)), VALUE._col7 (type: binary)
@@ -234,8 +240,8 @@ STAGE PLANS:
                     compressed: false
                     Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
                     table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -254,7 +260,7 @@ POSTHOOK: Input: default@over1korc
 #### A masked pattern was here ####
 NULL	374	65560	4294967516	65.43	22.48	true	oscar quirinius	2013-03-01 09:11:58.703316	16.86	mathematics
 NULL	409	65536	4294967490	46.97	25.92	false	fred miller	2013-03-01 09:11:58.703116	33.45	history
-NULL	473	65720	4294967324	80.74	40.6	false	holly falkner	2013-03-01 09:11:58.703111	18.8	mathematics
+NULL	473	65720	4294967324	80.74	40.6	false	holly falkner	2013-03-01 09:11:58.703111	18.80	mathematics
 -3	275	65622	4294967302	71.78	8.49	false	wendy robinson	2013-03-01 09:11:58.703294	95.39	undecided
 -3	344	65733	4294967363	0.56	11.96	true	rachel thompson	2013-03-01 09:11:58.703276	88.46	wind surfing
 -3	376	65548	4294967431	96.78	43.23	false	fred ellison	2013-03-01 09:11:58.703233	75.39	education

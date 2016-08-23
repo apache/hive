@@ -45,6 +45,12 @@
 </property>
 
 <property>
+  <name>hive.stats.fetch.column.stats</name>
+  <value>true</value>
+  <description>Use column stats to annotate stats for physical optimization phase</description>
+</property>
+
+<property>
   <name>hive.merge.tezfiles</name>
   <value>false</value>
   <description>Merge small files at the end of a Tez DAG</description>

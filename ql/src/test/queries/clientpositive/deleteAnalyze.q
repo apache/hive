@@ -1,4 +1,5 @@
 set hive.stats.autogather=true;
+set hive.explain.user=true;
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/testdeci2;
 

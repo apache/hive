@@ -57,6 +57,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -65,32 +66,34 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_part
-                  Statistics: Num rows: 200 Data size: 54496 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 200 Data size: 56096 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (cdouble + 2.0) (type: double)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 200 Data size: 54496 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 200 Data size: 56096 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: double)
                       sort order: +
-                      Statistics: Num rows: 200 Data size: 54496 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 200 Data size: 56096 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: double)
                 outputColumnNames: _col0
-                Statistics: Num rows: 200 Data size: 54496 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 200 Data size: 56096 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 10
-                  Statistics: Num rows: 10 Data size: 2720 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 2800 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 10 Data size: 2720 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 2800 Basic stats: COMPLETE Column stats: NONE
                     table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0

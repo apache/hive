@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.optimize.cte.materialize.threshold=-1;
+set hive.explain.user=true;
 
 create database mydb;
 use mydb;

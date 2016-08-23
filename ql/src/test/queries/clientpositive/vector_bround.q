@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+set hive.explain.user=true;
 create table test_vector_bround(v0 double, v1 double) stored as orc;
 insert into table test_vector_bround
 values

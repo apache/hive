@@ -76,75 +76,35 @@ select a.colnum
 from mydb.q1 as a join q1 as b
 on a.colnum=b.key
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+Plan optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (UDFToDouble(colnum) = 5.0) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key = '5') (type: boolean)
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
-            LLAP IO: no inputs
-        Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 
-                  1 
-                Statistics: Num rows: 250 Data size: 3656 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: 5 (type: int)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 250 Data size: 3656 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 250 Data size: 3656 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
 
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 llap
+      File Output Operator [FS_10]
+        Select Operator [SEL_9] (rows=2 width=89)
+          Output:["_col0"]
+          Merge Join Operator [MERGEJOIN_13] (rows=2 width=89)
+            Conds:(Inner)
+          <-Map 1 [SIMPLE_EDGE] llap
+            SHUFFLE [RS_6]
+              Select Operator [SEL_2] (rows=1 width=3)
+                Filter Operator [FIL_11] (rows=1 width=3)
+                  predicate:(UDFToDouble(colnum) = 5.0)
+                  TableScan [TS_0] (rows=1 width=3)
+                    mydb@q1,a,Tbl:COMPLETE,Col:NONE,Output:["colnum"]
+          <-Map 3 [SIMPLE_EDGE] llap
+            SHUFFLE [RS_7]
+              Select Operator [SEL_5] (rows=2 width=85)
+                Filter Operator [FIL_12] (rows=2 width=87)
+                  predicate:(key = '5')
+                  TableScan [TS_3] (rows=500 width=87)
+                    default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: with q1 as (select * from src where key= '5')

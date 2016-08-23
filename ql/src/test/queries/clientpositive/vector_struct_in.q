@@ -1,4 +1,5 @@
 set hive.cbo.enable=false;
+set hive.explain.user=true;
 set hive.tez.dynamic.partition.pruning=false;
 set hive.vectorized.execution.enabled=true;
 SET hive.auto.convert.join=true;

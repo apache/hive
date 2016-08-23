@@ -1,5 +1,6 @@
 set hive.auto.convert.join=true;
 set hive.mapjoin.hybridgrace.hashtable=false;
+set hive.explain.user=true;
 
 DROP TABLE IF EXISTS test_1;
 CREATE TABLE test_1 AS SELECT 1 AS id;

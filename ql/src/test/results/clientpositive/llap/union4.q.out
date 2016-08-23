@@ -33,11 +33,11 @@ STAGE DEPENDENCIES:
   Stage-2 depends on stages: Stage-1
   Stage-0 depends on stages: Stage-2
   Stage-3 depends on stages: Stage-0
-  Stage-4 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
         Reducer 5 <- Map 4 (SIMPLE_EDGE), Union 3 (CONTAINS)
@@ -60,10 +60,11 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: llap
+            LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: s1
+                  alias: s2
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
@@ -77,8 +78,9 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: llap
+            LLAP IO: no inputs
         Reducer 2 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -102,7 +104,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.tmptable
         Reducer 5 
-            Execution mode: uber
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -142,9 +144,6 @@ STAGE PLANS:
               name: default.tmptable
 
   Stage: Stage-3
-    Stats-Aggr Operator
-
-  Stage: Stage-4
     Stats-Aggr Operator
 
 PREHOOK: query: insert overwrite table tmptable

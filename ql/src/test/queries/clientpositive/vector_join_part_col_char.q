@@ -2,6 +2,8 @@ set hive.mapred.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.vectorized.execution.enabled=true;
+set hive.explain.user=true;
+set hive.metastore.fastpath=false;
 
 drop table if exists char_part_tbl1 ;
 drop table if exists char_part_tbl2;

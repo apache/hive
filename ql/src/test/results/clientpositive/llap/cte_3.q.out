@@ -8,59 +8,30 @@ with q1 as ( select key from src where key = '5')
 select *
 from q1
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-1
-  Stage-3 is a root stage
+Plan optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key = '5') (type: boolean)
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: '5' (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.q1
-            Execution mode: llap
-            LLAP IO: no inputs
-
-  Stage: Stage-2
-    Dependency Collection
-
-  Stage: Stage-0
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
-  Stage: Stage-3
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        TableScan
-          alias: q1
-          Select Operator
-            expressions: key (type: string)
-            outputColumnNames: _col0
-            ListSink
+Stage-2
+  Dependency Collection{}
+    Stage-1
+      Map 1 llap
+      File Output Operator [FS_3]
+        table:{"name:":"default.q1"}
+        Select Operator [SEL_2] (rows=2 width=85)
+          Output:["_col0"]
+          Filter Operator [FIL_4] (rows=2 width=87)
+            predicate:(key = '5')
+            TableScan [TS_0] (rows=500 width=87)
+              default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+Stage-0
+  Move Operator
+     Please refer to the previous Stage-1
+Stage-3
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_6]
+      Output:["_col0"]
+      TableScan [TS_5]
+        Output:["key"]
 
 PREHOOK: query: with q1 as ( select key from src where key = '5')
 select *
@@ -93,59 +64,30 @@ explain
 with q1 as ( select key from src where key = '5')
 select * from (select key from q1) a
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-1
-  Stage-3 is a root stage
+Plan optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key = '5') (type: boolean)
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: '5' (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.q1
-            Execution mode: llap
-            LLAP IO: no inputs
-
-  Stage: Stage-2
-    Dependency Collection
-
-  Stage: Stage-0
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
-  Stage: Stage-3
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        TableScan
-          alias: q1
-          Select Operator
-            expressions: key (type: string)
-            outputColumnNames: _col0
-            ListSink
+Stage-2
+  Dependency Collection{}
+    Stage-1
+      Map 1 llap
+      File Output Operator [FS_3]
+        table:{"name:":"default.q1"}
+        Select Operator [SEL_2] (rows=2 width=85)
+          Output:["_col0"]
+          Filter Operator [FIL_4] (rows=2 width=87)
+            predicate:(key = '5')
+            TableScan [TS_0] (rows=500 width=87)
+              default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+Stage-0
+  Move Operator
+     Please refer to the previous Stage-1
+Stage-3
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_6]
+      Output:["_col0"]
+      TableScan [TS_5]
+        Output:["key"]
 
 PREHOOK: query: with q1 as ( select key from src where key = '5')
 select * from (select key from q1) a
@@ -178,98 +120,45 @@ with q1 as ( select key from q2 where key = '5'),
 q2 as ( select key from src where key = '5')
 select * from (select key from q1) a
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-4 depends on stages: Stage-2, Stage-0
-  Stage-5 depends on stages: Stage-4
-  Stage-3 depends on stages: Stage-4
-  Stage-0 depends on stages: Stage-1
-  Stage-6 is a root stage
+Plan optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key = '5') (type: boolean)
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: '5' (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.q2
-            Execution mode: llap
-            LLAP IO: no inputs
-
-  Stage: Stage-2
-    Dependency Collection
-
-  Stage: Stage-4
-    Tez
-#### A masked pattern was here ####
-      Vertices:
-        Map 2 
-            Map Operator Tree:
-                TableScan
-                  alias: q2
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                  Filter Operator
-                    predicate: (key = '5') (type: boolean)
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                    Select Operator
-                      expressions: '5' (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.q1
-            Execution mode: llap
-            LLAP IO: no inputs
-
-  Stage: Stage-5
-    Dependency Collection
-
-  Stage: Stage-3
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
-  Stage: Stage-0
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
-  Stage: Stage-6
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        TableScan
-          alias: q1
-          Select Operator
-            expressions: key (type: string)
-            outputColumnNames: _col0
-            ListSink
+Stage-5
+  Dependency Collection{}
+    Stage-4
+      Map 2 llap
+      File Output Operator [FS_8]
+        table:{"name:":"default.q1"}
+        Select Operator [SEL_7] (rows=1 width=0)
+          Output:["_col0"]
+          Filter Operator [FIL_9] (rows=1 width=0)
+            predicate:(key = '5')
+            TableScan [TS_5] (rows=1 width=0)
+              default@q2,q2,Tbl:PARTIAL,Col:NONE,Output:["key"]
+        Stage-2
+          Dependency Collection{}
+            Stage-1
+              Map 1 llap
+              File Output Operator [FS_3]
+                table:{"name:":"default.q2"}
+                Select Operator [SEL_2] (rows=2 width=85)
+                  Output:["_col0"]
+                  Filter Operator [FIL_4] (rows=2 width=87)
+                    predicate:(key = '5')
+                    TableScan [TS_0] (rows=500 width=87)
+                      default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+        Stage-0
+          Move Operator
+             Please refer to the previous Stage-1
+Stage-3
+  Move Operator
+     Please refer to the previous Stage-4
+Stage-6
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_11]
+      Output:["_col0"]
+      TableScan [TS_10]
+        Output:["key"]
 
 PREHOOK: query: with q1 as ( select key from q2 where key = '5'),
 q2 as ( select key from src where key = '5')

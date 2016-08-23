@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 SET hive.vectorized.execution.enabled=true;
+set hive.explain.user=true;
 
 DROP TABLE parquet_types_staging;
 DROP TABLE parquet_types;

@@ -1246,6 +1246,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
@@ -1255,22 +1256,23 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_sales
-                  Statistics: Num rows: 2000 Data size: 3504000 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 3520000 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ws_order_number (type: int)
                     outputColumnNames: ws_order_number
-                    Statistics: Num rows: 2000 Data size: 3504000 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 3520000 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: ws_order_number (type: int)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2000 Data size: 3504000 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 3520000 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2000 Data size: 3504000 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2000 Data size: 3520000 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1278,7 +1280,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1000 Data size: 1752000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1000 Data size: 1760000 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col0)
                   mode: hash
@@ -1289,7 +1291,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
-            Execution mode: vectorized, uber
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1300,8 +1302,8 @@ STAGE PLANS:
                   compressed: false
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0

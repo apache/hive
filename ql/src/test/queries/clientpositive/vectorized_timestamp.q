@@ -1,4 +1,5 @@
 set hive.fetch.task.conversion=none;
+set hive.explain.user=true;
 
 DROP TABLE IF EXISTS test;
 CREATE TABLE test(ts TIMESTAMP) STORED AS ORC;

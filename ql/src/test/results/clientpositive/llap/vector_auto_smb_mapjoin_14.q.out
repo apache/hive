@@ -54,70 +54,37 @@ select count(*) from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+Plan optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-                    Merge Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 key (type: int)
-                        1 key (type: int)
-                      Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
-            Execution mode: llap
-        Reducer 2 
-            Execution mode: vectorized, uber
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_22]
+        Group By Operator [GBY_21] (rows=1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Map 1 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_11]
+            Group By Operator [GBY_10] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Merge Join Operator [MERGEJOIN_19] (rows=11 width=93)
+                Conds:SEL_2._col0=SEL_5._col0(Inner)
+              <-Select Operator [SEL_5] (rows=10 width=93)
+                  Output:["_col0"]
+                  Filter Operator [FIL_18] (rows=10 width=93)
+                    predicate:key is not null
+                    TableScan [TS_3] (rows=10 width=93)
+                      default@tbl2,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
+              <-Select Operator [SEL_2] (rows=10 width=93)
+                  Output:["_col0"]
+                  Filter Operator [FIL_17] (rows=10 width=93)
+                    predicate:key is not null
+                    TableScan [TS_0] (rows=10 width=93)
+                      default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: select count(*) from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
@@ -156,95 +123,46 @@ select count(*) from
   group by key
 ) subq2
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+Plan optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-                    Merge Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 key (type: int)
-                        1 key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        keys: _col0 (type: int)
-                        mode: hash
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col1 (type: bigint)
-            Execution mode: llap
-        Reducer 2 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                keys: KEY._col0 (type: int)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
-        Reducer 3 
-            Execution mode: vectorized, uber
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 3 vectorized, llap
+      File Output Operator [FS_31]
+        Group By Operator [GBY_30] (rows=1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Reducer 2 [SIMPLE_EDGE] vectorized, llap
+          SHUFFLE [RS_29]
+            Group By Operator [GBY_28] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Select Operator [SEL_27] (rows=5 width=93)
+                Group By Operator [GBY_26] (rows=5 width=93)
+                  Output:["_col0"],keys:KEY._col0
+                <-Map 1 [SIMPLE_EDGE] llap
+                  SHUFFLE [RS_11]
+                    PartitionCols:_col0
+                    Group By Operator [GBY_10] (rows=11 width=93)
+                      Output:["_col0"],keys:_col0
+                      Merge Join Operator [MERGEJOIN_24] (rows=11 width=93)
+                        Conds:SEL_2._col0=SEL_5._col0(Inner),Output:["_col0"]
+                      <-Select Operator [SEL_5] (rows=10 width=93)
+                          Output:["_col0"]
+                          Filter Operator [FIL_23] (rows=10 width=93)
+                            predicate:key is not null
+                            TableScan [TS_3] (rows=10 width=93)
+                              default@tbl2,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                      <-Select Operator [SEL_2] (rows=10 width=93)
+                          Output:["_col0"]
+                          Filter Operator [FIL_22] (rows=10 width=93)
+                            predicate:key is not null
+                            TableScan [TS_0] (rows=10 width=93)
+                              default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: select count(*) from
 (
@@ -309,149 +227,71 @@ join
 ) src2
 on src1.key = src2.key
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+Plan optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-                    Merge Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 key (type: int)
-                        1 key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        keys: _col0 (type: int)
-                        mode: hash
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col1 (type: bigint)
-            Execution mode: llap
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-                    Merge Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 key (type: int)
-                        1 key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        keys: _col0 (type: int)
-                        mode: hash
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col1 (type: bigint)
-            Execution mode: llap
-        Reducer 2 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                keys: KEY._col0 (type: int)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: bigint)
-        Reducer 3 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col0, _col1, _col3
-                Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: int), _col1 (type: bigint), _col3 (type: bigint)
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                keys: KEY._col0 (type: int)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: bigint)
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
+Reducer 6 <- Map 5 (SIMPLE_EDGE)
 
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 3 llap
+      File Output Operator [FS_32]
+        Select Operator [SEL_31] (rows=5 width=102)
+          Output:["_col0","_col1","_col2"]
+          Merge Join Operator [MERGEJOIN_49] (rows=5 width=102)
+            Conds:RS_51._col0=RS_53._col0(Inner),Output:["_col0","_col1","_col3"]
+          <-Reducer 2 [SIMPLE_EDGE] vectorized, llap
+            SHUFFLE [RS_51]
+              PartitionCols:_col0
+              Group By Operator [GBY_50] (rows=5 width=93)
+                Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
+              <-Map 1 [SIMPLE_EDGE] llap
+                SHUFFLE [RS_11]
+                  PartitionCols:_col0
+                  Group By Operator [GBY_10] (rows=11 width=93)
+                    Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
+                    Merge Join Operator [MERGEJOIN_45] (rows=11 width=93)
+                      Conds:SEL_2._col0=SEL_5._col0(Inner),Output:["_col0"]
+                    <-Select Operator [SEL_5] (rows=10 width=93)
+                        Output:["_col0"]
+                        Filter Operator [FIL_42] (rows=10 width=93)
+                          predicate:key is not null
+                          TableScan [TS_3] (rows=10 width=93)
+                            default@tbl2,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                    <-Select Operator [SEL_2] (rows=10 width=93)
+                        Output:["_col0"]
+                        Filter Operator [FIL_41] (rows=10 width=93)
+                          predicate:key is not null
+                          TableScan [TS_0] (rows=10 width=93)
+                            default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
+          <-Reducer 6 [SIMPLE_EDGE] vectorized, llap
+            SHUFFLE [RS_53]
+              PartitionCols:_col0
+              Group By Operator [GBY_52] (rows=5 width=93)
+                Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
+              <-Map 5 [SIMPLE_EDGE] llap
+                SHUFFLE [RS_25]
+                  PartitionCols:_col0
+                  Group By Operator [GBY_24] (rows=11 width=93)
+                    Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
+                    Merge Join Operator [MERGEJOIN_47] (rows=11 width=93)
+                      Conds:SEL_16._col0=SEL_19._col0(Inner),Output:["_col0"]
+                    <-Select Operator [SEL_19] (rows=10 width=93)
+                        Output:["_col0"]
+                        Filter Operator [FIL_44] (rows=10 width=93)
+                          predicate:key is not null
+                          TableScan [TS_17] (rows=10 width=93)
+                            default@tbl2,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                    <-Select Operator [SEL_16] (rows=10 width=93)
+                        Output:["_col0"]
+                        Filter Operator [FIL_43] (rows=10 width=93)
+                          predicate:key is not null
+                          TableScan [TS_14] (rows=10 width=93)
+                            default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: select src1.key, src1.cnt1, src2.cnt1 from
 (
@@ -515,78 +355,37 @@ select count(*) from
   (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+Plan optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key < 6) (type: boolean)
-                    Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key < 6) (type: boolean)
-                    Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
-                      Merge Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: int)
-                          1 _col0 (type: int)
-                        Statistics: Num rows: 3 Data size: 306 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
-            Execution mode: llap
-        Reducer 2 
-            Execution mode: vectorized, uber
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_22]
+        Group By Operator [GBY_21] (rows=1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Map 1 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_11]
+            Group By Operator [GBY_10] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Merge Join Operator [MERGEJOIN_19] (rows=3 width=102)
+                Conds:SEL_2._col0=SEL_5._col0(Inner)
+              <-Select Operator [SEL_5] (rows=3 width=93)
+                  Output:["_col0"]
+                  Filter Operator [FIL_18] (rows=3 width=93)
+                    predicate:(key < 6)
+                    TableScan [TS_3] (rows=10 width=93)
+                      default@tbl2,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
+              <-Select Operator [SEL_2] (rows=3 width=93)
+                  Output:["_col0"]
+                  Filter Operator [FIL_17] (rows=3 width=93)
+                    predicate:(key < 6)
+                    TableScan [TS_0] (rows=10 width=93)
+                      default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: select count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
@@ -635,74 +434,37 @@ select count(*) from
   join tbl2 b
   on subq2.key = b.key
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+Plan optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: NONE
-                      Merge Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: int)
-                          1 key (type: int)
-                        Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
-            Execution mode: llap
-        Reducer 2 
-            Execution mode: vectorized, uber
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_22]
+        Group By Operator [GBY_21] (rows=1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Map 1 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_11]
+            Group By Operator [GBY_10] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Merge Join Operator [MERGEJOIN_19] (rows=1 width=102)
+                Conds:SEL_2._col0=SEL_5._col0(Inner)
+              <-Select Operator [SEL_5] (rows=1 width=93)
+                  Output:["_col0"]
+                  Filter Operator [FIL_18] (rows=1 width=93)
+                    predicate:((key < 8) and (key < 6))
+                    TableScan [TS_3] (rows=10 width=93)
+                      default@tbl2,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
+              <-Select Operator [SEL_2] (rows=1 width=93)
+                  Output:["_col0"]
+                  Filter Operator [FIL_17] (rows=1 width=93)
+                    predicate:((key < 8) and (key < 6))
+                    TableScan [TS_0] (rows=10 width=93)
+                      default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: select count(*) from 
   (
@@ -775,78 +537,37 @@ select count(*) from
   ) subq4
   on subq2.key = subq4.key
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+Plan optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: NONE
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: NONE
-                      Merge Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: int)
-                          1 _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
-            Execution mode: llap
-        Reducer 2 
-            Execution mode: vectorized, uber
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_22]
+        Group By Operator [GBY_21] (rows=1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Map 1 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_11]
+            Group By Operator [GBY_10] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Merge Join Operator [MERGEJOIN_19] (rows=1 width=102)
+                Conds:SEL_2._col0=SEL_5._col0(Inner)
+              <-Select Operator [SEL_5] (rows=1 width=93)
+                  Output:["_col0"]
+                  Filter Operator [FIL_18] (rows=1 width=93)
+                    predicate:((key < 8) and (key < 6))
+                    TableScan [TS_3] (rows=10 width=93)
+                      default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
+              <-Select Operator [SEL_2] (rows=1 width=93)
+                  Output:["_col0"]
+                  Filter Operator [FIL_17] (rows=1 width=93)
+                    predicate:((key < 8) and (key < 6))
+                    TableScan [TS_0] (rows=10 width=93)
+                      default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: select count(*) from 
   (
@@ -909,78 +630,37 @@ select count(*) from
   (select a.key as key, concat(a.value, a.value) as value from tbl2 a where key < 8) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+Plan optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key < 8) (type: boolean)
-                    Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key < 8) (type: boolean)
-                    Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
-                      Merge Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: int)
-                          1 _col0 (type: int)
-                        Statistics: Num rows: 3 Data size: 306 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
-            Execution mode: llap
-        Reducer 2 
-            Execution mode: vectorized, uber
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_22]
+        Group By Operator [GBY_21] (rows=1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Map 1 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_11]
+            Group By Operator [GBY_10] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Merge Join Operator [MERGEJOIN_19] (rows=3 width=102)
+                Conds:SEL_2._col0=SEL_5._col0(Inner)
+              <-Select Operator [SEL_5] (rows=3 width=93)
+                  Output:["_col0"]
+                  Filter Operator [FIL_18] (rows=3 width=93)
+                    predicate:(key < 8)
+                    TableScan [TS_3] (rows=10 width=93)
+                      default@tbl2,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
+              <-Select Operator [SEL_2] (rows=3 width=93)
+                  Output:["_col0"]
+                  Filter Operator [FIL_17] (rows=3 width=93)
+                    predicate:(key < 8)
+                    TableScan [TS_0] (rows=10 width=93)
+                      default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: select count(*) from 
   (select a.key as key, concat(a.value, a.value) as value from tbl1 a where key < 8) subq1 
@@ -1019,94 +699,44 @@ select count(*) from
   (select a.key +1 as key, concat(a.value, a.value) as value from tbl2 a) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+Plan optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: (key + 1) (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                    Filter Operator
-                      predicate: _col0 is not null (type: boolean)
-                      Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized, llap
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: (key + 1) (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                    Filter Operator
-                      predicate: _col0 is not null (type: boolean)
-                      Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized, llap
-        Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: int)
-                  1 _col0 (type: int)
-                Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: bigint)
-        Reducer 3 
-            Execution mode: vectorized, uber
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 3 vectorized, llap
+      File Output Operator [FS_29]
+        Group By Operator [GBY_28] (rows=1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Reducer 2 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_11]
+            Group By Operator [GBY_10] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Merge Join Operator [MERGEJOIN_21] (rows=11 width=93)
+                Conds:RS_24._col0=RS_27._col0(Inner)
+              <-Map 1 [SIMPLE_EDGE] vectorized, llap
+                SHUFFLE [RS_24]
+                  PartitionCols:_col0
+                  Select Operator [SEL_23] (rows=10 width=93)
+                    Output:["_col0"]
+                    Filter Operator [FIL_22] (rows=10 width=93)
+                      predicate:(key + 1) is not null
+                      TableScan [TS_0] (rows=10 width=93)
+                        default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
+              <-Map 4 [SIMPLE_EDGE] vectorized, llap
+                SHUFFLE [RS_27]
+                  PartitionCols:_col0
+                  Select Operator [SEL_26] (rows=10 width=93)
+                    Output:["_col0"]
+                    Filter Operator [FIL_25] (rows=10 width=93)
+                      predicate:(key + 1) is not null
+                      TableScan [TS_3] (rows=10 width=93)
+                        default@tbl2,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: select count(*) from 
   (select a.key +1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
@@ -1141,74 +771,37 @@ select count(*) from
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
     join tbl2 a on subq1.key = a.key
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+Plan optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key < 6) (type: boolean)
-                    Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
-                      Merge Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: int)
-                          1 key (type: int)
-                        Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
-            Execution mode: llap
-        Reducer 2 
-            Execution mode: vectorized, uber
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_22]
+        Group By Operator [GBY_21] (rows=1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Map 1 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_11]
+            Group By Operator [GBY_10] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Merge Join Operator [MERGEJOIN_19] (rows=3 width=102)
+                Conds:SEL_2._col0=SEL_5._col0(Inner)
+              <-Select Operator [SEL_5] (rows=3 width=93)
+                  Output:["_col0"]
+                  Filter Operator [FIL_18] (rows=3 width=93)
+                    predicate:(key < 6)
+                    TableScan [TS_3] (rows=10 width=93)
+                      default@tbl2,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
+              <-Select Operator [SEL_2] (rows=3 width=93)
+                  Output:["_col0"]
+                  Filter Operator [FIL_17] (rows=3 width=93)
+                    predicate:(key < 6)
+                    TableScan [TS_0] (rows=10 width=93)
+                      default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: select count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
@@ -1249,91 +842,43 @@ select count(*) from
   (select a.key as key, a.value as value from tbl2 a where key < 6) subq3
   on (subq1.key = subq3.key)
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+Plan optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key < 6) (type: boolean)
-                    Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key < 6) (type: boolean)
-                    Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key < 6) (type: boolean)
-                    Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
-                      Merge Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                             Inner Join 0 to 2
-                        keys:
-                          0 _col0 (type: int)
-                          1 _col0 (type: int)
-                          2 _col0 (type: int)
-                        Statistics: Num rows: 6 Data size: 613 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
-            Execution mode: llap
-        Reducer 2 
-            Execution mode: vectorized, uber
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_32]
+        Group By Operator [GBY_31] (rows=1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Map 1 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_15]
+            Group By Operator [GBY_14] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Merge Join Operator [MERGEJOIN_28] (rows=6 width=102)
+                Conds:SEL_2._col0=SEL_5._col0(Inner),SEL_2._col0=SEL_8._col0(Inner)
+              <-Select Operator [SEL_5] (rows=3 width=93)
+                  Output:["_col0"]
+                  Filter Operator [FIL_26] (rows=3 width=93)
+                    predicate:(key < 6)
+                    TableScan [TS_3] (rows=10 width=93)
+                      default@tbl2,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
+              <-Select Operator [SEL_8] (rows=3 width=93)
+                  Output:["_col0"]
+                  Filter Operator [FIL_27] (rows=3 width=93)
+                    predicate:(key < 6)
+                    TableScan [TS_6] (rows=10 width=93)
+                      default@tbl2,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
+              <-Select Operator [SEL_2] (rows=3 width=93)
+                  Output:["_col0"]
+                  Filter Operator [FIL_25] (rows=3 width=93)
+                    predicate:(key < 6)
+                    TableScan [TS_0] (rows=10 width=93)
+                      default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: select count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
@@ -1390,74 +935,37 @@ select count(*) from (
 join tbl2 b
 on subq2.key = b.key) a
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+Plan optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (((key < 8) and (key < 6)) and key is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: NONE
-                      Merge Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: int)
-                          1 key (type: int)
-                        Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
-            Execution mode: llap
-        Reducer 2 
-            Execution mode: vectorized, uber
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_22]
+        Group By Operator [GBY_21] (rows=1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Map 1 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_11]
+            Group By Operator [GBY_10] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Merge Join Operator [MERGEJOIN_19] (rows=1 width=102)
+                Conds:SEL_2._col0=SEL_5._col0(Inner)
+              <-Select Operator [SEL_5] (rows=1 width=93)
+                  Output:["_col0"]
+                  Filter Operator [FIL_18] (rows=1 width=93)
+                    predicate:((key < 8) and (key < 6))
+                    TableScan [TS_3] (rows=10 width=93)
+                      default@tbl2,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
+              <-Select Operator [SEL_2] (rows=1 width=93)
+                  Output:["_col0"]
+                  Filter Operator [FIL_17] (rows=1 width=93)
+                    predicate:((key < 8) and (key < 6))
+                    TableScan [TS_0] (rows=10 width=93)
+                      default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: select count(*) from (
   select subq2.key as key, subq2.value as value1, b.value as value2 from
@@ -1524,96 +1032,42 @@ from (
 insert overwrite table dest1 select key, val1
 insert overwrite table dest2 select key, val1, val2
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-0
-  Stage-1 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-1
+Plan not optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-2
-    Tez
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-                    Merge Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 key (type: int)
-                        1 key (type: int)
-                      outputColumnNames: _col0, _col1, _col6
-                      Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: int), _col1 (type: string), _col6 (type: string)
-                        outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: _col0 (type: int), _col1 (type: string)
-                          outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.dest1
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: default.dest2
-            Execution mode: llap
-
-  Stage: Stage-3
-    Dependency Collection
-
-  Stage: Stage-0
-    Move Operator
-      tables:
-          replace: true
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
-
-  Stage: Stage-4
-    Stats-Aggr Operator
-
-  Stage: Stage-1
-    Move Operator
-      tables:
-          replace: true
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
-
-  Stage: Stage-5
-    Stats-Aggr Operator
+Stage-4
+  Stats-Aggr Operator
+    Stage-0
+      Move Operator
+        table:{"name:":"default.dest1"}
+        Stage-3
+          Dependency Collection{}
+            Stage-2
+              Map 1 llap
+              File Output Operator [FS_9]
+                table:{"name:":"default.dest1"}
+                Select Operator [SEL_8] (rows=11 width=93)
+                  Output:["_col0","_col1"]
+                  Select Operator [SEL_7] (rows=11 width=93)
+                    Output:["_col0","_col1","_col2"]
+                    Merge Join Operator [MERGEJOIN_16] (rows=11 width=93)
+                      Conds:FIL_14.key=FIL_15.key(Inner),Output:["_col0","_col1","_col6"]
+                    <-Filter Operator [FIL_15] (rows=10 width=93)
+                        predicate:key is not null
+                        TableScan [TS_1] (rows=10 width=93)
+                          default@tbl2,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                    <-Filter Operator [FIL_14] (rows=10 width=93)
+                        predicate:key is not null
+                        TableScan [TS_0] (rows=10 width=93)
+                          default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+              File Output Operator [FS_11]
+                table:{"name:":"default.dest2"}
+                 Please refer to the previous Select Operator [SEL_7]
+Stage-5
+  Stats-Aggr Operator
+    Stage-1
+      Move Operator
+        table:{"name:":"default.dest2"}
+         Please refer to the previous Stage-3
 
 PREHOOK: query: from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
@@ -1734,119 +1188,52 @@ from (
 insert overwrite table dest1 select key, val1
 insert overwrite table dest2 select key, count(*) group by key
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-0
-  Stage-1 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-1
+Plan not optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-2
-    Tez
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: NONE
-                    Merge Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 key (type: int)
-                        1 key (type: int)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.dest1
-                      Select Operator
-                        expressions: _col0 (type: int)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          keys: _col0 (type: int)
-                          mode: hash
-                          outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            key expressions: _col0 (type: int)
-                            sort order: +
-                            Map-reduce partition columns: _col0 (type: int)
-                            Statistics: Num rows: 5 Data size: 511 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col1 (type: bigint)
-            Execution mode: llap
-        Reducer 2 
-            Execution mode: vectorized, uber
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                keys: KEY._col0 (type: int)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: int), UDFToInteger(_col1) (type: int)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest2
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
-  Stage: Stage-3
-    Dependency Collection
-
-  Stage: Stage-0
-    Move Operator
-      tables:
-          replace: true
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
-
-  Stage: Stage-4
-    Stats-Aggr Operator
-
-  Stage: Stage-1
-    Move Operator
-      tables:
-          replace: true
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
-
-  Stage: Stage-5
-    Stats-Aggr Operator
+Stage-4
+  Stats-Aggr Operator
+    Stage-0
+      Move Operator
+        table:{"name:":"default.dest1"}
+        Stage-3
+          Dependency Collection{}
+            Stage-2
+              Reducer 2 vectorized, llap
+              File Output Operator [FS_25]
+                table:{"name:":"default.dest2"}
+                Select Operator [SEL_24] (rows=5 width=93)
+                  Output:["_col0","_col1"]
+                  Group By Operator [GBY_23] (rows=5 width=93)
+                    Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
+                  <-Map 1 [SIMPLE_EDGE] llap
+                    File Output Operator [FS_9]
+                      table:{"name:":"default.dest1"}
+                      Merge Join Operator [MERGEJOIN_21] (rows=11 width=93)
+                        Conds:FIL_19.key=FIL_20.key(Inner),Output:["_col0","_col1"]
+                      <-Filter Operator [FIL_20] (rows=10 width=93)
+                          predicate:key is not null
+                          TableScan [TS_1] (rows=10 width=93)
+                            default@tbl2,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                      <-Filter Operator [FIL_19] (rows=10 width=93)
+                          predicate:key is not null
+                          TableScan [TS_0] (rows=10 width=93)
+                            default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                    SHUFFLE [RS_12]
+                      PartitionCols:_col0
+                      Group By Operator [GBY_11] (rows=11 width=93)
+                        Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
+                        Select Operator [SEL_10] (rows=11 width=93)
+                          Output:["_col0"]
+                           Please refer to the previous Merge Join Operator [MERGEJOIN_21]
+Stage-5
+  Stats-Aggr Operator
+    Stage-1
+      Move Operator
+        table:{"name:":"default.dest2"}
+         Please refer to the previous Stage-3
 
 PREHOOK: query: from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
