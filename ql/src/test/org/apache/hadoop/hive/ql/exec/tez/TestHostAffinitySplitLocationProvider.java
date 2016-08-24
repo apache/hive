@@ -14,15 +14,12 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,8 +28,11 @@ import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestHostAffinitySplitLocationProvider {
+  private final Logger LOG = LoggerFactory.getLogger(TestHostAffinitySplitLocationProvider.class);
 
 
   private static final String[] locations = new String[5];
@@ -88,6 +88,81 @@ public class TestHostAffinitySplitLocationProvider {
     assertEquals(1, retLoc3.length);
     assertFalse(locationsSet.contains(retLoc3[0]));
     assertTrue(executorLocationsSet.contains(retLoc3[0]));
+  }
+
+
+  @Test (timeout = 10000)
+  public void testConsistentHashing() throws IOException {
+    final int LOC_COUNT = 20, MIN_LOC_COUNT = 4, SPLIT_COUNT = 100;
+
+    String[] locations = new String[LOC_COUNT];
+    for (int i = 0; i < locations.length; ++i) {
+      locations[i] = String.valueOf(i);
+    }
+    InputSplit[] splits = new InputSplit[SPLIT_COUNT];
+    for (int i = 0; i < splits.length; ++i) {
+      splits[i] = createMockFileSplit(true, "path" + i, 0, 1000, new String[] {});
+    }
+
+    StringBuilder failBuilder = new StringBuilder("\n");
+    String[] lastLocations = new String[splits.length];
+    double movedRatioSum = 0, newRatioSum = 0,
+        movedRatioWorst = 0, newRatioWorst = Double.MAX_VALUE;
+    for (int locs = MIN_LOC_COUNT; locs <= locations.length; ++locs) {
+      String[] partLoc = Arrays.copyOf(locations, locs);
+      HostAffinitySplitLocationProvider lp = new HostAffinitySplitLocationProvider(partLoc);
+      int moved = 0, newLoc = 0;
+      String newNode = partLoc[locs - 1];
+      for (int splitIx = 0; splitIx < splits.length; ++splitIx) {
+        String[] splitLocations = lp.getLocations(splits[splitIx]);
+        assertEquals(1, splitLocations.length);
+        String splitLocation = splitLocations[0];
+        if (locs > MIN_LOC_COUNT && !splitLocation.equals(lastLocations[splitIx])) {
+          ++moved;
+        }
+        if (newNode.equals(splitLocation)) {
+          ++newLoc;
+        }
+        lastLocations[splitIx] = splitLocation;
+      }
+      if (locs == MIN_LOC_COUNT) continue;
+      String msgTail = " when going to " + locs + " locations";
+      String movedMsg = moved + " splits moved",
+          newMsg = newLoc + " splits went to the new node";
+      LOG.info(movedMsg + " and " + newMsg + msgTail);
+      double maxMoved = 1.0f * splits.length / locs, minNew = 1.0f * splits.length / locs;
+      movedRatioSum += Math.max(moved / maxMoved, 1f);
+      movedRatioWorst = Math.max(moved / maxMoved, movedRatioWorst);
+      newRatioSum += Math.min(newLoc / minNew, 1f);
+      newRatioWorst = Math.min(newLoc / minNew, newRatioWorst);
+      logBadRatios(failBuilder, moved, newLoc, msgTail, movedMsg, newMsg, maxMoved, minNew);
+    }
+    int count = locations.length - MIN_LOC_COUNT;
+    double moveRatioAvg = movedRatioSum / count, newRatioAvg = newRatioSum / count;
+    String errorMsg = "Move counts: average " + moveRatioAvg + ", worst " + movedRatioWorst
+        + "; assigned to new node: average " + newRatioAvg + ", worst " + newRatioWorst;
+    LOG.info(errorMsg);
+    // Give it a LOT of slack, since on low numbers consistent hashing is very imprecise.
+    if (moveRatioAvg > 1.2f || newRatioAvg < 0.8f
+        || movedRatioWorst > 1.5f || newRatioWorst < 0.5f) {
+      fail(errorMsg + "; example failures: " + failBuilder.toString());
+    }
+  }
+
+  private void logBadRatios(StringBuilder failBuilder, int moved, int newLoc, String msgTail,
+      String movedMsg, String newMsg, double maxMoved, double minNew) {
+    boolean logged = false;
+    if (moved > maxMoved * 1.33f) {
+      failBuilder.append(movedMsg).append(" (threshold ").append(maxMoved).append(") ");
+      logged = true;
+    }
+    if (newLoc < minNew * 0.75f) {
+      failBuilder.append(newMsg).append(" (threshold ").append(minNew).append(") ");
+      logged = true;
+    }
+    if (logged) {
+      failBuilder.append(msgTail).append(";\n");
+    }
   }
 
   @Test (timeout = 5000)
