@@ -1051,6 +1051,8 @@ public class HiveConf extends Configuration {
         "Optimized hashtable (see hive.mapjoin.optimized.hashtable) uses a chain of buffers to\n" +
         "store data. This is one buffer size. HT may be slightly faster if this is larger, but for small\n" +
         "joins unnecessary memory will be allocated and then trimmed."),
+    HIVEHYBRIDGRACEHASHJOINBLOOMFILTER("hive.mapjoin.hybridgrace.bloomfilter", true, "Whether to " +
+        "use BloomFilter in Hybrid grace hash join to minimize unnecessary spilling."),
 
     HIVESMBJOINCACHEROWS("hive.smbjoin.cache.rows", 10000,
         "How many rows with the same key value should be cached in memory per smb joined table."),

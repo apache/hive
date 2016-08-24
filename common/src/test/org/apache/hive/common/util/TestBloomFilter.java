@@ -70,6 +70,12 @@ public class TestBloomFilter {
     assertEquals(729844, BloomFilter.optimalNumOfBits(100000, 0.03));
     assertEquals(7298440, BloomFilter.optimalNumOfBits(1000000, 0.03));
     assertEquals(6235224, BloomFilter.optimalNumOfBits(1000000, 0.05));
+    assertEquals(1870567268, BloomFilter.optimalNumOfBits(300000000, 0.05));
+    assertEquals(1437758756, BloomFilter.optimalNumOfBits(300000000, 0.1));
+    assertEquals(432808512, BloomFilter.optimalNumOfBits(300000000, 0.5));
+    assertEquals(1393332198, BloomFilter.optimalNumOfBits(3000000000L, 0.8));
+    assertEquals(657882327, BloomFilter.optimalNumOfBits(3000000000L, 0.9));
+    assertEquals(0, BloomFilter.optimalNumOfBits(3000000000L, 1));
   }
 
   @Test
