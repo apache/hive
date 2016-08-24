@@ -17,7 +17,8 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.io.IOException;
 
 import com.google.common.base.Preconditions;
-import org.apache.hadoop.io.DataOutputBuffer;
+import com.google.common.hash.Hashing;
+
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.split.SplitLocationProvider;
@@ -54,9 +55,7 @@ public class HostAffinitySplitLocationProvider implements SplitLocationProvider 
   public String[] getLocations(InputSplit split) throws IOException {
     if (split instanceof FileSplit) {
       FileSplit fsplit = (FileSplit) split;
-      long hash = generateHash(fsplit.getPath().toString(), fsplit.getStart());
-      int indexRaw = (int) (hash % knownLocations.length);
-      int index = Math.abs(indexRaw);
+      int index = chooseBucket(fsplit.getPath().toString(), fsplit.getStart());
       if (isDebugEnabled) {
         LOG.debug(
             "Split at " + fsplit.getPath() + " with offset= " + fsplit.getStart() + ", length=" +
@@ -72,15 +71,14 @@ public class HostAffinitySplitLocationProvider implements SplitLocationProvider 
     }
   }
 
-  private long generateHash(String path, long startOffset) throws IOException {
-    // Explicitly using only the start offset of a split, and not the length.
-    // Splits generated on block boundaries and stripe boundaries can vary slightly. Try hashing both to the same node.
-    // There is the drawback of potentially hashing the same data on multiple nodes though, when a large split
-    // is sent to 1 node, and a second invocation uses smaller chunks of the previous large split and send them
-    // to different nodes.
-    DataOutputBuffer dob = new DataOutputBuffer();
-    dob.writeLong(startOffset);
-    dob.writeUTF(path);
-    return Murmur3.hash64(dob.getData(), 0, dob.getLength());
+
+  private int chooseBucket(String path, long startOffset) throws IOException {
+    // Explicitly using only the start offset of a split, and not the length. Splits generated on
+    // block boundaries and stripe boundaries can vary slightly. Try hashing both to the same node.
+    // There is the drawback of potentially hashing the same data on multiple nodes though, when a
+    // large split is sent to 1 node, and a second invocation uses smaller chunks of the previous
+    // large split and send them to different nodes.
+    long hashCode = ((startOffset >> 2) * 37) ^ Murmur3.hash64(path.getBytes());
+    return Hashing.consistentHash(hashCode, knownLocations.length);
   }
 }
