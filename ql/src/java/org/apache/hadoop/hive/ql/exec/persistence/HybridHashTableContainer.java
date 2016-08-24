@@ -111,7 +111,8 @@ public class HybridHashTableContainer
    * This is a cheap exit option to prevent spilling the big-table in such a
    * scenario.
    */
-  private transient final BloomFilter bloom1;
+  private transient BloomFilter bloom1 = null;
+  private final int BLOOM_FILTER_MAX_SIZE = 300000000;
 
   private final List<Object> EMPTY_LIST = new ArrayList<Object>(0);
 
@@ -276,14 +277,15 @@ public class HybridHashTableContainer
         HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEWBSIZE),
         HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINNUMPARTITIONS),
         HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEMAPJOINOPTIMIZEDTABLEPROBEPERCENT),
+        HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINBLOOMFILTER),
         estimatedTableSize, keyCount, memoryAvailable, nwayConf,
         HiveUtils.getLocalDirList(hconf));
   }
 
   private HybridHashTableContainer(float keyCountAdj, int threshold, float loadFactor,
       int memCheckFreq, int minWbSize, int maxWbSize, int minNumParts, float probePercent,
-      long estimatedTableSize, long keyCount, long memoryAvailable, HybridHashTableConf nwayConf,
-      String spillLocalDirs)
+      boolean useBloomFilter, long estimatedTableSize, long keyCount, long memoryAvailable,
+      HybridHashTableConf nwayConf, String spillLocalDirs)
       throws SerDeException, IOException {
     directWriteHelper = new MapJoinBytesTableContainer.DirectKeyValueWriter();
 
@@ -331,18 +333,29 @@ public class HybridHashTableContainer
     // We also want to limit the size of writeBuffer, because we normally have 16 partitions, that
     // makes spilling prediction (isMemoryFull) to be too defensive which results in unnecessary spilling
     writeBufferSize = writeBufferSize < minWbSize ? minWbSize : Math.min(maxWbSize / numPartitions, writeBufferSize);
+    LOG.info("Write buffer size: " + writeBufferSize);
+    memoryUsed = 0;
 
-    this.bloom1 = new BloomFilter(newKeyCount);
-
-    if (LOG.isInfoEnabled()) {
+    if (useBloomFilter) {
+      if (newKeyCount <= BLOOM_FILTER_MAX_SIZE) {
+        this.bloom1 = new BloomFilter(newKeyCount);
+      } else {
+        // To avoid having a huge BloomFilter we need to scale up False Positive Probability
+        double fpp = calcFPP(newKeyCount);
+        assert fpp < 1 : "Too many keys! BloomFilter False Positive Probability is 1!";
+        if (fpp >= 0.5) {
+          LOG.warn("BloomFilter FPP is greater than 0.5!");
+        }
+        LOG.info("BloomFilter is using FPP: " + fpp);
+        this.bloom1 = new BloomFilter(newKeyCount, fpp);
+      }
       LOG.info(String.format("Using a bloom-1 filter %d keys of size %d bytes",
-          newKeyCount, bloom1.sizeInBytes()));
-      LOG.info("Write buffer size: " + writeBufferSize);
+        newKeyCount, bloom1.sizeInBytes()));
+      memoryUsed = bloom1.sizeInBytes();
     }
 
     hashPartitions = new HashPartition[numPartitions];
     int numPartitionsSpilledOnCreation = 0;
-    memoryUsed = bloom1.sizeInBytes();
     int initialCapacity = Math.max(newKeyCount / numPartitions, threshold / numPartitions);
     // maxCapacity should be calculated based on a percentage of memoryThreshold, which is to divide
     // row size using long size
@@ -406,6 +419,22 @@ public class HybridHashTableContainer
     }
   }
 
+  /**
+   * Calculate the proper False Positive Probability so that the BloomFilter won't grow too big
+   * @param keyCount number of keys
+   * @return FPP
+   */
+  private double calcFPP(int keyCount) {
+    int n = keyCount;
+    double p = 0.05;
+
+    // Calculation below is consistent with BloomFilter.optimalNumOfBits().
+    // Also, we are capping the BloomFilter size below 100 MB (800000000/8)
+    while ((-n * Math.log(p) / (Math.log(2) * Math.log(2))) > 800000000) {
+      p += 0.05;
+    }
+    return p;
+  }
 
   public MapJoinBytesTableContainer.KeyValueHelper getWriteHelper() {
     return writeHelper;
@@ -424,7 +453,7 @@ public class HybridHashTableContainer
    * @return current memory usage
    */
   private long refreshMemoryUsed() {
-    long memUsed = bloom1.sizeInBytes();
+    long memUsed = bloom1 != null ? bloom1.sizeInBytes() : 0;
     for (HashPartition hp : hashPartitions) {
       if (hp.hashMap != null) {
         memUsed += hp.hashMap.memorySize();
@@ -477,7 +506,9 @@ public class HybridHashTableContainer
     int partitionId = keyHash & (hashPartitions.length - 1);
     HashPartition hashPartition = hashPartitions[partitionId];
 
-    bloom1.addLong(keyHash);
+    if (bloom1 != null) {
+      bloom1.addLong(keyHash);
+    }
 
     if (isOnDisk(partitionId) || isHashMapSpilledOnCreation(partitionId)) { // destination on disk
       putToSidefile = true;
@@ -909,7 +940,7 @@ public class HybridHashTableContainer
     public JoinUtil.JoinResult setFromOutput(Output output) throws HiveException {
       int keyHash = HashCodeUtil.murmurHash(output.getData(), 0, output.getLength());
 
-      if (!bloom1.testLong(keyHash)) {
+      if (bloom1 != null && !bloom1.testLong(keyHash)) {
         /*
          * if the keyHash is missing in the bloom filter, then the value cannot
          * exist in any of the spilled partition - return NOMATCH
@@ -1063,7 +1094,7 @@ public class HybridHashTableContainer
       int keyHash = HashCodeUtil.murmurHash(bytes, offset, length);
       partitionId = keyHash & (hashPartitions.length - 1);
 
-      if (!bloom1.testLong(keyHash)) {
+      if (bloom1 != null && !bloom1.testLong(keyHash)) {
         /*
          * if the keyHash is missing in the bloom filter, then the value cannot exist in any of the
          * spilled partition - return NOMATCH
