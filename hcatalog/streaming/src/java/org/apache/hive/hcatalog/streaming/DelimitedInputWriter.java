@@ -262,7 +262,7 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
       byte[] orderedFields = reorderFields(record);
       Object encodedRow = encode(orderedFields);
       int bucket = getBucket(encodedRow);
-      updaters.get(bucket).insert(transactionId, encodedRow);
+      getRecordUpdater(bucket).insert(transactionId, encodedRow);
     } catch (IOException e) {
       throw new StreamingIOFailure("Error writing record in transaction ("
               + transactionId + ")", e);

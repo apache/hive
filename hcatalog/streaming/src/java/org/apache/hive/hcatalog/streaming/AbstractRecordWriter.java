@@ -178,7 +178,9 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   public void flush() throws StreamingIOFailure {
     try {
       for (RecordUpdater updater : updaters) {
-        updater.flush();
+        if (updater != null) {
+          updater.flush();
+        }
       }
     } catch (IOException e) {
       throw new StreamingIOFailure("Unable to flush recordUpdater", e);
@@ -198,15 +200,11 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   @Override
   public void newBatch(Long minTxnId, Long maxTxnID)
           throws StreamingIOFailure, SerializationError {
-    try {
-      LOG.debug("Creating Record updater");
-      curBatchMinTxnId = minTxnId;
-      curBatchMaxTxnId = maxTxnID;
-      updaters = createRecordUpdaters(totalBuckets, minTxnId, maxTxnID);
-    } catch (IOException e) {
-      String errMsg = "Failed creating RecordUpdaterS for " + getWatermark();
-      LOG.error(errMsg, e);
-      throw new StreamingIOFailure(errMsg, e);
+    curBatchMinTxnId = minTxnId;
+    curBatchMaxTxnId = maxTxnID;
+    updaters = new ArrayList<RecordUpdater>(totalBuckets);
+    for (int bucket = 0; bucket < totalBuckets; bucket++) {
+      updaters.add(bucket, null);
     }
   }
 
@@ -214,13 +212,14 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   public void closeBatch() throws StreamingIOFailure {
     boolean haveError = false;
     for (RecordUpdater updater : updaters) {
-      try {
-        //try not to leave any files open
-        updater.close(false);
-      }
-      catch(Exception ex) {
-        haveError = true;
-        LOG.error("Unable to close " + updater + " due to: " + ex.getMessage(), ex);
+      if (updater != null) {
+        try {
+          //try not to leave any files open
+          updater.close(false);
+        } catch (Exception ex) {
+          haveError = true;
+          LOG.error("Unable to close " + updater + " due to: " + ex.getMessage(), ex);
+        }
       }
     }
     updaters.clear();
@@ -252,17 +251,6 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     return bucketFieldData;
   }
 
-
-
-  private ArrayList<RecordUpdater> createRecordUpdaters(int bucketCount, Long minTxnId, Long maxTxnID)
-          throws IOException, SerializationError {
-    ArrayList<RecordUpdater> result = new ArrayList<RecordUpdater>(bucketCount);
-    for (int bucket = 0; bucket < bucketCount; bucket++) {
-      result.add(createRecordUpdater(bucket, minTxnId, maxTxnID) );
-    }
-    return result;
-  }
-
   private RecordUpdater createRecordUpdater(int bucketId, Long minTxnId, Long maxTxnID)
           throws IOException, SerializationError {
     try {
@@ -284,6 +272,21 @@ public abstract class AbstractRecordWriter implements RecordWriter {
       throw new SerializationError("Failed to get object inspector from Serde "
               + getSerde().getClass().getName(), e);
     }
+  }
+
+  RecordUpdater getRecordUpdater(int bucketId) throws StreamingIOFailure, SerializationError {
+    RecordUpdater recordUpdater = updaters.get(bucketId);
+    if (recordUpdater == null) {
+      try {
+        recordUpdater = createRecordUpdater(bucketId, curBatchMinTxnId, curBatchMaxTxnId);
+      } catch (IOException e) {
+        String errMsg = "Failed creating RecordUpdater for " + getWatermark();
+        LOG.error(errMsg, e);
+        throw new StreamingIOFailure(errMsg, e);
+      }
+      updaters.set(bucketId, recordUpdater);
+    }
+    return recordUpdater;
   }
 
   private Path getPathForEndPoint(IMetaStoreClient msClient, HiveEndPoint endPoint)

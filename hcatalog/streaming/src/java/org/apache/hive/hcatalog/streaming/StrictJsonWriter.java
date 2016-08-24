@@ -122,7 +122,7 @@ public class StrictJsonWriter extends AbstractRecordWriter {
     try {
       Object encodedRow = encode(record);
       int bucket = getBucket(encodedRow);
-      updaters.get(bucket).insert(transactionId, encodedRow);
+      getRecordUpdater(bucket).insert(transactionId, encodedRow);
     } catch (IOException e) {
       throw new StreamingIOFailure("Error writing record in transaction("
               + transactionId + ")", e);

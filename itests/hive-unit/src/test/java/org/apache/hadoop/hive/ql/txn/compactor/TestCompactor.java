@@ -778,13 +778,13 @@ public class TestCompactor {
       Path resultDelta = null;
       for (int i = 0; i < names.length; i++) {
         names[i] = stat[i].getPath().getName();
-        if (names[i].equals("delta_0000001_0000006")) {
+        if (names[i].equals("delta_0000001_0000004")) {
           resultDelta = stat[i].getPath();
         }
       }
       Arrays.sort(names);
       String[] expected = new String[]{"delta_0000001_0000002",
-          "delta_0000001_0000006", "delta_0000003_0000004", "delta_0000005_0000006"};
+          "delta_0000001_0000004", "delta_0000003_0000004"};
       if (!Arrays.deepEquals(expected, names)) {
         Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names));
       }
@@ -844,11 +844,11 @@ public class TestCompactor {
         Assert.fail("majorCompactAfterAbort FileStatus[] stat " + Arrays.toString(stat));
       }
       if (1 != stat.length) {
-        Assert.fail("Expecting 1 file \"base_0000006\" and found " + stat.length + " files " + Arrays.toString(stat));
+        Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
       }
       String name = stat[0].getPath().getName();
-      if (!name.equals("base_0000006")) {
-        Assert.fail("majorCompactAfterAbort name " + name + " not equals to base_0000006");
+      if (!name.equals("base_0000004")) {
+        Assert.fail("majorCompactAfterAbort name " + name + " not equals to base_0000004");
       }
       checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L);
     } finally {

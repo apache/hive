@@ -1208,8 +1208,6 @@ public class TestStreaming {
     txnBatch2.write("name5,2,fact3".getBytes());  // bucket 0
     txnBatch2.write("name8,2,fact3".getBytes());  // bucket 1
     txnBatch2.write("name0,1,fact1".getBytes());  // bucket 2
-    // no data for bucket 3 -- expect 0 length bucket file
-
 
     txnBatch2.commit();
 
@@ -1223,13 +1221,11 @@ public class TestStreaming {
     System.err.println(actual2);
 
     // assert bucket listing is as expected
-    Assert.assertEquals("number of buckets does not match expectation", actual1.values().size(), 4);
+    Assert.assertEquals("number of buckets does not match expectation", actual1.values().size(), 3);
     Assert.assertEquals("records in bucket does not match expectation", actual1.get(0).size(), 2);
     Assert.assertEquals("records in bucket does not match expectation", actual1.get(1).size(), 1);
-    Assert.assertEquals("records in bucket does not match expectation", actual1.get(2).size(), 0);
+    Assert.assertTrue("bucket 2 shouldn't have been created", actual1.get(2) == null);
     Assert.assertEquals("records in bucket does not match expectation", actual1.get(3).size(), 1);
-
-
   }
   private void runCmdOnDriver(String cmd) throws QueryFailedException {
     boolean t = runDDL(driver, cmd);
@@ -1359,12 +1355,7 @@ public class TestStreaming {
       } else if (file.contains("bucket_00001")) {
         corruptDataFile(file, conf, -1);
       } else if (file.contains("bucket_00002")) {
-        // since we are adding more bytes we know the length of the file is already readable
-        Path bPath = new Path(file);
-        FileSystem fs = bPath.getFileSystem(conf);
-        FileStatus fileStatus = fs.getFileStatus(bPath);
-        readableFooter = (int) fileStatus.getLen();
-        corruptDataFile(file, conf, 2);
+        Assert.assertFalse("bucket 2 shouldn't have been created", true);
       } else if (file.contains("bucket_00003")) {
         corruptDataFile(file, conf, 100);
       }
@@ -1381,7 +1372,7 @@ public class TestStreaming {
 
     String errDump = new String(myErr.toByteArray());
     Assert.assertEquals(false, errDump.contains("Exception"));
-    Assert.assertEquals(true, errDump.contains("4 file(s) are corrupted"));
+    Assert.assertEquals(true, errDump.contains("3 file(s) are corrupted"));
     Assert.assertEquals(false, errDump.contains("is still open for writes."));
 
     origErr = System.err;
@@ -1397,9 +1388,6 @@ public class TestStreaming {
     Assert.assertEquals(true, errDump.contains("bucket_00000 recovered successfully!"));
     Assert.assertEquals(true, errDump.contains("No readable footers found. Creating empty orc file."));
     Assert.assertEquals(true, errDump.contains("bucket_00001 recovered successfully!"));
-    Assert.assertEquals(true, errDump.contains("bucket_00002 recovered successfully!"));
-    // check for bucket2's last readable footer offset
-    Assert.assertEquals(true, errDump.contains("Readable footerOffsets: [" + readableFooter + "]"));
     Assert.assertEquals(true, errDump.contains("bucket_00003 recovered successfully!"));
     Assert.assertEquals(false, errDump.contains("Exception"));
     Assert.assertEquals(false, errDump.contains("is still open for writes."));
