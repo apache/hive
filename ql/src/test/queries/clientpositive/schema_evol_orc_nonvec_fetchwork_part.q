@@ -10,6 +10,7 @@ SET hive.vectorized.execution.enabled=false;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.metastore.disallow.incompatible.col.type.changes=true;
 set hive.default.fileformat=orc;
+set hive.llap.io.enabled=false;
 
 -- SORT_QUERY_RESULTS
 --
