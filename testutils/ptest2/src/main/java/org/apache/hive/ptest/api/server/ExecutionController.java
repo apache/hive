@@ -57,8 +57,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 
-
-
 /**
  * Server interface of the ptest environment. Each request
  * is converted from JSON and each response is returned in JSON.
@@ -81,9 +79,7 @@ public class ExecutionController {
       throws IOException {
     String executionContextConfigurationFile = System.getProperty(CONF_PROPERTY, "").trim();
     Preconditions.checkArgument(!executionContextConfigurationFile.isEmpty(), CONF_PROPERTY + " is required");
-    LOG.info("Reading configuration from file: " + executionContextConfigurationFile);
     mExecutionContextConfiguration = ExecutionContextConfiguration.fromFile(executionContextConfigurationFile);
-    LOG.info("ExecutionContext is [{}]", mExecutionContextConfiguration);
     mExecutionContextProvider = mExecutionContextConfiguration.getExecutionContextProvider();
     mTests = Collections.synchronizedMap(new LinkedHashMap<String, Test>() {
       private static final long serialVersionUID = 1L;

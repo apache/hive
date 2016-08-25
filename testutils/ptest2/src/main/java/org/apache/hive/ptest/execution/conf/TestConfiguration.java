@@ -60,11 +60,6 @@ public class TestConfiguration {
   private static final String LOGS_URL = "logsURL";
   private static final String TEST_CASE_PROPERTY_NAME = "testCasePropertyName";
   private static final String BUILD_TOOL = "buildTool";
-  // The following parameters are not supported yet. TODO Add support
-  private static final String APPLY_PATCH_SCRIPT_PATH = "applyPatchScriptPath";
-  private static final String PREP_TEMPLATE_PATH = "prepTemplatePath";
-  private static final String BATCH_EXEC_TEMPLATE_PATH = "batchExecTemplatePath";
-
 
   private final Context context;
   private String antArgs;
@@ -91,9 +86,6 @@ public class TestConfiguration {
   private final String jiraPassword;
   private final String testCasePropertyName;
   private final String buildTool;
-  private final String applyPathScriptPath;
-  private final String prepTemplatePath;
-  private final String batchExecTemplatePath;
   
   private String jiraName;
   private boolean clearLibraryCache;
@@ -136,10 +128,6 @@ public class TestConfiguration {
     logsURL = context.getString(LOGS_URL, "").trim();
     testCasePropertyName = context.getString(TEST_CASE_PROPERTY_NAME, "testcase").trim();
     sshOpts = context.getString(SSH_OPTS, "").trim();
-
-    applyPathScriptPath = context.getString(APPLY_PATCH_SCRIPT_PATH, null);
-    prepTemplatePath = context.getString(PREP_TEMPLATE_PATH, null);
-    batchExecTemplatePath = context.getString(BATCH_EXEC_TEMPLATE_PATH, null);
 
   }
   public Context getContext() {
@@ -225,21 +213,6 @@ public class TestConfiguration {
   public String getTestCasePropertyName() {
     return testCasePropertyName;
   }
-
-  public String getApplyPathScriptPath() {
-    return applyPathScriptPath;
-  }
-
-  public String getPrepTemplatePath() {
-    return prepTemplatePath;
-  }
-
-  public String getBatchExecTemplatePath() {
-    return batchExecTemplatePath;
-  }
-
-  // TODO - Allow the branch to be specified as a parameter to ptest, rather than requiring a separate property file.
-  // (will need to handle an alternate work-dir as well in this case - derive from branch?)
   public void setPatch(String patch) {
     this.patch = Strings.nullToEmpty(patch);
   }
