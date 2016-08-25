@@ -20,16 +20,23 @@ package org.apache.hadoop.hive.cli.control;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.concurrent.TimeUnit;
+
+import com.google.common.base.Stopwatch;
 import org.apache.hadoop.hive.cli.control.AbstractCliConfig.MetastoreType;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.util.ElapsedTimeLoggingWrapper;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CoreCliDriver extends CliAdapter {
 
+  private static final Logger LOG = LoggerFactory.getLogger(CoreCliDriver.class);
   private static QTestUtil qt;
   
   public CoreCliDriver(AbstractCliConfig testCliConfig) {
@@ -39,19 +46,41 @@ public class CoreCliDriver extends CliAdapter {
   @Override
   @BeforeClass
   public void beforeClass() {
-    MiniClusterType miniMR =cliConfig.getClusterType();
-    String hiveConfDir = cliConfig.getHiveConfDir();
-    String initScript = cliConfig.getInitScript();
-    String cleanupScript = cliConfig.getCleanupScript();
-    boolean useHBaseMetastore = cliConfig.getMetastoreType() == MetastoreType.hbase;
+    String message = "Starting " + CoreCliDriver.class.getName() + " run at " + System.currentTimeMillis();
+    LOG.info(message);
+    System.err.println(message);
+    final MiniClusterType miniMR =cliConfig.getClusterType();
+    final String hiveConfDir = cliConfig.getHiveConfDir();
+    final String initScript = cliConfig.getInitScript();
+    final String cleanupScript = cliConfig.getCleanupScript();
+    final boolean useHBaseMetastore = cliConfig.getMetastoreType() == MetastoreType.hbase;
     try {
-      String hadoopVer = cliConfig.getHadoopVersion();
-      qt = new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR,
-      hiveConfDir, hadoopVer, initScript, cleanupScript, useHBaseMetastore, true);
+      final String hadoopVer = cliConfig.getHadoopVersion();
+
+      qt = new ElapsedTimeLoggingWrapper<QTestUtil>() {
+        @Override
+        public QTestUtil invokeInternal() throws Exception {
+          return new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR,
+              hiveConfDir, hadoopVer, initScript, cleanupScript, useHBaseMetastore, true);
+        }
+      }.invoke("QtestUtil instance created", LOG, true);
 
       // do a one time initialization
-      qt.cleanUp();
-      qt.createSources();
+      new ElapsedTimeLoggingWrapper<Void>() {
+        @Override
+        public Void invokeInternal() throws Exception {
+          qt.cleanUp();
+          return null;
+        }
+      }.invoke("Initialization cleanup done.", LOG, true);
+
+      new ElapsedTimeLoggingWrapper<Void>() {
+        @Override
+        public Void invokeInternal() throws Exception {
+          qt.createSources();
+          return null;
+        }
+      }.invoke("Initialization createSources done.", LOG, true);
 
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
@@ -65,7 +94,13 @@ public class CoreCliDriver extends CliAdapter {
   @Before
   public void setUp() {
     try {
-      qt.clearTestSideEffects();
+      new ElapsedTimeLoggingWrapper<Void>() {
+        @Override
+        public Void invokeInternal() throws Exception {
+          qt.clearTestSideEffects();
+          return null;
+        }
+      }.invoke("PerTestSetup done.", LOG, false);
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -78,7 +113,13 @@ public class CoreCliDriver extends CliAdapter {
   @After
   public void tearDown() {
     try {
-      qt.clearPostTestEffects();
+      new ElapsedTimeLoggingWrapper<Void>() {
+        @Override
+        public Void invokeInternal() throws Exception {
+          qt.clearPostTestEffects();
+          return null;
+        }
+      }.invoke("PerTestTearDown done.", LOG, false);
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -91,7 +132,13 @@ public class CoreCliDriver extends CliAdapter {
   @AfterClass
   public void shutdown() throws Exception {
     try {
-      qt.shutdown();
+      new ElapsedTimeLoggingWrapper<Void>() {
+        @Override
+        public Void invokeInternal() throws Exception {
+          qt.shutdown();
+          return null;
+        }
+      }.invoke("Teardown done.", LOG, false);
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -105,33 +152,43 @@ public class CoreCliDriver extends CliAdapter {
 
   @Override
   public void runTest(String tname, String fname, String fpath) throws Exception {
-    long startTime = System.currentTimeMillis();
+    Stopwatch sw = new Stopwatch().start();
+    boolean skipped = false;
+    boolean failed = false;
     try {
+      LOG.info("Begin query: " + fname);
       System.err.println("Begin query: " + fname);
 
       qt.addFile(fpath);
 
       if (qt.shouldBeSkipped(fname)) {
+        LOG.info("Test " + fname + " skipped");
         System.err.println("Test " + fname + " skipped");
+        skipped = true;
         return;
       }
 
       qt.cliInit(fname, false);
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {
+        failed = true;
         qt.failed(ecode, fname, debugHint);
       }
       ecode = qt.checkCliDriverResults(fname);
       if (ecode != 0) {
+        failed = true;
         qt.failedDiff(ecode, fname, debugHint);
       }
     }
     catch (Throwable e) {
+      failed = true;
       qt.failed(e, fname, debugHint);
+    } finally {
+      String message = "Done query" + fname + ". succeeded=" + !failed + ", skipped=" + skipped +
+          ". ElapsedTime(ms)=" + sw.stop().elapsed(TimeUnit.MILLISECONDS);
+      LOG.info(message);
+      System.err.println(message);
     }
-
-    long elapsedTime = System.currentTimeMillis() - startTime;
-    System.err.println("Done query: " + fname + " elapsedTime=" + elapsedTime/1000 + "s");
     assertTrue("Test passed", true);
   }
 }
