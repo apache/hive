@@ -361,6 +361,10 @@ public class QTestUtil {
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
       String confDir, String hadoopVer, String initScript, String cleanupScript)
     throws Exception {
+    LOG.info("Setting up QtestUtil with outDir=" + outDir + ", logDir=" + logDir
+        + ", clusterType=" + clusterType + ", confDir=" + confDir + ", hadoopVer=" + hadoopVer
+        +", initScript=" + initScript + ", cleanupScript=" + cleanupScript
+        + ", useHbaseMetaStore=false, withLlapIo=false");
     this.outDir = outDir;
     this.logDir = logDir;
     this.srcTables=getSrcTables();
@@ -789,7 +793,10 @@ public class QTestUtil {
         cliDriver = new CliDriver();
       }
       SessionState.get().getConf().setBoolean("hive.test.shutdown.phase", true);
-      cliDriver.processLine(cleanupCommands);
+      int result = cliDriver.processLine(cleanupCommands);
+      if (result != 0) {
+        Assert.fail("Failed during cleanup processLine with code=" + result);
+      }
       SessionState.get().getConf().setBoolean("hive.test.shutdown.phase", false);
     } else {
       LOG.info("No cleanup script detected. Skipping.");
@@ -853,7 +860,10 @@ public class QTestUtil {
     String initCommands = readEntireFileIntoString(scriptFile);
     LOG.info("Initial setup (" + initScript + "):\n" + initCommands);
 
-    cliDriver.processLine(initCommands);
+    int result = cliDriver.processLine(initCommands);
+    if (result != 0) {
+      Assert.fail("Failed during createSurces processLine with code=" + result);
+    }
 
     conf.setBoolean("hive.test.init.phase", false);
   }
