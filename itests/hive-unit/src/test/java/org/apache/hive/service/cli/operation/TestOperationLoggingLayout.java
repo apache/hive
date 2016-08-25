@@ -98,7 +98,7 @@ public class TestOperationLoggingLayout {
     // non-verbose pattern is %-5p : %m%n. Look for " : "
     while (iter.hasNext()) {
       String row = iter.next()[0].toString();
-      Assert.assertEquals(true, row.matches("^(FATAL|ERROR|WARN|INFO|DEBUG|TRACE).*$"));
+      Assert.assertEquals(true, row.matches("^.*(FATAL|ERROR|WARN|INFO|DEBUG|TRACE).*$"));
     }
 
     String queryString = "set hive.server2.logging.operation.level=verbose";
