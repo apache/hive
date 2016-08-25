@@ -2311,8 +2311,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                 + dbName + "." + tblName + ": " + part);
           }
 
-          MetaStoreUtils.validatePartitionNameCharacters(part.getValues(),
-              partitionValidationPattern);
+          boolean shouldAdd = startAddPartition(ms, part, ifNotExists);
+          if (!shouldAdd) {
+            existingParts.add(part);
+            LOG.info("Not adding partition " + part + " as it already exists");
+            continue;
+          }
+
 
           partFutures.add(threadPool.submit(new Callable() {
             @Override
@@ -2471,10 +2476,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             throw new MetaException("Partition does not belong to target table "
                 + dbName + "." + tblName + ": " + part);
           }
-
-          MetaStoreUtils.validatePartitionNameCharacters(part.getValues(),
-              partitionValidationPattern);
-
+          boolean shouldAdd = startAddPartition(ms, part, ifNotExists);
+          if (!shouldAdd) {
+            LOG.info("Not adding partition " + part + " as it already exists");
+            continue;
+          }
           partFutures.add(threadPool.submit(new Callable() {
             @Override public Object call() throws Exception {
               boolean madeDir = createLocationForAddedPartition(table, part);
