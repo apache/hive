@@ -103,4 +103,16 @@ public class ExecutionContextConfiguration {
       in.close();
     }
   }
+
+  @Override
+  public String toString() {
+    return "ExecutionContextConfiguration{" +
+        "mExecutionContextProvider=" + mExecutionContextProvider +
+        ", mWorkingDirectory='" + mWorkingDirectory + '\'' +
+        ", mGlobalLogDirectory='" + mGlobalLogDirectory + '\'' +
+        ", mProfileDirectory='" + mProfileDirectory + '\'' +
+        ", mMaxLogDirectoriesPerProfile=" + mMaxLogDirectoriesPerProfile +
+        ", mMaxRsyncThreads=" + mMaxRsyncThreads +
+        '}';
+  }
 }

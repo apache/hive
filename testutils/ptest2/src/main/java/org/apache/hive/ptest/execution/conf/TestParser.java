@@ -116,7 +116,15 @@ public class TestParser {
     Map<String, Properties> properties = parseQTestProperties();
 
     List<QFileTestBatch> result = Lists.newArrayList();
-    for(String alias : context.getString("qFileTests", "").split(" ")) {
+    String qFileTestsString = context.getString("qFileTests",null);
+    String []aliases;
+    if (qFileTestsString != null) {
+      aliases = qFileTestsString.split(" ");
+    } else {
+      aliases = new String[0];
+    }
+
+    for(String alias : aliases) {
       Context testContext = new Context(context.getSubProperties(
           Joiner.on(".").join("qFileTest", alias, "")));
       String driver = checkNotNull(testContext.getString("driver"), "driver").trim();

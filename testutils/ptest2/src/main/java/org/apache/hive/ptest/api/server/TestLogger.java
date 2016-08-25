@@ -225,6 +225,10 @@ public class TestLogger extends MarkerIgnoringBase {
     return "<unknown>";
   }
 
+  private String getThreadName() {
+    return Thread.currentThread().getName();
+  }
+
   private String getCallerShortName(StackTraceElement frame) {
     String className = frame.getClassName();
     String methodName = frame.getMethodName();
@@ -241,6 +245,10 @@ public class TestLogger extends MarkerIgnoringBase {
       mLog.print(mDateFormatter.format(new Date()));
       mLog.print(" ");
       mLog.print(String.format("%5s", level.name()));
+      mLog.print(" ");
+      mLog.print("[");
+      mLog.print(getThreadName());
+      mLog.print("]");
       mLog.print(" ");
       mLog.print(getCaller());
       mLog.print(" ");

@@ -35,6 +35,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -98,7 +99,8 @@ public class PTest {
     mExecutionContext = executionContext;
     mSshCommandExecutor = sshCommandExecutor;
     mRsyncCommandExecutor = rsyncCommandExecutor;
-    mExecutor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
+    mExecutor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool(
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("HostExecutor %d").build()));
     final File failedLogDir = Dirs.create(new File(logDir, "failed"));
     final File succeededLogDir = Dirs.create(new File(logDir, "succeeded"));
     final File scratchDir = Dirs.createEmpty(new File(mExecutionContext.getLocalWorkingDirectory(), "scratch"));

@@ -27,6 +27,7 @@ limitations under the License.
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <log4j2.version>2.4.1</log4j2.version>
+    <spring.framework.version>3.2.16.RELEASE</spring.framework.version>
   </properties>
 
   <repositories>
@@ -137,12 +138,12 @@ limitations under the License.
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-web</artifactId>
-      <version>3.2.1.RELEASE</version>
+      <version>${spring.framework.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
-      <version>3.2.1.RELEASE</version>
+      <version>${spring.framework.version}</version>
     </dependency>
     <dependency>
       <groupId>xml-apis</groupId>
