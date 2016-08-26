@@ -98,7 +98,9 @@ public class TestExecutor extends Thread {
           File profileConfFile = new File(mExecutionContextConfiguration.getProfileDirectory(),
               String.format("%s.properties", profile));
           if(!profileConfFile.isFile()) {
-            test.setStatus(Status.illegalArgument("Profile " + profile + " not found"));
+            test.setStatus(Status.illegalArgument(
+                "Profile " + profile + " not found in directory " +
+                    mExecutionContextConfiguration.getProfileDirectory()));
             test.setExecutionFinishTime(System.currentTimeMillis());
           } else {
             File logDir = Dirs.create(new File(mExecutionContextConfiguration.
@@ -124,7 +126,7 @@ public class TestExecutor extends Thread {
               test.setStatus(Status.failed("Tests failed with exit code " + result));
             }
             logStream.flush();
-            // if all drones where abandoned on a host, replace it
+            // if all drones where abandoned on a host, try replacing them.
             mExecutionContext.replaceBadHosts();
           }
         }
