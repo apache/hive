@@ -1662,8 +1662,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       try {
 
         // 1. If the table has a Sample specified, bail from Calcite path.
+        // 2. if returnpath is on and hivetestmode is on bail
         if (qb.getParseInfo().getTabSample(tableAlias) != null
-            || getNameToSplitSampleMap().containsKey(tableAlias)) {
+            || getNameToSplitSampleMap().containsKey(tableAlias)
+            || (conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) && (conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE)) ) {
           String msg = String.format("Table Sample specified for %s."
               + " Currently we don't support Table Sample clauses in CBO,"
               + " turn off cbo for queries on tableSamples.", tableAlias);
