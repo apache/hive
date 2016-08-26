@@ -21,3 +21,6 @@ select count(1) from src where (case key when '238' then null else 1=1 end);
 explain 
 select (CASE WHEN (-2) >= 0  THEN SUBSTRING(key, 1,CAST((-2) AS INT)) ELSE NULL END)
 from src;
+explain
+select (CASE WHEN key = value THEN '1' WHEN true THEN '0' ELSE NULL END)
+from src;

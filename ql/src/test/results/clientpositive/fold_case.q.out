@@ -474,3 +474,40 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
+PREHOOK: query: explain
+select (CASE WHEN key = value THEN '1' WHEN true THEN '0' ELSE NULL END)
+from src
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select (CASE WHEN key = value THEN '1' WHEN true THEN '0' ELSE NULL END)
+from src
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: CASE WHEN ((key = value)) THEN ('1') ELSE ('0') END (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
