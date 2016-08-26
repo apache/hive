@@ -295,6 +295,11 @@ public class HiveRexUtil {
         if (operand.isAlwaysTrue()) {
           // Predicate is always TRUE. Make value the ELSE and quit.
           newOperands.add(operands.get(i + 1));
+          if (unknownAsFalse && RexUtil.isNull(operands.get(i + 1))) {
+            values.add(rexBuilder.makeLiteral(false).toString());
+          } else {
+            values.add(operands.get(i + 1).toString());
+          }
           break;
         } else if (operand.isAlwaysFalse() || RexUtil.isNull(operand)) {
           // Predicate is always FALSE or NULL. Skip predicate and value.
