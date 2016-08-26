@@ -175,7 +175,10 @@ public abstract class VectorMapJoinFastBytesHashTable
     while (true) {
       int tripleIndex = slot * 3;
       // LOG.debug("VectorMapJoinFastBytesHashMap findReadSlot slot keyRefWord " + Long.toHexString(slotTriples[tripleIndex]) + " hashCode " + Long.toHexString(hashCode) + " entry hashCode " + Long.toHexString(slotTriples[tripleIndex + 1]) + " valueRefWord " + Long.toHexString(slotTriples[tripleIndex + 2]));
-      if (slotTriples[tripleIndex] != 0 && hashCode == slotTriples[tripleIndex + 1]) {
+      if (slotTriples[tripleIndex] == 0) {
+        // Given that we do not delete, an empty slot means no match.
+        return -1;
+      } else if (hashCode == slotTriples[tripleIndex + 1]) {
         // Finally, verify the key bytes match.
 
         if (keyStore.equalKey(slotTriples[tripleIndex], keyBytes, keyStart, keyLength, readPos)) {
