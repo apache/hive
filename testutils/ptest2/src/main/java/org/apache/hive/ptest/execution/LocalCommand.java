@@ -64,9 +64,9 @@ public class LocalCommand {
         exitCode = process.waitFor();
         if (stopwatch.isRunning()) {
           stopwatch.stop();
-          logger.info("Finished LocalCommandId={}. ElapsedTime(seconds)={}", commandId,
+          logger.info("Finished LocalCommandId={}. ElapsedTime(ms)={}", commandId,
               stopwatch.elapsed(
-                  TimeUnit.SECONDS));
+                  TimeUnit.MILLISECONDS));
         }
       }
     }

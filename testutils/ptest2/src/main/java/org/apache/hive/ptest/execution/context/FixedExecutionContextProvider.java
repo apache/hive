@@ -57,7 +57,11 @@ public class FixedExecutionContextProvider implements ExecutionContextProvider {
   }
   @Override
   public void replaceBadHosts(ExecutionContext executionContext) throws CreateHostsFailedException {
-    throw new UnsupportedOperationException();
+    if (!executionContext.getBadHosts().isEmpty()) {
+      LOG.warn(
+          "Found bad nodes on FixedExecutionContext. Cannot replace them. Degraded performance. badNodes={}",
+          executionContext.getBadHosts());
+    }
   }
 
   @Override
