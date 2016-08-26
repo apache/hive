@@ -604,6 +604,7 @@ class BeeLineOpts implements Completer {
     return helpAsked;
   }
 
+  @Ignore
   public HiveConf getConf() {
     return conf;
   }
