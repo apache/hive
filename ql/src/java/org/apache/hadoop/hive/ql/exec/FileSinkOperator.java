@@ -148,8 +148,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     RecordWriter[] outWriters;
     RecordUpdater[] updaters;
     Stat stat;
-    int acidLastBucket = -1;
-    int acidFileOffset = -1;
 
     public FSPaths(Path specPath) {
       tmpPath = Utilities.toTempPath(specPath);
@@ -763,22 +761,20 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         Object recId = ((StructObjectInspector)rowInspector).getStructFieldData(row, recIdField);
         int bucketNum =
             bucketInspector.get(recIdInspector.getStructFieldData(recId, bucketField));
-        if (fpaths.acidLastBucket != bucketNum) {
-          fpaths.acidLastBucket = bucketNum;
-          // Switch files
-          fpaths.updaters[++fpaths.acidFileOffset] = HiveFileFormatUtils.getAcidRecordUpdater(
-              jc, conf.getTableInfo(), bucketNum, conf, fpaths.outPaths[fpaths.acidFileOffset],
+        if(fpaths.updaters[bucketMap.get(bucketNum)] == null){
+          fpaths.updaters[bucketMap.get(bucketNum)] = HiveFileFormatUtils.getAcidRecordUpdater(
+              jc, conf.getTableInfo(), bucketNum, conf, fpaths.outPaths[bucketMap.get(bucketNum)],
               rowInspector, reporter, 0);
           if (isDebugEnabled) {
             LOG.debug("Created updater for bucket number " + bucketNum + " using file " +
-                fpaths.outPaths[fpaths.acidFileOffset]);
+                fpaths.outPaths[bucketMap.get(bucketNum)]);
           }
         }
 
         if (conf.getWriteType() == AcidUtils.Operation.UPDATE) {
-          fpaths.updaters[fpaths.acidFileOffset].update(conf.getTransactionId(), row);
+          fpaths.updaters[bucketMap.get(bucketNum)].update(conf.getTransactionId(), row);
         } else if (conf.getWriteType() == AcidUtils.Operation.DELETE) {
-          fpaths.updaters[fpaths.acidFileOffset].delete(conf.getTransactionId(), row);
+          fpaths.updaters[bucketMap.get(bucketNum)].delete(conf.getTransactionId(), row);
         } else {
           throw new HiveException("Unknown write type " + conf.getWriteType().toString());
         }
