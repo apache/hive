@@ -340,7 +340,9 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
         File rf = File.createTempFile("arena-", ".cache", cacheDir.toFile());
         RandomAccessFile rwf = new RandomAccessFile(rf, "rw");
         rwf.setLength(arenaSize); // truncate (TODO: posix_fallocate?)
-        ByteBuffer rwbuf = rwf.getChannel().map(MapMode.PRIVATE, 0, arenaSize);
+        // Use RW, not PRIVATE because the copy-on-write is irrelevant for a deleted file
+        // see discussion in YARN-5551 for the memory accounting discussion
+        ByteBuffer rwbuf = rwf.getChannel().map(MapMode.READ_WRITE, 0, arenaSize);
         // A mapping, once established, is not dependent upon the file channel that was used to
         // create it. delete file and hold onto the map
         rwf.close();
