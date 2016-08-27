@@ -531,58 +531,54 @@ public class VectorizationContext {
       ve = getColumnVectorExpression((ExprNodeColumnDesc) exprDesc, mode);
     } else if (exprDesc instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc expr = (ExprNodeGenericFuncDesc) exprDesc;
-      if (isCustomUDF(expr)) {
-        ve = getCustomUDFExpression(expr, mode);
-      } else {
-
-        // Add cast expression if needed. Child expressions of a udf may return different data types
-        // and that would require converting their data types to evaluate the udf.
-        // For example decimal column added to an integer column would require integer column to be
-        // cast to decimal.
-        List<ExprNodeDesc> childExpressions = getChildExpressionsWithImplicitCast(expr.getGenericUDF(),
-            exprDesc.getChildren(), exprDesc.getTypeInfo());
-        ve = getGenericUdfVectorExpression(expr.getGenericUDF(),
-            childExpressions, mode, exprDesc.getTypeInfo());
-        if (ve == null) {
-          // Ok, no vectorized class available.  No problem -- try to use the VectorUDFAdaptor
-          // when configured.
-          //
-          // NOTE: We assume if hiveVectorAdaptorUsageMode has not been set it because we are
-          // executing a test that didn't create a HiveConf, etc.  No usage of VectorUDFAdaptor in
-          // that case.
-          if (hiveVectorAdaptorUsageMode != null) {
-            switch (hiveVectorAdaptorUsageMode) {
-            case NONE:
-              // No VectorUDFAdaptor usage.
+      // Add cast expression if needed. Child expressions of a udf may return different data types
+      // and that would require converting their data types to evaluate the udf.
+      // For example decimal column added to an integer column would require integer column to be
+      // cast to decimal.
+	  // Note: this is a no-op for custom UDFs
+      List<ExprNodeDesc> childExpressions = getChildExpressionsWithImplicitCast(expr.getGenericUDF(),
+          exprDesc.getChildren(), exprDesc.getTypeInfo());
+      ve = getGenericUdfVectorExpression(expr.getGenericUDF(),
+          childExpressions, mode, exprDesc.getTypeInfo());
+      if (ve == null) {
+        // Ok, no vectorized class available.  No problem -- try to use the VectorUDFAdaptor
+        // when configured.
+        //
+        // NOTE: We assume if hiveVectorAdaptorUsageMode has not been set it because we are
+        // executing a test that didn't create a HiveConf, etc.  No usage of VectorUDFAdaptor in
+        // that case.
+        if (hiveVectorAdaptorUsageMode != null) {
+          switch (hiveVectorAdaptorUsageMode) {
+          case NONE:
+            // No VectorUDFAdaptor usage.
+            throw new HiveException(
+                "Could not vectorize expression (mode = " + mode.name() + "): " + exprDesc.toString()
+                  + " because hive.vectorized.adaptor.usage.mode=none");
+          case CHOSEN:
+            if (isNonVectorizedPathUDF(expr, mode)) {
+              ve = getCustomUDFExpression(expr, mode);
+            } else {
               throw new HiveException(
                   "Could not vectorize expression (mode = " + mode.name() + "): " + exprDesc.toString()
-                    + " because hive.vectorized.adaptor.usage.mode=none");
-            case CHOSEN:
-              if (isNonVectorizedPathUDF(expr, mode)) {
-                ve = getCustomUDFExpression(expr, mode);
-              } else {
-                throw new HiveException(
-                    "Could not vectorize expression (mode = " + mode.name() + "): " + exprDesc.toString()
-                      + " because hive.vectorized.adaptor.usage.mode=chosen "
-                      + " and the UDF wasn't one of the chosen ones");
-              }
-              break;
-            case ALL:
-              if (LOG.isDebugEnabled()) {
-                LOG.debug("We will try to use the VectorUDFAdaptor for " + exprDesc.toString()
-                    + " because hive.vectorized.adaptor.usage.mode=all");
-              }
-              ve = getCustomUDFExpression(expr, mode);
-              break;
-            default:
-              throw new RuntimeException("Unknown hive vector adaptor usage mode " +
-                hiveVectorAdaptorUsageMode.name());
+                    + " because hive.vectorized.adaptor.usage.mode=chosen "
+                    + " and the UDF wasn't one of the chosen ones");
             }
-            if (ve == null) {
-              throw new HiveException(
-                  "Unable vectorize expression (mode = " + mode.name() + "): " + exprDesc.toString()
-                    + " even for the VectorUDFAdaptor");
+            break;
+          case ALL:
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("We will try to use the VectorUDFAdaptor for " + exprDesc.toString()
+                  + " because hive.vectorized.adaptor.usage.mode=all");
             }
+            ve = getCustomUDFExpression(expr, mode);
+            break;
+          default:
+            throw new RuntimeException("Unknown hive vector adaptor usage mode " +
+              hiveVectorAdaptorUsageMode.name());
+          }
+          if (ve == null) {
+            throw new HiveException(
+                "Unable vectorize expression (mode = " + mode.name() + "): " + exprDesc.toString()
+                  + " even for the VectorUDFAdaptor");
           }
         }
       }
@@ -650,8 +646,13 @@ public class VectorizationContext {
    */
   private List<ExprNodeDesc> getChildExpressionsWithImplicitCast(GenericUDF genericUDF,
       List<ExprNodeDesc> children, TypeInfo returnType) throws HiveException {
-    if (isExcludedFromCast(genericUDF)) {
 
+    if (isCustomUDF(genericUDF.getUdfName())) {
+      // no implicit casts possible
+      return children;
+    }
+
+    if (isExcludedFromCast(genericUDF)) {
       // No implicit cast needed
       return children;
     }
@@ -946,9 +947,12 @@ public class VectorizationContext {
   }
 
   // Return true if this is a custom UDF or custom GenericUDF.
-  // This is for use only in the planner. It will fail in a task.
+  // This two functions are for use only in the planner. It will fail in a task.
   public static boolean isCustomUDF(ExprNodeGenericFuncDesc expr) {
-    String udfName = expr.getFuncText();
+    return isCustomUDF(expr.getFuncText());
+  }
+
+  private static boolean isCustomUDF(String udfName) {
     if (udfName == null) {
       return false;
     }

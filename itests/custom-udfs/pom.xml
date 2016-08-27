@@ -42,6 +42,7 @@ limitations under the License.
     <module>udf-classloader-util</module>
     <module>udf-classloader-udf1</module>
     <module>udf-classloader-udf2</module>
+    <module>udf-vectorized-badexample</module>
   </modules>
 
   <dependencies>
