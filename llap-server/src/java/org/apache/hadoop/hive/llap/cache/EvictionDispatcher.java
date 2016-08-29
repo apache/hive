@@ -26,10 +26,10 @@ import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
  * Eviction dispatcher - uses double dispatch to route eviction notifications to correct caches.
  */
 public final class EvictionDispatcher implements EvictionListener {
-  private final LowLevelCacheImpl dataCache;
+  private final LowLevelCache dataCache;
   private final OrcMetadataCache metadataCache;
 
-  public EvictionDispatcher(LowLevelCacheImpl dataCache, OrcMetadataCache metadataCache) {
+  public EvictionDispatcher(LowLevelCache dataCache, OrcMetadataCache metadataCache) {
     this.dataCache = dataCache;
     this.metadataCache = metadataCache;
   }

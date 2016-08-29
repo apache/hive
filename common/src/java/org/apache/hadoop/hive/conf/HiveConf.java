@@ -2699,10 +2699,10 @@ public class HiveConf extends Configuration {
     // The default is different on the client and server, so it's null here.
     LLAP_IO_ENABLED("hive.llap.io.enabled", null, "Whether the LLAP IO layer is enabled."),
     LLAP_IO_MEMORY_MODE("hive.llap.io.memory.mode", "cache",
-        new StringSet("cache", "allocator", "none"),
+        new StringSet("cache", "none"),
         "LLAP IO memory usage; 'cache' (the default) uses data and metadata cache with a\n" +
-        "custom off-heap allocator, 'allocator' uses the custom allocator without the caches,\n" +
-        "'none' doesn't use either (this mode may result in significant performance degradation)"),
+        "custom off-heap allocator, 'none' doesn't use either (this mode may result in\n" +
+        "significant performance degradation)"),
     LLAP_ALLOCATOR_MIN_ALLOC("hive.llap.io.allocator.alloc.min", "16Kb", new SizeValidator(),
         "Minimum allocation possible from LLAP buddy allocator. Allocations below that are\n" +
         "padded to minimum allocation. For ORC, should generally be the same as the expected\n" +

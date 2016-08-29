@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.EvictionAwareAllocator;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
+import org.apache.hadoop.hive.llap.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheMemoryManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCachePolicy;
@@ -66,7 +67,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   public static final Logger CACHE_LOGGER = LoggerFactory.getLogger("LlapIoCache");
   public static final Logger LOCKING_LOGGER = LoggerFactory.getLogger("LlapIoLocking");
 
-  private static final String MODE_CACHE = "cache", MODE_ALLOCATOR = "allocator";
+  private static final String MODE_CACHE = "cache";
 
   private final ColumnVectorProducer cvp;
   private final ListeningExecutorService executor;
@@ -77,9 +78,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
 
   private LlapIoImpl(Configuration conf) throws IOException {
     String ioMode = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MODE);
-    boolean useLowLevelCache = LlapIoImpl.MODE_CACHE.equalsIgnoreCase(ioMode),
-        useAllocOnly = !useLowLevelCache && LlapIoImpl.MODE_ALLOCATOR.equalsIgnoreCase(ioMode);
-    LOG.info("Initializing LLAP IO in {} mode", ioMode);
+    boolean useLowLevelCache = LlapIoImpl.MODE_CACHE.equalsIgnoreCase(ioMode);
+    LOG.info("Initializing LLAP IO in {} mode", useLowLevelCache ? LlapIoImpl.MODE_CACHE : "none");
     String displayName = "LlapDaemonCacheMetrics-" + MetricsUtils.getHostName();
     String sessionId = conf.get("llap.daemon.metrics.sessionid");
     this.cacheMetrics = LlapDaemonCacheMetrics.create(displayName, sessionId);
@@ -104,7 +104,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
         sessionId);
 
     OrcMetadataCache metadataCache = null;
-    LowLevelCacheImpl orcCache = null;
+    LowLevelCache cache = null;
     BufferUsageManager bufferManager = null;
     if (useLowLevelCache) {
       // Memory manager uses cache policy to trigger evictions, so create the policy first.
@@ -117,23 +117,21 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       // Cache uses allocator to allocate and deallocate, create allocator and then caches.
       EvictionAwareAllocator allocator = new BuddyAllocator(conf, memManager, cacheMetrics);
       this.allocator = allocator;
-      orcCache = new LowLevelCacheImpl(cacheMetrics, cachePolicy, allocator, true);
+      LowLevelCacheImpl cacheImpl = new LowLevelCacheImpl(
+          cacheMetrics, cachePolicy, allocator, true);
+      cache = cacheImpl;
       boolean useGapCache = HiveConf.getBoolVar(conf, ConfVars.LLAP_CACHE_ENABLE_ORC_GAP_CACHE);
       metadataCache = new OrcMetadataCache(memManager, cachePolicy, useGapCache);
       // And finally cache policy uses cache to notify it of eviction. The cycle is complete!
-      cachePolicy.setEvictionListener(new EvictionDispatcher(orcCache, metadataCache));
-      cachePolicy.setParentDebugDumper(orcCache);
-      orcCache.init(); // Start the cache threads.
-      bufferManager = orcCache; // Cache also serves as buffer manager.
+      cachePolicy.setEvictionListener(new EvictionDispatcher(cache, metadataCache));
+      cachePolicy.setParentDebugDumper(cacheImpl);
+      cacheImpl.startThreads(); // Start the cache threads.
+      bufferManager = cacheImpl; // Cache also serves as buffer manager.
     } else {
-      if (useAllocOnly) {
-        LowLevelCacheMemoryManager memManager = new LowLevelCacheMemoryManager(
-            conf, null, cacheMetrics);
-        allocator = new BuddyAllocator(conf, memManager, cacheMetrics);
-      } else {
-        allocator = new SimpleAllocator(conf);
-      }
-      bufferManager = new SimpleBufferManager(allocator, cacheMetrics);
+      this.allocator = new SimpleAllocator(conf);
+      SimpleBufferManager sbm = new SimpleBufferManager(allocator, cacheMetrics);
+      bufferManager = sbm;
+      cache = sbm;
     }
     // IO thread pool. Listening is used for unhandled errors for now (TODO: remove?)
     int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE);
@@ -141,7 +139,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
         new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true).build()));
     // TODO: this should depends on input format and be in a map, or something.
     this.cvp = new OrcColumnVectorProducer(
-        metadataCache, orcCache, bufferManager, conf, cacheMetrics, ioMetrics);
+        metadataCache, cache, bufferManager, conf, cacheMetrics, ioMetrics);
     LOG.info("LLAP IO initialized");
 
     registerMXBeans();
