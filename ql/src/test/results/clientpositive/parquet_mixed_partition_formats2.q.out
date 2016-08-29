@@ -88,10 +88,12 @@ POSTHOOK: Input: default@parquet_table_json_partition@ts=20150101
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@new_table
 PREHOOK: query: SELECT * FROM new_table
+ORDER BY id DESC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@new_table
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM new_table
+ORDER BY id DESC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@new_table
 #### A masked pattern was here ####

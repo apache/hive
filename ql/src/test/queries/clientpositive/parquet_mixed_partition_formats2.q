@@ -26,6 +26,7 @@ SELECT * FROM parquet_table_json_partition LIMIT 100;
 
 CREATE TABLE new_table AS SELECT * FROM parquet_table_json_partition LIMIT 100;
 
-SELECT * FROM new_table;
+SELECT * FROM new_table
+ORDER BY id DESC;
 
 
