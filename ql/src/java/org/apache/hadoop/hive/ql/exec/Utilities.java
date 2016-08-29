@@ -213,6 +213,7 @@ public final class Utilities {
    */
 
   public static String HADOOP_LOCAL_FS = "file:///";
+  public static final String HADOOP_LOCAL_FS_SCHEME = "file";
   public static String MAP_PLAN_NAME = "map.xml";
   public static String REDUCE_PLAN_NAME = "reduce.xml";
   public static String MERGE_PLAN_NAME = "merge.xml";
