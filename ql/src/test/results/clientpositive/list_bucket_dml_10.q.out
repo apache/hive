@@ -68,19 +68,19 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
                 Static Partition Specification: ds=2008-04-08/hr=11/
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 29 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -111,7 +111,6 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               columns key,value
               columns.comments 'default','default'
@@ -119,8 +118,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src
               numFiles 1
-              numRows 500
-              rawDataSize 5312
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -131,7 +130,6 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
                 columns key,value
                 columns.comments 'default','default'
@@ -139,8 +137,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src
                 numFiles 1
-                numRows 500
-                rawDataSize 5312
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
