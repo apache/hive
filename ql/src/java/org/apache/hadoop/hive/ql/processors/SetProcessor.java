@@ -24,7 +24,6 @@ import static org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.defaultN
 
 import static org.apache.hadoop.hive.conf.SystemVariables.*;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -179,7 +178,7 @@ public class SetProcessor implements CommandProcessor {
   /**
    * @return A console message that is not strong enough to fail the command (e.g. deprecation).
    */
-  private static String setConf(String varname, String key, String varvalue, boolean register)
+  static String setConf(String varname, String key, String varvalue, boolean register)
         throws IllegalArgumentException {
     String result = null;
     HiveConf conf = SessionState.get().getConf();

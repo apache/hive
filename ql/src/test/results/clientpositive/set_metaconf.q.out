@@ -1,3 +1,5 @@
 metaconf:hive.metastore.try.direct.sql=true
 metaconf:hive.metastore.try.direct.sql=false
 hive.metastore.try.direct.sql=true
+metaconf:hive.metastore.try.direct.sql=true
+hive.metastore.try.direct.sql=true

@@ -4,3 +4,35 @@ hive.skewjoin.key=300000
 hive.skewjoin.mapjoin.min.split=256000000
 hive.skewjoin.key=100000
 hive.skewjoin.mapjoin.min.split=33554432
+PREHOOK: query: select 'After setting hive.skewjoin.key and hive.skewjoin.mapjoin.min.split'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'After setting hive.skewjoin.key and hive.skewjoin.mapjoin.min.split'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+After setting hive.skewjoin.key and hive.skewjoin.mapjoin.min.split
+hive.skewjoin.key=300000
+PREHOOK: query: select 'After resetting hive.skewjoin.key to default'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'After resetting hive.skewjoin.key to default'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+After resetting hive.skewjoin.key to default
+hive.skewjoin.key=100000
+hive.skewjoin.mapjoin.min.split=256000000
+PREHOOK: query: select 'After resetting both to default'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'After resetting both to default'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+After resetting both to default
+hive.skewjoin.key=100000
+hive.skewjoin.mapjoin.min.split=33554432
