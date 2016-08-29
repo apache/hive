@@ -835,12 +835,11 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     @Override
     public DiskRangeList getFileData(Object fileKey, DiskRangeList range,
         long baseOffset, DiskRangeListFactory factory, BooleanRef gotAllData) {
-      DiskRangeList result = (lowLevelCache == null) ? range
-          : lowLevelCache.getFileData(fileKey, range, baseOffset, factory, counters, gotAllData);
+      DiskRangeList result = lowLevelCache.getFileData(
+          fileKey, range, baseOffset, factory, counters, gotAllData);
       if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
-        LlapIoImpl.ORC_LOGGER.trace("Disk ranges after data cache (file " + fileKey
-            + ", base offset " + baseOffset + "): "
-            + RecordReaderUtils.stringifyDiskRanges(range.next));
+        LlapIoImpl.ORC_LOGGER.trace("Disk ranges after data cache (file " + fileKey +
+            ", base offset " + baseOffset + "): " + RecordReaderUtils.stringifyDiskRanges(range));
       }
       if (gotAllData.value) return result;
       return (metadataCache == null) ? range
@@ -851,7 +850,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     public long[] putFileData(Object fileKey, DiskRange[] ranges,
         MemoryBuffer[] data, long baseOffset) {
       if (data != null) {
-        return (lowLevelCache == null) ? null : lowLevelCache.putFileData(
+        return lowLevelCache.putFileData(
             fileKey, ranges, data, baseOffset, Priority.NORMAL, counters);
       } else if (metadataCache != null) {
         metadataCache.putIncompleteCbs(fileKey, ranges, baseOffset);

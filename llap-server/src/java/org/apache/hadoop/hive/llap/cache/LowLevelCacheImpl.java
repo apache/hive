@@ -67,7 +67,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
     this.doAssumeGranularBlocks = doAssumeGranularBlocks;
   }
 
-  public void init() {
+  public void startThreads() {
     if (cleanupInterval < 0) return;
     cleanupThread = new CleanupThread(cleanupInterval);
     cleanupThread.start();
@@ -368,7 +368,8 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
     return fake;
   }
 
-  public final void notifyEvicted(LlapDataBuffer buffer) {
+  @Override
+  public final void notifyEvicted(MemoryBuffer buffer) {
     allocator.deallocateEvicted(buffer);
     newEvictions.incrementAndGet();
   }

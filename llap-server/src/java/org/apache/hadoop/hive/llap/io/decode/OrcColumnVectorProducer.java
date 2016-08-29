@@ -25,7 +25,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
-import org.apache.hadoop.hive.llap.cache.LowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
@@ -48,7 +47,7 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
   private LlapDaemonIOMetrics ioMetrics;
 
   public OrcColumnVectorProducer(OrcMetadataCache metadataCache,
-      LowLevelCacheImpl lowLevelCache, BufferUsageManager bufferManager,
+      LowLevelCache lowLevelCache, BufferUsageManager bufferManager,
       Configuration conf, LlapDaemonCacheMetrics cacheMetrics, LlapDaemonIOMetrics ioMetrics) {
     LlapIoImpl.LOG.info("Initializing ORC column vector producer");
 
