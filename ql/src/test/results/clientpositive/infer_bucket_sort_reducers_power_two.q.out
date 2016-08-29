@@ -275,8 +275,8 @@ InputFormat:        	org.apache.hadoop.mapred.TextInputFormat
 OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
 Compressed:         	No                  	 
 Num Buckets:        	16                  	 
-Bucket Columns:     	[key]               	 
-Sort Columns:       	[Order(col:key, order:1)]	 
+Bucket Columns:     	[value]             	 
+Sort Columns:       	[Order(col:value, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: -- Test group by in subquery with another group by outside, should be bucketed and sorted by the
