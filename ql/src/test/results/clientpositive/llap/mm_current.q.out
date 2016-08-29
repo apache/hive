@@ -1,0 +1,21 @@
+PREHOOK: query: drop table simple123
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table simple123
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table simple123(key int) partitioned by (key123 int) tblproperties ('hivecommit'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@simple123
+POSTHOOK: query: create table simple123(key int) partitioned by (key123 int) tblproperties ('hivecommit'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@simple123
+PREHOOK: query: insert into table simple123 partition(key123='455') select key from src limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@simple123@key123=455
+POSTHOOK: query: insert into table simple123 partition(key123='455') select key from src limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@simple123@key123=455
+POSTHOOK: Lineage: simple123 PARTITION(key123=455).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -217,11 +218,13 @@ public final class UnionProcFactory {
         // each parent
         List<FileSinkDesc> fileDescLists = new ArrayList<FileSinkDesc>();
 
+        // TODO# special case #N - unions
         for (Operator<? extends OperatorDesc> parent : parents) {
           FileSinkDesc fileSinkDesc = (FileSinkDesc) fileSinkOp.getConf().clone();
           fileSinkDesc.setDirName(new Path(parentDirName, parent.getIdentifier()));
           fileSinkDesc.setLinkedFileSink(true);
           fileSinkDesc.setParentDir(parentDirName);
+          Utilities.LOG14535.info("Created LinkedFileSink for union " + fileSinkDesc.getDirName() + "; parent " + parentDirName);
           parent.setChildOperators(null);
           Operator<? extends OperatorDesc> tmpFileSinkOp =
             OperatorFactory.getAndMakeChild(fileSinkDesc, parent.getSchema(), parent);

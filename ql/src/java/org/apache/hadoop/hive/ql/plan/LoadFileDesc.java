@@ -22,6 +22,7 @@ import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 
 /**
  * LoadFileDesc.
@@ -55,6 +56,7 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
       final boolean isDfsDir, final String columns, final String columnTypes) {
 
     super(sourcePath);
+    Utilities.LOG14535.info("creating LFD from " + sourcePath + " to " + targetDir, new Exception());
     this.targetDir = targetDir;
     this.isDfsDir = isDfsDir;
     this.columns = columns;

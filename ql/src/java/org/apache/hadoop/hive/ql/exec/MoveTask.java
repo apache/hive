@@ -252,6 +252,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       if (lfd != null) {
         Path targetPath = lfd.getTargetDir();
         Path sourcePath = lfd.getSourcePath();
+        Utilities.LOG14535.info("MoveTask moving LFD " + sourcePath + " to " + targetPath);
         moveFile(sourcePath, targetPath, lfd.getIsDfsDir());
       }
 
@@ -268,6 +269,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           if (!fs.exists(destPath.getParent())) {
             fs.mkdirs(destPath.getParent());
           }
+          Utilities.LOG14535.info("MoveTask moving LMFD " + srcPath + " to " + destPath);
           moveFile(srcPath, destPath, isDfsDir);
           i++;
         }
@@ -288,71 +290,17 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           mesg.append(')');
         }
         String mesg_detail = " from " + tbd.getSourcePath();
+        Utilities.LOG14535.info("" + mesg.toString() + " " + mesg_detail);
         console.printInfo(mesg.toString(), mesg_detail);
         Table table = db.getTable(tbd.getTable().getTableName());
 
-        if (work.getCheckFileFormat()) {
-          // Get all files from the src directory
-          FileStatus[] dirs;
-          ArrayList<FileStatus> files;
-          FileSystem srcFs; // source filesystem
-          try {
-            srcFs = tbd.getSourcePath().getFileSystem(conf);
-            dirs = srcFs.globStatus(tbd.getSourcePath());
-            files = new ArrayList<FileStatus>();
-            for (int i = 0; (dirs != null && i < dirs.length); i++) {
-              files.addAll(Arrays.asList(srcFs.listStatus(dirs[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER)));
-              // We only check one file, so exit the loop when we have at least
-              // one.
-              if (files.size() > 0) {
-                break;
-              }
-            }
-          } catch (IOException e) {
-            throw new HiveException(
-                "addFiles: filesystem error in check phase", e);
-          }
-
-          // handle file format check for table level
-          if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVECHECKFILEFORMAT)) {
-            boolean flag = true;
-            // work.checkFileFormat is set to true only for Load Task, so assumption here is
-            // dynamic partition context is null
-            if (tbd.getDPCtx() == null) {
-              if (tbd.getPartitionSpec() == null || tbd.getPartitionSpec().isEmpty()) {
-                // Check if the file format of the file matches that of the table.
-                flag = HiveFileFormatUtils.checkInputFormat(
-                    srcFs, conf, tbd.getTable().getInputFileFormatClass(), files);
-              } else {
-                // Check if the file format of the file matches that of the partition
-                Partition oldPart = db.getPartition(table, tbd.getPartitionSpec(), false);
-                if (oldPart == null) {
-                  // this means we have just created a table and are specifying partition in the
-                  // load statement (without pre-creating the partition), in which case lets use
-                  // table input format class. inheritTableSpecs defaults to true so when a new
-                  // partition is created later it will automatically inherit input format
-                  // from table object
-                  flag = HiveFileFormatUtils.checkInputFormat(
-                      srcFs, conf, tbd.getTable().getInputFileFormatClass(), files);
-                } else {
-                  flag = HiveFileFormatUtils.checkInputFormat(
-                      srcFs, conf, oldPart.getInputFormatClass(), files);
-                }
-              }
-              if (!flag) {
-                throw new HiveException(
-                    "Wrong file format. Please check the file's format.");
-              }
-            } else {
-              LOG.warn("Skipping file format check as dpCtx is not null");
-            }
-          }
-        }
+        checkFileFormats(db, tbd, table);
 
         // Create a data container
         DataContainer dc = null;
         if (tbd.getPartitionSpec().size() == 0) {
           dc = new DataContainer(table.getTTable());
+          Utilities.LOG14535.info("loadTable called from " + tbd.getSourcePath() + " into " + tbd.getTable());
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getReplace(),
               work.isSrcLocal(), isSkewedStoredAsDirs(tbd),
               work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
@@ -495,10 +443,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             List<String> partVals = MetaStoreUtils.getPvals(table.getPartCols(),
                 tbd.getPartitionSpec());
             db.validatePartitionNameCharacters(partVals);
+            Utilities.LOG14535.info("loadPartition called from " + tbd.getSourcePath() + " into " + tbd.getTable());
             db.loadPartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
                 tbd.getPartitionSpec(), tbd.getReplace(),
                 tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
-                work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID, hasFollowingStatsTask());
+                work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID, hasFollowingStatsTask(), tbd.isMmTable());
             Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
 
             if (bucketCols != null || sortCols != null) {
@@ -544,6 +493,67 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           + StringUtils.stringifyException(e));
       setException(e);
       return (1);
+    }
+  }
+
+  private void checkFileFormats(Hive db, LoadTableDesc tbd, Table table)
+      throws HiveException {
+    if (work.getCheckFileFormat()) {
+      // Get all files from the src directory
+      FileStatus[] dirs;
+      ArrayList<FileStatus> files;
+      FileSystem srcFs; // source filesystem
+      try {
+        srcFs = tbd.getSourcePath().getFileSystem(conf);
+        dirs = srcFs.globStatus(tbd.getSourcePath());
+        files = new ArrayList<FileStatus>();
+        for (int i = 0; (dirs != null && i < dirs.length); i++) {
+          files.addAll(Arrays.asList(srcFs.listStatus(dirs[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER)));
+          // We only check one file, so exit the loop when we have at least
+          // one.
+          if (files.size() > 0) {
+            break;
+          }
+        }
+      } catch (IOException e) {
+        throw new HiveException(
+            "addFiles: filesystem error in check phase", e);
+      }
+
+      // handle file format check for table level
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVECHECKFILEFORMAT)) {
+        boolean flag = true;
+        // work.checkFileFormat is set to true only for Load Task, so assumption here is
+        // dynamic partition context is null
+        if (tbd.getDPCtx() == null) {
+          if (tbd.getPartitionSpec() == null || tbd.getPartitionSpec().isEmpty()) {
+            // Check if the file format of the file matches that of the table.
+            flag = HiveFileFormatUtils.checkInputFormat(
+                srcFs, conf, tbd.getTable().getInputFileFormatClass(), files);
+          } else {
+            // Check if the file format of the file matches that of the partition
+            Partition oldPart = db.getPartition(table, tbd.getPartitionSpec(), false);
+            if (oldPart == null) {
+              // this means we have just created a table and are specifying partition in the
+              // load statement (without pre-creating the partition), in which case lets use
+              // table input format class. inheritTableSpecs defaults to true so when a new
+              // partition is created later it will automatically inherit input format
+              // from table object
+              flag = HiveFileFormatUtils.checkInputFormat(
+                  srcFs, conf, tbd.getTable().getInputFileFormatClass(), files);
+            } else {
+              flag = HiveFileFormatUtils.checkInputFormat(
+                  srcFs, conf, oldPart.getInputFormatClass(), files);
+            }
+          }
+          if (!flag) {
+            throw new HiveException(
+                "Wrong file format. Please check the file's format.");
+          }
+        } else {
+          LOG.warn("Skipping file format check as dpCtx is not null");
+        }
+      }
     }
   }
 

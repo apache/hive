@@ -233,6 +233,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
         // point, updates from speculative tasks still writing to tmpPath
         // will not appear in finalPath.
         log.info("Moving tmp dir: " + tmpPath + " to: " + intermediatePath);
+        Utilities.LOG14535.info("Moving tmp dir: " + tmpPath + " to: " + intermediatePath + "(spec " + specPath + ")");
         Utilities.rename(fs, tmpPath, intermediatePath);
         // Step2: remove any tmp file or double-committed output files
         Utilities.removeTempOrDuplicateFiles(fs, intermediatePath);

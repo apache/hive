@@ -1268,6 +1268,7 @@ public final class GenMapRedUtils {
 
     // Create a FileSink operator
     TableDesc ts = (TableDesc) fsInputDesc.getTableInfo().clone();
+    // TODO# special case #N - merge FS is created here
     FileSinkDesc fsOutputDesc = new FileSinkDesc(finalName, ts,
       conf.getBoolVar(ConfVars.COMPRESSRESULT));
     FileSinkOperator fsOutput = (FileSinkOperator) OperatorFactory.getAndMakeChild(
@@ -1806,6 +1807,7 @@ public final class GenMapRedUtils {
 
       // Create the required temporary file in the HDFS location if the destination
       // path of the FileSinkOperator table is a blobstore path.
+      // TODO# HERE
       Path tmpDir = baseCtx.getTempDirForPath(fileSinkDesc.getDestPath());
 
       // Change all the linked file sink descriptors
@@ -1813,9 +1815,11 @@ public final class GenMapRedUtils {
         for (FileSinkDesc fsConf:fileSinkDesc.getLinkedFileSinkDesc()) {
           fsConf.setParentDir(tmpDir);
           fsConf.setDirName(new Path(tmpDir, fsConf.getDirName().getName()));
+          Utilities.LOG14535.info("createMoveTask setting tmpDir for LinkedFileSink chDir " + fsConf.getDirName() + "; new parent " + tmpDir + ", dest was " + fileSinkDesc.getDestPath());
         }
       } else {
         fileSinkDesc.setDirName(tmpDir);
+        Utilities.LOG14535.info("createMoveTask setting tmpDir for LinkedFileSink chDir " + tmpDir + "; dest was " + fileSinkDesc.getDestPath());
       }
     }
 

@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 
 /**
  * Conditional task resolution interface. This is invoked at run time to get the
@@ -243,6 +244,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     Path path = ptpi.keySet().iterator().next();
     PartitionDesc partDesc = ptpi.get(path);
     TableDesc tblDesc = partDesc.getTableDesc();
+    Utilities.LOG14535.info("merge resolver removing " + path);
     work.removePathToPartitionInfo(path); // the root path is not useful anymore
 
     // cleanup pathToAliases
@@ -264,9 +266,12 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
         totalSz += len;
         PartitionDesc pDesc = (dpCtx != null) ? generateDPFullPartSpec(dpCtx, status, tblDesc, i)
             : partDesc;
+        Utilities.LOG14535.info("merge resolver will merge " + status[i].getPath());
         work.resolveDynamicPartitionStoredAsSubDirsMerge(conf, status[i].getPath(), tblDesc,
             aliases, pDesc);
       } else {
+        Utilities.LOG14535.info("merge resolver will move " + status[i].getPath());
+
         toMove.add(status[i].getPath());
       }
     }

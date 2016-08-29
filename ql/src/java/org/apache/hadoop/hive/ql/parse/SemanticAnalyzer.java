@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
@@ -6542,6 +6543,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LoadTableDesc ltd = null;
     ListBucketingCtx lbCtx = null;
     Map<String, String> partSpec = null;
+    boolean isMmTable = false;
 
     switch (dest_type.intValue()) {
     case QBMetaData.DEST_TABLE: {
@@ -6551,70 +6553,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       destTableIsTemporary = dest_tab.isTemporary();
 
       // Is the user trying to insert into a external tables
-      if ((!conf.getBoolVar(HiveConf.ConfVars.HIVE_INSERT_INTO_EXTERNAL_TABLES)) &&
-          (dest_tab.getTableType().equals(TableType.EXTERNAL_TABLE))) {
-        throw new SemanticException(
-            ErrorMsg.INSERT_EXTERNAL_TABLE.getMsg(dest_tab.getTableName()));
-      }
+      checkExternalTable(dest_tab);
 
       partSpec = qbm.getPartSpecForAlias(dest);
       dest_path = dest_tab.getPath();
 
-      // If the query here is an INSERT_INTO and the target is an immutable table,
-      // verify that our destination is empty before proceeding
-      if (dest_tab.isImmutable() &&
-          qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),dest_tab.getTableName())){
-        try {
-          FileSystem fs = dest_path.getFileSystem(conf);
-          if (! MetaStoreUtils.isDirEmpty(fs,dest_path)){
-            LOG.warn("Attempted write into an immutable table : "
-                + dest_tab.getTableName() + " : " + dest_path);
-            throw new SemanticException(
-                ErrorMsg.INSERT_INTO_IMMUTABLE_TABLE.getMsg(dest_tab.getTableName()));
-          }
-        } catch (IOException ioe) {
-            LOG.warn("Error while trying to determine if immutable table has any data : "
-                + dest_tab.getTableName() + " : " + dest_path);
-          throw new SemanticException(ErrorMsg.INSERT_INTO_IMMUTABLE_TABLE.getMsg(ioe.getMessage()));
-        }
-      }
+      checkImmutableTable(qb, dest_tab, dest_path, false);
 
-      // check for partition
-      List<FieldSchema> parts = dest_tab.getPartitionKeys();
-      if (parts != null && parts.size() > 0) { // table is partitioned
-        if (partSpec == null || partSpec.size() == 0) { // user did NOT specify partition
-          throw new SemanticException(generateErrorMessage(
-              qb.getParseInfo().getDestForClause(dest),
-              ErrorMsg.NEED_PARTITION_ERROR.getMsg()));
-        }
-        dpCtx = qbm.getDPCtx(dest);
-        if (dpCtx == null) {
-          dest_tab.validatePartColumnNames(partSpec, false);
-          dpCtx = new DynamicPartitionCtx(dest_tab, partSpec,
-              conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
-              conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
-          qbm.setDPCtx(dest, dpCtx);
-        }
-
-        if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING)) { // allow DP
-          throw new SemanticException(generateErrorMessage(
-              qb.getParseInfo().getDestForClause(dest),
-              ErrorMsg.DYNAMIC_PARTITION_DISABLED.getMsg()));
-        }
-        if (dpCtx.getSPPath() != null) {
-          dest_path = new Path(dest_tab.getPath(), dpCtx.getSPPath());
-        }
-        if ((dest_tab.getNumBuckets() > 0)) {
-          dpCtx.setNumBuckets(dest_tab.getNumBuckets());
-        }
+      // Check for dynamic partitions.
+      dpCtx = checkDynPart(qb, qbm, dest_tab, partSpec, dest);
+      if (dpCtx != null && dpCtx.getSPPath() != null) {
+        dest_path = new Path(dest_tab.getPath(), dpCtx.getSPPath());
       }
 
       boolean isNonNativeTable = dest_tab.isNonNative();
-      if (isNonNativeTable) {
+      isMmTable = isMmTable(dest_tab);
+      if (isNonNativeTable || isMmTable) {
         queryTmpdir = dest_path;
       } else {
         queryTmpdir = ctx.getTempDirForPath(dest_path);
       }
+      Utilities.LOG14535.info("createFS for table specifying " + queryTmpdir + " from " + dest_path);
       if (dpCtx != null) {
         // set the root of the temporary path where dynamic partition columns will populate
         dpCtx.setRootPath(queryTmpdir);
@@ -6641,9 +6600,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           acidOp = getAcidType(table_desc.getOutputFileFormatClass());
           checkAcidConstraints(qb, table_desc, dest_tab);
         }
-        ltd = new LoadTableDesc(queryTmpdir, table_desc, dpCtx, acidOp);
-        ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
-            dest_tab.getTableName()));
+        boolean isReplace = !qb.getParseInfo().isInsertIntoTable(
+            dest_tab.getDbName(), dest_tab.getTableName());
+        ltd = new LoadTableDesc(queryTmpdir, table_desc, dpCtx, acidOp, isReplace, isMmTable);
         ltd.setLbCtx(lbCtx);
         loadTableWork.add(ltd);
       } else {
@@ -6652,42 +6611,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         setStatsForNonNativeTable(dest_tab);
       }
 
-      WriteEntity output = null;
-
-      // Here only register the whole table for post-exec hook if no DP present
-      // in the case of DP, we will register WriteEntity in MoveTask when the
-      // list of dynamically created partitions are known.
-      if ((dpCtx == null || dpCtx.getNumDPCols() == 0)) {
-        output = new WriteEntity(dest_tab, determineWriteType(ltd, isNonNativeTable));
-        if (!outputs.add(output)) {
-          throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
-              .getMsg(dest_tab.getTableName()));
-        }
-      }
-      if ((dpCtx != null) && (dpCtx.getNumDPCols() >= 0)) {
-        // No static partition specified
-        if (dpCtx.getNumSPCols() == 0) {
-          output = new WriteEntity(dest_tab, determineWriteType(ltd, isNonNativeTable), false);
-          outputs.add(output);
-        }
-        // part of the partition specified
-        // Create a DummyPartition in this case. Since, the metastore does not store partial
-        // partitions currently, we need to store dummy partitions
-        else {
-          try {
-            String ppath = dpCtx.getSPPath();
-            ppath = ppath.substring(0, ppath.length() - 1);
-            DummyPartition p =
-                new DummyPartition(dest_tab, dest_tab.getDbName()
-                    + "@" + dest_tab.getTableName() + "@" + ppath,
-                    partSpec);
-            output = new WriteEntity(p, WriteEntity.WriteType.INSERT, false);
-            outputs.add(output);
-          } catch (HiveException e) {
-            throw new SemanticException(e.getMessage(), e);
-          }
-        }
-      }
+      WriteEntity output = generateTableWriteEntity(
+          dest_tab, partSpec, ltd, dpCtx, isNonNativeTable);
 
       ctx.getLoadTableOutputMap().put(ltd, output);
       break;
@@ -6697,40 +6622,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       dest_part = qbm.getDestPartitionForAlias(dest);
       dest_tab = dest_part.getTable();
       destTableIsAcid = AcidUtils.isAcidTable(dest_tab);
-      if ((!conf.getBoolVar(HiveConf.ConfVars.HIVE_INSERT_INTO_EXTERNAL_TABLES)) &&
-          dest_tab.getTableType().equals(TableType.EXTERNAL_TABLE)) {
-        throw new SemanticException(
-            ErrorMsg.INSERT_EXTERNAL_TABLE.getMsg(dest_tab.getTableName()));
-      }
+
+      checkExternalTable(dest_tab);
 
       Path tabPath = dest_tab.getPath();
       Path partPath = dest_part.getDataLocation();
 
-      // If the query here is an INSERT_INTO and the target is an immutable table,
-      // verify that our destination is empty before proceeding
-      if (dest_tab.isImmutable() &&
-          qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),dest_tab.getTableName())){
-        try {
-          FileSystem fs = partPath.getFileSystem(conf);
-          if (! MetaStoreUtils.isDirEmpty(fs,partPath)){
-            LOG.warn("Attempted write into an immutable table partition : "
-                + dest_tab.getTableName() + " : " + partPath);
-            throw new SemanticException(
-                ErrorMsg.INSERT_INTO_IMMUTABLE_TABLE.getMsg(dest_tab.getTableName()));
-          }
-        } catch (IOException ioe) {
-            LOG.warn("Error while trying to determine if immutable table partition has any data : "
-                + dest_tab.getTableName() + " : " + partPath);
-          throw new SemanticException(ErrorMsg.INSERT_INTO_IMMUTABLE_TABLE.getMsg(ioe.getMessage()));
-        }
-      }
+      checkImmutableTable(qb, dest_tab, partPath, true);
 
       // if the table is in a different dfs than the partition,
       // replace the partition's dfs with the table's dfs.
       dest_path = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
           .getAuthority(), partPath.toUri().getPath());
 
-      queryTmpdir = ctx.getTempDirForPath(dest_path);
+      isMmTable = isMmTable(dest_tab);
+      queryTmpdir = isMmTable ? dest_path : ctx.getTempDirForPath(dest_path);
+      Utilities.LOG14535.info("createFS for partition specifying " + queryTmpdir + " from " + dest_path);
       table_desc = Utilities.getTableDesc(dest_tab);
 
       // Add sorting/bucketing if needed
@@ -6946,6 +6853,54 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       genPartnCols(dest, input, qb, table_desc, dest_tab, rsCtx);
     }
 
+    FileSinkDesc fileSinkDesc = createFileSinkDesc(table_desc, dest_part,
+        dest_path, currentTableId, destTableIsAcid, destTableIsTemporary,
+        destTableIsMaterialization, queryTmpdir, rsCtx, dpCtx, lbCtx, fsRS,
+        canBeMerged, isMmTable);
+
+    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
+        fileSinkDesc, fsRS, input), inputRR);
+
+    handleLineage(ltd, output);
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Created FileSink Plan for clause: " + dest + "dest_path: "
+          + dest_path + " row schema: " + inputRR.toString());
+    }
+
+    FileSinkOperator fso = (FileSinkOperator) output;
+    fso.getConf().setTable(dest_tab);
+    fsopToTable.put(fso, dest_tab);
+    // the following code is used to collect column stats when
+    // hive.stats.autogather=true
+    // and it is an insert overwrite or insert into table
+    if (dest_tab != null && conf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
+        && conf.getBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER)
+        && ColumnStatsAutoGatherContext.canRunAutogatherStats(fso)) {
+      if (dest_type.intValue() == QBMetaData.DEST_TABLE) {
+        genAutoColumnStatsGatheringPipeline(qb, table_desc, partSpec, input, qb.getParseInfo()
+            .isInsertIntoTable(dest_tab.getDbName(), dest_tab.getTableName()));
+      } else if (dest_type.intValue() == QBMetaData.DEST_PARTITION) {
+        genAutoColumnStatsGatheringPipeline(qb, table_desc, dest_part.getSpec(), input, qb
+            .getParseInfo().isInsertIntoTable(dest_tab.getDbName(), dest_tab.getTableName()));
+
+      }
+    }
+    return output;
+  }
+
+  private static boolean isMmTable(Table table) {
+    // TODO: perhaps it should be a 3rd value for 'transactional'?
+    String value = table.getProperty(hive_metastoreConstants.TABLE_IS_MM);
+    return value != null && value.equalsIgnoreCase("true");
+  }
+
+  private FileSinkDesc createFileSinkDesc(TableDesc table_desc,
+      Partition dest_part, Path dest_path, int currentTableId,
+      boolean destTableIsAcid, boolean destTableIsTemporary,
+      boolean destTableIsMaterialization, Path queryTmpdir,
+      SortBucketRSCtx rsCtx, DynamicPartitionCtx dpCtx, ListBucketingCtx lbCtx,
+      RowSchema fsRS, boolean canBeMerged, boolean isMmTable) throws SemanticException {
     FileSinkDesc fileSinkDesc = new FileSinkDesc(
       queryTmpdir,
       table_desc,
@@ -6957,7 +6912,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       rsCtx.getTotalFiles(),
       rsCtx.getPartnCols(),
       dpCtx,
-      dest_path);
+      dest_path,
+      isMmTable);
 
     fileSinkDesc.setHiveServerQuery(SessionState.get().isHiveServerQuery());
     // If this is an insert, update, or delete on an ACID table then mark that so the
@@ -7001,10 +6957,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } else if (dpCtx != null) {
       fileSinkDesc.setStaticSpec(dpCtx.getSPPath());
     }
+    return fileSinkDesc;
+  }
 
-    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        fileSinkDesc, fsRS, input), inputRR);
-
+  private void handleLineage(LoadTableDesc ltd, Operator output)
+      throws SemanticException {
     if (ltd != null && SessionState.get() != null) {
       SessionState.get().getLineageState()
           .mapDirToFop(ltd.getSourcePath(), (FileSinkOperator) output);
@@ -7022,32 +6979,110 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       SessionState.get().getLineageState()
               .mapDirToFop(tlocation, (FileSinkOperator) output);
     }
+  }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Created FileSink Plan for clause: " + dest + "dest_path: "
-          + dest_path + " row schema: " + inputRR.toString());
+  private WriteEntity generateTableWriteEntity(Table dest_tab,
+      Map<String, String> partSpec, LoadTableDesc ltd,
+      DynamicPartitionCtx dpCtx, boolean isNonNativeTable)
+      throws SemanticException {
+    WriteEntity output = null;
+
+    // Here only register the whole table for post-exec hook if no DP present
+    // in the case of DP, we will register WriteEntity in MoveTask when the
+    // list of dynamically created partitions are known.
+    if ((dpCtx == null || dpCtx.getNumDPCols() == 0)) {
+      output = new WriteEntity(dest_tab, determineWriteType(ltd, isNonNativeTable));
+      if (!outputs.add(output)) {
+        throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
+            .getMsg(dest_tab.getTableName()));
+      }
     }
-
-    FileSinkOperator fso = (FileSinkOperator) output;
-    fso.getConf().setTable(dest_tab);
-    fsopToTable.put(fso, dest_tab);
-    // the following code is used to collect column stats when
-    // hive.stats.autogather=true
-    // and it is an insert overwrite or insert into table
-    if (dest_tab != null && conf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
-        && conf.getBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER)
-        && ColumnStatsAutoGatherContext.canRunAutogatherStats(fso)) {
-      if (dest_type.intValue() == QBMetaData.DEST_TABLE) {
-        genAutoColumnStatsGatheringPipeline(qb, table_desc, partSpec, input, qb.getParseInfo()
-            .isInsertIntoTable(dest_tab.getDbName(), dest_tab.getTableName()));
-      } else if (dest_type.intValue() == QBMetaData.DEST_PARTITION) {
-        genAutoColumnStatsGatheringPipeline(qb, table_desc, dest_part.getSpec(), input, qb
-            .getParseInfo().isInsertIntoTable(dest_tab.getDbName(), dest_tab.getTableName()));
-
+    if ((dpCtx != null) && (dpCtx.getNumDPCols() >= 0)) {
+      // No static partition specified
+      if (dpCtx.getNumSPCols() == 0) {
+        output = new WriteEntity(dest_tab, determineWriteType(ltd, isNonNativeTable), false);
+        outputs.add(output);
+      }
+      // part of the partition specified
+      // Create a DummyPartition in this case. Since, the metastore does not store partial
+      // partitions currently, we need to store dummy partitions
+      else {
+        try {
+          String ppath = dpCtx.getSPPath();
+          ppath = ppath.substring(0, ppath.length() - 1);
+          DummyPartition p =
+              new DummyPartition(dest_tab, dest_tab.getDbName()
+                  + "@" + dest_tab.getTableName() + "@" + ppath,
+                  partSpec);
+          output = new WriteEntity(p, WriteEntity.WriteType.INSERT, false);
+          outputs.add(output);
+        } catch (HiveException e) {
+          throw new SemanticException(e.getMessage(), e);
+        }
       }
     }
     return output;
   }
+
+  private void checkExternalTable(Table dest_tab) throws SemanticException {
+    if ((!conf.getBoolVar(HiveConf.ConfVars.HIVE_INSERT_INTO_EXTERNAL_TABLES)) &&
+        (dest_tab.getTableType().equals(TableType.EXTERNAL_TABLE))) {
+      throw new SemanticException(
+          ErrorMsg.INSERT_EXTERNAL_TABLE.getMsg(dest_tab.getTableName()));
+    }
+  }
+
+  private void checkImmutableTable(QB qb, Table dest_tab, Path dest_path, boolean isPart)
+      throws SemanticException {
+    // If the query here is an INSERT_INTO and the target is an immutable table,
+    // verify that our destination is empty before proceeding
+    if (!dest_tab.isImmutable() || !qb.getParseInfo().isInsertIntoTable(
+        dest_tab.getDbName(), dest_tab.getTableName())) {
+      return;
+    }
+    try {
+      FileSystem fs = dest_path.getFileSystem(conf);
+      if (! MetaStoreUtils.isDirEmpty(fs,dest_path)){
+        LOG.warn("Attempted write into an immutable table : "
+            + dest_tab.getTableName() + " : " + dest_path);
+        throw new SemanticException(
+            ErrorMsg.INSERT_INTO_IMMUTABLE_TABLE.getMsg(dest_tab.getTableName()));
+      }
+    } catch (IOException ioe) {
+        LOG.warn("Error while trying to determine if immutable table "
+            + (isPart ? "partition " : "") + "has any data : "  + dest_tab.getTableName()
+            + " : " + dest_path);
+      throw new SemanticException(ErrorMsg.INSERT_INTO_IMMUTABLE_TABLE.getMsg(ioe.getMessage()));
+    }
+  }
+
+  private DynamicPartitionCtx checkDynPart(QB qb, QBMetaData qbm, Table dest_tab,
+      Map<String, String> partSpec, String dest) throws SemanticException {
+    List<FieldSchema> parts = dest_tab.getPartitionKeys();
+    if (parts == null || parts.isEmpty()) return null; // table is not partitioned
+    if (partSpec == null || partSpec.size() == 0) { // user did NOT specify partition
+      throw new SemanticException(generateErrorMessage(qb.getParseInfo().getDestForClause(dest),
+          ErrorMsg.NEED_PARTITION_ERROR.getMsg()));
+    }
+    DynamicPartitionCtx dpCtx = qbm.getDPCtx(dest);
+    if (dpCtx == null) {
+      dest_tab.validatePartColumnNames(partSpec, false);
+      dpCtx = new DynamicPartitionCtx(dest_tab, partSpec,
+          conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
+          conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
+      qbm.setDPCtx(dest, dpCtx);
+    }
+
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING)) { // allow DP
+      throw new SemanticException(generateErrorMessage(qb.getParseInfo().getDestForClause(dest),
+          ErrorMsg.DYNAMIC_PARTITION_DISABLED.getMsg()));
+    }
+    if ((dest_tab.getNumBuckets() > 0)) {
+      dpCtx.setNumBuckets(dest_tab.getNumBuckets());
+    }
+    return dpCtx;
+  }
+
 
   private void genAutoColumnStatsGatheringPipeline(QB qb, TableDesc table_desc,
       Map<String, String> partSpec, Operator curr, boolean isInsertInto) throws SemanticException {

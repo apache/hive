@@ -208,6 +208,9 @@ import com.google.common.base.Preconditions;
 @SuppressWarnings("nls")
 public final class Utilities {
 
+  // TODO: remove when merging
+  public static final Logger LOG14535 = LoggerFactory.getLogger("Log14535");
+
   /**
    * The object in the reducer are composed of these top level fields.
    */
@@ -1405,6 +1408,7 @@ public final class Utilities {
     Path tmpPath = Utilities.toTempPath(specPath);
     Path taskTmpPath = Utilities.toTaskTempPath(specPath);
     if (success) {
+      // TODO# specPath instead of tmpPath
       FileStatus[] statuses = HiveStatsUtils.getFileStatusRecurse(
           tmpPath, ((dpCtx == null) ? 1 : dpCtx.getNumDPCols()), fs);
       if(statuses != null && statuses.length > 0) {
@@ -1414,16 +1418,20 @@ public final class Utilities {
         if (emptyBuckets.size() > 0) {
           createEmptyBuckets(hconf, emptyBuckets, conf, reporter);
         }
-
         // move to the file destination
-        log.info("Moving tmp dir: " + tmpPath + " to: " + specPath);
+        Utilities.LOG14535.info("Moving tmp dir: " + tmpPath + " to: " + specPath);
         Utilities.renameOrMoveFiles(fs, tmpPath, specPath);
       }
+      List<Path> paths = new ArrayList<>();
+      // TODO#: HERE listFilesToCommit(specPath, fs, paths);
     } else {
+      Utilities.LOG14535.info("deleting tmpPath " + tmpPath);
       fs.delete(tmpPath, true);
     }
+    Utilities.LOG14535.info("deleting taskTmpPath " + taskTmpPath);
     fs.delete(taskTmpPath, true);
   }
+
 
   /**
    * Check the existence of buckets according to bucket specification. Create empty buckets if
@@ -1465,6 +1473,7 @@ public final class Utilities {
     }
 
     for (Path path : paths) {
+      Utilities.LOG14535.info("creating empty bucket for " + path);
       RecordWriter writer = HiveFileFormatUtils.getRecordWriter(
           jc, hiveOutputFormat, outputClass, isCompressed,
           tableInfo.getProperties(), path, reporter);
@@ -1576,15 +1585,19 @@ public final class Utilities {
 
     for (FileStatus one : items) {
       if (isTempPath(one)) {
+        Utilities.LOG14535.info("removeTempOrDuplicateFiles deleting " + one.getPath(), new Exception());
         if (!fs.delete(one.getPath(), true)) {
           throw new IOException("Unable to delete tmp file: " + one.getPath());
         }
       } else {
         String taskId = getPrefixedTaskIdFromFilename(one.getPath().getName());
+        Utilities.LOG14535.info("removeTempOrDuplicateFiles pondering " + one.getPath() + ", taskId " + taskId, new Exception());
+
         FileStatus otherFile = taskIdToFile.get(taskId);
         if (otherFile == null) {
           taskIdToFile.put(taskId, one);
         } else {
+          // TODO# file choice!
           // Compare the file sizes of all the attempt files for the same task, the largest win
           // any attempt files could contain partial results (due to task failures or
           // speculative runs), but the largest should be the correct one since the result
