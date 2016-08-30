@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.parse.ExplainConfiguration;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.util.StringUtils;
@@ -121,17 +122,14 @@ public class ATSHook implements ExecuteWithHookContext {
 
             switch(hookContext.getHookType()) {
             case PRE_EXEC_HOOK:
+            ExplainConfiguration config = new ExplainConfiguration();
+            config.setFormatted(true);
             ExplainWork work = new ExplainWork(null,// resFile
                 null,// pCtx
                 plan.getRootTasks(),// RootTasks
                 plan.getFetchTask(),// FetchTask
                 null,// analyzer
-                false,// extended
-                true,// formatted
-                false,// dependency
-                false,// logical
-                false,// authorize
-                false,// userLevelExplain
+                config, //explainConfig
                 null// cboInfo
             );
               @SuppressWarnings("unchecked")

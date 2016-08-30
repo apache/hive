@@ -135,6 +135,7 @@ import org.apache.hadoop.hive.ql.optimizer.lineage.Generator;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec.SpecType;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
+import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PTFInputSpec;
@@ -865,6 +866,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // this file.
     Path tablePath = null;
     FileSystem fs = null;
+    FSDataOutputStream out = null;
     try {
       if(dataDir == null) {
         tablePath = Warehouse.getDnsPath(new Path(ss.getTempTableSpace(), tableName), conf);
@@ -877,7 +879,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       fs = tablePath.getFileSystem(conf);
       fs.mkdirs(tablePath);
       Path dataFile = new Path(tablePath, "data_file");
-      FSDataOutputStream out = fs.create(dataFile);
+      out = fs.create(dataFile);
       List<FieldSchema> fields = new ArrayList<FieldSchema>();
 
       boolean firstRow = true;
@@ -901,7 +903,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         writeAsText("\n", out);
         firstRow = false;
       }
-      out.close();
 
       // Step 2, create a temp table, using the created file as the data
       StorageFormat format = new StorageFormat(conf);
@@ -925,6 +926,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } catch (IOException swallowIt) {}
       }
       throw new SemanticException(errMsg, e);
+    } finally {
+        IOUtils.closeStream(out);
     }
 
     // Step 3, return a new subtree with a from clause built around that temp table
@@ -7096,7 +7099,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LOG.info("Generate an operator pipleline to autogather column stats for table " + tableName
         + " in query " + ctx.getCmd());
     ColumnStatsAutoGatherContext columnStatsAutoGatherContext = null;
-    columnStatsAutoGatherContext = new ColumnStatsAutoGatherContext(this, conf, curr, table, partSpec, isInsertInto);
+    columnStatsAutoGatherContext = new ColumnStatsAutoGatherContext(this, conf, curr, table, partSpec, isInsertInto, ctx);
     columnStatsAutoGatherContext.insertAnalyzePipeline();
     columnStatsAutoGatherContexts.add(columnStatsAutoGatherContext);
   }
@@ -10859,6 +10862,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // 5. Take care of view creation
     if (createVwDesc != null) {
+      if (ctx.getExplainAnalyze() == AnalyzeState.RUNNING) {
+        return;
+      }
       saveViewDefinition();
 
       // validate the create view statement at this point, the createVwDesc gets
@@ -10941,7 +10947,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // 11. if desired check we're not going over partition scan limits
-    if (!ctx.getExplain()) {
+    if (!ctx.isExplainSkipExecution()) {
       enforceScanLimits(pCtx, origFetchTask);
     }
 
@@ -11726,7 +11732,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case CTAS: // create table as select
 
       if (isTemporary) {
-        if (!ctx.getExplain() && !isMaterialization) {
+        if (!ctx.isExplainSkipExecution() && !isMaterialization) {
           String dbName = qualifiedTabName[0];
           String tblName = qualifiedTabName[1];
           SessionState ss = SessionState.get();
@@ -11745,7 +11751,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // dumpTable is only used to check the conflict for non-temporary tables
         try {
           Table dumpTable = db.newTable(dbDotTab);
-          if (null != db.getTable(dumpTable.getDbName(), dumpTable.getTableName(), false) && !ctx.getExplain()) {
+          if (null != db.getTable(dumpTable.getDbName(), dumpTable.getTableName(), false) && !ctx.isExplainSkipExecution()) {
             throw new SemanticException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(dbDotTab));
           }
         } catch (HiveException e) {

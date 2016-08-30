@@ -30,4 +30,6 @@ public interface OperatorDesc extends Serializable, Cloneable {
   public Map<String, String> getOpProps();
   public long getMemoryNeeded();
   public void setMemoryNeeded(long memoryNeeded);
+  public String getRuntimeStatsTmpDir();
+  public void setRuntimeStatsTmpDir(String runtimeStatsTmpDir);
 }

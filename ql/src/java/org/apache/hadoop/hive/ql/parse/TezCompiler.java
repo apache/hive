@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.ql.optimizer.ReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.RemoveDynamicPruningBySize;
 import org.apache.hadoop.hive.ql.optimizer.SetReducerParallelism;
 import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
+import org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.CrossProductCheck;
 import org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider;
 import org.apache.hadoop.hive.ql.optimizer.physical.MemoryDecider;
@@ -390,8 +391,9 @@ public class TezCompiler extends TaskCompiler {
     }
 
     // we need to clone some operator plans and remove union operators still
+    int indexForTezUnion = 0;
     for (BaseWork w: procCtx.workWithUnionOperators) {
-      GenTezUtils.removeUnionOperators(procCtx, w);
+      GenTezUtils.removeUnionOperators(procCtx, w, indexForTezUnion++);
     }
 
     // then we make sure the file sink operators are set up right
@@ -489,7 +491,8 @@ public class TezCompiler extends TaskCompiler {
       LOG.debug("Skipping cross product analysis");
     }
 
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)
+        && ctx.getExplainAnalyze() == null) {
       physicalCtx = new Vectorizer().resolve(physicalCtx);
     } else {
       LOG.debug("Skipping vectorization");
@@ -517,6 +520,11 @@ public class TezCompiler extends TaskCompiler {
     //  the backend. If you have a physical optimization that changes
     //  table scans or filters, you have to invoke it before this one.
     physicalCtx = new SerializeFilter().resolve(physicalCtx);
+
+    if (physicalCtx.getContext().getExplainAnalyze() != null) {
+      new AnnotateRunTimeStatsOptimizer().resolve(physicalCtx);
+    }
+
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "optimizeTaskPlan");
     return;
   }

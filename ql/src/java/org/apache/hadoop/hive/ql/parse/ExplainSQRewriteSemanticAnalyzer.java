@@ -36,8 +36,7 @@ public class ExplainSQRewriteSemanticAnalyzer extends BaseSemanticAnalyzer {
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
 
-
-    ctx.setExplain(true);
+    ctx.setExplainConfig(new ExplainConfiguration());
 
     // Create a semantic analyzer for the query
     ASTNode input = (ASTNode) ast.getChild(0);

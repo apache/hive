@@ -271,7 +271,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           // Because of the implementation of the JsonParserFactory, we are sure
           // that we can get a TezJsonParser.
           JsonParser jsonParser = JsonParserFactory.getParser(conf);
-          work.setFormatted(true);
+          work.getConfig().setFormatted(true);
           JSONObject jsonPlan = getJSONPlan(out, work);
           if (work.getCboInfo() != null) {
             jsonPlan.put("cboInfo", work.getCboInfo());
@@ -282,8 +282,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
             // if there is anything wrong happen, we bail out.
             LOG.error("Running explain user level has problem: " + e.toString()
                 + ". Falling back to normal explain");
-            work.setFormatted(false);
-            work.setUserLevelExplain(false);
+            work.getConfig().setFormatted(false);
+            work.getConfig().setUserLevelExplain(false);
             jsonPlan = getJSONPlan(out, work);
           }
         } else {

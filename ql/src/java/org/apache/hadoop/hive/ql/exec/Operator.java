@@ -35,7 +35,9 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -46,6 +48,9 @@ import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
+import org.apache.hadoop.hive.ql.stats.StatsPublisher;
+import org.apache.hadoop.hive.ql.stats.fs.FSStatsPublisher;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -77,6 +82,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected final AtomicBoolean abortOp;
   private transient ExecMapperContext execContext;
   private transient boolean rootInitializeCalled = false;
+  protected transient long runTimeNumRows;
+  protected int indexForTezUnion = -1;
+  private transient Configuration hconf;
   protected final transient Collection<Future<?>> asyncInitOperations = new HashSet<>();
 
   // It can be optimized later so that an operator operator (init/close) is performed
@@ -476,7 +484,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * Operator specific initialization.
    */
   protected void initializeOp(Configuration hconf) throws HiveException {
+    this.hconf = hconf;
     rootInitializeCalled = true;
+    runTimeNumRows = 0;
   }
 
   /**
@@ -711,6 +721,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * should overwrite this funtion for their specific cleanup routine.
    */
   protected void closeOp(boolean abort) throws HiveException {
+    if (conf != null && conf.getRuntimeStatsTmpDir() != null) {
+      publishRunTimeStats();
+    }
+    runTimeNumRows = 0;
   }
 
   private boolean jobCloseDone = false;
@@ -865,7 +879,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   protected void forward(Object row, ObjectInspector rowInspector)
       throws HiveException {
-
+    runTimeNumRows++;
     if (getDone()) {
       return;
     }
@@ -1420,5 +1434,39 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   /** @return Compilation operator context. Only available during compilation. */
   public CompilationOpContext getCompilationOpContext() {
     return cContext;
+  }
+
+  private void publishRunTimeStats() throws HiveException {
+    StatsPublisher statsPublisher = new FSStatsPublisher();
+    StatsCollectionContext sContext = new StatsCollectionContext(hconf);
+    sContext.setIndexForTezUnion(indexForTezUnion);
+    sContext.setStatsTmpDir(conf.getRuntimeStatsTmpDir());
+
+    if (!statsPublisher.connect(sContext)) {
+      LOG.error("StatsPublishing error: cannot connect to database");
+      throw new HiveException(ErrorMsg.STATSPUBLISHER_CONNECTION_ERROR.getErrorCodedMsg());
+    }
+
+    String prefix = "";
+    Map<String, String> statsToPublish = new HashMap<String, String>();
+    statsToPublish.put(StatsSetupConst.RUN_TIME_ROW_COUNT, Long.toString(runTimeNumRows));
+    if (!statsPublisher.publishStat(prefix, statsToPublish)) {
+      // The original exception is lost.
+      // Not changing the interface to maintain backward compatibility
+      throw new HiveException(ErrorMsg.STATSPUBLISHER_PUBLISHING_ERROR.getErrorCodedMsg());
+    }
+    if (!statsPublisher.closeConnection(sContext)) {
+      // The original exception is lost.
+      // Not changing the interface to maintain backward compatibility
+      throw new HiveException(ErrorMsg.STATSPUBLISHER_CLOSING_ERROR.getErrorCodedMsg());
+    }
+  }
+
+  public int getIndexForTezUnion() {
+    return indexForTezUnion;
+  }
+
+  public void setIndexForTezUnion(int indexForTezUnion) {
+    this.indexForTezUnion = indexForTezUnion;
   }
 }

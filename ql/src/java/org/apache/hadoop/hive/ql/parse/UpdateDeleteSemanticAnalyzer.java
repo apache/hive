@@ -260,6 +260,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       // references.
       HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
       rewrittenCtx = new Context(conf);
+      rewrittenCtx.setExplainConfig(ctx.getExplainConfig());
     } catch (IOException e) {
       throw new SemanticException(ErrorMsg.UPDATEDELETE_IO_ERROR.getMsg());
     }

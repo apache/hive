@@ -150,5 +150,6 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
   @Override
   protected void closeOp(boolean abort) throws HiveException {
     conf.getGenericUDTF().close();
+    super.closeOp(abort);
   }
 }

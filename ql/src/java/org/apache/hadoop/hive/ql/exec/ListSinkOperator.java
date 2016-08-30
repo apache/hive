@@ -93,6 +93,7 @@ public class ListSinkOperator extends Operator<ListSinkDesc> {
     try {
       res.add(fetcher.convert(row, inputObjInspectors[0]));
       numRows++;
+      runTimeNumRows++;
     } catch (Exception e) {
       throw new HiveException(e);
     }

@@ -20,12 +20,15 @@ package org.apache.hadoop.hive.llap.cache;
 import java.util.List;
 
 import org.apache.hadoop.hive.common.io.Allocator;
+import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
+import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
+import org.apache.hadoop.hive.common.io.DiskRange;
+import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
-import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 
-public class SimpleBufferManager implements BufferUsageManager {
+public class SimpleBufferManager implements BufferUsageManager, LowLevelCache {
   private final Allocator allocator;
   private final LlapDaemonCacheMetrics metrics;
 
@@ -72,5 +75,31 @@ public class SimpleBufferManager implements BufferUsageManager {
   @Override
   public Allocator getAllocator() {
     return allocator;
+  }
+
+  @Override
+  public DiskRangeList getFileData(Object fileKey, DiskRangeList range, long baseOffset,
+      DiskRangeListFactory factory, LowLevelCacheCounters qfCounters, BooleanRef gotAllData) {
+    return range; // Nothing changes - no cache.
+  }
+
+  @Override
+  public long[] putFileData(Object fileKey, DiskRange[] ranges,
+      MemoryBuffer[] chunks, long baseOffset, Priority priority,
+      LowLevelCacheCounters qfCounters) {
+    for (int i = 0; i < chunks.length; ++i) {
+      LlapDataBuffer buffer = (LlapDataBuffer)chunks[i];
+      if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
+        LlapIoImpl.LOCKING_LOGGER.trace("Locking {} at put time (no cache)", buffer);
+      }
+      boolean canLock = lockBuffer(buffer);
+      assert canLock;
+    }
+    return null;
+  }
+
+  @Override
+  public void notifyEvicted(MemoryBuffer buffer) {
+    throw new UnsupportedOperationException("Buffer manager doesn't have cache");
   }
 }

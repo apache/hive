@@ -88,11 +88,16 @@ public class PhysicalOptimizer {
     // Vectorization should be the last optimization, because it doesn't modify the plan
     // or any operators. It makes a very low level transformation to the expressions to
     // run in the vectorized mode.
-    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)
+        && pctx.getContext().getExplainAnalyze() == null) {
       resolvers.add(new Vectorizer());
     }
     if (!"none".equalsIgnoreCase(hiveConf.getVar(HiveConf.ConfVars.HIVESTAGEIDREARRANGE))) {
       resolvers.add(new StageIDsRearranger());
+    }
+
+    if (pctx.getContext().getExplainAnalyze() != null) {
+      resolvers.add(new AnnotateRunTimeStatsOptimizer());
     }
   }
 

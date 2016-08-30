@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
@@ -244,6 +245,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   public int execute(DriverContext driverContext) {
 
     try {
+      if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
+        return 0;
+      }
       Hive db = getHive();
 
       // Do any hive related operations like moving tables and files

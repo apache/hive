@@ -54,6 +54,11 @@ public class TestContext {
         doReturn(mrTmpPath).when(spyContext).getMRTmpPath();
         assertEquals(mrTmpPath, spyContext.getTempDirForPath(new Path("s3a://bucket/dir")));
 
+        // When local filesystem paths are used, then getMRTmpPatch() should be called to
+        // get a temporary directory
+        assertEquals(mrTmpPath, spyContext.getTempDirForPath(new Path("file:/user")));
+        assertEquals(mrTmpPath, spyContext.getTempDirForPath(new Path("file:///user")));
+
         // When Non-Object store paths are used, then getExtTmpPathRelTo is called to get a temporary
         // directory on the same path passed as a parameter
         Path tmpPathRelTo = new Path("hdfs://hostname/user");

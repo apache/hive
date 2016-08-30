@@ -40,18 +40,20 @@ public class Statistics implements Serializable {
   }
 
   private long numRows;
+  private long runTimeNumRows;
   private long dataSize;
   private State basicStatsState;
   private Map<String, ColStatistics> columnStats;
   private State columnStatsState;
 
   public Statistics() {
-    this(0, 0);
+    this(0, 0, -1);
   }
 
-  public Statistics(long nr, long ds) {
+  public Statistics(long nr, long ds, long rnr) {
     this.setNumRows(nr);
     this.setDataSize(ds);
+    this.setRunTimeNumRows(rnr);
     this.basicStatsState = State.NONE;
     this.columnStats = null;
     this.columnStatsState = State.NONE;
@@ -107,6 +109,9 @@ public class Statistics implements Serializable {
     StringBuilder sb = new StringBuilder();
     sb.append("Num rows: ");
     sb.append(numRows);
+    if (runTimeNumRows >= 0) {
+      sb.append("/" + runTimeNumRows);
+    }
     sb.append(" Data size: ");
     sb.append(dataSize);
     sb.append(" Basic stats: ");
@@ -121,6 +126,9 @@ public class Statistics implements Serializable {
     StringBuilder sb = new StringBuilder();
     sb.append("rows=");
     sb.append(numRows);
+    if (runTimeNumRows >= 0) {
+      sb.append("/" + runTimeNumRows);
+    }
     sb.append(" width=");
     // just to be safe about numRows
     if (numRows != 0) {
@@ -148,7 +156,7 @@ public class Statistics implements Serializable {
 
   @Override
   public Statistics clone() throws CloneNotSupportedException {
-    Statistics clone = new Statistics(numRows, dataSize);
+    Statistics clone = new Statistics(numRows, dataSize, runTimeNumRows);
     clone.setBasicStatsState(basicStatsState);
     clone.setColumnStatsState(columnStatsState);
     if (columnStats != null) {
@@ -262,5 +270,13 @@ public class Statistics implements Serializable {
       return Lists.newArrayList(columnStats.values());
     }
     return null;
+  }
+
+  public long getRunTimeNumRows() {
+    return runTimeNumRows;
+  }
+
+  public void setRunTimeNumRows(long runTimeNumRows) {
+    this.runTimeNumRows = runTimeNumRows;
   }
 }

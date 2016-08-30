@@ -17,6 +17,20 @@
 
 package org.apache.hive.spark.client;
 
+import org.apache.hive.spark.client.JobHandle.Listener;
+
+import org.slf4j.Logger;
+
+import org.slf4j.LoggerFactory;
+
+import org.mockito.invocation.InvocationOnMock;
+
+import org.mockito.stubbing.Answer;
+
+import org.mockito.stubbing.Answer;
+
+import org.mockito.Mockito;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -258,11 +272,40 @@ public class TestSparkClient {
     });
   }
 
+  private static final Logger LOG = LoggerFactory.getLogger(TestSparkClient.class);
+
   private <T extends Serializable> JobHandle.Listener<T> newListener() {
     @SuppressWarnings("unchecked")
-    JobHandle.Listener<T> listener =
-      (JobHandle.Listener<T>) mock(JobHandle.Listener.class);
+    JobHandle.Listener<T> listener = mock(JobHandle.Listener.class);
+    answerWhen(listener, "cancelled").onJobCancelled(Mockito.<JobHandle<T>>any());
+    answerWhen(listener, "queued").onJobQueued(Mockito.<JobHandle<T>>any());
+    answerWhen(listener, "started").onJobStarted(Mockito.<JobHandle<T>>any());
+    answerWhen(listener, "succeeded").onJobSucceeded(
+        Mockito.<JobHandle<T>>any(), Mockito.<T>any());
+    answerWhen(listener, "job started").onSparkJobStarted(
+        Mockito.<JobHandle<T>>any(), Mockito.anyInt());
+    Mockito.doAnswer(new Answer<Void>() {
+      public Void answer(InvocationOnMock invocation) throws Throwable {
+        @SuppressWarnings("rawtypes")
+        JobHandleImpl arg = ((JobHandleImpl)invocation.getArguments()[0]);
+        LOG.info("Job failed " + arg.getClientJobId(),
+            (Throwable)invocation.getArguments()[1]);
+        return null;
+      };
+    }).when(listener).onJobFailed(Mockito.<JobHandle<T>>any(), Mockito.<Throwable>any());
     return listener;
+  }
+
+  protected <T extends Serializable> Listener<T> answerWhen(
+      Listener<T> listener, final String logStr) {
+    return Mockito.doAnswer(new Answer<Void>() {
+      public Void answer(InvocationOnMock invocation) throws Throwable {
+        @SuppressWarnings("rawtypes")
+        JobHandleImpl arg = ((JobHandleImpl)invocation.getArguments()[0]);
+        LOG.info("Job " + logStr + " " + arg.getClientJobId());
+        return null;
+      };
+    }).when(listener);
   }
 
   private void runTest(boolean local, TestFunction test) throws Exception {

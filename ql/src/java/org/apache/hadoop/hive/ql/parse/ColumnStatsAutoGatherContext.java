@@ -67,10 +67,11 @@ public class ColumnStatsAutoGatherContext {
   private boolean isInsertInto;
   private Table tbl;
   private Map<String, String> partSpec;
+  private Context origCtx;
   
   public ColumnStatsAutoGatherContext(SemanticAnalyzer sa, HiveConf conf,
       Operator<? extends OperatorDesc> op, Table tbl, Map<String, String> partSpec,
-      boolean isInsertInto) throws SemanticException {
+      boolean isInsertInto, Context ctx) throws SemanticException {
     super();
     this.sa = sa;
     this.conf = conf;
@@ -78,6 +79,7 @@ public class ColumnStatsAutoGatherContext {
     this.tbl = tbl;
     this.partSpec = partSpec;
     this.isInsertInto = isInsertInto;
+    this.origCtx = ctx;
     columns = tbl.getCols();
     partitionColumns = tbl.getPartCols();
   }
@@ -107,7 +109,7 @@ public class ColumnStatsAutoGatherContext {
     // 2. Based on the statement, generate the selectOperator
     Operator<?> selOp = null;
     try {
-      selOp = genSelOpForAnalyze(analyzeCommand);
+      selOp = genSelOpForAnalyze(analyzeCommand, origCtx);
     } catch (IOException | ParseException e) {
       throw new SemanticException(e);
     }
@@ -126,9 +128,10 @@ public class ColumnStatsAutoGatherContext {
   }
   
   @SuppressWarnings("rawtypes")
-  private Operator genSelOpForAnalyze(String analyzeCommand) throws IOException, ParseException, SemanticException{
+  private Operator genSelOpForAnalyze(String analyzeCommand, Context origCtx) throws IOException, ParseException, SemanticException{
     //0. initialization
     Context ctx = new Context(conf);
+    ctx.setExplainConfig(origCtx.getExplainConfig());
     ParseDriver pd = new ParseDriver();
     ASTNode tree = pd.parse(analyzeCommand, ctx);
     tree = ParseUtils.findRootNonNullToken(tree);

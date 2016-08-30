@@ -68,6 +68,7 @@ public final class SimpleAllocator implements Allocator, BuddyAllocatorMXBean {
     LlapDataBuffer buf = (LlapDataBuffer)buffer;
     ByteBuffer bb = buf.byteBuffer;
     buf.byteBuffer = null;
+    if (!bb.isDirect()) return;
     Field field = cleanerField;
     if (field == null) return;
     try {

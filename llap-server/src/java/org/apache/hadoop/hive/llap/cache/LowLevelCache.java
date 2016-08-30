@@ -59,4 +59,7 @@ public interface LowLevelCache {
    */
   long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] chunks,
       long baseOffset, Priority priority, LowLevelCacheCounters qfCounters);
+
+  /** Notifies the cache that a particular buffer should be removed due to eviction. */
+  void notifyEvicted(MemoryBuffer buffer);
 }

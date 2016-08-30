@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -48,7 +49,12 @@ public class MergeJoinWork extends BaseWork {
 
   @Override
   public Set<Operator<?>> getAllRootOperators() {
-    return getMainWork().getAllRootOperators();
+    Set<Operator<?>> set = new HashSet<>();
+    set.addAll(getMainWork().getAllRootOperators());
+    for (BaseWork w : mergeWorkList) {
+      set.addAll(w.getAllRootOperators());
+    }
+    return set;
   }
 
   @Override

@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.parse.ExplainConfiguration;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -132,6 +133,7 @@ public class TestExplainTask {
     pCtx.setTopOps(topOps);
     work.setParseContext(pCtx);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    work.setConfig(new ExplainConfiguration());
     new ExplainTask().getJSONLogicalPlan(new PrintStream(baos), work);
     baos.close();
     return baos.toString();

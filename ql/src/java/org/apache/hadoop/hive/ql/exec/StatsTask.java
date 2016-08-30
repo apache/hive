@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
+import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
@@ -87,7 +88,9 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
   @Override
   public int execute(DriverContext driverContext) {
-
+    if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
+      return 0;
+    }
     LOG.info("Executing stats task");
     // Make sure that it is either an ANALYZE, INSERT OVERWRITE (maybe load) or CTAS command
     short workComponentsPresent = 0;
@@ -147,7 +150,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       if (!getWork().getNoStatsAggregator() && !getWork().isNoScanAnalyzeCommand()) {
         try {
           scc = getContext();
-          statsAggregator = createStatsAggregator(scc);
+          statsAggregator = createStatsAggregator(scc, conf);
         } catch (HiveException e) {
           if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_RELIABLE)) {
             throw e;
@@ -294,7 +297,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     return prefix;
   }
 
-  private StatsAggregator createStatsAggregator(StatsCollectionContext scc) throws HiveException {
+  private StatsAggregator createStatsAggregator(StatsCollectionContext scc, HiveConf conf) throws HiveException {
     String statsImpl = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
     StatsFactory factory = StatsFactory.newFactory(statsImpl, conf);
     if (factory == null) {
