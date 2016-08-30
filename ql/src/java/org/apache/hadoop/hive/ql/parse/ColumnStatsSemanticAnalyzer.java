@@ -377,6 +377,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       analyzeRewrite.setColType(colType);
       qbp.setAnalyzeRewrite(analyzeRewrite);
       initCtx(ctx);
+      ctx.setExplainConfig(origCtx.getExplainConfig());
       LOG.info("Invoking analyze on rewritten query");
       analyzeInternal(rewrittenTree);
     } else {

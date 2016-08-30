@@ -136,6 +136,7 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.AbortTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
@@ -287,6 +288,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   @Override
   public int execute(DriverContext driverContext) {
+    if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
+      return 0;
+    }
 
     // Create the db
     Hive db;

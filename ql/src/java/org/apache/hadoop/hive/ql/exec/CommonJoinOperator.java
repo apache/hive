@@ -788,6 +788,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       }
     }
     Arrays.fill(storage, null);
+    super.closeOp(abort);
   }
 
   @Override

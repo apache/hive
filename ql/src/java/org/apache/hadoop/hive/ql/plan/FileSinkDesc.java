@@ -61,7 +61,6 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   private DynamicPartitionCtx dpCtx;
   private String staticSpec; // static partition spec ends with a '/'
   private boolean gatherStats;
-  private int indexInTezUnion = -1;
 
   // Consider a query like:
   // insert overwrite table T3 select ... from T1 join T2 on T1.key = T2.key;
@@ -473,14 +472,6 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   public void setStatsTmpDir(String statsCollectionTempDir) {
     this.statsTmpDir = statsCollectionTempDir;
-  }
-
-  public int getIndexInTezUnion() {
-    return indexInTezUnion;
-  }
-
-  public void setIndexInTezUnion(int indexInTezUnion) {
-    this.indexInTezUnion = indexInTezUnion;
   }
 
 }

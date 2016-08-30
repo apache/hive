@@ -84,6 +84,8 @@ public class StatsSetupConst {
    */
   public static final String ROW_COUNT = "numRows";
 
+  public static final String RUN_TIME_ROW_COUNT = "runTimeNumRows";
+
   /**
    * The name of the statistic Raw Data Size to be published or gathered.
    */

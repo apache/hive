@@ -267,6 +267,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
         publishStats();
       }
     }
+    super.closeOp(abort);
   }
 
   /**

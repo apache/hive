@@ -539,6 +539,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     // forward is not called
     if (null != out) {
       numRows++;
+      runTimeNumRows++;
       if (isLogInfoEnabled) {
         if (numRows == cntr) {
           cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;

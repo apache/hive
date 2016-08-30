@@ -178,7 +178,7 @@ public class MapReduceCompiler extends TaskCompiler {
       throws SemanticException {
 
     // bypass for explain queries for now
-    if (ctx.getExplain()) {
+    if (ctx.isExplainSkipExecution()) {
       return;
     }
 

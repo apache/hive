@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 
 public class AbstractOperatorDesc implements OperatorDesc {
 
@@ -31,6 +33,7 @@ public class AbstractOperatorDesc implements OperatorDesc {
   protected transient OpTraits opTraits;
   protected transient Map<String, String> opProps;
   protected long memNeeded = 0;
+  protected String runtimeStatsTmpDir;
 
   @Override
   @Explain(skipHeader = true, displayName = "Statistics")
@@ -89,4 +92,13 @@ public class AbstractOperatorDesc implements OperatorDesc {
   public void setMemoryNeeded(long memNeeded) {
     this.memNeeded = memNeeded;
   }
+
+  public String getRuntimeStatsTmpDir() {
+    return runtimeStatsTmpDir;
+  }
+
+  public void setRuntimeStatsTmpDir(String runtimeStatsTmpDir) {
+    this.runtimeStatsTmpDir = runtimeStatsTmpDir;
+  }
+
 }

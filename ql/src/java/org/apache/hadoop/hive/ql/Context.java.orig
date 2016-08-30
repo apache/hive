@@ -51,8 +51,6 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.ExplainConfiguration;
-import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -74,7 +72,7 @@ public class Context {
   private int resDirFilesNum;
   boolean initialized;
   String originalTracker = null;
-  private CompilationOpContext opContext;
+  private final CompilationOpContext opContext;
   private final Map<String, ContentSummary> pathToCS = new ConcurrentHashMap<String, ContentSummary>();
 
   // scratch path to use for all non-local (ie. hdfs) file system tmp folders
@@ -91,9 +89,10 @@ public class Context {
 
   private final Configuration conf;
   protected int pathid = 10000;
-  protected ExplainConfiguration explainConfig = null;
+  protected boolean explain = false;
   protected String cboInfo;
   protected boolean cboSucceeded;
+  protected boolean explainLogical = false;
   protected String cmd = "";
   // number of previous attempts
   protected int tryCount = 0;
@@ -161,25 +160,34 @@ public class Context {
   }
 
   /**
-   * Find whether we should execute the current query due to explain
-   * @return true if the query needs to be executed, false if not
+   * Set the context on whether the current query is an explain query.
+   * @param value true if the query is an explain query, false if not
    */
-  public boolean isExplainSkipExecution() {
-    return (explainConfig != null && explainConfig.getAnalyze() != AnalyzeState.RUNNING);
+  public void setExplain(boolean value) {
+    explain = value;
+  }
+
+  /**
+   * Find whether the current query is an explain query
+   * @return true if the query is an explain query, false if not
+   */
+  public boolean getExplain() {
+    return explain;
   }
 
   /**
    * Find whether the current query is a logical explain query
    */
   public boolean getExplainLogical() {
-    return explainConfig != null && explainConfig.isLogical();
+    return explainLogical;
   }
 
-  public AnalyzeState getExplainAnalyze() {
-    if (explainConfig != null) {
-      return explainConfig.getAnalyze();
-    }
-    return null;
+  /**
+   * Set the context on whether the current query is a logical
+   * explain query.
+   */
+  public void setExplainLogical(boolean explainLogical) {
+    this.explainLogical = explainLogical;
   }
 
   /**
@@ -326,7 +334,7 @@ public class Context {
     // if we are executing entirely on the client side - then
     // just (re)use the local scratch directory
     if(isLocalOnlyExecutionMode()) {
-      return getLocalScratchDir(!isExplainSkipExecution());
+      return getLocalScratchDir(!explain);
     }
 
     try {
@@ -334,7 +342,7 @@ public class Context {
       URI uri = dir.toUri();
 
       Path newScratchDir = getScratchDir(uri.getScheme(), uri.getAuthority(),
-          !isExplainSkipExecution(), uri.getPath());
+          !explain, uri.getPath());
       LOG.info("New scratch dir is " + newScratchDir);
       return newScratchDir;
     } catch (IOException e) {
@@ -381,7 +389,7 @@ public class Context {
   }
 
   private Path getExternalScratchDir(URI extURI) {
-    return getStagingDir(new Path(extURI.getScheme(), extURI.getAuthority(), extURI.getPath()), !isExplainSkipExecution());
+    return getStagingDir(new Path(extURI.getScheme(), extURI.getAuthority(), extURI.getPath()), !explain);
   }
 
   /**
@@ -443,7 +451,7 @@ public class Context {
   }
 
   public Path getMRTmpPath(URI uri) {
-    return new Path(getStagingDir(new Path(uri), !isExplainSkipExecution()), MR_PREFIX + nextPathId());
+    return new Path(getStagingDir(new Path(uri), !explain), MR_PREFIX + nextPathId());
   }
 
   /**
@@ -489,7 +497,7 @@ public class Context {
    * path within /tmp
    */
   public Path getExtTmpPathRelTo(Path path) {
-    return new Path(getStagingDir(path, !isExplainSkipExecution()), EXT_PREFIX + nextPathId());
+    return new Path(getStagingDir(path, !explain), EXT_PREFIX + nextPathId());
   }
 
   /**
@@ -635,7 +643,7 @@ public class Context {
    *          the stream being used
    */
   public void setTokenRewriteStream(TokenRewriteStream tokenRewriteStream) {
-    assert (this.tokenRewriteStream == null || this.getExplainAnalyze() == AnalyzeState.RUNNING);
+    assert (this.tokenRewriteStream == null);
     this.tokenRewriteStream = tokenRewriteStream;
   }
 
@@ -817,18 +825,5 @@ public class Context {
 
   public void setSkipTableMasking(boolean skipTableMasking) {
     this.skipTableMasking = skipTableMasking;
-  }
-
-  public ExplainConfiguration getExplainConfig() {
-    return explainConfig;
-  }
-
-  public void setExplainConfig(ExplainConfiguration explainConfig) {
-    this.explainConfig = explainConfig;
-  }
-
-  public void resetOpContext(){
-    opContext = new CompilationOpContext();
-    sequencer = new AtomicInteger();
   }
 }
