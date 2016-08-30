@@ -19,21 +19,46 @@
 package org.apache.hadoop.hive.ql.debug;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Method;
 
 import javax.management.MBeanServer;
 
 import org.apache.commons.lang.StringUtils;
-
-import com.sun.management.HotSpotDiagnosticMXBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Debug utility methods for Hive.
  */
 public class Utils {
+  private static final Logger LOG = LoggerFactory.getLogger(Utils.class.getName());
   private static final String HOTSPOT_BEAN_NAME = "com.sun.management:type=HotSpotDiagnostic";
-  private static volatile HotSpotDiagnosticMXBean hotspotMBean;
+  private static volatile Object hotspotMBean;
+  private static final Method DUMP_HEAP_METHOD;
+  private static final Class HOTSPOT_MXBEAN_CLASS;
+
+  static {
+    Class clazz;
+    Method method;
+    try{
+      clazz = Class.forName("com.sun.management.HotSpotDiagnosticMXBean");
+      method = clazz.getMethod("dumpHeap", String.class, Boolean.class);
+    } catch (ClassNotFoundException ce) {
+      LOG.error("com.sun.management.HotSpotDiagnosticMXBean is not supported.", ce);
+      throw new RuntimeException(ce);
+    } catch (NoSuchMethodException ne) {
+      LOG.error("Failed to inject operation dumpHeap.", ne);
+      throw new RuntimeException(ne);
+    } catch (Exception e){
+      LOG.error(e.getMessage());
+      throw new RuntimeException(e);
+    }
+    HOTSPOT_MXBEAN_CLASS = clazz;
+    DUMP_HEAP_METHOD = method;
+  }
 
   /**
    * Dumps process heap to a file in temp directoty.
@@ -62,23 +87,28 @@ public class Utils {
       try {
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
         hotspotMBean = ManagementFactory.newPlatformMXBeanProxy(server,
-            HOTSPOT_BEAN_NAME, HotSpotDiagnosticMXBean.class);
-      } catch (RuntimeException re) {
-          throw re;
-      } catch (Exception exp) {
-          throw new RuntimeException(exp);
+            HOTSPOT_BEAN_NAME, HOTSPOT_MXBEAN_CLASS);
+      } catch (IOException e) {
+        LOG.error(e.getMessage());
+        throw new RuntimeException(e);
       }
     }
-    try {
-        hotspotMBean.dumpHeap(fileName, live);
-    } catch (RuntimeException re) {
+    if(DUMP_HEAP_METHOD != null) {
+      try {
+        DUMP_HEAP_METHOD.invoke(hotspotMBean, new Object[]{fileName, Boolean.valueOf(live)});
+      } catch (RuntimeException re) {
+        LOG.error(re.getMessage());
         throw re;
-    } catch (Exception exp) {
+      } catch (Exception exp) {
+        LOG.error(exp.getMessage());
         throw new RuntimeException(exp);
+      }
+    } else {
+      LOG.error("Cannot find method dumpHeap() in com.sun.management.HotSpotDiagnosticMXBean.");
     }
   }
 
-  /** 
+  /**
    * Outputs some bytes as hex w/printable characters prints.
    * Helpful debug method; c/p from HBase Bytes.
    * @param b Bytes.
