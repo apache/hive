@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.parse.ExplainConfiguration;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.timeline.TimelineEntity;
@@ -137,98 +138,111 @@ public class ATSHook implements ExecuteWithHookContext {
 
   @Override
   public void run(final HookContext hookContext) throws Exception {
-    final long currentTime = System.currentTimeMillis();
-    final HiveConf conf = new HiveConf(hookContext.getConf());
-    final QueryState queryState = hookContext.getQueryState();
-    final String queryId = queryState.getQueryId();
+          final long currentTime = System.currentTimeMillis();
+          final HiveConf conf = new HiveConf(hookContext.getConf());
+          final QueryState queryState = hookContext.getQueryState();
+          final String queryId = queryState.getQueryId();
 
-    final Map<String, Long> durations = new HashMap<String, Long>();
-    for (String key : hookContext.getPerfLogger().getEndTimes().keySet()) {
-      durations.put(key, hookContext.getPerfLogger().getDuration(key));
-    }
-
-    try {
-      setupAtsExecutor(conf);
-
-      executor.submit(new Runnable() {
-          @Override
-          public void run() {
-            try {
-              QueryPlan plan = hookContext.getQueryPlan();
-              if (plan == null) {
-                return;
-              }
-              String queryId = plan.getQueryId();
-              String opId = hookContext.getOperationId();
-              long queryStartTime = plan.getQueryStartTime();
-              String user = hookContext.getUgi().getShortUserName();
-              String requestuser = hookContext.getUserName();
-              if (hookContext.getUserName() == null ){
-                requestuser = hookContext.getUgi().getUserName() ;
-              }
-              int numMrJobs = Utilities.getMRTasks(plan.getRootTasks()).size();
-              int numTezJobs = Utilities.getTezTasks(plan.getRootTasks()).size();
-              if (numMrJobs + numTezJobs <= 0) {
-                return; // ignore client only queries
-              }
-
-              switch(hookContext.getHookType()) {
-              case PRE_EXEC_HOOK:
-                ExplainWork work = new ExplainWork(null,// resFile
-                    null,// pCtx
-                    plan.getRootTasks(),// RootTasks
-                    plan.getFetchTask(),// FetchTask
-                    null,// analyzer
-                    false,// extended
-                    true,// formatted
-                    false,// dependency
-                    false,// logical
-                    false,// authorize
-                    false,// userLevelExplain
-                    null// cboInfo
-                );
-                @SuppressWarnings("unchecked")
-                ExplainTask explain = (ExplainTask) TaskFactory.get(work, conf);
-                explain.initialize(queryState, plan, null, null);
-                String query = plan.getQueryStr();
-                JSONObject explainPlan = explain.getJSONPlan(null, work);
-                String logID = conf.getLogIdVar(hookContext.getSessionId());
-                List<String> tablesRead = getTablesFromEntitySet(hookContext.getInputs());
-                List<String> tablesWritten = getTablesFromEntitySet(hookContext.getOutputs());
-                String executionMode = getExecutionMode(plan).name();
-                String hiveInstanceAddress = hookContext.getHiveInstanceAddress();
-                if (hiveInstanceAddress == null) {
-                  hiveInstanceAddress = InetAddress.getLocalHost().getHostAddress();
-                }
-                String hiveInstanceType = hookContext.isHiveServerQuery() ? "HS2" : "CLI";
-                ApplicationId llapId = determineLlapId(conf, plan);
-                fireAndForget(
-                    createPreHookEvent(queryId, query, explainPlan, queryStartTime,
-                        user, requestuser, numMrJobs, numTezJobs, opId,
-                        hookContext.getIpAddress(), hiveInstanceAddress, hiveInstanceType,
-                        hookContext.getSessionId(), logID, hookContext.getThreadId(), executionMode,
-                        tablesRead, tablesWritten, conf));
-                break;
-              case POST_EXEC_HOOK:
-                fireAndForget(createPostHookEvent(queryId, currentTime, user, requestuser, true, opId, durations));
-                break;
-              case ON_FAILURE_HOOK:
-                fireAndForget(createPostHookEvent(queryId, currentTime, user, requestuser , false, opId, durations));
-                break;
-              default:
-                //ignore
-                break;
-              }
-            } catch (Exception e) {
-              LOG.warn("Failed to submit plan to ATS for " + queryId, e);
-            }
+          final Map<String, Long> durations = new HashMap<String, Long>();
+          for (String key : hookContext.getPerfLogger().getEndTimes().keySet()) {
+                  durations.put(key, hookContext.getPerfLogger().getDuration(key));
           }
-        });
-    } catch (Exception e) {
-      LOG.warn("Failed to submit to ATS for " + queryId, e);
-    }
-  }
 
+          try {
+                  setupAtsExecutor(conf);
+
+                  executor.submit(new Runnable() {
+                          @Override
+                          public void run() {
+                                  try {
+                                          QueryPlan plan = hookContext.getQueryPlan();
+                                          if (plan == null) {
+                                                  return;
+                                          }
+                                          String queryId = plan.getQueryId();
+                                          String opId = hookContext.getOperationId();
+                                          long queryStartTime = plan.getQueryStartTime();
+                                          String user = hookContext.getUgi().getUserName();
+                                          String requestuser = hookContext.getUserName();
+                                          if (hookContext.getUserName() == null) {
+                                                  requestuser = hookContext.getUgi().getUserName();
+                                          }
+                                          int numMrJobs = Utilities.getMRTasks(
+                                                          plan.getRootTasks()).size();
+                                          int numTezJobs = Utilities.getTezTasks(
+                                                          plan.getRootTasks()).size();
+                                          if (numMrJobs + numTezJobs <= 0) {
+                                                  return; // ignore client only queries
+                                          }
+
+                                          switch (hookContext.getHookType()) {
+                                          case PRE_EXEC_HOOK:
+                                                  ExplainConfiguration config = new ExplainConfiguration();
+                                                  config.setFormatted(true);
+                                                  ExplainWork work = new ExplainWork(null,// resFile
+                                                                  null,// pCtx
+                                                                  plan.getRootTasks(),// RootTasks
+                                                                  plan.getFetchTask(),// FetchTask
+                                                                  null,// analyzer
+                                                                  config, // explainConfig
+                                                                  null// cboInfo
+                                                  );
+                                                  @SuppressWarnings("unchecked")
+                                                  ExplainTask explain = (ExplainTask) TaskFactory
+                                                                  .get(work, conf);
+                                                  explain.initialize(queryState, plan, null, null);
+                                                  String query = plan.getQueryStr();
+                                                  JSONObject explainPlan = explain.getJSONPlan(null,
+                                                                  work);
+						  String logID = conf.getLogIdVar(hookContext.getSessionId());
+						  List<String> tablesRead = getTablesFromEntitySet(hookContext
+                                                                  .getInputs());
+                                                  List<String> tablesWritten = getTablesFromEntitySet(hookContext
+                                                                  .getOutputs());
+                                                  String executionMode = getExecutionMode(plan)
+                                                                  .name();
+                                                  String hiveInstanceAddress = hookContext
+                                                                  .getHiveInstanceAddress();
+                                                  if (hiveInstanceAddress == null) {
+                                                          hiveInstanceAddress = InetAddress
+                                                                          .getLocalHost().getHostAddress();
+                                                  }
+                                                  String hiveInstanceType = hookContext
+                                                                  .isHiveServerQuery() ? "HS2" : "CLI";
+                                                  ApplicationId llapId = determineLlapId(conf, plan);
+                                                  fireAndForget(createPreHookEvent(queryId, query,
+                                                                  explainPlan, queryStartTime, user,
+                                                                  requestuser, numMrJobs, numTezJobs, opId,
+                                                                  hookContext.getIpAddress(),
+                                                                  hiveInstanceAddress, hiveInstanceType,
+                                                                  hookContext.getSessionId(),
+                                                                  logID,
+                                                                  hookContext.getThreadId(), executionMode,
+                                                                  tablesRead, tablesWritten, conf));
+                                                  break;
+                                          case POST_EXEC_HOOK:
+                                                  fireAndForget(createPostHookEvent(queryId,
+                                                                  currentTime, user, requestuser, true, opId,
+                                                                  durations));
+                                                  break;
+                                          case ON_FAILURE_HOOK:
+                                                  fireAndForget(createPostHookEvent(queryId,
+                                                                  currentTime, user, requestuser, false,
+                                                                  opId, durations));
+                                                  break;
+                                          default:
+                                                  // ignore
+                                                  break;
+                                          }
+                                  } catch (Exception e) {
+                                          LOG.warn("Failed to submit to ATS for " + queryId, e);
+                                  }
+                          }
+                  });
+          } catch (Exception e) {
+                  LOG.warn("Failed to submit to ATS for " + queryId, e);
+          }
+  }
   protected List<String> getTablesFromEntitySet(Set<? extends Entity> entities) {
     List<String> tableNames = new ArrayList<String>();
     for (Entity entity : entities) {

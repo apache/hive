@@ -29,7 +29,7 @@ public class SubQueryDiagnostic {
   static QBSubQueryRewrite getRewrite(QBSubQuery subQuery, 
       TokenRewriteStream stream,
       Context ctx) {
-    if (ctx.getExplain()) {
+    if (ctx.isExplainSkipExecution()) {
       return new QBSubQueryRewrite(subQuery, stream);
     } else {
       return new QBSubQueryRewriteNoop(subQuery, stream);

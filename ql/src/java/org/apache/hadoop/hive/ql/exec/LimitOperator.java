@@ -88,6 +88,7 @@ public class LimitOperator extends Operator<LimitDesc> implements Serializable {
     if (!isMap && currCount < leastRow) {
       throw new HiveException("No sufficient row found");
     }
+    super.closeOp(abort);
   }
 
 }

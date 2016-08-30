@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.ExplainConfiguration;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 
 /**
@@ -42,15 +43,10 @@ public class ExplainWork implements Serializable {
   private HashSet<ReadEntity> inputs;
   private ParseContext pCtx;
 
-  boolean extended;
-  boolean formatted;
-  boolean dependency;
-  boolean logical;
+  private ExplainConfiguration config;
 
   boolean appendTaskType;
 
-  boolean authorize;
-  boolean userLevelExplain;
   String cboInfo;
 
   private transient BaseSemanticAnalyzer analyzer;
@@ -63,12 +59,7 @@ public class ExplainWork implements Serializable {
       List<Task<? extends Serializable>> rootTasks,
       Task<? extends Serializable> fetchTask,
       BaseSemanticAnalyzer analyzer,
-      boolean extended,
-      boolean formatted,
-      boolean dependency,
-      boolean logical,
-      boolean authorize,
-      boolean userLevelExplain,
+      ExplainConfiguration config,
       String cboInfo) {
     this.resFile = resFile;
     this.rootTasks = new ArrayList<Task<? extends Serializable>>(rootTasks);
@@ -77,14 +68,9 @@ public class ExplainWork implements Serializable {
     if (analyzer != null) {
       this.inputs = analyzer.getInputs();
     }
-    this.extended = extended;
-    this.formatted = formatted;
-    this.dependency = dependency;
-    this.logical = logical;
     this.pCtx = pCtx;
-    this.authorize = authorize;
-    this.userLevelExplain = userLevelExplain;
     this.cboInfo = cboInfo;
+    this.config = config;
   }
 
   public Path getResFile() {
@@ -120,27 +106,15 @@ public class ExplainWork implements Serializable {
   }
 
   public boolean getExtended() {
-    return extended;
-  }
-
-  public void setExtended(boolean extended) {
-    this.extended = extended;
+    return config.isExtended();
   }
 
   public boolean getDependency() {
-    return dependency;
-  }
-
-  public void setDependency(boolean dependency) {
-    this.dependency = dependency;
+    return config.isDependency();
   }
 
   public boolean isFormatted() {
-    return formatted;
-  }
-
-  public void setFormatted(boolean formatted) {
-    this.formatted = formatted;
+    return config.isFormatted();
   }
 
   public ParseContext getParseContext() {
@@ -152,11 +126,7 @@ public class ExplainWork implements Serializable {
   }
 
   public boolean isLogical() {
-    return logical;
-  }
-
-  public void setLogical(boolean logical) {
-    this.logical = logical;
+    return config.isLogical();
   }
 
   public boolean isAppendTaskType() {
@@ -168,11 +138,7 @@ public class ExplainWork implements Serializable {
   }
 
   public boolean isAuthorize() {
-    return authorize;
-  }
-
-  public void setAuthorize(boolean authorize) {
-    this.authorize = authorize;
+    return config.isAuthorize();
   }
 
   public BaseSemanticAnalyzer getAnalyzer() {
@@ -180,11 +146,7 @@ public class ExplainWork implements Serializable {
   }
 
   public boolean isUserLevelExplain() {
-    return userLevelExplain;
-  }
-
-  public void setUserLevelExplain(boolean userLevelExplain) {
-    this.userLevelExplain = userLevelExplain;
+    return config.isUserLevelExplain();
   }
 
   public String getCboInfo() {
@@ -193,6 +155,14 @@ public class ExplainWork implements Serializable {
 
   public void setCboInfo(String cboInfo) {
     this.cboInfo = cboInfo;
+  }
+
+  public ExplainConfiguration getConfig() {
+    return config;
+  }
+
+  public void setConfig(ExplainConfiguration config) {
+    this.config = config;
   }
 
 }

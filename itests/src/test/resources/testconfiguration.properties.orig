@@ -1,19 +1,54 @@
 # NOTE: files should be listed in alphabetical order
-minimr.query.files=infer_bucket_sort_map_operators.q,\
-  infer_bucket_sort_dyn_part.q,\
-  infer_bucket_sort_merge.q,\
-  infer_bucket_sort_reducers_power_two.q,\
-  infer_bucket_sort_num_buckets.q,\
-  root_dir_external_table.q,\
-  parallel_orderby.q,\
+minimr.query.files=auto_sortmerge_join_16.q,\
+  bucket4.q,\
+  bucket5.q,\
+  bucket6.q,\
+  bucket_many.q,\
   bucket_num_reducers.q,\
-  udf_using.q,\
+  bucket_num_reducers2.q,\
+  bucketizedhiveinputformat.q,\
+  bucketmapjoin6.q,\
+  bucketmapjoin7.q,\
+  disable_merge_for_bucketing.q,\
+  empty_dir_in_table.q,\
+  exchgpartition2lel.q,\
+  external_table_with_space_in_location_path.q,\
+  file_with_header_footer.q,\
+  groupby2.q,\
+  import_exported_table.q,\
   index_bitmap3.q,\
   index_bitmap_auto.q,\
-  scriptfile1.q,\
-  bucket_num_reducers2.q,\
+  infer_bucket_sort_bucketed_table.q,\
+  infer_bucket_sort_dyn_part.q,\
+  infer_bucket_sort_map_operators.q,\
+  infer_bucket_sort_merge.q,\
+  infer_bucket_sort_num_buckets.q,\
+  infer_bucket_sort_reducers_power_two.q,\
+  input16_cc.q,\
+  insert_dir_distcp.q,\
+  join1.q,\
+  join_acid_non_acid.q,\
+  leftsemijoin_mr.q,\
+  list_bucket_dml_10.q,\
+  load_fs2.q,\
+  load_hdfs_file_with_space_in_the_name.q,\
+  non_native_window_udf.q, \
+  orc_merge_diff_fs.q,\
+  parallel_orderby.q,\
+  quotedid_smb.q,\
+  reduce_deduplicate.q,\
   remote_script.q,\
-  scriptfile1_win.q
+  root_dir_external_table.q,\
+  schemeAuthority.q,\
+  schemeAuthority2.q,\
+  scriptfile1.q,\
+  scriptfile1_win.q,\
+  skewjoin_onesideskew.q,\
+  table_nonprintable.q,\
+  temp_table_external.q,\
+  truncate_column_buckets.q,\
+  uber_reduce.q,\
+  udf_using.q
 
 # These tests are disabled for minimr
 #  ql_rewrite_gbtoidx.q,\
@@ -26,26 +61,62 @@ minimr.query.files=infer_bucket_sort_map_operators.q,\
 disabled.query.files=ql_rewrite_gbtoidx.q,\
   ql_rewrite_gbtoidx_cbo_1.q,\
   ql_rewrite_gbtoidx_cbo_2.q,\
-  cbo_rp_subq_in.q,\
-  cbo_rp_subq_not_in.q,\
-  cbo_rp_subq_exists.q,\
   rcfile_merge1.q,\
-  smb_mapjoin_8.q,\
-  index_auto_mult_tables.q,\
-  ivyDownload.q,\
-  stats_filemetadata.q
+  smb_mapjoin_8.q
 
-minitez.query.files.shared=acid_globallimit.q,\
-  deleteAnalyze.q,\
-  empty_join.q,\
+# NOTE: Add tests to minitez only if it is very
+# specific to tez and cannot be added to minillap.
+minitez.query.files.shared=delete_orig_table.q,\
+  orc_merge12.q,\
+  orc_vectorization_ppd.q,\
+  unionDistinct_2.q,\
+  update_orig_table.q,\
+  vector_join_part_col_char.q,\
+  vector_non_string_partition.q,\
+  vectorization_div0.q,\
+  vectorization_limit.q
+
+# NOTE: Add tests to minitez only if it is very
+# specific to tez and cannot be added to minillap.
+minitez.query.files=explainuser_3.q,\
+  hybridgrace_hashjoin_1.q,\
+  hybridgrace_hashjoin_2.q,\
+  partition_column_names_with_leading_and_trailing_spaces.q,\
+  stats_filemetadata.q,\
+  tez_union_with_udf.q
+
+minillap.shared.query.files=acid_globallimit.q,\
   alter_merge_2_orc.q,\
   alter_merge_orc.q,\
   alter_merge_stats_orc.q,\
   auto_join0.q,\
   auto_join1.q,\
+  auto_join21.q,\
+  auto_join29.q,\
+  auto_join30.q,\
+  auto_join_filters.q,\
+  auto_join_nulls.q,\
+  auto_sortmerge_join_1.q,\
+  auto_sortmerge_join_10.q,\
+  auto_sortmerge_join_11.q,\
+  auto_sortmerge_join_12.q,\
+  auto_sortmerge_join_13.q,\
+  auto_sortmerge_join_14.q,\
+  auto_sortmerge_join_15.q,\
+  auto_sortmerge_join_16.q,\
+  auto_sortmerge_join_2.q,\
+  auto_sortmerge_join_3.q,\
+  auto_sortmerge_join_4.q,\
+  auto_sortmerge_join_5.q,\
+  auto_sortmerge_join_6.q,\
+  auto_sortmerge_join_7.q,\
+  auto_sortmerge_join_8.q,\
+  auto_sortmerge_join_9.q,\
   bucket2.q,\
   bucket3.q,\
   bucket4.q,\
+  bucket_map_join_tez1.q,\
+  bucket_map_join_tez2.q,\
   cbo_gby.q,\
   cbo_gby_empty.q,\
   cbo_join.q,\
@@ -61,6 +132,7 @@ minitez.query.files.shared=acid_globallimit.q,\
   cbo_views.q,\
   cbo_windowing.q,\
   column_names_with_leading_and_trailing_spaces.q,\
+  constprog_dpp.q,\
   constprog_semijoin.q,\
   correlationoptimizer1.q,\
   count.q,\
@@ -80,18 +152,21 @@ minitez.query.files.shared=acid_globallimit.q,\
   cte_mat_4.q,\
   cte_mat_5.q,\
   custom_input_output_format.q,\
+  deleteAnalyze.q,\
   delete_all_non_partitioned.q,\
   delete_all_partitioned.q,\
-  delete_orig_table.q,\
   delete_tmp_table.q,\
   delete_where_no_match.q,\
   delete_where_non_partitioned.q,\
   delete_where_partitioned.q,\
   delete_whole_partition.q,\
   disable_merge_for_bucketing.q,\
+  dynamic_partition_pruning.q,\
+  dynamic_partition_pruning_2.q,\
   dynpart_sort_opt_vectorization.q,\
   dynpart_sort_optimization.q,\
   dynpart_sort_optimization2.q,\
+  empty_join.q,\
   enforce_order.q,\
   filter_join_breaktask.q,\
   filter_join_breaktask2.q,\
@@ -99,43 +174,46 @@ minitez.query.files.shared=acid_globallimit.q,\
   groupby2.q,\
   groupby3.q,\
   having.q,\
-  identity_project_remove_skip.q\
+  identity_project_remove_skip.q,\
   insert1.q,\
   insert_into1.q,\
   insert_into2.q,\
   insert_orig_table.q,\
+  insert_update_delete.q,\
   insert_values_dynamic_partitioned.q,\
   insert_values_non_partitioned.q,\
-  insert_values_orig_table.q\
+  insert_values_orig_table.,\
   insert_values_partitioned.q,\
   insert_values_tmp_table.q,\
-  insert_update_delete.q,\
   join0.q,\
   join1.q,\
-  join_emit_interval.q,\
-  join46.q,\
   join_nullsafe.q,\
   leftsemijoin.q,\
   limit_pushdown.q,\
+  llap_nullscan.q,\
+  llapdecider.q,\
   load_dyn_part1.q,\
   load_dyn_part2.q,\
   load_dyn_part3.q,\
+  lvj_mapjoin.q,\
   mapjoin2.q,\
-  mapjoin46.q,\
+  mapjoin_decimal.q,\
   mapjoin_mapjoin.q,\
   mapreduce1.q,\
   mapreduce2.q,\
   merge1.q,\
   merge2.q,\
   mergejoin.q,\
-  metadataonly1.q,\
   metadata_only_queries.q,\
   metadata_only_queries_with_filters.q,\
+  metadataonly1.q,\
+  mrr.q,\
   nonmr_fetch_threshold.q,\
-  order_null.q,\
   optimize_nullscan.q,\
   orc_analyze.q,\
   orc_merge1.q,\
+  orc_merge10.q,\
+  orc_merge11.q,\
   orc_merge2.q,\
   orc_merge3.q,\
   orc_merge4.q,\
@@ -144,50 +222,26 @@ minitez.query.files.shared=acid_globallimit.q,\
   orc_merge7.q,\
   orc_merge8.q,\
   orc_merge9.q,\
-  orc_merge10.q,\
-  orc_merge11.q,\
-  orc_merge12.q,\
   orc_merge_incompat1.q,\
   orc_merge_incompat2.q,\
   orc_merge_incompat3.q,\
-  orc_vectorization_ppd.q,\
+  orc_ppd_basic.q,\
+  orc_ppd_schema_evol_1a.q,\
+  orc_ppd_schema_evol_1b.q,\
+  orc_ppd_schema_evol_2a.q,\
+  orc_ppd_schema_evol_2b.q,\
+  orc_ppd_schema_evol_3a.q,\
+  order_null.q,\
   parallel.q,\
   ptf.q,\
   ptf_matchpath.q,\
   ptf_streaming.q,\
   sample1.q,\
-  schema_evol_stats.q,\
-  schema_evol_orc_acid_mapwork_part.q,\
-  schema_evol_orc_acid_mapwork_table.q,\
-  schema_evol_orc_acidvec_mapwork_part.q,\
-  schema_evol_orc_acidvec_mapwork_table.q,\
-  schema_evol_orc_nonvec_fetchwork_part.q,\
-  schema_evol_orc_nonvec_fetchwork_table.q,\
-  schema_evol_orc_nonvec_mapwork_part.q,\
-  schema_evol_orc_nonvec_mapwork_part_all_complex.q,\
-  schema_evol_orc_nonvec_mapwork_part_all_primitive.q,\
-  schema_evol_orc_nonvec_mapwork_table.q,\
-  schema_evol_orc_vec_mapwork_part.q,\
-  schema_evol_orc_vec_mapwork_part_all_complex.q,\
-  schema_evol_orc_vec_mapwork_part_all_primitive.q,\
-  schema_evol_orc_vec_mapwork_table.q,\
-  schema_evol_text_nonvec_mapwork_part.q,\
-  schema_evol_text_nonvec_mapwork_part_all_complex.q,\
-  schema_evol_text_nonvec_mapwork_part_all_primitive.q,\
-  schema_evol_text_nonvec_mapwork_table.q,\
-  schema_evol_text_vec_mapwork_part.q,\
-  schema_evol_text_vec_mapwork_part_all_complex.q,\
-  schema_evol_text_vec_mapwork_part_all_primitive.q,\
-  schema_evol_text_vec_mapwork_table.q,\
-  schema_evol_text_vecrow_mapwork_part.q,\
-  schema_evol_text_vecrow_mapwork_part_all_complex.q,\
-  schema_evol_text_vecrow_mapwork_part_all_primitive.q,\
-  schema_evol_text_vecrow_mapwork_table.q,\
-  selectDistinctStar.q,\
   script_env_var1.q,\
   script_env_var2.q,\
   script_pipe.q,\
   scriptfile1.q,\
+  selectDistinctStar.q,\
   select_dummy_source.q,\
   skewjoin.q,\
   stats_noscan_1.q,\
@@ -195,6 +249,31 @@ minitez.query.files.shared=acid_globallimit.q,\
   subquery_exists.q,\
   subquery_in.q,\
   temp_table.q,\
+  tez_bmj_schema_evolution.q,\
+  tez_dml.q,\
+  tez_dynpart_hashjoin_1.q,\
+  tez_dynpart_hashjoin_2.q,\
+  tez_fsstat.q,\
+  tez_insert_overwrite_local_directory_1.q,\
+  tez_join.q,\
+  tez_join_hash.q,\
+  tez_join_result_complex.q,\
+  tez_join_tests.q,\
+  tez_joins_explain.q,\
+  tez_multi_union.q,\
+  tez_schema_evolution.q,\
+  tez_self_join.q,\
+  tez_smb_1.q,\
+  tez_smb_main.q,\
+  tez_union.q,\
+  tez_union2.q,\
+  tez_union_decimal.q,\
+  tez_union_dynamic_partition.q,\
+  tez_union_group_by.q,\
+  tez_union_multiinsert.q,\
+  tez_union_view.q,\
+  tez_vector_dynpart_hashjoin_1.q,\
+  tez_vector_dynpart_hashjoin_2.q,\
   transform1.q,\
   transform2.q,\
   transform_ppr1.q,\
@@ -208,32 +287,31 @@ minitez.query.files.shared=acid_globallimit.q,\
   union8.q,\
   union9.q,\
   unionDistinct_1.q,\
-  unionDistinct_2.q,\
   union_fast_stats.q,\
   union_stats.q,\
+  union_type_chk.q,\
   update_after_multiple_inserts.q,\
   update_all_non_partitioned.q,\
   update_all_partitioned.q,\
   update_all_types.q,\
-  update_orig_table.q,\
   update_tmp_table.q,\
+  update_two_cols.q,\
   update_where_no_match.q,\
   update_where_non_partitioned.q,\
   update_where_partitioned.q,\
-  update_two_cols.q,\
   vector_acid3.q,\
   vector_aggregate_9.q,\
   vector_aggregate_without_gby.q,\
   vector_auto_smb_mapjoin_14.q,\
-  vector_between_in.q,\
   vector_between_columns.q,\
+  vector_between_in.q,\
   vector_binary_join_groupby.q,\
   vector_bround.q,\
   vector_bucket.q,\
-  vector_char_cast.q,\
   vector_cast_constant.q,\
   vector_char_2.q,\
   vector_char_4.q,\
+  vector_char_cast.q,\
   vector_char_mapjoin1.q,\
   vector_char_simple.q,\
   vector_coalesce.q,\
@@ -286,9 +364,8 @@ minitez.query.files.shared=acid_globallimit.q,\
   vector_mapjoin_reduce.q,\
   vector_mr_diff_schema_alias.q,\
   vector_multi_insert.q,\
-  vector_non_string_partition.q,\
-  vector_nullsafe_join.q,\
   vector_null_projection.q,\
+  vector_nullsafe_join.q,\
   vector_nvl.q,\
   vector_orderby_5.q,\
   vector_outer_join0.q,\
@@ -300,13 +377,12 @@ minitez.query.files.shared=acid_globallimit.q,\
   vector_outer_join6.q,\
   vector_partition_diff_num_cols.q,\
   vector_partitioned_date_time.q,\
-  vector_reduce_groupby_decimal.q,\
   vector_reduce1.q,\
   vector_reduce2.q,\
   vector_reduce3.q,\
+  vector_reduce_groupby_decimal.q,\
   vector_string_concat.q,\
   vector_struct_in.q,\
-  vectorized_timestamp.q,\
   vector_varchar_4.q,\
   vector_varchar_mapjoin1.q,\
   vector_varchar_simple.q,\
@@ -330,8 +406,6 @@ minitez.query.files.shared=acid_globallimit.q,\
   vectorization_8.q,\
   vectorization_9.q,\
   vectorization_decimal_date.q,\
-  vectorization_div0.q,\
-  vectorization_limit.q,\
   vectorization_nested_udf.q,\
   vectorization_not.q,\
   vectorization_part.q,\
@@ -345,6 +419,7 @@ minitez.query.files.shared=acid_globallimit.q,\
   vectorized_context.q,\
   vectorized_date_funcs.q,\
   vectorized_distinct_gby.q,\
+  vectorized_dynamic_partition_pruning.q,\
   vectorized_mapjoin.q,\
   vectorized_math_funcs.q,\
   vectorized_nested_mapjoin.q,\
@@ -354,249 +429,95 @@ minitez.query.files.shared=acid_globallimit.q,\
   vectorized_rcfile_columnar.q,\
   vectorized_shufflejoin.q,\
   vectorized_string_funcs.q,\
+  vectorized_timestamp.q,\
   vectorized_timestamp_funcs.q,\
-  vectorized_timestamp_ints_casts.q,\
-  auto_sortmerge_join_1.q,\
-  auto_sortmerge_join_10.q,\
-  auto_sortmerge_join_11.q,\
-  auto_sortmerge_join_12.q,\
-  auto_sortmerge_join_13.q,\
-  auto_sortmerge_join_14.q,\
-  auto_sortmerge_join_15.q,\
-  auto_sortmerge_join_16.q,\
-  auto_sortmerge_join_2.q,\
-  auto_sortmerge_join_3.q,\
-  auto_sortmerge_join_4.q,\
-  auto_sortmerge_join_5.q,\
-  auto_sortmerge_join_6.q,\
-  auto_sortmerge_join_7.q,\
-  auto_sortmerge_join_8.q,\
-  auto_sortmerge_join_9.q,\
-  auto_join30.q,\
-  auto_join21.q,\
-  auto_join29.q,\
-  auto_join_filters.q,\
-  auto_join_nulls.q,\
-  union_type_chk.q
+  vectorized_timestamp_ints_casts.q
 
-
-minitez.query.files=acid_vectorization_missing_cols.q,\
+minillap.query.files=acid_bucket_pruning.q,\
+  acid_vectorization_missing_cols.q,\
   bucket_map_join_tez1.q,\
-  smb_cache.q,\
   bucket_map_join_tez2.q,\
+  bucketpruning1.q,\
   constprog_dpp.q,\
   dynamic_partition_pruning.q,\
   dynamic_partition_pruning_2.q,\
-  bucketpruning1.q,\
-  explainanalyze_1.q,\
-  explainanalyze_2.q,\
-  explainanalyze_3.q,\
-  explainanalyze_4.q,\
-  explainanalyze_5.q,\
   explainuser_1.q,\
   explainuser_2.q,\
-  explainuser_3.q,\
   explainuser_4.q,\
   hybridgrace_hashjoin_1.q,\
   hybridgrace_hashjoin_2.q,\
   llap_nullscan.q,\
+  llap_udf.q,\
   llapdecider.q,\
   lvj_mapjoin.q,\
   mapjoin_decimal.q,\
-  mapjoin_emit_interval.q,\
   mergejoin_3way.q,\
   mrr.q,\
-  multi_count_distinct.q,\
+  orc_llap.q,\
+  orc_llap_counters.q,\
+  orc_llap_counters1.q,\
+  orc_llap_nonvector.q,\
   orc_merge_diff_fs.q,\
+  orc_ppd_basic.q,\
+  schema_evol_orc_acid_part.q,\
+  schema_evol_orc_acid_part_update.q,\
+  schema_evol_orc_acid_table.q,\
+  schema_evol_orc_acid_table_update.q,\
+  schema_evol_orc_acidvec_part.q,\
+  schema_evol_orc_acidvec_part_update.q,\
+  schema_evol_orc_acidvec_table.q,\
+  schema_evol_orc_acidvec_table_update.q,\
+  schema_evol_orc_nonvec_part.q,\
+  schema_evol_orc_nonvec_part_all_complex.q,\
+  schema_evol_orc_nonvec_part_all_primitive.q,\
+  schema_evol_orc_nonvec_table.q,\
+  schema_evol_orc_vec_part.q,\
+  schema_evol_orc_vec_part_all_complex.q,\
+  schema_evol_orc_vec_part_all_primitive.q,\
+  schema_evol_orc_vec_table.q,\
+  schema_evol_stats.q,\
+  schema_evol_text_nonvec_part.q,\
+  schema_evol_text_nonvec_part_all_complex.q,\
+  schema_evol_text_nonvec_part_all_primitive.q,\
+  schema_evol_text_nonvec_table.q,\
+  schema_evol_text_vec_part.q,\
+  schema_evol_text_vec_part_all_complex.q,\
+  schema_evol_text_vec_part_all_primitive.q,\
+  schema_evol_text_vec_table.q,\
+  schema_evol_text_vecrow_part.q,\
+  schema_evol_text_vecrow_part_all_complex.q,\
+  schema_evol_text_vecrow_part_all_primitive.q,\
+  schema_evol_text_vecrow_table.q,\
+  smb_cache.q,\
   tez_aggr_part_stats.q,\
   tez_bmj_schema_evolution.q,\
   tez_dml.q,\
-  tez_fsstat.q,\
-  tez_insert_overwrite_local_directory_1.q,\
-  tez_vector_dynpart_hashjoin_1.q,\
-  tez_vector_dynpart_hashjoin_2.q,\
-  tez_join_result_complex.q,\
-  tez_join_tests.q,\
-  tez_joins_explain.q,\
-  tez_multi_union.q,\
-  tez_nway_join.q,\
-  tez_schema_evolution.q,\
-  tez_self_join.q,\
-  tez_union.q,\
-  tez_union2.q,\
-  tez_union_dynamic_partition.q,\
-  tez_union_view.q,\
-  tez_union_with_udf.q,\
-  tez_union_decimal.q,\
-  tez_union_group_by.q,\
-  tez_smb_main.q,\
-  tez_smb_1.q,\
-  tez_smb_empty.q,\
-  vector_join_part_col_char.q,\
-  vectorized_dynamic_partition_pruning.q,\
-  tez_multi_union.q,\
-  tez_join.q,\
-  tez_union_multiinsert.q,\
-  windowing_gby.q,\
-  vectorized_join46.q
-
-
-
-
-minillap.shared.query.files=bucket_map_join_tez1.q,\
-  bucket_map_join_tez2.q,\
-  constprog_dpp.q,\
-  cte_1.q,\
-  cte_2.q,\
-  cte_3.q,\
-  cte_4.q,\
-  cte_5.q,\
-  cte_mat_1.q,\
-  cte_mat_2.q,\
-  cte_mat_3.q,\
-  cte_mat_4.q,\
-  cte_mat_5.q,\
-  dynamic_partition_pruning.q,\
-  dynamic_partition_pruning_2.q,\
-  dynamic_semijoin_reduction.q,\
-  hybridgrace_hashjoin_1.q,\
-  hybridgrace_hashjoin_2.q,\
-  mapjoin_decimal.q,\
-  lvj_mapjoin.q,\
-  llapdecider.q,\
-  llap_nullscan.q,\
-  mapjoin3.q,\
-  mrr.q,\
-  orc_merge12.q,\
-  orc_ppd_schema_evol_1a.q,\
-  orc_ppd_schema_evol_1b.q,\
-  orc_ppd_schema_evol_2a.q,\
-  orc_ppd_schema_evol_2b.q,\
-  orc_ppd_schema_evol_3a.q,\
-  tez_bmj_schema_evolution.q,\
-  tez_dml.q,\
-  tez_fsstat.q,\
-  tez_insert_overwrite_local_directory_1.q,\
-  tez_join_hash.q,\
-  tez_join_result_complex.q,\
-  tez_join_tests.q,\
-  tez_joins_explain.q,\
-  tez_schema_evolution.q,\
-  tez_self_join.q,\
-  tez_union.q,\
-  tez_union2.q,\
-  tez_union_dynamic_partition.q,\
-  tez_union_view.q,\
-  tez_union_decimal.q,\
-  tez_union_group_by.q,\
-  tez_smb_main.q,\
-  tez_smb_1.q,\
-  vector_complex_all.q,\
-  vector_complex_join.q,\
-  vector_include_no_sel.q,\
-  vector_join_part_col_char.q,\
-  vectorized_dynamic_partition_pruning.q,\
-  tez_multi_union.q,\
-  tez_join.q,\
-  tez_union_multiinsert.q
-
-minillaplocal.shared.query.files=alter_merge_2_orc.q
-
-minillaplocal.query.files=acid_globallimit.q
-  sqlmerge.q
-
-minillap.query.files=cross_prod_1.q,\
-  cross_prod_2.q,\
-  cross_prod_3.q,\
-  dynamic_semijoin_reduction.q,\
-  dynamic_semijoin_reduction_2.q,\
-  except_distinct.q,\
-  intersect_all.q,\
-  intersect_distinct.q,\
-  intersect_merge.q,\
-  llap_udf.q,\
-  llap_stats.q,\
-  orc_llap.q,\
-  orc_llap_nonvector.q,\
-  orc_ppd_basic.q,\
-  orc_llap_counters.q,\
-  orc_llap_counters1.q,\
-  schema_evol_stats.q,\
-  schema_evol_orc_acid_mapwork_part.q,\
-  schema_evol_orc_acid_mapwork_table.q,\
-  schema_evol_orc_acidvec_mapwork_part.q,\
-  schema_evol_orc_acidvec_mapwork_table.q,\
-  schema_evol_orc_nonvec_fetchwork_part.q,\
-  schema_evol_orc_nonvec_fetchwork_table.q,\
-  schema_evol_orc_nonvec_mapwork_part.q,\
-  schema_evol_orc_nonvec_mapwork_part_all_complex.q,\
-  schema_evol_orc_nonvec_mapwork_part_all_primitive.q,\
-  schema_evol_orc_nonvec_mapwork_table.q,\
-  schema_evol_orc_vec_mapwork_part.q,\
-  schema_evol_orc_vec_mapwork_part_all_complex.q,\
-  schema_evol_orc_vec_mapwork_part_all_primitive.q,\
-  schema_evol_orc_vec_mapwork_table.q,\
-  schema_evol_text_nonvec_mapwork_part.q,\
-  schema_evol_text_nonvec_mapwork_part_all_complex.q,\
-  schema_evol_text_nonvec_mapwork_part_all_primitive.q,\
-  schema_evol_text_nonvec_mapwork_table.q,\
-  schema_evol_text_vec_mapwork_part.q,\
-  schema_evol_text_vec_mapwork_part_all_complex.q,\
-  schema_evol_text_vec_mapwork_part_all_primitive.q,\
-  schema_evol_text_vec_mapwork_table.q,\
-  schema_evol_text_vecrow_mapwork_part.q,\
-  schema_evol_text_vecrow_mapwork_part_all_complex.q,\
-  schema_evol_text_vecrow_mapwork_part_all_primitive.q,\
-  schema_evol_text_vecrow_mapwork_table.q,\
-  sqlmerge.q, \
-  subquery_nested_subquery.q,\
-  subquery_shared_alias.q,\
-  subquery_multi.q,\
-  subquery_scalar.q,\
-  stats_based_fetch_decision.q,\
   tez_dynpart_hashjoin_1.q,\
   tez_dynpart_hashjoin_2.q,\
   tez_dynpart_hashjoin_3.q,\
+  tez_fsstat.q,\
+  tez_insert_overwrite_local_directory_1.q,\
+  tez_join.q,\
+  tez_join_result_complex.q,\
+  tez_join_tests.q,\
+  tez_joins_explain.q,\
+  tez_multi_union.q,\
+  tez_schema_evolution.q,\
+  tez_self_join.q,\
+  tez_smb_1.q,\
+  tez_smb_empty.q,\
+  tez_smb_main.q,\
+  tez_union.q,\
+  tez_union2.q,\
+  tez_union_decimal.q,\
+  tez_union_dynamic_partition.q,\
+  tez_union_group_by.q,\
+  tez_union_multiinsert.q,\
+  tez_union_view.q,\
   tez_vector_dynpart_hashjoin_1.q,\
   tez_vector_dynpart_hashjoin_2.q,\
-  tez_join_hash.q,\
-  auto_sortmerge_join_16.q,\
-  bucket4.q,\
-  bucket5.q,\
-  bucket6.q,\
-  bucket_many.q,\
-  bucketizedhiveinputformat.q,\
-  bucketmapjoin6.q,\
-  bucketmapjoin7.q,\
-  disable_merge_for_bucketing.q,\
-  empty_dir_in_table.q,\
-  exchgpartition2lel.q,\
-  external_table_with_space_in_location_path.q,\
-  file_with_header_footer.q,\
-  groupby2.q,\
-  import_exported_table.q,\
-  infer_bucket_sort_bucketed_table.q,\
-  input16_cc.q,\
-  insert_dir_distcp.q,\
-  join1.q,\
-  join_acid_non_acid.q,\
-  join_max_hashtable.q,\
-  leftsemijoin_mr.q,\
-  list_bucket_dml_10.q,\
-  load_fs2.q,\
-  multi_count_distinct_null.q,\
-  load_hdfs_file_with_space_in_the_name.q,\
-  non_native_window_udf.q,\
-  quotedid_smb.q,\
-  reduce_deduplicate.q,\
-  schemeAuthority.q,\
-  schemeAuthority2.q,\
-  table_nonprintable.q,\
-  temp_table_external.q,\
-  uber_reduce.q,\
-  vectorized_dynamic_semijoin_reduction.q,\
-  vectorized_dynamic_semijoin_reduction2.q,\
-  vectorized_join46.q
+  vectorized_dynamic_partition_pruning.q,\
+  windowing_gby.q
 
 encrypted.query.files=encryption_join_unencrypted_tbl.q,\
   encryption_insert_partition_static.q,\
@@ -612,8 +533,7 @@ encrypted.query.files=encryption_join_unencrypted_tbl.q,\
   encryption_drop_view.q \
   encryption_drop_partition.q \
   encryption_with_trash.q \
-  encryption_ctas.q \
-  encryption_trash.q
+  encryption_ctas.q
 
 beeline.positive.exclude=add_part_exist.q,\
   alter1.q,\
@@ -776,7 +696,9 @@ minimr.query.negative.files=cluster_tasklog_retrieval.q,\
   file_with_header_footer_negative.q,\
   local_mapred_error_cache.q,\
   mapreduce_stack_trace.q,\
+  mapreduce_stack_trace_hadoop20.q,\
   mapreduce_stack_trace_turnoff.q,\
+  mapreduce_stack_trace_turnoff_hadoop20.q,\
   minimr_broken_pipe.q,\
   table_nonprintable_negative.q,\
   udf_local_resource.q
@@ -1059,7 +981,6 @@ spark.query.files=add_part_multiple.q, \
   leftsemijoin_mr.q, \
   limit_partition_metadataonly.q, \
   limit_pushdown.q, \
-  limit_pushdown2.q, \
   list_bucket_dml_2.q, \
   load_dyn_part1.q, \
   load_dyn_part10.q, \
