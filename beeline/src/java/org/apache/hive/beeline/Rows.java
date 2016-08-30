@@ -35,7 +35,7 @@ import java.util.Iterator;
  * Holds column values as strings
  */
 abstract class Rows implements Iterator {
-  private final BeeLine beeLine;
+  protected final BeeLine beeLine;
   final ResultSetMetaData rsMeta;
   final Boolean[] primaryKeys;
   final NumberFormat numberFormat;

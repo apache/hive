@@ -2023,10 +2023,14 @@ public class BeeLine implements Closeable {
 
     Rows rows;
 
-    if (getOpts().getIncremental()) {
-      rows = new IncrementalRows(this, rs);
+    if (f instanceof TableOutputFormat) {
+      if (getOpts().getIncremental()) {
+        rows = new IncrementalRowsWithNormalization(this, rs);
+      } else {
+        rows = new BufferedRows(this, rs);
+      }
     } else {
-      rows = new BufferedRows(this, rs);
+      rows = new IncrementalRows(this, rs);
     }
     return f.print(rows);
   }

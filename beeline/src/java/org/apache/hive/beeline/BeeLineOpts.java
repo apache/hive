@@ -59,6 +59,7 @@ class BeeLineOpts implements Completer {
   public static final String DEFAULT_NULL_STRING = "NULL";
   public static final char DEFAULT_DELIMITER_FOR_DSV = '|';
   public static final int DEFAULT_MAX_COLUMN_WIDTH = 50;
+  public static final int DEFAULT_INCREMENTAL_BUFFER_ROWS = 1000;
 
   public static String URL_ENV_PREFIX = "BEELINE_URL_";
 
@@ -74,6 +75,7 @@ class BeeLineOpts implements Completer {
   private boolean verbose = false;
   private boolean force = false;
   private boolean incremental = false;
+  private int incrementalBufferRows = DEFAULT_INCREMENTAL_BUFFER_ROWS;
   private boolean showWarnings = false;
   private boolean showNestedErrs = false;
   private boolean showElapsedTime = true;
@@ -509,6 +511,14 @@ class BeeLineOpts implements Completer {
 
   public boolean getIncremental() {
     return incremental;
+  }
+
+  public void setIncrementalBufferRows(int incrementalBufferRows) {
+    this.incrementalBufferRows = incrementalBufferRows;
+  }
+
+  public int getIncrementalBufferRows() {
+    return this.incrementalBufferRows;
   }
 
   public void setSilent(boolean silent) {

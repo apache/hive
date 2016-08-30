@@ -31,12 +31,12 @@ import java.util.NoSuchElementException;
  * without any buffering.
  */
 public class IncrementalRows extends Rows {
-  private final ResultSet rs;
+  protected final ResultSet rs;
   private final Row labelRow;
   private final Row maxRow;
   private Row nextRow;
   private boolean endOfResult;
-  private boolean normalizingWidths;
+  protected boolean normalizingWidths;
 
 
   IncrementalRows(BeeLine beeLine, ResultSet rs) throws SQLException {
@@ -53,8 +53,8 @@ public class IncrementalRows extends Rows {
       // normalized display width is based on maximum of display size
       // and label size
       maxRow.sizes[i] = Math.max(
-          maxRow.sizes[i],
-          rsMeta.getColumnDisplaySize(i + 1));
+              maxRow.sizes[i],
+              rsMeta.getColumnDisplaySize(i + 1));
       maxRow.sizes[i] = Math.min(maxWidth, maxRow.sizes[i]);
     }
 
