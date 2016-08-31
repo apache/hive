@@ -3310,6 +3310,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   /**
    * Helper class that generates SQL queries with syntax specific to target DB
    */
+  @VisibleForTesting
   static final class SQLGenerator {
     private final DatabaseProduct dbProduct;
     private final HiveConf conf;
@@ -3376,7 +3377,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
      * Given a {@code selectStatement}, decorated it with FOR UPDATE or semantically equivalent
      * construct.  If the DB doesn't support, return original select.
      */
-    private String addForUpdateClause(String selectStatement) throws MetaException {
+    String addForUpdateClause(String selectStatement) throws MetaException {
       switch (dbProduct) {
         case DERBY:
           //https://db.apache.org/derby/docs/10.1/ref/rrefsqlj31783.html
@@ -3392,7 +3393,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         case SQLSERVER:
           //https://msdn.microsoft.com/en-us/library/ms189499.aspx
           //https://msdn.microsoft.com/en-us/library/ms187373.aspx
-          return selectStatement + " with(updlock)";
+          String modifier = " with (updlock)";
+          int wherePos = selectStatement.toUpperCase().indexOf(" WHERE ");
+          if(wherePos < 0) {
+            return selectStatement + modifier;
+          }
+          return selectStatement.substring(0, wherePos) + modifier +
+            selectStatement.substring(wherePos, selectStatement.length());
         default:
           String msg = "Unrecognized database product name <" + dbProduct + ">";
           LOG.error(msg);
