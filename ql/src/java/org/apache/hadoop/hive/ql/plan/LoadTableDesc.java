@@ -52,10 +52,10 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final Map<String, String> partitionSpec,
       final boolean replace,
-      final AcidUtils.Operation writeType) {
+      final AcidUtils.Operation writeType, boolean isMmTable) {
     super(sourcePath);
-    Utilities.LOG14535.info("creating part LTD from " + sourcePath + " to " + table.getTableName(), new Exception());
-    init(table, partitionSpec, replace, writeType, false);
+    Utilities.LOG14535.info("creating part LTD from " + sourcePath + " to " + table.getTableName()/*, new Exception()*/);
+    init(table, partitionSpec, replace, writeType, isMmTable);
   }
 
   /**
@@ -69,14 +69,16 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
                        final TableDesc table,
                        final Map<String, String> partitionSpec,
                        final boolean replace) {
-    this(sourcePath, table, partitionSpec, replace, AcidUtils.Operation.NOT_ACID);
+    // TODO# we assume mm=false here
+    this(sourcePath, table, partitionSpec, replace, AcidUtils.Operation.NOT_ACID, false);
   }
 
   public LoadTableDesc(final Path sourcePath,
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final Map<String, String> partitionSpec,
-      final AcidUtils.Operation writeType) {
-    this(sourcePath, table, partitionSpec, true, writeType);
+      final AcidUtils.Operation writeType, boolean isMmTable) {
+    // TODO# we assume mm=false here
+    this(sourcePath, table, partitionSpec, true, writeType, isMmTable);
   }
 
   /**
@@ -88,7 +90,8 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
   public LoadTableDesc(final Path sourcePath,
                        final org.apache.hadoop.hive.ql.plan.TableDesc table,
                        final Map<String, String> partitionSpec) {
-    this(sourcePath, table, partitionSpec, true, AcidUtils.Operation.NOT_ACID);
+    // TODO# we assume mm=false here
+    this(sourcePath, table, partitionSpec, true, AcidUtils.Operation.NOT_ACID, false);
   }
 
   public LoadTableDesc(final Path sourcePath,
@@ -98,7 +101,7 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
       boolean isReplace,
       boolean isMmTable) {
     super(sourcePath);
-    Utilities.LOG14535.info("creating LTD from " + sourcePath + " to " + table.getTableName(), new Exception());
+    Utilities.LOG14535.info("creating LTD from " + sourcePath + " to " + table.getTableName()/*, new Exception()*/);
     this.dpCtx = dpCtx;
     if (dpCtx != null && dpCtx.getPartSpec() != null && partitionSpec == null) {
       init(table, dpCtx.getPartSpec(), isReplace, writeType, isMmTable);

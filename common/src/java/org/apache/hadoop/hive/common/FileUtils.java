@@ -329,9 +329,13 @@ public final class FileUtils {
    */
   public static void listStatusRecursively(FileSystem fs, FileStatus fileStatus,
       List<FileStatus> results) throws IOException {
+    listStatusRecursively(fs, fileStatus, HIDDEN_FILES_PATH_FILTER, results);
+  }
 
+  public static void listStatusRecursively(FileSystem fs, FileStatus fileStatus,
+      PathFilter filter, List<FileStatus> results) throws IOException {
     if (fileStatus.isDir()) {
-      for (FileStatus stat : fs.listStatus(fileStatus.getPath(), HIDDEN_FILES_PATH_FILTER)) {
+      for (FileStatus stat : fs.listStatus(fileStatus.getPath(), filter)) {
         listStatusRecursively(fs, stat, results);
       }
     } else {

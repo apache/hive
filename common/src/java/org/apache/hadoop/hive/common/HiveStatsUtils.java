@@ -25,6 +25,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,15 +51,20 @@ public class HiveStatsUtils {
    * @return array of FileStatus
    * @throws IOException
    */
-  public static FileStatus[] getFileStatusRecurse(Path path, int level, FileSystem fs)
+  public static FileStatus[] getFileStatusRecurse(Path path, int level,  FileSystem fs)
       throws IOException {
+    return getFileStatusRecurse(path, level, fs, FileUtils.HIDDEN_FILES_PATH_FILTER);
+  }
+
+  public static FileStatus[] getFileStatusRecurse(
+      Path path, int level, FileSystem fs, PathFilter filter) throws IOException {
 
     // if level is <0, the return all files/directories under the specified path
-    if ( level < 0) {
+    if (level < 0) {
       List<FileStatus> result = new ArrayList<FileStatus>();
       try {
         FileStatus fileStatus = fs.getFileStatus(path);
-        FileUtils.listStatusRecursively(fs, fileStatus, result);
+        FileUtils.listStatusRecursively(fs, fileStatus, filter, result);
       } catch (IOException e) {
         // globStatus() API returns empty FileStatus[] when the specified path
         // does not exist. But getFileStatus() throw IOException. To mimic the
@@ -75,7 +81,7 @@ public class HiveStatsUtils {
       sb.append(Path.SEPARATOR).append("*");
     }
     Path pathPattern = new Path(path, sb.toString());
-    return fs.globStatus(pathPattern, FileUtils.HIDDEN_FILES_PATH_FILTER);
+    return fs.globStatus(pathPattern, filter);
   }
 
   public static int getNumBitVectorsForNDVEstimation(Configuration conf) throws Exception {

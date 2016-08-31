@@ -1878,7 +1878,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               Utilities.LOG14535.info("loadPartition called for DPP from " + partPath + " to " + tbl.getTableName());
               Partition newPartition = loadPartition(partPath, tbl, fullPartSpec,
                   replace, true, listBucketingEnabled,
-                  false, isAcid, hasFollowingStatsTask, false); // TODO# here
+                  false, isAcid, hasFollowingStatsTask, false); // TODO# special case #N
               partitionsMap.put(fullPartSpec, newPartition);
 
               if (inPlaceEligible) {

@@ -254,8 +254,8 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
       Path outputDir = conf.getOutputPath();
       FileSystem fs = outputDir.getFileSystem(hconf);
       Path backupPath = backupOutputPath(fs, outputDir);
-      Utilities
-          .mvFileToFinalPath(outputDir, hconf, success, LOG, conf.getDpCtx(),
+      // TODO# merge-related move
+      Utilities.mvFileToFinalPath(outputDir, hconf, success, LOG, conf.getDpCtx(),
               null, reporter);
       if (success) {
         LOG.info("jobCloseOp moved merged files to output dir: " + outputDir);

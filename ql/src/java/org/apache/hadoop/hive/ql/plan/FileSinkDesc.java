@@ -97,6 +97,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   private Path destPath;
   private boolean isHiveServerQuery;
   private boolean isMmTable;
+  private String executionPrefix;
 
   public FileSinkDesc() {
   }
@@ -158,6 +159,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     ret.setWriteType(writeType);
     ret.setTransactionId(txnId);
     ret.setStatsTmpDir(statsTmpDir);
+    ret.setExecutionPrefix(executionPrefix);
     return ret;
   }
 
@@ -481,4 +483,11 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.statsTmpDir = statsCollectionTempDir;
   }
 
+  public String getExecutionPrefix() {
+    return this.executionPrefix;
+  }
+
+  public void setExecutionPrefix(String value) {
+    this.executionPrefix = value;
+  }
 }

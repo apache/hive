@@ -27,16 +27,22 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -79,6 +85,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
@@ -92,6 +99,7 @@ import com.google.common.collect.Lists;
 public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     Serializable {
 
+  private static final String MANIFEST_EXTENSION = ".manifest";
   public static final Logger LOG = LoggerFactory.getLogger(FileSinkOperator.class);
   private static final boolean isInfoEnabled = LOG.isInfoEnabled();
   private static final boolean isDebugEnabled = LOG.isDebugEnabled();
@@ -165,7 +173,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       } 
       Utilities.LOG14535.info("new FSPaths for " + numFiles + " files, dynParts = " + bDynParts
           + ": tmpPath " + tmpPath + ", task path " + taskOutputTempPath
-          + " (spec path " + specPath + ")", new Exception());
+          + " (spec path " + specPath + ")"/*, new Exception()*/);
 
       outPaths = new Path[numFiles];
       finalPaths = new Path[numFiles];
@@ -187,7 +195,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     /**
      * Update the final paths according to tmpPath.
      */
-    public Path getFinalPath(String taskId, Path tmpPath, String extension) {
+    private Path getFinalPath(String taskId, Path tmpPath, String extension) {
       if (extension != null) {
         return new Path(tmpPath, taskId + extension);
       } else {
@@ -218,41 +226,64 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
 
     private void commit(FileSystem fs) throws HiveException {
-      if (isMmTable) return;  // TODO#: need to propagate to MoveTask instead
+      List<Path> commitPaths = null;
+      if (isMmTable) {
+        commitPaths = new ArrayList<>();
+      }
       for (int idx = 0; idx < outPaths.length; ++idx) {
         try {
-          if ((bDynParts || isSkewedStoredAsSubDirectories)
-              && !fs.exists(finalPaths[idx].getParent())) {
-            Utilities.LOG14535.info("commit making path for dyn/skew: " + finalPaths[idx].getParent());
-            fs.mkdirs(finalPaths[idx].getParent());
-          }
-          boolean needToRename = true;
-          if (conf.getWriteType() == AcidUtils.Operation.UPDATE ||
-              conf.getWriteType() == AcidUtils.Operation.DELETE) {
-            // If we're updating or deleting there may be no file to close.  This can happen
-            // because the where clause strained out all of the records for a given bucket.  So
-            // before attempting the rename below, check if our file exists.  If it doesn't,
-            // then skip the rename.  If it does try it.  We could just blindly try the rename
-            // and avoid the extra stat, but that would mask other errors.
-            try {
-              if (outPaths[idx] != null) {
-                FileStatus stat = fs.getFileStatus(outPaths[idx]);
-              }
-            } catch (FileNotFoundException fnfe) {
-              needToRename = false;
-            }
-          }
-          Utilities.LOG14535.info("commit potentially moving " + outPaths[idx] + " to " + finalPaths[idx]);
-          if (needToRename && outPaths[idx] != null && !fs.rename(outPaths[idx], finalPaths[idx])) {
-            throw new HiveException("Unable to rename output from: " +
-                outPaths[idx] + " to: " + finalPaths[idx]);
-          }
-          updateProgress();
+          commitOneOutPath(idx, fs, commitPaths);
         } catch (IOException e) {
           throw new HiveException("Unable to rename output from: " +
               outPaths[idx] + " to: " + finalPaths[idx], e);
         }
       }
+      if (isMmTable) {
+        Path manifestPath = new Path(specPath, "_tmp." + getPrefixedTaskId() + MANIFEST_EXTENSION);
+        Utilities.LOG14535.info("Writing manifest to " + manifestPath + " with " + commitPaths);
+        try {
+          try (FSDataOutputStream out = fs.create(manifestPath)) {
+            out.writeInt(commitPaths.size());
+            for (Path path : commitPaths) {
+              out.writeUTF(path.toString());
+            }
+          }
+        } catch (IOException e) {
+          throw new HiveException(e);
+        }
+      }
+    }
+
+    private String getPrefixedTaskId() {
+      return conf.getExecutionPrefix() + "_" + taskId;
+    }
+
+    private void commitOneOutPath(int idx, FileSystem fs, List<Path> commitPaths)
+        throws IOException, HiveException {
+      if ((bDynParts || isSkewedStoredAsSubDirectories)
+          && !fs.exists(finalPaths[idx].getParent())) {
+        Utilities.LOG14535.info("commit making path for dyn/skew: " + finalPaths[idx].getParent());
+        fs.mkdirs(finalPaths[idx].getParent());
+      }
+      // If we're updating or deleting there may be no file to close.  This can happen
+      // because the where clause strained out all of the records for a given bucket.  So
+      // before attempting the rename below, check if our file exists.  If it doesn't,
+      // then skip the rename.  If it does try it.  We could just blindly try the rename
+      // and avoid the extra stat, but that would mask other errors.
+      boolean needToRename = (conf.getWriteType() != AcidUtils.Operation.UPDATE &&
+          conf.getWriteType() != AcidUtils.Operation.DELETE) || fs.exists(outPaths[idx]);
+      if (needToRename && outPaths[idx] != null) {
+        Utilities.LOG14535.info("committing " + outPaths[idx] + " to " + finalPaths[idx] + " (" + isMmTable + ")");
+        if (isMmTable) {
+          assert outPaths[idx].equals(finalPaths[idx]);
+          commitPaths.add(outPaths[idx]);
+        } else if (!fs.rename(outPaths[idx], finalPaths[idx])) {
+          throw new HiveException("Unable to rename output from: "
+              + outPaths[idx] + " to: " + finalPaths[idx]);
+        }
+      }
+
+      updateProgress();
     }
 
     public void abortWriters(FileSystem fs, boolean abort, boolean delete) throws HiveException {
@@ -297,10 +328,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           outPaths[filesIdx] = getTaskOutPath(taskId);
         } else {
           if (!bDynParts && !isSkewedStoredAsSubDirectories) {
-            finalPaths[filesIdx] = getFinalPath(taskId, specPath, extension);
+            finalPaths[filesIdx] = getFinalPath(getPrefixedTaskId(), specPath, extension);
           } else {
             // TODO# wrong!
-            finalPaths[filesIdx] = getFinalPath(taskId, specPath, extension);
+            finalPaths[filesIdx] = getFinalPath(getPrefixedTaskId(), specPath, extension);
           }
           outPaths[filesIdx] = finalPaths[filesIdx];
         }
@@ -638,7 +669,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       fsp.initializeBucketPaths(filesIdx, taskId, isNativeTable, isSkewedStoredAsSubDirectories);
       Utilities.LOG14535.info("createBucketForFileIdx " + filesIdx + ": final path " + fsp.finalPaths[filesIdx]
           + "; out path " + fsp.outPaths[filesIdx] +" (spec path " + specPath + ", tmp path "
-          + fsp.getTmpPath() + ", task " + taskId + ")", new Exception());
+          + fsp.getTmpPath() + ", task " + taskId + ")"/*, new Exception()*/);
 
       if (isInfoEnabled) {
         LOG.info("New Final Path: FS " + fsp.finalPaths[filesIdx]);
@@ -1150,14 +1181,107 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         DynamicPartitionCtx dpCtx = conf.getDynPartCtx();
         if (conf.isLinkedFileSink() && (dpCtx != null)) {
           specPath = conf.getParentDir();
+          Utilities.LOG14535.info("Setting specPath to " + specPath + " for dynparts");
         }
-        Utilities.mvFileToFinalPath(specPath, hconf, success, LOG, dpCtx, conf,
-          reporter);
+        if (!conf.isMmTable()) {
+          Utilities.mvFileToFinalPath(specPath, hconf, success, LOG, dpCtx, conf, reporter); // TODO# other callers
+        } else {
+          handleMmTable(specPath, hconf, success, dpCtx, conf, reporter);
+        }
       }
     } catch (IOException e) {
       throw new HiveException(e);
     }
     super.jobCloseOp(hconf, success);
+  }
+
+  private static class ExecPrefixPathFilter implements PathFilter {
+    private final String prefix, tmpPrefix;
+    public ExecPrefixPathFilter(String prefix) {
+      this.prefix = prefix;
+      this.tmpPrefix = "_tmp." + prefix;
+    }
+
+    @Override
+    public boolean accept(Path path) {
+      String name = path.getName();
+      return name.startsWith(prefix) || name.startsWith(tmpPrefix);
+    }
+  }
+
+
+  private void handleMmTable(Path specPath, Configuration hconf, boolean success,
+      DynamicPartitionCtx dpCtx, FileSinkDesc conf, Reporter reporter)
+          throws IOException, HiveException {
+    FileSystem fs = specPath.getFileSystem(hconf);
+    int targetLevel = (dpCtx == null) ? 1 : dpCtx.getNumDPCols();
+    if (!success) {
+      FileStatus[] statuses = HiveStatsUtils.getFileStatusRecurse(
+          specPath, targetLevel, fs, new ExecPrefixPathFilter(conf.getExecutionPrefix()));
+      for (FileStatus status : statuses) {
+        Utilities.LOG14535.info("Deleting " + status.getPath() + " on failure");
+        tryDelete(fs, status.getPath());
+      }
+      return;
+    }
+    FileStatus[] statuses = HiveStatsUtils.getFileStatusRecurse(
+        specPath, targetLevel, fs, new ExecPrefixPathFilter(conf.getExecutionPrefix()));
+    if (statuses == null) return;
+    LinkedList<FileStatus> results = new LinkedList<>();
+    List<Path> manifests = new ArrayList<>(statuses.length);
+    for (FileStatus status : statuses) {
+      if (status.getPath().getName().endsWith(MANIFEST_EXTENSION)) {
+        manifests.add(status.getPath());
+      } else {
+        results.add(status);
+      }
+    }
+    HashSet<String> committed = new HashSet<>();
+    for (Path mfp : manifests) {
+      try (FSDataInputStream mdis = fs.open(mfp)) {
+        int fileCount = mdis.readInt();
+        for (int i = 0; i < fileCount; ++i) {
+          String nextFile = mdis.readUTF();
+          if (!committed.add(nextFile)) {
+            throw new HiveException(nextFile + " was specified in multiple manifests");
+          }
+        }
+      }
+    }
+    Iterator<FileStatus> iter = results.iterator();
+    while (iter.hasNext()) {
+      FileStatus rfs = iter.next();
+      if (!committed.remove(rfs.getPath().toString())) {
+        iter.remove();
+        Utilities.LOG14535.info("Deleting " + rfs.getPath() + " that was not committed");
+        tryDelete(fs, rfs.getPath());
+      }
+    }
+    if (!committed.isEmpty()) {
+      throw new HiveException("The following files were committed but not found: " + committed);
+    }
+    for (Path mfp : manifests) {
+      Utilities.LOG14535.info("Deleting manifest " + mfp);
+      tryDelete(fs, mfp);
+    }
+
+    if (results.isEmpty()) return;
+    FileStatus[] finalResults = results.toArray(new FileStatus[results.size()]);
+
+    List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(
+        fs, finalResults, dpCtx, conf, hconf);
+    // create empty buckets if necessary
+    if (emptyBuckets.size() > 0) {
+      Utilities.createEmptyBuckets(hconf, emptyBuckets, conf, reporter);
+    }
+  }
+
+  private void tryDelete(FileSystem fs, Path path) {
+    try {
+      fs.delete(path, false);
+    } catch (IOException ex) {
+      LOG.error("Failed to delete " + path, ex);
+    }
   }
 
   @Override
