@@ -1187,6 +1187,12 @@ public class HiveConf extends Configuration {
     HIVE_TRANSACTIONAL_TABLE_SCAN("hive.transactional.table.scan", false,
         "internal usage only -- do transaction (ACID) table scan.", true),
 
+    HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY("hive.transactional.events.mem", 10000000,
+        "Vectorized ACID readers can often load all the delete events from all the delete deltas\n"
+        + "into memory to optimize for performance. To prevent out-of-memory errors, this is a rough heuristic\n"
+        + "that limits the total number of delete events that can be loaded into memory at once.\n"
+        + "Roughly it has been set to 10 million delete events per bucket (~160 MB).\n"),
+
     HIVESAMPLERANDOMNUM("hive.sample.seednumber", 0,
         "A number used to percentage sampling. By changing this number, user will change the subsets of data sampled."),
 

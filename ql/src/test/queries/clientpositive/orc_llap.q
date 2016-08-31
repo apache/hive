@@ -62,42 +62,26 @@ select count(*) from orc_llap_small;
 -- All row groups pruned
 select count(*) from orc_llap_small where cint < 60000000;
 
--- Hash cannot be vectorized, so run hash as the last step on a temp table
-drop table llap_temp_table;
+-- Hash cannot be vectorized, but now we have row-by-row reader, so the subquery runs in llap but with row-by-row reader
 explain
-select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null;
-create table llap_temp_table as
-select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null;
-select sum(hash(*)) from llap_temp_table;
+select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t;
+select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t;
 
-drop table llap_temp_table;
 explain
-select * from orc_llap where cint > 10 and cbigint is not null;
-create table llap_temp_table as
-select * from orc_llap where cint > 10 and cbigint is not null;
-select sum(hash(*)) from llap_temp_table;
+select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t;
+select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t;
 
-drop table llap_temp_table;
 explain
-select cstring2 from orc_llap where cint > 5 and cint < 10;
-create table llap_temp_table as
-select cstring2 from orc_llap where cint > 5 and cint < 10;
-select sum(hash(*)) from llap_temp_table;
+select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t;
+select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t;
 
-
-drop table llap_temp_table;
 explain
-select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2;
-create table llap_temp_table as
-select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2;
-select sum(hash(*)) from llap_temp_table;
+select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t;
+select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t;
 
-drop table llap_temp_table;
 explain
-select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null;
-create table llap_temp_table as
-select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null;
-select sum(hash(*)) from llap_temp_table;
+select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t;
+select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t;
 
 -- multi-stripe test
 insert into table orc_llap
@@ -106,43 +90,25 @@ from alltypesorc cross join cross_numbers;
 
 alter table orc_llap concatenate;
 
-drop table llap_temp_table;
 explain
-select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null;
-create table llap_temp_table as
-select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null;
-select sum(hash(*)) from llap_temp_table;
+select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t;
+select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t;
 
-drop table llap_temp_table;
 explain
-select * from orc_llap where cint > 10 and cbigint is not null;
-create table llap_temp_table as
-select * from orc_llap where cint > 10 and cbigint is not null;
-select sum(hash(*)) from llap_temp_table;
+select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t;
+select sum(hash(*)) from (select * from orc_llap where cint > 10 and cbigint is not null) t;
 
-drop table llap_temp_table;
 explain
-select cstring2 from orc_llap where cint > 5 and cint < 10;
-create table llap_temp_table as
-select cstring2 from orc_llap where cint > 5 and cint < 10;
-select sum(hash(*)) from llap_temp_table;
+select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t;
+select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t;
 
-drop table llap_temp_table;
 explain
-select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2;
-create table llap_temp_table as
-select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2;
-select sum(hash(*)) from llap_temp_table;
+select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t;
+select sum(hash(*)) from (select cstring1, cstring2, count(*) from orc_llap group by cstring1, cstring2) t;
 
-drop table llap_temp_table;
 explain
-select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null;
-create table llap_temp_table as
-select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null;
-select sum(hash(*)) from llap_temp_table;
-
-drop table llap_temp_table;
-
+select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t;
+select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner join orc_llap o2 on o1.csmallint = o2.csmallint where o1.cbigint is not null and o2.cbigint is not null) t;
 
 DROP TABLE cross_numbers;
 DROP TABLE orc_llap;

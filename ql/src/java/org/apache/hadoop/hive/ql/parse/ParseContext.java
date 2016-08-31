@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -620,4 +623,26 @@ public class ParseContext {
       List<ColumnStatsAutoGatherContext> columnStatsAutoGatherContexts) {
     this.columnStatsAutoGatherContexts = columnStatsAutoGatherContexts;
   }
+
+  public Collection<Operator> getAllOps() {
+    List<Operator> ops = new ArrayList<>();
+    Set<Operator> visited = new HashSet<Operator>();
+    for (Operator<?> op : getTopOps().values()) {
+      getAllOps(ops, visited, op);
+    }
+    return ops;
+  }
+
+  private static void getAllOps(List<Operator> builder, Set<Operator> visited, Operator<?> op) {
+    boolean added = visited.add(op);
+    builder.add(op);
+    if (!added) return;
+    if (op.getNumChild() > 0) {
+      List<Operator<?>> children = op.getChildOperators();
+      for (int i = 0; i < children.size(); i++) {
+        getAllOps(builder, visited, children.get(i));
+      }
+    }
+  }
+
 }

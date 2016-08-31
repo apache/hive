@@ -133,6 +133,12 @@ public class TestGenericUDFAbs extends TestCase {
     output = (DoubleWritable) udf.evaluate(args);
 
     assertEquals("abs() test for String failed ", "123.45", output.toString());
+
+    valueObj = new DeferredJavaObject(new Text("foo"));
+    args[0] = valueObj;
+    output = (DoubleWritable) udf.evaluate(args);
+
+    assertEquals("abs() test for String failed ", null, output);
   }
 
   public void testHiveDecimal() throws HiveException {

@@ -130,6 +130,9 @@ public class GenericUDFAbs extends GenericUDF {
     case STRING:
     case DOUBLE:
       valObject = inputConverter.convert(valObject);
+      if (valObject == null) {
+        return null;
+      }
       resultDouble.set(Math.abs(((DoubleWritable) valObject).get()));
       return resultDouble;
     case DECIMAL:
