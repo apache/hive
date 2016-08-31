@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.apache.orc.impl.InStream;
-import org.apache.orc.impl.SchemaEvolution;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
@@ -41,26 +38,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.io.IOConstants;
-import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
-import org.apache.orc.ColumnStatistics;
-import org.apache.orc.OrcUtils;
-import org.apache.orc.StripeInformation;
-import org.apache.orc.StripeStatistics;
-import org.apache.orc.TypeDescription;
-import org.apache.orc.impl.OrcTail;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
@@ -73,6 +50,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Metastore;
 import org.apache.hadoop.hive.metastore.Metastore.SplitInfos;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -89,22 +67,33 @@ import org.apache.hadoop.hive.ql.io.BatchToRowReader;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.LlapWrappableInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
-import org.apache.hadoop.hive.ql.io.orc.ExternalCache.ExternalFooterCachesByConf;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
+import org.apache.hadoop.hive.ql.io.orc.ExternalCache.ExternalFooterCachesByConf;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -117,7 +106,17 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.orc.ColumnStatistics;
 import org.apache.orc.OrcProto;
+import org.apache.orc.OrcUtils;
+import org.apache.orc.StripeInformation;
+import org.apache.orc.StripeStatistics;
+import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.InStream;
+import org.apache.orc.impl.OrcTail;
+import org.apache.orc.impl.SchemaEvolution;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
@@ -318,7 +317,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     List<OrcProto.Type> types = file.getTypes();
     options.include(genIncludedColumns(types, conf, isOriginal));
     setSearchArgument(options, types, conf, isOriginal);
-    return (RecordReader) file.rowsOptions(options);
+    return file.rowsOptions(options);
   }
 
   public static boolean isOriginal(Reader file) {
@@ -1793,17 +1792,28 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     reporter.setStatus(inputSplit.toString());
 
+    boolean isFastVectorizedReaderAvailable =
+        VectorizedOrcAcidRowBatchReader.canCreateVectorizedAcidRowBatchReaderOnSplit(conf, inputSplit);
+
+    if (vectorMode && isFastVectorizedReaderAvailable) {
+      // Faster vectorized ACID row batch reader is available that avoids row-by-row stitching.
+      return (org.apache.hadoop.mapred.RecordReader)
+          new VectorizedOrcAcidRowBatchReader(inputSplit, conf, reporter);
+    }
+
     Options options = new Options(conf).reporter(reporter);
     final RowReader<OrcStruct> inner = getReader(inputSplit, options);
-
-    if (vectorMode) {
+    if (vectorMode && !isFastVectorizedReaderAvailable) {
+      // Vectorized regular ACID reader that does row-by-row stitching.
       return (org.apache.hadoop.mapred.RecordReader)
           new VectorizedOrcAcidRowReader(inner, conf,
               Utilities.getMapWork(conf).getVectorizedRowBatchCtx(), (FileSplit) inputSplit);
     } else {
+      // Non-vectorized regular ACID reader.
       return new NullKeyRecordReader(inner, conf);
     }
   }
+
   /**
    * Return a RecordReader that is compatible with the Hive 0.12 reader
    * with NullWritable for the key instead of RecordIdentifier.
@@ -1890,35 +1900,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             : AcidUtils.deserializeDeltas(root, split.getDeltas());
     final Configuration conf = options.getConfiguration();
 
-
-    /**
-     * Do we have schema on read in the configuration variables?
-     */
-    TypeDescription schema = getDesiredRowTypeDescr(conf, true, Integer.MAX_VALUE);
-
-    final Reader reader;
-    final int bucket;
-    Reader.Options readOptions = new Reader.Options().schema(schema);
+    final Reader reader = OrcInputFormat.createOrcReaderForSplit(conf, split);
+    final int bucket = OrcInputFormat.getBucketForSplit(conf, split);
+    final Reader.Options readOptions = OrcInputFormat.createOptionsForReader(conf);
     readOptions.range(split.getStart(), split.getLength());
 
-    // TODO: Convert genIncludedColumns and setSearchArgument to use TypeDescription.
-    final List<OrcProto.Type> schemaTypes = OrcUtils.getOrcTypes(schema);
-    readOptions.include(genIncludedColumns(schemaTypes, conf, SCHEMA_TYPES_IS_ORIGINAL));
-    setSearchArgument(readOptions, schemaTypes, conf, SCHEMA_TYPES_IS_ORIGINAL);
-
-    if (split.hasBase()) {
-      bucket = AcidUtils.parseBaseOrDeltaBucketFilename(split.getPath(), conf)
-          .getBucket();
-      OrcFile.ReaderOptions readerOptions = OrcFile.readerOptions(conf)
-          .maxLength(split.getFileLength());
-      if (split.hasFooter()) {
-        readerOptions.orcTail(split.getOrcTail());
-      }
-      reader = OrcFile.createReader(path, readerOptions);
-    } else {
-      bucket = (int) split.getStart();
-      reader = null;
-    }
     String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
     ValidTxnList validTxnList = txnString == null ? new ValidReadTxnList() :
       new ValidReadTxnList(txnString);
@@ -1930,7 +1916,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
       @Override
       public ObjectInspector getObjectInspector() {
-        return OrcStruct.createObjectInspector(0, schemaTypes);
+        return OrcStruct.createObjectInspector(0, OrcUtils.getOrcTypes(readOptions.getSchema()));
       }
 
       @Override
@@ -1990,6 +1976,44 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
     throw new IllegalArgumentException("Can't find bucket " + bucket + " in " +
         directory);
+  }
+
+  static Reader.Options createOptionsForReader(Configuration conf) {
+    /**
+     * Do we have schema on read in the configuration variables?
+     */
+    TypeDescription schema =
+        OrcInputFormat.getDesiredRowTypeDescr(conf, true, Integer.MAX_VALUE);
+    Reader.Options readerOptions = new Reader.Options().schema(schema);
+    // TODO: Convert genIncludedColumns and setSearchArgument to use TypeDescription.
+    final List<OrcProto.Type> schemaTypes = OrcUtils.getOrcTypes(schema);
+    readerOptions.include(OrcInputFormat.genIncludedColumns(schemaTypes, conf, SCHEMA_TYPES_IS_ORIGINAL));
+    OrcInputFormat.setSearchArgument(readerOptions, schemaTypes, conf, SCHEMA_TYPES_IS_ORIGINAL);
+    return readerOptions;
+  }
+
+  static Reader createOrcReaderForSplit(Configuration conf, OrcSplit orcSplit) throws IOException {
+    Path path = orcSplit.getPath();
+    Reader reader;
+    if (orcSplit.hasBase()) {
+      OrcFile.ReaderOptions readerOptions = OrcFile.readerOptions(conf);
+      readerOptions.maxLength(orcSplit.getFileLength());
+      if (orcSplit.hasFooter()) {
+        readerOptions.orcTail(orcSplit.getOrcTail());
+      }
+      reader = OrcFile.createReader(path, readerOptions);
+    } else {
+      reader = null;
+    }
+    return reader;
+  }
+
+  static int getBucketForSplit(Configuration conf, OrcSplit orcSplit) {
+    if (orcSplit.hasBase()) {
+      return AcidUtils.parseBaseOrDeltaBucketFilename(orcSplit.getPath(), conf).getBucket();
+    } else {
+      return (int) orcSplit.getStart();
+    }
   }
 
   public static boolean[] pickStripesViaTranslatedSarg(SearchArgument sarg,

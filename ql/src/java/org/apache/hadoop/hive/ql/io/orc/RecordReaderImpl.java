@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -49,7 +50,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.orc.TypeDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
 public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
                               implements RecordReader {
@@ -77,6 +77,10 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
       return super.nextBatch(batch);
     }
     return true;
+  }
+
+  public VectorizedRowBatch createRowBatch() {
+    return this.schema.createRowBatch();
   }
 
   @Override
@@ -129,6 +133,7 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     return previous;
   }
 
+  @Override
   public boolean nextBatch(VectorizedRowBatch theirBatch) throws IOException {
     // If the user hasn't been reading by row, use the fast path.
     if (rowInBatch >= batch.size) {
