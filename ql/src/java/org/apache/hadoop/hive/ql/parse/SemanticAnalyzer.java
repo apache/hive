@@ -6439,7 +6439,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // it should be the same as the MoveWork's sourceDir.
     fileSinkDesc.setStatsAggPrefix(fileSinkDesc.getDirName().toString());
     if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-      String statsTmpLoc = ctx.getTempDirForPath(dest_path).toString();
+      String statsTmpLoc;
+      if(isLocal) {
+        statsTmpLoc = ctx.getTempDirForPath(queryTmpdir).toString();
+      } else {
+        statsTmpLoc = ctx.getTempDirForPath(dest_path).toString();
+      }
       LOG.info("Set stats collection dir : " + statsTmpLoc);
       conf.set(StatsSetupConst.STATS_TMP_LOC, statsTmpLoc);
     }
