@@ -881,6 +881,7 @@ public class BeeLine implements Closeable {
     }
 
     try {
+      ConsoleReader reader = getConsoleReader(inputStream);
       if (isBeeLine) {
         int code = initArgs(args);
         if (code != 0) {
@@ -905,7 +906,7 @@ public class BeeLine implements Closeable {
       } catch (Exception e) {
         // ignore
       }
-      ConsoleReader reader = getConsoleReader(inputStream);
+
       return execute(reader, false);
     } finally {
         close();
@@ -1079,14 +1080,16 @@ public class BeeLine implements Closeable {
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
         @Override
         public void run() {
+          if(consoleReader != null) {
             History h = consoleReader.getHistory();
             if (h instanceof FileHistory) {
-                try {
-                    ((FileHistory) h).flush();
-                } catch (IOException e) {
-                    error(e);
-                }
+              try {
+                ((FileHistory) h).flush();
+              } catch (IOException e) {
+                error(e);
+              }
             }
+          }
         }
     }));
 
