@@ -15,7 +15,6 @@
 
 set -e
 set -x
-date +"%Y-%m-%d %T.%3N"
 if [[ -n "/usr/java/jdk1.7" ]]
 then
   export JAVA_HOME=/usr/java/jdk1.7
@@ -64,15 +63,13 @@ cd /some/working/dir/
     then
       git clone https://svn.apache.org/repos/asf/hive/trunk apache-source
     fi
-    date +"%Y-%m-%d %T.%3N"
     cd apache-source
     git fetch origin
     git reset --hard HEAD && git clean -f -d
     git checkout  || git checkout -b  origin/
     git reset --hard origin/
     git merge --ff-only origin/
-    #git gc
-    date +"%Y-%m-%d %T.%3N"
+    git gc
   else
     echo "Unknown repository type 'svn'"
     exit 1
@@ -88,11 +85,8 @@ cd /some/working/dir/
   then
     rm -rf /some/working/dir/maven/org/apache/hive
         mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven $mavenArgs $mavenBuildArgs
-    if [[ -d "itests" ]]
-    then
-      cd itests
-      mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven $mavenArgs $mavenBuildArgs
-    fi
+    cd itests
+    mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven $mavenArgs $mavenBuildArgs
   elif [[ "maven" == "ant" ]]
   then
     ant -Dant=arg1 -Divy.default.ivy.user.dir=/some/working/dir/ivy \
@@ -102,6 +96,5 @@ cd /some/working/dir/
      echo "Unknown build tool maven"
      exit 127
    fi
-   date +"%Y-%m-%d %T.%3N"
 ) 2>&1 | tee /some/log/dir/source-prep.txt
 exit ${PIPESTATUS[0]}
