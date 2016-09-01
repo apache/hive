@@ -17,6 +17,7 @@ THISSERVICE=hiveserver2
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 hiveserver2() {
+  echo "$(timestamp): Starting HiveServer2"
   CLASS=org.apache.hive.service.server.HiveServer2
   if $cygwin; then
     HIVE_LIB=`cygpath -w "$HIVE_LIB"`
@@ -30,3 +31,7 @@ hiveserver2_help() {
   hiveserver2 -H
 }
 
+timestamp()
+{
+ date +"%Y-%m-%d %T"
+}
