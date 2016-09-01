@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +34,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,8 +44,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 public class TestParser {
+
   private static final Splitter TEST_SPLITTER = Splitter.onPattern("[, ]")
-    .trimResults().omitEmptyStrings();
+      .trimResults().omitEmptyStrings();
 
   private static final String QTEST_MODULE_NAME = "itests/qtest";
   private static final String QTEST_SPARK_MODULE_NAME = "itests/qtest-spark";
@@ -63,50 +64,21 @@ public class TestParser {
     this.logger = logger;
   }
   private List<TestBatch> parseTests() {
-    Context unitContext = new Context(context.getSubProperties(
-        Joiner.on(".").join("unitTests", "")));
-    Set<String> excluded = Sets.newHashSet(TEST_SPLITTER.split(unitContext.getString("exclude", "")));
-    Set<String> isolated = Sets.newHashSet(TEST_SPLITTER.split(unitContext.getString("isolate", "")));
-    Set<String> included = Sets.newHashSet(TEST_SPLITTER.split(unitContext.getString("include", "")));
-    if(!included.isEmpty() && !excluded.isEmpty()) {
-      throw new IllegalArgumentException(String.format("Included and excluded mutally exclusive." +
-          " Included = %s, excluded = %s", included.toString(), excluded.toString()));
-    }
-    List<File> unitTestsDirs = Lists.newArrayList();
-    for(String unitTestDir : TEST_SPLITTER
-        .split(checkNotNull(unitContext.getString("directories"), "directories"))) {
-      File unitTestParent = new File(sourceDirectory, unitTestDir);
-      if(unitTestParent.isDirectory()) {
-        unitTestsDirs.add(unitTestParent);
-      } else {
-        logger.warn("Unit test directory " + unitTestParent + " does not exist.");
-      }
-    }
+
+    Set<String> excluded = new HashSet<String>();
+
+
     List<TestBatch> result = Lists.newArrayList();
     for(QFileTestBatch test : parseQFileTests()) {
       result.add(test);
       excluded.add(test.getDriver());
     }
-    for(File unitTestDir : unitTestsDirs) {
-      for(File classFile : FileUtils.listFiles(unitTestDir, new String[]{"class"}, true)) {
-        String className = classFile.getName();
-        logger.debug("In  " + unitTestDir  + ", found " + className);
-        if(className.startsWith("Test") && !className.contains("$")) {
-          String testName = className.replaceAll("\\.class$", "");
-          if(excluded.contains(testName)) {
-            logger.info("Exlcuding unit test " + testName);
-          } else if(included.isEmpty() || included.contains(testName)) {
-            if(isolated.contains(testName)) {
-              logger.info("Executing isolated unit test " + testName);
-              result.add(new UnitTestBatch(testCasePropertyName, testName, false));
-            } else {
-              logger.info("Executing parallel unit test " + testName);
-              result.add(new UnitTestBatch(testCasePropertyName, testName, true));
-            }
-          }
-        }
-      }
-    }
+
+    Collection<TestBatch> unitTestBatches =
+        new UnitTestPropertiesParser(context, testCasePropertyName, sourceDirectory, logger,
+            excluded).generateTestBatches();
+    result.addAll(unitTestBatches);
+
     return result;
   }
   private List<QFileTestBatch> parseQFileTests() {

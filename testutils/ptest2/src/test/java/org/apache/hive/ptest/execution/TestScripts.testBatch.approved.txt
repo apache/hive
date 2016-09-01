@@ -15,6 +15,7 @@
 # limitations under the License.
 
 set -x
+date +"%Y-%m-%d %T.%3N"
 umask 0022
 echo $$
 ps -e -o pid,pgrp,user,args
@@ -37,6 +38,8 @@ export M2_OPTS="-Xmx1g -XX:MaxPermSize=256m -Djava.io.tmpdir=/some/log/dir/tmp $
 export HADOOP_ROOT_LOGGER=INFO,console
 export HADOOP_OPTS="-Dhive.log.dir=/some/log/dir -Dhive.query.id=hadoop -Djava.io.tmpdir=/some/log/dir/tmp"
 cd /some/local/dir/instance-1/apache-source || exit 1
+date +"%Y-%m-%d %T.%3N"
+echo "Pre test cleanup"
 if [[ -s batch.pid ]]
 then
   while read pid
@@ -52,10 +55,11 @@ echo "$$" > batch.pid
 find ./ -name 'TEST-*.xml' -delete
 find ./ -name 'hive.log' -delete
 find ./ -name junit_metastore_db | xargs -r rm -rf
+date +"%Y-%m-%d %T.%3N"
+echo "Pre test cleanup done"
 ret=0
 if [[ "maven" == "maven" ]]
 then
-  testModule=$(find ./ -name 'TestCliDriver.java' | awk -F'/' '{print $2}')
   if [[ -z "$testModule" ]]
   then
     testModule=./
@@ -63,6 +67,7 @@ then
   pushd $testModule
   timeout 40m mvn -B test -Dmaven.repo.local=/some/local/dir/instance-1/maven \
     -Dant=arg1 $mavenTestArgs -Dtest=arg1 1>/some/log/dir/maven-test.txt 2>&1 </dev/null &
+  date +"%Y-%m-%d %T.%3N"
 
   pid=$!
 
@@ -85,6 +90,7 @@ fi
 echo $pid >> batch.pid
 wait $pid
 ret=$?
+date +"%Y-%m-%d %T.%3N"
 find ./ -type f -name hive.log -o -name spark.log -o -name derby.log | \
   xargs -I {} sh -c 'f=$(basename {}); test -f /some/log/dir/$f && f=$f-$(uuidgen); mv {} /some/log/dir/$f'
 find ./ -type f -name 'TEST-*.xml' | \
@@ -93,7 +99,7 @@ find ./ -path "*/spark/work" | \
   xargs -I {} sh -c 'mv {} /some/log/dir/spark-log'
 find ./ -type f -name 'syslog*' | \
   xargs -I {} sh -c 'mkdir -p /some/log/dir/syslogs; mv {} /some/log/dir/syslogs'
-
+date +"%Y-%m-%d %T.%3N"
 
 if [[ -f /some/log/dir/.log ]]
 then

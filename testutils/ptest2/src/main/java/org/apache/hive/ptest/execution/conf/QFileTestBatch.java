@@ -23,7 +23,7 @@ import java.util.Set;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterators;
 
-public class QFileTestBatch implements TestBatch {
+public class QFileTestBatch extends TestBatch {
 
   private final String testCasePropertyName;
   private final String driver;
@@ -66,7 +66,7 @@ public class QFileTestBatch implements TestBatch {
 
   @Override
   public String toString() {
-    return "QFileTestBatch [driver=" + driver + ", queryFilesProperty="
+    return "QFileTestBatch [batchId=" + getBatchId() + ", driver=" + driver + ", queryFilesProperty="
         + queryFilesProperty + ", name=" + name + ", tests=" + tests
         + ", isParallel=" + isParallel + ", moduleName=" + moduleName + "]";
   }
@@ -76,8 +76,13 @@ public class QFileTestBatch implements TestBatch {
   }
 
   @Override
-  public String getTestModule() {
+  public String getTestModuleRelativeDir() {
     return moduleName;
+  }
+
+  @Override
+  public int getNumTestsInBatch() {
+    return tests.size();
   }
 
   @Override
