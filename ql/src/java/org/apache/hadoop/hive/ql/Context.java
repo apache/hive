@@ -43,7 +43,6 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
@@ -346,17 +345,7 @@ public class Context {
    * @return A path to the new temporary directory
      */
   public Path getTempDirForPath(Path path) {
-    boolean isLocal = false;
-    if (path != null) {
-      String scheme = path.toUri().getScheme();
-      if (scheme != null) {
-        String localScheme =
-            Utilities.HADOOP_LOCAL_FS.substring(0, Utilities.HADOOP_LOCAL_FS.indexOf(':'));
-        isLocal = scheme.equals(localScheme);
-      }
-    }
-    if ((BlobStorageUtils.isBlobStoragePath(conf, path) && !BlobStorageUtils.isBlobStorageAsScratchDir(conf))
-        || isLocal) {
+    if (BlobStorageUtils.isBlobStoragePath(conf, path) && !BlobStorageUtils.isBlobStorageAsScratchDir(conf)) {
       // For better write performance, we use HDFS for temporary data when object store is used.
       // Note that the scratch directory configuration variable must use HDFS or any other non-blobstorage system
       // to take advantage of this performance.
