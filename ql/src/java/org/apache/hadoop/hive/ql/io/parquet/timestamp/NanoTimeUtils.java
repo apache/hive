@@ -49,7 +49,7 @@ public class NanoTimeUtils {
      return parquetLocalCalendar.get();
    }
 
-   private static Calendar getCalendar(boolean skipConversion) {
+   public static Calendar getCalendar(boolean skipConversion) {
      Calendar calendar = skipConversion ? getLocalCalendar() : getGMTCalendar();
      calendar.clear(); // Reset all fields before reusing this instance
      return calendar;

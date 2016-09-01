@@ -15,147 +15,29 @@ package org.apache.hadoop.hive.ql.io.parquet;
 
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.vector.VectorColumnAssign;
-import org.apache.hadoop.hive.ql.exec.vector.VectorColumnAssignFactory;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
-import org.apache.hadoop.hive.ql.io.parquet.read.ParquetRecordReaderWrapper;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.io.ArrayWritable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.FileSplit;
+import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.parquet.hadoop.ParquetInputFormat;
 
 /**
  * Vectorized input format for Parquet files
  */
-public class VectorizedParquetInputFormat extends FileInputFormat<NullWritable, VectorizedRowBatch>
-  implements VectorizedInputFormatInterface {
+public class VectorizedParquetInputFormat
+  extends FileInputFormat<NullWritable, VectorizedRowBatch> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(VectorizedParquetInputFormat.class);
-
-  /**
-   * Vectorized record reader for vectorized Parquet input format
-   */
-  private static class VectorizedParquetRecordReader implements
-      RecordReader<NullWritable, VectorizedRowBatch> {
-    private static final Logger LOG = LoggerFactory.getLogger(VectorizedParquetRecordReader.class);
-
-    private final ParquetRecordReaderWrapper internalReader;
-      private VectorizedRowBatchCtx rbCtx;
-      private Object[] partitionValues;
-      private ArrayWritable internalValues;
-      private NullWritable internalKey;
-      private VectorColumnAssign[] assigners;
-
-    public VectorizedParquetRecordReader(
-        ParquetInputFormat<ArrayWritable> realInput,
-        FileSplit split,
-        JobConf conf, Reporter reporter) throws IOException, InterruptedException {
-      internalReader = new ParquetRecordReaderWrapper(
-        realInput,
-        split,
-        conf,
-        reporter);
-      rbCtx = Utilities.getVectorizedRowBatchCtx(conf);
-      int partitionColumnCount = rbCtx.getPartitionColumnCount();
-      if (partitionColumnCount > 0) {
-        partitionValues = new Object[partitionColumnCount];
-        rbCtx.getPartitionValues(rbCtx, conf, split, partitionValues);
-      }
-    }
-
-      @Override
-      public NullWritable createKey() {
-        internalKey = internalReader.createKey();
-        return NullWritable.get();
-      }
-
-      @Override
-      public VectorizedRowBatch createValue() {
-        VectorizedRowBatch outputBatch;
-        outputBatch = rbCtx.createVectorizedRowBatch();
-        internalValues = internalReader.createValue();
-        return outputBatch;
-      }
-
-      @Override
-      public long getPos() throws IOException {
-        return internalReader.getPos();
-      }
-
-      @Override
-      public void close() throws IOException {
-        internalReader.close();
-      }
-
-      @Override
-      public float getProgress() throws IOException {
-        return internalReader.getProgress();
-      }
-
-    @Override
-    public boolean next(NullWritable key, VectorizedRowBatch outputBatch)
-        throws IOException {
-      if (assigners != null) {
-        assert(outputBatch.numCols == assigners.length);
-      }
-      outputBatch.reset();
-      int maxSize = outputBatch.getMaxSize();
-      try {
-        while (outputBatch.size < maxSize) {
-          if (false == internalReader.next(internalKey, internalValues)) {
-            outputBatch.endOfFile = true;
-            break;
-          }
-          Writable[] writables = internalValues.get();
-
-          if (null == assigners) {
-            // Normally we'd build the assigners from the rbCtx.rowOI, but with Parquet
-            // we have a discrepancy between the metadata type (Eg. tinyint -> BYTE) and
-            // the writable value (IntWritable). see Parquet's ETypeConverter class.
-            assigners = VectorColumnAssignFactory.buildAssigners(outputBatch, writables);
-          }
-
-          for(int i = 0; i < writables.length; ++i) {
-            assigners[i].assignObjectValue(writables[i], outputBatch.size);
-          }
-          ++outputBatch.size;
-         }
-      } catch (HiveException e) {
-        throw new RuntimeException(e);
-      }
-      return outputBatch.size > 0;
-    }
+  public VectorizedParquetInputFormat() {
   }
 
-  private final ParquetInputFormat<ArrayWritable> realInput;
-
-  public VectorizedParquetInputFormat(ParquetInputFormat<ArrayWritable> realInput) {
-    this.realInput = realInput;
-  }
-
-  @SuppressWarnings("unchecked")
   @Override
   public RecordReader<NullWritable, VectorizedRowBatch> getRecordReader(
-      InputSplit split, JobConf conf, Reporter reporter) throws IOException {
-    try {
-      return (RecordReader<NullWritable, VectorizedRowBatch>)
-        new VectorizedParquetRecordReader(realInput, (FileSplit) split, conf, reporter);
-    } catch (final InterruptedException e) {
-      throw new RuntimeException("Cannot create a VectorizedParquetRecordReader", e);
-    }
+    InputSplit inputSplit,
+    JobConf jobConf,
+    Reporter reporter) throws IOException {
+    return new VectorizedParquetRecordReader(inputSplit, jobConf);
   }
-
 }
