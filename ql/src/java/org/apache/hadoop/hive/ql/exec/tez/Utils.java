@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -38,7 +38,7 @@ public class Utils {
       LlapRegistryService serviceRegistry;
       serviceRegistry = LlapRegistryService.getClient(conf);
 
-      List<ServiceInstance> serviceInstances =
+      Collection<ServiceInstance> serviceInstances =
           serviceRegistry.getInstances().getAllInstancesOrdered();
       String[] locations = new String[serviceInstances.size()];
       int i = 0;

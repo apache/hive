@@ -13,9 +13,8 @@
  */
 package org.apache.hadoop.hive.llap.registry;
 
-import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public interface ServiceInstanceSet {
@@ -28,14 +27,14 @@ public interface ServiceInstanceSet {
    * 
    * @return
    */
-  public Map<String, ServiceInstance> getAll();
+  public Collection<ServiceInstance> getAll();
 
   /**
    * Gets a list containing all the instances. This list has the same iteration order across
    * different processes, assuming the list of registry entries is the same.
    * @return
    */
-  public List<ServiceInstance> getAllInstancesOrdered();
+  public Collection<ServiceInstance> getAllInstancesOrdered();
 
   /**
    * Get an instance by worker identity.

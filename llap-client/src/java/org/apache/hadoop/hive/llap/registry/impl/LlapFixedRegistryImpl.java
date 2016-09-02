@@ -19,6 +19,7 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -222,8 +223,8 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
     }
 
     @Override
-    public Map<String, ServiceInstance> getAll() {
-      return instances;
+    public Collection<ServiceInstance> getAll() {
+      return instances.values();
     }
 
     @Override
