@@ -425,14 +425,19 @@ public class CLIService extends CompositeService implements ICLIService {
     Operation operation = sessionManager.getOperationManager().getOperation(opHandle);
     /**
      * If this is a background operation run asynchronously,
-     * we block for a configured duration, before we return
-     * (duration: HIVE_SERVER2_LONG_POLLING_TIMEOUT).
+     * we block for a duration determined by a step function, before we return
      * However, if the background operation is complete, we return immediately.
      */
     if (operation.shouldRunAsync()) {
       HiveConf conf = operation.getParentSession().getHiveConf();
-      long timeout = HiveConf.getTimeVar(conf,
+      long maxTimeout = HiveConf.getTimeVar(conf,
           HiveConf.ConfVars.HIVE_SERVER2_LONG_POLLING_TIMEOUT, TimeUnit.MILLISECONDS);
+
+      final long elapsed = System.currentTimeMillis() - operation.getBeginTime();
+      // A step function to increase the polling timeout by 500 ms every 10 sec, 
+      // starting from 500 ms up to HIVE_SERVER2_LONG_POLLING_TIMEOUT
+      final long timeout = Math.min(maxTimeout, (elapsed / TimeUnit.SECONDS.toMillis(10) + 1) * 500);
+
       try {
         operation.getBackgroundHandle().get(timeout, TimeUnit.MILLISECONDS);
       } catch (TimeoutException e) {
