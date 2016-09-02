@@ -184,14 +184,19 @@ public class AppConfig extends Configuration {
    * been installed.  We need pass some properties to that client to make sure it connects to the
    * right Metastore, configures Tez, etc.  Here we look for such properties in hive config,
    * and set a comma-separated list of key values in {@link #HIVE_PROPS_NAME}.
+   * The HIVE_CONF_HIDDEN_LIST should be handled separately too - this also should be copied from
+   * the hive config to the webhcat config if not defined there.
    * Note that the user may choose to set the same keys in HIVE_PROPS_NAME directly, in which case
    * those values should take precedence.
    */
   private void handleHiveProperties() {
     HiveConf hiveConf = new HiveConf();//load hive-site.xml from classpath
     List<String> interestingPropNames = Arrays.asList(
-      "hive.metastore.uris","hive.metastore.sasl.enabled",
-      "hive.metastore.execute.setugi","hive.execution.engine");
+        HiveConf.ConfVars.METASTOREURIS.varname,
+        HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL.varname,
+        HiveConf.ConfVars.METASTORE_EXECUTE_SET_UGI.varname,
+        HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname,
+        HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname);
 
     //each items is a "key=value" format
     List<String> webhcatHiveProps = new ArrayList<String>(hiveProps());
@@ -216,6 +221,12 @@ public class AppConfig extends Configuration {
       hiveProps.append(hiveProps.length() > 0 ? "," : "").append(StringUtils.escapeString(whProp));
     }
     set(HIVE_PROPS_NAME, hiveProps.toString());
+    // Setting the hidden list
+    String hiddenProperties = hiveConf.get(HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname);
+    if (this.get(HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname) == null
+        && hiddenProperties!=null) {
+      set(HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname, hiddenProperties);
+    }
   }
 
   private static void logConfigLoadAttempt(String path) {

@@ -134,18 +134,6 @@ public class TestUtilities extends TestCase {
     }
   }
 
-
-  public void testMaskIfPassword() {
-    Assert.assertNull(Utilities.maskIfPassword("",null));
-    Assert.assertNull(Utilities.maskIfPassword(null,null));
-    Assert.assertEquals("test",Utilities.maskIfPassword(null,"test"));
-    Assert.assertEquals("test2",Utilities.maskIfPassword("any","test2"));
-    Assert.assertEquals("###_MASKED_###",Utilities.maskIfPassword("password","test3"));
-    Assert.assertEquals("###_MASKED_###",Utilities.maskIfPassword("a_passWord","test4"));
-    Assert.assertEquals("###_MASKED_###",Utilities.maskIfPassword("password_a","test5"));
-    Assert.assertEquals("###_MASKED_###",Utilities.maskIfPassword("a_PassWord_a","test6"));
-  }
-
   /**
    * Check that calling {@link Utilities#getInputPaths(JobConf, MapWork, Path, Context, boolean)}
    * can process two different empty tables without throwing any exceptions.
