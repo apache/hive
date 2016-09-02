@@ -19,9 +19,9 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -213,15 +213,16 @@ public class HiveRelMdPredicates extends RelMdPredicates {
   public RelOptPredicateList getPredicates(Union union, RelMetadataQuery mq) {
     RexBuilder rB = union.getCluster().getRexBuilder();
 
-    Map<String, RexNode> finalPreds = new LinkedHashMap<>();
-    Map<String, RexNode> finalResidualPreds = new LinkedHashMap<>();
+    Map<String, RexNode> finalPreds = new HashMap<>();
+    List<RexNode> finalResidualPreds = new ArrayList<>();
     for (int i = 0; i < union.getInputs().size(); i++) {
       RelNode input = union.getInputs().get(i);
       RelOptPredicateList info = mq.getPulledUpPredicates(input);
       if (info.pulledUpPredicates.isEmpty()) {
         return RelOptPredicateList.EMPTY;
       }
-      Map<String, RexNode> preds = new LinkedHashMap<>();
+      Map<String, RexNode> preds = new HashMap<>();
+      List<RexNode> residualPreds = new ArrayList<>();
       for (RexNode pred : info.pulledUpPredicates) {
         final String predString = pred.toString();
         if (i == 0) {
@@ -231,21 +232,28 @@ public class HiveRelMdPredicates extends RelMdPredicates {
         if (finalPreds.containsKey(predString)) {
           preds.put(predString, pred);
         } else {
-          finalResidualPreds.put(predString, pred);
+          residualPreds.add(pred);
         }
       }
+      // Add new residual preds
+      finalResidualPreds.add(RexUtil.composeConjunction(rB, residualPreds, false));
       // Add those that are not part of the final set to residual
       for (Entry<String, RexNode> e : finalPreds.entrySet()) {
         if (!preds.containsKey(e.getKey())) {
-          finalResidualPreds.put(e.getKey(), e.getValue());
+          // This node was in previous union inputs, but it is not in this one
+          for (int j = 0; j < i; j++) {
+            finalResidualPreds.set(j, RexUtil.composeConjunction(rB, Lists.newArrayList(
+                    finalResidualPreds.get(j), e.getValue()), false));
+          }
         }
       }
+      // Final preds
       finalPreds = preds;
     }
 
     List<RexNode> preds = new ArrayList<>(finalPreds.values());
-    RexNode disjPred = RexUtil.composeDisjunction(rB, finalResidualPreds.values(), true);
-    if (disjPred != null) {
+    RexNode disjPred = RexUtil.composeDisjunction(rB, finalResidualPreds, false);
+    if (!disjPred.isAlwaysTrue()) {
       preds.add(disjPred);
     }
     return RelOptPredicateList.of(preds);
