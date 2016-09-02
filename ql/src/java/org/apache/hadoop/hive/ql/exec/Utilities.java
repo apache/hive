@@ -225,13 +225,6 @@ public final class Utilities {
   public static String REDUCENAME = "Reducer ";
 
   /**
-   * Constants for log masking
-   */
-  private static String KEY_TO_MASK_WITH = "password";
-  private static String MASKED_VALUE = "###_MASKED_###";
-
-
-  /**
    * ReduceField:
    * KEY: record key
    * VALUE: record value
