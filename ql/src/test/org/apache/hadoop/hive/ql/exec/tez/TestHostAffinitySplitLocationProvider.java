@@ -131,9 +131,9 @@ public class TestHostAffinitySplitLocationProvider {
           newMsg = newLoc + " splits went to the new node";
       LOG.info(movedMsg + " and " + newMsg + msgTail);
       double maxMoved = 1.0f * splits.length / locs, minNew = 1.0f * splits.length / locs;
-      movedRatioSum += Math.max(moved / maxMoved, 1f);
+      movedRatioSum += moved / maxMoved;
       movedRatioWorst = Math.max(moved / maxMoved, movedRatioWorst);
-      newRatioSum += Math.min(newLoc / minNew, 1f);
+      newRatioSum += newLoc / minNew;
       newRatioWorst = Math.min(newLoc / minNew, newRatioWorst);
       logBadRatios(failBuilder, moved, newLoc, msgTail, movedMsg, newMsg, maxMoved, minNew);
     }

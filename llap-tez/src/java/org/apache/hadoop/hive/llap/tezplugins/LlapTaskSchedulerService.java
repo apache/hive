@@ -313,7 +313,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       registry.start();
       registry.registerStateChangeListener(new NodeStateChangeListener());
       activeInstances = registry.getInstances();
-      for (ServiceInstance inst : activeInstances.getAll().values()) {
+      for (ServiceInstance inst : activeInstances.getAll()) {
         addNode(inst, new NodeInfo(inst, nodeBlacklistConf, clock, numSchedulableTasksPerNode,
             metrics));
       }
@@ -326,21 +326,21 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     private final Logger LOG = LoggerFactory.getLogger(NodeStateChangeListener.class);
 
     @Override
-    public void onCreate(final ServiceInstance serviceInstance) {
+    public void onCreate(ServiceInstance serviceInstance) {
       addNode(serviceInstance, new NodeInfo(serviceInstance, nodeBlacklistConf, clock,
           numSchedulableTasksPerNode, metrics));
       LOG.info("Added node with identity: {}", serviceInstance.getWorkerIdentity());
     }
 
     @Override
-    public void onUpdate(final ServiceInstance serviceInstance) {
+    public void onUpdate(ServiceInstance serviceInstance) {
       instanceToNodeMap.put(serviceInstance.getWorkerIdentity(), new NodeInfo(serviceInstance,
           nodeBlacklistConf, clock, numSchedulableTasksPerNode, metrics));
       LOG.info("Updated node with identity: {}", serviceInstance.getWorkerIdentity());
     }
 
     @Override
-    public void onRemove(final ServiceInstance serviceInstance) {
+    public void onRemove(ServiceInstance serviceInstance) {
       // FIXME: disabling this for now
       // instanceToNodeMap.remove(serviceInstance.getWorkerIdentity());
       LOG.info("Removed node with identity: {}", serviceInstance.getWorkerIdentity());
@@ -444,7 +444,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     readLock.lock();
     try {
       int numInstancesFound = 0;
-      for (ServiceInstance inst : activeInstances.getAll().values()) {
+      for (ServiceInstance inst : activeInstances.getAll()) {
         if (inst.isAlive()) {
           Resource r = inst.getResource();
           memory += r.getMemory();
@@ -494,7 +494,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     readLock.lock();
     try {
       int n = 0;
-      for (ServiceInstance inst : activeInstances.getAll().values()) {
+      for (ServiceInstance inst : activeInstances.getAll()) {
         if (inst.isAlive()) {
           n++;
         }
@@ -811,7 +811,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     /* check again whether nodes are disabled or just missing */
     writeLock.lock();
     try {
-      for (ServiceInstance inst : activeInstances.getAll().values()) {
+      for (ServiceInstance inst : activeInstances.getAll()) {
         if (inst.isAlive() && instanceToNodeMap.containsKey(inst.getWorkerIdentity()) == false) {
           /* that's a good node, not added to the allocations yet */
           LOG.info("Found a new node: " + inst + ".");
@@ -825,7 +825,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   }
 
   private void addNode(ServiceInstance inst, NodeInfo node) {
-    LOG.info("Adding node: " + inst);
     // we have just added a new node. Signal timeout monitor to reset timer
     if (activeInstances.size() == 1) {
       LOG.info("New node added. Signalling scheduler timeout monitor thread to stop timer.");
