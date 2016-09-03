@@ -2797,7 +2797,7 @@ public class HiveConf extends Configuration {
     HIVE_DECODE_PARTITION_NAME("hive.decode.partition.name", false,
         "Whether to show the unquoted partition names in query results."),
 
-    HIVE_EXECUTION_ENGINE("hive.execution.engine", "mr", new StringSet("mr", "tez", "spark"),
+    HIVE_EXECUTION_ENGINE("hive.execution.engine", "mr", new StringSet(true, "mr", "tez", "spark"),
         "Chooses execution engine. Options are: mr (Map reduce, default), tez, spark. While MR\n" +
         "remains the default engine for historical reasons, it is itself a historical engine\n" +
         "and is deprecated in Hive 2 line. It may be removed without further warning."),
