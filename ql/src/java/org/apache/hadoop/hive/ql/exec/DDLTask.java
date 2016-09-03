@@ -1877,10 +1877,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
               apd.addPartition(Warehouse.makeSpecFromName(part.getPartitionName()), null);
               repairOutput.add("Repair: Added partition to metastore " + msckDesc.getTableName()
                   + ':' + part.getPartitionName());
-              if (counter == batch_size) {
+              if (counter % batch_size == 0 || counter == partsNotInMs.size()) {
                 db.createPartitions(apd);
                 apd = new AddPartitionDesc(table.getDbName(), table.getTableName(), false);
-                counter = 0;
               }
             }
           } else {

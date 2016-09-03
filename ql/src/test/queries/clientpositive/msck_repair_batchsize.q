@@ -1,4 +1,4 @@
-set hive.msck.repair.batch.size=1;
+set hive.msck.repair.batch.size=2;
 
 DROP TABLE IF EXISTS repairtable;
 
@@ -8,7 +8,10 @@ MSCK TABLE repairtable;
 
 dfs ${system:test.dfs.mkdir} ${system:test.warehouse.dir}/repairtable/p1=a/p2=a;
 dfs ${system:test.dfs.mkdir} ${system:test.warehouse.dir}/repairtable/p1=b/p2=a;
+dfs ${system:test.dfs.mkdir} ${system:test.warehouse.dir}/repairtable/p1=c/p2=a;
+dfs -touchz ${system:test.warehouse.dir}/repairtable/p1=a/p2=a/datafile;
 dfs -touchz ${system:test.warehouse.dir}/repairtable/p1=b/p2=a/datafile;
+dfs -touchz ${system:test.warehouse.dir}/repairtable/p1=c/p2=a/datafile;
 
 MSCK TABLE default.repairtable;
 
