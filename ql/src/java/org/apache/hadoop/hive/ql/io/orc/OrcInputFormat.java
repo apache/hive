@@ -1162,7 +1162,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private List<StripeInformation> stripes;
     private List<StripeStatistics> stripeStats;
     private List<OrcProto.Type> fileTypes;
-    private boolean[] readerIncluded;
+    private boolean[] included;          // The included columns from the Hive configuration.
+    private boolean[] readerIncluded;    // The included columns of the reader / file schema that
+                                         // include ACID columns if present.
     private final boolean isOriginal;
     private final List<DeltaMetaData> deltas;
     private final boolean hasBase;
@@ -1357,7 +1359,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         if ((deltas == null || deltas.isEmpty()) && context.sarg != null) {
           String[] colNames =
               extractNeededColNames((readerTypes == null ? fileTypes : readerTypes),
-                  context.conf, readerIncluded, isOriginal);
+                  context.conf, included, isOriginal);
           if (colNames == null) {
             LOG.warn("Skipping split elimination for {} as column names is null", file.getPath());
           } else {
@@ -1479,15 +1481,18 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       fileTypes = orcTail.getTypes();
       TypeDescription fileSchema = OrcUtils.convertTypeFromProtobuf(fileTypes, 0);
       if (readerTypes == null) {
-        readerIncluded = genIncludedColumns(fileTypes, context.conf, isOriginal);
-        evolution = new SchemaEvolution(fileSchema, readerIncluded);
+        included = genIncludedColumns(fileTypes, context.conf, isOriginal);
+        evolution = new SchemaEvolution(fileSchema, included);
+        readerIncluded = included;
       } else {
-        // The readerSchema always comes in without ACID columns.
-        readerIncluded = genIncludedColumns(readerTypes, context.conf, /* isOriginal */ true);
-        if (readerIncluded != null && !isOriginal) {
+        // The reader schema always comes in without ACID columns.
+        included = genIncludedColumns(readerTypes, context.conf, /* isOriginal */ true);
+        if (included != null && !isOriginal) {
           // We shift the include columns here because the SchemaEvolution constructor will
           // add the ACID event metadata the readerSchema...
-          readerIncluded = shiftReaderIncludedForAcid(readerIncluded);
+          readerIncluded = shiftReaderIncludedForAcid(included);
+        } else {
+          readerIncluded = included;
         }
         TypeDescription readerSchema = OrcUtils.convertTypeFromProtobuf(readerTypes, 0);
         evolution = new SchemaEvolution(fileSchema, readerSchema, readerIncluded);
