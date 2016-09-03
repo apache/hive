@@ -1062,7 +1062,7 @@ public final class ConstantPropagateProcFactory {
           colList.set(i, newCol);
           if (newCol instanceof ExprNodeConstantDesc && op.getSchema() != null) {
             ColumnInfo colInfo = op.getSchema().getSignature().get(i);
-            if (!VirtualColumn.isVirtualColumnBasedOnAlias(colInfo)) {
+            if (constants.containsKey(colInfo)) {
               constants.put(colInfo, newCol);
             }
           }

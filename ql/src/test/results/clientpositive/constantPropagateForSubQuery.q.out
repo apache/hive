@@ -308,9 +308,13 @@ POSTHOOK: Input: default@src1
 429	val_429	66	val_66
 429	val_429	98	val_98
 429	val_429	98	val_98
-PREHOOK: query: explain extended select * from (select key-1 as key from srcbucket where key = 6) z
+PREHOOK: query: -- Test constant propagation where the column name is aliased to its original name, see CDH-39679 for details
+
+explain extended select * from (select key-1 as key from srcbucket where key = 6) z
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select * from (select key-1 as key from srcbucket where key = 6) z
+POSTHOOK: query: -- Test constant propagation where the column name is aliased to its original name, see CDH-39679 for details
+
+explain extended select * from (select key-1 as key from srcbucket where key = 6) z
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   
@@ -457,3 +461,179 @@ POSTHOOK: Input: default@srcbucket
 #### A masked pattern was here ####
 5
 5
+PREHOOK: query: -- Test with multiple levels of sub-queries
+
+explain extended select y.key-1 as key from (select z.key-1 as key from (select key-1 as key from srcbucket where key = 6) z) y
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Test with multiple levels of sub-queries
+
+explain extended select y.key-1 as key from (select z.key-1 as key from (select key-1 as key from srcbucket where key = 6) z) y
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_SUBQUERY
+         TOK_QUERY
+            TOK_FROM
+               TOK_SUBQUERY
+                  TOK_QUERY
+                     TOK_FROM
+                        TOK_TABREF
+                           TOK_TABNAME
+                              srcbucket
+                     TOK_INSERT
+                        TOK_DESTINATION
+                           TOK_DIR
+                              TOK_TMP_FILE
+                        TOK_SELECT
+                           TOK_SELEXPR
+                              -
+                                 TOK_TABLE_OR_COL
+                                    key
+                                 1
+                              key
+                        TOK_WHERE
+                           =
+                              TOK_TABLE_OR_COL
+                                 key
+                              6
+                  z
+            TOK_INSERT
+               TOK_DESTINATION
+                  TOK_DIR
+                     TOK_TMP_FILE
+               TOK_SELECT
+                  TOK_SELEXPR
+                     -
+                        .
+                           TOK_TABLE_OR_COL
+                              z
+                           key
+                        1
+                     key
+         y
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            -
+               .
+                  TOK_TABLE_OR_COL
+                     y
+                  key
+               1
+            key
+
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: srcbucket
+            Statistics: Num rows: 1000 Data size: 10603 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: (key = 6) (type: boolean)
+              Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: 3 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        columns _col0
+                        columns.types int
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: srcbucket
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count 2
+              bucket_field_name key
+              columns key,value
+              columns.comments 
+              columns.types int:string
+#### A masked pattern was here ####
+              name default.srcbucket
+              numFiles 2
+              numRows 1000
+              rawDataSize 10603
+              serialization.ddl struct srcbucket { i32 key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 11603
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count 2
+                bucket_field_name key
+                columns key,value
+                columns.comments 
+                columns.types int:string
+#### A masked pattern was here ####
+                name default.srcbucket
+                numFiles 2
+                numRows 1000
+                rawDataSize 10603
+                serialization.ddl struct srcbucket { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 11603
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.srcbucket
+            name: default.srcbucket
+      Truncated Path -> Alias:
+        /srcbucket [$hdt$_0:$hdt$_0:$hdt$_0:srcbucket]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select y.key1-1 from (select z.key-1 as key1 from (select key-1 as key from srcbucket where key = 6) z) y
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+POSTHOOK: query: select y.key1-1 from (select z.key-1 as key1 from (select key-1 as key from srcbucket where key = 6) z) y
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
+3
+3

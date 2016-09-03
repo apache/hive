@@ -176,14 +176,4 @@ public class VirtualColumn implements Serializable {
     }
     return ObjectInspectorFactory.getStandardStructObjectInspector(names, inspectors);
   }
-
-  public static boolean isVirtualColumnBasedOnAlias(ColumnInfo column) {
-    // Not using method column.getIsVirtualCol() because partitioning columns
-    // are also treated as virtual columns in ColumnInfo.
-    if (column.getAlias() != null
-        && VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(column.getAlias().toUpperCase())) {
-      return true;
-    }
-    return false;
-  }
 }
