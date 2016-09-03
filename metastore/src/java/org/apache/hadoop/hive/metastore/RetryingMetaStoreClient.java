@@ -200,7 +200,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
       }
 
 
-      if (retriesMade >= retryLimit) {
+      if (retriesMade >= retryLimit || base.isLocalMetaStore()) {
         throw caughtException;
       }
       retriesMade++;
