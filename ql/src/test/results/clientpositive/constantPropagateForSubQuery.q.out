@@ -308,11 +308,11 @@ POSTHOOK: Input: default@src1
 429	val_429	66	val_66
 429	val_429	98	val_98
 429	val_429	98	val_98
-PREHOOK: query: -- Test constant propagation where the column name is aliased to its original name, see CDH-39679 for details
+PREHOOK: query: -- Test constant propagation where the column name is aliased to its original name, see HIVE-14705 for details
 
 explain extended select * from (select key-1 as key from srcbucket where key = 6) z
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test constant propagation where the column name is aliased to its original name, see CDH-39679 for details
+POSTHOOK: query: -- Test constant propagation where the column name is aliased to its original name, see HIVE-14705 for details
 
 explain extended select * from (select key-1 as key from srcbucket where key = 6) z
 POSTHOOK: type: QUERY
