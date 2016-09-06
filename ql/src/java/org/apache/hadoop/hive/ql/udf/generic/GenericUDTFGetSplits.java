@@ -228,58 +228,64 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     }
 
     Driver driver = new Driver(conf);
-    CommandProcessorResponse cpr = driver.compileAndRespond(query);
-    if (cpr.getResponseCode() != 0) {
-      throw new HiveException("Failed to compile query: " + cpr.getException());
-    }
-
-    QueryPlan plan = driver.getPlan();
-    List<Task<?>> roots = plan.getRootTasks();
-    Schema schema = convertSchema(plan.getResultSchema());
-
-    if (roots == null || roots.size() != 1 || !(roots.get(0) instanceof TezTask)) {
-      throw new HiveException("Was expecting a single TezTask.");
-    }
-
-    TezWork tezWork = ((TezTask)roots.get(0)).getWork();
-
-    if (tezWork.getAllWork().size() != 1) {
-
-      String tableName = "table_"+UUID.randomUUID().toString().replaceAll("[^A-Za-z0-9 ]", "");
-
-      String ctas = "create temporary table " + tableName + " as " + query;
-      LOG.info("Materializing the query for LLAPIF; CTAS: " + ctas);
-
-      try {
-        HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, originalMode);
-        cpr = driver.run(ctas, false);
-      } catch (CommandNeedRetryException e) {
-        throw new HiveException(e);
+    try {
+      CommandProcessorResponse cpr = driver.compileAndRespond(query);
+      if (cpr.getResponseCode() != 0) {
+        throw new HiveException("Failed to compile query: " + cpr.getException());
       }
 
-      if(cpr.getResponseCode() != 0) {
-        throw new HiveException("Failed to create temp table: " + cpr.getException());
-      }
-
-      HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, "llap");
-      query = "select * from " + tableName;
-      cpr = driver.compileAndRespond(query);
-      if(cpr.getResponseCode() != 0) {
-        throw new HiveException("Failed to create temp table: "+cpr.getException());
-      }
-
-      plan = driver.getPlan();
-      roots = plan.getRootTasks();
-      schema = convertSchema(plan.getResultSchema());
+      QueryPlan plan = driver.getPlan();
+      List<Task<?>> roots = plan.getRootTasks();
+      Schema schema = convertSchema(plan.getResultSchema());
 
       if (roots == null || roots.size() != 1 || !(roots.get(0) instanceof TezTask)) {
         throw new HiveException("Was expecting a single TezTask.");
       }
 
-      tezWork = ((TezTask)roots.get(0)).getWork();
-    }
+      TezWork tezWork = ((TezTask)roots.get(0)).getWork();
 
-    return new PlanFragment(tezWork, schema, jc);
+      if (tezWork.getAllWork().size() != 1) {
+
+        String tableName = "table_"+UUID.randomUUID().toString().replaceAll("[^A-Za-z0-9 ]", "");
+
+        String ctas = "create temporary table " + tableName + " as " + query;
+        LOG.info("Materializing the query for LLAPIF; CTAS: " + ctas);
+
+        try {
+          driver.resetQueryState();
+          HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, originalMode);
+          cpr = driver.run(ctas, false);
+        } catch (CommandNeedRetryException e) {
+          throw new HiveException(e);
+        }
+
+        if(cpr.getResponseCode() != 0) {
+          throw new HiveException("Failed to create temp table: " + cpr.getException());
+        }
+
+        HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, "llap");
+        query = "select * from " + tableName;
+        cpr = driver.compileAndRespond(query);
+        if(cpr.getResponseCode() != 0) {
+          throw new HiveException("Failed to create temp table: "+cpr.getException());
+        }
+
+        plan = driver.getPlan();
+        roots = plan.getRootTasks();
+        schema = convertSchema(plan.getResultSchema());
+
+        if (roots == null || roots.size() != 1 || !(roots.get(0) instanceof TezTask)) {
+          throw new HiveException("Was expecting a single TezTask.");
+        }
+
+        tezWork = ((TezTask)roots.get(0)).getWork();
+      }
+
+      return new PlanFragment(tezWork, schema, jc);
+    } finally {
+      driver.close();
+      driver.destroy();
+    }
   }
 
   public InputSplit[] getSplits(JobConf job, int numSplits, TezWork work, Schema schema)
