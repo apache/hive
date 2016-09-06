@@ -34,6 +34,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -193,6 +194,22 @@ public class TestJdbcWithMiniLlap {
     assertArrayEquals(new String[] {"val_0", nonAscii}, rowCollector.rows.get(0));
     assertArrayEquals(new String[] {"val_0", nonAscii}, rowCollector.rows.get(1));
     assertArrayEquals(new String[] {"val_0", nonAscii}, rowCollector.rows.get(2));
+  }
+
+  @Test(timeout = 60000)
+  public void testEscapedStrings() throws Exception {
+    createTestTable("testtab1");
+
+    RowCollector rowCollector = new RowCollector();
+    String expectedVal1 = "'a',\"b\",\\c\\";
+    String expectedVal2 = "multi\nline";
+    String query = "select value, '\\'a\\',\"b\",\\\\c\\\\', 'multi\\nline' from testtab1 where under_col=0";
+    int rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(3, rowCount);
+
+    assertArrayEquals(new String[] {"val_0", expectedVal1, expectedVal2}, rowCollector.rows.get(0));
+    assertArrayEquals(new String[] {"val_0", expectedVal1, expectedVal2}, rowCollector.rows.get(1));
+    assertArrayEquals(new String[] {"val_0", expectedVal1, expectedVal2}, rowCollector.rows.get(2));
   }
 
   private interface RowProcessor {
