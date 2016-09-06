@@ -700,4 +700,5 @@ sql11ReservedKeywordsUsedAsIdentifier
     | KW_FOREIGN
     | KW_CONSTRAINT
     | KW_REFERENCES
+    | KW_PRECISION
     ;

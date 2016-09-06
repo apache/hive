@@ -466,6 +466,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_BIGINT", "BIGINT");
     xlateMap.put("KW_FLOAT", "FLOAT");
     xlateMap.put("KW_DOUBLE", "DOUBLE");
+    xlateMap.put("KW_PRECISION", "PRECISION");
     xlateMap.put("KW_DATE", "DATE");
     xlateMap.put("KW_DATETIME", "DATETIME");
     xlateMap.put("KW_TIMESTAMP", "TIMESTAMP");
@@ -2232,7 +2233,7 @@ primitiveType
     | KW_BIGINT        ->    TOK_BIGINT
     | KW_BOOLEAN       ->    TOK_BOOLEAN
     | KW_FLOAT         ->    TOK_FLOAT
-    | KW_DOUBLE        ->    TOK_DOUBLE
+    | KW_DOUBLE KW_PRECISION?       ->    TOK_DOUBLE
     | KW_DATE          ->    TOK_DATE
     | KW_DATETIME      ->    TOK_DATETIME
     | KW_TIMESTAMP     ->    TOK_TIMESTAMP
