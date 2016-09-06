@@ -151,6 +151,7 @@ noopwithmap
 noopwithmapstreaming
 not
 ntile
+nullif
 nvl
 or
 parse_url
