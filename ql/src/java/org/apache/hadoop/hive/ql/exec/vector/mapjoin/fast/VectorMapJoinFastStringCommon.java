@@ -67,6 +67,8 @@ public class VectorMapJoinFastStringCommon {
     this.isOuterJoin = isOuterJoin;
     PrimitiveTypeInfo[] primitiveTypeInfos = { TypeInfoFactory.stringTypeInfo };
     keyBinarySortableDeserializeRead =
-        new BinarySortableDeserializeRead(primitiveTypeInfos);
+        new BinarySortableDeserializeRead(
+            primitiveTypeInfos,
+            /* useExternalBuffer */ false);
   }
 }

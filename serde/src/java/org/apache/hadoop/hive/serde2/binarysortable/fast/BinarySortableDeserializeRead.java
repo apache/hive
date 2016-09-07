@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.io.Text;
 
 /*
  * Directly deserialize with the caller reading field-by-field the LazyBinary serialization format.
@@ -64,8 +63,12 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
   private int end;
   private int fieldStart;
 
+  private int bytesStart;
+
+  private int internalBufferLen;
+  private byte[] internalBuffer;
+
   private byte[] tempTimestampBytes;
-  private Text tempText;
 
   private byte[] tempDecimalBuffer;
 
@@ -77,13 +80,14 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
   /*
    * Use this constructor when only ascending sort order is used.
    */
-  public BinarySortableDeserializeRead(PrimitiveTypeInfo[] primitiveTypeInfos) {
-    this(primitiveTypeInfos, null);
+  public BinarySortableDeserializeRead(PrimitiveTypeInfo[] primitiveTypeInfos,
+      boolean useExternalBuffer) {
+    this(primitiveTypeInfos, useExternalBuffer, null);
   }
 
-  public BinarySortableDeserializeRead(TypeInfo[] typeInfos,
+  public BinarySortableDeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer,
           boolean[] columnSortOrderIsDesc) {
-    super(typeInfos);
+    super(typeInfos, useExternalBuffer);
     fieldCount = typeInfos.length;
     if (columnSortOrderIsDesc != null) {
       this.columnSortOrderIsDesc = columnSortOrderIsDesc;
@@ -94,6 +98,7 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
     inputByteBuffer = new InputByteBuffer();
     readBeyondConfiguredFieldsWarned = false;
     bufferRangeHasExtraDataWarned = false;
+    internalBufferLen = -1;
   }
 
   // Not public since we must have column information.
@@ -139,6 +144,8 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
       sb.append(" current read offset ");
       sb.append(inputByteBuffer.tell());
     }
+    sb.append(" column sort order ");
+    sb.append(Arrays.toString(columnSortOrderIsDesc));
 
     return sb.toString();
   }
@@ -276,14 +283,55 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
     case CHAR:
     case VARCHAR:
       {
-        if (tempText == null) {
-          tempText = new Text();
+        /*
+         * This code is a modified version of BinarySortableSerDe.deserializeText that lets us
+         * detect if we can return a reference to the bytes directly.
+         */
+
+        // Get the actual length first
+        bytesStart = inputByteBuffer.tell();
+        final boolean invert = columnSortOrderIsDesc[fieldIndex];
+        int length = 0;
+        do {
+          byte b = inputByteBuffer.read(invert);
+          if (b == 0) {
+            // end of string
+            break;
+          }
+          if (b == 1) {
+            // the last char is an escape char. read the actual char
+            inputByteBuffer.read(invert);
+          }
+          length++;
+        } while (true);
+
+        if (length == 0 ||
+            (!invert && length == inputByteBuffer.tell() - bytesStart - 1)) {
+          // No inversion or escaping happened, so we are can reference directly.
+          currentExternalBufferNeeded = false;
+          currentBytes = inputByteBuffer.getData();
+          currentBytesStart = bytesStart;
+          currentBytesLength = length;
+        } else {
+          // We are now positioned at the end of this field's bytes.
+          if (useExternalBuffer) {
+            // If we decided not to reposition and re-read the buffer to copy it with
+            // copyToExternalBuffer, we we will still be correctly positioned for the next field.
+            currentExternalBufferNeeded = true;
+            currentExternalBufferNeededLen = length;
+          } else {
+            // The copyToBuffer will reposition and re-read the input buffer.
+            currentExternalBufferNeeded = false;
+            if (internalBufferLen < length) {
+              internalBufferLen = length;
+              internalBuffer = new byte[internalBufferLen];
+            }
+            copyToBuffer(internalBuffer, 0, length);
+            currentBytes = internalBuffer;
+            currentBytesStart = 0;
+            currentBytesLength = length;
+          }
         }
-        BinarySortableSerDe.deserializeText(
-            inputByteBuffer, columnSortOrderIsDesc[fieldIndex], tempText);
-        currentBytes = tempText.getBytes();
-        currentBytesStart = 0;
-        currentBytesLength = tempText.getLength();
       }
       break;
     case INTERVAL_YEAR_MONTH:
@@ -317,7 +365,9 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
 
         final boolean invert = columnSortOrderIsDesc[fieldIndex];
         int b = inputByteBuffer.read(invert) - 1;
-        assert (b == 1 || b == -1 || b == 0);
+        if (!(b == 1 || b == -1 || b == 0)) {
+          throw new IOException("Unexpected byte value " + (int)b + " in binary sortable format data (invert " + invert + ")");
+        }
         boolean positive = b != -1;
 
         int factor = inputByteBuffer.read(invert) ^ 0x80;
@@ -334,7 +384,10 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
 
         do {
           b = inputByteBuffer.read(positive ? invert : !invert);
-          assert(b != 1);
+          if (b == 1) {
+            throw new IOException("Expected -1 and found byte value " + (int)b + " in binary sortable format data (invert " + invert + ")");
+          }
+
 
           if (b == 0) {
             // end of digits
@@ -394,6 +447,32 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
     }
 
     return isNull;
+  }
+
+  @Override
+  public void copyToExternalBuffer(byte[] externalBuffer, int externalBufferStart) throws IOException {
+    copyToBuffer(externalBuffer, externalBufferStart, currentExternalBufferNeededLen);
+  }
+
+  private void copyToBuffer(byte[] buffer, int bufferStart, int bufferLength) throws IOException {
+    final boolean invert = columnSortOrderIsDesc[fieldIndex];
+    inputByteBuffer.seek(bytesStart);
+    // 3. Copy the data.
+    for (int i = 0; i < bufferLength; i++) {
+      byte b = inputByteBuffer.read(invert);
+      if (b == 1) {
+        // The last char is an escape char, read the actual char.
+        // The serialization format escape \0 to \1, and \1 to \2,
+        // to make sure the string is null-terminated.
+        b = (byte) (inputByteBuffer.read(invert) - 1);
+      }
+      buffer[bufferStart + i] = b;
+    }
+    // 4. Read the null terminator.
+    byte b = inputByteBuffer.read(invert);
+    if (b != 0) {
+      throw new RuntimeException("Expected 0 terminating byte");
+    }
   }
 
   /*

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.serde2.lazy.fast;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.CharacterCodingException;
 import java.sql.Date;
@@ -78,15 +79,17 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
   private int fieldStart;
   private int fieldLength;
 
-  private Text tempText;
+  private int internalBufferLen;
+  private byte[] internalBuffer;
+
   private TimestampParser timestampParser;
 
   private boolean extraFieldWarned;
   private boolean missingFieldWarned;
 
-  public LazySimpleDeserializeRead(TypeInfo[] typeInfos,
+  public LazySimpleDeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer,
       byte separator, LazySerDeParameters lazyParams) {
-    super(typeInfos);
+    super(typeInfos, useExternalBuffer);
 
     // Field length is difference between positions hence one extra.
     startPosition = new int[typeInfos.length + 1];
@@ -100,13 +103,14 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     lastColumnTakesRest = lazyParams.isLastColumnTakesRest();
 
     fieldCount = typeInfos.length;
-    tempText = new Text();
     extraFieldWarned = false;
     missingFieldWarned = false;
+    internalBufferLen = -1;
   }
 
-  public LazySimpleDeserializeRead(TypeInfo[] typeInfos, LazySerDeParameters lazyParams) {
-    this(typeInfos, lazyParams.getSeparators()[0], lazyParams);
+  public LazySimpleDeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer,
+      LazySerDeParameters lazyParams) {
+    this(typeInfos, useExternalBuffer, lazyParams.getSeparators()[0], lazyParams);
   }
 
   // Not public since we must have the field count so every 8 fields NULL bytes can be navigated.
@@ -395,16 +399,48 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     case STRING:
     case CHAR:
     case VARCHAR:
-      if (isEscaped) {
-        LazyUtils.copyAndEscapeStringDataToText(bytes, fieldStart, fieldLength, escapeChar, tempText);
-        currentBytes = tempText.getBytes();
-        currentBytesStart = 0;
-        currentBytesLength = tempText.getLength();
-      } else {
-        // if the data is not escaped, simply copy the data.
-        currentBytes = bytes;
-        currentBytesStart = fieldStart;
-        currentBytesLength = fieldLength;
+      {
+        if (isEscaped) {
+          // First calculate the length of the output string
+          int outputLength = 0;
+          for (int i = 0; i < fieldLength; i++) {
+            if (bytes[fieldStart + i] != escapeChar) {
+              outputLength++;
+            } else {
+              outputLength++;
+              i++;
+            }
+          }
+          if (outputLength == fieldLength) {
+            // No escaping.
+            currentExternalBufferNeeded = false;
+            currentBytes = bytes;
+            currentBytesStart = fieldStart;
+            currentBytesLength = outputLength;
+          } else {
+            if (useExternalBuffer) {
+              currentExternalBufferNeeded = true;
+              currentExternalBufferNeededLen = outputLength;
+            } else {
+              // The copyToBuffer will reposition and re-read the input buffer.
+              currentExternalBufferNeeded = false;
+              if (internalBufferLen < outputLength) {
+                internalBufferLen = outputLength;
+                internalBuffer = new byte[internalBufferLen];
+              }
+              copyToBuffer(internalBuffer, 0, outputLength);
+              currentBytes = internalBuffer;
+              currentBytesStart = 0;
+              currentBytesLength = outputLength;
+            }
+          }
+        } else {
+          // If the data is not escaped, reference the data directly.
+          currentExternalBufferNeeded = false;
+          currentBytes = bytes;
+          currentBytesStart = fieldStart;
+          currentBytesLength = fieldLength;
+        }
       }
       break;
     case BINARY:
@@ -526,6 +562,32 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     }
 
     return false;
+  }
+
+  @Override
+  public void copyToExternalBuffer(byte[] externalBuffer, int externalBufferStart) {
+    copyToBuffer(externalBuffer, externalBufferStart, currentExternalBufferNeededLen);
+  }
+
+  private void copyToBuffer(byte[] buffer, int bufferStart, int bufferLength) {
+    int k = 0;
+    for (int i = 0; i < bufferLength; i++) {
+      byte b = bytes[fieldStart + i];
+      if (b == escapeChar && i < bufferLength - 1) {
+        ++i;
+        // Check if it's '\r' or '\n'
+        if (bytes[fieldStart + i] == 'r') {
+          buffer[bufferStart + k++] = '\r';
+        } else if (bytes[fieldStart + i] == 'n') {
+          buffer[bufferStart + k++] = '\n';
+        } else {
+          // get the next byte
+          buffer[bufferStart + k++] = bytes[fieldStart + i];
+        }
+      } else {
+        buffer[bufferStart + k++] = b;
+      }
+    }
   }
 
   public void logExceptionMessage(byte[] bytes, int bytesStart, int bytesLength, String dataType) {

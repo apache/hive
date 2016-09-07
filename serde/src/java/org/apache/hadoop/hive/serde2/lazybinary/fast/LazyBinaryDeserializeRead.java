@@ -68,11 +68,12 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
   private boolean readBeyondConfiguredFieldsWarned;
   private boolean bufferRangeHasExtraDataWarned;
 
-  public LazyBinaryDeserializeRead(TypeInfo[] typeInfos) {
-    super(typeInfos);
+  public LazyBinaryDeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer) {
+    super(typeInfos, useExternalBuffer);
     fieldCount = typeInfos.length;
     tempVInt = new VInt();
     tempVLong = new VLong();
+    currentExternalBufferNeeded = false;
     readBeyondConfiguredFieldsWarned = false;
     bufferRangeHasExtraDataWarned = false;
   }

@@ -74,6 +74,12 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
   private TypeInfo[] sourceTypeInfos;
 
+  private byte[] inputBytes;
+
+  /**
+   * @param deserializeRead   Set useExternalBuffer to true to avoid buffer copying and to get
+   *     more efficient reading.
+   */
   public VectorDeserializeRow(T deserializeRead) {
     this();
     this.deserializeRead = deserializeRead;
@@ -338,10 +344,15 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
    * @param batch
    * @param batchIndex
    * @param logicalColumnIndex
+   * @param canRetainByteRef    Specify true when it is safe to retain references to the bytes
+   *                            source for DeserializeRead.  I.e. the STRING, CHAR/VARCHAR data
+   *                            can be set in BytesColumnVector with setRef instead of with setVal
+   *                            which copies data.  An example of a safe usage is referring to bytes
+   *                            in a hash table entry that is immutable.
    * @throws IOException
    */
   private void deserializeRowColumn(VectorizedRowBatch batch, int batchIndex,
-      int logicalColumnIndex) throws IOException {
+      int logicalColumnIndex, boolean canRetainByteRef) throws IOException {
     Category sourceCategory = sourceCategories[logicalColumnIndex];
     if (sourceCategory == null) {
       /*
@@ -406,42 +417,114 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
           break;
         case BINARY:
         case STRING:
-          ((BytesColumnVector) batch.cols[projectionColumnNum]).setVal(
-              batchIndex,
-              deserializeRead.currentBytes,
-              deserializeRead.currentBytesStart,
-              deserializeRead.currentBytesLength);
+          {
+            BytesColumnVector bytesColVec = ((BytesColumnVector) batch.cols[projectionColumnNum]);
+            if (deserializeRead.currentExternalBufferNeeded) {
+              bytesColVec.ensureValPreallocated(deserializeRead.currentExternalBufferNeededLen);
+              deserializeRead.copyToExternalBuffer(
+                  bytesColVec.getValPreallocatedBytes(), bytesColVec.getValPreallocatedStart());
+              bytesColVec.setValPreallocated(
+                  batchIndex,
+                  deserializeRead.currentExternalBufferNeededLen);
+            } else if (canRetainByteRef && inputBytes == deserializeRead.currentBytes) {
+              bytesColVec.setRef(
+                  batchIndex,
+                  deserializeRead.currentBytes,
+                  deserializeRead.currentBytesStart,
+                  deserializeRead.currentBytesLength);
+            } else {
+              bytesColVec.setVal(
+                  batchIndex,
+                  deserializeRead.currentBytes,
+                  deserializeRead.currentBytesStart,
+                  deserializeRead.currentBytesLength);
+            }
+          }
           break;
         case VARCHAR:
           {
             // Use the basic STRING bytes read to get access, then use our optimal truncate/trim method
             // that does not use Java String objects.
-            int adjustedLength = StringExpr.truncate(
-                deserializeRead.currentBytes,
-                deserializeRead.currentBytesStart,
-                deserializeRead.currentBytesLength,
-                maxLengths[logicalColumnIndex]);
-            ((BytesColumnVector) batch.cols[projectionColumnNum]).setVal(
-                batchIndex,
-                deserializeRead.currentBytes,
-                deserializeRead.currentBytesStart,
-                adjustedLength);
+            BytesColumnVector bytesColVec = ((BytesColumnVector) batch.cols[projectionColumnNum]);
+            if (deserializeRead.currentExternalBufferNeeded) {
+              // Write directly into our BytesColumnVector value buffer.
+              bytesColVec.ensureValPreallocated(deserializeRead.currentExternalBufferNeededLen);
+              byte[] convertBuffer = bytesColVec.getValPreallocatedBytes();
+              int convertBufferStart = bytesColVec.getValPreallocatedStart();
+              deserializeRead.copyToExternalBuffer(
+                  convertBuffer,
+                  convertBufferStart);
+              bytesColVec.setValPreallocated(
+                  batchIndex,
+                  StringExpr.truncate(
+                      convertBuffer,
+                      convertBufferStart,
+                      deserializeRead.currentExternalBufferNeededLen,
+                      maxLengths[logicalColumnIndex]));
+            } else if (canRetainByteRef && inputBytes == deserializeRead.currentBytes) {
+              bytesColVec.setRef(
+                  batchIndex,
+                  deserializeRead.currentBytes,
+                  deserializeRead.currentBytesStart,
+                  StringExpr.truncate(
+                      deserializeRead.currentBytes,
+                      deserializeRead.currentBytesStart,
+                      deserializeRead.currentBytesLength,
+                      maxLengths[logicalColumnIndex]));
+            } else {
+              bytesColVec.setVal(
+                  batchIndex,
+                  deserializeRead.currentBytes,
+                  deserializeRead.currentBytesStart,
+                  StringExpr.truncate(
+                      deserializeRead.currentBytes,
+                      deserializeRead.currentBytesStart,
+                      deserializeRead.currentBytesLength,
+                      maxLengths[logicalColumnIndex]));
+            }
           }
           break;
         case CHAR:
           {
             // Use the basic STRING bytes read to get access, then use our optimal truncate/trim method
             // that does not use Java String objects.
-            int adjustedLength = StringExpr.rightTrimAndTruncate(
-                deserializeRead.currentBytes,
-                deserializeRead.currentBytesStart,
-                deserializeRead.currentBytesLength,
-                maxLengths[logicalColumnIndex]);
-            ((BytesColumnVector) batch.cols[projectionColumnNum]).setVal(
-                batchIndex,
-                deserializeRead.currentBytes,
-                deserializeRead.currentBytesStart,
-                adjustedLength);
+            BytesColumnVector bytesColVec = ((BytesColumnVector) batch.cols[projectionColumnNum]);
+            if (deserializeRead.currentExternalBufferNeeded) {
+              // Write directly into our BytesColumnVector value buffer.
+              bytesColVec.ensureValPreallocated(deserializeRead.currentExternalBufferNeededLen);
+              byte[] convertBuffer = bytesColVec.getValPreallocatedBytes();
+              int convertBufferStart = bytesColVec.getValPreallocatedStart();
+              deserializeRead.copyToExternalBuffer(
+                  convertBuffer,
+                  convertBufferStart);
+              bytesColVec.setValPreallocated(
+                  batchIndex,
+                  StringExpr.rightTrimAndTruncate(
+                      convertBuffer,
+                      convertBufferStart,
+                      deserializeRead.currentExternalBufferNeededLen,
+                      maxLengths[logicalColumnIndex]));
+            } else if (canRetainByteRef && inputBytes == deserializeRead.currentBytes) {
+              bytesColVec.setRef(
+                  batchIndex,
+                  deserializeRead.currentBytes,
+                  deserializeRead.currentBytesStart,
+                  StringExpr.rightTrimAndTruncate(
+                      deserializeRead.currentBytes,
+                      deserializeRead.currentBytesStart,
+                      deserializeRead.currentBytesLength,
+                      maxLengths[logicalColumnIndex]));
+            } else {
+              bytesColVec.setVal(
+                  batchIndex,
+                  deserializeRead.currentBytes,
+                  deserializeRead.currentBytesStart,
+                  StringExpr.rightTrimAndTruncate(
+                      deserializeRead.currentBytes,
+                      deserializeRead.currentBytesStart,
+                      deserializeRead.currentBytesLength,
+                      maxLengths[logicalColumnIndex]));
+            }
           }
           break;
         case DECIMAL:
@@ -644,6 +727,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
    * @param length
    */
   public void setBytes(byte[] bytes, int offset, int length) {
+    inputBytes = bytes;
     deserializeRead.set(bytes, offset, length);
   }
 
@@ -652,6 +736,10 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
    *
    * Use getDetailedReadPositionString to get detailed read position information to help
    * diagnose exceptions that are thrown...
+   *
+   * This version of deserialize does not keep byte references to string/char/varchar/binary data
+   * type field.  The bytes are copied into the BytesColumnVector buffer with setVal.
+   * (See deserializeByRef below if keep references is safe).
    *
    * @param batch
    * @param batchIndex
@@ -663,11 +751,48 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       if (isConvert[i]) {
         deserializeConvertRowColumn(batch, batchIndex, i);
       } else {
-        deserializeRowColumn(batch, batchIndex, i);
+        // Pass false for canRetainByteRef since we will NOT be keeping byte references to the input
+        // bytes with the BytesColumnVector.setRef method.
+        deserializeRowColumn(batch, batchIndex, i, /* canRetainByteRef */ false);
       }
     }
     deserializeRead.extraFieldsCheck();
   }
+
+  /**
+   * Deserialize a row from the range of bytes specified by setBytes.
+   *
+   * Use this method instead of deserialize when it is safe to retain references to the bytes source
+   * for DeserializeRead.  I.e. the STRING, CHAR/VARCHAR data can be set in BytesColumnVector with
+   * setRef instead of with setVal which copies data.
+   *
+   * An example of a safe usage:
+   *   Referring to bytes in a hash table entry that is immutable.
+   *
+   * An example of a unsafe usage:
+   *   Referring to bytes in a reduce receive buffer that will be overwritten with new data.
+   *
+   * Use getDetailedReadPositionString to get detailed read position information to help
+   * diagnose exceptions that are thrown...
+   *
+   * @param batch
+   * @param batchIndex
+   * @throws IOException
+   */
+  public void deserializeByRef(VectorizedRowBatch batch, int batchIndex) throws IOException {
+    final int count = isConvert.length;
+    for (int i = 0; i < count; i++) {
+      if (isConvert[i]) {
+        deserializeConvertRowColumn(batch, batchIndex, i);
+      } else {
+        // Pass true for canRetainByteRef since we will be keeping byte references to the input
+        // bytes with the BytesColumnVector.setRef method.
+        deserializeRowColumn(batch, batchIndex, i, /* canRetainByteRef */ true);
+      }
+    }
+    deserializeRead.extraFieldsCheck();
+  }
+
 
   public String getDetailedReadPositionString() {
     return deserializeRead.getDetailedReadPositionString();

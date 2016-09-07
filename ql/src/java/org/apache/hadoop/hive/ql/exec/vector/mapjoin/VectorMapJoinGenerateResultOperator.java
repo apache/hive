@@ -144,7 +144,8 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
     smallTableVectorDeserializeRow.setBytes(bytes, offset, length);
 
     try {
-      smallTableVectorDeserializeRow.deserialize(batch, batchIndex);
+      // Our hash tables are immutable.  We can safely do by reference STRING, CHAR/VARCHAR, etc.
+      smallTableVectorDeserializeRow.deserializeByRef(batch, batchIndex);
     } catch (Exception e) {
       throw new HiveException(
           "\nHashMapResult detail: " +
@@ -442,7 +443,9 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
 
     bigTableVectorDeserializeRow =
         new VectorDeserializeRow<LazyBinaryDeserializeRead>(
-            new LazyBinaryDeserializeRead(bigTableTypeInfos));
+            new LazyBinaryDeserializeRead(
+                bigTableTypeInfos,
+                /* useExternalBuffer */ true));
 
     bigTableVectorDeserializeRow.init(noNullsProjection);
   }
