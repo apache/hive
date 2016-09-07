@@ -195,6 +195,7 @@ sign
 sin
 size
 sort_array
+sort_array_by
 soundex
 space
 split

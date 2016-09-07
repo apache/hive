@@ -139,6 +139,7 @@ Saving all output to "!!{outputDirectory}!!/show_functions.q.raw". Enter "record
 'sin'
 'size'
 'sort_array'
+'sort_array_by'
 'space'
 'split'
 'sqrt'

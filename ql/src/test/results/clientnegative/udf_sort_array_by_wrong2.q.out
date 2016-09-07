@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10015]: Line 2:7 Arguments length mismatch '70000': SORT_ARRAY_BY requires minimum 2 arguments, got 1
