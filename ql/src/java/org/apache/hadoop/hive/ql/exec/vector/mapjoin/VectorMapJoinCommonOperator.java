@@ -574,7 +574,8 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
           new VectorDeserializeRow<LazyBinaryDeserializeRead>(
               new LazyBinaryDeserializeRead(
                   VectorizedBatchUtil.typeInfosFromTypeNames(
-                      smallTableMapping.getTypeNames())));
+                      smallTableMapping.getTypeNames()),
+                      /* useExternalBuffer */ true));
       smallTableVectorDeserializeRow.init(smallTableMapping.getOutputColumns());
     }
 

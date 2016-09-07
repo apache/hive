@@ -170,6 +170,37 @@ public class BytesColumnVector extends ColumnVector {
   }
 
   /**
+   * Preallocate space in the local buffer so the caller can fill in the value bytes themselves.
+   *
+   * Always use with getValPreallocatedBytes, getValPreallocatedStart, and setValPreallocated.
+   */
+  public void ensureValPreallocated(int length) {
+    if ((nextFree + length) > buffer.length) {
+      increaseBufferSpace(length);
+    }
+  }
+
+  public byte[] getValPreallocatedBytes() {
+    return buffer;
+  }
+
+  public int getValPreallocatedStart() {
+    return nextFree;
+  }
+
+  /**
+   * Set the length of the preallocated values bytes used.
+   * @param elementNum
+   * @param length
+   */
+  public void setValPreallocated(int elementNum, int length) {
+    vector[elementNum] = buffer;
+    this.start[elementNum] = nextFree;
+    this.length[elementNum] = length;
+    nextFree += length;
+  }
+
+  /**
    * Set a field to the concatenation of two string values. Result data is copied
    * into the internal buffer.
    *

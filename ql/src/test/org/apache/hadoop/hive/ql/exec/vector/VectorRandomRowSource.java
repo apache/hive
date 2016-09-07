@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.RandomTypeUtil;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -61,6 +62,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hive.common.util.DateUtils;
 
+import com.google.common.base.Charsets;
+
 /**
  * Generate object inspector and random row object[].
  */
@@ -79,6 +82,11 @@ public class VectorRandomRowSource {
   private List<ObjectInspector> primitiveObjectInspectorList;
 
   private StructObjectInspector rowStructObjectInspector;
+
+  private String[] alphabets;
+
+  private boolean addEscapables;
+  private String needsEscapeStr;
 
   public List<String> typeNames() {
     return typeNames;
@@ -201,6 +209,35 @@ public class VectorRandomRowSource {
       typeNames.add(typeName);
     }
     rowStructObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, primitiveObjectInspectorList);
+    alphabets = new String[columnCount];
+  }
+
+  public void addBinarySortableAlphabets() {
+    for (int c = 0; c < columnCount; c++) {
+      switch (primitiveCategories[c]) {
+      case STRING:
+      case CHAR:
+      case VARCHAR:
+        byte[] bytes = new byte[10 + r.nextInt(10)];
+        for (int i = 0; i < bytes.length; i++) {
+          bytes[i] = (byte) (32 + r.nextInt(96));
+        }
+        int alwaysIndex = r.nextInt(bytes.length);
+        bytes[alwaysIndex] = 0;  // Must be escaped by BinarySortable.
+        int alwaysIndex2 = r.nextInt(bytes.length);
+        bytes[alwaysIndex2] = 1;  // Must be escaped by BinarySortable.
+        alphabets[c] = new String(bytes, Charsets.UTF_8);
+        break;
+      default:
+        // No alphabet needed.
+        break;
+      }
+    }
+  }
+
+  public void addEscapables(String needsEscapeStr) {
+    addEscapables = true;
+    this.needsEscapeStr = needsEscapeStr;
   }
 
   public Object[][] randomRows(int n) {
@@ -327,63 +364,105 @@ public class VectorRandomRowSource {
   }
 
   public Object randomObject(int column) {
-    return randomObject(column, r, primitiveCategories, primitiveTypeInfos);
+    return randomObject(column, r, primitiveCategories, primitiveTypeInfos, alphabets, addEscapables, needsEscapeStr);
   }
 
   public static Object randomObject(int column, Random r, PrimitiveCategory[] primitiveCategories,
       PrimitiveTypeInfo[] primitiveTypeInfos) {
+    return randomObject(column, r, primitiveCategories, primitiveTypeInfos, null, false, "");
+  }
+
+  public static Object randomObject(int column, Random r, PrimitiveCategory[] primitiveCategories,
+      PrimitiveTypeInfo[] primitiveTypeInfos, String[] alphabets, boolean addEscapables, String needsEscapeStr) {
     PrimitiveCategory primitiveCategory = primitiveCategories[column];
     PrimitiveTypeInfo primitiveTypeInfo = primitiveTypeInfos[column];
-    switch (primitiveCategory) {
-    case BOOLEAN:
-      return Boolean.valueOf(r.nextInt(1) == 1);
-    case BYTE:
-      return Byte.valueOf((byte) r.nextInt());
-    case SHORT:
-      return Short.valueOf((short) r.nextInt());
-    case INT:
-      return Integer.valueOf(r.nextInt());
-    case LONG:
-      return Long.valueOf(r.nextLong());
-    case DATE:
-      return RandomTypeUtil.getRandDate(r);
-    case FLOAT:
-      return Float.valueOf(r.nextFloat() * 10 - 5);
-    case DOUBLE:
-      return Double.valueOf(r.nextDouble() * 10 - 5);
-    case STRING:
-      return RandomTypeUtil.getRandString(r);
-    case CHAR:
-      return getRandHiveChar(r, (CharTypeInfo) primitiveTypeInfo);
-    case VARCHAR:
-      return getRandHiveVarchar(r, (VarcharTypeInfo) primitiveTypeInfo);
-    case BINARY:
-      return getRandBinary(r, 1 + r.nextInt(100));
-    case TIMESTAMP:
-      return RandomTypeUtil.getRandTimestamp(r);
-    case INTERVAL_YEAR_MONTH:
-      return getRandIntervalYearMonth(r);
-    case INTERVAL_DAY_TIME:
-      return getRandIntervalDayTime(r);
-    case DECIMAL:
-      return getRandHiveDecimal(r, (DecimalTypeInfo) primitiveTypeInfo);
-    default:
-      throw new Error("Unknown primitive category " + primitiveCategory);
+    try {
+      switch (primitiveCategory) {
+      case BOOLEAN:
+        return Boolean.valueOf(r.nextInt(1) == 1);
+      case BYTE:
+        return Byte.valueOf((byte) r.nextInt());
+      case SHORT:
+        return Short.valueOf((short) r.nextInt());
+      case INT:
+        return Integer.valueOf(r.nextInt());
+      case LONG:
+        return Long.valueOf(r.nextLong());
+      case DATE:
+        return RandomTypeUtil.getRandDate(r);
+      case FLOAT:
+        return Float.valueOf(r.nextFloat() * 10 - 5);
+      case DOUBLE:
+        return Double.valueOf(r.nextDouble() * 10 - 5);
+      case STRING:
+      case CHAR:
+      case VARCHAR:
+        {
+          String result;
+          if (alphabets != null && alphabets[column] != null) {
+            result = RandomTypeUtil.getRandString(r, alphabets[column], r.nextInt(10));
+          } else {
+            result = RandomTypeUtil.getRandString(r);
+          }
+          if (addEscapables && result.length() > 0) {
+            int escapeCount = 1 + r.nextInt(2);
+            for (int i = 0; i < escapeCount; i++) {
+              int index = r.nextInt(result.length());
+              String begin = result.substring(0, index);
+              String end = result.substring(index);
+              Character needsEscapeChar = needsEscapeStr.charAt(r.nextInt(needsEscapeStr.length()));
+              result = begin + needsEscapeChar + end;
+            }
+          }
+          switch (primitiveCategory) {
+          case STRING:
+            return result;
+          case CHAR:
+            return new HiveChar(result, ((CharTypeInfo) primitiveTypeInfo).getLength());
+          case VARCHAR:
+            return new HiveChar(result, ((VarcharTypeInfo) primitiveTypeInfo).getLength());
+          default:
+            throw new Error("Unknown primitive category " + primitiveCategory);
+          }
+        }
+      case BINARY:
+        return getRandBinary(r, 1 + r.nextInt(100));
+      case TIMESTAMP:
+        return RandomTypeUtil.getRandTimestamp(r);
+      case INTERVAL_YEAR_MONTH:
+        return getRandIntervalYearMonth(r);
+      case INTERVAL_DAY_TIME:
+        return getRandIntervalDayTime(r);
+      case DECIMAL:
+        return getRandHiveDecimal(r, (DecimalTypeInfo) primitiveTypeInfo);
+      default:
+        throw new Error("Unknown primitive category " + primitiveCategory);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("randomObject failed on column " + column + " type " + primitiveCategory, e);
     }
   }
 
-  public static HiveChar getRandHiveChar(Random r, CharTypeInfo charTypeInfo) {
+  public static HiveChar getRandHiveChar(Random r, CharTypeInfo charTypeInfo, String alphabet) {
     int maxLength = 1 + r.nextInt(charTypeInfo.getLength());
-    String randomString = RandomTypeUtil.getRandString(r, "abcdefghijklmnopqrstuvwxyz", 100);
+    String randomString = RandomTypeUtil.getRandString(r, alphabet, 100);
     HiveChar hiveChar = new HiveChar(randomString, maxLength);
     return hiveChar;
   }
 
-  public static HiveVarchar getRandHiveVarchar(Random r, VarcharTypeInfo varcharTypeInfo) {
+  public static HiveChar getRandHiveChar(Random r, CharTypeInfo charTypeInfo) {
+    return getRandHiveChar(r, charTypeInfo, "abcdefghijklmnopqrstuvwxyz");
+  }
+
+  public static HiveVarchar getRandHiveVarchar(Random r, VarcharTypeInfo varcharTypeInfo, String alphabet) {
     int maxLength = 1 + r.nextInt(varcharTypeInfo.getLength());
-    String randomString = RandomTypeUtil.getRandString(r, "abcdefghijklmnopqrstuvwxyz", 100);
+    String randomString = RandomTypeUtil.getRandString(r, alphabet, 100);
     HiveVarchar hiveVarchar = new HiveVarchar(randomString, maxLength);
     return hiveVarchar;
+  }
+
+  public static HiveVarchar getRandHiveVarchar(Random r, VarcharTypeInfo varcharTypeInfo) {
+    return getRandHiveVarchar(r, varcharTypeInfo, "abcdefghijklmnopqrstuvwxyz");
   }
 
   public static byte[] getRandBinary(Random r, int len){

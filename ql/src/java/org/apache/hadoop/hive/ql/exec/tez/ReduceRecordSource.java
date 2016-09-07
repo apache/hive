@@ -185,6 +185,7 @@ public class ReduceRecordSource implements RecordSource {
                         new BinarySortableDeserializeRead(
                                   VectorizedBatchUtil.typeInfosFromStructObjectInspector(
                                       keyStructInspector),
+                                  /* useExternalBuffer */ true,
                                   binarySortableSerDe.getSortOrders()));
         keyBinarySortableDeserializeToRow.init(0);
 
@@ -194,7 +195,8 @@ public class ReduceRecordSource implements RecordSource {
                   new VectorDeserializeRow<LazyBinaryDeserializeRead>(
                         new LazyBinaryDeserializeRead(
                             VectorizedBatchUtil.typeInfosFromStructObjectInspector(
-                                       valueStructInspectors)));
+                                       valueStructInspectors),
+                            /* useExternalBuffer */ true));
           valueLazyBinaryDeserializeToRow.init(firstValueColumnOffset);
 
           // Create data buffers for value bytes column vectors.

@@ -96,7 +96,9 @@ public class TestLazySimpleFast extends TestCase {
     for (int i = 0; i < rowCount; i++) {
       Object[] row = rows[i];
       LazySimpleDeserializeRead lazySimpleDeserializeRead =
-              new LazySimpleDeserializeRead(writePrimitiveTypeInfos,
+              new LazySimpleDeserializeRead(
+                  writePrimitiveTypeInfos,
+                  /* useExternalBuffer */ false,
                   separator, serdeParams);
 
       if (useIncludeColumns) {
@@ -186,7 +188,9 @@ public class TestLazySimpleFast extends TestCase {
       Object[] row = rows[i];
 
       LazySimpleDeserializeRead lazySimpleDeserializeRead =
-              new LazySimpleDeserializeRead(writePrimitiveTypeInfos,
+              new LazySimpleDeserializeRead(
+                  writePrimitiveTypeInfos,
+                  /* useExternalBuffer */ false,
                   separator, serdeParams);
 
       if (useIncludeColumns) {

@@ -116,7 +116,10 @@ public class TestBinarySortableFast extends TestCase {
     for (int i = 0; i < rowCount; i++) {
       Object[] row = rows[i];
       BinarySortableDeserializeRead binarySortableDeserializeRead =
-              new BinarySortableDeserializeRead(primitiveTypeInfos, columnSortOrderIsDesc);
+              new BinarySortableDeserializeRead(
+                  primitiveTypeInfos,
+                  /* useExternalBuffer */ false,
+                  columnSortOrderIsDesc);
 
       if (useIncludeColumns) {
         binarySortableDeserializeRead.setColumnsToInclude(columnsToInclude);
@@ -144,7 +147,10 @@ public class TestBinarySortableFast extends TestCase {
        * Clip off one byte and expect to get an EOFException on the write field.
        */
       BinarySortableDeserializeRead binarySortableDeserializeRead2 =
-          new BinarySortableDeserializeRead(primitiveTypeInfos, columnSortOrderIsDesc);
+          new BinarySortableDeserializeRead(
+              primitiveTypeInfos,
+              /* useExternalBuffer */ false,
+              columnSortOrderIsDesc);
 
       if (useIncludeColumns) {
         binarySortableDeserializeRead2.setColumnsToInclude(columnsToInclude);
@@ -278,7 +284,10 @@ public class TestBinarySortableFast extends TestCase {
     for (int i = 0; i < rowCount; i++) {
       Object[] row = rows[i];
       BinarySortableDeserializeRead binarySortableDeserializeRead =
-              new BinarySortableDeserializeRead(primitiveTypeInfos, columnSortOrderIsDesc);
+              new BinarySortableDeserializeRead(
+                  primitiveTypeInfos,
+                  /* useExternalBuffer */ false,
+                  columnSortOrderIsDesc);
 
       if (useIncludeColumns) {
         binarySortableDeserializeRead.setColumnsToInclude(columnsToInclude);

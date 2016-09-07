@@ -69,7 +69,9 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
       int length = ref.getLength();
 
       LazyBinaryDeserializeRead lazyBinaryDeserializeRead =
-          new LazyBinaryDeserializeRead(typeInfos);
+          new LazyBinaryDeserializeRead(
+              typeInfos,
+              /* useExternalBuffer */ false);
 
       lazyBinaryDeserializeRead.set(bytes, offset, length);
 
@@ -127,7 +129,9 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
       }
 
       LazyBinaryDeserializeRead lazyBinaryDeserializeRead =
-          new LazyBinaryDeserializeRead(typeInfos);
+          new LazyBinaryDeserializeRead(
+              typeInfos,
+              /* useExternalBuffer */ false);
 
       lazyBinaryDeserializeRead.set(bytes, offset, length);
 
