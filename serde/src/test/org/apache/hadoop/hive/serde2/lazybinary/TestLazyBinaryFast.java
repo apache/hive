@@ -91,7 +91,9 @@ public class TestLazyBinaryFast extends TestCase {
       // Specifying the right type info length tells LazyBinaryDeserializeRead which is the last
       // column.
       LazyBinaryDeserializeRead lazyBinaryDeserializeRead =
-              new LazyBinaryDeserializeRead(writePrimitiveTypeInfos);
+              new LazyBinaryDeserializeRead(
+                  writePrimitiveTypeInfos,
+                  /* useExternalBuffer */ false);
 
       if (useIncludeColumns) {
         lazyBinaryDeserializeRead.setColumnsToInclude(columnsToInclude);
@@ -191,7 +193,9 @@ public class TestLazyBinaryFast extends TestCase {
 
       // When doWriteFewerColumns, try to read more fields than exist in buffer.
       LazyBinaryDeserializeRead lazyBinaryDeserializeRead =
-              new LazyBinaryDeserializeRead(primitiveTypeInfos);
+              new LazyBinaryDeserializeRead(
+                  primitiveTypeInfos,
+                  /* useExternalBuffer */ false);
 
       if (useIncludeColumns) {
         lazyBinaryDeserializeRead.setColumnsToInclude(columnsToInclude);

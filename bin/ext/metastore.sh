@@ -17,7 +17,7 @@ THISSERVICE=metastore
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 metastore() {
-  echo "Starting Hive Metastore Server"
+  echo "$(timestamp): Starting Hive Metastore Server"
   CLASS=org.apache.hadoop.hive.metastore.HiveMetaStore
   if $cygwin; then
     HIVE_LIB=`cygpath -w "$HIVE_LIB"`
@@ -34,3 +34,7 @@ metastore_help() {
   metastore -h
 }
 
+timestamp()
+{
+ date +"%Y-%m-%d %T"
+}

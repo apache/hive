@@ -60,42 +60,6 @@ public class TestTxnCommands2WithSplitUpdate extends TestTxnCommands2 {
 
   @Override
   @Test
-  public void testOrcPPD() throws Exception  {
-    final String defaultUnset = "unset";
-    String oldSplitStrategyValue = hiveConf.get(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, defaultUnset);
-    // TODO: Setting split strategy as 'BI' is workaround for HIVE-14448 until it is resolved.
-    hiveConf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "BI");
-
-    super.testOrcPPD();
-
-    // Restore the previous value for split strategy, or unset if not previously set.
-    if (oldSplitStrategyValue.equals(defaultUnset)) {
-      hiveConf.unset(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname);
-    } else {
-      hiveConf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, oldSplitStrategyValue);
-    }
-  }
-
-  @Override
-  @Test
-  public void testOrcNoPPD() throws Exception {
-    final String defaultUnset = "unset";
-    String oldSplitStrategyValue = hiveConf.get(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, defaultUnset);
-    // TODO: Setting split strategy as 'BI' is workaround for HIVE-14448 until it is resolved.
-    hiveConf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "BI");
-
-    super.testOrcNoPPD();
-
-    // Restore the previous value for split strategy, or unset if not previously set.
-    if (oldSplitStrategyValue.equals(defaultUnset)) {
-      hiveConf.unset(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname);
-    } else {
-      hiveConf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, oldSplitStrategyValue);
-    }
-  }
-
-  @Override
-  @Test
   public void testInitiatorWithMultipleFailedCompactions() throws Exception {
     // Test with split-update turned on.
     testInitiatorWithMultipleFailedCompactionsForVariousTblProperties("'transactional'='true','transactional_properties'='default'");

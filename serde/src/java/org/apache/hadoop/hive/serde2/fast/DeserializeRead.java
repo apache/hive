@@ -47,12 +47,34 @@ public abstract class DeserializeRead {
 
   protected TypeInfo[] typeInfos;
 
+  protected boolean useExternalBuffer;
+
   protected boolean[] columnsToInclude;
 
   protected Category[] categories;
   protected PrimitiveCategory[] primitiveCategories;
 
-  public DeserializeRead(TypeInfo[] typeInfos) {
+  /**
+   * Constructor.
+   *
+   * When useExternalBuffer is specified true and readCheckNull reads a string/char/varchar/binary
+   * field, it will request an external buffer to receive the data of format conversion.
+   *
+   * if (!deserializeRead.readCheckNull()) {
+   *   if (deserializeRead.currentExternalBufferNeeded) {
+   *     <Ensure external buffer is as least deserializeRead.currentExternalBufferNeededLen bytes>
+   *     deserializeRead.copyToExternalBuffer(externalBuffer, externalBufferStart);
+   *   } else {
+   *     <Otherwise, field data is available in the currentBytes, currentBytesStart, and
+   *      currentBytesLength of deserializeRead>
+   *   }
+   *
+   * @param typeInfos
+   * @param useExternalBuffer   Specify true when the caller is prepared to provide a bytes buffer
+   *                            to receive a string/char/varchar/binary field that needs format
+   *                            conversion.
+   */
+  public DeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer) {
     this.typeInfos = typeInfos;
     final int count = typeInfos.length;
     categories = new Category[count];
@@ -96,6 +118,8 @@ public abstract class DeserializeRead {
           // No writable needed for this data type.
         }
       }
+
+      this.useExternalBuffer = useExternalBuffer;
     }
 
     columnsToInclude = null;
@@ -194,7 +218,19 @@ public abstract class DeserializeRead {
    *
    * For CHAR and VARCHAR when the caller takes responsibility for
    * truncation/padding issues.
+   *
+   * When currentExternalBufferNeeded is true, conversion is needed into an external buffer of
+   * at least currentExternalBufferNeededLen bytes.  Use copyToExternalBuffer to get the result.
+   *
+   * Otherwise, currentBytes, currentBytesStart, and currentBytesLength are the result.
    */
+  public boolean currentExternalBufferNeeded;
+  public int currentExternalBufferNeededLen;
+
+  public void copyToExternalBuffer(byte[] externalBuffer, int externalBufferStart) throws IOException {
+    throw new RuntimeException("Not implemented");
+  }
+
   public byte[] currentBytes;
   public int currentBytesStart;
   public int currentBytesLength;

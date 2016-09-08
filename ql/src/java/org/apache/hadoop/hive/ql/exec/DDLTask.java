@@ -1770,7 +1770,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private void msckAddPartitionsOneByOne(Hive db, Table table,
-      List<CheckResult.PartitionResult> partsNotInMs, List<String> repairOutput) {
+      Set<CheckResult.PartitionResult> partsNotInMs, List<String> repairOutput) {
     for (CheckResult.PartitionResult part : partsNotInMs) {
       try {
         db.createPartition(table, Warehouse.makeSpecFromName(part.getPartitionName()));
@@ -1829,7 +1829,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       HiveMetaStoreChecker checker = new HiveMetaStoreChecker(db);
       String[] names = Utilities.getDbTableName(msckDesc.getTableName());
       checker.checkMetastore(names[0], names[1], msckDesc.getPartSpecs(), result);
-      List<CheckResult.PartitionResult> partsNotInMs = result.getPartitionsNotInMs();
+      Set<CheckResult.PartitionResult> partsNotInMs = result.getPartitionsNotInMs();
       if (msckDesc.isRepairPartitions() && !partsNotInMs.isEmpty()) {
         AbstractList<String> vals = null;
         String settingStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION);
@@ -1877,10 +1877,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
               apd.addPartition(Warehouse.makeSpecFromName(part.getPartitionName()), null);
               repairOutput.add("Repair: Added partition to metastore " + msckDesc.getTableName()
                   + ':' + part.getPartitionName());
-              if (counter == batch_size) {
+              if (counter % batch_size == 0 || counter == partsNotInMs.size()) {
                 db.createPartitions(apd);
                 apd = new AddPartitionDesc(table.getDbName(), table.getTableName(), false);
-                counter = 0;
               }
             }
           } else {
@@ -1961,7 +1960,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws IOException
    *           In case the writing fails
    */
-  private boolean writeMsckResult(List<? extends Object> result, String msg,
+  private boolean writeMsckResult(Set<? extends Object> result, String msg,
       Writer out, boolean wrote) throws IOException {
 
     if (!result.isEmpty()) {

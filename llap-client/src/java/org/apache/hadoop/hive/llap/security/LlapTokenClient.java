@@ -137,11 +137,11 @@ public class LlapTokenClient {
       registry.start();
       activeInstances = registry.getInstances();
     }
-    Map<String, ServiceInstance> daemons = activeInstances.getAll();
+    Collection<ServiceInstance> daemons = activeInstances.getAll();
     if (daemons == null || daemons.isEmpty()) {
       throw new RuntimeException("No LLAPs found");
     }
-    lastKnownInstances = daemons.values();
+    lastKnownInstances = daemons;
     return new ArrayList<ServiceInstance>(lastKnownInstances);
   }
 

@@ -33,7 +33,6 @@ minimr.query.files=auto_sortmerge_join_16.q,\
   load_fs2.q,\
   load_hdfs_file_with_space_in_the_name.q,\
   non_native_window_udf.q, \
-  orc_merge_diff_fs.q,\
   parallel_orderby.q,\
   quotedid_smb.q,\
   reduce_deduplicate.q,\
@@ -79,6 +78,11 @@ minitez.query.files.shared=delete_orig_table.q,\
 # NOTE: Add tests to minitez only if it is very
 # specific to tez and cannot be added to minillap.
 minitez.query.files=explainuser_3.q,\
+  explainanalyze_1.q,\
+  explainanalyze_2.q,\
+  explainanalyze_3.q,\
+  explainanalyze_4.q,\
+  explainanalyze_5.q,\
   hybridgrace_hashjoin_1.q,\
   hybridgrace_hashjoin_2.q,\
   partition_column_names_with_leading_and_trailing_spaces.q,\
@@ -222,6 +226,7 @@ minillap.shared.query.files=acid_globallimit.q,\
   orc_merge7.q,\
   orc_merge8.q,\
   orc_merge9.q,\
+  orc_merge_diff_fs.q,\
   orc_merge_incompat1.q,\
   orc_merge_incompat2.q,\
   orc_merge_incompat3.q,\
@@ -457,7 +462,6 @@ minillap.query.files=acid_bucket_pruning.q,\
   orc_llap_counters.q,\
   orc_llap_counters1.q,\
   orc_llap_nonvector.q,\
-  orc_merge_diff_fs.q,\
   orc_ppd_basic.q,\
   schema_evol_orc_acid_part.q,\
   schema_evol_orc_acid_part_update.q,\

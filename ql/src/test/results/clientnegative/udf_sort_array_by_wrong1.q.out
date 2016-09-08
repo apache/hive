@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 2:21 Argument type mismatch '4': Element[s] of first argument array in function SORT_ARRAY_BY must be struct, but array<int> was found.

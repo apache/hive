@@ -54,7 +54,11 @@ public class UDFRand extends UDF {
 
   public DoubleWritable evaluate(LongWritable seed) {
     if (random == null) {
-      random = new Random(seed.get());
+      long seedValue = 0;
+      if (seed != null) {
+        seedValue = seed.get();
+      }
+      random = new Random(seedValue);
     }
     result.set(random.nextDouble());
     return result;

@@ -42,6 +42,12 @@ public class LogUtils {
   private static final String HIVE_EXEC_L4J = "hive-exec-log4j2.properties";
   private static final Logger l4j = LoggerFactory.getLogger(LogUtils.class);
 
+  /**
+   * Constants for log masking
+   */
+  private static String KEY_TO_MASK_WITH = "password";
+  private static String MASKED_VALUE = "###_MASKED_###";
+
   @SuppressWarnings("serial")
   public static class LogInitializationException extends Exception {
     public LogInitializationException(String msg) {
@@ -170,5 +176,21 @@ public class LogUtils {
       l4j.debug("Using hive-site.xml found on CLASSPATH at "
         + conf.getHiveSiteLocation().getPath());
     }
+  }
+
+  /**
+   * Returns MASKED_VALUE if the key contains KEY_TO_MASK_WITH or the original property otherwise.
+   * Used to mask environment variables, and properties in logs which contain passwords
+   * @param key The property key to check
+   * @param value The original value of the property
+   * @return The masked property value
+   */
+  public static String maskIfPassword(String key, String value) {
+    if (key!=null && value!=null) {
+      if (key.toLowerCase().indexOf(KEY_TO_MASK_WITH) != -1) {
+        return MASKED_VALUE;
+      }
+    }
+    return value;
   }
 }

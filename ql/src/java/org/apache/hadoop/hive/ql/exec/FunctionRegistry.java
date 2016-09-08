@@ -421,6 +421,7 @@ public final class FunctionRegistry {
 
     system.registerGenericUDF("case", GenericUDFCase.class);
     system.registerGenericUDF("when", GenericUDFWhen.class);
+    system.registerGenericUDF("nullif", GenericUDFNullif.class);
     system.registerGenericUDF("hash", GenericUDFHash.class);
     system.registerGenericUDF("coalesce", GenericUDFCoalesce.class);
     system.registerGenericUDF("index", GenericUDFIndex.class);
@@ -430,6 +431,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("elt", GenericUDFElt.class);
     system.registerGenericUDF("concat_ws", GenericUDFConcatWS.class);
     system.registerGenericUDF("sort_array", GenericUDFSortArray.class);
+    system.registerGenericUDF("sort_array_by", GenericUDFSortArrayByField.class);
     system.registerGenericUDF("array_contains", GenericUDFArrayContains.class);
     system.registerGenericUDF("sentences", GenericUDFSentences.class);
     system.registerGenericUDF("map_keys", GenericUDFMapKeys.class);

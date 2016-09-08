@@ -36,14 +36,14 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.StorageFormats;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-
 import org.apache.hive.hcatalog.HcatTestUtils;
 import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
-
 import org.apache.pig.EvalFunc;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigException;
@@ -52,15 +52,12 @@ import org.apache.pig.data.DataByteArray;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.util.LogUtils;
-
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -505,7 +502,7 @@ public class TestHCatStorer extends HCatBaseTest {
   }
 
   @Test
-  public void testMultiPartColsInData() throws IOException, CommandNeedRetryException {
+  public void testMultiPartColsInData() throws Exception {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
 
     driver.run("drop table employee");
@@ -545,11 +542,17 @@ public class TestHCatStorer extends HCatBaseTest {
     assertEquals(inputData[1], results.get(1));
     assertEquals(inputData[2], results.get(2));
     assertEquals(inputData[3], results.get(3));
+    // verify the directories in table location
+    Path path = new Path(client.getTable("default","employee").getSd().getLocation());
+    FileSystem fs = path.getFileSystem(hiveConf);
+    assertEquals(1, fs.listStatus(path).length);
+    assertEquals(4, fs.listStatus(new Path(client.getTable("default","employee").getSd().getLocation()
+        + File.separator + "emp_country=IN")).length);
     driver.run("drop table employee");
   }
 
   @Test
-  public void testStoreInPartiitonedTbl() throws IOException, CommandNeedRetryException {
+  public void testStoreInPartiitonedTbl() throws Exception {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
 
     driver.run("drop table junit_unparted");
@@ -582,6 +585,10 @@ public class TestHCatStorer extends HCatBaseTest {
 
     assertFalse(itr.hasNext());
     assertEquals(11, i);
+    // verify the scratch directories has been cleaned up
+    Path path = new Path(client.getTable("default","junit_unparted").getSd().getLocation());
+    FileSystem fs = path.getFileSystem(hiveConf);
+    assertEquals(1, fs.listStatus(path).length);
   }
 
   @Test

@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -484,34 +485,30 @@ public class LlapStatusServiceDriver {
           "Failed to create llap registry client", e);
     }
     try {
-      Map<String, ServiceInstance> serviceInstanceMap;
+      Collection<ServiceInstance> serviceInstances;
       try {
-        serviceInstanceMap = llapRegistry.getInstances().getAll();
+        serviceInstances = llapRegistry.getInstances().getAll();
       } catch (IOException e) {
         throw new LlapStatusCliException(ExitCode.LLAP_REGISTRY_ERROR, "Failed to get instances from llap registry", e);
       }
 
-      if (serviceInstanceMap == null || serviceInstanceMap.isEmpty()) {
+      if (serviceInstances == null || serviceInstances.isEmpty()) {
         LOG.info("No information found in the LLAP registry");
         appStatusBuilder.setLiveInstances(0);
         appStatusBuilder.setState(State.LAUNCHING);
         appStatusBuilder.clearLlapInstances();
         return ExitCode.SUCCESS;
       } else {
-
-
         // Tracks instances known by both slider and llap.
         List<LlapInstance> validatedInstances = new LinkedList<>();
         List<String> llapExtraInstances = new LinkedList<>();
 
-        for (Map.Entry<String, ServiceInstance> serviceInstanceEntry : serviceInstanceMap
-            .entrySet()) {
+        for (ServiceInstance serviceInstance : serviceInstances) {
+          String containerIdString = serviceInstance.getProperties().get(
+              HiveConf.ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
 
-          ServiceInstance serviceInstance = serviceInstanceEntry.getValue();
-          String containerIdString = serviceInstance.getProperties().get(HiveConf.ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
-
-
-          LlapInstance llapInstance = appStatusBuilder.removeAndgetLlapInstanceForContainer(containerIdString);
+          LlapInstance llapInstance = appStatusBuilder.removeAndgetLlapInstanceForContainer(
+              containerIdString);
           if (llapInstance != null) {
             llapInstance.setMgmtPort(serviceInstance.getManagementPort());
             llapInstance.setRpcPort(serviceInstance.getRpcPort());

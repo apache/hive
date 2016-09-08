@@ -319,7 +319,7 @@ public class CliConfigs {
 
         setResultsDir("hbase-handler/src/test/results/positive");
         setLogDir("itests/qtest/target/qfile-results/hbase-handler/minimrpositive");
-        setInitScript("q_test_init.sql");
+        setInitScript("q_test_init_for_minimr.sql");
         setCleanupScript("q_test_cleanup.sql");
         setHiveConfDir("");
         setClusterType(MiniClusterType.mr);

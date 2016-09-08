@@ -528,14 +528,15 @@ public abstract class CLIServiceTest {
   }
 
   private OperationStatus waitForAsyncQuery(OperationHandle opHandle,
-      OperationState expectedState, long longPollingTimeout) throws HiveSQLException {
+      OperationState expectedState, long maxLongPollingTimeout) throws HiveSQLException {
     long testIterationTimeout = System.currentTimeMillis() + 100000;
     long longPollingStart;
     long longPollingEnd;
     long longPollingTimeDelta;
     OperationStatus opStatus = null;
     OperationState state = null;
-    int count = 0;
+    int count = 0;    
+    long start = System.currentTimeMillis();
     while (true) {
       // Break if iteration times out
       if (System.currentTimeMillis() > testIterationTimeout) {
@@ -560,8 +561,11 @@ public abstract class CLIServiceTest {
       } else {
         // Verify that getOperationStatus returned only after the long polling timeout
         longPollingTimeDelta = longPollingEnd - longPollingStart;
+        // Calculate the expected timeout based on the elapsed time between waiting start time and polling start time
+        long elapsed = longPollingStart - start;
+        long expectedTimeout = Math.min(maxLongPollingTimeout, (elapsed / TimeUnit.SECONDS.toMillis(10) + 1) * 500);
         // Scale down by a factor of 0.9 to account for approximate values
-        assertTrue(longPollingTimeDelta - 0.9*longPollingTimeout > 0);
+        assertTrue(longPollingTimeDelta - 0.9*expectedTimeout > 0);
       }
     }
     assertEquals(expectedState, client.getOperationStatus(opHandle).getState());

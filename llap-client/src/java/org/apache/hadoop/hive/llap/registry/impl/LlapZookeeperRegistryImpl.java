@@ -21,15 +21,18 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +48,7 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.framework.recipes.nodes.PersistentEphemeralNode;
+import org.apache.curator.framework.recipes.nodes.PersistentEphemeralNode.Mode;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.utils.CloseableUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -97,13 +101,19 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
   private final static String USER_SCOPE_PATH_PREFIX = "user-";
   private static final String DISABLE_MESSAGE =
       "Set " + ConfVars.LLAP_VALIDATE_ACLS.varname + " to false to disable ACL validation";
+  private static final String WORKER_PREFIX = "worker-";
+  private static final String SLOT_PREFIX = "slot-";
 
   private final Configuration conf;
   private final CuratorFramework zooKeeperClient;
-  private final String pathPrefix, userPathPrefix;
+  // userPathPrefix is the path specific to the user for which ACLs should be restrictive.
+  // workersPath is the directory path where all the worker znodes are located.
+  private final String userPathPrefix, workersPath;
   private String userNameFromPrincipal; // Only set when setting up the secure config for ZK.
 
   private PersistentEphemeralNode znode;
+
+  private SlotZnode slotZnode;
   private String znodePath; // unique identity for this instance
   private final ServiceRecordMarshal encoder; // to marshal/unmarshal znode data
 
@@ -147,7 +157,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     // number when it returns back. If session timeout expires, the node will be deleted and new
     // addition of the same node (restart) will get next sequence number
     this.userPathPrefix = USER_SCOPE_PATH_PREFIX + getZkPathUser(this.conf);
-    this.pathPrefix = "/" + userPathPrefix + "/" + instanceName + "/workers/worker-";
+    this.workersPath =  "/" + userPathPrefix + "/" + instanceName + "/workers";
     this.instancesCache = null;
     this.instances = null;
     this.stateChangeListeners = new HashSet<>();
@@ -292,10 +302,10 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     try {
       // PersistentEphemeralNode will make sure the ephemeral node created on server will be present
       // even under connection or session interruption (will automatically handle retries)
-      znode = new PersistentEphemeralNode(zooKeeperClient,
-          PersistentEphemeralNode.Mode.EPHEMERAL_SEQUENTIAL, pathPrefix, encoder.toBytes(srv));
+      znode = new PersistentEphemeralNode(zooKeeperClient, Mode.EPHEMERAL_SEQUENTIAL,
+          workersPath + "/" + WORKER_PREFIX, encoder.toBytes(srv));
 
-      // start the creation of znode
+      // start the creation of znodes
       znode.start();
 
       // We'll wait for 120s for node creation
@@ -306,6 +316,14 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
       }
 
       znodePath = znode.getActualPath();
+
+      slotZnode = new SlotZnode(
+          zooKeeperClient, workersPath, SLOT_PREFIX, WORKER_PREFIX, uniq.toString());
+      if (!slotZnode.start(znodeCreationTimeout, TimeUnit.SECONDS)) {
+        throw new Exception(
+            "Max znode creation wait time: " + znodeCreationTimeout + "s exhausted");
+      }
+
       if (HiveConf.getBoolVar(conf, ConfVars.LLAP_VALIDATE_ACLS)) {
         try {
           checkAndSetAcls();
@@ -313,7 +331,6 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
           throw new IOException("Error validating or setting ACLs. " + DISABLE_MESSAGE, ex);
         }
       }
-      // Set a watch on the znode
       if (zooKeeperClient.checkExists().forPath(znodePath) == null) {
         // No node exists, throw exception
         throw new Exception("Unable to create znode for this LLAP instance on ZooKeeper.");
@@ -325,24 +342,22 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     } catch (Exception e) {
       LOG.error("Unable to create a znode for this server instance", e);
       CloseableUtils.closeQuietly(znode);
+      CloseableUtils.closeQuietly(slotZnode);
       throw (e instanceof IOException) ? (IOException)e : new IOException(e);
     }
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created zknode with path: {} service record: {}", znodePath, srv);
     }
+
     return uniq.toString();
   }
 
   private void checkAndSetAcls() throws Exception {
     if (!UserGroupInformation.isSecurityEnabled()) return;
-    String pathToCheck = znodePath;
     // We are trying to check ACLs on the "workers" directory, which noone except us should be
     // able to write to. Higher-level directories shouldn't matter - we don't read them.
-    int ix = pathToCheck.lastIndexOf('/');
-    if (ix > 0) {
-      pathToCheck = pathToCheck.substring(0, ix);
-    }
+    String pathToCheck = workersPath;
     List<ACL> acls = zooKeeperClient.getACL().forPath(pathToCheck);
     if (acls == null || acls.isEmpty()) {
       // Can there be no ACLs? There's some access (to get ACLs), so assume it means free for all.
@@ -506,38 +521,61 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     }
 
     @Override
-    public Map<String, ServiceInstance> getAll() {
-      Map<String, ServiceInstance> instances = new LinkedHashMap<>();
+    public Collection<ServiceInstance> getAll() {
+      List<ServiceInstance> instances = new ArrayList<>();
       // TODO: we could refresh instanceCache here on previous failure
       for (ChildData childData : instancesCache.getCurrentData()) {
-        if (childData != null) {
-          byte[] data = childData.getData();
-          if (data != null) {
-            try {
-              ServiceRecord srv = encoder.fromBytes(childData.getPath(), data);
-              ServiceInstance instance = new DynamicServiceInstance(srv);
-              instances.put(childData.getPath(), instance);
-            } catch (IOException e) {
-              LOG.error("Unable to decode data for zkpath: {}." +
-                  " Ignoring from current instances list..", childData.getPath());
-            }
-          }
+        if (childData == null) continue;
+        byte[] data = childData.getData();
+        if (data == null) continue;
+        if (!extractNodeName(childData).startsWith(WORKER_PREFIX)) continue;
+        try {
+          ServiceRecord srv = encoder.fromBytes(childData.getPath(), data);
+          ServiceInstance instance = new DynamicServiceInstance(srv);
+          instances.add(instance);
+        } catch (IOException e) {
+          LOG.error("Unable to decode data for zkpath: {}." +
+              " Ignoring from current instances list..", childData.getPath());
         }
       }
       return instances;
     }
 
     @Override
-    public List<ServiceInstance> getAllInstancesOrdered() {
-      List<ServiceInstance> list = new LinkedList<>();
-      list.addAll(instances.getAll().values());
-      Collections.sort(list, new Comparator<ServiceInstance>() {
-        @Override
-        public int compare(ServiceInstance o1, ServiceInstance o2) {
-          return o2.getWorkerIdentity().compareTo(o2.getWorkerIdentity());
+    public Collection<ServiceInstance> getAllInstancesOrdered() {
+      Map<String, String> slotByWorker = new HashMap<String, String>();
+      List<ServiceInstance> unsorted = new LinkedList<ServiceInstance>();
+      for (ChildData childData : instancesCache.getCurrentData()) {
+        if (childData == null) continue;
+        byte[] data = childData.getData();
+        if (data == null) continue;
+        String nodeName = extractNodeName(childData);
+        if (nodeName.startsWith(WORKER_PREFIX)) {
+          try {
+            ServiceRecord srv = encoder.fromBytes(childData.getPath(), data);
+            ServiceInstance instance = new DynamicServiceInstance(srv);
+            unsorted.add(instance);
+          } catch (IOException e) {
+            LOG.error("Unable to decode data for zkpath: {}." +
+                " Ignoring from current instances list..", childData.getPath());
+          }
+        } else if (nodeName.startsWith(SLOT_PREFIX)) {
+          slotByWorker.put(extractWorkerIdFromSlot(childData), nodeName);
+        } else {
+          LOG.info("Ignoring unknown node {}", childData.getPath());
         }
-      });
-      return list;
+      }
+
+      TreeMap<String, ServiceInstance> sorted = new TreeMap<>();
+      for (ServiceInstance worker : unsorted) {
+        String slot = slotByWorker.get(worker.getWorkerIdentity());
+        if (slot == null) {
+          LOG.info("Unknown slot for {}", worker.getWorkerIdentity());
+          continue;
+        }
+        sorted.put(slot, worker);
+      }
+      return sorted.values();
     }
 
     @Override
@@ -563,23 +601,22 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     public Set<ServiceInstance> getByHost(String host) {
       Set<ServiceInstance> byHost = new HashSet<>();
       for (ChildData childData : instancesCache.getCurrentData()) {
-        if (childData != null) {
-          byte[] data = childData.getData();
-          if (data != null) {
-            try {
-              ServiceRecord srv = encoder.fromBytes(childData.getPath(), data);
-              ServiceInstance instance = new DynamicServiceInstance(srv);
-              if (host.equals(instance.getHost())) {
-                byHost.add(instance);
-              }
-              if (LOG.isDebugEnabled()) {
-                LOG.debug("Locality comparing " + host + " to " + instance.getHost());
-              }
-            } catch (IOException e) {
-              LOG.error("Unable to decode data for zkpath: {}." +
-                  " Ignoring host from current instances list..", childData.getPath());
-            }
+        if (childData == null) continue;
+        byte[] data = childData.getData();
+        if (data == null) continue;
+        if (!extractNodeName(childData).startsWith(WORKER_PREFIX)) continue;
+        try {
+          ServiceRecord srv = encoder.fromBytes(childData.getPath(), data);
+          ServiceInstance instance = new DynamicServiceInstance(srv);
+          if (host.equals(instance.getHost())) {
+            byHost.add(instance);
           }
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Locality comparing " + host + " to " + instance.getHost());
+          }
+        } catch (IOException e) {
+          LOG.error("Unable to decode data for zkpath: {}." +
+              " Ignoring host from current instances list..", childData.getPath());
         }
       }
 
@@ -595,6 +632,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     }
   }
 
+  // TODO: make class static? fields leak
   private class InstanceStateChangeListener implements PathChildrenCacheListener {
     private final Logger LOG = LoggerFactory.getLogger(InstanceStateChangeListener.class);
 
@@ -605,43 +643,59 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
           && client.getState() == CuratorFrameworkState.STARTED, "client is not started");
 
       synchronized (this) {
-        if (!stateChangeListeners.isEmpty()) {
-          ServiceInstance instance = null;
-          ChildData childData = event.getData();
-          if (childData != null) {
-            byte[] data = childData.getData();
-            if (data != null) {
-              try {
-                ServiceRecord srv = encoder.fromBytes(event.getData().getPath(), data);
-                instance = new DynamicServiceInstance(srv);
-              } catch (IOException e) {
-                LOG.error("Unable to decode data for zknode: {}." +
-                    " Dropping notification of type: {}", childData.getPath(), event.getType());
-              }
-            }
-          }
-
-          // notify listeners of the new data
-          for (ServiceInstanceStateChangeListener listener : stateChangeListeners) {
-            if (event.getType() == PathChildrenCacheEvent.Type.CHILD_ADDED) {
-              LOG.info("Added zknode {} to llap namespace. Notifying state change listener.",
-                  event.getData().getPath());
-              listener.onCreate(instance);
-            } else if (event.getType() == PathChildrenCacheEvent.Type.CHILD_UPDATED) {
-              LOG.info("Updated zknode {} in llap namespace. Notifying state change listener.",
-                  event.getData().getPath());
-              listener.onUpdate(instance);
-            } else if (event.getType() == PathChildrenCacheEvent.Type.CHILD_REMOVED) {
-              LOG.info("Removed zknode {} from llap namespace. Notifying state change listener.",
-                  event.getData().getPath());
-              listener.onRemove(instance);
-            }
+        if (stateChangeListeners.isEmpty()) return;
+        ChildData childData = event.getData();
+        if (childData == null) return;
+        String nodeName = extractNodeName(childData);
+        if (!nodeName.startsWith(WORKER_PREFIX)) return; // No need to propagate slot updates.
+        LOG.info("{} for zknode {} in llap namespace", event.getType(), childData.getPath());
+        ServiceInstance instance = extractServiceInstance(event, childData);
+        for (ServiceInstanceStateChangeListener listener : stateChangeListeners) {
+          switch (event.getType()) {
+          case CHILD_ADDED:
+            listener.onCreate(instance);
+            break;
+          case CHILD_UPDATED:
+            listener.onUpdate(instance);
+            break;
+          case CHILD_REMOVED:
+            listener.onRemove(instance);
+            break;
+          default:
+            // Ignore all the other events; logged above.
           }
         }
       }
     }
   }
 
+  private static String extractWorkerIdFromSlot(ChildData childData) {
+    return new String(childData.getData(), SlotZnode.CHARSET);
+  }
+
+  private static String extractNodeName(ChildData childData) {
+    String nodeName = childData.getPath();
+    int ix = nodeName.lastIndexOf("/");
+    if (ix >= 0) {
+      nodeName = nodeName.substring(ix + 1);
+    }
+    return nodeName;
+  }
+
+  private ServiceInstance extractServiceInstance(
+      PathChildrenCacheEvent event, ChildData childData) {
+    byte[] data = childData.getData();
+    if (data == null) return null;
+    try {
+      ServiceRecord srv = encoder.fromBytes(event.getData().getPath(), data);
+      return new DynamicServiceInstance(srv);
+    } catch (IOException e) {
+      LOG.error("Unable to decode data for zknode: {}." +
+          " Dropping notification of type: {}", childData.getPath(), event.getType());
+      return null;
+    }
+  }
+  
   @Override
   public ServiceInstanceSet getInstances(String component) throws IOException {
     checkPathChildrenCache();
@@ -669,8 +723,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
 
     // lazily create PathChildrenCache
     if (instancesCache == null) {
-      this.instancesCache = new PathChildrenCache(zooKeeperClient,
-          RegistryPathUtils.parentOf(pathPrefix).toString(), true);
+      this.instancesCache = new PathChildrenCache(zooKeeperClient, workersPath, true);
       instancesCache.getListenable().addListener(new InstanceStateChangeListener(),
           Executors.newFixedThreadPool(1, new ThreadFactoryBuilder()
               .setDaemon(true)
@@ -698,6 +751,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
   @Override
   public void stop() throws IOException {
     CloseableUtils.closeQuietly(znode);
+    CloseableUtils.closeQuietly(slotZnode);
     CloseableUtils.closeQuietly(instancesCache);
     CloseableUtils.closeQuietly(zooKeeperClient);
   }
