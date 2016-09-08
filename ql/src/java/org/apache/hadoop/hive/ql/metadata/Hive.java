@@ -3365,7 +3365,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return true if deletion successful
    * @throws IOException
    */
-  private boolean trashFiles(final FileSystem fs, final FileStatus[] statuses, final Configuration conf)
+  public static boolean trashFiles(final FileSystem fs, final FileStatus[] statuses, final Configuration conf)
       throws IOException {
     boolean result = true;
 
