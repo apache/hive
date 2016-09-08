@@ -27,6 +27,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.HouseKeeperService;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.slf4j.Logger;
@@ -1875,12 +1876,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       if(dbProduct == null) {
         throw new IllegalStateException("DB Type not determined yet.");
       }
-      if (e instanceof SQLTransactionRollbackException ||
-        ((dbProduct == DatabaseProduct.MYSQL || dbProduct == DatabaseProduct.POSTGRES ||
-          dbProduct == DatabaseProduct.SQLSERVER) && e.getSQLState().equals("40001")) ||
-        (dbProduct == DatabaseProduct.POSTGRES && e.getSQLState().equals("40P01")) ||
-        (dbProduct == DatabaseProduct.ORACLE && (e.getMessage().contains("deadlock detected")
-          || e.getMessage().contains("can't serialize access for this transaction")))) {
+      if (DatabaseProduct.isDeadlock(dbProduct, e)) {
         if (deadlockCnt++ < ALLOWED_REPEATED_DEADLOCKS) {
           long waitInterval = deadlockRetryInterval * deadlockCnt;
           LOG.warn("Deadlock detected in " + caller + ". Will wait " + waitInterval +
@@ -1985,44 +1981,22 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return identifierQuoteString;
   }
 
-  protected enum DatabaseProduct { DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER}
 
-  /**
-   * Determine the database product type
-   * @param conn database connection
-   * @return database product type
-   */
-  private DatabaseProduct determineDatabaseProduct(Connection conn) {
-    if (dbProduct == null) {
-      try {
-        String s = conn.getMetaData().getDatabaseProductName();
-        if (s == null) {
-          String msg = "getDatabaseProductName returns null, can't determine database product";
-          LOG.error(msg);
-          throw new IllegalStateException(msg);
-        } else if (s.equals("Apache Derby")) {
-          dbProduct = DatabaseProduct.DERBY;
-        } else if (s.equals("Microsoft SQL Server")) {
-          dbProduct = DatabaseProduct.SQLSERVER;
-        } else if (s.equals("MySQL")) {
-          dbProduct = DatabaseProduct.MYSQL;
-        } else if (s.equals("Oracle")) {
-          dbProduct = DatabaseProduct.ORACLE;
-        } else if (s.equals("PostgreSQL")) {
-          dbProduct = DatabaseProduct.POSTGRES;
-        } else {
-          String msg = "Unrecognized database product name <" + s + ">";
-          LOG.error(msg);
-          throw new IllegalStateException(msg);
-        }
-
-      } catch (SQLException e) {
-        String msg = "Unable to get database product name: " + e.getMessage();
+  private void determineDatabaseProduct(Connection conn) {
+    if (dbProduct != null) return;
+    try {
+      String s = conn.getMetaData().getDatabaseProductName();
+      dbProduct = DatabaseProduct.determineDatabaseProduct(s);
+      if (dbProduct == DatabaseProduct.OTHER) {
+        String msg = "Unrecognized database product name <" + s + ">";
         LOG.error(msg);
         throw new IllegalStateException(msg);
       }
+    } catch (SQLException e) {
+      String msg = "Unable to get database product name";
+      LOG.error(msg, e);
+      throw new IllegalStateException(msg, e);
     }
-    return dbProduct;
   }
 
   private static class LockInfo {
