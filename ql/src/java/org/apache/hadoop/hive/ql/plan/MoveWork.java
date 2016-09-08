@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  */
 @Explain(displayName = "Move Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class MoveWork implements Serializable {
-  // TODO# all the places where MoveWork is created need to be handled.
   private static final long serialVersionUID = 1L;
   private LoadTableDesc loadTableWork;
   private LoadFileDesc loadFileWork;

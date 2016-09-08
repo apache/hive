@@ -1082,6 +1082,12 @@ public class AcidUtils {
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }
 
+  public static boolean isMmTable(Table table) {
+    // TODO: perhaps it should be a 3rd value for 'transactional'?
+    String value = table.getProperty(hive_metastoreConstants.TABLE_IS_MM);
+    return value != null && value.equalsIgnoreCase("true");
+  }
+
   /**
    * Sets the acidOperationalProperties in the configuration object argument.
    * @param conf Mutable configuration object
@@ -1160,5 +1166,9 @@ public class AcidUtils {
       return AcidOperationalProperties.getLegacy();
     }
     return AcidOperationalProperties.parseString(resultStr);
+  }
+
+  public static String getMmFilePrefix(long mmWriteId) {
+    return "mm_" + mmWriteId + "_";
   }
 }

@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.model.MTableWrite;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
@@ -680,4 +681,10 @@ public interface RawStore extends Configurable {
   void addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException;
 
   void addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException;
+
+  void updateTableWrite(MTableWrite tw);
+
+  MTableWrite getTableWrite(String dbName, String tblName, long writeId) throws MetaException;
+
+  void createTableWrite(Table tbl, long writeId, char state, long heartbeat);
 }

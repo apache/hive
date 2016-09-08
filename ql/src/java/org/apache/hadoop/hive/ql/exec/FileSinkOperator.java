@@ -239,7 +239,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
       if (isMmTable) {
-        Path manifestPath = new Path(specPath, "_tmp." + getPrefixedTaskId() + MANIFEST_EXTENSION);
+        Path manifestPath = new Path(specPath, "_tmp." + getMmPrefixedTaskId() + MANIFEST_EXTENSION);
         Utilities.LOG14535.info("Writing manifest to " + manifestPath + " with " + commitPaths);
         try {
           try (FSDataOutputStream out = fs.create(manifestPath)) {
@@ -252,10 +252,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           throw new HiveException(e);
         }
       }
-    }
-
-    private String getPrefixedTaskId() {
-      return conf.getExecutionPrefix() + "_" + taskId;
     }
 
     private void commitOneOutPath(int idx, FileSystem fs, List<Path> commitPaths)
@@ -328,10 +324,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           outPaths[filesIdx] = getTaskOutPath(taskId);
         } else {
           if (!bDynParts && !isSkewedStoredAsSubDirectories) {
-            finalPaths[filesIdx] = getFinalPath(getPrefixedTaskId(), specPath, extension);
+            finalPaths[filesIdx] = getFinalPath(getMmPrefixedTaskId(), specPath, extension);
           } else {
             // TODO# wrong!
-            finalPaths[filesIdx] = getFinalPath(getPrefixedTaskId(), specPath, extension);
+            finalPaths[filesIdx] = getFinalPath(getMmPrefixedTaskId(), specPath, extension);
           }
           outPaths[filesIdx] = finalPaths[filesIdx];
         }
@@ -723,6 +719,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     } else {
       return false;
     }
+  }
+
+  private String getMmPrefixedTaskId() {
+    return AcidUtils.getMmFilePrefix(conf.getMmWriteId()) + taskId;
   }
 
   protected Writable recordValue;
@@ -1216,16 +1216,16 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     FileSystem fs = specPath.getFileSystem(hconf);
     int targetLevel = (dpCtx == null) ? 1 : dpCtx.getNumDPCols();
     if (!success) {
-      FileStatus[] statuses = HiveStatsUtils.getFileStatusRecurse(
-          specPath, targetLevel, fs, new ExecPrefixPathFilter(conf.getExecutionPrefix()));
+      FileStatus[] statuses = HiveStatsUtils.getFileStatusRecurse(specPath, targetLevel, fs,
+          new ExecPrefixPathFilter(AcidUtils.getMmFilePrefix(conf.getMmWriteId())));
       for (FileStatus status : statuses) {
         Utilities.LOG14535.info("Deleting " + status.getPath() + " on failure");
         tryDelete(fs, status.getPath());
       }
       return;
     }
-    FileStatus[] statuses = HiveStatsUtils.getFileStatusRecurse(
-        specPath, targetLevel, fs, new ExecPrefixPathFilter(conf.getExecutionPrefix()));
+    FileStatus[] statuses = HiveStatsUtils.getFileStatusRecurse(specPath, targetLevel, fs,
+        new ExecPrefixPathFilter(AcidUtils.getMmFilePrefix(conf.getMmWriteId())));
     if (statuses == null) return;
     LinkedList<FileStatus> results = new LinkedList<>();
     List<Path> manifests = new ArrayList<>(statuses.length);

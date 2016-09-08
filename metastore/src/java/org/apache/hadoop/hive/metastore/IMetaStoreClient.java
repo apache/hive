@@ -1619,4 +1619,11 @@ public interface IMetaStoreClient {
 
   void addForeignKey(List<SQLForeignKey> foreignKeyCols) throws
   MetaException, NoSuchObjectException, TException;
+
+  long getNextTableWriteId(String dbName, String tableName) throws TException;
+
+  void heartbeatTableWrite(String dbName, String tableName, long writeId) throws TException;
+
+  void finalizeTableWrite(String dbName, String tableName, long writeId,
+      boolean commit) throws TException;
 }

@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.PlanResult;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.ScanPlan;
+import org.apache.hadoop.hive.metastore.model.MTableWrite;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -2721,5 +2722,23 @@ public class HBaseStore implements RawStore {
   public void addForeignKeys(List<SQLForeignKey> fks)
     throws InvalidObjectException, MetaException {
     // TODO: WTF?
+  }
+
+  @Override
+  public void createTableWrite(Table tbl, long writeId, char state, long heartbeat) {
+    // TODO: Auto-generated method stub
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void updateTableWrite(MTableWrite tw) {
+    // TODO: Auto-generated method stub
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public MTableWrite getTableWrite(String dbName, String tblName, long writeId) {
+    // TODO: Auto-generated method stub
+    throw new UnsupportedOperationException();
   }
 }

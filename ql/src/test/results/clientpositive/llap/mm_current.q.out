@@ -1,3 +1,15 @@
+PREHOOK: query: drop table part_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table part_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table simple_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table simple_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table intermediate
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table intermediate
+POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table intermediate(key int) partitioned by (p int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -6,44 +18,35 @@ POSTHOOK: query: create table intermediate(key int) partitioned by (p int) store
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@intermediate
-PREHOOK: query: insert into table intermediate partition(p='455') select key from src limit 3
+PREHOOK: query: insert into table intermediate partition(p='455') select key from src limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@intermediate@p=455
-POSTHOOK: query: insert into table intermediate partition(p='455') select key from src limit 3
+POSTHOOK: query: insert into table intermediate partition(p='455') select key from src limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@intermediate@p=455
 POSTHOOK: Lineage: intermediate PARTITION(p=455).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: insert into table intermediate partition(p='456') select key from src limit 3
+PREHOOK: query: insert into table intermediate partition(p='456') select key from src limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@intermediate@p=456
-POSTHOOK: query: insert into table intermediate partition(p='456') select key from src limit 3
+POSTHOOK: query: insert into table intermediate partition(p='456') select key from src limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@intermediate@p=456
 POSTHOOK: Lineage: intermediate PARTITION(p=456).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: insert into table intermediate partition(p='457') select key from src limit 3
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-PREHOOK: Output: default@intermediate@p=457
-POSTHOOK: query: insert into table intermediate partition(p='457') select key from src limit 3
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-POSTHOOK: Output: default@intermediate@p=457
-POSTHOOK: Lineage: intermediate PARTITION(p=457).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: create table simple_mm(key int) partitioned by (key_mm int) stored as orc tblproperties ('hivecommit'='true')
+PREHOOK: query: create table part_mm(key int) partitioned by (key_mm int) stored as orc tblproperties ('hivecommit'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@simple_mm
-POSTHOOK: query: create table simple_mm(key int) partitioned by (key_mm int) stored as orc tblproperties ('hivecommit'='true')
+PREHOOK: Output: default@part_mm
+POSTHOOK: query: create table part_mm(key int) partitioned by (key_mm int) stored as orc tblproperties ('hivecommit'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@simple_mm
-PREHOOK: query: explain insert into table simple_mm partition(key_mm='455') select key from intermediate
+POSTHOOK: Output: default@part_mm
+PREHOOK: query: explain insert into table part_mm partition(key_mm='455') select key from intermediate
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into table simple_mm partition(key_mm='455') select key from intermediate
+POSTHOOK: query: explain insert into table part_mm partition(key_mm='455') select key from intermediate
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -60,19 +63,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: intermediate
-                  Statistics: Num rows: 9 Data size: 108 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 9 Data size: 108 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 9 Data size: 108 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                           output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                           serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                          name: default.simple_mm
+                          name: default.part_mm
             Execution mode: llap
             LLAP IO: all inputs
 
@@ -89,27 +92,133 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.simple_mm
+              name: default.part_mm
           micromanaged table: true
 
   Stage: Stage-3
     Stats-Aggr Operator
 
-PREHOOK: query: insert into table simple_mm partition(key_mm='455') select key from intermediate
+PREHOOK: query: insert into table part_mm partition(key_mm='455') select key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
-PREHOOK: Output: default@simple_mm@key_mm=455
-POSTHOOK: query: insert into table simple_mm partition(key_mm='455') select key from intermediate
+PREHOOK: Output: default@part_mm@key_mm=455
+POSTHOOK: query: insert into table part_mm partition(key_mm='455') select key from intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
-POSTHOOK: Output: default@simple_mm@key_mm=455
-POSTHOOK: Lineage: simple_mm PARTITION(key_mm=455).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Output: default@part_mm@key_mm=455
+POSTHOOK: Lineage: part_mm PARTITION(key_mm=455).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: insert into table part_mm partition(key_mm='456') select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: default@part_mm@key_mm=456
+POSTHOOK: query: insert into table part_mm partition(key_mm='456') select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: default@part_mm@key_mm=456
+POSTHOOK: Lineage: part_mm PARTITION(key_mm=456).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: insert into table part_mm partition(key_mm='455') select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: default@part_mm@key_mm=455
+POSTHOOK: query: insert into table part_mm partition(key_mm='455') select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: default@part_mm@key_mm=455
+POSTHOOK: Lineage: part_mm PARTITION(key_mm=455).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from part_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_mm
+PREHOOK: Input: default@part_mm@key_mm=455
+PREHOOK: Input: default@part_mm@key_mm=456
+#### A masked pattern was here ####
+POSTHOOK: query: select * from part_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_mm
+POSTHOOK: Input: default@part_mm@key_mm=455
+POSTHOOK: Input: default@part_mm@key_mm=456
+#### A masked pattern was here ####
+0	455
+455	455
+0	455
+455	455
+0	455
+455	455
+0	455
+455	455
+0	456
+455	456
+0	456
+455	456
+PREHOOK: query: create table simple_mm(key int) stored as orc tblproperties ('hivecommit'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@simple_mm
+POSTHOOK: query: create table simple_mm(key int) stored as orc tblproperties ('hivecommit'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@simple_mm
+PREHOOK: query: insert into table simple_mm select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: default@simple_mm
+POSTHOOK: query: insert into table simple_mm select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: default@simple_mm
+POSTHOOK: Lineage: simple_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: insert into table simple_mm select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: default@simple_mm
+POSTHOOK: query: insert into table simple_mm select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: default@simple_mm
+POSTHOOK: Lineage: simple_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from simple_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@simple_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from simple_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@simple_mm
+#### A masked pattern was here ####
+0
+455
+0
+455
+0
+455
+0
+455
+PREHOOK: query: drop table part_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@part_mm
+PREHOOK: Output: default@part_mm
+POSTHOOK: query: drop table part_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@part_mm
+POSTHOOK: Output: default@part_mm
 PREHOOK: query: drop table simple_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@simple_mm

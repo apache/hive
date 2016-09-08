@@ -2484,6 +2484,51 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'cache_file_metadata failed: unknown result')
     end
 
+    def get_next_write_id(req)
+      send_get_next_write_id(req)
+      return recv_get_next_write_id()
+    end
+
+    def send_get_next_write_id(req)
+      send_message('get_next_write_id', Get_next_write_id_args, :req => req)
+    end
+
+    def recv_get_next_write_id()
+      result = receive_message(Get_next_write_id_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_next_write_id failed: unknown result')
+    end
+
+    def finalize_write_id(req)
+      send_finalize_write_id(req)
+      return recv_finalize_write_id()
+    end
+
+    def send_finalize_write_id(req)
+      send_message('finalize_write_id', Finalize_write_id_args, :req => req)
+    end
+
+    def recv_finalize_write_id()
+      result = receive_message(Finalize_write_id_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'finalize_write_id failed: unknown result')
+    end
+
+    def heartbeat_write_id(req)
+      send_heartbeat_write_id(req)
+      return recv_heartbeat_write_id()
+    end
+
+    def send_heartbeat_write_id(req)
+      send_message('heartbeat_write_id', Heartbeat_write_id_args, :req => req)
+    end
+
+    def recv_heartbeat_write_id()
+      result = receive_message(Heartbeat_write_id_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'heartbeat_write_id failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -4328,6 +4373,27 @@ module ThriftHiveMetastore
       result = Cache_file_metadata_result.new()
       result.success = @handler.cache_file_metadata(args.req)
       write_result(result, oprot, 'cache_file_metadata', seqid)
+    end
+
+    def process_get_next_write_id(seqid, iprot, oprot)
+      args = read_args(iprot, Get_next_write_id_args)
+      result = Get_next_write_id_result.new()
+      result.success = @handler.get_next_write_id(args.req)
+      write_result(result, oprot, 'get_next_write_id', seqid)
+    end
+
+    def process_finalize_write_id(seqid, iprot, oprot)
+      args = read_args(iprot, Finalize_write_id_args)
+      result = Finalize_write_id_result.new()
+      result.success = @handler.finalize_write_id(args.req)
+      write_result(result, oprot, 'finalize_write_id', seqid)
+    end
+
+    def process_heartbeat_write_id(seqid, iprot, oprot)
+      args = read_args(iprot, Heartbeat_write_id_args)
+      result = Heartbeat_write_id_result.new()
+      result.success = @handler.heartbeat_write_id(args.req)
+      write_result(result, oprot, 'heartbeat_write_id', seqid)
     end
 
   end
@@ -9920,6 +9986,102 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::CacheFileMetadataResult}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_next_write_id_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::GetNextWriteIdRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_next_write_id_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetNextWriteIdResult}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Finalize_write_id_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::FinalizeWriteIdRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Finalize_write_id_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::FinalizeWriteIdResult}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Heartbeat_write_id_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::HeartbeatWriteIdRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Heartbeat_write_id_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::HeartbeatWriteIdResult}
     }
 
     def struct_fields; FIELDS; end

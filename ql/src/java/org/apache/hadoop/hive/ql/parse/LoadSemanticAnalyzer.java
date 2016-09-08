@@ -270,6 +270,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       loadTableWork.setInheritTableSpecs(false);
     }
 
+    // TODO# movetask is created here; handle MM tables
     Task<? extends Serializable> childTask = TaskFactory.get(new MoveWork(getInputs(),
         getOutputs(), loadTableWork, null, true, isLocal), conf);
     if (rTask != null) {

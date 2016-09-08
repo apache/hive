@@ -173,6 +173,9 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  PutFileMetadataResult put_file_metadata(PutFileMetadataRequest req)')
   print('  ClearFileMetadataResult clear_file_metadata(ClearFileMetadataRequest req)')
   print('  CacheFileMetadataResult cache_file_metadata(CacheFileMetadataRequest req)')
+  print('  GetNextWriteIdResult get_next_write_id(GetNextWriteIdRequest req)')
+  print('  FinalizeWriteIdResult finalize_write_id(FinalizeWriteIdRequest req)')
+  print('  HeartbeatWriteIdResult heartbeat_write_id(HeartbeatWriteIdRequest req)')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')
@@ -1135,6 +1138,24 @@ elif cmd == 'cache_file_metadata':
     print('cache_file_metadata requires 1 args')
     sys.exit(1)
   pp.pprint(client.cache_file_metadata(eval(args[0]),))
+
+elif cmd == 'get_next_write_id':
+  if len(args) != 1:
+    print('get_next_write_id requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_next_write_id(eval(args[0]),))
+
+elif cmd == 'finalize_write_id':
+  if len(args) != 1:
+    print('finalize_write_id requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.finalize_write_id(eval(args[0]),))
+
+elif cmd == 'heartbeat_write_id':
+  if len(args) != 1:
+    print('heartbeat_write_id requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.heartbeat_write_id(eval(args[0]),))
 
 elif cmd == 'getName':
   if len(args) != 0:

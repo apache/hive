@@ -96,8 +96,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   private transient Table table;
   private Path destPath;
   private boolean isHiveServerQuery;
-  private boolean isMmTable;
-  private String executionPrefix;
+  private Long mmWriteId;
 
   public FileSinkDesc() {
   }
@@ -109,7 +108,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
       final boolean compressed, final int destTableId, final boolean multiFileSpray,
       final boolean canBeMerged, final int numFiles, final int totalFiles,
       final ArrayList<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx, Path destPath,
-      boolean isMmTable) {
+      Long mmWriteId) {
 
     this.dirName = dirName;
     this.tableInfo = tableInfo;
@@ -123,7 +122,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.dpCtx = dpCtx;
     this.dpSortState = DPSortState.NONE;
     this.destPath = destPath;
-    this.isMmTable = isMmTable;
+    this.mmWriteId = mmWriteId;
   }
 
   public FileSinkDesc(final Path dirName, final TableDesc tableInfo,
@@ -145,7 +144,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   public Object clone() throws CloneNotSupportedException {
     FileSinkDesc ret = new FileSinkDesc(dirName, tableInfo, compressed,
         destTableId, multiFileSpray, canBeMerged, numFiles, totalFiles,
-        partitionCols, dpCtx, destPath, isMmTable);
+        partitionCols, dpCtx, destPath, mmWriteId);
     ret.setCompressCodec(compressCodec);
     ret.setCompressType(compressType);
     ret.setGatherStats(gatherStats);
@@ -159,7 +158,6 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     ret.setWriteType(writeType);
     ret.setTransactionId(txnId);
     ret.setStatsTmpDir(statsTmpDir);
-    ret.setExecutionPrefix(executionPrefix);
     return ret;
   }
 
@@ -254,7 +252,11 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   }
 
   public boolean isMmTable() {
-    return isMmTable;
+    return mmWriteId != null;
+  }
+
+  public long getMmWriteId() {
+    return mmWriteId;
   }
 
   public boolean isMaterialization() {
@@ -481,13 +483,5 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   public void setStatsTmpDir(String statsCollectionTempDir) {
     this.statsTmpDir = statsCollectionTempDir;
-  }
-
-  public String getExecutionPrefix() {
-    return this.executionPrefix;
-  }
-
-  public void setExecutionPrefix(String value) {
-    this.executionPrefix = value;
   }
 }

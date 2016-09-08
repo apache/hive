@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.model.MMasterKey;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
@@ -312,15 +313,28 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
         checkFileFormats(db, tbd, table);
 
+        boolean isAcid = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID;
+        if (tbd.isMmTable()) {
+          if (tbd.getReplace()) {
+            // TODO#: would need a list of new files to support. Then, old ones only would need
+            //        to be removed from MS (and FS). Also, per-partition IOW is problematic for
+            //        the prefix case.
+            throw new HiveException("Replace and MM are not supported");
+          }
+          if (isAcid) {
+            // TODO# need to make sure ACID writes to final directories. Otherwise, might need to move.
+            throw new HiveException("ACID and MM are not supported");
+          }
+        }
+
         // Create a data container
         DataContainer dc = null;
         if (tbd.getPartitionSpec().size() == 0) {
           dc = new DataContainer(table.getTTable());
           Utilities.LOG14535.info("loadTable called from " + tbd.getSourcePath() + " into " + tbd.getTable());
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getReplace(),
-              work.isSrcLocal(), isSkewedStoredAsDirs(tbd),
-              work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
-              hasFollowingStatsTask());
+              work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isAcid, hasFollowingStatsTask(),
+              tbd.getMmWriteId());
           if (work.getOutputs() != null) {
             work.getOutputs().add(new WriteEntity(table,
                 (tbd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE :
@@ -376,11 +390,13 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       TaskInformation ti) throws HiveException, IOException, InvalidOperationException {
     List<String> partVals = MetaStoreUtils.getPvals(table.getPartCols(),  tbd.getPartitionSpec());
     db.validatePartitionNameCharacters(partVals);
-    Utilities.LOG14535.info("loadPartition called from " + tbd.getSourcePath() + " into " + tbd.getTable());
-    db.loadPartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
+    Utilities.LOG14535.info("loadPartition called from " + tbd.getSourcePath()
+        + " into " + tbd.getTable().getTableName());
+    db.loadSinglePartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
         tbd.getPartitionSpec(), tbd.getReplace(),
         tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
-        work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID, hasFollowingStatsTask(), tbd.isMmTable());
+        work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
+        hasFollowingStatsTask(), tbd.getMmWriteId());
     Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
 
     if (ti.bucketCols != null || ti.sortCols != null) {

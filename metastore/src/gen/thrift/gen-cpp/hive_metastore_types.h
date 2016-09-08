@@ -384,6 +384,18 @@ class CacheFileMetadataResult;
 
 class CacheFileMetadataRequest;
 
+class GetNextWriteIdRequest;
+
+class GetNextWriteIdResult;
+
+class FinalizeWriteIdRequest;
+
+class FinalizeWriteIdResult;
+
+class HeartbeatWriteIdRequest;
+
+class HeartbeatWriteIdResult;
+
 class GetAllFunctionsResponse;
 
 class TableMeta;
@@ -2042,7 +2054,7 @@ inline std::ostream& operator<<(std::ostream& out, const StorageDescriptor& obj)
 }
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), mmNextWriteId(false), mmWatermarkWriteId(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -2057,6 +2069,8 @@ typedef struct _Table__isset {
   bool tableType :1;
   bool privileges :1;
   bool temporary :1;
+  bool mmNextWriteId :1;
+  bool mmWatermarkWriteId :1;
 } _Table__isset;
 
 class Table {
@@ -2064,7 +2078,7 @@ class Table {
 
   Table(const Table&);
   Table& operator=(const Table&);
-  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false) {
+  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), mmNextWriteId(0), mmWatermarkWriteId(0) {
   }
 
   virtual ~Table() throw();
@@ -2082,6 +2096,8 @@ class Table {
   std::string tableType;
   PrincipalPrivilegeSet privileges;
   bool temporary;
+  int64_t mmNextWriteId;
+  int64_t mmWatermarkWriteId;
 
   _Table__isset __isset;
 
@@ -2112,6 +2128,10 @@ class Table {
   void __set_privileges(const PrincipalPrivilegeSet& val);
 
   void __set_temporary(const bool val);
+
+  void __set_mmNextWriteId(const int64_t val);
+
+  void __set_mmWatermarkWriteId(const int64_t val);
 
   bool operator == (const Table & rhs) const
   {
@@ -2146,6 +2166,14 @@ class Table {
     if (__isset.temporary != rhs.__isset.temporary)
       return false;
     else if (__isset.temporary && !(temporary == rhs.temporary))
+      return false;
+    if (__isset.mmNextWriteId != rhs.__isset.mmNextWriteId)
+      return false;
+    else if (__isset.mmNextWriteId && !(mmNextWriteId == rhs.mmNextWriteId))
+      return false;
+    if (__isset.mmWatermarkWriteId != rhs.__isset.mmWatermarkWriteId)
+      return false;
+    else if (__isset.mmWatermarkWriteId && !(mmWatermarkWriteId == rhs.mmWatermarkWriteId))
       return false;
     return true;
   }
@@ -7152,6 +7180,266 @@ class CacheFileMetadataRequest {
 void swap(CacheFileMetadataRequest &a, CacheFileMetadataRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const CacheFileMetadataRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class GetNextWriteIdRequest {
+ public:
+
+  GetNextWriteIdRequest(const GetNextWriteIdRequest&);
+  GetNextWriteIdRequest& operator=(const GetNextWriteIdRequest&);
+  GetNextWriteIdRequest() : dbName(), tblName() {
+  }
+
+  virtual ~GetNextWriteIdRequest() throw();
+  std::string dbName;
+  std::string tblName;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tblName(const std::string& val);
+
+  bool operator == (const GetNextWriteIdRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    return true;
+  }
+  bool operator != (const GetNextWriteIdRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetNextWriteIdRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetNextWriteIdRequest &a, GetNextWriteIdRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetNextWriteIdRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class GetNextWriteIdResult {
+ public:
+
+  GetNextWriteIdResult(const GetNextWriteIdResult&);
+  GetNextWriteIdResult& operator=(const GetNextWriteIdResult&);
+  GetNextWriteIdResult() : writeId(0) {
+  }
+
+  virtual ~GetNextWriteIdResult() throw();
+  int64_t writeId;
+
+  void __set_writeId(const int64_t val);
+
+  bool operator == (const GetNextWriteIdResult & rhs) const
+  {
+    if (!(writeId == rhs.writeId))
+      return false;
+    return true;
+  }
+  bool operator != (const GetNextWriteIdResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetNextWriteIdResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetNextWriteIdResult &a, GetNextWriteIdResult &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetNextWriteIdResult& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class FinalizeWriteIdRequest {
+ public:
+
+  FinalizeWriteIdRequest(const FinalizeWriteIdRequest&);
+  FinalizeWriteIdRequest& operator=(const FinalizeWriteIdRequest&);
+  FinalizeWriteIdRequest() : dbName(), tblName(), writeId(0), commit(0) {
+  }
+
+  virtual ~FinalizeWriteIdRequest() throw();
+  std::string dbName;
+  std::string tblName;
+  int64_t writeId;
+  bool commit;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tblName(const std::string& val);
+
+  void __set_writeId(const int64_t val);
+
+  void __set_commit(const bool val);
+
+  bool operator == (const FinalizeWriteIdRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (!(writeId == rhs.writeId))
+      return false;
+    if (!(commit == rhs.commit))
+      return false;
+    return true;
+  }
+  bool operator != (const FinalizeWriteIdRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FinalizeWriteIdRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FinalizeWriteIdRequest &a, FinalizeWriteIdRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const FinalizeWriteIdRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class FinalizeWriteIdResult {
+ public:
+
+  FinalizeWriteIdResult(const FinalizeWriteIdResult&);
+  FinalizeWriteIdResult& operator=(const FinalizeWriteIdResult&);
+  FinalizeWriteIdResult() {
+  }
+
+  virtual ~FinalizeWriteIdResult() throw();
+
+  bool operator == (const FinalizeWriteIdResult & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const FinalizeWriteIdResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FinalizeWriteIdResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FinalizeWriteIdResult &a, FinalizeWriteIdResult &b);
+
+inline std::ostream& operator<<(std::ostream& out, const FinalizeWriteIdResult& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class HeartbeatWriteIdRequest {
+ public:
+
+  HeartbeatWriteIdRequest(const HeartbeatWriteIdRequest&);
+  HeartbeatWriteIdRequest& operator=(const HeartbeatWriteIdRequest&);
+  HeartbeatWriteIdRequest() : dbName(), tblName(), writeId(0) {
+  }
+
+  virtual ~HeartbeatWriteIdRequest() throw();
+  std::string dbName;
+  std::string tblName;
+  int64_t writeId;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tblName(const std::string& val);
+
+  void __set_writeId(const int64_t val);
+
+  bool operator == (const HeartbeatWriteIdRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (!(writeId == rhs.writeId))
+      return false;
+    return true;
+  }
+  bool operator != (const HeartbeatWriteIdRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const HeartbeatWriteIdRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(HeartbeatWriteIdRequest &a, HeartbeatWriteIdRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const HeartbeatWriteIdRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class HeartbeatWriteIdResult {
+ public:
+
+  HeartbeatWriteIdResult(const HeartbeatWriteIdResult&);
+  HeartbeatWriteIdResult& operator=(const HeartbeatWriteIdResult&);
+  HeartbeatWriteIdResult() {
+  }
+
+  virtual ~HeartbeatWriteIdResult() throw();
+
+  bool operator == (const HeartbeatWriteIdResult & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const HeartbeatWriteIdResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const HeartbeatWriteIdResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(HeartbeatWriteIdResult &a, HeartbeatWriteIdResult &b);
+
+inline std::ostream& operator<<(std::ostream& out, const HeartbeatWriteIdResult& obj)
 {
   obj.printTo(out);
   return out;

@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
@@ -81,6 +80,7 @@ import org.apache.hadoop.hive.metastore.events.PreLoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadTableEvent;
 import org.apache.hadoop.hive.metastore.filemeta.OrcFileMetadataHandler;
+import org.apache.hadoop.hive.metastore.model.MTableWrite;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -181,11 +181,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     };
   };
 
-  /**
-   * default port on which to start the Hive server
-   */
   public static final String ADMIN = "admin";
   public static final String PUBLIC = "public";
+  /** MM write states. */
+  public static final char MM_WRITE_OPEN = 'o', MM_WRITE_COMMITTED = 'c', MM_WRITE_ABORTED = 'a';
 
   private static HadoopThriftAuthBridge.Server saslServer;
   private static HiveDelegationTokenManager delegationTokenManager;
@@ -1253,13 +1252,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else {
-          throw newMetaException(e);
-        }
+        throwMetaException(e);
       } finally {
         endFunction("get_type", ret != null, ex);
       }
@@ -1302,13 +1295,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         success = getMS().dropType(name);
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else {
-          throw newMetaException(e);
-        }
+        throwMetaException(e);
       } finally {
         endFunction("drop_type", success, ex);
       }
@@ -1863,13 +1850,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new MetaException(e.getMessage());
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else {
-          throw newMetaException(e);
-        }
+        throwMetaException(e);
       } finally {
         endFunction("drop_table", success, ex, name);
       }
@@ -1941,7 +1922,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      */
     public Table get_table_core(final String dbname, final String name) throws MetaException,
         NoSuchObjectException {
-      Table t;
+      Table t = null;
       try {
         t = getMS().getTable(dbname, name);
         if (t == null) {
@@ -1949,13 +1930,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               + " table not found");
         }
       } catch (Exception e) {
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else {
-          throw newMetaException(e);
-        }
+        throwMetaException(e);
       }
       return t;
     }
@@ -3116,13 +3091,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = getMS().getPartition(db_name, tbl_name, part_vals);
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else {
-          throw newMetaException(e);
-        }
+        throwMetaException(e);
       } finally {
         endFunction("get_partition", ret != null, ex, tbl_name);
       }
@@ -3188,13 +3157,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = getMS().getPartitions(db_name, tbl_name, max_parts);
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else {
-          throw newMetaException(e);
-        }
+        throwMetaException(e);
       } finally {
         endFunction("get_partitions", ret != null, ex, tbl_name);
       }
@@ -6443,13 +6406,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = getMS().getPrimaryKeys(db_name, tbl_name);
       } catch (Exception e) {
        ex = e;
-       if (e instanceof MetaException) {
-         throw (MetaException) e;
-       } else if (e instanceof NoSuchObjectException) {
-         throw (NoSuchObjectException) e;
-       } else {
-         throw newMetaException(e);
-       }
+       throwMetaException(e);
      } finally {
        endFunction("get_primary_keys", ret != null, ex, tbl_name);
      }
@@ -6473,17 +6430,141 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               foreign_db_name, foreign_tbl_name);
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else {
-          throw newMetaException(e);
-        }
+        throwMetaException(e);
       } finally {
         endFunction("get_foreign_keys", ret != null, ex, foreign_tbl_name);
       }
       return new ForeignKeysResponse(ret);
+    }
+
+    private void throwMetaException(Exception e) throws MetaException,
+        NoSuchObjectException {
+      if (e instanceof MetaException) {
+        throw (MetaException) e;
+      } else if (e instanceof NoSuchObjectException) {
+        throw (NoSuchObjectException) e;
+      } else {
+        throw newMetaException(e);
+      }
+    }
+
+    @Override
+    public GetNextWriteIdResult get_next_write_id(GetNextWriteIdRequest req) throws TException {
+      RawStore ms = getMS();
+      String dbName = req.getDbName(), tblName = req.getTblName();
+      startFunction("get_next_write_id", " : db=" + dbName + " tbl=" + tblName);
+      Exception ex = null;
+      long writeId = -1;
+      // TODO# see TXN about how to handle conflicts
+      try {
+        boolean ok = false;
+        ms.openTransaction();
+        try {
+          Table tbl = ms.getTable(dbName, tblName);
+          if (tbl == null) {
+            throw new NoSuchObjectException(dbName + "." + tblName);
+          }
+          writeId = tbl.isSetMmNextWriteId() ? tbl.getMmNextWriteId() : 0;
+          tbl.setMmNextWriteId(writeId + 1);
+          ms.alterTable(dbName, tblName, tbl);
+          ok = true;
+        } finally {
+          commitOrRollback(ms, ok);
+        }
+        // Do a separate txn after we have reserved the number. TODO: If we fail, ignore on read.
+        ok = false;
+        ms.openTransaction();
+        try {
+          Table tbl = ms.getTable(dbName, tblName);
+          ms.createTableWrite(tbl, writeId, MM_WRITE_OPEN, System.currentTimeMillis());
+          ok = true;
+        } finally {
+          commitOrRollback(ms, ok);
+        }
+      } catch (Exception e) {
+        ex = e;
+        throwMetaException(e);
+      } finally {
+        endFunction("get_next_write_id", ex == null, ex, tblName);
+      }
+      return new GetNextWriteIdResult(writeId);
+    }
+
+    @Override
+    public FinalizeWriteIdResult finalize_write_id(FinalizeWriteIdRequest req) throws TException {
+      RawStore ms = getMS();
+      String dbName = req.getDbName(), tblName = req.getTblName();
+      long writeId = req.getWriteId();
+      boolean commit = req.isCommit();
+      startFunction("finalize_write_id", " : db=" + dbName + " tbl=" + tblName
+          + " writeId=" + writeId + " commit=" + commit);
+      Exception ex = null;
+      try {
+        boolean ok = false;
+        ms.openTransaction();
+        try {
+          MTableWrite tw = getActiveTableWrite(ms, dbName, tblName, writeId);
+          tw.setState(String.valueOf(commit ? MM_WRITE_COMMITTED : MM_WRITE_ABORTED));
+          ms.updateTableWrite(tw);
+          ok = true;
+        } finally {
+          commitOrRollback(ms, ok);
+        }
+      } catch (Exception e) {
+        ex = e;
+        throwMetaException(e);
+      } finally {
+        endFunction("finalize_write_id", ex == null, ex, tblName);
+      }
+      return new FinalizeWriteIdResult();
+    }
+
+    private void commitOrRollback(RawStore ms, boolean ok) throws MetaException {
+      if (ok) {
+        if (!ms.commitTransaction()) throw new MetaException("Failed to commit");
+      } else {
+        ms.rollbackTransaction();
+      }
+    }
+
+    @Override
+    public HeartbeatWriteIdResult heartbeat_write_id(HeartbeatWriteIdRequest req)
+        throws TException {
+      RawStore ms = getMS();
+      String dbName = req.getDbName(), tblName = req.getTblName();
+      long writeId = req.getWriteId();
+      startFunction("heartbeat_write_id", " : db="
+          + dbName + " tbl=" + tblName + " writeId=" + writeId);
+      Exception ex = null;
+      try {
+        boolean ok = false;
+        ms.openTransaction();
+        try {
+          MTableWrite tw = getActiveTableWrite(ms, dbName, tblName, writeId);
+          tw.setLastHeartbeat(System.currentTimeMillis());
+          ms.updateTableWrite(tw);
+          ok = true;
+        } finally {
+          commitOrRollback(ms, ok);
+        }
+      } catch (Exception e) {
+        ex = e;
+        throwMetaException(e);
+      } finally {
+        endFunction("heartbeat_write_id", ex == null, ex, tblName);
+      }
+      return new HeartbeatWriteIdResult();
+    }
+
+    private MTableWrite getActiveTableWrite(RawStore ms, String dbName,
+        String tblName, long writeId) throws MetaException {
+      MTableWrite tw = ms.getTableWrite(dbName, tblName, writeId);
+      assert tw.getState().length() == 1;
+      char state = tw.getState().charAt(0);
+      if (state != MM_WRITE_OPEN) {
+        throw new MetaException("Invalid write state to finalize: " + state);
+      }
+      return tw;
     }
   }
 

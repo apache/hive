@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.model.MTableWrite;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
@@ -878,6 +879,19 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public void addForeignKeys(List<SQLForeignKey> fks)
     throws InvalidObjectException, MetaException {
     // TODO Auto-generated method stub
+  }
+
+  @Override
+  public void createTableWrite(Table tbl, long writeId, char state, long heartbeat) {
+  }
+
+  @Override
+  public void updateTableWrite(MTableWrite tw) {
+  }
+
+  @Override
+  public MTableWrite getTableWrite(String dbName, String tblName, long writeId) {
+    return null;
   }
 }
 

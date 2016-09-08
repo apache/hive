@@ -142,6 +142,7 @@ import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
+import org.apache.hadoop.hive.metastore.model.MTableWrite;
 import org.apache.hadoop.hive.metastore.model.MType;
 import org.apache.hadoop.hive.metastore.model.MVersionTable;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
@@ -1053,6 +1054,11 @@ public class ObjectStore implements RawStore, Configurable {
           pm.deletePersistentAll(tabConstraints);
         }
 
+        List<MTableWrite> tableWrites = listAllTableWrites(dbName, tableName);
+        if (tableWrites != null && tableWrites.size() > 0) {
+          pm.deletePersistentAll(tableWrites);
+        }
+
         preDropStorageDescriptor(tbl.getSd());
         // then remove the table
         pm.deletePersistentAll(tbl);
@@ -1108,7 +1114,33 @@ public class ObjectStore implements RawStore, Configurable {
     return mConstraints;
   }
 
-@Override
+
+  private List<MTableWrite> listAllTableWrites(String dbName, String tableName) {
+    List<MTableWrite> result = null;
+    Query query = null;
+    boolean success = false;
+    openTransaction();
+    try {
+      String queryStr = "table.tableName == t1 && table.database.name == t2";
+      query = pm.newQuery(MTableWrite.class, queryStr);
+      query.declareParameters("java.lang.String t1, java.lang.String t2");
+      result = new ArrayList<>((List<MTableWrite>) query.executeWithArray(tableName, dbName));
+      pm.retrieveAll(result);
+      success = true;
+    } finally {
+      if (success) {
+        commitTransaction();
+      } else {
+        rollbackTransaction();
+      }
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+    return result;
+  }
+
+  @Override
   public Table getTable(String dbName, String tableName) throws MetaException {
     boolean commited = false;
     Table tbl = null;
@@ -1410,11 +1442,14 @@ public class ObjectStore implements RawStore, Configurable {
         tableType = TableType.MANAGED_TABLE.toString();
       }
     }
-    return new Table(mtbl.getTableName(), mtbl.getDatabase().getName(), mtbl
+    Table t = new Table(mtbl.getTableName(), mtbl.getDatabase().getName(), mtbl
         .getOwner(), mtbl.getCreateTime(), mtbl.getLastAccessTime(), mtbl
         .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
         convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
         mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
+    t.setMmNextWriteId(mtbl.getMmNextWriteId());
+    t.setMmWatermarkWriteId(mtbl.getMmWatermarkWriteId());
+    return t;
   }
 
   private MTable convertToMTable(Table tbl) throws InvalidObjectException,
@@ -1452,7 +1487,8 @@ public class ObjectStore implements RawStore, Configurable {
         .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(),
-        tableType);
+        tableType, tbl.isSetMmNextWriteId() ?  tbl.getMmNextWriteId() : -1,
+            tbl.isSetMmWatermarkWriteId() ?  tbl.getMmWatermarkWriteId() : -1);
   }
 
   private List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {
@@ -3218,6 +3254,8 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setLastAccessTime(newt.getLastAccessTime());
       oldt.setViewOriginalText(newt.getViewOriginalText());
       oldt.setViewExpandedText(newt.getViewExpandedText());
+      oldt.setMmNextWriteId(newt.getMmNextWriteId());
+      oldt.setMmWatermarkWriteId(newt.getMmWatermarkWriteId());
 
       // commit the changes
       success = commitTransaction();
@@ -8609,6 +8647,78 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!success) {
         rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public void createTableWrite(Table tbl, long writeId, char state, long heartbeat) {
+    boolean success = false;
+    openTransaction();
+    try {
+      MTable mtbl = getMTable(tbl.getDbName(), tbl.getTableName());
+      MTableWrite tw = new MTableWrite(mtbl, writeId, String.valueOf(state), heartbeat);
+      pm.makePersistent(tw);
+      success = true;
+    } finally {
+      if (success) {
+        commitTransaction();
+      } else {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public void updateTableWrite(MTableWrite tw) {
+    boolean success = false;
+    openTransaction();
+    try {
+      pm.makePersistent(tw);
+      success = true;
+    } finally {
+      if (success) {
+        commitTransaction();
+      } else {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public MTableWrite getTableWrite(
+      String dbName, String tblName, long writeId) throws MetaException {
+    boolean success = false;
+    Query query = null;
+    try {
+      openTransaction();
+      dbName = HiveStringUtils.normalizeIdentifier(dbName);
+      tblName = HiveStringUtils.normalizeIdentifier(tblName);
+      MTable mtbl = getMTable(dbName, tblName);
+      if (mtbl == null) {
+        success = true;
+        return null;
+      }
+      query = pm.newQuery(MTableWrite.class,
+              "table.tableName == t1 && table.database.name == t2 && writeId == t3");
+      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.Long t3");
+      List<MTableWrite> writes = (List<MTableWrite>) query.execute(tblName, dbName, writeId);
+      pm.retrieveAll(writes);
+      success = true;
+      if (writes == null || writes.isEmpty()) return null;
+      if (writes.size() > 1) {
+        throw new MetaException(
+            "More than one TableWrite for " + dbName + "." + tblName + " and " + writeId);
+      }
+      return writes.get(0);
+    } finally {
+      if (success) {
+        commitTransaction();
+      } else {
+        rollbackTransaction();
+      }
+      if (query != null) {
+        query.closeAll();
       }
     }
   }

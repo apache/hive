@@ -51,6 +51,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
 import javax.jdo.JDODataStoreException;
@@ -1469,15 +1470,29 @@ public class Hive {
     return getDatabase(currentDb);
   }
 
-  public void loadPartition(Path loadPath, String tableName,
-      Map<String, String> partSpec, boolean replace,
-      boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
-      boolean isSrcLocal, boolean isAcid, boolean hasFollowingStatsTask, boolean isMmTable)
-          throws HiveException {
+  public void loadSinglePartition(Path loadPath, String tableName,
+      Map<String, String> partSpec, boolean replace, boolean inheritTableSpecs,
+      boolean isSkewedStoreAsSubdir,  boolean isSrcLocal, boolean isAcid,
+      boolean hasFollowingStatsTask, Long mmWriteId) throws HiveException {
     Table tbl = getTable(tableName);
-    // TODO# dbl check if table is still mm for consistency
+    boolean isMmTableWrite = (mmWriteId != null);
+    Preconditions.checkState(isMmTableWrite == AcidUtils.isMmTable(tbl));
     loadPartition(loadPath, tbl, partSpec, replace, inheritTableSpecs,
-        isSkewedStoreAsSubdir, isSrcLocal, isAcid, hasFollowingStatsTask, isMmTable);
+        isSkewedStoreAsSubdir, isSrcLocal, isAcid, hasFollowingStatsTask, mmWriteId);
+    if (isMmTableWrite) {
+      // The assumption behind committing here is that this partition is the only one outputted
+      commitMmTableWrite(tbl, mmWriteId);
+    }
+  }
+
+
+  private void commitMmTableWrite(Table tbl, Long mmWriteId)
+      throws HiveException {
+    try {
+      getMSC().finalizeTableWrite(tbl.getDbName(), tbl.getTableName(), mmWriteId, true);
+    } catch (TException e) {
+      throw new HiveException(e);
+    }
   }
 
   /**
@@ -1503,9 +1518,8 @@ public class Hive {
    */
   public Partition loadPartition(Path loadPath, Table tbl, Map<String, String> partSpec,
       boolean replace, boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
-      boolean isSrcLocal, boolean isAcid, boolean hasFollowingStatsTask, boolean isMmTable)
+      boolean isSrcLocal, boolean isAcid, boolean hasFollowingStatsTask, Long mmWriteId)
           throws HiveException {
-
     Path tblDataLocationPath =  tbl.getDataLocation();
     try {
       Partition oldPart = getPartition(tbl, partSpec, false);
@@ -1542,12 +1556,12 @@ public class Hive {
       } else {
         newPartPath = oldPartPath;
       }
-      List<Path> newFiles = null, mmFiles = null;
-      if (isMmTable) {
-        mmFiles = handleMicromanagedPartition(
-            loadPath, tbl, replace, oldPart, newPartPath, isAcid);
+      List<Path> newFiles = null;
+      if (mmWriteId != null) {
+        Utilities.LOG14535.info("not moving " + loadPath + " to " + newPartPath);
+        assert !isAcid && !replace;
         if (areEventsForDmlNeeded(tbl, oldPart)) {
-          newFiles = mmFiles;
+          newFiles = listFilesCreatedByQuery(loadPath, mmWriteId);
         }
       } else {
         if (replace || (oldPart == null && !isAcid)) {
@@ -1636,21 +1650,9 @@ public class Hive {
     return conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && oldPart != null;
   }
 
-
-  private List<Path> handleMicromanagedPartition(Path loadPath, Table tbl, boolean replace,
-      Partition oldPart, Path newPartPath, boolean isAcid) throws HiveException {
-    Utilities.LOG14535.info("not moving " + loadPath + " to " + newPartPath);
-    if (replace) {
-      // TODO#: would need a list of new files to support. Then, old ones only would need
-      //        to be removed from MS (and FS). Also, per-partition IOW is problematic for
-      //        the prefix case.
-      throw new HiveException("Replace and MM are not supported");
-    }
-    if (isAcid) {
-      // TODO# need to make sure ACID writes to final directories. Otherwise, might need to move.
-      throw new HiveException("ACID and MM are not supported");
-    }
+  private List<Path> listFilesCreatedByQuery(Path loadPath, long mmWriteId) throws HiveException {
     List<Path> newFiles = new ArrayList<Path>();
+    final String filePrefix = AcidUtils.getMmFilePrefix(mmWriteId);
     FileStatus[] srcs;
     FileSystem srcFs;
     try {
@@ -1664,19 +1666,27 @@ public class Hive {
       LOG.info("No sources specified: " + loadPath);
       return newFiles;
     }
-
+    PathFilter subdirFilter = null;
+ 
     // TODO: just like the move path, we only do one level of recursion.
     for (FileStatus src : srcs) {
       if (src.isDirectory()) {
+        if (subdirFilter == null) {
+          subdirFilter = new PathFilter() {
+            @Override
+            public boolean accept(Path path) {
+              return path.getName().startsWith(filePrefix);
+            }
+          };
+        }
         try {
-          for (FileStatus srcFile :
-            srcFs.listStatus(src.getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER)) {
+          for (FileStatus srcFile : srcFs.listStatus(src.getPath(), subdirFilter)) {
             newFiles.add(srcFile.getPath());
           }
         } catch (IOException e) {
           throw new HiveException(e);
         }
-      } else {
+      } else if (src.getPath().getName().startsWith(filePrefix)) {
         newFiles.add(src.getPath());
       }
     }
@@ -1878,7 +1888,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               Utilities.LOG14535.info("loadPartition called for DPP from " + partPath + " to " + tbl.getTableName());
               Partition newPartition = loadPartition(partPath, tbl, fullPartSpec,
                   replace, true, listBucketingEnabled,
-                  false, isAcid, hasFollowingStatsTask, false); // TODO# special case #N
+                  false, isAcid, hasFollowingStatsTask, null); // TODO# special case #N
               partitionsMap.put(fullPartSpec, newPartition);
 
               if (inPlaceEligible) {
@@ -1910,6 +1920,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       for (Future future : futures) {
         future.get();
       }
+      // TODO# we would commit the txn to metastore here
     } catch (InterruptedException | ExecutionException e) {
       LOG.debug("Cancelling " + futures.size() + " dynamic loading tasks");
       //cancel other futures
@@ -1959,8 +1970,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param isAcid true if this is an ACID based write
    */
   public void loadTable(Path loadPath, String tableName, boolean replace, boolean isSrcLocal,
-      boolean isSkewedStoreAsSubdir, boolean isAcid, boolean hasFollowingStatsTask)
-      throws HiveException {
+      boolean isSkewedStoreAsSubdir, boolean isAcid, boolean hasFollowingStatsTask,
+      Long mmWriteId) throws HiveException {
 
     List<Path> newFiles = null;
     Table tbl = getTable(tableName);
@@ -1968,17 +1979,21 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
       newFiles = Collections.synchronizedList(new ArrayList<Path>());
     }
-    if (replace) {
-      Path tableDest = tbl.getPath();
-      replaceFiles(tableDest, loadPath, tableDest, tableDest, sessionConf, isSrcLocal);
-    } else {
-      FileSystem fs;
-      try {
-        fs = tbl.getDataLocation().getFileSystem(sessionConf);
-        copyFiles(sessionConf, loadPath, tbl.getPath(), fs, isSrcLocal, isAcid, newFiles);
-      } catch (IOException e) {
-        throw new HiveException("addFiles: filesystem error in check phase", e);
+    if (mmWriteId == null) {
+      if (replace) {
+        Path tableDest = tbl.getPath();
+        replaceFiles(tableDest, loadPath, tableDest, tableDest, sessionConf, isSrcLocal);
+      } else {
+        FileSystem fs;
+        try {
+          fs = tbl.getDataLocation().getFileSystem(sessionConf);
+          copyFiles(sessionConf, loadPath, tbl.getPath(), fs, isSrcLocal, isAcid, newFiles);
+        } catch (IOException e) {
+          throw new HiveException("addFiles: filesystem error in check phase", e);
+        }
       }
+    } else {
+      newFiles = listFilesCreatedByQuery(loadPath, mmWriteId);
     }
     if (!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
       StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
@@ -2010,6 +2025,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       alterTable(tableName, tbl, environmentContext);
     } catch (InvalidOperationException e) {
       throw new HiveException(e);
+    }
+
+    if (mmWriteId != null) {
+      commitMmTableWrite(tbl, mmWriteId);
     }
 
     fireInsertEvent(tbl, null, newFiles);
@@ -3983,6 +4002,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
     throws HiveException, NoSuchObjectException {
     try {
       getMSC().addForeignKey(foreignKeyCols);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+
+  public long getNextTableWriteId(String dbName, String tableName) throws HiveException {
+    try {
+      return getMSC().getNextTableWriteId(dbName, tableName);
     } catch (Exception e) {
       throw new HiveException(e);
     }

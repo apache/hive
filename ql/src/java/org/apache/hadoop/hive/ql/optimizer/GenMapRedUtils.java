@@ -1305,6 +1305,7 @@ public final class GenMapRedUtils {
     //
     // 2. Constructing a conditional task consisting of a move task and a map reduce task
     //
+    // TODO# movetask is created here; handle MM tables
     MoveWork dummyMv = new MoveWork(null, null, null,
          new LoadFileDesc(fsInputDesc.getFinalDirName(), finalName, true, null, null), false);
     MapWork cplan;

@@ -233,8 +233,8 @@ public class Context {
       // Append task specific info to stagingPathName, instead of creating a sub-directory.
       // This way we don't have to worry about deleting the stagingPathName separately at
       // end of query execution.
-      // TODO# HERE
-      dir = fs.makeQualified(new Path(stagingPathName + "_" + getExecutionPrefix()));
+      dir = fs.makeQualified(new Path(
+          stagingPathName + "_" + this.executionId + "-" + TaskRunner.getTaskRunnerID()));
 
       LOG.debug("Created staging dir = " + dir + " for path = " + inputPath);
 
@@ -818,10 +818,6 @@ public class Context {
 
   public void setSkipTableMasking(boolean skipTableMasking) {
     this.skipTableMasking = skipTableMasking;
-  }
-
-  public String getExecutionPrefix() {
-    return this.executionId + "-" + TaskRunner.getTaskRunnerID();
   }
 
   public ExplainConfiguration getExplainConfig() {

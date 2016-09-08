@@ -71,6 +71,7 @@ public class AnnotateRunTimeStatsOptimizer implements PhysicalPlanResolver {
       Task<? extends Serializable> currTask = (Task<? extends Serializable>) nd;
       Set<Operator<? extends OperatorDesc>> ops = new HashSet<>();
 
+      /* TODO# wtf
       if (currTask instanceof MapRedTask) {
         MapRedTask mr = (MapRedTask) currTask;
         ops.addAll(mr.getWork().getAllOperators());
@@ -84,7 +85,7 @@ public class AnnotateRunTimeStatsOptimizer implements PhysicalPlanResolver {
         for (BaseWork w : sparkWork.getAllWork()) {
           ops.addAll(w.getAllOperators());
         }
-      }
+      }*/
 
       setOrAnnotateStats(ops, physicalContext.getParseContext());
       return null;

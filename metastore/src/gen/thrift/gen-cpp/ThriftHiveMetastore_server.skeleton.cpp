@@ -767,6 +767,21 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("cache_file_metadata\n");
   }
 
+  void get_next_write_id(GetNextWriteIdResult& _return, const GetNextWriteIdRequest& req) {
+    // Your implementation goes here
+    printf("get_next_write_id\n");
+  }
+
+  void finalize_write_id(FinalizeWriteIdResult& _return, const FinalizeWriteIdRequest& req) {
+    // Your implementation goes here
+    printf("finalize_write_id\n");
+  }
+
+  void heartbeat_write_id(HeartbeatWriteIdResult& _return, const HeartbeatWriteIdRequest& req) {
+    // Your implementation goes here
+    printf("heartbeat_write_id\n");
+  }
+
 };
 
 int main(int argc, char **argv) {
