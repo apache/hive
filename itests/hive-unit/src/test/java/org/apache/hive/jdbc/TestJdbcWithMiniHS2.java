@@ -441,6 +441,11 @@ public class TestJdbcWithMiniHS2 {
     conf.setInt("hive.server2.thrift.resultset.max.fetch.size", 1000);
   }
 
+  private void unsetSerializeInTasksInConf(HiveConf conf) {
+    conf.setBoolean("hive.server2.thrift.resultset.serialize.in.tasks", false);
+    conf.unset("hive.server2.thrift.resultset.max.fetch.size");
+  }
+
   @Test
   public void testMetadataQueriesWithSerializeThriftInTasks() throws Exception {
     //stop HiveServer2
@@ -602,6 +607,45 @@ public class TestJdbcWithMiniHS2 {
     stmt.execute("drop table testThriftSerializeShow2");
     stmt.close();
   }
+
+   @Test
+   public void testEnableThriftSerializeInTasks() throws Exception {
+     //stop HiveServer2
+     if (miniHS2.isStarted()) {
+       miniHS2.stop();
+     }
+
+     HiveConf conf = new HiveConf();
+     String userName;
+     setSerializeInTasksInConf(conf);
+     miniHS2 = new MiniHS2(conf);
+     Map<String, String> confOverlay = new HashMap<String, String>();
+     miniHS2.start(confOverlay);
+
+     userName = System.getProperty("user.name");
+     hs2Conn = getConnection(miniHS2.getJdbcURL(), userName, "password");
+     Statement stmt = hs2Conn.createStatement();
+     stmt.execute("drop table if exists testThriftSerializeShow1");
+     stmt.execute("drop table if exists testThriftSerializeShow2");
+     stmt.execute("create table testThriftSerializeShow1 (a int)");
+     stmt.execute("create table testThriftSerializeShow2 (b int)");
+     stmt.execute("insert into testThriftSerializeShow1 values (1)");
+     stmt.execute("insert into testThriftSerializeShow2 values (2)");
+     ResultSet rs = stmt.executeQuery("select * from testThriftSerializeShow1 inner join testThriftSerializeShow2 where testThriftSerializeShow1.a=testThriftSerializeShow2.b");
+     assertTrue(!rs.next());
+
+     unsetSerializeInTasksInConf(conf);
+     rs = stmt.executeQuery("select * from testThriftSerializeShow1 inner join testThriftSerializeShow2 where testThriftSerializeShow1.a=testThriftSerializeShow2.b");
+     assertTrue(!rs.next());
+
+     setSerializeInTasksInConf(conf);
+     rs = stmt.executeQuery("select * from testThriftSerializeShow1 inner join testThriftSerializeShow2 where testThriftSerializeShow1.a=testThriftSerializeShow2.b");
+     assertTrue(!rs.next());
+
+     stmt.execute("drop table testThriftSerializeShow1");
+     stmt.execute("drop table testThriftSerializeShow2");
+     stmt.close();
+   }
 
   /**
    * Tests the creation of the 3 scratch dirs: hdfs, local, downloaded resources (which is also local).

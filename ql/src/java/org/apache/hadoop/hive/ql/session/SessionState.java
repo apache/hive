@@ -140,6 +140,11 @@ public class SessionState {
    */
   private boolean isHiveServerQuery = false;
 
+  /**
+   * The flag to indicate if the session using thrift jdbc binary serde or not.
+   */
+  private boolean isUsingThriftJDBCBinarySerDe = false;
+
   /*
    * HiveHistory Object
    */
@@ -340,6 +345,14 @@ public class SessionState {
 
   public void setIsVerbose(boolean isVerbose) {
     this.isVerbose = isVerbose;
+  }
+
+  public void setIsUsingThriftJDBCBinarySerDe(boolean isUsingThriftJDBCBinarySerDe) {
+	this.isUsingThriftJDBCBinarySerDe = isUsingThriftJDBCBinarySerDe;
+  }
+
+  public boolean getIsUsingThriftJDBCBinarySerDe() {
+	return isUsingThriftJDBCBinarySerDe;
   }
 
   public void setIsHiveServerQuery(boolean isHiveServerQuery) {
