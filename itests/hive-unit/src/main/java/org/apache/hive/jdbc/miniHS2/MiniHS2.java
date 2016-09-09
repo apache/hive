@@ -502,4 +502,8 @@ public class MiniHS2 extends AbstractHiveService {
       break;
     } while (true);
   }
+  
+  public Service.STATE getState() {
+    return hiveServer2.getServiceState();
+  }
 }
