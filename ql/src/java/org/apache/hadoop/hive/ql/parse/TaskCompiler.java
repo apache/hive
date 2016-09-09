@@ -159,7 +159,7 @@ public abstract class TaskCompiler {
       TableDesc resultTab = pCtx.getFetchTableDesc();
       if (resultTab == null) {
         resFileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
-        if (SessionState.get().isHiveServerQuery() && (conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS))
+        if (SessionState.get().getIsUsingThriftJDBCBinarySerDe()
             && (resFileFormat.equalsIgnoreCase("SequenceFile"))) {
           resultTab =
               PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat,

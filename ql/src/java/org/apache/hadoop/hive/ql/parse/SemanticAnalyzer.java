@@ -6874,8 +6874,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (tblDesc == null) {
         if (qb.getIsQuery()) {
           String fileFormat;
-          if (SessionState.get().isHiveServerQuery() &&
-                   conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS)) {
+          if (SessionState.get().getIsUsingThriftJDBCBinarySerDe()) {
               fileFormat = "SequenceFile";
               HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT, fileFormat);
               table_desc=

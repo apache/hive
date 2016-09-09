@@ -166,6 +166,7 @@ public class HiveSessionImpl implements HiveSession {
     sessionState.setUserIpAddress(ipAddress);
     sessionState.setIsHiveServerQuery(true);
     sessionState.setForwardedAddresses(SessionManager.getForwardedAddresses());
+    sessionState.setIsUsingThriftJDBCBinarySerDe(updateIsUsingThriftJDBCBinarySerDe());
     SessionState.start(sessionState);
     try {
       sessionState.loadAuxJars();
@@ -189,7 +190,7 @@ public class HiveSessionImpl implements HiveSession {
     lastIdleTime = lastAccessTime;
   }
 
-  /**
+/**
    * It is used for processing hiverc file from HiveServer2 side.
    */
   private class GlobalHivercFileProcessor extends HiveFileProcessor {
@@ -266,6 +267,11 @@ public class HiveSessionImpl implements HiveSession {
         sessionConf.verifyAndSet(key, entry.getValue());
       }
     }
+  }
+
+  private boolean updateIsUsingThriftJDBCBinarySerDe() {
+	return (8 <= getProtocolVersion().getValue())
+      && sessionConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS);
   }
 
   @Override
@@ -355,6 +361,7 @@ public class HiveSessionImpl implements HiveSession {
     // stored in the thread local for the handler thread.
     SessionState.setCurrentSessionState(sessionState);
     sessionState.setForwardedAddresses(SessionManager.getForwardedAddresses());
+    sessionState.setIsUsingThriftJDBCBinarySerDe(updateIsUsingThriftJDBCBinarySerDe());
     if (userAccess) {
       lastAccessTime = System.currentTimeMillis();
     }
