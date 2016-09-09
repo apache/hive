@@ -94,7 +94,7 @@ public class HiveServer2 extends CompositeService {
   private PersistentEphemeralNode znode;
   private String znodePath;
   private CuratorFramework zooKeeperClient;
-  private boolean registeredWithZooKeeper = false;
+  private boolean deregisteredWithZooKeeper = false; // Set to true only when deregistration happens
   private HttpServer webServer; // Web UI
 
   public HiveServer2() {
@@ -324,7 +324,7 @@ public class HiveServer2 extends CompositeService {
       if (!znode.waitForInitialCreate(znodeCreationTimeout, TimeUnit.SECONDS)) {
         throw new Exception("Max znode creation wait time: " + znodeCreationTimeout + "s exhausted");
       }
-      setRegisteredWithZooKeeper(true);
+      setDeregisteredWithZooKeeper(false);
       znodePath = znode.getActualPath();
       // Set a watch on the znode
       if (zooKeeperClient.checkExists().usingWatcher(new DeRegisterWatcher()).forPath(znodePath) == null) {
@@ -415,7 +415,7 @@ public class HiveServer2 extends CompositeService {
           } catch (IOException e) {
             LOG.error("Failed to close the persistent ephemeral znode", e);
           } finally {
-            HiveServer2.this.setRegisteredWithZooKeeper(false);
+            HiveServer2.this.setDeregisteredWithZooKeeper(true);
             // If there are no more active client sessions, stop the server
             if (cliService.getSessionManager().getOpenSessionCount() == 0) {
               LOG.warn("This instance of HiveServer2 has been removed from the list of server "
@@ -430,7 +430,8 @@ public class HiveServer2 extends CompositeService {
   }
 
   private void removeServerInstanceFromZooKeeper() throws Exception {
-    setRegisteredWithZooKeeper(false);
+    setDeregisteredWithZooKeeper(true);
+    
     if (znode != null) {
       znode.close();
     }
@@ -438,12 +439,12 @@ public class HiveServer2 extends CompositeService {
     LOG.info("Server instance removed from ZooKeeper.");
   }
 
-  public boolean isRegisteredWithZooKeeper() {
-    return registeredWithZooKeeper;
+  public boolean isDeregisteredWithZooKeeper() {
+    return deregisteredWithZooKeeper;
   }
 
-  private void setRegisteredWithZooKeeper(boolean registeredWithZooKeeper) {
-    this.registeredWithZooKeeper = registeredWithZooKeeper;
+  private void setDeregisteredWithZooKeeper(boolean deregisteredWithZooKeeper) {
+    this.deregisteredWithZooKeeper = deregisteredWithZooKeeper;
   }
 
   private String getServerInstanceURI() throws Exception {
