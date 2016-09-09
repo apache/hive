@@ -783,7 +783,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         }
       }
       /* fall through - miss in locality (random scheduling) or no locality-requested */
-      Collection<ServiceInstance> instances = activeInstances.getAll();
+      Collection<ServiceInstance> instances = activeInstances.getAll().values();
       ArrayList<NodeInfo> all = new ArrayList<>(instances.size());
       for (ServiceInstance inst : instances) {
         NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
