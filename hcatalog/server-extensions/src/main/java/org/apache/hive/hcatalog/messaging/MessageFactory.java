@@ -37,7 +37,7 @@ import java.util.Map;
  */
 public abstract class MessageFactory {
 
-  private static MessageFactory instance = new JSONMessageFactory();
+  private static MessageFactory instance = null;
 
   protected static final HiveConf hiveConf = new HiveConf();
   static {
