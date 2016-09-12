@@ -17,10 +17,12 @@
  */
 package org.apache.hadoop.hive.llap.security;
 
+import java.io.IOException;
+
 import org.apache.hadoop.security.token.delegation.DelegationKey;
 
 public interface SigningSecretManager {
-  DelegationKey getCurrentKey();
+  DelegationKey getCurrentKey() throws IOException;
   byte[] signWithKey(byte[] message, DelegationKey key);
   byte[] signWithKey(byte[] message, int keyId) throws SecurityException;
 }
