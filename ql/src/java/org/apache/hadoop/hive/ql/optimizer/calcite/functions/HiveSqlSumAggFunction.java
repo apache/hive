@@ -58,7 +58,7 @@ public class HiveSqlSumAggFunction extends SqlAggFunction implements CanAggregat
     SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker) {
     super(
         "sum",
-        SqlKind.OTHER_FUNCTION,
+        SqlKind.SUM,
         returnTypeInference,
         operandTypeInference,
         operandTypeChecker,

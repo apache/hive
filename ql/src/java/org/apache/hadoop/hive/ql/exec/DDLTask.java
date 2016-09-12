@@ -60,6 +60,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HdfsUtils;
@@ -224,6 +225,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.tools.HadoopArchives;
@@ -4268,15 +4271,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // this is not transactional
       for (Path location : getLocations(db, table, partSpec)) {
         FileSystem fs = location.getFileSystem(conf);
-        HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(conf, fs, location);
-        FileStatus targetStatus = fs.getFileStatus(location);
-        String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
-        fs.delete(location, true);
-        fs.mkdirs(location);
-        try {
-          HdfsUtils.setFullFileStatus(conf, status, targetGroup, fs, location, false);
-        } catch (Exception e) {
-          LOG.warn("Error setting permissions of " + location, e);
+        HadoopShims.HdfsEncryptionShim shim
+          = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
+        if (!shim.isPathEncrypted(location)) {
+          HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(conf, fs, location);
+          FileStatus targetStatus = fs.getFileStatus(location);
+          String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
+          FileUtils.moveToTrash(fs, location, conf);
+          fs.mkdirs(location);
+          try {
+            HdfsUtils.setFullFileStatus(conf, status, targetGroup, fs, location, false);
+          } catch (Exception e) {
+            LOG.warn("Error setting permissions of " + location, e);
+          }
+        } else {
+          FileStatus[] statuses = fs.listStatus(location, FileUtils.HIDDEN_FILES_PATH_FILTER);
+          if (statuses == null || statuses.length == 0) {
+            continue;
+          }
+          boolean success = Hive.trashFiles(fs, statuses, conf);
+          if (!success) {
+            throw new HiveException("Error in deleting the contents of " + location.toString());
+          }
         }
       }
     } catch (Exception e) {
@@ -4468,12 +4484,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   public static boolean doesTableNeedLocation(Table tbl) {
-    // If we are ok with breaking compatibility of existing 3rd party StorageHandlers,
+    // TODO: If we are ok with breaking compatibility of existing 3rd party StorageHandlers,
     // this method could be moved to the HiveStorageHandler interface.
     boolean retval = true;
     if (tbl.getStorageHandler() != null) {
-      retval = !tbl.getStorageHandler().toString().equals(
-          "org.apache.hadoop.hive.hbase.HBaseStorageHandler");
+      String sh = tbl.getStorageHandler().toString();
+      retval = !sh.equals("org.apache.hadoop.hive.hbase.HBaseStorageHandler")
+              && !sh.equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID);
     }
     return retval;
   }

@@ -31,14 +31,20 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.udf.UDFDateFloorDay;
+import org.apache.hadoop.hive.ql.udf.UDFDateFloorHour;
+import org.apache.hadoop.hive.ql.udf.UDFDateFloorMinute;
+import org.apache.hadoop.hive.ql.udf.UDFDateFloorMonth;
+import org.apache.hadoop.hive.ql.udf.UDFDateFloorQuarter;
+import org.apache.hadoop.hive.ql.udf.UDFDateFloorSecond;
+import org.apache.hadoop.hive.ql.udf.UDFDateFloorWeek;
+import org.apache.hadoop.hive.ql.udf.UDFDateFloorYear;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.UDAFPercentile;
 import org.apache.hadoop.hive.ql.udf.UDFAcos;
@@ -141,6 +147,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.common.util.AnnotationUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * FunctionRegistry.
@@ -288,6 +296,16 @@ public final class FunctionRegistry {
     system.registerGenericUDF("next_day", GenericUDFNextDay.class);
     system.registerGenericUDF("trunc", GenericUDFTrunc.class);
     system.registerGenericUDF("date_format", GenericUDFDateFormat.class);
+
+    // Special date formatting functions
+    system.registerUDF("floor_year", UDFDateFloorYear.class, false);
+    system.registerUDF("floor_quarter", UDFDateFloorQuarter.class, false);
+    system.registerUDF("floor_month", UDFDateFloorMonth.class, false);
+    system.registerUDF("floor_day", UDFDateFloorDay.class, false);
+    system.registerUDF("floor_week", UDFDateFloorWeek.class, false);
+    system.registerUDF("floor_hour", UDFDateFloorHour.class, false);
+    system.registerUDF("floor_minute", UDFDateFloorMinute.class, false);
+    system.registerUDF("floor_second", UDFDateFloorSecond.class, false);
 
     system.registerGenericUDF("date_add", GenericUDFDateAdd.class);
     system.registerGenericUDF("date_sub", GenericUDFDateSub.class);

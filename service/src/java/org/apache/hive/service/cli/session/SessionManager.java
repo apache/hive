@@ -366,7 +366,7 @@ public class SessionManager extends CompositeService {
     } finally {
       // Shutdown HiveServer2 if it has been deregistered from ZooKeeper and has no active sessions
       if (!(hiveServer2 == null) && (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY))
-          && (!hiveServer2.isRegisteredWithZooKeeper())) {
+          && (hiveServer2.isDeregisteredWithZooKeeper())) {
         // Asynchronously shutdown this instance of HiveServer2,
         // if there are no active client sessions
         if (getOpenSessionCount() == 0) {

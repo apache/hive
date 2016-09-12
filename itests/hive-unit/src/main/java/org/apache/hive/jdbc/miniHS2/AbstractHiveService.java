@@ -140,7 +140,7 @@ public abstract class AbstractHiveService {
     return startedHiveService;
   }
 
-  protected void setStarted(boolean hiveServiceStatus) {
+  public void setStarted(boolean hiveServiceStatus) {
     this.startedHiveService =  hiveServiceStatus;
   }
 

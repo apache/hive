@@ -542,61 +542,67 @@ public class MapOperator extends AbstractMapOperator {
       vcValues = new Object[vcs.size()];
     }
     for (int i = 0; i < vcs.size(); i++) {
-      VirtualColumn vc = vcs.get(i);
-      if (vc.equals(VirtualColumn.FILENAME)) {
-        if (ctx.inputFileChanged()) {
-          vcValues[i] = new Text(ctx.getCurrentInputPath().toString());
-        }
-      } else if (vc.equals(VirtualColumn.BLOCKOFFSET)) {
-        long current = ctx.getIoCxt().getCurrentBlockStart();
-        LongWritable old = (LongWritable) vcValues[i];
-        if (old == null) {
-          old = new LongWritable(current);
-          vcValues[i] = old;
-          continue;
-        }
-        if (current != old.get()) {
-          old.set(current);
-        }
-      } else if (vc.equals(VirtualColumn.ROWOFFSET)) {
-        long current = ctx.getIoCxt().getCurrentRow();
-        LongWritable old = (LongWritable) vcValues[i];
-        if (old == null) {
-          old = new LongWritable(current);
-          vcValues[i] = old;
-          continue;
-        }
-        if (current != old.get()) {
-          old.set(current);
-        }
-      } else if (vc.equals(VirtualColumn.RAWDATASIZE)) {
-        long current = 0L;
-        SerDeStats stats = deserializer.getSerDeStats();
-        if(stats != null) {
-          current = stats.getRawDataSize();
-        }
-        LongWritable old = (LongWritable) vcValues[i];
-        if (old == null) {
-          old = new LongWritable(current);
-          vcValues[i] = old;
-          continue;
-        }
-        if (current != old.get()) {
-          old.set(current);
-        }
-      }
-      else if(vc.equals(VirtualColumn.ROWID)) {
-        if(ctx.getIoCxt().getRecordIdentifier() == null) {
-          vcValues[i] = null;
-        }
-        else {
-          if(vcValues[i] == null) {
-            vcValues[i] = new Object[RecordIdentifier.Field.values().length];
+      switch(vcs.get(i)) {
+        case FILENAME :
+          if (ctx.inputFileChanged()) {
+            vcValues[i] = new Text(ctx.getCurrentInputPath().toString());
           }
-          RecordIdentifier.StructInfo.toArray(ctx.getIoCxt().getRecordIdentifier(), (Object[])vcValues[i]);
-          ctx.getIoCxt().setRecordIdentifier(null);//so we don't accidentally cache the value; shouldn't
-          //happen since IO layer either knows how to produce ROW__ID or not - but to be safe
+          break;
+        case BLOCKOFFSET: {
+          long current = ctx.getIoCxt().getCurrentBlockStart();
+          LongWritable old = (LongWritable) vcValues[i];
+          if (old == null) {
+            old = new LongWritable(current);
+            vcValues[i] = old;
+            continue;
+          }
+          if (current != old.get()) {
+            old.set(current);
+          }
         }
+        break;
+        case ROWOFFSET: {
+          long current = ctx.getIoCxt().getCurrentRow();
+          LongWritable old = (LongWritable) vcValues[i];
+          if (old == null) {
+            old = new LongWritable(current);
+            vcValues[i] = old;
+            continue;
+          }
+          if (current != old.get()) {
+            old.set(current);
+          }
+        }
+        break;
+        case RAWDATASIZE:
+          long current = 0L;
+          SerDeStats stats = deserializer.getSerDeStats();
+          if(stats != null) {
+            current = stats.getRawDataSize();
+          }
+          LongWritable old = (LongWritable) vcValues[i];
+          if (old == null) {
+            old = new LongWritable(current);
+            vcValues[i] = old;
+            continue;
+          }
+          if (current != old.get()) {
+            old.set(current);
+          }
+          break;
+        case ROWID:
+          if(ctx.getIoCxt().getRecordIdentifier() == null) {
+            vcValues[i] = null;
+          }
+          else {
+            if(vcValues[i] == null) {
+              vcValues[i] = new Object[RecordIdentifier.Field.values().length];
+            }
+            RecordIdentifier.StructInfo.toArray(ctx.getIoCxt().getRecordIdentifier(), (Object[])vcValues[i]);
+            ctx.getIoCxt().setRecordIdentifier(null);//so we don't accidentally cache the value; shouldn't
+            //happen since IO layer either knows how to produce ROW__ID or not - but to be safe
+          }
+	  break;
       }
     }
     return vcValues;

@@ -175,6 +175,8 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            properties:
+              insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < '11') (type: boolean)
@@ -330,6 +332,8 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            properties:
+              insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < '11') (type: boolean)

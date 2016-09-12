@@ -462,16 +462,16 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain create table if not exists nzhang_ctas3 as select key, value from src sort by key, value limit 2
-PREHOOK: type: CREATETABLE
+PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: explain create table if not exists nzhang_ctas3 as select key, value from src sort by key, value limit 2
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
 
 STAGE PLANS:
 PREHOOK: query: create table if not exists nzhang_ctas3 as select key, value from src sort by key, value limit 2
-PREHOOK: type: CREATETABLE
+PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: create table if not exists nzhang_ctas3 as select key, value from src sort by key, value limit 2
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: query: select * from nzhang_ctas3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas3

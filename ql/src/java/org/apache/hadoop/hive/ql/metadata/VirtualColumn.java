@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -41,19 +40,16 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 @InterfaceAudience.Private
-public class VirtualColumn implements Serializable {
+public enum VirtualColumn {
+  FILENAME("INPUT__FILE__NAME", TypeInfoFactory.stringTypeInfo),
+  BLOCKOFFSET("BLOCK__OFFSET__INSIDE__FILE", TypeInfoFactory.longTypeInfo),
+  ROWOFFSET("ROW__OFFSET__INSIDE__BLOCK", TypeInfoFactory.longTypeInfo),
 
-  private static final long serialVersionUID = 1L;
-
-  public static final VirtualColumn FILENAME = new VirtualColumn("INPUT__FILE__NAME", (PrimitiveTypeInfo)TypeInfoFactory.stringTypeInfo);
-  public static final VirtualColumn BLOCKOFFSET = new VirtualColumn("BLOCK__OFFSET__INSIDE__FILE", (PrimitiveTypeInfo)TypeInfoFactory.longTypeInfo);
-  public static final VirtualColumn ROWOFFSET = new VirtualColumn("ROW__OFFSET__INSIDE__BLOCK", (PrimitiveTypeInfo)TypeInfoFactory.longTypeInfo);
-
-  public static final VirtualColumn RAWDATASIZE = new VirtualColumn("RAW__DATA__SIZE", (PrimitiveTypeInfo)TypeInfoFactory.longTypeInfo);
+  RAWDATASIZE("RAW__DATA__SIZE", TypeInfoFactory.longTypeInfo),
   /**
    * {@link org.apache.hadoop.hive.ql.io.RecordIdentifier} 
    */
-  public static final VirtualColumn ROWID = new VirtualColumn("ROW__ID", RecordIdentifier.StructInfo.typeInfo, true, RecordIdentifier.StructInfo.oi);
+  ROWID("ROW__ID", RecordIdentifier.StructInfo.typeInfo, true, RecordIdentifier.StructInfo.oi),
 
   /**
    * GROUPINGID is used with GROUP BY GROUPINGS SETS, ROLLUP and CUBE.
@@ -62,8 +58,7 @@ public class VirtualColumn implements Serializable {
    * set if that column has been aggregated in that row. Otherwise the
    * value is "0".  Returns the decimal representation of the bit vector.
    */
-  public static final VirtualColumn GROUPINGID =
-      new VirtualColumn("GROUPING__ID", (PrimitiveTypeInfo) TypeInfoFactory.intTypeInfo);
+  GROUPINGID("GROUPING__ID", TypeInfoFactory.intTypeInfo);
 
   public static ImmutableSet<String> VIRTUAL_COLUMN_NAMES =
       ImmutableSet.of(FILENAME.getName(), BLOCKOFFSET.getName(), ROWOFFSET.getName(),
@@ -74,12 +69,12 @@ public class VirtualColumn implements Serializable {
   private final boolean isHidden;
   private final ObjectInspector oi;
 
-  private VirtualColumn(String name, PrimitiveTypeInfo typeInfo) {
+  VirtualColumn(String name, PrimitiveTypeInfo typeInfo) {
     this(name, typeInfo, true, 
       PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(typeInfo));
   }
 
-  private VirtualColumn(String name, TypeInfo typeInfo, boolean isHidden, ObjectInspector oi) {
+  VirtualColumn(String name, TypeInfo typeInfo, boolean isHidden, ObjectInspector oi) {
     this.name = name;
     this.typeInfo = typeInfo;
     this.isHidden = isHidden;
@@ -124,24 +119,6 @@ public class VirtualColumn implements Serializable {
     return oi;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if(!(o instanceof VirtualColumn)) {
-      return false;
-    }
-    VirtualColumn c = (VirtualColumn) o;
-    return this.name.equals(c.name)
-        && this.typeInfo.getTypeName().equals(c.getTypeInfo().getTypeName());
-  }
-  @Override
-  public int hashCode() {
-    int c = 19;
-    c = 31 * name.hashCode() + c;
-    return  31 * typeInfo.getTypeName().hashCode() + c;
-  }
   public static Collection<String> removeVirtualColumns(final Collection<String> columns) {
     Iterables.removeAll(columns, VIRTUAL_COLUMN_NAMES);
     return columns;

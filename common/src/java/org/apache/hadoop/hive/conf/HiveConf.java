@@ -1884,6 +1884,17 @@ public class HiveConf extends Configuration {
     WRITE_SET_REAPER_INTERVAL("hive.writeset.reaper.interval", "60s",
       new TimeValidator(TimeUnit.MILLISECONDS), "Frequency of WriteSet reaper runs"),
 
+    // For Druid storage handler
+    HIVE_DRUID_BROKER_DEFAULT_ADDRESS("hive.druid.broker.address.default", "localhost:8082",
+        "Address of the Druid broker. If we are querying Druid from Hive, this address needs to be\n" +
+        "declared"),
+    HIVE_DRUID_SELECT_THRESHOLD("hive.druid.select.threshold", 10000,
+        "When we can split a Select query, this is the maximum number of rows that we try to retrieve\n" +
+        "per query. In order to do that, we obtain the estimated size for the complete result. If the\n" +
+        "number of records of the query results is larger than this threshold, we split the query in\n" +
+        "total number of rows/threshold parts across the time dimension. Note that we assume the\n" +
+        "records to be split uniformly across the time dimension"),
+
     // For HBase storage handler
     HIVE_HBASE_WAL_ENABLED("hive.hbase.wal.enabled", true,
         "Whether writes to HBase should be forced to the write-ahead log. \n" +

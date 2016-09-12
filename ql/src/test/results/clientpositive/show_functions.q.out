@@ -87,6 +87,14 @@ field
 find_in_set
 first_value
 floor
+floor_day
+floor_hour
+floor_minute
+floor_month
+floor_quarter
+floor_second
+floor_week
+floor_year
 format_number
 from_unixtime
 from_utc_timestamp
@@ -286,6 +294,7 @@ e
 encode
 explode
 first_value
+floor_minute
 from_unixtime
 in_file
 inline

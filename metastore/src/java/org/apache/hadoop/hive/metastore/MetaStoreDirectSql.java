@@ -88,14 +88,6 @@ import com.google.common.collect.Lists;
  * to SQL stores only. There's always a way to do without direct SQL.
  */
 class MetaStoreDirectSql {
-  private static enum DB {
-    MYSQL,
-    ORACLE,
-    MSSQL,
-    DERBY,
-    OTHER
-  }
-
   private static final int NO_BATCHING = -1, DETECT_BATCHING = 0;
 
   private static final Logger LOG = LoggerFactory.getLogger(MetaStoreDirectSql.class);
@@ -109,7 +101,7 @@ class MetaStoreDirectSql {
    *
    * Use sparingly, we don't want to devolve into another DataNucleus...
    */
-  private final DB dbType;
+  private final DatabaseProduct dbType;
   private final int batchSize;
   private final boolean convertMapNullsToEmptyStrings;
   private final String defaultPartName;
@@ -123,10 +115,17 @@ class MetaStoreDirectSql {
 
   public MetaStoreDirectSql(PersistenceManager pm, Configuration conf) {
     this.pm = pm;
-    this.dbType = determineDbType();
+    DatabaseProduct dbType = null;
+    try {
+      dbType = DatabaseProduct.determineDatabaseProduct(getProductName());
+    } catch (SQLException e) {
+      LOG.warn("Cannot determine database product; assuming OTHER", e);
+      dbType = DatabaseProduct.OTHER;
+    }
+    this.dbType = dbType;
     int batchSize = HiveConf.getIntVar(conf, ConfVars.METASTORE_DIRECT_SQL_PARTITION_BATCH_SIZE);
     if (batchSize == DETECT_BATCHING) {
-      batchSize = (dbType == DB.ORACLE || dbType == DB.MSSQL) ? 1000 : NO_BATCHING;
+      batchSize = DatabaseProduct.needsInBatching(dbType) ? 1000 : NO_BATCHING;
     }
     this.batchSize = batchSize;
 
@@ -136,7 +135,7 @@ class MetaStoreDirectSql {
 
     String jdoIdFactory = HiveConf.getVar(conf, ConfVars.METASTORE_IDENTIFIER_FACTORY);
     if (! ("datanucleus1".equalsIgnoreCase(jdoIdFactory))){
-      LOG.warn("Underlying metastore does not use 'datanuclues1' for its ORM naming scheme."
+      LOG.warn("Underlying metastore does not use 'datanucleus1' for its ORM naming scheme."
           + " Disabling directSQL as it uses hand-hardcoded SQL with that assumption.");
       isCompatibleDatastore = false;
     } else {
@@ -146,28 +145,11 @@ class MetaStoreDirectSql {
       }
     }
 
-    isAggregateStatsCacheEnabled = HiveConf.getBoolVar(conf, ConfVars.METASTORE_AGGREGATE_STATS_CACHE_ENABLED);
+    isAggregateStatsCacheEnabled = HiveConf.getBoolVar(
+        conf, ConfVars.METASTORE_AGGREGATE_STATS_CACHE_ENABLED);
     if (isAggregateStatsCacheEnabled) {
       aggrStatsCache = AggregateStatsCache.getInstance(conf);
     }
-  }
-
-  private DB determineDbType() {
-    DB dbType = DB.OTHER;
-    String productName = getProductName();
-    if (productName != null) {
-      productName = productName.toLowerCase();
-      if (productName.contains("mysql")) {
-        dbType = DB.MYSQL;
-      } else if (productName.contains("oracle")) {
-        dbType = DB.ORACLE;
-      } else if (productName.contains("microsoft sql server")) {
-        dbType = DB.MSSQL;
-      } else if (productName.contains("derby")) {
-        dbType = DB.DERBY;
-      }
-    }
-    return dbType;
   }
 
   private String getProductName() {
@@ -391,7 +373,7 @@ class MetaStoreDirectSql {
   public boolean generateSqlFilterForPushdown(
       Table table, ExpressionTree tree, SqlFilterForPushdown result) throws MetaException {
     // Derby and Oracle do not interpret filters ANSI-properly in some cases and need a workaround.
-    boolean dbHasJoinCastBug = (dbType == DB.DERBY || dbType == DB.ORACLE);
+    boolean dbHasJoinCastBug = DatabaseProduct.hasJoinOperationOrderBug(dbType);
     result.table = table;
     result.filter = PartitionFilterGenerator.generateSqlFilter(
         table, tree, result.params, result.joins, dbHasJoinCastBug, defaultPartName, dbType);
@@ -960,10 +942,10 @@ class MetaStoreDirectSql {
     private final List<String> joins;
     private final boolean dbHasJoinCastBug;
     private final String defaultPartName;
-    private final DB dbType;
+    private final DatabaseProduct dbType;
 
     private PartitionFilterGenerator(Table table, List<Object> params, List<String> joins,
-        boolean dbHasJoinCastBug, String defaultPartName, DB dbType) {
+        boolean dbHasJoinCastBug, String defaultPartName, DatabaseProduct dbType) {
       this.table = table;
       this.params = params;
       this.joins = joins;
@@ -981,8 +963,8 @@ class MetaStoreDirectSql {
      * @return the string representation of the expression tree
      */
     private static String generateSqlFilter(Table table, ExpressionTree tree, List<Object> params,
-        List<String> joins, boolean dbHasJoinCastBug, String defaultPartName, DB dbType)
-            throws MetaException {
+        List<String> joins, boolean dbHasJoinCastBug, String defaultPartName,
+        DatabaseProduct dbType) throws MetaException {
       assert table != null;
       if (tree == null) {
         // consistent with other APIs like makeExpressionTree, null is returned to indicate that
@@ -1129,7 +1111,7 @@ class MetaStoreDirectSql {
         if (colType == FilterType.Integral) {
           tableValue = "cast(" + tableValue + " as decimal(21,0))";
         } else if (colType == FilterType.Date) {
-          if (dbType == DB.ORACLE) {
+          if (dbType == DatabaseProduct.ORACLE) {
             // Oracle requires special treatment... as usual.
             tableValue = "TO_DATE(" + tableValue + ", 'YYYY-MM-DD')";
           } else {
@@ -1756,7 +1738,7 @@ class MetaStoreDirectSql {
    * effect will apply to the connection that is executing the queries otherwise.
    */
   public void prepareTxn() throws MetaException {
-    if (dbType != DB.MYSQL) return;
+    if (dbType != DatabaseProduct.MYSQL) return;
     try {
       assert pm.currentTransaction().isActive(); // must be inside tx together with queries
       executeNoResult("SET @@session.sql_mode=ANSI_QUOTES");
