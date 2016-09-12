@@ -40,10 +40,10 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -239,7 +239,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
       if (isMmTable) {
-        Path manifestPath = new Path(specPath, "_tmp." + getMmPrefixedTaskId() + MANIFEST_EXTENSION);
+        Path manifestPath = new Path(specPath, "_tmp." + ValidWriteIds.getMmFilePrefix(
+            conf.getMmWriteId()) + "_" + taskId + MANIFEST_EXTENSION);
         Utilities.LOG14535.info("Writing manifest to " + manifestPath + " with " + commitPaths);
         try {
           try (FSDataOutputStream out = fs.create(manifestPath)) {
@@ -323,11 +324,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           }
           outPaths[filesIdx] = getTaskOutPath(taskId);
         } else {
+          String subdirPath = ValidWriteIds.getMmFilePrefix(conf.getMmWriteId()) + "/" + taskId;
           if (!bDynParts && !isSkewedStoredAsSubDirectories) {
-            finalPaths[filesIdx] = getFinalPath(getMmPrefixedTaskId(), specPath, extension);
+            finalPaths[filesIdx] = getFinalPath(subdirPath, specPath, extension);
           } else {
-            // TODO# wrong!
-            finalPaths[filesIdx] = getFinalPath(getMmPrefixedTaskId(), specPath, extension);
+            // TODO# wrong! special case #N bucketing
+            finalPaths[filesIdx] = getFinalPath(subdirPath, specPath, extension);
           }
           outPaths[filesIdx] = finalPaths[filesIdx];
         }
@@ -719,10 +721,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     } else {
       return false;
     }
-  }
-
-  private String getMmPrefixedTaskId() {
-    return AcidUtils.getMmFilePrefix(conf.getMmWriteId()) + taskId;
   }
 
   protected Writable recordValue;
@@ -1195,21 +1193,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     super.jobCloseOp(hconf, success);
   }
 
-  private static class ExecPrefixPathFilter implements PathFilter {
-    private final String prefix, tmpPrefix;
-    public ExecPrefixPathFilter(String prefix) {
-      this.prefix = prefix;
-      this.tmpPrefix = "_tmp." + prefix;
-    }
-
-    @Override
-    public boolean accept(Path path) {
-      String name = path.getName();
-      return name.startsWith(prefix) || name.startsWith(tmpPrefix);
-    }
-  }
-
-
   private void handleMmTable(Path specPath, Configuration hconf, boolean success,
       DynamicPartitionCtx dpCtx, FileSinkDesc conf, Reporter reporter)
           throws IOException, HiveException {
@@ -1217,7 +1200,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     int targetLevel = (dpCtx == null) ? 1 : dpCtx.getNumDPCols();
     if (!success) {
       FileStatus[] statuses = HiveStatsUtils.getFileStatusRecurse(specPath, targetLevel, fs,
-          new ExecPrefixPathFilter(AcidUtils.getMmFilePrefix(conf.getMmWriteId())));
+          new ValidWriteIds.IdPathFilter(conf.getMmWriteId(), true));
       for (FileStatus status : statuses) {
         Utilities.LOG14535.info("Deleting " + status.getPath() + " on failure");
         tryDelete(fs, status.getPath());
@@ -1225,15 +1208,19 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       return;
     }
     FileStatus[] statuses = HiveStatsUtils.getFileStatusRecurse(specPath, targetLevel, fs,
-        new ExecPrefixPathFilter(AcidUtils.getMmFilePrefix(conf.getMmWriteId())));
+        new ValidWriteIds.IdPathFilter(conf.getMmWriteId(), true));
     if (statuses == null) return;
     LinkedList<FileStatus> results = new LinkedList<>();
     List<Path> manifests = new ArrayList<>(statuses.length);
     for (FileStatus status : statuses) {
       if (status.getPath().getName().endsWith(MANIFEST_EXTENSION)) {
         manifests.add(status.getPath());
+      } else if (!status.isDirectory()) {
+        Path path = status.getPath();
+        Utilities.LOG14535.warn("Unknown file found - neither a manifest nor directory: " + path);
+        tryDelete(fs, path);
       } else {
-        results.add(status);
+        results.addAll(Lists.newArrayList(fs.listStatus(status.getPath())));
       }
     }
     HashSet<String> committed = new HashSet<>();
@@ -1254,7 +1241,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       if (!committed.remove(rfs.getPath().toString())) {
         iter.remove();
         Utilities.LOG14535.info("Deleting " + rfs.getPath() + " that was not committed");
-        tryDelete(fs, rfs.getPath());
+        // We should actually succeed here - if we fail, don't commit the query.
+        if (!fs.delete(rfs.getPath(), true)) {
+          throw new HiveException("Failed to delete an uncommitted path " + rfs.getPath());
+        }
       }
     }
     if (!committed.isEmpty()) {
@@ -1268,6 +1258,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     if (results.isEmpty()) return;
     FileStatus[] finalResults = results.toArray(new FileStatus[results.size()]);
 
+    // TODO# dp will break - removeTempOrDuplicateFiles assumes dirs in results. Why? We recurse...
     List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(
         fs, finalResults, dpCtx, conf, hconf);
     // create empty buckets if necessary
@@ -1278,7 +1269,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
   private void tryDelete(FileSystem fs, Path path) {
     try {
-      fs.delete(path, false);
+      fs.delete(path, true);
     } catch (IOException ex) {
       LOG.error("Failed to delete " + path, ex);
     }

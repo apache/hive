@@ -104,14 +104,17 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public boolean commitTransaction() {
+    return false;
+  }
 
+  @Override
+  @CanNotRetry
+  public Boolean commitTransactionExpectDeadlock() {
     return false;
   }
 
   @Override
   public void rollbackTransaction() {
-
-
   }
 
   @Override
@@ -891,6 +894,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public MTableWrite getTableWrite(String dbName, String tblName, long writeId) {
+    return null;
+  }
+
+  @Override
+  public List<Long> getWriteIds(
+      String dbName, String tblName, long watermarkId, long nextWriteId, char state) {
     return null;
   }
 }

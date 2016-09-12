@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -96,6 +97,7 @@ import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResult;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
@@ -1563,6 +1565,11 @@ public class Hive {
         if (areEventsForDmlNeeded(tbl, oldPart)) {
           newFiles = listFilesCreatedByQuery(loadPath, mmWriteId);
         }
+        if (replace) {
+          Path tableDest = tbl.getPath();
+          deleteOldPathForReplace(newPartPath, oldPartPath,
+              getConf(), new ValidWriteIds.IdPathFilter(mmWriteId, false));
+        }
       } else {
         if (replace || (oldPart == null && !isAcid)) {
           replaceFiles(tbl.getPath(), loadPath, newPartPath, oldPartPath, getConf(),
@@ -1652,7 +1659,7 @@ public class Hive {
 
   private List<Path> listFilesCreatedByQuery(Path loadPath, long mmWriteId) throws HiveException {
     List<Path> newFiles = new ArrayList<Path>();
-    final String filePrefix = AcidUtils.getMmFilePrefix(mmWriteId);
+    final String filePrefix = ValidWriteIds.getMmFilePrefix(mmWriteId);
     FileStatus[] srcs;
     FileSystem srcFs;
     try {
@@ -1920,7 +1927,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       for (Future future : futures) {
         future.get();
       }
-      // TODO# we would commit the txn to metastore here
+      // TODO# special case #N - DP - we would commit the txn to metastore here
     } catch (InterruptedException | ExecutionException e) {
       LOG.debug("Cancelling " + futures.size() + " dynamic loading tasks");
       //cancel other futures
@@ -1993,6 +2000,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
         }
       }
     } else {
+      if (replace) {
+        Path tableDest = tbl.getPath();
+        deleteOldPathForReplace(tableDest, tableDest, sessionConf,
+            new ValidWriteIds.IdPathFilter(mmWriteId, false));
+      }
       newFiles = listFilesCreatedByQuery(loadPath, mmWriteId);
     }
     if (!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
@@ -3376,39 +3388,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       if (oldPath != null) {
-        boolean oldPathDeleted = false;
-        boolean isOldPathUnderDestf = false;
-        FileStatus[] statuses = null;
-        try {
-          FileSystem oldFs = oldPath.getFileSystem(conf);
-          statuses = oldFs.listStatus(oldPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
-          // Do not delete oldPath if:
-          //  - destf is subdir of oldPath
-          isOldPathUnderDestf = isSubDir(oldPath, destf, oldFs, destFs, false);
-          if (isOldPathUnderDestf) {
-            // if oldPath is destf or its subdir, its should definitely be deleted, otherwise its
-            // existing content might result in incorrect (extra) data.
-            // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
-            // not the destf or its subdir?
-            oldPathDeleted = trashFiles(oldFs, statuses, conf);
-          }
-        } catch (IOException e) {
-          if (isOldPathUnderDestf) {
-            // if oldPath is a subdir of destf but it could not be cleaned
-            throw new HiveException("Directory " + oldPath.toString()
-                + " could not be cleaned up.", e);
-          } else {
-            //swallow the exception since it won't affect the final result
-            LOG.warn("Directory " + oldPath.toString() + " cannot be cleaned: " + e, e);
-          }
-        }
-        if (statuses != null && statuses.length > 0) {
-          if (isOldPathUnderDestf && !oldPathDeleted) {
-            throw new HiveException("Destination directory " + destf + " has not be cleaned up.");
-          }
-        }
+        deleteOldPathForReplace(destf, oldPath, conf, FileUtils.HIDDEN_FILES_PATH_FILTER);
       }
 
+      // TODO# what are the paths that use this? MM tables will need to do this beforehand
       // first call FileUtils.mkdir to make sure that destf directory exists, if not, it creates
       // destf with inherited permissions
       boolean inheritPerms = HiveConf.getBoolVar(conf, HiveConf.ConfVars
@@ -3438,6 +3421,37 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     } catch (IOException e) {
       throw new HiveException(e.getMessage(), e);
+    }
+  }
+
+
+  private void deleteOldPathForReplace(Path destPath, Path oldPath, HiveConf conf,
+      PathFilter pathFilter) throws HiveException {
+    boolean isOldPathUnderDestf = false;
+    try {
+      FileSystem oldFs = oldPath.getFileSystem(conf);
+      FileSystem destFs = destPath.getFileSystem(conf);
+      // if oldPath is destf or its subdir, its should definitely be deleted, otherwise its
+      // existing content might result in incorrect (extra) data.
+      // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
+      // not the destf or its subdir?
+      isOldPathUnderDestf = isSubDir(oldPath, destPath, oldFs, destFs, false);
+      if (isOldPathUnderDestf) {
+        FileStatus[] statuses = oldFs.listStatus(oldPath, pathFilter);
+        if (statuses != null && statuses.length > 0 && !trashFiles(oldFs, statuses, conf)) {
+          throw new HiveException("Destination directory " + destPath
+              + " has not been cleaned up.");
+        }
+      }
+    } catch (IOException e) {
+      if (isOldPathUnderDestf) {
+        // if oldPath is a subdir of destf but it could not be cleaned
+        throw new HiveException("Directory " + oldPath.toString()
+            + " could not be cleaned up.", e);
+      } else {
+        //swallow the exception since it won't affect the final result
+        LOG.warn("Directory " + oldPath.toString() + " cannot be cleaned: " + e, e);
+      }
     }
   }
 
@@ -4007,10 +4021,22 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-
   public long getNextTableWriteId(String dbName, String tableName) throws HiveException {
     try {
       return getMSC().getNextTableWriteId(dbName, tableName);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public ValidWriteIds getValidWriteIdsForTable(
+      String dbName, String tableName) throws HiveException {
+    try {
+      // TODO: decode ID ranges here if we use that optimization
+      GetValidWriteIdsResult result = getMSC().getValidWriteIds(dbName, tableName);
+      return new ValidWriteIds(result.getLowWatermarkId(), result.getHighWatermarkId(),
+          result.isSetAreIdsValid() && result.isAreIdsValid(),
+          result.isSetIds() ? new HashSet<Long>(result.getIds()) : null);
     } catch (Exception e) {
       throw new HiveException(e);
     }

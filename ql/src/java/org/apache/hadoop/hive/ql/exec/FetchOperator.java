@@ -30,6 +30,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -694,5 +695,9 @@ public class FetchOperator implements Serializable {
     public RecordReader<WritableComparable, Writable> getRecordReader(JobConf job) throws IOException {
       return inputFormat.getRecordReader(getInputSplit(), job, Reporter.NULL);
     }
+  }
+
+  public Configuration getJobConf() {
+    return job;
   }
 }

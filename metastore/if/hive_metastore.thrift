@@ -918,6 +918,17 @@ struct HeartbeatWriteIdRequest {
 struct HeartbeatWriteIdResult {
 }
 
+struct GetValidWriteIdsRequest {
+  1: required string dbName,
+  2: required string tblName
+}
+struct GetValidWriteIdsResult {
+  1: required i64 lowWatermarkId,
+  2: required i64 highWatermarkId,
+  3: optional bool areIdsValid,
+  4: optional list<i64> ids
+}
+
 
 struct GetAllFunctionsResponse {
   1: optional list<Function> functions
@@ -1470,6 +1481,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   GetNextWriteIdResult get_next_write_id(1:GetNextWriteIdRequest req)
   FinalizeWriteIdResult finalize_write_id(1:FinalizeWriteIdRequest req)
   HeartbeatWriteIdResult heartbeat_write_id(1:HeartbeatWriteIdRequest req)
+  GetValidWriteIdsResult get_valid_write_ids(1:GetValidWriteIdsRequest req)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

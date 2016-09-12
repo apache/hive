@@ -24,7 +24,8 @@ select * from part_mm;
 
 create table simple_mm(key int) stored as orc tblproperties ('hivecommit'='true');
 insert into table simple_mm select key from intermediate;
-insert into table simple_mm select key from intermediate;
+insert overwrite table simple_mm select key from intermediate;
+
 select * from simple_mm;
 
 drop table part_mm;

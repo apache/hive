@@ -25,6 +25,8 @@ import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -52,6 +54,7 @@ import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
+import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 
 import com.google.common.collect.Maps;
@@ -220,6 +223,7 @@ public class ObjectStore implements RawStore, Configurable {
   private boolean isInitialized = false;
   private PersistenceManager pm = null;
   private MetaStoreDirectSql directSql = null;
+  private DatabaseProduct dbType = null;
   private PartitionExpressionProxy expressionProxy = null;
   private Configuration hiveConf;
   private volatile int openTrasactionCalls = 0;
@@ -329,13 +333,35 @@ public class ObjectStore implements RawStore, Configurable {
     pm = getPersistenceManager();
     isInitialized = pm != null;
     if (isInitialized) {
+      dbType = determineDatabaseProduct();
       expressionProxy = createExpressionProxy(hiveConf);
       if (HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL)) {
-        directSql = new MetaStoreDirectSql(pm, hiveConf);
+        directSql = new MetaStoreDirectSql(pm, hiveConf, dbType);
       }
     }
     LOG.debug("RawStore: " + this + ", with PersistenceManager: " + pm +
         " created in the thread with id: " + Thread.currentThread().getId());
+  }
+
+  private DatabaseProduct determineDatabaseProduct() {
+    try {
+      return DatabaseProduct.determineDatabaseProduct(getProductName(pm));
+    } catch (SQLException e) {
+      LOG.warn("Cannot determine database product; assuming OTHER", e);
+      return DatabaseProduct.OTHER;
+    }
+  }
+
+  private static String getProductName(PersistenceManager pm) {
+    JDOConnection jdoConn = pm.getDataStoreConnection();
+    try {
+      return ((Connection)jdoConn.getNativeConnection()).getMetaData().getDatabaseProductName();
+    } catch (Throwable t) {
+      LOG.warn("Error retrieving product name", t);
+      return null;
+    } finally {
+      jdoConn.close(); // We must release the connection before we call other pm methods.
+    }
   }
 
   /**
@@ -511,15 +537,52 @@ public class ObjectStore implements RawStore, Configurable {
     return result;
   }
 
-  /**
-   * if this is the commit of the first open call then an actual commit is
-   * called.
-   *
-   * @return Always returns true
-   */
   @Override
   @SuppressWarnings("nls")
   public boolean commitTransaction() {
+    if (!startCommitTransaction()) return false;
+
+    openTrasactionCalls--;
+    debugLog("Commit transaction: count = " + openTrasactionCalls + ", isactive "+ currentTransaction.isActive());
+    if ((openTrasactionCalls == 0) && currentTransaction.isActive()) {
+      transactionStatus = TXN_STATUS.COMMITED;
+      currentTransaction.commit();
+    }
+
+    return true;
+  }
+
+  @Override
+  @CanNotRetry
+  public Boolean commitTransactionExpectDeadlock() {
+    if (!startCommitTransaction()) return false;
+
+    if (--openTrasactionCalls != 0) {
+      String msg = "commitTransactionExpectDeadlock cannot be called for a nested transaction";
+      LOG.error(msg);
+      throw new AssertionError(msg);
+    }
+
+    transactionStatus = TXN_STATUS.COMMITED;
+    try {
+      currentTransaction.commit();
+    } catch (Exception ex) {
+      Throwable candidate = ex;
+      while (candidate != null && !(candidate instanceof SQLException)) {
+        candidate = candidate.getCause();
+      }
+      if (candidate == null) throw ex;
+      if (DatabaseProduct.isDeadlock(dbType, (SQLException)candidate)) {
+        LOG.info("Deadlock exception during commit: " + candidate.getMessage());
+        return null;
+      }
+      throw ex;
+    }
+
+    return true;
+  }
+
+  private boolean startCommitTransaction() {
     if (TXN_STATUS.ROLLBACK == transactionStatus) {
       debugLog("Commit transaction: rollback");
       return false;
@@ -538,14 +601,6 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.error("Unbalanced calls to open/commit Transaction", e);
       throw e;
     }
-    openTrasactionCalls--;
-    debugLog("Commit transaction: count = " + openTrasactionCalls + ", isactive "+ currentTransaction.isActive());
-
-    if ((openTrasactionCalls == 0) && currentTransaction.isActive()) {
-      transactionStatus = TXN_STATUS.COMMITED;
-      currentTransaction.commit();
-    }
-
     return true;
   }
 
@@ -1487,7 +1542,7 @@ public class ObjectStore implements RawStore, Configurable {
         .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(),
-        tableType, tbl.isSetMmNextWriteId() ?  tbl.getMmNextWriteId() : -1,
+        tableType, tbl.isSetMmNextWriteId() ?  tbl.getMmNextWriteId() : 0,
             tbl.isSetMmWatermarkWriteId() ?  tbl.getMmWatermarkWriteId() : -1);
   }
 
@@ -2718,7 +2773,8 @@ public class ObjectStore implements RawStore, Configurable {
       boolean isConfigEnabled = HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL)
           && (HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL_DDL) || !isInTxn);
       if (isConfigEnabled && directSql == null) {
-        directSql = new MetaStoreDirectSql(pm, getConf());
+        dbType = determineDatabaseProduct();
+        directSql = new MetaStoreDirectSql(pm, getConf(), dbType);
       }
 
       if (!allowJdo && isConfigEnabled && !directSql.isCompatibleDatastore()) {
@@ -8692,16 +8748,10 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      dbName = HiveStringUtils.normalizeIdentifier(dbName);
-      tblName = HiveStringUtils.normalizeIdentifier(tblName);
-      MTable mtbl = getMTable(dbName, tblName);
-      if (mtbl == null) {
-        success = true;
-        return null;
-      }
       query = pm.newQuery(MTableWrite.class,
               "table.tableName == t1 && table.database.name == t2 && writeId == t3");
       query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.Long t3");
+      @SuppressWarnings("unchecked")
       List<MTableWrite> writes = (List<MTableWrite>) query.execute(tblName, dbName, writeId);
       pm.retrieveAll(writes);
       success = true;
@@ -8723,4 +8773,34 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
+  public List<Long> getWriteIds(String dbName, String tblName,
+      long watermarkId, long nextWriteId, char state) throws MetaException {
+    boolean success = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery("select writeId from org.apache.hadoop.hive.metastore.model.MTableWrite"
+          + " where table.tableName == t1 && table.database.name == t2 && writeId >= t3"
+          + " && writeId < t4 && state == t5");
+      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.Long t3, "
+          + "java.lang.Long t4, java.lang.String t5");
+      query.setResult("writeId");
+      query.setOrdering("writeId asc");
+      @SuppressWarnings("unchecked")
+      List<Long> writes = (List<Long>) query.executeWithArray(
+          tblName, dbName, watermarkId, nextWriteId, String.valueOf(state));
+      success = true;
+      return (writes == null || writes.isEmpty()) ? null : new ArrayList<>(writes);
+    } finally {
+      if (success) {
+        commitTransaction();
+      } else {
+        rollbackTransaction();
+      }
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+  }
 }

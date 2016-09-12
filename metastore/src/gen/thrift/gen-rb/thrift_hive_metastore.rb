@@ -2529,6 +2529,21 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'heartbeat_write_id failed: unknown result')
     end
 
+    def get_valid_write_ids(req)
+      send_get_valid_write_ids(req)
+      return recv_get_valid_write_ids()
+    end
+
+    def send_get_valid_write_ids(req)
+      send_message('get_valid_write_ids', Get_valid_write_ids_args, :req => req)
+    end
+
+    def recv_get_valid_write_ids()
+      result = receive_message(Get_valid_write_ids_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_valid_write_ids failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -4394,6 +4409,13 @@ module ThriftHiveMetastore
       result = Heartbeat_write_id_result.new()
       result.success = @handler.heartbeat_write_id(args.req)
       write_result(result, oprot, 'heartbeat_write_id', seqid)
+    end
+
+    def process_get_valid_write_ids(seqid, iprot, oprot)
+      args = read_args(iprot, Get_valid_write_ids_args)
+      result = Get_valid_write_ids_result.new()
+      result.success = @handler.get_valid_write_ids(args.req)
+      write_result(result, oprot, 'get_valid_write_ids', seqid)
     end
 
   end
@@ -10082,6 +10104,38 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::HeartbeatWriteIdResult}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_valid_write_ids_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::GetValidWriteIdsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_valid_write_ids_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetValidWriteIdsResult}
     }
 
     def struct_fields; FIELDS; end

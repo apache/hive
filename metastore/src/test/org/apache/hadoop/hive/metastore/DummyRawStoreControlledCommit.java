@@ -878,4 +878,16 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public MTableWrite getTableWrite(String dbName, String tblName, long writeId) {
     return null;
   }
+
+  @Override
+  @CanNotRetry
+  public Boolean commitTransactionExpectDeadlock() {
+    return null;
+  }
+
+  @Override
+  public List<Long> getWriteIds(
+      String dbName, String tblName, long watermarkId, long nextWriteId, char state) {
+    return null;
+  }
 }

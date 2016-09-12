@@ -396,6 +396,10 @@ class HeartbeatWriteIdRequest;
 
 class HeartbeatWriteIdResult;
 
+class GetValidWriteIdsRequest;
+
+class GetValidWriteIdsResult;
+
 class GetAllFunctionsResponse;
 
 class TableMeta;
@@ -7440,6 +7444,117 @@ class HeartbeatWriteIdResult {
 void swap(HeartbeatWriteIdResult &a, HeartbeatWriteIdResult &b);
 
 inline std::ostream& operator<<(std::ostream& out, const HeartbeatWriteIdResult& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class GetValidWriteIdsRequest {
+ public:
+
+  GetValidWriteIdsRequest(const GetValidWriteIdsRequest&);
+  GetValidWriteIdsRequest& operator=(const GetValidWriteIdsRequest&);
+  GetValidWriteIdsRequest() : dbName(), tblName() {
+  }
+
+  virtual ~GetValidWriteIdsRequest() throw();
+  std::string dbName;
+  std::string tblName;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tblName(const std::string& val);
+
+  bool operator == (const GetValidWriteIdsRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    return true;
+  }
+  bool operator != (const GetValidWriteIdsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetValidWriteIdsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetValidWriteIdsRequest &a, GetValidWriteIdsRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetValidWriteIdsRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _GetValidWriteIdsResult__isset {
+  _GetValidWriteIdsResult__isset() : areIdsValid(false), ids(false) {}
+  bool areIdsValid :1;
+  bool ids :1;
+} _GetValidWriteIdsResult__isset;
+
+class GetValidWriteIdsResult {
+ public:
+
+  GetValidWriteIdsResult(const GetValidWriteIdsResult&);
+  GetValidWriteIdsResult& operator=(const GetValidWriteIdsResult&);
+  GetValidWriteIdsResult() : lowWatermarkId(0), highWatermarkId(0), areIdsValid(0) {
+  }
+
+  virtual ~GetValidWriteIdsResult() throw();
+  int64_t lowWatermarkId;
+  int64_t highWatermarkId;
+  bool areIdsValid;
+  std::vector<int64_t>  ids;
+
+  _GetValidWriteIdsResult__isset __isset;
+
+  void __set_lowWatermarkId(const int64_t val);
+
+  void __set_highWatermarkId(const int64_t val);
+
+  void __set_areIdsValid(const bool val);
+
+  void __set_ids(const std::vector<int64_t> & val);
+
+  bool operator == (const GetValidWriteIdsResult & rhs) const
+  {
+    if (!(lowWatermarkId == rhs.lowWatermarkId))
+      return false;
+    if (!(highWatermarkId == rhs.highWatermarkId))
+      return false;
+    if (__isset.areIdsValid != rhs.__isset.areIdsValid)
+      return false;
+    else if (__isset.areIdsValid && !(areIdsValid == rhs.areIdsValid))
+      return false;
+    if (__isset.ids != rhs.__isset.ids)
+      return false;
+    else if (__isset.ids && !(ids == rhs.ids))
+      return false;
+    return true;
+  }
+  bool operator != (const GetValidWriteIdsResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetValidWriteIdsResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetValidWriteIdsResult &a, GetValidWriteIdsResult &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetValidWriteIdsResult& obj)
 {
   obj.printTo(out);
   return out;

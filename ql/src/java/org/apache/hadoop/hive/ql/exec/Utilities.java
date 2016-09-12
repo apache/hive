@@ -123,6 +123,7 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.io.ReworkMapredInputFormat;
@@ -161,6 +162,7 @@ import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.Serializer;
@@ -192,6 +194,7 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
+import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.ReflectionUtil;
@@ -199,6 +202,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 /**
@@ -651,6 +655,7 @@ public final class Utilities {
     }
   }
 
+  @VisibleForTesting
   public static TableDesc defaultTd;
   static {
     // by default we expect ^A separated strings
@@ -658,7 +663,16 @@ public final class Utilities {
     // PlanUtils.getDefaultTableDesc(String separatorCode, String columns)
     // or getBinarySortableTableDesc(List<FieldSchema> fieldSchemas) when
     // we know the column names.
-    defaultTd = PlanUtils.getDefaultTableDesc("" + Utilities.ctrlaCode);
+    /**
+     * Generate the table descriptor of MetadataTypedColumnsetSerDe with the
+     * separatorCode. MetaDataTypedColumnsetSerDe is used because LazySimpleSerDe
+     * does not support a table with a single column "col" with type
+     * "array<string>".
+     */
+    defaultTd = new TableDesc(TextInputFormat.class, IgnoreKeyTextOutputFormat.class,
+        Utilities.makeProperties(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT,
+            "" + Utilities.ctrlaCode, serdeConstants.SERIALIZATION_LIB,
+            MetadataTypedColumnsetSerDe.class.getName()));
   }
 
   public static final int carriageReturnCode = 13;
@@ -1528,14 +1542,9 @@ public final class Utilities {
           // get the missing buckets and generate empty buckets
           String taskID1 = taskIDToFile.keySet().iterator().next();
           Path bucketPath = taskIDToFile.values().iterator().next().getPath();
+          Utilities.LOG14535.info("Bucket path " + bucketPath);
           for (int j = 0; j < dpCtx.getNumBuckets(); ++j) {
-            String taskID2 = replaceTaskId(taskID1, j);
-            if (!taskIDToFile.containsKey(taskID2)) {
-              // create empty bucket, file name should be derived from taskID2
-              URI bucketUri = bucketPath.toUri();
-              String path2 = replaceTaskIdFromFilename(bucketUri.getPath().toString(), j);
-              result.add(new Path(bucketUri.getScheme(), bucketUri.getAuthority(), path2));
-            }
+            addBucketFileIfMissing(result, taskIDToFile, taskID1, bucketPath, j);
           }
         }
       }
@@ -1550,19 +1559,27 @@ public final class Utilities {
           // get the missing buckets and generate empty buckets for non-dynamic partition
         String taskID1 = taskIDToFile.keySet().iterator().next();
         Path bucketPath = taskIDToFile.values().iterator().next().getPath();
+        Utilities.LOG14535.info("Bucket path " + bucketPath);
         for (int j = 0; j < conf.getTable().getNumBuckets(); ++j) {
-          String taskID2 = replaceTaskId(taskID1, j);
-          if (!taskIDToFile.containsKey(taskID2)) {
-            // create empty bucket, file name should be derived from taskID2
-            URI bucketUri = bucketPath.toUri();
-            String path2 = replaceTaskIdFromFilename(bucketUri.getPath().toString(), j);
-            result.add(new Path(bucketUri.getScheme(), bucketUri.getAuthority(), path2));
-          }
+          addBucketFileIfMissing(result, taskIDToFile, taskID1, bucketPath, j);
         }
       }
     }
 
     return result;
+  }
+
+  private static void addBucketFileIfMissing(List<Path> result,
+      HashMap<String, FileStatus> taskIDToFile, String taskID1, Path bucketPath, int j) {
+    // TODO# this will probably break with directories cause buckets would be above (or not?)
+    String taskID2 = replaceTaskId(taskID1, j);
+    if (!taskIDToFile.containsKey(taskID2)) {
+      // create empty bucket, file name should be derived from taskID2
+      URI bucketUri = bucketPath.toUri();
+      String path2 = replaceTaskIdFromFilename(bucketUri.getPath().toString(), j);
+      Utilities.LOG14535.info("Creating an empty bucket file " + path2);
+      result.add(new Path(bucketUri.getScheme(), bucketUri.getAuthority(), path2));
+    }
   }
 
   public static HashMap<String, FileStatus> removeTempOrDuplicateFiles(FileStatus[] items,
@@ -2976,8 +2993,9 @@ public final class Utilities {
 
       // The alias may not have any path
       Path path = null;
-      for (Path file : new LinkedList<Path>(work.getPathToAliases().keySet())) {
-        List<String> aliases = work.getPathToAliases().get(file);
+      for (Map.Entry<Path, ArrayList<String>> e : work.getPathToAliases().entrySet()) {
+        Path file = e.getKey();
+        List<String> aliases = e.getValue();
         if (aliases.contains(alias)) {
           path = file;
 

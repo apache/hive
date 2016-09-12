@@ -2404,4 +2404,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       String dbName, String tableName, long writeId) throws TException {
     client.heartbeat_write_id(new HeartbeatWriteIdRequest(dbName, tableName, writeId));
   }
+
+  @Override
+  public GetValidWriteIdsResult getValidWriteIds(
+      String dbName, String tableName) throws TException {
+    return client.get_valid_write_ids(new GetValidWriteIdsRequest(dbName, tableName));
+  }
 }

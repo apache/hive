@@ -53,7 +53,7 @@
            <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
         </value>
       </field>
-      <field name="ownerName">	
+      <field name="ownerName">    
         <column name="OWNER_NAME" length="128" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
        <field name="ownerType">
@@ -183,10 +183,10 @@
         <column name="TBL_TYPE" length="128" jdbc-type="VARCHAR"/>
       </field>
       <field name="mmNextWriteId">
-        <column name="MM_NEXT_WRITE_ID" jdbc-type="BIGINT"/>
+        <column name="MM_NEXT_WRITE_ID" jdbc-type="BIGINT" default-value="0" />
       </field>
       <field name="mmWatermarkWriteId">
-        <column name="MM_WATERMARK_WRITE_ID" jdbc-type="BIGINT"/>
+        <column name="MM_WATERMARK_WRITE_ID" jdbc-type="BIGINT" default-value="-1" />
       </field>
     </class>
 
@@ -210,7 +210,7 @@
         <column name="PARENT_CD_ID"/>
       </field>
       <field name="parentIntegerIndex">
-	<column name="PARENT_INTEGER_IDX"/>
+    <column name="PARENT_INTEGER_IDX"/>
       </field>
       <field name="parentTable">
         <column name="PARENT_TBL_ID"/>
@@ -219,7 +219,7 @@
         <column name="CONSTRAINT_TYPE"/>
       </field>
       <field name="deleteRule">
-	<column name="DELETE_RULE"/>
+        <column name="DELETE_RULE"/>
       </field>
       <field name="updateRule">
         <column name="UPDATE_RULE"/>
@@ -288,7 +288,7 @@
           </embedded>
         </element>
       </field>
-	</class>
+    </class>
 
    <class name="MStringList" identity-type="datastore" table="Skewed_STRING_LIST" detachable="true">
      <datastore-identity>
@@ -308,7 +308,7 @@
         <column name="SD_ID"/>
       </datastore-identity>
       <field name="cd">
-      	<column name="CD_ID"/>
+          <column name="CD_ID"/>
       </field>
       <field name="location">
         <column name="LOCATION" length="4000" jdbc-type="VARCHAR"/>
@@ -1003,7 +1003,7 @@
       <field name="className">
         <column name="CLASS_NAME" length="4000" jdbc-type="VARCHAR"/>
       </field>
-      <field name="ownerName">	
+      <field name="ownerName">    
         <column name="OWNER_NAME" length="128" jdbc-type="VARCHAR"/>
       </field>
        <field name="ownerType">

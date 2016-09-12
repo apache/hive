@@ -782,6 +782,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("heartbeat_write_id\n");
   }
 
+  void get_valid_write_ids(GetValidWriteIdsResult& _return, const GetValidWriteIdsRequest& req) {
+    // Your implementation goes here
+    printf("get_valid_write_ids\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

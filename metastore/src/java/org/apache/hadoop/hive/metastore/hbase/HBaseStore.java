@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.RawStore.CanNotRetry;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -131,10 +132,24 @@ public class HBaseStore implements RawStore {
   @Override
   public boolean commitTransaction() {
     if (--txnNestLevel == 0) {
-      LOG.debug("Committing HBase transaction");
-      getHBase().commit();
+      commitInternal();
     }
     return true;
+  }
+
+  @Override
+  @CanNotRetry
+  public Boolean commitTransactionExpectDeadlock() {
+    if (--txnNestLevel != 0) {
+      throw new AssertionError("Cannot be called on a nested transaction");
+    }
+    commitInternal();
+    return true;
+  }
+
+  private void commitInternal() {
+    LOG.debug("Committing HBase transaction");
+    getHBase().commit();
   }
 
   @Override
@@ -2738,6 +2753,14 @@ public class HBaseStore implements RawStore {
 
   @Override
   public MTableWrite getTableWrite(String dbName, String tblName, long writeId) {
+    // TODO: Auto-generated method stub
+    throw new UnsupportedOperationException();
+  }
+ 
+
+  @Override
+  public List<Long> getWriteIds(
+      String dbName, String tblName, long watermarkId, long nextWriteId, char state) {
     // TODO: Auto-generated method stub
     throw new UnsupportedOperationException();
   }

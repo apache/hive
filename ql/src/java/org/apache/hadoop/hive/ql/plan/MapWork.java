@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.JobConf;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Interner;
 
 /**
@@ -375,6 +376,7 @@ public class MapWork extends BaseWork {
   }
 
   @SuppressWarnings("nls")
+  @VisibleForTesting
   public void addMapWork(Path path, String alias, Operator<?> work,
       PartitionDesc pd) {
     ArrayList<String> curAliases = pathToAliases.get(path);

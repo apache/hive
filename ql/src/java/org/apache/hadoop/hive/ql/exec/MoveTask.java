@@ -314,17 +314,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         checkFileFormats(db, tbd, table);
 
         boolean isAcid = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID;
-        if (tbd.isMmTable()) {
-          if (tbd.getReplace()) {
-            // TODO#: would need a list of new files to support. Then, old ones only would need
-            //        to be removed from MS (and FS). Also, per-partition IOW is problematic for
-            //        the prefix case.
-            throw new HiveException("Replace and MM are not supported");
-          }
-          if (isAcid) {
-            // TODO# need to make sure ACID writes to final directories. Otherwise, might need to move.
-            throw new HiveException("ACID and MM are not supported");
-          }
+        if (tbd.isMmTable() && isAcid) {
+          // TODO# need to make sure ACID writes to final directories. Otherwise, might need to move.
+          throw new HiveException("ACID and MM are not supported");
         }
 
         // Create a data container

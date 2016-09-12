@@ -182,13 +182,13 @@ POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
 POSTHOOK: Output: default@simple_mm
 POSTHOOK: Lineage: simple_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: insert into table simple_mm select key from intermediate
+PREHOOK: query: insert overwrite table simple_mm select key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
 PREHOOK: Output: default@simple_mm
-POSTHOOK: query: insert into table simple_mm select key from intermediate
+POSTHOOK: query: insert overwrite table simple_mm select key from intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
@@ -203,10 +203,6 @@ POSTHOOK: query: select * from simple_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_mm
 #### A masked pattern was here ####
-0
-455
-0
-455
 0
 455
 0
