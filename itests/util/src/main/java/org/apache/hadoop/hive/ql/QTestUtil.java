@@ -860,7 +860,8 @@ public class QTestUtil {
       SessionState.get().getConf().setBoolean("hive.test.shutdown.phase", true);
       int result = cliDriver.processLine(cleanupCommands);
       if (result != 0) {
-        Assert.fail("Failed during cleanup processLine with code=" + result);
+        LOG.error("Failed during cleanup processLine with code={}. Ignoring", result);
+        // TODO Convert this to an Assert.fail once HIVE-14682 is fixed
       }
       SessionState.get().getConf().setBoolean("hive.test.shutdown.phase", false);
     } else {
