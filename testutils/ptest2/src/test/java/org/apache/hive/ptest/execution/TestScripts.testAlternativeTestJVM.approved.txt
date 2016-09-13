@@ -85,10 +85,16 @@ fi
 echo $pid >> batch.pid
 wait $pid
 ret=$?
-find ./ -type f -name hive.log -o -name spark.log | \
+find ./ -type f -name hive.log -o -name spark.log -o -name derby.log | \
   xargs -I {} sh -c 'f=$(basename {}); test -f /some/log/dir/$f && f=$f-$(uuidgen); mv {} /some/log/dir/$f'
 find ./ -type f -name 'TEST-*.xml' | \
   xargs -I {} sh -c 'f=TEST-batch-1-$(basename {}); test -f /some/log/dir/$f && f=$f-$(uuidgen); mv {} /some/log/dir/$f'
+find ./ -path "*/spark/work" | \
+  xargs -I {} sh -c 'mv {} /some/log/dir/spark-log'
+find ./ -type f -name 'syslog*' | \
+  xargs -I {} sh -c 'mkdir -p /some/log/dir/syslogs; mv {} /some/log/dir/syslogs'
+
+
 if [[ -f /some/log/dir/.log ]]
 then
   mv /some/log/dir/.log /some/log/dir/dot.log
