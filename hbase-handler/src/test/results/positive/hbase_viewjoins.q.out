@@ -1,0 +1,172 @@
+PREHOOK: query: DROP VIEW IF EXISTS VIEW_HBASE_TABLE_TEST_2
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW IF EXISTS VIEW_HBASE_TABLE_TEST_2
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: DROP VIEW IF EXISTS VIEW_HBASE_TABLE_TEST_1
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW IF EXISTS VIEW_HBASE_TABLE_TEST_1
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: DROP TABLE IF EXISTS HBASE_TABLE_TEST_2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS HBASE_TABLE_TEST_2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS HBASE_TABLE_TEST_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS HBASE_TABLE_TEST_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE HBASE_TABLE_TEST_1(
+  cvalue string ,
+  pk string,
+ ccount int   )
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.hbase.HBaseSerDe'
+STORED BY
+  'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+  'hbase.columns.mapping'='cf:val,:key,cf2:count',
+  'hbase.scan.cache'='500',
+  'hbase.scan.cacheblocks'='false',
+  'serialization.format'='1')
+TBLPROPERTIES (
+  'hbase.table.name'='hbase_table_test_1',
+  'serialization.null.format'=''  )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@HBASE_TABLE_TEST_1
+POSTHOOK: query: CREATE TABLE HBASE_TABLE_TEST_1(
+  cvalue string ,
+  pk string,
+ ccount int   )
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.hbase.HBaseSerDe'
+STORED BY
+  'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+  'hbase.columns.mapping'='cf:val,:key,cf2:count',
+  'hbase.scan.cache'='500',
+  'hbase.scan.cacheblocks'='false',
+  'serialization.format'='1')
+TBLPROPERTIES (
+  'hbase.table.name'='hbase_table_test_1',
+  'serialization.null.format'=''  )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@HBASE_TABLE_TEST_1
+PREHOOK: query: CREATE VIEW VIEW_HBASE_TABLE_TEST_1 AS SELECT hbase_table_test_1.cvalue,hbase_table_test_1.pk,hbase_table_test_1.ccount FROM hbase_table_test_1 WHERE hbase_table_test_1.ccount IS NOT NULL
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@hbase_table_test_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@VIEW_HBASE_TABLE_TEST_1
+POSTHOOK: query: CREATE VIEW VIEW_HBASE_TABLE_TEST_1 AS SELECT hbase_table_test_1.cvalue,hbase_table_test_1.pk,hbase_table_test_1.ccount FROM hbase_table_test_1 WHERE hbase_table_test_1.ccount IS NOT NULL
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@hbase_table_test_1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@VIEW_HBASE_TABLE_TEST_1
+PREHOOK: query: CREATE TABLE HBASE_TABLE_TEST_2(
+  cvalue string ,
+    pk string ,
+   ccount int  )
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.hbase.HBaseSerDe'
+STORED BY
+  'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+  'hbase.columns.mapping'='cf:val,:key,cf2:count',
+  'hbase.scan.cache'='500',
+  'hbase.scan.cacheblocks'='false',
+  'serialization.format'='1')
+TBLPROPERTIES (
+  'hbase.table.name'='hbase_table_test_2',
+  'serialization.null.format'='')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@HBASE_TABLE_TEST_2
+POSTHOOK: query: CREATE TABLE HBASE_TABLE_TEST_2(
+  cvalue string ,
+    pk string ,
+   ccount int  )
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.hbase.HBaseSerDe'
+STORED BY
+  'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+  'hbase.columns.mapping'='cf:val,:key,cf2:count',
+  'hbase.scan.cache'='500',
+  'hbase.scan.cacheblocks'='false',
+  'serialization.format'='1')
+TBLPROPERTIES (
+  'hbase.table.name'='hbase_table_test_2',
+  'serialization.null.format'='')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@HBASE_TABLE_TEST_2
+PREHOOK: query: CREATE VIEW VIEW_HBASE_TABLE_TEST_2 AS SELECT hbase_table_test_2.cvalue,hbase_table_test_2.pk,hbase_table_test_2.ccount
+FROM hbase_table_test_2 WHERE  hbase_table_test_2.pk >='3-0000h-0' AND hbase_table_test_2.pk <= '3-0000h-g' AND
+hbase_table_test_2.ccount IS NOT NULL
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@hbase_table_test_2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@VIEW_HBASE_TABLE_TEST_2
+POSTHOOK: query: CREATE VIEW VIEW_HBASE_TABLE_TEST_2 AS SELECT hbase_table_test_2.cvalue,hbase_table_test_2.pk,hbase_table_test_2.ccount
+FROM hbase_table_test_2 WHERE  hbase_table_test_2.pk >='3-0000h-0' AND hbase_table_test_2.pk <= '3-0000h-g' AND
+hbase_table_test_2.ccount IS NOT NULL
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@hbase_table_test_2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@VIEW_HBASE_TABLE_TEST_2
+PREHOOK: query: SELECT  p.cvalue cvalue
+FROM `VIEW_HBASE_TABLE_TEST_1` `p`
+LEFT OUTER JOIN `VIEW_HBASE_TABLE_TEST_2` `A1`
+ON `p`.cvalue = `A1`.cvalue
+LEFT OUTER JOIN `VIEW_HBASE_TABLE_TEST_1` `A2`
+ON `p`.cvalue = `A2`.cvalue
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_table_test_1
+PREHOOK: Input: default@hbase_table_test_2
+PREHOOK: Input: default@view_hbase_table_test_1
+PREHOOK: Input: default@view_hbase_table_test_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT  p.cvalue cvalue
+FROM `VIEW_HBASE_TABLE_TEST_1` `p`
+LEFT OUTER JOIN `VIEW_HBASE_TABLE_TEST_2` `A1`
+ON `p`.cvalue = `A1`.cvalue
+LEFT OUTER JOIN `VIEW_HBASE_TABLE_TEST_1` `A2`
+ON `p`.cvalue = `A2`.cvalue
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_table_test_1
+POSTHOOK: Input: default@hbase_table_test_2
+POSTHOOK: Input: default@view_hbase_table_test_1
+POSTHOOK: Input: default@view_hbase_table_test_2
+#### A masked pattern was here ####
+PREHOOK: query: DROP VIEW VIEW_HBASE_TABLE_TEST_2
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@view_hbase_table_test_2
+PREHOOK: Output: default@view_hbase_table_test_2
+POSTHOOK: query: DROP VIEW VIEW_HBASE_TABLE_TEST_2
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@view_hbase_table_test_2
+POSTHOOK: Output: default@view_hbase_table_test_2
+PREHOOK: query: DROP VIEW VIEW_HBASE_TABLE_TEST_1
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@view_hbase_table_test_1
+PREHOOK: Output: default@view_hbase_table_test_1
+POSTHOOK: query: DROP VIEW VIEW_HBASE_TABLE_TEST_1
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@view_hbase_table_test_1
+POSTHOOK: Output: default@view_hbase_table_test_1
+PREHOOK: query: DROP TABLE HBASE_TABLE_TEST_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hbase_table_test_2
+PREHOOK: Output: default@hbase_table_test_2
+POSTHOOK: query: DROP TABLE HBASE_TABLE_TEST_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hbase_table_test_2
+POSTHOOK: Output: default@hbase_table_test_2
+PREHOOK: query: DROP TABLE HBASE_TABLE_TEST_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hbase_table_test_1
+PREHOOK: Output: default@hbase_table_test_1
+POSTHOOK: query: DROP TABLE HBASE_TABLE_TEST_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hbase_table_test_1
+POSTHOOK: Output: default@hbase_table_test_1
