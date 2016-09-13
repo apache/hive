@@ -92,6 +92,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.beeline.cli.CliOptionsProcessor;
+import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.thrift.transport.TTransportException;
 
 import org.apache.hive.jdbc.Utils;
@@ -1076,7 +1077,7 @@ public class BeeLine implements Closeable {
     }
 
     // add shutdown hook to flush the history to history file
-    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+    ShutdownHookManager.addShutdownHook(new Runnable() {
         @Override
         public void run() {
             History h = consoleReader.getHistory();
@@ -1088,7 +1089,7 @@ public class BeeLine implements Closeable {
                 }
             }
         }
-    }));
+    });
 
     consoleReader.addCompleter(new BeeLineCompleter(this));
     return consoleReader;

@@ -101,7 +101,7 @@ public class ExecutionController {
     mTestExecutor.setName("TestExecutor");
     mTestExecutor.setDaemon(true);
     mTestExecutor.start();
-    Runtime.getRuntime().addShutdownHook(new Thread() {
+    ShutdownHookManager.addShutdownHook(new Runnable() {
       @Override
       public void run() {
         LOG.info("Shutdown hook called");
