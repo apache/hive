@@ -18,35 +18,129 @@
 
 package org.apache.hive.common.util;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.apache.hadoop.fs.FileSystem;
-
 import com.google.common.annotations.VisibleForTesting;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
- * This is just a wrapper around hadoop's ShutdownHookManager but also manages delete on exit hook for temp files.
+ * The <code>ShutdownHookManager</code> enables running shutdownHook
+ * in a deterministic order, higher priority first.
+ * <p/>
+ * The JVM runs ShutdownHooks in a non-deterministic order or in parallel.
+ * This class registers a single JVM shutdownHook and run all the
+ * shutdownHooks registered to it (to this class) in order based on their
+ * priority.
+ *
+ * Originally taken from o.a.hadoop.util.ShutdownHookManager
  */
 public class ShutdownHookManager {
 
-  private static final org.apache.hadoop.util.ShutdownHookManager MGR = org.apache.hadoop.util.ShutdownHookManager.get();
+  private static final ShutdownHookManager MGR = new ShutdownHookManager();
 
   private static final DeleteOnExitHook DELETE_ON_EXIT_HOOK = new DeleteOnExitHook();
 
+  private static final Logger LOG = LoggerFactory.getLogger(ShutdownHookManager.class);
+
   static {
-    MGR.addShutdownHook(DELETE_ON_EXIT_HOOK, -1);
+    MGR.addShutdownHookInternal(DELETE_ON_EXIT_HOOK, -1);
+    Runtime.getRuntime().addShutdownHook(
+      new Thread() {
+        @Override
+        public void run() {
+          MGR.shutdownInProgress.set(true);
+          for (Runnable hook : getShutdownHooksInOrder()) {
+            try {
+              hook.run();
+            } catch (Throwable ex) {
+              LOG.warn("ShutdownHook '" + hook.getClass().getSimpleName() +
+                       "' failed, " + ex.toString(), ex);
+            }
+          }
+        }
+      }
+    );
+  }
+
+
+  /**
+   * Private structure to store ShutdownHook and its priority.
+   */
+  private static class HookEntry {
+    Runnable hook;
+    int priority;
+
+    public HookEntry(Runnable hook, int priority) {
+      this.hook = hook;
+      this.priority = priority;
+    }
+
+    @Override
+    public int hashCode() {
+      return hook.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      boolean eq = false;
+      if (obj != null) {
+        if (obj instanceof HookEntry) {
+          eq = (hook == ((HookEntry)obj).hook);
+        }
+      }
+      return eq;
+    }
+
+  }
+
+  private final Set<HookEntry> hooks =
+    Collections.synchronizedSet(new HashSet<HookEntry>());
+
+  private final AtomicBoolean shutdownInProgress = new AtomicBoolean(false);
+
+  //private to constructor to ensure singularity
+  private ShutdownHookManager() {
   }
 
   /**
-   * Adds shutdown hook with default priority (10)
-   * @param shutdownHook - shutdown hook
+   * Returns the list of shutdownHooks in order of execution,
+   * Highest priority first.
+   *
+   * @return the list of shutdownHooks in order of execution.
    */
-  public static void addShutdownHook(Runnable shutdownHook) {
-    addShutdownHook(shutdownHook, FileSystem.SHUTDOWN_HOOK_PRIORITY);
+  static List<Runnable> getShutdownHooksInOrder() {
+    return MGR.getShutdownHooksInOrderInternal();
   }
+
+  private List<Runnable> getShutdownHooksInOrderInternal() {
+    List<HookEntry> list;
+    synchronized (MGR.hooks) {
+      list = new ArrayList<HookEntry>(MGR.hooks);
+    }
+    Collections.sort(list, new Comparator<HookEntry>() {
+
+      //reversing comparison so highest priority hooks are first
+      @Override
+      public int compare(HookEntry o1, HookEntry o2) {
+        return o2.priority - o1.priority;
+      }
+    });
+    List<Runnable> ordered = new ArrayList<Runnable>();
+    for (HookEntry entry: list) {
+      ordered.add(entry.hook);
+    }
+    return ordered;
+  }
+
 
   /**
    * Adds a shutdownHook with a priority, the higher the priority
@@ -60,16 +154,17 @@ public class ShutdownHookManager {
     if (priority < 0) {
       throw new IllegalArgumentException("Priority should be greater than or equal to zero");
     }
-    MGR.addShutdownHook(shutdownHook, priority);
+    MGR.addShutdownHookInternal(shutdownHook, priority);
   }
 
-  /**
-   * Indicates if shutdown is in progress or not.
-   *
-   * @return TRUE if the shutdown is in progress, otherwise FALSE.
-   */
-  public static boolean isShutdownInProgress() {
-    return MGR.isShutdownInProgress();
+  private void addShutdownHookInternal(Runnable shutdownHook, int priority) {
+    if (shutdownHook == null) {
+      throw new IllegalArgumentException("shutdownHook cannot be NULL");
+    }
+    if (shutdownInProgress.get()) {
+      throw new IllegalStateException("Shutdown in progress, cannot add a shutdownHook");
+    }
+    hooks.add(new HookEntry(shutdownHook, priority));
   }
 
   /**
@@ -83,7 +178,41 @@ public class ShutdownHookManager {
     if (shutdownHook == null) {
       return false;
     }
-    return MGR.removeShutdownHook(shutdownHook);
+    return MGR.removeShutdownHookInternal(shutdownHook);
+  }
+
+  private boolean removeShutdownHookInternal(Runnable shutdownHook) {
+    if (shutdownInProgress.get()) {
+      throw new IllegalStateException("Shutdown in progress, cannot remove a shutdownHook");
+    }
+    return hooks.remove(new HookEntry(shutdownHook, 0));
+  }
+
+  /**
+   * Indicates if a shutdownHook is registered or not.
+   *
+   * @param shutdownHook shutdownHook to check if registered.
+   * @return TRUE/FALSE depending if the shutdownHook is is registered.
+   */
+  public static boolean hasShutdownHook(Runnable shutdownHook) {
+    return MGR.hasShutdownHookInternal(shutdownHook);
+  }
+
+  public boolean hasShutdownHookInternal(Runnable shutdownHook) {
+    return hooks.contains(new HookEntry(shutdownHook, 0));
+  }
+
+  /**
+   * Indicates if shutdown is in progress or not.
+   *
+   * @return TRUE if the shutdown is in progress, otherwise FALSE.
+   */
+  public static boolean isShutdownInProgress() {
+    return MGR.isShutdownInProgressInternal();
+  }
+
+  private boolean isShutdownInProgressInternal() {
+    return shutdownInProgress.get();
   }
 
   /**
@@ -92,7 +221,7 @@ public class ShutdownHookManager {
    * @see {@link org.apache.hadoop.hive.common.FileUtils#createTempFile}
    */
   public static void deleteOnExit(File file) {
-    if (MGR.isShutdownInProgress()) {
+    if (isShutdownInProgress()) {
       throw new IllegalStateException("Shutdown in progress, cannot add a deleteOnExit");
     }
     DELETE_ON_EXIT_HOOK.deleteTargets.add(file);
@@ -102,7 +231,7 @@ public class ShutdownHookManager {
    * deregister file from delete-on-exit hook
    */
   public static void cancelDeleteOnExit(File file) {
-    if (MGR.isShutdownInProgress()) {
+    if (isShutdownInProgress()) {
       throw new IllegalStateException("Shutdown in progress, cannot cancel a deleteOnExit");
     }
     DELETE_ON_EXIT_HOOK.deleteTargets.remove(file);

@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -47,7 +46,7 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
   private static SparkSessionManagerImpl instance;
 
   static {
-    ShutdownHookManager.addShutdownHook(new Runnable() {
+    Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
       public void run() {
         try {

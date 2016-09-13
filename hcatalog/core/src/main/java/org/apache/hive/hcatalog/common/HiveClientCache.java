@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -218,7 +217,7 @@ class HiveClientCache {
       }
     };
 
-    ShutdownHookManager.addShutdownHook(cleanupHiveClientShutdownThread);
+    Runtime.getRuntime().addShutdownHook(cleanupHiveClientShutdownThread);
   }
 
   /**
