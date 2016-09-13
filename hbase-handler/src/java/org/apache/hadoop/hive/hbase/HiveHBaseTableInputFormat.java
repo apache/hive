@@ -61,6 +61,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -222,7 +224,8 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
       Utilities.deserializeExpression(filterExprSerialized);
 
     String keyColName = jobConf.get(serdeConstants.LIST_COLUMNS).split(",")[iKey];
-    String colType = jobConf.get(serdeConstants.LIST_COLUMN_TYPES).split(",")[iKey];
+    ArrayList<TypeInfo> cols = TypeInfoUtils.getTypeInfosFromTypeString(jobConf.get(serdeConstants.LIST_COLUMN_TYPES));
+    String colType = cols.get(iKey).getTypeName();
     boolean isKeyComparable = isKeyBinary || colType.equalsIgnoreCase("string");
 
     String tsColName = null;
