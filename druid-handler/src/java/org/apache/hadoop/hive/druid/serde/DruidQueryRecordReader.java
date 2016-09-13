@@ -83,7 +83,7 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>,R extends Co
 
     HttpClient client = HttpClientInit.createClient(HttpClientConfig.builder().build(), new Lifecycle());
     InputStream response = DruidStorageHandlerUtils.submitRequest(client,
-            DruidStorageHandlerUtils.createRequest(hiveDruidSplit.getAddress(), query));
+            DruidStorageHandlerUtils.createQueryRequest(hiveDruidSplit.getAddress(), query));
 
     // Retrieve results
     List<R> resultsList;

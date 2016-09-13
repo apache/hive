@@ -102,6 +102,32 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>io.druid</groupId>
+      <artifactId>druid-indexing-service</artifactId>
+      <version>${druid.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- When we upgrade to Druid 0.9.2
+    <dependency>
+      <groupId>io.druid.extensions.contrib</groupId>
+      <artifactId>druid-orc-extensions</artifactId>
+      <version>${druid.version}</version>
+    </dependency>
+    -->
 
     <!-- test inter-project -->
     <dependency>

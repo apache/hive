@@ -29,8 +29,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.optimizer.calcite.druid.DruidTable;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -42,7 +46,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
@@ -50,6 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.metamx.common.lifecycle.Lifecycle;
 import com.metamx.http.client.HttpClient;
@@ -81,8 +85,10 @@ public class DruidSerDe extends AbstractSerDe {
   private String[] columns;
   private PrimitiveTypeInfo[] types;
   private ObjectInspector inspector;
+  private AbstractSerDe serializer;
 
 
+  @SuppressWarnings("deprecation")
   @Override
   public void initialize(Configuration configuration, Properties properties) throws SerDeException {
     final List<String> columnNames = new ArrayList<>();
@@ -92,52 +98,81 @@ public class DruidSerDe extends AbstractSerDe {
     // Druid query
     String druidQuery = properties.getProperty(Constants.DRUID_QUERY_JSON);
     if (druidQuery == null) {
-      // No query. We need to create a Druid Segment Metadata query that retrieves all
-      // columns present in the data source (dimensions and metrics).
-      // Create Segment Metadata Query
-      String dataSource = properties.getProperty(Constants.DRUID_DATA_SOURCE);
-      if (dataSource == null) {
-        throw new SerDeException("Druid data source not specified; use " +
-                Constants.DRUID_DATA_SOURCE + " in table properties");
-      }
-      SegmentMetadataQueryBuilder builder = new Druids.SegmentMetadataQueryBuilder();
-      builder.dataSource(dataSource);
-      builder.merge(true);
-      builder.analysisTypes();
-      SegmentMetadataQuery query = builder.build();
+      // No query. Either it is a CTAS, or we need to create a Druid
+      // Segment Metadata query that retrieves all columns present in
+      // the data source (dimensions and metrics).
+      if (!org.apache.commons.lang3.StringUtils.isEmpty(properties.getProperty(serdeConstants.LIST_COLUMNS))
+              && !org.apache.commons.lang3.StringUtils.isEmpty(properties.getProperty(serdeConstants.LIST_COLUMN_TYPES))) {
+        columnNames.addAll(Utilities.getColumnNames(properties));
+        if (!columnNames.contains(DruidTable.DEFAULT_TIMESTAMP_COLUMN)) {
+          throw new SerDeException("Timestamp column (' " + DruidTable.DEFAULT_TIMESTAMP_COLUMN +
+                  "') not specified in create table; list of columns is : " +
+                  properties.getProperty(serdeConstants.LIST_COLUMNS));
+        }
+        columnTypes.addAll(Lists.transform(Utilities.getColumnTypes(properties),
+          new Function<String, PrimitiveTypeInfo>() {
+            @Override
+            public PrimitiveTypeInfo apply(String type) {
+              return TypeInfoFactory.getPrimitiveTypeInfo(type);
+            }
+          }
+        ));
+        inspectors.addAll(Lists.transform(columnTypes,
+          new Function<PrimitiveTypeInfo, ObjectInspector>() {
+            @Override
+            public ObjectInspector apply(PrimitiveTypeInfo type) {
+              return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(type);
+            }
+          }
+        ));
+        columns = columnNames.toArray(new String[columnNames.size()]);
+        types = columnTypes.toArray(new PrimitiveTypeInfo[columnTypes.size()]);
+        inspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors);
+      } else {
+        String dataSource = properties.getProperty(Constants.DRUID_DATA_SOURCE);
+        if (dataSource == null) {
+          throw new SerDeException("Druid data source not specified; use " +
+                  Constants.DRUID_DATA_SOURCE + " in table properties");
+        }
+        SegmentMetadataQueryBuilder builder = new Druids.SegmentMetadataQueryBuilder();
+        builder.dataSource(dataSource);
+        builder.merge(true);
+        builder.analysisTypes();
+        SegmentMetadataQuery query = builder.build();
 
-      // Execute query in Druid
-      String address = HiveConf.getVar(configuration,
-              HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
-      if (org.apache.commons.lang3.StringUtils.isEmpty(address)) {
-        throw new SerDeException("Druid broker address not specified in configuration");
-      }
+        // Execute query in Druid
+        String address = HiveConf.getVar(configuration,
+                HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
+        if (org.apache.commons.lang3.StringUtils.isEmpty(address)) {
+          throw new SerDeException("Druid broker address not specified in configuration");
+        }
 
-      // Infer schema
-      SegmentAnalysis schemaInfo;
-      try {
-        schemaInfo = submitMetadataRequest(address, query);
-      } catch (IOException e) {
-        throw new SerDeException(e);
-      }
-      for (Entry<String,ColumnAnalysis> columnInfo : schemaInfo.getColumns().entrySet()) {
-        if (columnInfo.getKey().equals(DruidTable.DEFAULT_TIMESTAMP_COLUMN)) {
-          // Special handling for timestamp column
+        // Infer schema
+        SegmentAnalysis schemaInfo;
+        try {
+          schemaInfo = submitMetadataRequest(address, query);
+        } catch (IOException e) {
+          throw new SerDeException(e);
+        }
+        for (Entry<String,ColumnAnalysis> columnInfo : schemaInfo.getColumns().entrySet()) {
+          if (columnInfo.getKey().equals(DruidTable.DEFAULT_TIMESTAMP_COLUMN)) {
+            // Special handling for timestamp column
+            columnNames.add(columnInfo.getKey()); // field name
+            PrimitiveTypeInfo type = TypeInfoFactory.timestampTypeInfo; // field type
+            columnTypes.add(type);
+            inspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(type));
+            continue;
+          }
           columnNames.add(columnInfo.getKey()); // field name
-          PrimitiveTypeInfo type = TypeInfoFactory.timestampTypeInfo; // field type
+          PrimitiveTypeInfo type = DruidSerDeUtils.convertDruidToHiveType(
+                  columnInfo.getValue().getType()); // field type
           columnTypes.add(type);
           inspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(type));
-          continue;
         }
-        columnNames.add(columnInfo.getKey()); // field name
-        PrimitiveTypeInfo type = DruidSerDeUtils.convertDruidToHiveType(
-                columnInfo.getValue().getType()); // field type
-        columnTypes.add(type);
-        inspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(type));
+        columns = columnNames.toArray(new String[columnNames.size()]);
+        types = columnTypes.toArray(new PrimitiveTypeInfo[columnTypes.size()]);
+        inspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors);
       }
-      columns = columnNames.toArray(new String[columnNames.size()]);
-      types = columnTypes.toArray(new PrimitiveTypeInfo[columnTypes.size()]);
-      inspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors);
     } else {
       // Query is specified, we can extract the results schema from the query
       Query<?> query;
@@ -179,6 +214,19 @@ public class DruidSerDe extends AbstractSerDe {
               + "\t columns: " + columnNames
               + "\n\t types: " + columnTypes);
     }
+
+    // Initialize serializer
+    final String name = HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_DRUID_OUTPUT_FORMAT);
+    if (name.equalsIgnoreCase(IOConstants.ORC)) {
+      throw new UnsupportedOperationException("Currently reading from ORC is not supported;"
+              + "Druid version needs to be upgraded to 0.9.2");
+    } else {
+      serializer = new MetadataTypedColumnsetSerDe(); // Textfile
+      properties.put(serdeConstants.SERIALIZATION_FORMAT, ",");
+      properties.put(serdeConstants.SERIALIZATION_NULL_FORMAT, "");
+      properties.put(serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST, "false");
+    }
+    serializer.initialize(configuration, properties);
   }
 
   /* Submits the request and returns */
@@ -188,7 +236,7 @@ public class DruidSerDe extends AbstractSerDe {
     InputStream response;
     try {
       response = DruidStorageHandlerUtils.submitRequest(client,
-              DruidStorageHandlerUtils.createRequest(address, query));
+              DruidStorageHandlerUtils.createQueryRequest(address, query));
     } catch (Exception e) {
       throw new SerDeException(StringUtils.stringifyException(e));
     }
@@ -292,17 +340,18 @@ public class DruidSerDe extends AbstractSerDe {
 
   @Override
   public Class<? extends Writable> getSerializedClass() {
-    return NullWritable.class;
+    return serializer.getSerializedClass();
   }
 
   @Override
   public Writable serialize(Object o, ObjectInspector objectInspector) throws SerDeException {
-    return NullWritable.get();
+    return serializer.serialize(o, objectInspector);
   }
 
   @Override
   public SerDeStats getSerDeStats() {
-    throw new UnsupportedOperationException("SerdeStats not supported.");
+    // no support for statistics
+    return null;
   }
 
   @Override

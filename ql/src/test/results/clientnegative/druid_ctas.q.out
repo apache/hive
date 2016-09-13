@@ -1,0 +1,1 @@
+FAILED: SemanticException org.apache.hadoop.hive.serde2.SerDeException: Timestamp column (' __time') not specified in create table; list of columns is : key,value

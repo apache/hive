@@ -270,7 +270,7 @@ STAGE PLANS:
           Partition
             base file name: druid_table_1
             input format: org.apache.hadoop.hive.druid.HiveDruidQueryBasedInputFormat
-            output format: org.apache.hadoop.hive.druid.HiveDruidOutputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               EXTERNAL TRUE
@@ -295,7 +295,7 @@ STAGE PLANS:
             serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
           
               input format: org.apache.hadoop.hive.druid.HiveDruidQueryBasedInputFormat
-              output format: org.apache.hadoop.hive.druid.HiveDruidOutputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 EXTERNAL TRUE
@@ -436,7 +436,7 @@ STAGE PLANS:
           Partition
             base file name: druid_table_1
             input format: org.apache.hadoop.hive.druid.HiveDruidQueryBasedInputFormat
-            output format: org.apache.hadoop.hive.druid.HiveDruidOutputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               EXTERNAL TRUE
@@ -461,7 +461,7 @@ STAGE PLANS:
             serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
           
               input format: org.apache.hadoop.hive.druid.HiveDruidQueryBasedInputFormat
-              output format: org.apache.hadoop.hive.druid.HiveDruidOutputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 EXTERNAL TRUE

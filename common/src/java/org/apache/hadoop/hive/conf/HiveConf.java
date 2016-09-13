@@ -1891,6 +1891,21 @@ public class HiveConf extends Configuration {
       new TimeValidator(TimeUnit.MILLISECONDS), "Frequency of WriteSet reaper runs"),
 
     // For Druid storage handler
+    HIVE_DRUID_OVERLORD_DEFAULT_ADDRESS("hive.druid.overlord.address.default", "localhost:8081",
+        "Default address of the Druid overlord"),
+    HIVE_DRUID_INDEXING_INITIAL_SLEEP_TIME("hive.druid.indexing.initial.sleeptime", 10000L,
+        "Initial time (ms) that we wait till we send the first request to Druid for the status of the\n" +
+        "indexing task. This value needs to be specified because it takes time till the indexing task\n" +
+        "is registered by Druid; otherwise, we might end up considering that the task has failed when,\n" +
+        "in fact, it has not even started"),
+    HIVE_DRUID_INDEXING_TIMEOUT("hive.druid.indexing.timeout", -1L,
+        "Maximum time (ms) that we allow an indexing task in Druid to run. After this timeout is passed,\n" +
+        "the indexing task is shutdown even if it has not finished, and table creation in Druid fails.\n" +
+        "Default value is -1 (no timeout)"),
+    HIVE_DRUID_INDEXING_SLEEP_TIME("hive.druid.indexing.sleeptime", 4000L,
+        "Time (ms) to sleep between each Druid request to check the status of an indexing task"),
+    HIVE_DRUID_OUTPUT_FORMAT("hive.druid.output.fileformat", "TextFile", new StringSet("TextFile", "ORC"),
+        "Format to use for storing CTAS or MVs results before indexing them to Druid"),
     HIVE_DRUID_BROKER_DEFAULT_ADDRESS("hive.druid.broker.address.default", "localhost:8082",
         "Address of the Druid broker. If we are querying Druid from Hive, this address needs to be\n" +
         "declared"),

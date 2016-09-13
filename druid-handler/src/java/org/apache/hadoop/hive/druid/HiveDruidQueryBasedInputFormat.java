@@ -187,7 +187,7 @@ public class HiveDruidQueryBasedInputFormat extends InputFormat<NullWritable, Dr
     InputStream response;
     try {
       response = DruidStorageHandlerUtils.submitRequest(client,
-              DruidStorageHandlerUtils.createRequest(address, metadataQuery));
+              DruidStorageHandlerUtils.createQueryRequest(address, metadataQuery));
     } catch (Exception e) {
       throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
@@ -231,7 +231,7 @@ public class HiveDruidQueryBasedInputFormat extends InputFormat<NullWritable, Dr
 
       try {
         response = DruidStorageHandlerUtils.submitRequest(client,
-                DruidStorageHandlerUtils.createRequest(address, timeQuery));
+                DruidStorageHandlerUtils.createQueryRequest(address, timeQuery));
       } catch (Exception e) {
         throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
       }
