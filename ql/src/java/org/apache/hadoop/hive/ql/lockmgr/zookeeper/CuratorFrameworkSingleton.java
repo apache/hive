@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.lockmgr.zookeeper;
 
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.curator.framework.CuratorFramework;
@@ -34,7 +35,7 @@ public class CuratorFrameworkSingleton {
   static final Logger LOG = LoggerFactory.getLogger("CuratorFrameworkSingleton");
   static {
     // Add shutdown hook.
-    Runtime.getRuntime().addShutdownHook(new Thread() {
+    ShutdownHookManager.addShutdownHook(new Runnable() {
       @Override
       public void run() {
         closeAndReleaseInstance();

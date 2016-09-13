@@ -99,6 +99,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -6744,7 +6745,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       // Add shutdown hook.
-      Runtime.getRuntime().addShutdownHook(new Thread() {
+      ShutdownHookManager.addShutdownHook(new Runnable() {
         @Override
         public void run() {
           String shutdownMsg = "Shutting down hive metastore.";
