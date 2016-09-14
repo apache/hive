@@ -91,7 +91,6 @@ public class TestTestParser {
   @Test
   public void testParseWithExcludes() throws Exception {
     context.put("unitTests.directories", "build/1 build/2");
-    context.put("unitTests.subdirForPrefix", "units");
     context.put("unitTests.exclude", "TestA");
     context.put("unitTests.isolate", "TestB");
     context.put("qFileTests", "f");
@@ -109,7 +108,6 @@ public class TestTestParser {
   @Test
   public void testParseWithIncludes() throws Exception {
     context.put("unitTests.directories", "build/1 build/2");
-    context.put("unitTests.subdirForPrefix", "units");
     context.put("unitTests.include", "TestA TestB");
     context.put("unitTests.isolate", "TestB");
     context.put("qFileTests", "f");
@@ -127,7 +125,6 @@ public class TestTestParser {
   @Test
   public void testParsePropertyFile() throws Exception {
     context.put("unitTests.directories", "build/1 build/2");
-    context.put("unitTests.subdirForPrefix", "units");
     context.put("unitTests.include", "TestA TestB");
     context.put("unitTests.isolate", "TestB");
     context.put("qFileTests", "f");

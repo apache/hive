@@ -58,7 +58,6 @@ public class TestConfiguration {
   private static final String JENKINS_URL = "jenkinsURL";
   private static final String SSH_OPTS = "sshOpts";
   private static final String LOGS_URL = "logsURL";
-  // This ends up being set to "test" | mvn ${testCasePropertyName} for instance
   private static final String TEST_CASE_PROPERTY_NAME = "testCasePropertyName";
   private static final String BUILD_TOOL = "buildTool";
   // The following parameters are not supported yet. TODO Add support
@@ -227,17 +226,14 @@ public class TestConfiguration {
     return testCasePropertyName;
   }
 
-  // TODO Make sure this method is eventually used to find the prep / batch scripts.
   public String getApplyPathScriptPath() {
     return applyPathScriptPath;
   }
 
-  // TODO Make sure this method is eventually used to find the prep / batch scripts.
   public String getPrepTemplatePath() {
     return prepTemplatePath;
   }
 
-  // TODO Make sure this method is eventually used to find the prep / batch scripts.
   public String getBatchExecTemplatePath() {
     return batchExecTemplatePath;
   }

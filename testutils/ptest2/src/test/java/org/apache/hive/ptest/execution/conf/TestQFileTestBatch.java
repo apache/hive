@@ -50,7 +50,7 @@ public class TestQFileTestBatch {
     Assert.assertEquals(Joiner.on("-").join(DRIVER, "a", "b", "c"), batch.getName());
     Assert.assertEquals(String.format("-Dtestcase=%s -D%s=a,b,c", DRIVER,
         QUERY_FILES_PROPERTY), batch.getTestArguments());
-    Assert.assertEquals(TEST_MODULE_NAME, batch.getTestModuleRelativeDir());
+    Assert.assertEquals(TEST_MODULE_NAME, batch.getTestModule());
   }
   @Test
   public void testMoreThanThreeTests() throws Exception {

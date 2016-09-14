@@ -20,7 +20,6 @@ package org.apache.hive.ptest.execution;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -68,7 +67,6 @@ public class TestExecutionPhase extends AbstractTestPhase {
     return phase;
   }
   private void setupQFile(boolean isParallel) throws Exception {
-    TestBatch.resetBatchCoutner();
     testDir = Dirs.create( new File(baseDir, "test"));
     Assert.assertTrue(new File(testDir, QFILENAME).createNewFile());
     testBatch =
@@ -77,8 +75,7 @@ public class TestExecutionPhase extends AbstractTestPhase {
     testBatches = Collections.singletonList(testBatch);
   }
   private void setupUnitTest() throws Exception {
-    TestBatch.resetBatchCoutner();
-    testBatch = new UnitTestBatch("testcase", Arrays.asList(DRIVER), "fakemodule", false);
+    testBatch = new UnitTestBatch("testcase", DRIVER, false);
     testBatches = Collections.singletonList(testBatch);
   }
   private void copyTestOutput(String resource, File directory, String name) throws Exception {
@@ -107,7 +104,6 @@ public class TestExecutionPhase extends AbstractTestPhase {
         "-0/scratch/hiveptest-" + DRIVER + "-" + QFILENAME + ".sh", 1);
     copyTestOutput("SomeTest-failure.xml", failedLogDir, testBatch.getName());
     getPhase().execute();
-    Assert.assertEquals(1, sshCommandExecutor.getMatchCount());
     Approvals.verify(getExecutedCommands());
     Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), executedTests);
     Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), failedTests);
@@ -125,10 +121,9 @@ public class TestExecutionPhase extends AbstractTestPhase {
   public void testFailingUnitTest() throws Throwable {
     setupUnitTest();
     sshCommandExecutor.putFailure("bash " + LOCAL_DIR + "/" + HOST + "-" + USER +
-        "-0/scratch/hiveptest-" + testBatch.getBatchId() + "_" + DRIVER + ".sh", 1);
+        "-0/scratch/hiveptest-" + DRIVER + ".sh", 1);
     copyTestOutput("SomeTest-failure.xml", failedLogDir, testBatch.getName());
     getPhase().execute();
-    Assert.assertEquals(1, sshCommandExecutor.getMatchCount());
     Approvals.verify(getExecutedCommands());
     Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), executedTests);
     Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), failedTests);

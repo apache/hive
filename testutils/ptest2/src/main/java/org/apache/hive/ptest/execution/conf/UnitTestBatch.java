@@ -18,55 +18,34 @@
  */
 package org.apache.hive.ptest.execution.conf;
 
-import java.util.List;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-
-public class UnitTestBatch extends TestBatch {
+public class UnitTestBatch implements TestBatch {
 
   private final String testCasePropertyName;
-  private final List<String> testList;
+  private final String testName;
   private final boolean isParallel;
-  private final String moduleName;
-  private final String batchName;
 
-  public UnitTestBatch(String testCasePropertyName, List<String> tests, String moduleName, boolean isParallel) {
-    super();
-    Preconditions.checkNotNull(testCasePropertyName);
-    Preconditions.checkArgument(tests!= null && !tests.isEmpty());
+  public UnitTestBatch(String testCasePropertyName, String testName, boolean isParallel) {
     this.testCasePropertyName = testCasePropertyName;
-    this.testList = tests;
+    this.testName = testName;
     this.isParallel = isParallel;
-    this.moduleName = moduleName;
-    if (tests.size() == 1) {
-      batchName = String.format("%d_%s", getBatchId(), tests.get(0));
-    } else {
-      batchName = String.format("%d_UTBatch_%s_%d_tests", getBatchId(),
-          (moduleName.replace("/", "__").replace(".", "__")), tests.size());
-    }
   }
   @Override
   public String getTestArguments() {
-    String testArg = Joiner.on(",").join(testList);
-    return String.format("-D%s=%s", testCasePropertyName, testArg);
+    return String.format("-D%s=%s", testCasePropertyName, testName);
   }
 
   @Override
   public String getName() {
-    // Used for logDir, failure messages etc.
-    return batchName;
+    return testName;
   }
   @Override
   public String getTestClass() {
-    // Used to identify the module name. Return any.
-    return testList.get(0);
+    return testName;
   }
-
   @Override
   public String toString() {
-    return "UnitTestBatch [name=" + batchName + ", id=" + getBatchId() + ", moduleName=" + moduleName +
-        ", isParallel=" + isParallel + ", testList=" + testList + "]";
+    return "UnitTestBatch [testName=" + testName + ", isParallel=" + isParallel
+        + "]";
   }
   @Override
   public boolean isParallel() {
@@ -74,45 +53,34 @@ public class UnitTestBatch extends TestBatch {
   }
 
   @Override
-  public String getTestModuleRelativeDir() {
-    return moduleName;
-  }
-
-  @Override
-  public int getNumTestsInBatch() {
-    return testList.size();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    UnitTestBatch that = (UnitTestBatch) o;
-
-    if (isParallel != that.isParallel) {
-      return false;
-    }
-    if (testList != null ? !testList.equals(that.testList) : that.testList != null) {
-      return false;
-    }
-    if (moduleName != null ? !moduleName.equals(that.moduleName) : that.moduleName != null) {
-      return false;
-    }
-    return batchName != null ? batchName.equals(that.batchName) : that.batchName == null;
-
+  public String getTestModule() {
+    return null;
   }
 
   @Override
   public int hashCode() {
-    int result = testList != null ? testList.hashCode() : 0;
-    result = 31 * result + (isParallel ? 1 : 0);
-    result = 31 * result + (moduleName != null ? moduleName.hashCode() : 0);
-    result = 31 * result + (batchName != null ? batchName.hashCode() : 0);
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + (isParallel ? 1231 : 1237);
+    result = prime * result + ((testName == null) ? 0 : testName.hashCode());
     return result;
+  }
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    UnitTestBatch other = (UnitTestBatch) obj;
+    if (isParallel != other.isParallel)
+      return false;
+    if (testName == null) {
+      if (other.testName != null)
+        return false;
+    } else if (!testName.equals(other.testName))
+      return false;
+    return true;
   }
 }
