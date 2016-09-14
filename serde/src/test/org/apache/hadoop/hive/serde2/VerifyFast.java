@@ -65,7 +65,7 @@ public class VerifyFast {
 
     boolean isNull;
 
-    isNull = deserializeRead.readCheckNull();
+    isNull = !deserializeRead.readNextField();
     if (isNull) {
       if (writable != null) {
         TestCase.fail("Field reports null but object is not null");

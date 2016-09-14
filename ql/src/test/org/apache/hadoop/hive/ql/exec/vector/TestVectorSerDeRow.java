@@ -96,7 +96,7 @@ public class TestVectorSerDeRow extends TestCase {
       Object expected = expectedRow[i];
       PrimitiveCategory primitiveCategory = primitiveCategories[i];
       PrimitiveTypeInfo primitiveTypeInfo = source.primitiveTypeInfos()[i];
-      if (deserializeRead.readCheckNull()) {
+      if (!deserializeRead.readNextField()) {
         throw new HiveException("Unexpected NULL");
       }
       switch (primitiveCategory) {
@@ -282,9 +282,7 @@ public class TestVectorSerDeRow extends TestCase {
       throw new HiveException("Unexpected primitive category " + primitiveCategory);
     }
     }
-    deserializeRead.extraFieldsCheck();
-    TestCase.assertTrue(!deserializeRead.readBeyondConfiguredFieldsWarned());
-    TestCase.assertTrue(!deserializeRead.bufferRangeHasExtraDataWarned());
+    TestCase.assertTrue(deserializeRead.isEndOfInputReached());
   }
 
   void serializeBatch(VectorizedRowBatch batch, VectorSerializeRow vectorSerializeRow,
@@ -382,11 +380,13 @@ public class TestVectorSerDeRow extends TestCase {
       Object[] expectedRow = randomRows[firstRandomRowIndex + i];
 
       for (int c = 0; c < rowSize; c++) {
-        if (row[c] == null) {
+        Object rowObj = row[c];
+        Object expectedObj = expectedRow[c];
+        if (rowObj == null) {
           fail("Unexpected NULL from extractRow");
         }
-        if (!row[c].equals(expectedRow[c])) {
-          fail("Row " + (firstRandomRowIndex + i) + " and column " + c + " mismatch (" + primitiveTypeInfos[c].getPrimitiveCategory() + " actual value " + row[c] + " and expected value " + expectedRow[c] + ")");
+        if (!rowObj.equals(expectedObj)) {
+          fail("Row " + (firstRandomRowIndex + i) + " and column " + c + " mismatch (" + primitiveTypeInfos[c].getPrimitiveCategory() + " actual value " + rowObj + " and expected value " + expectedObj + ")");
         }
       }
     }

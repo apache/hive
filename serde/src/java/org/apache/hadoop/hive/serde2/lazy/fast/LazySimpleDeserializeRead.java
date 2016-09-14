@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.serde2.lazy.fast;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.util.Arrays;
 
@@ -37,6 +38,7 @@ import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazyShort;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.Text;
@@ -47,7 +49,7 @@ import org.apache.hive.common.util.TimestampParser;
  * serialization format.
  *
  * The caller is responsible for calling the read method for the right type of each field
- * (after calling readCheckNull).
+ * (after calling readNextField).
  *
  * Reading some fields require a results object to receive value information.  A separate
  * results object is created by the caller at initialization per different field even for the same
@@ -62,49 +64,63 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
 
   private int[] startPosition;
 
-  private byte separator;
-  private boolean isEscaped;
-  private byte escapeChar;
-  private byte[] nullSequenceBytes;
-  private boolean isExtendedBooleanLiteral;
-  private boolean lastColumnTakesRest;
+  private final byte separator;
+  private final boolean isEscaped;
+  private final byte escapeChar;
+  private final int[] escapeCounts;
+  private final byte[] nullSequenceBytes;
+  private final boolean isExtendedBooleanLiteral;
+
+  private final int fieldCount;
 
   private byte[] bytes;
   private int start;
-  private int offset;
   private int end;
-  private int fieldCount;
-  private int fieldIndex;
-  private int parseFieldIndex;
-  private int fieldStart;
-  private int fieldLength;
+  private boolean parsed;
 
+  // Used by readNextField/skipNextField and not by readField.
+  private int nextFieldIndex;
+
+  // For getDetailedReadPositionString.
+  private int currentFieldIndex;
+  private int currentFieldStart;
+  private int currentFieldLength;
+
+  // For string/char/varchar buffering when there are escapes.
   private int internalBufferLen;
   private byte[] internalBuffer;
 
-  private TimestampParser timestampParser;
+  private final TimestampParser timestampParser;
 
-  private boolean extraFieldWarned;
-  private boolean missingFieldWarned;
+  private boolean isEndOfInputReached;
 
   public LazySimpleDeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer,
       byte separator, LazySerDeParameters lazyParams) {
     super(typeInfos, useExternalBuffer);
 
+    fieldCount = typeInfos.length;
+
     // Field length is difference between positions hence one extra.
-    startPosition = new int[typeInfos.length + 1];
+    startPosition = new int[fieldCount + 1];
 
     this.separator = separator;
 
     isEscaped = lazyParams.isEscaped();
-    escapeChar = lazyParams.getEscapeChar();
+    if (isEscaped) {
+      escapeChar = lazyParams.getEscapeChar();
+      escapeCounts = new int[fieldCount];
+    } else {
+      escapeChar = (byte) 0;
+      escapeCounts = null;
+    }
     nullSequenceBytes = lazyParams.getNullSequence().getBytes();
     isExtendedBooleanLiteral = lazyParams.isExtendedBooleanLiteral();
-    lastColumnTakesRest = lazyParams.isLastColumnTakesRest();
+    if (lazyParams.isLastColumnTakesRest()) {
+      throw new RuntimeException("serialization.last.column.takes.rest not supported");
+    }
 
-    fieldCount = typeInfos.length;
-    extraFieldWarned = false;
-    missingFieldWarned = false;
+    timestampParser = new TimestampParser();
+
     internalBufferLen = -1;
   }
 
@@ -113,21 +129,16 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     this(typeInfos, useExternalBuffer, lazyParams.getSeparators()[0], lazyParams);
   }
 
-  // Not public since we must have the field count so every 8 fields NULL bytes can be navigated.
-  private LazySimpleDeserializeRead() {
-    super();
-  }
-
   /*
    * Set the range of bytes to be deserialized.
    */
   @Override
   public void set(byte[] bytes, int offset, int length) {
     this.bytes = bytes;
-    this.offset = offset;
     start = offset;
     end = offset + length;
-    fieldIndex = -1;
+    parsed = false;
+    nextFieldIndex = -1;
   }
 
   /*
@@ -147,19 +158,16 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     sb.append(" fields with types ");
     sb.append(Arrays.toString(typeInfos));
     sb.append(".  ");
-    if (fieldIndex == -1) {
-      sb.append("Error during field delimitor parsing of field #");
-      sb.append(parseFieldIndex);
+    if (!parsed) {
+      sb.append("Error during field separator parsing");
     } else {
       sb.append("Read field #");
-      sb.append(fieldIndex);
+      sb.append(currentFieldIndex);
       sb.append(" at field start position ");
-      sb.append(startPosition[fieldIndex]);
-      int currentFieldLength = startPosition[fieldIndex + 1] - startPosition[fieldIndex] - 1;
+      sb.append(startPosition[currentFieldIndex]);
+      int currentFieldLength = startPosition[currentFieldIndex + 1] - startPosition[currentFieldIndex] - 1;
       sb.append(" for field length ");
       sb.append(currentFieldLength);
-      sb.append(" current read offset ");
-      sb.append(offset);
     }
 
     return sb.toString();
@@ -173,395 +181,406 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
    */
   private void parse() {
 
-    int structByteEnd = end;
+    int fieldId = 0;
     int fieldByteBegin = start;
     int fieldByteEnd = start;
 
-    // Kept as a member variable to support getDetailedReadPositionString.
-    parseFieldIndex = 0;
+    final byte separator = this.separator;
+    final int fieldCount = this.fieldCount;
+    final int[] startPosition = this.startPosition;
+    final byte[] bytes = this.bytes;
+    final int end = this.end;
 
-    // Go through all bytes in the byte[]
-    while (fieldByteEnd <= structByteEnd) {
-      if (fieldByteEnd == structByteEnd || bytes[fieldByteEnd] == separator) {
-        // Reached the end of a field?
-        if (lastColumnTakesRest && parseFieldIndex == fieldCount - 1) {
-          fieldByteEnd = structByteEnd;
-        }
-        startPosition[parseFieldIndex] = fieldByteBegin;
-        parseFieldIndex++;
-        if (parseFieldIndex == fieldCount || fieldByteEnd == structByteEnd) {
-          // All fields have been parsed, or bytes have been parsed.
-          // We need to set the startPosition of fields.length to ensure we
-          // can use the same formula to calculate the length of each field.
-          // For missing fields, their starting positions will all be the same,
-          // which will make their lengths to be -1 and uncheckedGetField will
-          // return these fields as NULLs.
-          for (int i = parseFieldIndex; i <= fieldCount; i++) {
-            startPosition[i] = fieldByteEnd + 1;
+    /*
+     * Optimize the loops by pulling special end cases and global decisions like isEscaped out!
+     */
+    if (!isEscaped) {
+      while (fieldByteEnd < end) {
+        if (bytes[fieldByteEnd] == separator) {
+          startPosition[fieldId++] = fieldByteBegin;
+          if (fieldId == fieldCount) {
+            break;
           }
-          break;
-        }
-        fieldByteBegin = fieldByteEnd + 1;
-        fieldByteEnd++;
-      } else {
-        if (isEscaped && bytes[fieldByteEnd] == escapeChar
-            && fieldByteEnd + 1 < structByteEnd) {
-          // ignore the char after escape_char
-          fieldByteEnd += 2;
+          fieldByteBegin = ++fieldByteEnd;
         } else {
           fieldByteEnd++;
         }
       }
+      // End serves as final separator.
+      if (fieldByteEnd == end && fieldId < fieldCount) {
+        startPosition[fieldId++] = fieldByteBegin;
+      }
+    } else {
+      final byte escapeChar = this.escapeChar;
+      final int endLessOne = end - 1;
+      final int[] escapeCounts = this.escapeCounts;
+      int escapeCount = 0;
+      // Process the bytes that can be escaped (the last one can't be).
+      while (fieldByteEnd < endLessOne) {
+        if (bytes[fieldByteEnd] == separator) {
+          escapeCounts[fieldId] = escapeCount;
+          escapeCount = 0;
+          startPosition[fieldId++] = fieldByteBegin;
+          if (fieldId == fieldCount) {
+            break;
+          }
+          fieldByteBegin = ++fieldByteEnd;
+        } else if (bytes[fieldByteEnd] == escapeChar) {
+          // Ignore the char after escape_char
+          fieldByteEnd += 2;
+          escapeCount++;
+        } else {
+          fieldByteEnd++;
+        }
+      }
+      // Process the last byte if necessary.
+      if (fieldByteEnd == endLessOne && fieldId < fieldCount) {
+        if (bytes[fieldByteEnd] == separator) {
+          escapeCounts[fieldId] = escapeCount;
+          escapeCount = 0;
+          startPosition[fieldId++] = fieldByteBegin;
+          if (fieldId <= fieldCount) {
+            fieldByteBegin = ++fieldByteEnd;
+          }
+        } else {
+          fieldByteEnd++;
+        }
+      }
+      // End serves as final separator.
+      if (fieldByteEnd == end && fieldId < fieldCount) {
+        escapeCounts[fieldId] = escapeCount;
+        startPosition[fieldId++] = fieldByteBegin;
+      }
     }
 
-    // Extra bytes at the end?
-    if (!extraFieldWarned && fieldByteEnd < structByteEnd) {
-      doExtraFieldWarned();
+    if (fieldId == fieldCount || fieldByteEnd == end) {
+      // All fields have been parsed, or bytes have been parsed.
+      // We need to set the startPosition of fields.length to ensure we
+      // can use the same formula to calculate the length of each field.
+      // For missing fields, their starting positions will all be the same,
+      // which will make their lengths to be -1 and uncheckedGetField will
+      // return these fields as NULLs.
+      Arrays.fill(startPosition, fieldId, startPosition.length, fieldByteEnd + 1);
     }
 
-    // Missing fields?
-    if (!missingFieldWarned && parseFieldIndex < fieldCount) {
-      doMissingFieldWarned(parseFieldIndex);
+    isEndOfInputReached = (fieldByteEnd == end);
+  }
+
+  /*
+   * Reads the the next field.
+   *
+   * Afterwards, reading is positioned to the next field.
+   *
+   * @return  Return true when the field was not null and data is put in the appropriate
+   *          current* member.
+   *          Otherwise, false when the field is null.
+   *
+   */
+  @Override
+  public boolean readNextField() throws IOException {
+    if (nextFieldIndex + 1 >= fieldCount) {
+      return false;
+    }
+    nextFieldIndex++;
+    return readField(nextFieldIndex);
+  }
+
+  /*
+   * Reads through an undesired field.
+   *
+   * No data values are valid after this call.
+   * Designed for skipping columns that are not included.
+   */
+  public void skipNextField() throws IOException {
+    if (!parsed) {
+      parse();
+      parsed = true;
+    }
+    if (nextFieldIndex + 1 >= fieldCount) {
+      // No more.
+    } else {
+      nextFieldIndex++;
+    }
+  }
+
+  @Override
+  public boolean isReadFieldSupported() {
+    return true;
+  }
+
+  private boolean checkNull(byte[] bytes, int start, int len) {
+    if (len != nullSequenceBytes.length) {
+      return false;
+    }
+    final byte[] nullSequenceBytes = this.nullSequenceBytes;
+    switch(len) {
+    case 0:
+      return true;
+    case 2:
+      return bytes[start] == nullSequenceBytes[0] && bytes[start+1] == nullSequenceBytes[1];
+    case 4:
+      return bytes[start] == nullSequenceBytes[0] && bytes[start+1] == nullSequenceBytes[1]
+          && bytes[start+2] == nullSequenceBytes[2] && bytes[start+3] == nullSequenceBytes[3];
+    default:
+      for (int i = 0; i < nullSequenceBytes.length; i++) {
+        if (bytes[start + i] != nullSequenceBytes[i]) {
+          return false;
+        }
+      }
+      return true;
     }
   }
 
   /*
-   * Reads the NULL information for a field.
+   * When supported, read a field by field number (i.e. random access).
    *
-   * @return Returns true when the field is NULL; reading is positioned to the next field.
-   *         Otherwise, false when the field is NOT NULL; reading is positioned to the field data.
+   * Currently, only LazySimpleDeserializeRead supports this.
+   *
+   * @return  Return true when the field was not null and data is put in the appropriate
+   *          current* member.
+   *          Otherwise, false when the field is null.
    */
-  @Override
-  public boolean readCheckNull() {
-    if (fieldIndex == -1) {
+  public boolean readField(int fieldIndex) throws IOException {
+
+    if (!parsed) {
       parse();
-      fieldIndex = 0;
-    } else if (fieldIndex + 1 >= fieldCount) {
-      return true;
-    } else {
-      fieldIndex++;
+      parsed = true;
     }
 
-    // Do we want this field?
-    if (columnsToInclude != null && !columnsToInclude[fieldIndex]) {
-      return true;
-    }
+    currentFieldIndex = fieldIndex;
 
-    fieldStart = startPosition[fieldIndex];
-    fieldLength = startPosition[fieldIndex + 1] - startPosition[fieldIndex] - 1;
+    final int fieldStart = startPosition[fieldIndex];
+    currentFieldStart = fieldStart;
+    final int fieldLength = startPosition[fieldIndex + 1] - startPosition[fieldIndex] - 1;
+    currentFieldLength = fieldLength;
     if (fieldLength < 0) {
-      return true;
+      return false;
     }
+
+    final byte[] bytes = this.bytes;
 
     // Is the field the configured string representing NULL?
     if (nullSequenceBytes != null) {
-      if (fieldLength == nullSequenceBytes.length) {
-        int i = 0;
-        while (true) {
-          if (bytes[fieldStart + i] != nullSequenceBytes[i]) {
-            break;
-          }
-          i++;
-          if (i >= fieldLength) {
-            return true;
-          }
-        }
+      if (checkNull(bytes, fieldStart, fieldLength)) {
+        return false;
       }
     }
 
-    /*
-     * We have a field and are positioned to it.  Read it.
-     */
-    switch (primitiveCategories[fieldIndex]) {
-    case BOOLEAN:
-      {
-        int i = fieldStart;
-        if (fieldLength == 4) {
-          if ((bytes[i] == 'T' || bytes[i] == 't') &&
-              (bytes[i + 1] == 'R' || bytes[i + 1] == 'r') &&
-              (bytes[i + 2] == 'U' || bytes[i + 1] == 'u') &&
-              (bytes[i + 3] == 'E' || bytes[i + 3] == 'e')) {
-            currentBoolean = true;
-          } else {
-            // No boolean value match for 5 char field.
-            return true;
-          }
-        } else if (fieldLength == 5) {
-          if ((bytes[i] == 'F' || bytes[i] == 'f') &&
-              (bytes[i + 1] == 'A' || bytes[i + 1] == 'a') &&
-              (bytes[i + 2] == 'L' || bytes[i + 2] == 'l') &&
-              (bytes[i + 3] == 'S' || bytes[i + 3] == 's') &&
-              (bytes[i + 4] == 'E' || bytes[i + 4] == 'e')) {
-            currentBoolean = false;
-          } else {
-            // No boolean value match for 4 char field.
-            return true;
-          }
-        } else if (isExtendedBooleanLiteral && fieldLength == 1) {
-          byte b = bytes[fieldStart];
-          if (b == '1' || b == 't' || b == 'T') {
-            currentBoolean = true;
-          } else if (b == '0' || b == 'f' || b == 'F') {
-            currentBoolean = false;
-          } else {
-            // No boolean value match for extended 1 char field.
-            return true;
-          }
-        } else {
-          // No boolean value match for other lengths.
-          return true;
-        }
-      }
-      break;
-    case BYTE:
-      if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
-        return true;
-      }
-      try {
-        currentByte = LazyByte.parseByte(bytes, fieldStart, fieldLength, 10);
-      } catch (NumberFormatException e) {
-        logExceptionMessage(bytes, fieldStart, fieldLength, "TINYINT");
-        return true;
-      }
-      break;
-    case SHORT:
-      if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
-        return true;
-      }
-      try {
-        currentShort = LazyShort.parseShort(bytes, fieldStart, fieldLength, 10);
-      } catch (NumberFormatException e) {
-        logExceptionMessage(bytes, fieldStart, fieldLength, "SMALLINT");
-        return true;
-      }
-      break;
-    case INT:
-      if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
-        return true;
-      }
-      try {
-        currentInt = LazyInteger.parseInt(bytes, fieldStart, fieldLength, 10);
-      } catch (NumberFormatException e) {
-        logExceptionMessage(bytes, fieldStart, fieldLength, "INT");
-        return true;
-      }
-      break;
-    case LONG:
-      if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
-        return true;
-      }
-      try {
-        currentLong = LazyLong.parseLong(bytes, fieldStart, fieldLength, 10);
-      } catch (NumberFormatException e) {
-        logExceptionMessage(bytes, fieldStart, fieldLength, "BIGINT");
-        return true;
-      }
-      break;
-    case FLOAT:
-      {
-        if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
-          return true;
-        }
-        String byteData = null;
-        try {
-          byteData = Text.decode(bytes, fieldStart, fieldLength);
-          currentFloat = Float.parseFloat(byteData);
-        } catch (NumberFormatException e) {
-          LOG.debug("Data not in the Float data type range so converted to null. Given data is :"
-              + byteData, e);
-          return true;
-        } catch (CharacterCodingException e) {
-          LOG.debug("Data not in the Float data type range so converted to null.", e);
-          return true;
-        }
-      }
-      break;
-    case DOUBLE:
-      {
-        if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
-          return true;
-        }
-        String byteData = null;
-        try {
-          byteData = Text.decode(bytes, fieldStart, fieldLength);
-          currentDouble = Double.parseDouble(byteData);
-        } catch (NumberFormatException e) {
-          LOG.debug("Data not in the Double data type range so converted to null. Given data is :"
-              + byteData, e);
-          return true;
-        } catch (CharacterCodingException e) {
-          LOG.debug("Data not in the Double data type range so converted to null.", e);
-          return true;
-        }
-      }
-      break;
-
-    case STRING:
-    case CHAR:
-    case VARCHAR:
-      {
-        if (isEscaped) {
-          // First calculate the length of the output string
-          int outputLength = 0;
-          for (int i = 0; i < fieldLength; i++) {
-            if (bytes[fieldStart + i] != escapeChar) {
-              outputLength++;
+    try {
+      /*
+       * We have a field and are positioned to it.  Read it.
+       */
+      switch (primitiveCategories[fieldIndex]) {
+      case BOOLEAN:
+        {
+          int i = fieldStart;
+          if (fieldLength == 4) {
+            if ((bytes[i] == 'T' || bytes[i] == 't') &&
+                (bytes[i + 1] == 'R' || bytes[i + 1] == 'r') &&
+                (bytes[i + 2] == 'U' || bytes[i + 1] == 'u') &&
+                (bytes[i + 3] == 'E' || bytes[i + 3] == 'e')) {
+              currentBoolean = true;
             } else {
-              outputLength++;
-              i++;
+              // No boolean value match for 4 char field.
+              return false;
             }
+          } else if (fieldLength == 5) {
+            if ((bytes[i] == 'F' || bytes[i] == 'f') &&
+                (bytes[i + 1] == 'A' || bytes[i + 1] == 'a') &&
+                (bytes[i + 2] == 'L' || bytes[i + 2] == 'l') &&
+                (bytes[i + 3] == 'S' || bytes[i + 3] == 's') &&
+                (bytes[i + 4] == 'E' || bytes[i + 4] == 'e')) {
+              currentBoolean = false;
+            } else {
+              // No boolean value match for 5 char field.
+              return false;
+            }
+          } else if (isExtendedBooleanLiteral && fieldLength == 1) {
+            byte b = bytes[fieldStart];
+            if (b == '1' || b == 't' || b == 'T') {
+              currentBoolean = true;
+            } else if (b == '0' || b == 'f' || b == 'F') {
+              currentBoolean = false;
+            } else {
+              // No boolean value match for extended 1 char field.
+              return false;
+            }
+          } else {
+            // No boolean value match for other lengths.
+            return false;
           }
-          if (outputLength == fieldLength) {
-            // No escaping.
+        }
+        return true;
+      case BYTE:
+        if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
+          return false;
+        }
+        currentByte = LazyByte.parseByte(bytes, fieldStart, fieldLength, 10);
+        return true;
+      case SHORT:
+        if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
+          return false;
+        }
+        currentShort = LazyShort.parseShort(bytes, fieldStart, fieldLength, 10);
+        return true;
+      case INT:
+        if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
+          return false;
+        }
+        currentInt = LazyInteger.parseInt(bytes, fieldStart, fieldLength, 10);
+        return true;
+      case LONG:
+        if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
+          return false;
+        }
+        currentLong = LazyLong.parseLong(bytes, fieldStart, fieldLength, 10);
+        return true;
+      case FLOAT:
+        if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
+          return false;
+        }
+        currentFloat =
+            Float.parseFloat(
+                new String(bytes, fieldStart, fieldLength, StandardCharsets.UTF_8));
+        return true;
+      case DOUBLE:
+        if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
+          return false;
+        }
+        currentDouble =
+            Double.parseDouble(
+                new String(bytes, fieldStart, fieldLength, StandardCharsets.UTF_8));
+        return true;
+      case STRING:
+      case CHAR:
+      case VARCHAR:
+        {
+          if (isEscaped) {
+            if (escapeCounts[fieldIndex] == 0) {
+              // No escaping.
+              currentExternalBufferNeeded = false;
+              currentBytes = bytes;
+              currentBytesStart = fieldStart;
+              currentBytesLength = fieldLength;
+            } else {
+              final int unescapedLength = fieldLength - escapeCounts[fieldIndex];
+              if (useExternalBuffer) {
+                currentExternalBufferNeeded = true;
+                currentExternalBufferNeededLen = unescapedLength;
+              } else {
+                // The copyToBuffer will reposition and re-read the input buffer.
+                currentExternalBufferNeeded = false;
+                if (internalBufferLen < unescapedLength) {
+                  internalBufferLen = unescapedLength;
+                  internalBuffer = new byte[internalBufferLen];
+                }
+                copyToBuffer(internalBuffer, 0, unescapedLength);
+                currentBytes = internalBuffer;
+                currentBytesStart = 0;
+                currentBytesLength = unescapedLength;
+              }
+            }
+          } else {
+            // If the data is not escaped, reference the data directly.
             currentExternalBufferNeeded = false;
             currentBytes = bytes;
             currentBytesStart = fieldStart;
-            currentBytesLength = outputLength;
-          } else {
-            if (useExternalBuffer) {
-              currentExternalBufferNeeded = true;
-              currentExternalBufferNeededLen = outputLength;
-            } else {
-              // The copyToBuffer will reposition and re-read the input buffer.
-              currentExternalBufferNeeded = false;
-              if (internalBufferLen < outputLength) {
-                internalBufferLen = outputLength;
-                internalBuffer = new byte[internalBufferLen];
-              }
-              copyToBuffer(internalBuffer, 0, outputLength);
-              currentBytes = internalBuffer;
-              currentBytesStart = 0;
-              currentBytesLength = outputLength;
-            }
+            currentBytesLength = fieldLength;
           }
-        } else {
-          // If the data is not escaped, reference the data directly.
-          currentExternalBufferNeeded = false;
-          currentBytes = bytes;
-          currentBytesStart = fieldStart;
-          currentBytesLength = fieldLength;
         }
-      }
-      break;
-    case BINARY:
-      {
-        byte[] recv = new byte[fieldLength];
-        System.arraycopy(bytes, fieldStart, recv, 0, fieldLength);
-        byte[] decoded = LazyBinary.decodeIfNeeded(recv);
-        // use the original bytes in case decoding should fail
-        decoded = decoded.length > 0 ? decoded : recv;
-        currentBytes = decoded;
-        currentBytesStart = 0;
-        currentBytesLength = decoded.length;
-      }
-      break;
-    case DATE:
-      {
+        return true;
+      case BINARY:
+        {
+          byte[] recv = new byte[fieldLength];
+          System.arraycopy(bytes, fieldStart, recv, 0, fieldLength);
+          byte[] decoded = LazyBinary.decodeIfNeeded(recv);
+          // use the original bytes in case decoding should fail
+          decoded = decoded.length > 0 ? decoded : recv;
+          currentBytes = decoded;
+          currentBytesStart = 0;
+          currentBytesLength = decoded.length;
+        }
+        return true;
+      case DATE:
         if (!LazyUtils.isDateMaybe(bytes, fieldStart, fieldLength)) {
-          return true;
+          return false;
         }
-        String s = null;
-        try {
-          s = Text.decode(bytes, fieldStart, fieldLength);
-          currentDateWritable.set(Date.valueOf(s));
-        } catch (Exception e) {
-          logExceptionMessage(bytes, fieldStart, fieldLength, "DATE");
-          return true;
-        }
-      }
-      break;
-    case TIMESTAMP:
-      {
-        if (!LazyUtils.isDateMaybe(bytes, fieldStart, fieldLength)) {
-          return true;
-        }
-        String s = null;
-        try {
-          s = new String(bytes, fieldStart, fieldLength, "US-ASCII");
-        } catch (UnsupportedEncodingException e) {
-          LOG.error("Unsupported encoding found ", e);
-          s = "";
-        }
-
-        if (s.compareTo("NULL") == 0) {
-          logExceptionMessage(bytes, fieldStart, fieldLength, "TIMESTAMP");
-          return true;
-        } else {
+        currentDateWritable.set(
+            Date.valueOf(
+                new String(bytes, fieldStart, fieldLength, StandardCharsets.UTF_8)));
+        return true;
+      case TIMESTAMP:
+        {
+          if (!LazyUtils.isDateMaybe(bytes, fieldStart, fieldLength)) {
+            return false;
+          }
+          String s = new String(bytes, fieldStart, fieldLength, StandardCharsets.US_ASCII);
+          if (s.compareTo("NULL") == 0) {
+            logExceptionMessage(bytes, fieldStart, fieldLength, "TIMESTAMP");
+            return false;
+          }
           try {
-            if (timestampParser == null) {
-              timestampParser = new TimestampParser();
-            }
             currentTimestampWritable.set(timestampParser.parseTimestamp(s));
           } catch (IllegalArgumentException e) {
             logExceptionMessage(bytes, fieldStart, fieldLength, "TIMESTAMP");
-            return true;
+            return false;
           }
         }
-      }
-      break;
-    case INTERVAL_YEAR_MONTH:
-      {
+        return true;
+      case INTERVAL_YEAR_MONTH:
         if (fieldLength == 0) {
-          return true;
+          return false;
         }
-        String s = null;
         try {
-          s = Text.decode(bytes, fieldStart, fieldLength);
+          String s = new String(bytes, fieldStart, fieldLength, StandardCharsets.UTF_8);
           currentHiveIntervalYearMonthWritable.set(HiveIntervalYearMonth.valueOf(s));
         } catch (Exception e) {
           logExceptionMessage(bytes, fieldStart, fieldLength, "INTERVAL_YEAR_MONTH");
-          return true;
+          return false;
         }
-      }
-      break;
-    case INTERVAL_DAY_TIME:
-      {
+        return true;
+      case INTERVAL_DAY_TIME:
         if (fieldLength == 0) {
-          return true;
+          return false;
         }
-        String s = null;
         try {
-          s = Text.decode(bytes, fieldStart, fieldLength);
+          String s = new String(bytes, fieldStart, fieldLength, StandardCharsets.UTF_8);
           currentHiveIntervalDayTimeWritable.set(HiveIntervalDayTime.valueOf(s));
         } catch (Exception e) {
           logExceptionMessage(bytes, fieldStart, fieldLength, "INTERVAL_DAY_TIME");
-          return true;
+          return false;
         }
-      }
-      break;
-    case DECIMAL:
-      {
-        if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
-          return true;
+        return true;
+      case DECIMAL:
+        {
+          if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
+            return false;
+          }
+          String byteData = new String(bytes, fieldStart, fieldLength, StandardCharsets.UTF_8);
+          HiveDecimal decimal = HiveDecimal.create(byteData);
+          DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
+          int precision = decimalTypeInfo.getPrecision();
+          int scale = decimalTypeInfo.getScale();
+          decimal = HiveDecimal.enforcePrecisionScale(decimal, precision, scale);
+          if (decimal == null) {
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Data not in the HiveDecimal data type range so converted to null. Given data is :"
+                + byteData);
+            }
+            return false;
+          }
+          currentHiveDecimalWritable.set(decimal);
         }
-        String byteData = null;
-        try {
-          byteData = Text.decode(bytes, fieldStart, fieldLength);
-        } catch (CharacterCodingException e) {
-          LOG.debug("Data not in the HiveDecimal data type range so converted to null.", e);
-          return true;
-        }
+        return true;
 
-        HiveDecimal decimal = HiveDecimal.create(byteData);
-        DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
-        int precision = decimalTypeInfo.getPrecision();
-        int scale = decimalTypeInfo.getScale();
-        decimal = HiveDecimal.enforcePrecisionScale(
-            decimal, precision, scale);
-        if (decimal == null) {
-          LOG.debug("Data not in the HiveDecimal data type range so converted to null. Given data is :"
-              + byteData);
-          return true;
-        }
-        currentHiveDecimalWritable.set(decimal);
+      default:
+        throw new Error("Unexpected primitive category " + primitiveCategories[fieldIndex].name());
       }
-      break;
-
-    default:
-      throw new Error("Unexpected primitive category " + primitiveCategories[fieldIndex].name());
+    } catch (NumberFormatException nfe) {
+       // U+FFFD will throw this as well
+       logExceptionMessage(bytes, fieldStart, fieldLength, primitiveCategories[fieldIndex]);
+       return false;
     }
-
-    return false;
   }
 
   @Override
@@ -570,6 +589,8 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
   }
 
   private void copyToBuffer(byte[] buffer, int bufferStart, int bufferLength) {
+
+    final int fieldStart = currentFieldStart;
     int k = 0;
     for (int i = 0; i < bufferLength; i++) {
       byte b = bytes[fieldStart + i];
@@ -590,9 +611,44 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     }
   }
 
+  /*
+   * Call this method may be called after all the all fields have been read to check
+   * for unread fields.
+   *
+   * Note that when optimizing reading to stop reading unneeded include columns, worrying
+   * about whether all data is consumed is not appropriate (often we aren't reading it all by
+   * design).
+   *
+   * Since LazySimpleDeserializeRead parses the line through the last desired column it does
+   * support this function.
+   */
+  public boolean isEndOfInputReached() {
+    return isEndOfInputReached;
+  }
+
+  public void logExceptionMessage(byte[] bytes, int bytesStart, int bytesLength,
+      PrimitiveCategory dataCategory) {
+    final String dataType;
+    switch (dataCategory) {
+    case BYTE:
+      dataType = "TINYINT";
+      break;
+    case LONG:
+      dataType = "BIGINT";
+      break;
+    case SHORT:
+      dataType = "SMALLINT";
+      break;
+    default:
+      dataType = dataCategory.toString();
+      break;
+    }
+    logExceptionMessage(bytes, bytesStart, bytesLength, dataType);
+  }
+
   public void logExceptionMessage(byte[] bytes, int bytesStart, int bytesLength, String dataType) {
     try {
-      if(LOG.isDebugEnabled()) {
+      if (LOG.isDebugEnabled()) {
         String byteData = Text.decode(bytes, bytesStart, bytesLength);
         LOG.debug("Data not in the " + dataType
             + " data type range so converted to null. Given data is :" +
@@ -601,38 +657,6 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     } catch (CharacterCodingException e1) {
       LOG.debug("Data not in the " + dataType + " data type range so converted to null.", e1);
     }
-  }
-
-  /*
-   * Call this method after all fields have been read to check for extra fields.
-   */
-  @Override
-  public void extraFieldsCheck() {
-    // UNDONE: Get rid of...
-  }
-
-  /*
-   * Read integrity warning flags.
-   */
-  @Override
-  public boolean readBeyondConfiguredFieldsWarned() {
-    return missingFieldWarned;
-  }
-  @Override
-  public boolean bufferRangeHasExtraDataWarned() {
-    return false;
-  }
-
-  private void doExtraFieldWarned() {
-    extraFieldWarned = true;
-    LOG.warn("Extra bytes detected at the end of the row! Ignoring similar "
-        + "problems.");
-  }
-
-  private void doMissingFieldWarned(int fieldId) {
-    missingFieldWarned = true;
-    LOG.info("Missing fields! Expected " + fieldCount + " fields but "
-        + "only got " + fieldId + "! Ignoring similar problems.");
   }
 
   //------------------------------------------------------------------------------------------------
