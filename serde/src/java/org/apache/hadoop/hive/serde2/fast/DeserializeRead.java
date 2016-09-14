@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  * Directly deserialize with the caller reading field-by-field a serialization format.
  *
  * The caller is responsible for calling the read method for the right type of each field
- * (after calling readCheckNull).
+ * (after calling readNextField).
  *
  * Reading some fields require a results object to receive value information.  A separate
  * results object is created by the caller at initialization per different field even for the same
@@ -49,18 +49,16 @@ public abstract class DeserializeRead {
 
   protected boolean useExternalBuffer;
 
-  protected boolean[] columnsToInclude;
-
   protected Category[] categories;
   protected PrimitiveCategory[] primitiveCategories;
 
   /**
    * Constructor.
    *
-   * When useExternalBuffer is specified true and readCheckNull reads a string/char/varchar/binary
+   * When useExternalBuffer is specified true and readNextField reads a string/char/varchar/binary
    * field, it will request an external buffer to receive the data of format conversion.
    *
-   * if (!deserializeRead.readCheckNull()) {
+   * if (deserializeRead.readNextField()) {
    *   if (deserializeRead.currentExternalBufferNeeded) {
    *     <Ensure external buffer is as least deserializeRead.currentExternalBufferNeededLen bytes>
    *     deserializeRead.copyToExternalBuffer(externalBuffer, externalBufferStart);
@@ -121,8 +119,6 @@ public abstract class DeserializeRead {
 
       this.useExternalBuffer = useExternalBuffer;
     }
-
-    columnsToInclude = null;
   }
 
   // Don't allow for public.
@@ -137,37 +133,62 @@ public abstract class DeserializeRead {
   }
 
   /*
-   * If some fields are are not going to be used by the query, use this routine to specify
-   * the columns to return.  The readCheckNull method will automatically return NULL for the
-   * other columns.
-   */
-  public void setColumnsToInclude(boolean[] columnsToInclude) {
-    this.columnsToInclude = columnsToInclude;
-  }
-
-  /*
    * Set the range of bytes to be deserialized.
    */
   public abstract void set(byte[] bytes, int offset, int length);
 
   /*
-   * Reads the NULL information for a field.
+   * Reads the the next field.
    *
-   * @return Return true when the field is NULL; reading is positioned to the next field.
-   *         Otherwise, false when the field is NOT NULL; reading is positioned to the field data.
+   * Afterwards, reading is positioned to the next field.
+   *
+   * @return  Return true when the field was not null and data is put in the appropriate
+   *          current* member.
+   *          Otherwise, false when the field is null.
+   *
    */
-  public abstract boolean readCheckNull() throws IOException;
+  public abstract boolean readNextField() throws IOException;
 
   /*
-   * Call this method after all fields have been read to check for extra fields.
+   * Reads through an undesired field.
+   *
+   * No data values are valid after this call.
+   * Designed for skipping columns that are not included.
    */
-  public abstract void extraFieldsCheck();
+  public abstract void skipNextField() throws IOException;
 
   /*
-   * Read integrity warning flags.
+   * Returns true if the readField method is supported;
    */
-  public abstract boolean readBeyondConfiguredFieldsWarned();
-  public abstract boolean bufferRangeHasExtraDataWarned();
+  public boolean isReadFieldSupported() {
+    return false;
+  }
+
+  /*
+   * When supported, read a field by field number (i.e. random access).
+   *
+   * Currently, only LazySimpleDeserializeRead supports this.
+   *
+   * @return  Return true when the field was not null and data is put in the appropriate
+   *          current* member.
+   *          Otherwise, false when the field is null.
+   */
+  public boolean readField(int fieldIndex) throws IOException {
+    throw new RuntimeException("Not supported");
+  }
+
+  /*
+   * Call this method may be called after all the all fields have been read to check
+   * for unread fields.
+   *
+   * Note that when optimizing reading to stop reading unneeded include columns, worrying
+   * about whether all data is consumed is not appropriate (often we aren't reading it all by
+   * design).
+   *
+   * Since LazySimpleDeserializeRead parses the line through the last desired column it does
+   * support this function.
+   */
+  public abstract boolean isEndOfInputReached();
 
   /*
    * Get detailed read position information to help diagnose exceptions.
@@ -175,7 +196,7 @@ public abstract class DeserializeRead {
   public abstract String getDetailedReadPositionString();
 
   /*
-   * These members hold the current value that was read when readCheckNull return false.
+   * These members hold the current value that was read when readNextField return false.
    */
 
   /*

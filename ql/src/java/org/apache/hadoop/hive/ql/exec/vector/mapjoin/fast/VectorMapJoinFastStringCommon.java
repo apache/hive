@@ -46,7 +46,7 @@ public class VectorMapJoinFastStringCommon {
     int keyLength = currentKey.getLength();
     keyBinarySortableDeserializeRead.set(keyBytes, 0, keyLength);
     try {
-      if (keyBinarySortableDeserializeRead.readCheckNull()) {
+      if (!keyBinarySortableDeserializeRead.readNextField()) {
         return;
       }
     } catch (Exception e) {
