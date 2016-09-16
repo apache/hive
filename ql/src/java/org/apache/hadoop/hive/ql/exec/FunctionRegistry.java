@@ -985,9 +985,6 @@ public final class FunctionRegistry {
     try {
       o = m.invoke(thisObject, arguments);
     } catch (Exception e) {
-      String thisObjectString = "" + thisObject + " of class "
-          + (thisObject == null ? "null" : thisObject.getClass().getName());
-
       StringBuilder argumentString = new StringBuilder();
       if (arguments == null) {
         argumentString.append("null");
@@ -995,21 +992,19 @@ public final class FunctionRegistry {
         argumentString.append("{");
         for (int i = 0; i < arguments.length; i++) {
           if (i > 0) {
-            argumentString.append(", ");
+            argumentString.append(",");
           }
-          if (arguments[i] == null) {
-            argumentString.append("null");
-          } else {
-            argumentString.append("" + arguments[i] + ":"
-                + arguments[i].getClass().getName());
-          }
+
+          argumentString.append(arguments[i]);
         }
-        argumentString.append("} of size " + arguments.length);
+        argumentString.append("}");
       }
 
-      throw new HiveException("Unable to execute method " + m + " "
-          + " on object " + thisObjectString + " with arguments "
-          + argumentString.toString(), e);
+      String detailedMsg = e instanceof java.lang.reflect.InvocationTargetException ?
+        e.getCause().getMessage() : e.getMessage();
+
+      throw new HiveException("Unable to execute method " + m + " with arguments "
+          + argumentString + ":" + detailedMsg, e);
     }
     return o;
   }
