@@ -88,6 +88,14 @@ public class ExecutionPhase extends Phase {
     }
     logger.info("ParallelWorkQueueSize={}, IsolatedWorkQueueSize={}", parallelWorkQueue.size(),
         isolatedWorkQueue.size());
+    if (logger.isDebugEnabled()) {
+      for (TestBatch testBatch : parallelWorkQueue) {
+        logger.debug("PBatch: {}", testBatch);
+      }
+      for (TestBatch testBatch : isolatedWorkQueue) {
+        logger.debug("IBatch: {}", testBatch);
+      }
+    }
     try {
       int expectedNumHosts = hostExecutors.size();
       initalizeHosts();

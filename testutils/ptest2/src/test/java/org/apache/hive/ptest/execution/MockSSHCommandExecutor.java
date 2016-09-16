@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hive.ptest.execution.ssh.SSHCommand;
 import org.apache.hive.ptest.execution.ssh.SSHCommandExecutor;
@@ -33,6 +34,7 @@ import com.google.common.collect.Maps;
 public class MockSSHCommandExecutor extends SSHCommandExecutor {
   private final List<String> mCommands;
   private final Map<String, Queue<Integer>> mFailures;
+  private final AtomicInteger matchCount = new AtomicInteger(0);
   public MockSSHCommandExecutor(Logger logger) {
     super(logger);
     mCommands = Lists.newArrayList();
@@ -61,7 +63,12 @@ public class MockSSHCommandExecutor extends SSHCommandExecutor {
     if(queue == null || queue.isEmpty()) {
       command.setExitCode(0);
     } else {
+      matchCount.incrementAndGet();
       command.setExitCode(queue.remove());
     }
+  }
+
+  public int getMatchCount() {
+    return matchCount.get();
   }
 }

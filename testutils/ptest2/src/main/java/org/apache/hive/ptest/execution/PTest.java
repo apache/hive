@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.common.annotations.VisibleForTesting;
@@ -132,7 +133,7 @@ public class PTest {
       templateDefaultsBuilder.put("additionalProfiles", configuration.getAdditionalProfiles());
     }
     templateDefaults = templateDefaultsBuilder.build();
-    TestParser testParser = new TestParser(configuration.getContext(), configuration.getTestCasePropertyName(),
+    TestParser testParser = new TestParser(configuration.getContext(), new AtomicInteger(1), configuration.getTestCasePropertyName(),
         new File(mExecutionContext.getLocalWorkingDirectory(), configuration.getRepositoryName() + "-source"),
         logger);
 

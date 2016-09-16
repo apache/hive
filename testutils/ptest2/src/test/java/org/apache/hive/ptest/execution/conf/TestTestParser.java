@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
@@ -91,6 +92,7 @@ public class TestTestParser {
   @Test
   public void testParseWithExcludes() throws Exception {
     context.put("unitTests.directories", "build/1 build/2");
+    context.put("unitTests.subdirForPrefix", "units");
     context.put("unitTests.exclude", "TestA");
     context.put("unitTests.isolate", "TestB");
     context.put("qFileTests", "f");
@@ -101,13 +103,14 @@ public class TestTestParser {
     context.put("qFileTest.f.isolate", "isolated");
     context.put("qFileTest.f.groups.excluded", "excluded.q");
     context.put("qFileTest.f.groups.isolated", "isolated.q");
-    testParser = new TestParser(context, "testcase", workingDirectory, LOG);
+    testParser = new TestParser(context, new AtomicInteger(1),  "testcase", workingDirectory, LOG);
     List<TestBatch> testBatches = testParser.parse().get();
     Assert.assertEquals(4, testBatches.size());
   }
   @Test
   public void testParseWithIncludes() throws Exception {
     context.put("unitTests.directories", "build/1 build/2");
+    context.put("unitTests.subdirForPrefix", "units");
     context.put("unitTests.include", "TestA TestB");
     context.put("unitTests.isolate", "TestB");
     context.put("qFileTests", "f");
@@ -118,13 +121,14 @@ public class TestTestParser {
     context.put("qFileTest.f.queryFilesProperty", "qfile");
     context.put("qFileTest.f.groups.included", "included.q isolated.q");
     context.put("qFileTest.f.groups.isolated", "isolated.q");
-    testParser = new TestParser(context, "testcase", workingDirectory, LOG);
+    testParser = new TestParser(context, new AtomicInteger(1), "testcase", workingDirectory, LOG);
     List<TestBatch> testBatches = testParser.parse().get();
     Assert.assertEquals(4, testBatches.size());
   }
   @Test
   public void testParsePropertyFile() throws Exception {
     context.put("unitTests.directories", "build/1 build/2");
+    context.put("unitTests.subdirForPrefix", "units");
     context.put("unitTests.include", "TestA TestB");
     context.put("unitTests.isolate", "TestB");
     context.put("qFileTests", "f");
@@ -139,7 +143,7 @@ public class TestTestParser {
     context.put("qFileTest.f.groups.included", "prop.${normal.one.group} prop.${normal.two.group} prop.${isolated.group}");
     context.put("qFileTest.f.groups.isolated", "prop.${isolated.group}");
     context.put("qFileTest.f.groups.excluded", "prop.${excluded.group}");
-    testParser = new TestParser(context, "testcase", workingDirectory, LOG);
+    testParser = new TestParser(context, new AtomicInteger(1), "testcase", workingDirectory, LOG);
     List<TestBatch> testBatches = testParser.parse().get();
     Assert.assertEquals(4, testBatches.size());
   }

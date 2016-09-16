@@ -30,6 +30,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Stopwatch;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hive.ptest.execution.conf.Host;
 import org.apache.hive.ptest.execution.conf.TestBatch;
 import org.apache.hive.ptest.execution.ssh.RSyncCommand;
@@ -40,7 +41,6 @@ import org.apache.hive.ptest.execution.ssh.SSHCommand;
 import org.apache.hive.ptest.execution.ssh.SSHCommandExecutor;
 import org.apache.hive.ptest.execution.ssh.SSHExecutionException;
 import org.apache.hive.ptest.execution.ssh.SSHResult;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -244,9 +244,8 @@ class HostExecutor {
     templateVariables.put("testArguments", batch.getTestArguments());
     templateVariables.put("localDir", drone.getLocalDirectory());
     templateVariables.put("logDir", drone.getLocalLogDirectory());
-    if (!Strings.isEmpty(batch.getTestModule())) {
-      templateVariables.put("testModule", batch.getTestModule());
-    }
+    Preconditions.checkArgument(StringUtils.isNotBlank(batch.getTestModuleRelativeDir()));
+    templateVariables.put("testModule", batch.getTestModuleRelativeDir());
     String command = Templates.getTemplateResult("bash $localDir/$instanceName/scratch/" + script.getName(),
         templateVariables);
     Templates.writeTemplateResult("batch-exec.vm", script, templateVariables);
