@@ -16,33 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.hive.ptest.execution.conf;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.io.File;
+import java.util.Collection;
 
-public abstract class TestBatch {
+// Exists primarily to allow for easier unit tests.
+public interface FileListProvider {
 
-  public TestBatch(AtomicInteger BATCH_ID_GEN) {
-    this.batchId = BATCH_ID_GEN.getAndIncrement();
-  }
-
-  private final int batchId;
-
-  public abstract String getTestArguments();
-
-  // TODO Get rid of this.
-  public abstract String getTestClass();
-
-  public abstract String getName();
-
-  public abstract boolean isParallel();
-
-  public abstract String getTestModuleRelativeDir();
-
-  public abstract int getNumTestsInBatch();
-
-  public final int getBatchId() {
-    return batchId;
-  }
+  Collection<File> listFiles(
+      File directory, String[] extensions, boolean recursive);
 
 }

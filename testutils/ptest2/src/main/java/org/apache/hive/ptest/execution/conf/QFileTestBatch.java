@@ -19,11 +19,12 @@
 package org.apache.hive.ptest.execution.conf;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterators;
 
-public class QFileTestBatch implements TestBatch {
+public class QFileTestBatch extends TestBatch {
 
   private final String testCasePropertyName;
   private final String driver;
@@ -32,8 +33,11 @@ public class QFileTestBatch implements TestBatch {
   private final String moduleName;
   private final Set<String> tests;
   private final boolean isParallel;
-  public QFileTestBatch(String testCasePropertyName, String driver, 
-      String queryFilesProperty, Set<String> tests, boolean isParallel, String moduleName) {
+
+  public QFileTestBatch(AtomicInteger batchIdCounter, String testCasePropertyName, String driver,
+                        String queryFilesProperty, Set<String> tests, boolean isParallel,
+                        String moduleName) {
+    super(batchIdCounter);
     this.testCasePropertyName = testCasePropertyName;
     this.driver = driver;
     this.queryFilesProperty = queryFilesProperty;
@@ -66,7 +70,8 @@ public class QFileTestBatch implements TestBatch {
 
   @Override
   public String toString() {
-    return "QFileTestBatch [driver=" + driver + ", queryFilesProperty="
+    return "QFileTestBatch [batchId=" + getBatchId() + ", size=" + tests.size() + ", driver=" +
+        driver + ", queryFilesProperty="
         + queryFilesProperty + ", name=" + name + ", tests=" + tests
         + ", isParallel=" + isParallel + ", moduleName=" + moduleName + "]";
   }
@@ -76,8 +81,13 @@ public class QFileTestBatch implements TestBatch {
   }
 
   @Override
-  public String getTestModule() {
+  public String getTestModuleRelativeDir() {
     return moduleName;
+  }
+
+  @Override
+  public int getNumTestsInBatch() {
+    return tests.size();
   }
 
   @Override
