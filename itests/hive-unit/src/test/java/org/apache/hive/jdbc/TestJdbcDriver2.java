@@ -18,43 +18,8 @@
 
 package org.apache.hive.jdbc;
 
-import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
-import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.google.common.collect.ImmutableSet;
 
-import java.io.File;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.DriverPropertyInfo;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.SQLTimeoutException;
-import java.sql.SQLWarning;
-import java.sql.Statement;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -68,232 +33,200 @@ import org.apache.hive.service.cli.operation.ClassicTableTypeMapping.ClassicTabl
 import org.apache.hive.service.cli.operation.HiveTableTypeMapping;
 import org.apache.hive.service.cli.operation.TableTypeMappingFactory.TableTypeMappings;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableSet;
+import java.io.InputStream;
+import java.lang.Exception;
+import java.lang.Object;
+import java.lang.String;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.sql.DriverPropertyInfo;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
+import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
  * TestJdbcDriver2
+ * This class tests the JDBC API for HiveServer2 via an embedded HiveServer2 instance
  *
  */
 public class TestJdbcDriver2 {
-  private static final Log LOG = LogFactory.getLog(TestJdbcDriver2.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TestJdbcDriver2.class);
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
-  private static final String tableName = "testHiveJdbcDriver_Table";
+  private static final String testDbName = "testjdbcdriver";
+  private static final String defaultDbName = "default";
+  private static final String tableName = "testjdbcdrivertbl";
   private static final String tableComment = "Simple table";
-  private static final String viewName = "testHiveJdbcDriverView";
+  private static final String viewName = "testjdbcdriverview";
   private static final String viewComment = "Simple view";
-  private static final String partitionedTableName = "testHiveJdbcDriverPartitionedTable";
-  private static final String partitionedColumnName = "partcolabc";
+  private static final String partitionedTableName = "testjdbcdriverparttbl";
+  private static final String partitionedColumnName = "partcoljdbc";
   private static final String partitionedColumnValue = "20090619";
   private static final String partitionedTableComment = "Partitioned table";
-  private static final String dataTypeTableName = "testdatatypetable";
+  private static final String dataTypeTableName = "testjdbcdriverdatatypetbl";
   private static final String dataTypeTableComment = "Table with many column data types";
-
-  private static File workDir = new File(System.getProperty("test.tmp.dir"));
-  private static final String externalTable = "testHiveJdbcDriver_External";
+  private static final String externalTableName = "testjdbcdriverexttbl";
   private static final String externalTableComment = "An external table";
 
 
   private final HiveConf conf;
   public static String dataFileDir;
   private final Path dataFilePath;
+  private final int dataFileRowCount;
   private final Path dataTypeDataFilePath;
-  private Connection con;
-  private static boolean standAloneServer = false;
+  // Creating a new connection is expensive, so we'll reuse this object
+  private static Connection con;
   private static final float floatCompareDelta = 0.0001f;
 
   @Rule public ExpectedException thrown = ExpectedException.none();
 
-  public TestJdbcDriver2() {
+  @SuppressWarnings("deprecation")
+  public TestJdbcDriver2() throws SQLException, ClassNotFoundException {
     conf = new HiveConf(TestJdbcDriver2.class);
     dataFileDir = conf.get("test.data.files").replace('\\', '/')
         .replace("c:", "");
     dataFilePath = new Path(dataFileDir, "kv1.txt");
+    dataFileRowCount = 500;
     dataTypeDataFilePath = new Path(dataFileDir, "datatypes.txt");
-    standAloneServer = "true".equals(System
-        .getProperty("test.service.standalone.server"));
-  }
-
-  @BeforeClass
-  public static void setUpBeforeClass() throws SQLException, ClassNotFoundException{
+    // Create test database and base tables once for all the test
     Class.forName(driverName);
-    Connection con1 = getConnection("default");
     System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
-
-    Statement stmt1 = con1.createStatement();
-    assertNotNull("Statement is null", stmt1);
-
-    stmt1.execute("set hive.support.concurrency = false");
-
-    DatabaseMetaData metadata = con1.getMetaData();
-
-    // Drop databases created by other test cases
-    ResultSet databaseRes = metadata.getSchemas();
-
-    while(databaseRes.next()){
-      String db = databaseRes.getString(1);
-      if(!db.equals("default")){
-        System.err.println("Dropping database " + db);
-        stmt1.execute("DROP DATABASE " + db + " CASCADE");
-      }
-    }
-    stmt1.execute("create database testdb");
-    stmt1.close();
-    con1.close();
-  }
-
-  @Before
-  public void setUp() throws Exception {
-    con = getConnection("default");
-
+    System.setProperty(ConfVars.HIVEMAPREDMODE.varname, "nonstrict");
+    System.setProperty(ConfVars.HIVE_AUTHORIZATION_MANAGER.varname,
+        "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
+    con = getConnection(defaultDbName + ";create=true");
     Statement stmt = con.createStatement();
     assertNotNull("Statement is null", stmt);
-
     stmt.execute("set hive.support.concurrency = false");
-
-    createTestTables(stmt, "", true);
-    createTestTables(stmt, "testdb.", false);
-
-    stmt.execute("drop table " + externalTable);
-    stmt.execute("create external table " + externalTable + " (a int) comment '" + externalTableComment +
-      "' location '" + dataFileDir + "'");
+    stmt.execute("drop database if exists " + testDbName + " cascade");
+    stmt.execute("create database " + testDbName);
+    stmt.execute("use " + testDbName);
+    createTestTables(stmt, testDbName);
+    stmt.close();
   }
 
-  private void createTestTables(Statement stmt, String prefix, boolean loadData)
-      throws SQLException {
+  private static Connection getConnection(String postfix) throws SQLException {
+    Connection con1;
+    con1 = DriverManager.getConnection("jdbc:hive2:///" + postfix, "", "");
+    assertNotNull("Connection is null", con1);
+    assertFalse("Connection should not be closed", con1.isClosed());
+    return con1;
+  }
 
-    // drop test tables/views
-    dropTestTables(stmt, prefix);
+  private void createTestTables(Statement stmt, String testDbName) throws SQLException{
+    // We've already dropped testDbName in constructor & we also drop it in tearDownAfterClass
+    String prefix = testDbName + ".";
+    String tableName = prefix + TestJdbcDriver2.tableName;
+    String externalTableName = prefix + TestJdbcDriver2.externalTableName;
+    String partitionedTableName = prefix + TestJdbcDriver2.partitionedTableName;
+    String dataTypeTableName = prefix + TestJdbcDriver2.dataTypeTableName;
+    String viewName = prefix + TestJdbcDriver2.viewName;
 
-    String tableName = prefix + this.tableName;
-    String externalTable = prefix + this.tableName;
-    String partitionedTableName = prefix + this.partitionedTableName;
-    String dataTypeTableName = prefix + this.dataTypeTableName;
-    String viewName = prefix + this.viewName;
-
-    // create table
+    // create a table
     stmt.execute("create table " + tableName
-        + " (under_col int comment 'the under column', value string) comment '"
-        + tableComment + "'");
-
+        + " (under_col int comment 'the under column', value string) comment '" + tableComment
+        + "'");
     // load data
-    if (loadData) {
-      stmt.execute("load data local inpath '"
-          + dataFilePath.toString() + "' into table " + tableName);
-    }
+    stmt.execute("load data local inpath '" + dataFilePath.toString() + "' into table " + tableName);
 
-    // also initialize a paritioned table to test against.
+    // create an external table
+    stmt.execute("create external table " + externalTableName + " (a int) comment '"
+        + externalTableComment + "' location '" + dataFileDir + "'");
+
+    // create a paritioned table
     stmt.execute("create table " + partitionedTableName
-        + " (under_col int, value string) comment '"+partitionedTableComment
-        +"' partitioned by (" + partitionedColumnName + " STRING)");
-
+        + " (under_col int, value string) comment '" + partitionedTableComment
+        + "' partitioned by (" + partitionedColumnName + " STRING)");
     // load data
-    if (loadData) {
-      stmt.execute("load data local inpath '"
-          + dataFilePath.toString() + "' into table " + partitionedTableName
-          + " PARTITION (" + partitionedColumnName + "="
-          + partitionedColumnValue + ")");
-    }
+    stmt.execute("load data local inpath '" + dataFilePath.toString() + "' into table "
+        + partitionedTableName + " PARTITION (" + partitionedColumnName + "="
+        + partitionedColumnValue + ")");
 
     // tables with various types
     stmt.execute("create table " + dataTypeTableName
         + " (c1 int, c2 boolean, c3 double, c4 string,"
         + " c5 array<int>, c6 map<int,string>, c7 map<string,string>,"
         + " c8 struct<r:string,s:int,t:double>,"
-        + " c9 tinyint, c10 smallint, c11 float, c12 bigint,"
-        + " c13 array<array<string>>,"
-        + " c14 map<int, map<int,int>>,"
-        + " c15 struct<r:int,s:struct<a:int,b:string>>,"
-        + " c16 array<struct<m:map<string,string>,n:int>>,"
-        + " c17 timestamp, "
-        + " c18 decimal(16,7), "
-        + " c19 binary, "
-        + " c20 date,"
-        + " c21 varchar(20),"
-        + " c22 char(15),"
-        + " c23 binary"
-        + ") comment'" + dataTypeTableComment
-        +"' partitioned by (dt STRING)");
-
-    if (loadData) {
-      stmt.execute("load data local inpath '"
-          + dataTypeDataFilePath.toString() + "' into table " + dataTypeTableName
-          + " PARTITION (dt='20090619')");
-    }
+        + " c9 tinyint, c10 smallint, c11 float, c12 bigint," + " c13 array<array<string>>,"
+        + " c14 map<int, map<int,int>>," + " c15 struct<r:int,s:struct<a:int,b:string>>,"
+        + " c16 array<struct<m:map<string,string>,n:int>>," + " c17 timestamp, "
+        + " c18 decimal(16,7), " + " c19 binary, " + " c20 date," + " c21 varchar(20),"
+        + " c22 char(15)," + " c23 binary" + ") comment'" + dataTypeTableComment
+        + "' partitioned by (dt STRING)");
+    // load data
+    stmt.execute("load data local inpath '" + dataTypeDataFilePath.toString() + "' into table "
+        + dataTypeTableName + " PARTITION (dt='20090619')");
 
     // create view
-    stmt.execute("create view " + viewName + " comment '"+viewComment
-        +"' as select * from "+ tableName);
+    stmt.execute("create view " + viewName + " comment '" + viewComment + "' as select * from "
+        + tableName);
+    stmt.close();
   }
 
-  // drop test tables/views. ignore error.
-  private void dropTestTables(Statement stmt, String prefix) throws SQLException {
-    String tableName = prefix + this.tableName;
-    String partitionedTableName = prefix + this.partitionedTableName;
-    String dataTypeTableName = prefix + this.dataTypeTableName;
-    String viewName = prefix + this.viewName;
-
-    executeWithIgnore(stmt, "drop table " + tableName);
-    executeWithIgnore(stmt, "drop table " + partitionedTableName);
-    executeWithIgnore(stmt, "drop table " + dataTypeTableName);
-    executeWithIgnore(stmt, "drop view " + viewName);
+  @BeforeClass
+  public static void setUpBeforeClass() throws SQLException, ClassNotFoundException {
   }
 
-  private void executeWithIgnore(Statement stmt, String sql) throws SQLException {
-  // drop table. ignore error.
-    try {
-      stmt.execute(sql);
-    } catch (Exception ex) {
-      fail(ex.toString());
-    }
+  @AfterClass
+  public static void tearDownAfterClass() throws Exception {
+    Statement stmt = con.createStatement();
+    // drop test db and its tables and views
+    stmt.execute("set hive.support.concurrency = false");
+    stmt.execute("drop database if exists " + testDbName + " cascade");
+    stmt.close();
+    con.close();
   }
 
-  private static Connection getConnection(String postfix) throws SQLException {
-    Connection con1;
-    if (standAloneServer) {
-      // get connection
-      con1 = DriverManager.getConnection("jdbc:hive2://localhost:10000/" + postfix,
-          "", "");
-    } else {
-      con1 = DriverManager.getConnection("jdbc:hive2:///" + postfix, "", "");
-    }
-    assertNotNull("Connection is null", con1);
-    assertFalse("Connection should not be closed", con1.isClosed());
-
-    return con1;
+  @Before
+  public void setUp() throws Exception {
   }
 
   @After
   public void tearDown() throws Exception {
-    // drop table
-    Statement stmt = con.createStatement();
-    assertNotNull("Statement is null", stmt);
-    stmt.execute("drop table " + tableName);
-    stmt.execute("drop table " + partitionedTableName);
-    stmt.execute("drop table " + dataTypeTableName);
-
-    con.close();
-    assertTrue("Connection should be closed", con.isClosed());
-
-    Exception expectedException = null;
-    try {
-      con.createStatement();
-    } catch (Exception e) {
-      expectedException = e;
-    }
-
-    assertNotNull(
-        "createStatement() on closed connection should throw exception",
-        expectedException);
   }
 
   @Test
+  /**
+   * Tests malformed JDBC URL
+   * @throws Exception
+   */
   public void testBadURL() throws Exception {
     checkBadUrl("jdbc:hive2://localhost:10000;principal=test");
     checkBadUrl("jdbc:hive2://localhost:10000;" +
@@ -313,29 +246,29 @@ public class TestJdbcDriver2 {
   @Test
   public void testParentReferences() throws Exception {
     /* Test parent references from Statement */
-    Statement s = this.con.createStatement();
+    Statement s = con.createStatement();
     ResultSet rs = s.executeQuery("SELECT * FROM " + dataTypeTableName);
 
-    assertTrue(s.getConnection() == this.con);
+    assertTrue(s.getConnection() == con);
     assertTrue(rs.getStatement() == s);
 
     rs.close();
     s.close();
 
     /* Test parent references from PreparedStatement */
-    PreparedStatement ps = this.con.prepareStatement("SELECT * FROM " + dataTypeTableName);
+    PreparedStatement ps = con.prepareStatement("SELECT * FROM " + dataTypeTableName);
     rs = ps.executeQuery();
 
-    assertTrue(ps.getConnection() == this.con);
+    assertTrue(ps.getConnection() == con);
     assertTrue(rs.getStatement() == ps);
 
     rs.close();
     ps.close();
 
     /* Test DatabaseMetaData queries which do not have a parent Statement */
-    DatabaseMetaData md = this.con.getMetaData();
+    DatabaseMetaData md = con.getMetaData();
 
-    assertTrue(md.getConnection() == this.con);
+    assertTrue(md.getConnection() == con);
 
     rs = md.getCatalogs();
     assertNull(rs.getStatement());
@@ -353,7 +286,7 @@ public class TestJdbcDriver2 {
     assertNull(rs.getStatement());
     rs.close();
 
-    rs = md.getPrimaryKeys(null, null, null);
+    rs = md.getPrimaryKeys(null, testDbName, tableName);
     assertNull(rs.getStatement());
     rs.close();
 
@@ -387,7 +320,7 @@ public class TestJdbcDriver2 {
     Statement stmt = con.createStatement();
 
     ResultSet res = stmt.executeQuery(
-        "select c5, c1 from " + dataTypeTableName + " order by c1");
+        "select c5, c1 from " + dataTypeTableName);
     ResultSetMetaData meta = res.getMetaData();
 
     // row 1
@@ -396,6 +329,7 @@ public class TestJdbcDriver2 {
     for (int i = 1; i < meta.getColumnCount(); i++) {
       assertNull(res.getObject(i));
     }
+    stmt.close();
   }
 
   @Test
@@ -424,6 +358,7 @@ public class TestJdbcDriver2 {
     } catch (SQLException e) {
       assertEquals("42000", e.getSQLState());
     }
+    stmt.close();
   }
 
   /**
@@ -433,11 +368,9 @@ public class TestJdbcDriver2 {
   @Test
   public void testExplainStmt() throws SQLException {
     Statement stmt = con.createStatement();
-
     ResultSet res = stmt.executeQuery(
         "explain select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +
             "c1*2, sentences(null, null, null) as b, c23 from " + dataTypeTableName + " limit 1");
-
     ResultSetMetaData md = res.getMetaData();
     // only one result column
     assertEquals(md.getColumnCount(), 1);
@@ -445,46 +378,37 @@ public class TestJdbcDriver2 {
     assertEquals(md.getColumnLabel(1), EXPL_COLUMN_NAME);
     //verify that there is data in the resultset
     assertTrue("Nothing returned explain", res.next());
+    stmt.close();
   }
 
   @Test
   public void testPrepareStatement() {
-
-    String sql = "from (select count(1) from "
+    String sql = "FROM (SELECT 1 FROM "
         + tableName
         + " where   'not?param?not?param' <> 'not_param??not_param' and ?=? "
         + " and 1=? and 2=? and 3.0=? and 4.0=? and 'test\\'string\"'=? and 5=? and ?=? "
         + " and date '2012-01-01' = date ?"
-        + " ) t  select '2011-03-25' ddate,'China',true bv, 10 num limit 10";
+        + " ) t SELECT '2011-03-25' ddate,'China',true bv, 10 num LIMIT 1";
 
-    ///////////////////////////////////////////////
-    //////////////////// correct testcase
-    //////////////////// executed twice: once with the typed ps setters, once with the generic setObject
-    //////////////////////////////////////////////
+    // executed twice: once with the typed ps setters, once with the generic setObject
     try {
-      PreparedStatement ps = createPreapredStatementUsingSetXXX(sql);
-      ResultSet res = ps.executeQuery();
-      assertPreparedStatementResultAsExpected(res);
-      ps.close();
+      try (PreparedStatement ps = createPreapredStatementUsingSetXXX(sql);
+           ResultSet res = ps.executeQuery()) {
+        assertPreparedStatementResultAsExpected(res);
+      }
 
-      ps = createPreapredStatementUsingSetObject(sql);
-      res = ps.executeQuery();
-      assertPreparedStatementResultAsExpected(res);
-      ps.close();
-
+      try (PreparedStatement ps = createPreapredStatementUsingSetObject(sql);
+           ResultSet res = ps.executeQuery()) {
+        assertPreparedStatementResultAsExpected(res);
+      }
     } catch (Exception e) {
       e.printStackTrace();
       fail(e.toString());
     }
-
-    ///////////////////////////////////////////////
-    //////////////////// other failure testcases
-    //////////////////////////////////////////////
     // set nothing for prepared sql
     Exception expectedException = null;
-    try {
-      PreparedStatement ps = con.prepareStatement(sql);
-      ps.executeQuery();
+    try (PreparedStatement ps = con.prepareStatement(sql);
+         ResultSet ignored = ps.executeQuery()) {
     } catch (Exception e) {
       expectedException = e;
     }
@@ -494,11 +418,10 @@ public class TestJdbcDriver2 {
 
     // set some of parameters for prepared sql, not all of them.
     expectedException = null;
-    try {
-      PreparedStatement ps = con.prepareStatement(sql);
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
       ps.setBoolean(1, true);
       ps.setBoolean(2, true);
-      ps.executeQuery();
+      try (ResultSet ignored = ps.executeQuery()) {}
     } catch (Exception e) {
       expectedException = e;
     }
@@ -508,16 +431,11 @@ public class TestJdbcDriver2 {
 
     // set the wrong type parameters for prepared sql.
     expectedException = null;
-    try {
-      PreparedStatement ps = con.prepareStatement(sql);
-
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
       // wrong type here
       ps.setString(1, "wrong");
-
-      assertTrue(true);
-      ResultSet res = ps.executeQuery();
-      if (!res.next()) {
-        throw new Exception("there must be a empty result set");
+      try (ResultSet res = ps.executeQuery()) {
+        assertFalse("ResultSet was not empty", res.next());
       }
     } catch (Exception e) {
       expectedException = e;
@@ -528,17 +446,15 @@ public class TestJdbcDriver2 {
 
     // setObject to the yet unknown type java.util.Date
     expectedException = null;
-    try {
-      PreparedStatement ps = con.prepareStatement(sql);
+    try (PreparedStatement ps = con.prepareStatement(sql)) {
       ps.setObject(1, new Date());
-      ps.executeQuery();
+      try (ResultSet ignored = ps.executeQuery()) {}
     } catch (Exception e) {
       expectedException = e;
     }
     assertNotNull(
         "Setting to an unknown type should throw an exception",
         expectedException);
-
   }
 
   private PreparedStatement createPreapredStatementUsingSetObject(String sql) throws SQLException {
@@ -546,7 +462,6 @@ public class TestJdbcDriver2 {
 
     ps.setObject(1, true); //setBoolean
     ps.setObject(2, true); //setBoolean
-
     ps.setObject(3, Short.valueOf("1")); //setShort
     ps.setObject(4, 2); //setInt
     ps.setObject(5, 3f); //setFloat
@@ -556,6 +471,7 @@ public class TestJdbcDriver2 {
     ps.setObject(9, (byte) 1); //setByte
     ps.setObject(10, (byte) 1); //setByte
     ps.setString(11, "2012-01-01"); //setString
+    ps.setObject(12, Timestamp.valueOf("2012-04-22 09:00:00.123456789")); //setTimestamp
 
     ps.setMaxRows(2);
     return ps;
@@ -566,7 +482,6 @@ public class TestJdbcDriver2 {
 
     ps.setBoolean(1, true); //setBoolean
     ps.setBoolean(2, true); //setBoolean
-
     ps.setShort(3, Short.valueOf("1")); //setShort
     ps.setInt(4, 2); //setInt
     ps.setFloat(5, 3f); //setFloat
@@ -576,15 +491,17 @@ public class TestJdbcDriver2 {
     ps.setByte(9, (byte) 1); //setByte
     ps.setByte(10, (byte) 1); //setByte
     ps.setString(11, "2012-01-01"); //setString
+    ps.setTimestamp(12, Timestamp.valueOf("2012-04-22 09:00:00.123456789")); //setTimestamp
 
     ps.setMaxRows(2);
     return ps;
   }
 
-  private void assertPreparedStatementResultAsExpected(ResultSet res ) throws SQLException {
+  private void assertPreparedStatementResultAsExpected(ResultSet res) throws SQLException {
     assertNotNull(res);
+    assertTrue("ResultSet contained no rows", res.next());
 
-    while (res.next()) {
+    do {
       assertEquals("2011-03-25", res.getString("ddate"));
       assertEquals("10", res.getString("num"));
       assertEquals((byte) 10, res.getByte("num"));
@@ -598,9 +515,7 @@ public class TestJdbcDriver2 {
       assertNotNull(o);
       o = res.getObject("num");
       assertNotNull(o);
-    }
-    res.close();
-    assertTrue(true);
+    } while (res.next());
   }
 
   /**
@@ -752,12 +667,9 @@ public class TestJdbcDriver2 {
     Statement stmt = con.createStatement();
 
     // -select- should return a ResultSet
-    try {
-      stmt.executeQuery("select * from " + tableName);
-      System.out.println("select: success");
-    } catch(SQLException e) {
-      failWithExceptionMsg(e);
-    }
+    testQuery = "select * from " + tableName + " limit 5";
+    checkResultSetExpected(stmt, setupQueries, testQuery, true);
+    setupQueries.clear();
 
     // -create- should not return a ResultSet
     setupQueries.add("drop table test_t1");
@@ -767,14 +679,14 @@ public class TestJdbcDriver2 {
 
     // -create table as select- should not return a ResultSet
     setupQueries.add("drop table test_t1");
-    testQuery = "create table test_t1 as select * from " + tableName;
+    testQuery = "create table test_t1 as select * from " + tableName + " limit 5";
     checkResultSetExpected(stmt, setupQueries, testQuery, false);
     setupQueries.clear();
 
     // -insert table as select- should not return a ResultSet
     setupQueries.add("drop table test_t1");
     setupQueries.add("create table test_t1 (under_col int, value string)");
-    testQuery = "insert into table test_t1 select under_col, value from "  + tableName;
+    testQuery = "insert into table test_t1 select under_col, value from "  + tableName + " limit 5";
     checkResultSetExpected(stmt, setupQueries, testQuery, false);
     setupQueries.clear();
 
@@ -820,7 +732,7 @@ public class TestJdbcDriver2 {
     Statement stmt = con.createStatement();
 
     ResultSet res = stmt.executeQuery(
-        "select * from " + dataTypeTableName + " order by c1");
+        "select * from " + dataTypeTableName);
     ResultSetMetaData meta = res.getMetaData();
 
     // row 1
@@ -930,6 +842,8 @@ public class TestJdbcDriver2 {
 
     // no more rows
     assertFalse(res.next());
+
+    stmt.close();
   }
 
   private void doTestSelectAll(String tableName, int maxRows, int fetchSize) throws Exception {
@@ -1024,9 +938,8 @@ public class TestJdbcDriver2 {
 
     // These tests inherently cause exceptions to be written to the test output
     // logs. This is undesirable, since you it might appear to someone looking
-    // at the test output logs as if something is failing when it isn't. Not
-    // sure
-    // how to get around that.
+    // at the test output logs as if something is failing when it isn't.
+    // Not sure how to get around that.
     doTestErrorCase("SELECTT * FROM " + tableName,
         "cannot recognize input near 'SELECTT' '*' 'FROM'",
         invalidSyntaxSQLState, 40000);
@@ -1065,6 +978,7 @@ public class TestJdbcDriver2 {
 
     assertNotNull("Exception should have been thrown for query: " + sql,
         exceptionFound);
+    stmt.close();
   }
 
   @Test
@@ -1081,43 +995,46 @@ public class TestJdbcDriver2 {
         testTableExists = true;
       }
     }
-
     assertTrue("table name " + tableName
         + " not found in SHOW TABLES result set", testTableExists);
+    stmt.close();
   }
 
   @Test
   public void testMetaDataGetTables() throws SQLException {
-    getTablesTest(ImmutableSet.of(ClassicTableTypes.TABLE.toString()), ClassicTableTypes.VIEW.toString());
+    getTablesTest(ImmutableSet.of(ClassicTableTypes.TABLE.toString()),
+        ClassicTableTypes.VIEW.toString());
   }
 
   @Test
-  public  void testMetaDataGetTablesHive() throws SQLException {
+  public void testMetaDataGetTablesHive() throws SQLException {
     Statement stmt = con.createStatement();
-    stmt.execute("set " + HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING.varname +
-        " = " + TableTypeMappings.HIVE.toString());
-    getTablesTest(ImmutableSet.of(TableType.MANAGED_TABLE.toString(),
-        TableType.EXTERNAL_TABLE.toString()),
-      TableType.VIRTUAL_VIEW.toString());
+    stmt.execute("set " + HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING.varname + " = "
+        + TableTypeMappings.HIVE.toString());
+    getTablesTest(
+        ImmutableSet.of(TableType.MANAGED_TABLE.toString(), TableType.EXTERNAL_TABLE.toString()),
+        TableType.VIRTUAL_VIEW.toString());
   }
 
   @Test
-  public  void testMetaDataGetTablesClassic() throws SQLException {
+  public void testMetaDataGetTablesClassic() throws SQLException {
     Statement stmt = con.createStatement();
-    stmt.execute("set " + HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING.varname +
-        " = " + TableTypeMappings.CLASSIC.toString());
+    stmt.execute("set " + HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING.varname + " = "
+        + TableTypeMappings.CLASSIC.toString());
     stmt.close();
-    getTablesTest(ImmutableSet.of(ClassicTableTypes.TABLE.toString()), ClassicTableTypes.VIEW.toString());
+    getTablesTest(ImmutableSet.of(ClassicTableTypes.TABLE.toString()),
+        ClassicTableTypes.VIEW.toString());
   }
 
   @Test
   public void testMetaDataGetExternalTables() throws SQLException {
     Statement stmt = con.createStatement();
-    stmt.execute("set " + HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING.varname +
-      " = " + TableTypeMappings.HIVE.toString());
+    stmt.execute("set " + HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING.varname + " = "
+        + TableTypeMappings.HIVE.toString());
     stmt.close();
-    ResultSet rs = con.getMetaData().getTables(null,
-      null, null, new String[] { TableType.EXTERNAL_TABLE.toString() });
+    ResultSet rs =
+        con.getMetaData().getTables(testDbName, null, null,
+            new String[] { TableType.EXTERNAL_TABLE.toString() });
     ResultSetMetaData resMeta = rs.getMetaData();
     assertEquals(5, resMeta.getColumnCount());
     assertEquals("TABLE_CAT", resMeta.getColumnName(1));
@@ -1129,12 +1046,12 @@ public class TestJdbcDriver2 {
     rs.next();
 
     String resultDbName = rs.getString("TABLE_SCHEM");
-    assertEquals(resultDbName, "default");
+    assertEquals(resultDbName, testDbName);
     String resultTableName = rs.getString("TABLE_NAME");
-    assertEquals(resultTableName, externalTable.toLowerCase());
+    assertEquals(resultTableName, externalTableName.toLowerCase());
 
     String resultTableComment = rs.getString("REMARKS");
-    assertTrue("Missing comment on the table.", resultTableComment.length()>0);
+    assertTrue("Missing comment on the table.", resultTableComment.length() > 0);
     String tableType = rs.getString("TABLE_TYPE");
     assertEquals(TableType.EXTERNAL_TABLE.toString(), tableType);
 
@@ -1142,100 +1059,54 @@ public class TestJdbcDriver2 {
   }
 
   /**
-   * Test the type returned for pre-created table type table and view type
-   * table
+   * Test the type returned for pre-created table type table and view type table
    * @param tableTypeNames expected table types
    * @param viewTypeName expected view type
    * @throws SQLException
    */
   private void getTablesTest(Set<String> tableTypeNames, String viewTypeName) throws SQLException {
     String[] ALL = null;
-    String[] VIEW_ONLY = {viewTypeName};
+    String[] VIEW_ONLY = { viewTypeName };
     String[] TABLE_ONLY = tableTypeNames.toArray(new String[tableTypeNames.size()]);
 
     Set<String> viewOrTableArray = new HashSet<String>();
     viewOrTableArray.addAll(tableTypeNames);
     viewOrTableArray.add(viewTypeName);
-    String[] VIEWORTABLE = viewOrTableArray.toArray(new String[viewOrTableArray.size()]);
+    String testTblWithDb = testDbName + "." + tableName;
+    String testPartTblWithDb = testDbName + "." + partitionedTableName;
+    String testDataTypeTblWithDb = testDbName + "." + dataTypeTableName;
+    String testViewWithDb = testDbName + "." + viewName;
+    String testExtTblWithDb = testDbName + "." + externalTableName;
 
     Map<Object[], String[]> tests = new IdentityHashMap<Object[], String[]>();
-    tests.put(new Object[] { null, "test%jdbc%", ALL}, new String[]{
-        "default.testhivejdbcdriver_table",
-        "default.testhivejdbcdriverpartitionedtable",
-        "default.testhivejdbcdriverview",
-        "testdb.testhivejdbcdriver_table",
-        "testdb.testhivejdbcdriverpartitionedtable",
-        "testdb.testhivejdbcdriverview",
-        "default.testhivejdbcdriver_external"});
-    tests.put(new Object[] { "test%", "test%jdbc%", ALL}, new String[]{
-        "testdb.testhivejdbcdriver_table",
-        "testdb.testhivejdbcdriverpartitionedtable",
-        "testdb.testhivejdbcdriverview"});
-    tests.put(new Object[] { "test%", "test%jdbc%", VIEW_ONLY}, new String[]{
-        "testdb.testhivejdbcdriverview"});
-
-    tests.put(new Object[] { null, "%jdbcdriver\\_table", VIEWORTABLE}, new String[]{
-        "default.testhivejdbcdriver_table",
-        "testdb.testhivejdbcdriver_table"});
-    tests.put(new Object[] { "def%", "%jdbcdriver\\_table", VIEWORTABLE}, new String[]{
-        "default.testhivejdbcdriver_table"});
-    tests.put(new Object[] { "def%", "%jdbcdriver\\_table", VIEW_ONLY}, new String[0]);
-
-    tests.put(new Object[] { null, "testhivejdbcdriver\\_table", ALL}, new String[]{
-        "default.testhivejdbcdriver_table",
-        "testdb.testhivejdbcdriver_table"});
-    tests.put(new Object[] { "%faul%", "testhivejdbcdriver\\_table", ALL}, new String[]{
-        "default.testhivejdbcdriver_table"});
-    tests.put(new Object[] { "%faul%", "testhivejdbcdriver\\_table", TABLE_ONLY}, new String[]{
-        "default.testhivejdbcdriver_table"});
-
-    tests.put(new Object[] { null, "test_ivejdbcdri_er\\_table", ALL}, new String[]{
-        "default.testhivejdbcdriver_table",
-        "testdb.testhivejdbcdriver_table"});
-    tests.put(new Object[] { "test__", "test_ivejdbcdri_er\\_table", ALL}, new String[]{
-        "testdb.testhivejdbcdriver_table"});
-
-    tests.put(new Object[] { null, "test_ivejdbcdri_er_table", ALL}, new String[]{
-        "default.testhivejdbcdriver_table",
-        "testdb.testhivejdbcdriver_table"});
-    tests.put(new Object[] { null, "test_ivejdbcdri_er%table", ALL}, new String[]{
-        "default.testhivejdbcdriver_table",
-        "default.testhivejdbcdriverpartitionedtable",
-        "testdb.testhivejdbcdriver_table",
-        "testdb.testhivejdbcdriverpartitionedtable"});
-    tests.put(new Object[] { null, "%jdbc%", ALL}, new String[]{
-        "default.testhivejdbcdriver_table",
-        "default.testhivejdbcdriverpartitionedtable",
-        "default.testhivejdbcdriverview",
-        "testdb.testhivejdbcdriver_table",
-        "testdb.testhivejdbcdriverpartitionedtable",
-        "testdb.testhivejdbcdriverview",
-        "default.testhivejdbcdriver_external"});
-    tests.put(new Object[] { "%", "%jdbc%", VIEW_ONLY}, new String[]{
-        "default.testhivejdbcdriverview",
-        "testdb.testhivejdbcdriverview"});
-
-    tests.put(new Object[] { "%", "%jdbc%", VIEW_ONLY}, new String[]{
-        "default.testhivejdbcdriverview",
-        "testdb.testhivejdbcdriverview"});
-    tests.put(new Object[] { null, "", ALL}, new String[]{});
-
-    tests.put(new Object[] { null, "%jdbc%", TABLE_ONLY}, new String[]{
-        "default.testhivejdbcdriver_table",
-        "default.testhivejdbcdriverpartitionedtable",
-        "testdb.testhivejdbcdriver_table",
-        "testdb.testhivejdbcdriverpartitionedtable",
-        "default.testhivejdbcdriver_external"
-    });
+    tests.put(new Object[] { null, "testjdbc%", ALL }, new String[] { testTblWithDb,
+        testPartTblWithDb, testViewWithDb, testExtTblWithDb, testDataTypeTblWithDb });
+    tests.put(new Object[] { "test%", "testjdbc%", ALL }, new String[] { testTblWithDb,
+        testPartTblWithDb, testViewWithDb, testExtTblWithDb, testDataTypeTblWithDb });
+    tests.put(new Object[] { "test%", "testjdbc%", VIEW_ONLY }, new String[] { testViewWithDb });
+    tests.put(new Object[] { null, "testjdbcdrivertbl", ALL }, new String[] { testTblWithDb });
+    tests.put(new Object[] { "%jdbc%", "testjdbcdrivertbl", ALL }, new String[] { testTblWithDb });
+    tests.put(new Object[] { "%jdbc%", "testjdbc%", ALL }, new String[] { testTblWithDb,
+        testPartTblWithDb, testViewWithDb, testExtTblWithDb, testDataTypeTblWithDb });
+    tests.put(new Object[] { "%jdbc%", "testjdbcdrivertbl", TABLE_ONLY },
+        new String[] { testTblWithDb });
+    tests.put(new Object[] { null, "test_dbcdri_ertbl", ALL }, new String[] { testTblWithDb });
+    tests.put(new Object[] { null, "%jdbc%", ALL }, new String[] { testTblWithDb,
+        testPartTblWithDb, testViewWithDb, testDataTypeTblWithDb, testExtTblWithDb });
+    tests.put(new Object[] { "%", "%jdbc%", VIEW_ONLY }, new String[] { testViewWithDb });
+    tests.put(new Object[] { null, "%jdbc%", TABLE_ONLY }, new String[] { testTblWithDb,
+        testPartTblWithDb, testExtTblWithDb, testDataTypeTblWithDb });
 
     for (Map.Entry<Object[], String[]> entry : tests.entrySet()) {
       Object[] checkPattern = entry.getKey();
-      String debugString = checkPattern[0] + ", " + checkPattern[1] + ", " +
-          Arrays.toString((String[]) checkPattern[2]);
+      String debugString =
+          checkPattern[0] + ", " + checkPattern[1] + ", "
+              + Arrays.toString((String[]) checkPattern[2]);
 
       Set<String> expectedTables = new HashSet<String>(Arrays.asList(entry.getValue()));
-      ResultSet rs = con.getMetaData().getTables(null,
-          (String)checkPattern[0], (String)checkPattern[1], (String[])checkPattern[2]);
+      ResultSet rs =
+          con.getMetaData().getTables(null, (String) checkPattern[0], (String) checkPattern[1],
+              (String[]) checkPattern[2]);
       ResultSetMetaData resMeta = rs.getMetaData();
       assertEquals(5, resMeta.getColumnCount());
       assertEquals("TABLE_CAT", resMeta.getColumnName(1));
@@ -1248,16 +1119,17 @@ public class TestJdbcDriver2 {
       while (rs.next()) {
         String resultDbName = rs.getString("TABLE_SCHEM");
         String resultTableName = rs.getString("TABLE_NAME");
-        assertTrue("Invalid table " + resultDbName + "." + resultTableName + " for test " + debugString,
-          expectedTables.contains(resultDbName + "." + resultTableName));
+        assertTrue("Invalid table " + resultDbName + "." + resultTableName + " for test "
+            + debugString, expectedTables.contains(resultDbName + "." + resultTableName));
 
         String resultTableComment = rs.getString("REMARKS");
-        assertTrue("Missing comment on the table.", resultTableComment.length()>0);
+        assertTrue("Missing comment on the table.", resultTableComment.length() > 0);
         String tableType = rs.getString("TABLE_TYPE");
         if (resultTableName.endsWith("view")) {
           assertEquals("Expected a tabletype view but got something else.", viewTypeName, tableType);
         } else {
-          assertTrue("Expected one of " + tableTypeNames + " table but got something else: " + tableType, tableTypeNames.contains(tableType));
+          assertTrue("Expected one of " + tableTypeNames + " table but got something else: "
+              + tableType, tableTypeNames.contains(tableType));
         }
         cnt++;
       }
@@ -1273,7 +1145,6 @@ public class TestJdbcDriver2 {
     ResultSetMetaData resMeta = rs.getMetaData();
     assertEquals(1, resMeta.getColumnCount());
     assertEquals("TABLE_CAT", resMeta.getColumnName(1));
-
     assertFalse(rs.next());
   }
 
@@ -1288,7 +1159,7 @@ public class TestJdbcDriver2 {
     assertTrue(rs.next());
     assertEquals("default", rs.getString(1));
     assertTrue(rs.next());
-    assertEquals("testdb", rs.getString(1));
+    assertEquals(testDbName, rs.getString(1));
 
     assertFalse(rs.next());
     rs.close();
@@ -1329,10 +1200,8 @@ public class TestJdbcDriver2 {
    * @param tabletypes expected table types
    * @throws SQLException
    */
-  private void metaDataGetTableTypeTest(Set<String> tabletypes)
-      throws SQLException {
+  private void metaDataGetTableTypeTest(Set<String> tabletypes) throws SQLException {
     ResultSet rs = con.getMetaData().getTableTypes();
-
     int cnt = 0;
     while (rs.next()) {
       String tabletype = rs.getString("TABLE_TYPE");
@@ -1348,21 +1217,18 @@ public class TestJdbcDriver2 {
   @Test
   public void testMetaDataGetColumns() throws SQLException {
     Map<String[], Integer> tests = new HashMap<String[], Integer>();
-    tests.put(new String[]{"testhivejdbcdriver\\_table", null}, 2);
-    tests.put(new String[]{"testhivejdbc%", null}, 8);
-    tests.put(new String[]{"testhiveJDBC%", null}, 8);
-    tests.put(new String[]{"%jdbcdriver\\_table", null}, 2);
-    tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_col"}, 1);
-    //    tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_COL"}, 1);
-    tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_co_"}, 1);
-    tests.put(new String[]{"%jdbcdriver\\_table%", "under_col"}, 1);
-    tests.put(new String[]{"%jdbcdriver\\_table%", "und%"}, 1);
-    tests.put(new String[]{"%jdbcdriver\\_table%", "%"}, 2);
-    tests.put(new String[]{"%jdbcdriver\\_table%", "_%"}, 2);
+    tests.put(new String[] { "testjdbcdrivertbl", null }, 2);
+    tests.put(new String[] { "%jdbcdrivertbl", null }, 2);
+    tests.put(new String[] { "%jdbcdrivertbl%", "under\\_col" }, 1);
+    tests.put(new String[] { "%jdbcdrivertbl%", "under\\_co_" }, 1);
+    tests.put(new String[] { "%jdbcdrivertbl%", "under_col" }, 1);
+    tests.put(new String[] { "%jdbcdrivertbl%", "und%" }, 1);
+    tests.put(new String[] { "%jdbcdrivertbl%", "%" }, 2);
+    tests.put(new String[] { "%jdbcdrivertbl%", "_%" }, 2);
 
-    for (String[] checkPattern: tests.keySet()) {
-      ResultSet rs = con.getMetaData().getColumns(null, "default", checkPattern[0],
-          checkPattern[1]);
+    for (String[] checkPattern : tests.keySet()) {
+      ResultSet rs =
+          con.getMetaData().getColumns(null, testDbName, checkPattern[0], checkPattern[1]);
 
       // validate the metadata for the getColumns result set
       ResultSetMetaData rsmd = rs.getMetaData();
@@ -1372,7 +1238,7 @@ public class TestJdbcDriver2 {
       while (rs.next()) {
         String columnname = rs.getString("COLUMN_NAME");
         int ordinalPos = rs.getInt("ORDINAL_POSITION");
-        switch(cnt) {
+        switch (cnt) {
         case 0:
           assertEquals("Wrong column name found", "under_col", columnname);
           assertEquals("Wrong ordinal position found", ordinalPos, 1);
@@ -1396,11 +1262,8 @@ public class TestJdbcDriver2 {
    */
   @Test
   public void testMetaDataGetColumnsMetaData() throws SQLException {
-    ResultSet rs = con.getMetaData().getColumns(null, null
-        , "testhivejdbcdriver\\_table", null);
-
+    ResultSet rs = con.getMetaData().getColumns(null, null, "testhivejdbcdrivertable", null);
     ResultSetMetaData rsmd = rs.getMetaData();
-
     assertEquals("TABLE_CAT", rsmd.getColumnName(1));
     assertEquals(Types.VARCHAR, rsmd.getColumnType(1));
     assertEquals(Integer.MAX_VALUE, rsmd.getColumnDisplaySize(1));
@@ -1409,48 +1272,6 @@ public class TestJdbcDriver2 {
     assertEquals(Types.INTEGER, rsmd.getColumnType(17));
     assertEquals(11, rsmd.getColumnDisplaySize(17));
   }
-
-  /*
-  public void testConversionsBaseResultSet() throws SQLException {
-    ResultSet rs = new HiveMetaDataResultSet(Arrays.asList("key")
-            , Arrays.asList("long")
-            , Arrays.asList(1234, "1234", "abc")) {
-      private int cnt=1;
-      public boolean next() throws SQLException {
-        if (cnt<data.size()) {
-          row = Arrays.asList(data.get(cnt));
-          cnt++;
-          return true;
-        } else {
-          return false;
-        }
-      }
-    };
-
-    while (rs.next()) {
-      String key = rs.getString("key");
-      if ("1234".equals(key)) {
-        assertEquals("Converting a string column into a long failed.", rs.getLong("key"), 1234L);
-        assertEquals("Converting a string column into a int failed.", rs.getInt("key"), 1234);
-      } else if ("abc".equals(key)) {
-        Object result = null;
-        Exception expectedException = null;
-        try {
-          result = rs.getLong("key");
-        } catch (SQLException e) {
-          expectedException = e;
-        }
-        assertTrue("Trying to convert 'abc' into a long should not work.", expectedException!=null);
-        try {
-          result = rs.getInt("key");
-        } catch (SQLException e) {
-          expectedException = e;
-        }
-        assertTrue("Trying to convert 'abc' into a int should not work.", expectedException!=null);
-      }
-    }
-  }
-   */
 
   @Test
   public void testDescribeTable() throws SQLException {
@@ -1461,14 +1282,12 @@ public class TestJdbcDriver2 {
 
     res.next();
     assertEquals("Column name 'under_col' not found", "under_col", res.getString(1));
-    assertEquals("Column type 'under_col' for column under_col not found", "int", res
-        .getString(2));
+    assertEquals("Column type 'under_col' for column under_col not found", "int", res.getString(2));
     res.next();
     assertEquals("Column name 'value' not found", "value", res.getString(1));
-    assertEquals("Column type 'string' for column key not found", "string", res
-        .getString(2));
-
+    assertEquals("Column type 'string' for column key not found", "string", res.getString(2));
     assertFalse("More results found than expected", res.next());
+    stmt.close();
   }
 
   @Test
@@ -1485,6 +1304,7 @@ public class TestJdbcDriver2 {
     assertEquals("Column name 'value' not found",
         "value", res.getString(1));
     assertFalse("More results found than expected", res.next());
+    stmt.close();
   }
 
   @Test
@@ -1495,7 +1315,7 @@ public class TestJdbcDriver2 {
     assertEquals(HiveVersionInfo.getVersion(), meta.getDatabaseProductVersion());
     assertEquals(System.getProperty("hive.version"), meta.getDatabaseProductVersion());
     assertTrue("verifying hive version pattern. got " + meta.getDatabaseProductVersion(),
-        Pattern.matches("\\d+\\.\\d+\\.\\d+.*", meta.getDatabaseProductVersion()) );
+        Pattern.matches("\\d+\\.\\d+\\.\\d+.*", meta.getDatabaseProductVersion()));
 
     assertEquals(DatabaseMetaData.sqlStateSQL99, meta.getSQLStateType());
     assertFalse(meta.supportsCatalogsInTableDefinitions());
@@ -1505,7 +1325,7 @@ public class TestJdbcDriver2 {
     assertFalse(meta.supportsStoredProcedures());
     assertTrue(meta.supportsAlterTableWithAddColumn());
 
-    //-1 indicates malformed version.
+    // -1 indicates malformed version.
     assertTrue(meta.getDatabaseMajorVersion() > -1);
     assertTrue(meta.getDatabaseMinorVersion() > -1);
   }
@@ -1544,20 +1364,21 @@ public class TestJdbcDriver2 {
       LOG.info(msg, e);
       fail(msg);
     }
+    stmt.close();
   }
 
   @Test
   public void testResultSetMetaData() throws SQLException {
     Statement stmt = con.createStatement();
 
-    ResultSet res = stmt.executeQuery(
-        "select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +
-            "c1*2, sentences(null, null, null) as b, c17, c18, c20, c21, c22, c23, null as null_val from " + dataTypeTableName +
-        " limit 1");
+    ResultSet res =
+        stmt.executeQuery("select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, "
+            + "c1*2, sentences(null, null, null) as b, c17, c18, c20, c21, c22, c23, null as null_val from "
+            + dataTypeTableName + " limit 1");
     ResultSetMetaData meta = res.getMetaData();
 
-    ResultSet colRS = con.getMetaData().getColumns(null, null,
-        dataTypeTableName.toLowerCase(), null);
+    ResultSet colRS =
+        con.getMetaData().getColumns(null, null, dataTypeTableName.toLowerCase(), null);
 
     assertEquals(21, meta.getColumnCount());
 
@@ -1747,11 +1568,11 @@ public class TestJdbcDriver2 {
     assertEquals(0, meta.getScale(14));
 
     // Move the result of getColumns() forward to match the columns of the query
-    assertTrue(colRS.next());  // c13
-    assertTrue(colRS.next());  // c14
-    assertTrue(colRS.next());  // c15
-    assertTrue(colRS.next());  // c16
-    assertTrue(colRS.next());  // c17
+    assertTrue(colRS.next()); // c13
+    assertTrue(colRS.next()); // c14
+    assertTrue(colRS.next()); // c15
+    assertTrue(colRS.next()); // c16
+    assertTrue(colRS.next()); // c17
 
     assertEquals("c17", meta.getColumnName(15));
     assertEquals(Types.TIMESTAMP, meta.getColumnType(15));
@@ -1781,7 +1602,7 @@ public class TestJdbcDriver2 {
     assertEquals(meta.getPrecision(16), colRS.getInt("COLUMN_SIZE"));
     assertEquals(meta.getScale(16), colRS.getInt("DECIMAL_DIGITS"));
 
-    assertTrue(colRS.next());  // skip c19, since not selected by query
+    assertTrue(colRS.next()); // skip c19, since not selected by query
     assertTrue(colRS.next());
 
     assertEquals("c20", meta.getColumnName(17));
@@ -1852,6 +1673,7 @@ public class TestJdbcDriver2 {
       assertFalse(meta.isCurrency(i));
       assertEquals(ResultSetMetaData.columnNullable, meta.isNullable(i));
     }
+    stmt.close();
   }
 
   // [url] [host] [port] [db]
@@ -1891,19 +1713,19 @@ public class TestJdbcDriver2 {
       { "jdbc:hive2://server:10000/testdb;user=foo;password=bar;transportMode=binary;httpPath=",
           "server", "10000", "testdb", "binary", "" }, };
 
-@Test
-public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
-    ZooKeeperHiveClientException {
-  new HiveDriver();
-  for (String[] testValues : HTTP_URL_PROPERTIES) {
-    JdbcConnectionParams params = Utils.parseURL(testValues[0]);
-    assertEquals(params.getHost(), testValues[1]);
-    assertEquals(params.getPort(), Integer.parseInt(testValues[2]));
-    assertEquals(params.getDbName(), testValues[3]);
-    assertEquals(params.getSessionVars().get("transportMode"), testValues[4]);
-    assertEquals(params.getSessionVars().get("httpPath"), testValues[5]);
+  @Test
+  public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
+      ZooKeeperHiveClientException {
+    new HiveDriver();
+    for (String[] testValues : HTTP_URL_PROPERTIES) {
+      JdbcConnectionParams params = Utils.parseURL(testValues[0]);
+      assertEquals(params.getHost(), testValues[1]);
+      assertEquals(params.getPort(), Integer.parseInt(testValues[2]));
+      assertEquals(params.getDbName(), testValues[3]);
+      assertEquals(params.getSessionVars().get("transportMode"), testValues[4]);
+      assertEquals(params.getSessionVars().get("httpPath"), testValues[5]);
+    }
   }
-}
 
   private static void assertDpi(DriverPropertyInfo dpi, String name,
       String value) {
@@ -1925,18 +1747,21 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     ResultSet res = stmt.executeQuery(sql);
 
     // Validate resultset columns
-    ResultSetMetaData md = res.getMetaData() ;
+    ResultSetMetaData md = res.getMetaData();
     assertEquals(1, md.getColumnCount());
     assertEquals(SET_COLUMN_NAME, md.getColumnLabel(1));
 
-    //check if there is data in the resultset
+    // check if there is data in the resultset
     int numLines = 0;
-    while (res.next()){
+    while (res.next()) {
       numLines++;
       String rline = res.getString(1);
-      assertFalse("set output must not contain hidden variables such as the metastore password:"+rline,
-          rline.contains(HiveConf.ConfVars.METASTOREPWD.varname) && !(rline.contains(HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname)));
-        // the only conf allowed to have the metastore pwd keyname is the hidden list configuration value
+      assertFalse(
+          "set output must not contain hidden variables such as the metastore password:" + rline,
+          rline.contains(HiveConf.ConfVars.METASTOREPWD.varname)
+              && !(rline.contains(HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname)));
+      // the only conf allowed to have the metastore pwd keyname is the hidden list configuration
+      // value
     }
     assertTrue("Nothing returned by set -v", numLines > 0);
 
@@ -1954,12 +1779,22 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     ResultSet res = stmt.executeQuery("select * from " + tableName);
     assertNotNull("ResultSet is null", res);
     res.close();
-    try { res.getInt(1); fail("Expected SQLException"); }
-    catch (SQLException e) { }
-    try { res.getMetaData(); fail("Expected SQLException"); }
-    catch (SQLException e) { }
-    try { res.setFetchSize(10); fail("Expected SQLException"); }
-    catch (SQLException e) { }
+    try {
+      res.getInt(1);
+      fail("Expected SQLException");
+    } catch (SQLException e) {
+    }
+    try {
+      res.getMetaData();
+      fail("Expected SQLException");
+    } catch (SQLException e) {
+    }
+    try {
+      res.setFetchSize(10);
+      fail("Expected SQLException");
+    } catch (SQLException e) {
+    }
+    stmt.close();
   }
 
   /*
@@ -1973,6 +1808,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     assertTrue(rs.next());
     assertEquals(1, rs.getInt("a"));
     rs.close();
+    stmt.close();
   }
 
 
@@ -1983,23 +1819,18 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
   @Test
   public void testOutOfBoundCols() throws SQLException {
     Statement stmt = con.createStatement();
-
-    ResultSet res = stmt.executeQuery(
-        "select * from " + tableName);
-
+    ResultSet res = stmt.executeQuery("select * from " + tableName);
     // row 1
     assertTrue(res.next());
-
     try {
       res.getInt(200);
     } catch (SQLException e) {
     }
-
     try {
       res.getInt("zzzz");
     } catch (SQLException e) {
     }
-
+    stmt.close();
   }
 
   /**
@@ -2009,15 +1840,16 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
   @Test
   public void testBuiltInUDFCol() throws SQLException {
     Statement stmt = con.createStatement();
-    ResultSet res = stmt.executeQuery("select c12, bin(c12) from " + dataTypeTableName
-        + " where c1=1");
+    ResultSet res =
+        stmt.executeQuery("select c12, bin(c12) from " + dataTypeTableName + " where c1=1");
     ResultSetMetaData md = res.getMetaData();
     assertEquals(md.getColumnCount(), 2); // only one result column
-    assertEquals(md.getColumnLabel(2), "c1" ); // verify the system generated column name
+    assertEquals(md.getColumnLabel(2), "c1"); // verify the system generated column name
     assertTrue(res.next());
     assertEquals(res.getLong(1), 1);
     assertEquals(res.getString(2), "1");
     res.close();
+    stmt.close();
   }
 
   /**
@@ -2027,16 +1859,18 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
   @Test
   public void testExprCol() throws SQLException {
     Statement stmt = con.createStatement();
-    ResultSet res = stmt.executeQuery("select c1+1 as col1, length(c4) as len from " + dataTypeTableName
-        + " where c1=1");
+    ResultSet res =
+        stmt.executeQuery("select c1+1 as col1, length(c4) as len from " + dataTypeTableName
+            + " where c1=1");
     ResultSetMetaData md = res.getMetaData();
     assertEquals(md.getColumnCount(), 2); // only one result column
-    assertEquals(md.getColumnLabel(1), "col1" ); // verify the column name
-    assertEquals(md.getColumnLabel(2), "len" ); // verify the column name
+    assertEquals(md.getColumnLabel(1), "col1"); // verify the column name
+    assertEquals(md.getColumnLabel(2), "len"); // verify the column name
     assertTrue(res.next());
     assertEquals(res.getInt(1), 2);
     assertEquals(res.getInt(2), 1);
     res.close();
+    stmt.close();
   }
 
   /**
@@ -2077,8 +1911,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
   public void testPrimaryKeys() throws SQLException {
     DatabaseMetaData dbmd = con.getMetaData();
     assertNotNull(dbmd);
-    // currently getPrimaryKeys always returns an empty resultset for Hive
-    ResultSet res = dbmd.getPrimaryKeys(null, null, null);
+    ResultSet res = dbmd.getPrimaryKeys(null, testDbName, tableName);
     ResultSetMetaData md = res.getMetaData();
     assertEquals(md.getColumnCount(), 6);
     assertFalse(res.next());
@@ -2117,7 +1950,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
   @Test
   public void testFetchFirstQuery() throws Exception {
     execFetchFirst("select c4, c1 from " + dataTypeTableName + " order by c1", "c4", false);
-    execFetchFirst("select c4, c1 from " + dataTypeTableName + " order by c1", "c4",  true);
+    execFetchFirst("select c4, c1 from " + dataTypeTableName + " order by c1", "c4", true);
   }
 
   /**
@@ -2126,7 +1959,8 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
    */
   @Test
   public void testFetchFirstNonMR() throws Exception {
-    execFetchFirst("select * from " + dataTypeTableName, dataTypeTableName.toLowerCase() + "." + "c4", false);
+    execFetchFirst("select * from " + dataTypeTableName, dataTypeTableName.toLowerCase() + "."
+        + "c4", false);
   }
 
   /**
@@ -2188,6 +2022,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     } catch (SQLException e) {
       assertEquals("Method not supported for TYPE_FORWARD_ONLY resultset", e.getMessage());
     }
+    stmt.close();
   }
 
   /**
@@ -2198,13 +2033,12 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
    * @param oneRowOnly -  read and compare only one row from the resultset
    * @throws Exception
    */
-  private void execFetchFirst(String sqlStmt, String colName, boolean oneRowOnly)
-      throws Exception {
-    Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-        ResultSet.CONCUR_READ_ONLY);
+  private void execFetchFirst(String sqlStmt, String colName, boolean oneRowOnly) throws Exception {
+    Statement stmt =
+        con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
     ResultSet res = stmt.executeQuery(sqlStmt);
 
-    List<String> results = new ArrayList<String> ();
+    List<String> results = new ArrayList<String>();
     assertTrue(res.isBeforeFirst());
     int rowNum = 0;
     while (res.next()) {
@@ -2228,6 +2062,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
         break;
       }
     }
+    stmt.close();
   }
 
   @Test
@@ -2235,27 +2070,26 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     Statement stmt = con.createStatement();
     stmt.execute("grant select on table " + dataTypeTableName + " to user hive_test_user");
     stmt.execute("show grant user hive_test_user on table " + dataTypeTableName);
-
     ResultSet res = stmt.getResultSet();
     assertTrue(res.next());
-    assertEquals("default", res.getString(1));
+    assertEquals(testDbName, res.getString(1));
     assertEquals(dataTypeTableName, res.getString(2));
-    assertEquals("", res.getString(3));     // partition
-    assertEquals("", res.getString(4));     // column
+    assertEquals("", res.getString(3)); // partition
+    assertEquals("", res.getString(4)); // column
     assertEquals("hive_test_user", res.getString(5));
     assertEquals("USER", res.getString(6));
     assertEquals("SELECT", res.getString(7));
     assertEquals(false, res.getBoolean(8)); // grant option
     assertEquals(-1, res.getLong(9));
-    assertNotNull(res.getString(10));       // grantor
+    assertNotNull(res.getString(10)); // grantor
     assertFalse(res.next());
     res.close();
+    stmt.close();
   }
 
   @Test
   public void testShowRoleGrant() throws SQLException {
     Statement stmt = con.createStatement();
-
     // drop role. ignore error.
     try {
       stmt.execute("drop role role1");
@@ -2273,6 +2107,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     assertTrue(res.next());
     assertEquals("role1", res.getString(1));
     res.close();
+    stmt.close();
   }
 
   /**
@@ -2285,9 +2120,9 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
    */
   @Test
   public void testQueryCancel() throws Exception {
-    String udfName = SleepUDF.class.getName();
+    String udfName = SleepMsUDF.class.getName();
     Statement stmt1 = con.createStatement();
-    stmt1.execute("create temporary function sleepUDF as '" + udfName + "'");
+    stmt1.execute("create temporary function sleepMsUDF as '" + udfName + "'");
     stmt1.close();
     final Statement stmt = con.createStatement();
     // Thread executing the query
@@ -2296,7 +2131,8 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
       public void run() {
         try {
           System.out.println("Executing query: ");
-          stmt.executeQuery("select sleepUDF(t1.under_col) as u0, t1.under_col as u1, " +
+          // The test table has 500 rows, so total query time should be ~ 500*500ms
+          stmt.executeQuery("select sleepMsUDF(t1.under_col, 1) as u0, t1.under_col as u1, " +
               "t2.under_col as u2 from " + tableName +  " t1 join " + tableName +
               " t2 on t1.under_col = t2.under_col");
           fail("Expecting SQLException");
@@ -2312,7 +2148,8 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
       @Override
       public void run() {
         try {
-          Thread.sleep(10000);
+          // Sleep for 100ms
+          Thread.sleep(100);
           System.out.println("Cancelling query: ");
           stmt.cancel();
         } catch (Exception e) {
@@ -2329,19 +2166,18 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
 
   @Test
   public void testQueryTimeout() throws Exception {
-    String udfName = SleepUDF.class.getName();
+    String udfName = SleepMsUDF.class.getName();
     Statement stmt1 = con.createStatement();
-    stmt1.execute("create temporary function sleepUDF as '" + udfName + "'");
+    stmt1.execute("create temporary function sleepMsUDF as '" + udfName + "'");
     stmt1.close();
     Statement stmt = con.createStatement();
     // Test a query where timeout kicks in
-    // Set query timeout to 15 seconds
-    stmt.setQueryTimeout(15);
+    // Set query timeout to 1 second
+    stmt.setQueryTimeout(1);
     System.err.println("Executing query: ");
     try {
-      // Sleep UDF sleeps for 100ms for each select call
-      // The test table has 500 rows, so that should be sufficient time
-      stmt.executeQuery("select sleepUDF(t1.under_col) as u0, t1.under_col as u1, "
+      // The test table has 500 rows, so total query time should be ~ 2500ms
+      stmt.executeQuery("select sleepMsUDF(t1.under_col, 5) as u0, t1.under_col as u1, "
           + "t2.under_col as u2 from " + tableName + " t1 join " + tableName
           + " t2 on t1.under_col = t2.under_col");
       fail("Expecting SQLTimeoutException");
@@ -2353,8 +2189,9 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
       e.printStackTrace();
     }
 
-    // Test a query where timeout does not kick in. Set it to 25s
-    stmt.setQueryTimeout(25);
+    // Test a query where timeout does not kick in. Set it to 5s;
+    // show tables should be faster than that
+    stmt.setQueryTimeout(5);
     try {
       stmt.executeQuery("show tables");
     } catch (SQLException e) {
@@ -2365,11 +2202,11 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     stmt.close();
   }
 
-  // A udf which sleeps for 100ms to simulate a long running query
-  public static class SleepUDF extends UDF {
-    public Integer evaluate(final Integer value) {
+  // A udf which sleeps for some number of ms to simulate a long running query
+  public static class SleepMsUDF extends UDF {
+    public Integer evaluate(final Integer value, final Integer ms) {
       try {
-        Thread.sleep(100);
+        Thread.sleep(ms);
       } catch (InterruptedException e) {
         // No-op
       }
@@ -2391,15 +2228,15 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     stmt.execute("set hive.support.concurrency = false");
 
     // Create table
-    stmt.execute("create table " + nonAsciiTableName + " (key int, value string) " +
-        "row format delimited fields terminated by '|'");
+    stmt.execute("create table " + nonAsciiTableName + " (key int, value string) "
+        + "row format delimited fields terminated by '|'");
 
     // Load data
-    stmt.execute("load data local inpath '"
-        + nonAsciiFilePath.toString() + "' into table " + nonAsciiTableName);
+    stmt.execute("load data local inpath '" + nonAsciiFilePath.toString() + "' into table "
+        + nonAsciiTableName);
 
-    ResultSet rs = stmt.executeQuery("select value from " + nonAsciiTableName +  " limit 1");
-    while(rs.next()) {
+    ResultSet rs = stmt.executeQuery("select value from " + nonAsciiTableName + " limit 1");
+    while (rs.next()) {
       String resultValue = rs.getString(1);
       assertTrue(resultValue.equalsIgnoreCase(nonAsciiString));
     }
@@ -2425,7 +2262,8 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
         "Completed compiling command",
         "Starting Semantic Analysis",
         "Semantic Analysis Completed",
-        "Executing command"
+        "Executing command",
+        "Completed executing command"
     };
     String sql = "select count(*) from " + tableName;
 
@@ -2433,7 +2271,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     HiveStatement stmt = (HiveStatement)con.createStatement();
     assertNotNull("Statement is null", stmt);
     stmt.executeQuery(sql);
-    List<String> logs = stmt.getQueryLog(false, 10000);
+    List<String> logs = stmt.getQueryLog(false, 1000000);
     stmt.close();
     verifyFetchedLog(logs, expectedLogs);
 
@@ -2474,7 +2312,6 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
       incrementalLogs.addAll(remainingLogs);
     } while (remainingLogs.size() > 0);
     statement.close();
-
     verifyFetchedLog(incrementalLogs, expectedLogs);
   }
 
@@ -2500,11 +2337,9 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
 
   private void verifyFetchedLog(List<String> logs, String[] expectedLogs) {
     StringBuilder stringBuilder = new StringBuilder();
-
     for (String log : logs) {
       stringBuilder.append(log);
     }
-
     String accumulatedLogs = stringBuilder.toString();
     for (String expectedLog : expectedLogs) {
       assertTrue(accumulatedLogs.contains(expectedLog));
@@ -2536,6 +2371,5 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     } finally {
       mycon.close();
     }
-
   }
 }
