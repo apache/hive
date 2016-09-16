@@ -23,8 +23,8 @@ import java.nio.ByteBuffer;
 import org.apache.hadoop.hive.common.DiskRangeInfo;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
-import org.apache.orc.impl.SettableUncompressedStream;
-import org.apache.orc.impl.BufferChunk;
+import org.apache.hive.orc.impl.SettableUncompressedStream;
+import org.apache.hive.orc.impl.BufferChunk;
 
 /**
  * Stream utility.

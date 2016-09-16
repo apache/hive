@@ -25,8 +25,8 @@ import org.apache.hadoop.hive.common.Pool.PoolObjectHelper;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
-import org.apache.orc.DataReader;
-import org.apache.orc.OrcProto;
+import org.apache.hive.orc.DataReader;
+import org.apache.hive.orc.OrcProto;
 
 /**
  * The interface for reading encoded data from ORC files.

@@ -25,8 +25,8 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.WritableComparable;
-import org.apache.orc.CompressionKind;
-import org.apache.orc.OrcProto;
+import org.apache.hive.orc.CompressionKind;
+import org.apache.hive.orc.OrcProto;
 
 /**
  * Key for OrcFileMergeMapper task. Contains orc file related information that

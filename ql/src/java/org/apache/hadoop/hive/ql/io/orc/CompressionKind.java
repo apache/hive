@@ -24,18 +24,18 @@ package org.apache.hadoop.hive.ql.io.orc;
  * migrate to the org.apache.orc package.
  */
 public enum CompressionKind {
-  NONE(org.apache.orc.CompressionKind.NONE),
-  ZLIB(org.apache.orc.CompressionKind.ZLIB),
-  SNAPPY(org.apache.orc.CompressionKind.SNAPPY),
-  LZO(org.apache.orc.CompressionKind.LZO);
+  NONE(org.apache.hive.orc.CompressionKind.NONE),
+  ZLIB(org.apache.hive.orc.CompressionKind.ZLIB),
+  SNAPPY(org.apache.hive.orc.CompressionKind.SNAPPY),
+  LZO(org.apache.hive.orc.CompressionKind.LZO);
 
-  CompressionKind(org.apache.orc.CompressionKind underlying) {
+  CompressionKind(org.apache.hive.orc.CompressionKind underlying) {
     this.underlying = underlying;
   }
 
-  public org.apache.orc.CompressionKind getUnderlying() {
+  public org.apache.hive.orc.CompressionKind getUnderlying() {
     return underlying;
   }
 
-  private final org.apache.orc.CompressionKind underlying;
+  private final org.apache.hive.orc.CompressionKind underlying;
 }

@@ -24,8 +24,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.io.WritableComparable;
-import org.apache.orc.OrcProto;
-import org.apache.orc.StripeInformation;
+import org.apache.hive.orc.OrcProto;
+import org.apache.hive.orc.StripeInformation;
 
 /**
  * Value for OrcFileMergeMapper. Contains stripe related information for the

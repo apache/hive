@@ -21,7 +21,7 @@ import java.util.concurrent.Callable;
 
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
-import org.apache.orc.TypeDescription;
+import org.apache.hive.orc.TypeDescription;
 
 public interface ReadPipeline extends ConsumerFeedback<ColumnVectorBatch> {
   public Callable<Void> getReadCallable();

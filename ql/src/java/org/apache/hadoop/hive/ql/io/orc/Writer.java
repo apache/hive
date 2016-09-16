@@ -23,7 +23,7 @@ import java.io.IOException;
 /**
  * The HIVE interface for writing ORC files.
  */
-public interface Writer extends org.apache.orc.Writer {
+public interface Writer extends org.apache.hive.orc.Writer {
 
   /**
    * Add a row to the end of the ORC file.

@@ -28,18 +28,18 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 
 import org.apache.hadoop.hive.common.io.DiskRangeList;
-import org.apache.orc.DataReader;
+import org.apache.hive.orc.DataReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator.ObjectEstimator;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
-import org.apache.orc.impl.OrcIndex;
-import org.apache.orc.StripeInformation;
+import org.apache.hive.orc.impl.OrcIndex;
+import org.apache.hive.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
-import org.apache.orc.OrcProto;
+import org.apache.hive.orc.OrcProto;
 import org.junit.Test;
 import org.mockito.Mockito;
 

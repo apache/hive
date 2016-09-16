@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.apache.orc.impl.InStream;
-import org.apache.orc.impl.SchemaEvolution;
+import org.apache.hive.orc.impl.InStream;
+import org.apache.hive.orc.impl.SchemaEvolution;
 
   
 import java.io.IOException;
@@ -54,12 +54,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
-import org.apache.orc.ColumnStatistics;
-import org.apache.orc.OrcUtils;
-import org.apache.orc.StripeInformation;
-import org.apache.orc.StripeStatistics;
-import org.apache.orc.TypeDescription;
-import org.apache.orc.impl.OrcTail;
+import org.apache.hive.orc.ColumnStatistics;
+import org.apache.hive.orc.OrcUtils;
+import org.apache.hive.orc.StripeInformation;
+import org.apache.hive.orc.StripeStatistics;
+import org.apache.hive.orc.TypeDescription;
+import org.apache.hive.orc.impl.OrcTail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -110,7 +110,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.orc.OrcProto;
+import org.apache.hive.orc.OrcProto;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;

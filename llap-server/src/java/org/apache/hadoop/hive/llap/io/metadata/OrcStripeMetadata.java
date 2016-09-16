@@ -30,10 +30,10 @@ import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
-import org.apache.orc.DataReader;
-import org.apache.orc.OrcProto;
-import org.apache.orc.StripeInformation;
-import org.apache.orc.impl.OrcIndex;
+import org.apache.hive.orc.DataReader;
+import org.apache.hive.orc.OrcProto;
+import org.apache.hive.orc.StripeInformation;
+import org.apache.hive.orc.impl.OrcIndex;
 
 public class OrcStripeMetadata extends LlapCacheableBuffer {
   private final OrcBatchKey stripeKey;

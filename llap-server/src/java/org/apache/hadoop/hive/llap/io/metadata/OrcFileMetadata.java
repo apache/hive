@@ -29,11 +29,11 @@ import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
-import org.apache.orc.CompressionKind;
-import org.apache.orc.FileMetadata;
-import org.apache.orc.OrcProto;
-import org.apache.orc.StripeInformation;
-import org.apache.orc.impl.ReaderImpl;
+import org.apache.hive.orc.CompressionKind;
+import org.apache.hive.orc.FileMetadata;
+import org.apache.hive.orc.OrcProto;
+import org.apache.hive.orc.StripeInformation;
+import org.apache.hive.orc.impl.ReaderImpl;
 
 /** ORC file metadata. Currently contains some duplicate info due to how different parts
  * of ORC use different info. Ideally we would get rid of protobuf structs in code beyond reading,

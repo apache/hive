@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.apache.orc.CompressionKind;
-import org.apache.orc.impl.MemoryManager;
-import org.apache.orc.StripeInformation;
+import org.apache.hive.orc.CompressionKind;
+import org.apache.hive.orc.impl.MemoryManager;
+import org.apache.hive.orc.StripeInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -37,10 +37,8 @@ import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger.OriginalReaderPair;
 import org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger.ReaderKey;
 import org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger.ReaderPair;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.IntWritable;
@@ -51,7 +49,7 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.orc.OrcProto;
+import org.apache.hive.orc.OrcProto;
 import org.junit.Test;
 import org.mockito.MockSettings;
 import org.mockito.Mockito;

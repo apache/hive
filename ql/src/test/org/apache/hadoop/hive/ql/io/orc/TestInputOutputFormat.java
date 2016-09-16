@@ -114,7 +114,7 @@ import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
-import org.apache.orc.OrcProto;
+import org.apache.hive.orc.OrcProto;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

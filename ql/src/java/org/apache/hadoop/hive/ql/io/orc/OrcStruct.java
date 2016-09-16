@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Writable;
-import org.apache.orc.OrcProto;
+import org.apache.hive.orc.OrcProto;
 
 import java.io.DataInput;
 import java.io.DataOutput;

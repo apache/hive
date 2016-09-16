@@ -19,12 +19,10 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-
 /**
  * A row-by-row iterator for ORC files.
  */
-public interface RecordReader extends org.apache.orc.RecordReader {
+public interface RecordReader extends org.apache.hive.orc.RecordReader {
   /**
    * Does the reader have more rows available.
    * @return true if there are more rows
