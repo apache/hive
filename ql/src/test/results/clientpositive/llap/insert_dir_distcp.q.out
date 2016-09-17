@@ -1,0 +1,14 @@
+PREHOOK: query: -- see TEZ-2931 for using INFO logging
+
+#### A masked pattern was here ####
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- see TEZ-2931 for using INFO logging
+
+#### A masked pattern was here ####
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+Found 1 items
+#### A masked pattern was here ####
