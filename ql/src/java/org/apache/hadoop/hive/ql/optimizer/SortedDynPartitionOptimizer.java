@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.ReduceField;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -440,7 +441,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       int numPartAndBuck = partitionPositions.size();
 
       keyColsPosInVal.addAll(partitionPositions);
-      if (!bucketColumns.isEmpty()) {
+      if (!bucketColumns.isEmpty() || writeType == Operation.DELETE || writeType == Operation.UPDATE) {
         keyColsPosInVal.add(-1);
         numPartAndBuck += 1;
       }
