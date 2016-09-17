@@ -13,6 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+JIRA_ROOT_URL="https://issues.apache.org"
+
 fail() {
   echo "$@" 1>&2
   exit 1
@@ -46,6 +49,66 @@ get_branch_name() {
 
   echo $branch
   return 0
+}
+
+# Gets the attachment identifier of a JIRA attachment file
+get_attachment_id() {
+  local jira_attachment_url="$1"
+
+  basename $(dirname $jira_attachment_url)
+}
+
+# Fetchs JIRA information, and save it in a file specified as a parameter
+initialize_jira_info() {
+  local jira_issue="$1" 
+  local output_file="$2"
+
+  curl -s -S --location --retry 3 "${JIRA_ROOT_URL}/jira/browse/${jira_issue}" > $output_file
+}
+
+# Checks if a JIRA is in 'Patch Available' status
+is_patch_available() {
+  grep -q "Patch Available" $1
+}
+
+# Checks if a JIRA has 'NO PRECOMMIT TESTS' enabled
+is_check_no_precommit_tests_set() {
+  grep -q "NO PRECOMMIT TESTS" $1
+}
+
+# Gets the URL for the JIRA patch attached
+get_jira_patch_url() {
+  grep -o '"/jira/secure/attachment/[0-9]*/[^"]*' $1 | grep -v -e 'htm[l]*$' | sort | tail -1 | \
+    grep -o '/jira/secure/attachment/[0-9]*/[^"]*'
+}
+
+# Checks if the patch was already tested
+is_patch_already_tested() {
+  local attachment_id="$1"
+  local test_handle="$2"
+  local jira_info_file="$3"
+
+  grep -q "ATTACHMENT ID: $attachment_id $test_handle" $jira_info_file
+}
+
+# Gets the branch profile attached to the patch
+get_branch_profile() {
+  local jira_patch_url="$1"
+  local branch_name=`get_branch_name $(basename $jira_patch_url)`
+
+  if [ -n "$branch_name" ]; then
+    shopt -s nocasematch
+    if [[ $branch_name =~ (mr1|mr2)$ ]]; then
+      echo $branch_name
+    else
+      echo ${branch_name}-mr2
+    fi
+  fi
+}
+
+# Checks if a JIRA patch has 'CLEAR LIBRARY CACHE' enabled
+is_clear_cache_set() {
+  grep -q "CLEAR LIBRARY CACHE" $1
 }
 
 # Parses the JIRA/patch to find relavent information.
