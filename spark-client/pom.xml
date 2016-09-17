@@ -33,7 +33,6 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <scala.binary.version>2.10</scala.binary.version>
     <test.redirectToFile>true</test.redirectToFile>
   </properties>
 

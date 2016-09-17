@@ -282,9 +282,8 @@ public class TestHiveKVResultCache {
 
     resultList.init(rows, threshold, separate, prefix1, prefix2);
     long startTime = System.currentTimeMillis();
-    Iterator it = resultList.iterator();
-    while (it.hasNext()) {
-      Object item = it.next();
+    while (resultList.hasNext()) {
+      Object item = resultList.next();
       if (output != null) {
         output.add((Tuple2<HiveKey, BytesWritable>)item);
       }

@@ -24,15 +24,15 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.spark.JavaSparkListener;
 import org.apache.spark.executor.TaskMetrics;
+import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.scheduler.SparkListenerJobStart;
 import org.apache.spark.scheduler.SparkListenerTaskEnd;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-public class JobMetricsListener extends JavaSparkListener {
+public class JobMetricsListener extends SparkListener {
 
   private static final Logger LOG = LoggerFactory.getLogger(JobMetricsListener.class);
 
