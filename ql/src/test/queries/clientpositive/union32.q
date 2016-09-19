@@ -51,13 +51,13 @@ SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key) a
 -- Test union with join on the left selecting multiple columns
 EXPLAIN
 SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
 UNION ALL
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
 ;
 
 SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
 UNION ALL
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
 ;
@@ -67,11 +67,11 @@ EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
 UNION ALL
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
 ;
 
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
 UNION ALL
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
 ;

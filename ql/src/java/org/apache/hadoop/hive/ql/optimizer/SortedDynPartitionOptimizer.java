@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.ReduceField;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -184,6 +185,7 @@ public class SortedDynPartitionOptimizer extends Transform {
           destTable.getCols());
       List<Integer> sortPositions = null;
       List<Integer> sortOrder = null;
+      ArrayList<ExprNodeDesc> bucketColumns;
       if (fsOp.getConf().getWriteType() == AcidUtils.Operation.UPDATE ||
           fsOp.getConf().getWriteType() == AcidUtils.Operation.DELETE) {
         // When doing updates and deletes we always want to sort on the rowid because the ACID
@@ -191,6 +193,7 @@ public class SortedDynPartitionOptimizer extends Transform {
         // ignore whatever comes from the table and enforce this sort order instead.
         sortPositions = Arrays.asList(0);
         sortOrder = Arrays.asList(1); // 1 means asc, could really use enum here in the thrift if
+        bucketColumns = new ArrayList<>(); // Bucketing column is already present in ROW__ID, which is specially handled in ReduceSink
       } else {
         if (!destTable.getSortCols().isEmpty()) {
           // Sort columns specified by table
@@ -202,6 +205,8 @@ public class SortedDynPartitionOptimizer extends Transform {
           sortOrder = Lists.newArrayList();
           inferSortPositions(fsParent, sortPositions, sortOrder);
         }
+        List<ColumnInfo> colInfos = fsParent.getSchema().getSignature();
+        bucketColumns = getPositionsToExprNodes(bucketPositions, colInfos);
       }
       List<Integer> sortNullOrder = new ArrayList<Integer>();
       for (int order : sortOrder) {
@@ -212,8 +217,6 @@ public class SortedDynPartitionOptimizer extends Transform {
       for (int i : sortOrder) LOG.debug("sort order " + i);
       for (int i : sortNullOrder) LOG.debug("sort null order " + i);
       List<Integer> partitionPositions = getPartitionPositions(dpCtx, fsParent.getSchema());
-      List<ColumnInfo> colInfos = fsParent.getSchema().getSignature();
-      ArrayList<ExprNodeDesc> bucketColumns = getPositionsToExprNodes(bucketPositions, colInfos);
 
       // update file sink descriptor
       fsOp.getConf().setMultiFileSpray(false);
@@ -438,7 +441,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       int numPartAndBuck = partitionPositions.size();
 
       keyColsPosInVal.addAll(partitionPositions);
-      if (!bucketColumns.isEmpty()) {
+      if (!bucketColumns.isEmpty() || writeType == Operation.DELETE || writeType == Operation.UPDATE) {
         keyColsPosInVal.add(-1);
         numPartAndBuck += 1;
       }

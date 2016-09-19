@@ -120,17 +120,14 @@ public class TestBinarySortableFast extends TestCase {
                   /* useExternalBuffer */ false,
                   columnSortOrderIsDesc);
 
-      if (useIncludeColumns) {
-        binarySortableDeserializeRead.setColumnsToInclude(columnsToInclude);
-      }
-
       BytesWritable bytesWritable = serializeWriteBytes[i];
       binarySortableDeserializeRead.set(
           bytesWritable.getBytes(), 0, bytesWritable.getLength());
 
       for (int index = 0; index < columnCount; index++) {
-        if (index >= writeColumnCount ||
-            (useIncludeColumns && !columnsToInclude[index])) {
+        if (useIncludeColumns && !columnsToInclude[index]) {
+          binarySortableDeserializeRead.skipNextField();
+        } else if (index >= writeColumnCount) {
           // Should come back a null.
           VerifyFast.verifyDeserializeRead(binarySortableDeserializeRead, primitiveTypeInfos[index], null);
         } else {
@@ -138,9 +135,9 @@ public class TestBinarySortableFast extends TestCase {
           VerifyFast.verifyDeserializeRead(binarySortableDeserializeRead, primitiveTypeInfos[index], writable);
         }
       }
-      binarySortableDeserializeRead.extraFieldsCheck();
-      TestCase.assertTrue(!binarySortableDeserializeRead.readBeyondConfiguredFieldsWarned());
-      TestCase.assertTrue(!binarySortableDeserializeRead.bufferRangeHasExtraDataWarned());
+      if (writeColumnCount == columnCount) {
+        TestCase.assertTrue(binarySortableDeserializeRead.isEndOfInputReached());
+      }
 
       /*
        * Clip off one byte and expect to get an EOFException on the write field.
@@ -150,10 +147,6 @@ public class TestBinarySortableFast extends TestCase {
               primitiveTypeInfos,
               /* useExternalBuffer */ false,
               columnSortOrderIsDesc);
-
-      if (useIncludeColumns) {
-        binarySortableDeserializeRead2.setColumnsToInclude(columnsToInclude);
-      }
 
       binarySortableDeserializeRead2.set(
           bytesWritable.getBytes(), 0, bytesWritable.getLength() - 1);  // One fewer byte.
@@ -172,7 +165,7 @@ public class TestBinarySortableFast extends TestCase {
           TestCase.assertTrue(threw);
         } else {
           if (useIncludeColumns && !columnsToInclude[index]) {
-            VerifyFast.verifyDeserializeRead(binarySortableDeserializeRead2, primitiveTypeInfos[index], null);
+            binarySortableDeserializeRead2.skipNextField();
           } else {
             VerifyFast.verifyDeserializeRead(binarySortableDeserializeRead2, primitiveTypeInfos[index], writable);
           }
@@ -258,16 +251,14 @@ public class TestBinarySortableFast extends TestCase {
                   /* useExternalBuffer */ false,
                   columnSortOrderIsDesc);
 
-      if (useIncludeColumns) {
-        binarySortableDeserializeRead.setColumnsToInclude(columnsToInclude);
-      }
 
       BytesWritable bytesWritable = serdeBytes[i];
       binarySortableDeserializeRead.set(bytesWritable.getBytes(), 0, bytesWritable.getLength());
 
       for (int index = 0; index < columnCount; index++) {
-        if (index >= writeColumnCount ||
-            (useIncludeColumns && !columnsToInclude[index])) {
+        if (useIncludeColumns && !columnsToInclude[index]) {
+          binarySortableDeserializeRead.skipNextField();
+        } else if (index >= writeColumnCount) {
           // Should come back a null.
           VerifyFast.verifyDeserializeRead(binarySortableDeserializeRead, primitiveTypeInfos[index], null);
         } else {
@@ -275,9 +266,9 @@ public class TestBinarySortableFast extends TestCase {
           VerifyFast.verifyDeserializeRead(binarySortableDeserializeRead, primitiveTypeInfos[index], writable);
         }
       }
-      binarySortableDeserializeRead.extraFieldsCheck();
-      TestCase.assertTrue(!binarySortableDeserializeRead.readBeyondConfiguredFieldsWarned());
-      TestCase.assertTrue(!binarySortableDeserializeRead.bufferRangeHasExtraDataWarned());
+      if (writeColumnCount == columnCount) {
+        TestCase.assertTrue(binarySortableDeserializeRead.isEndOfInputReached());
+      }
     }
   }
 

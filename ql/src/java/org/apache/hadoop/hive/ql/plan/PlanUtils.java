@@ -380,6 +380,47 @@ public final class PlanUtils {
     return ret;
   }
 
+ /**
+   * Generate a table descriptor from a createViewDesc.
+   */
+  public static TableDesc getTableDesc(CreateViewDesc crtViewDesc, String cols, String colTypes) {
+    TableDesc ret;
+
+    try {
+      Class serdeClass = JavaUtils.loadClass(crtViewDesc.getSerde());
+      ret = getTableDesc(serdeClass, new String(LazySerDeParameters.DefaultSeparators), cols,
+          colTypes, false,  false);
+
+      // set other table properties
+      /*
+      TODO - I don't think I need any of this
+      Properties properties = ret.getProperties();
+
+      if (crtTblDesc.getTableName() != null && crtTblDesc.getDatabaseName() != null) {
+        properties.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
+            crtTblDesc.getTableName());
+      }
+
+      if (crtTblDesc.getTblProps() != null) {
+        properties.putAll(crtTblDesc.getTblProps());
+      }
+       */
+
+      // replace the default input & output file format with those found in
+      // crtTblDesc
+      Class<? extends InputFormat> inClass =
+          (Class<? extends InputFormat>)JavaUtils.loadClass(crtViewDesc.getInputFormat());
+      Class<? extends HiveOutputFormat> outClass =
+          (Class<? extends HiveOutputFormat>)JavaUtils.loadClass(crtViewDesc.getOutputFormat());
+
+      ret.setInputFileFormatClass(inClass);
+      ret.setOutputFileFormatClass(outClass);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException("Unable to find class in getTableDesc: " + e.getMessage(), e);
+    }
+    return ret;
+  }
+
   /**
    * Generate the table descriptor for reduce key.
    */

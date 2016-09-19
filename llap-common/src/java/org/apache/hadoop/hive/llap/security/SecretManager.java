@@ -38,6 +38,7 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.delegation.DelegationKey;
+import org.apache.hadoop.security.token.delegation.HiveDelegationTokenSupport;
 import org.apache.hadoop.security.token.delegation.ZKDelegationTokenSecretManager;
 import org.apache.hadoop.security.token.delegation.web.DelegationTokenManager;
 import org.apache.zookeeper.data.ACL;
@@ -119,8 +120,12 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
   }
 
   @Override
-  public synchronized DelegationKey getCurrentKey() {
-    return allKeys.get(getCurrentKeyId());
+  public synchronized DelegationKey getCurrentKey() throws IOException {
+    DelegationKey currentKey = getDelegationKey(getCurrentKeyId());
+    if (currentKey != null) return currentKey;
+    // Try to roll the key if none is found.
+    HiveDelegationTokenSupport.rollMasterKey(this);
+    return getDelegationKey(getCurrentKeyId());
   }
 
   @Override

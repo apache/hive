@@ -911,13 +911,13 @@ SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key) a
 -- Test union with join on the left selecting multiple columns
 EXPLAIN
 SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS STRING) AS value FROM t1 a JOIN t2 b ON a.key = b.key
 UNION DISTINCT
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
 ;
 
 SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
 UNION DISTINCT
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
 ;
@@ -927,13 +927,13 @@ EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
 UNION DISTINCT
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
 ;
 
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
 UNION DISTINCT
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS DOUBLE) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
 ;
 -- union33.q
 
@@ -950,7 +950,7 @@ SELECT key, value FROM (
 	SELECT key, value FROM src 
 	WHERE key = 0
 UNION DISTINCT
- 	SELECT key, COUNT(*) AS value FROM src
+ 	SELECT key, cast(COUNT(*) as string) AS value FROM src
  	GROUP BY key
 )a;
  
@@ -959,7 +959,7 @@ SELECT key, value FROM (
 	SELECT key, value FROM src 
 	WHERE key = 0
 UNION DISTINCT
- 	SELECT key, COUNT(*) AS value FROM src
+ 	SELECT key, cast(COUNT(*) as string) AS value FROM src
  	GROUP BY key
 )a;
  
@@ -967,7 +967,7 @@ SELECT COUNT(*) FROM test_src;
  
 EXPLAIN INSERT OVERWRITE TABLE test_src 
 SELECT key, value FROM (
-	SELECT key, COUNT(*) AS value FROM src
+	SELECT key, cast(COUNT(*) as string) AS value FROM src
  	GROUP BY key
 UNION DISTINCT
  	SELECT key, value FROM src 
@@ -976,7 +976,7 @@ UNION DISTINCT
  
 INSERT OVERWRITE TABLE test_src 
 SELECT key, value FROM (
-	SELECT key, COUNT(*) AS value FROM src
+	SELECT key, cast(COUNT(*) as string) AS value FROM src
  	GROUP BY key
 UNION DISTINCT
  	SELECT key, value FROM src 

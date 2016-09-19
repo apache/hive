@@ -3795,7 +3795,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           if (dropTbl.getIfExists()) {
             return;
           }
-          throw new HiveException("Cannot drop a view with DROP TABLE");
+          if (dropTbl.getExpectMaterializedView()) {
+            throw new HiveException("Cannot drop a view with DROP MATERIALIZED VIEW");
+          } else {
+            throw new HiveException("Cannot drop a view with DROP TABLE");
+          }
+        }
+      } else if (tbl.isMaterializedView()) {
+        if (!dropTbl.getExpectMaterializedView()) {
+          if (dropTbl.getIfExists()) {
+            return;
+          }
+          if (dropTbl.getExpectView()) {
+            throw new HiveException("Cannot drop a materialized view with DROP VIEW");
+          } else {
+            throw new HiveException("Cannot drop a materialized view with DROP TABLE");
+          }
         }
       } else {
         if (dropTbl.getExpectView()) {
@@ -3804,6 +3819,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           }
           throw new HiveException(
               "Cannot drop a base table with DROP VIEW");
+        } else if (dropTbl.getExpectMaterializedView()) {
+          if (dropTbl.getIfExists()) {
+            return;
+          }
+          throw new HiveException(
+              "Cannot drop a base table with DROP MATERIALIZED VIEW");
         }
       }
     }
@@ -4041,7 +4062,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // Get the existing table
     Table oldtbl = db.getTable(crtTbl.getLikeTableName());
     Table tbl;
-    if (oldtbl.getTableType() == TableType.VIRTUAL_VIEW) {
+    if (oldtbl.getTableType() == TableType.VIRTUAL_VIEW ||
+        oldtbl.getTableType() == TableType.MATERIALIZED_VIEW) {
       String targetTableName = crtTbl.getTableName();
       tbl=db.newTable(targetTableName);
 
@@ -4187,39 +4209,50 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int createView(Hive db, CreateViewDesc crtView) throws HiveException {
     Table oldview = db.getTable(crtView.getViewName(), false);
     if (crtView.getOrReplace() && oldview != null) {
-      // replace existing view
-      // remove the existing partition columns from the field schema
-      oldview.setViewOriginalText(crtView.getViewOriginalText());
-      oldview.setViewExpandedText(crtView.getViewExpandedText());
-      oldview.setFields(crtView.getSchema());
-      if (crtView.getComment() != null) {
-        oldview.setProperty("comment", crtView.getComment());
+      if (!crtView.isMaterialized()) {
+        // replace existing view
+        // remove the existing partition columns from the field schema
+        oldview.setViewOriginalText(crtView.getViewOriginalText());
+        oldview.setViewExpandedText(crtView.getViewExpandedText());
+        oldview.setFields(crtView.getSchema());
+        if (crtView.getComment() != null) {
+          oldview.setProperty("comment", crtView.getComment());
+        }
+        if (crtView.getTblProps() != null) {
+          oldview.getTTable().getParameters().putAll(crtView.getTblProps());
+        }
+        oldview.setPartCols(crtView.getPartCols());
+        if (crtView.getInputFormat() != null) {
+          oldview.setInputFormatClass(crtView.getInputFormat());
+        }
+        if (crtView.getOutputFormat() != null) {
+          oldview.setOutputFormatClass(crtView.getOutputFormat());
+        }
+        oldview.checkValidity(null);
+        try {
+          db.alterTable(crtView.getViewName(), oldview, null);
+        } catch (InvalidOperationException e) {
+          throw new HiveException(e);
+        }
+        work.getOutputs().add(new WriteEntity(oldview, WriteEntity.WriteType.DDL_NO_LOCK));
+      } else {
+        // This is a replace, so we need an exclusive lock
+        work.getOutputs().add(new WriteEntity(oldview, WriteEntity.WriteType.DDL_EXCLUSIVE));
       }
-      if (crtView.getTblProps() != null) {
-        oldview.getTTable().getParameters().putAll(crtView.getTblProps());
-      }
-      oldview.setPartCols(crtView.getPartCols());
-      if (crtView.getInputFormat() != null) {
-        oldview.setInputFormatClass(crtView.getInputFormat());
-      }
-      if (crtView.getOutputFormat() != null) {
-        oldview.setOutputFormatClass(crtView.getOutputFormat());
-      }
-      oldview.checkValidity(null);
-      try {
-        db.alterTable(crtView.getViewName(), oldview, null);
-      } catch (InvalidOperationException e) {
-        throw new HiveException(e);
-      }
-      work.getOutputs().add(new WriteEntity(oldview, WriteEntity.WriteType.DDL_NO_LOCK));
     } else {
       // create new view
       Table tbl = db.newTable(crtView.getViewName());
-      tbl.setTableType(TableType.VIRTUAL_VIEW);
+      if (crtView.isMaterialized()) {
+        tbl.setTableType(TableType.MATERIALIZED_VIEW);
+      } else {
+        tbl.setTableType(TableType.VIRTUAL_VIEW);
+      }
       tbl.setSerializationLib(null);
       tbl.clearSerDeInfo();
       tbl.setViewOriginalText(crtView.getViewOriginalText());
-      tbl.setViewExpandedText(crtView.getViewExpandedText());
+      if (!crtView.isMaterialized()) {
+        tbl.setViewExpandedText(crtView.getViewExpandedText());
+      }
       tbl.setFields(crtView.getSchema());
       if (crtView.getComment() != null) {
         tbl.setProperty("comment", crtView.getComment());
@@ -4235,8 +4268,21 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (crtView.getInputFormat() != null) {
         tbl.setInputFormatClass(crtView.getInputFormat());
       }
+
       if (crtView.getOutputFormat() != null) {
         tbl.setOutputFormatClass(crtView.getOutputFormat());
+      }
+
+      if (crtView.isMaterialized()) {
+        if (crtView.getLocation() != null) {
+          tbl.setDataLocation(new Path(crtView.getLocation()));
+        }
+        // Short circuit the checks that the input format is valid, this is configured for all
+        // materialized views and doesn't change so we don't need to check it constantly.
+        tbl.getSd().setInputFormat(crtView.getInputFormat());
+        tbl.getSd().setOutputFormat(crtView.getOutputFormat());
+        tbl.getSd().setSerdeInfo(new SerDeInfo(crtView.getSerde(), crtView.getSerde(),
+                crtView.getSerdeProps()));
       }
 
       db.createTable(tbl, crtView.getIfNotExists());

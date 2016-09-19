@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
+import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc.SampleDesc;
@@ -116,6 +117,7 @@ public class ParseContext {
 
   private AnalyzeRewriteContext analyzeRewrite;
   private CreateTableDesc createTableDesc;
+  private CreateViewDesc createViewDesc;
   private boolean reduceSinkAddedBySortedDynPartition;
 
   private Map<SelectOperator, Table> viewProjectToViewSchema;  
@@ -129,20 +131,14 @@ public class ParseContext {
 
   /**
    * @param conf
-   * @param qb
-   *          current QB
-   * @param ast
-   *          current parse tree
    * @param opToPartPruner
    *          map from table scan operator to partition pruner
    * @param opToPartList
    * @param topOps
    *          list of operators for the top query
-   * @param opParseCtx
-   *          operator parse context - contains a mapping from operator to
-   *          operator parse state (row resolver etc.)
    * @param joinOps
    *          context needed join processing (map join specifically)
+   * @param smbMapJoinOps
    * @param loadTableWork
    *          list of destination tables being loaded
    * @param loadFileWork
@@ -154,13 +150,19 @@ public class ParseContext {
    * @param destTableId
    * @param listMapJoinOpsNoReducer
    *          list of map join operators with no reducer
-   * @param groupOpToInputTables
    * @param prunedPartitions
    * @param opToSamplePruner
    *          operator to sample pruner map
    * @param globalLimitCtx
    * @param nameToSplitSample
    * @param rootTasks
+   * @param opToPartToSkewedPruner
+   * @param viewAliasToInput
+   * @param reduceSinkOperatorsAddedByEnforceBucketingSorting
+   * @param analyzeRewrite
+   * @param createTableDesc
+   * @param createViewDesc
+   * @param queryProperties
    */
   public ParseContext(
       QueryState queryState,
@@ -183,8 +185,8 @@ public class ParseContext {
       Map<String, ReadEntity> viewAliasToInput,
       List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting,
       AnalyzeRewriteContext analyzeRewrite, CreateTableDesc createTableDesc,
-      QueryProperties queryProperties, Map<SelectOperator, Table> viewProjectToTableSchema,
-      Set<FileSinkDesc> acidFileSinks) {
+      CreateViewDesc createViewDesc, QueryProperties queryProperties,
+      Map<SelectOperator, Table> viewProjectToTableSchema, Set<FileSinkDesc> acidFileSinks) {
     this.queryState = queryState;
     this.conf = queryState.getConf();
     this.opToPartPruner = opToPartPruner;
@@ -213,6 +215,7 @@ public class ParseContext {
         reduceSinkOperatorsAddedByEnforceBucketingSorting;
     this.analyzeRewrite = analyzeRewrite;
     this.createTableDesc = createTableDesc;
+    this.createViewDesc = createViewDesc;
     this.queryProperties = queryProperties;
     this.viewProjectToViewSchema = viewProjectToTableSchema;
     this.needViewColumnAuthorization = viewProjectToTableSchema != null
@@ -572,6 +575,10 @@ public class ParseContext {
 
   public void setCreateTable(CreateTableDesc createTableDesc) {
     this.createTableDesc = createTableDesc;
+  }
+
+  public CreateViewDesc getCreateViewDesc() {
+    return createViewDesc;
   }
 
   public void setReduceSinkAddedBySortedDynPartition(

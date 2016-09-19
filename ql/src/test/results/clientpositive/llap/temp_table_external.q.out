@@ -1,0 +1,34 @@
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp_table_external
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp_table_external
+PREHOOK: query: select * from temp_table_external
+PREHOOK: type: QUERY
+PREHOOK: Input: default@temp_table_external
+#### A masked pattern was here ####
+POSTHOOK: query: select * from temp_table_external
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temp_table_external
+#### A masked pattern was here ####
+NULL	35
+48	NULL
+100	100
+PREHOOK: query: -- Even after we drop the table, the data directory should still be there
+drop table temp_table_external
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@temp_table_external
+PREHOOK: Output: default@temp_table_external
+POSTHOOK: query: -- Even after we drop the table, the data directory should still be there
+drop table temp_table_external
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@temp_table_external
+POSTHOOK: Output: default@temp_table_external
+Found 1 items
+#### A masked pattern was here ####

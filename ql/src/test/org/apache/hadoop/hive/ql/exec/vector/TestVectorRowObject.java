@@ -69,7 +69,7 @@ public class TestVectorRowObject extends TestCase {
     VectorExtractRow vectorExtractRow = new VectorExtractRow();
     vectorExtractRow.init(source.typeNames());
 
-    Object[][] randomRows = source.randomRows(100000);
+    Object[][] randomRows = source.randomRows(10000);
     if (sort) {
       source.sort(randomRows);
     }

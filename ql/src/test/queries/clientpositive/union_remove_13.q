@@ -34,7 +34,7 @@ SELECT * FROM
 (
 select key, count(1) as `values` from inputTbl1 group by key
 union all
-select a.key as key, b.val as `values`
+select a.key as key, cast(b.val as bigint) as `values`
 FROM inputTbl1 a join inputTbl1 b on a.key=b.key
 )c;
 
@@ -43,7 +43,7 @@ SELECT * FROM
 (
 select key, count(1) as `values` from inputTbl1 group by key
 union all
-select a.key as key, b.val as `values`
+select a.key as key, cast(b.val as bigint) as `values`
 FROM inputTbl1 a join inputTbl1 b on a.key=b.key
 )c;
 

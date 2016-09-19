@@ -250,6 +250,8 @@ TOK_ALTERVIEW_DROPPROPERTIES;
 TOK_ALTERVIEW_ADDPARTS;
 TOK_ALTERVIEW_DROPPARTS;
 TOK_ALTERVIEW_RENAME;
+TOK_CREATE_MATERIALIZED_VIEW;
+TOK_DROP_MATERIALIZED_VIEW;
 TOK_VIEWPARTCOLS;
 TOK_EXPLAIN;
 TOK_EXPLAIN_SQ_REWRITE;
@@ -784,7 +786,9 @@ ddlStatement
     | showStatement
     | metastoreCheck
     | createViewStatement
+    | createMaterializedViewStatement
     | dropViewStatement
+    | dropMaterializedViewStatement
     | createFunctionStatement
     | createMacroStatement
     | createIndexStatement
@@ -1778,6 +1782,25 @@ createViewStatement
         )
     ;
 
+createMaterializedViewStatement
+@init {
+    pushMsg("create materialized view statement", state);
+}
+@after { popMsg(state); }
+    : KW_CREATE KW_MATERIALIZED KW_VIEW (ifNotExists)? name=tableName
+        tableComment? tableRowFormat? tableFileFormat? tableLocation?
+        tablePropertiesPrefixed? KW_AS selectStatementWithCTE
+    -> ^(TOK_CREATE_MATERIALIZED_VIEW $name 
+         ifNotExists?
+         tableComment?
+         tableRowFormat?
+         tableFileFormat?
+         tableLocation?
+         tablePropertiesPrefixed?
+         selectStatementWithCTE
+        )
+    ;
+
 viewPartition
 @init { pushMsg("view partition specification", state); }
 @after { popMsg(state); }
@@ -1789,6 +1812,12 @@ dropViewStatement
 @init { pushMsg("drop view statement", state); }
 @after { popMsg(state); }
     : KW_DROP KW_VIEW ifExists? viewName -> ^(TOK_DROPVIEW viewName ifExists?)
+    ;
+
+dropMaterializedViewStatement
+@init { pushMsg("drop materialized view statement", state); }
+@after { popMsg(state); }
+    : KW_DROP KW_MATERIALIZED KW_VIEW ifExists? viewName -> ^(TOK_DROP_MATERIALIZED_VIEW viewName ifExists?)
     ;
 
 showFunctionIdentifier

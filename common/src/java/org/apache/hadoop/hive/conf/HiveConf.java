@@ -1104,10 +1104,15 @@ public class HiveConf extends Configuration {
     HIVEDEFAULTFILEFORMAT("hive.default.fileformat", "TextFile", new StringSet("TextFile", "SequenceFile", "RCfile", "ORC"),
         "Default file format for CREATE TABLE statement. Users can explicitly override it by CREATE TABLE ... STORED AS [FORMAT]"),
     HIVEDEFAULTMANAGEDFILEFORMAT("hive.default.fileformat.managed", "none",
-  new StringSet("none", "TextFile", "SequenceFile", "RCfile", "ORC"),
-  "Default file format for CREATE TABLE statement applied to managed tables only. External tables will be \n" +
-  "created with format specified by hive.default.fileformat. Leaving this null will result in using hive.default.fileformat \n" +
-  "for all tables."),
+        new StringSet("none", "TextFile", "SequenceFile", "RCfile", "ORC"),
+        "Default file format for CREATE TABLE statement applied to managed tables only. External tables will be \n" +
+        "created with format specified by hive.default.fileformat. Leaving this null will result in using hive.default.fileformat \n" +
+        "for all tables."),
+    HIVEMATERIALIZEDVIEWFILEFORMAT("hive.materializedview.fileformat", "ORC",
+        new StringSet("none", "TextFile", "SequenceFile", "RCfile", "ORC"),
+        "Default file format for CREATE MATERIALIZED VIEW statement"),
+    HIVEMATERIALIZEDVIEWSERDE("hive.materializedview.serde",
+        "org.apache.hadoop.hive.ql.io.orc.OrcSerde", "Default SerDe used for materialized views"),
     HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", "SequenceFile", new StringSet("TextFile", "SequenceFile", "RCfile", "Llap"),
         "Default file format for storing result of the query."),
     HIVECHECKFILEFORMAT("hive.fileformat.check", true, "Whether to check file format or not when loading data files"),

@@ -1,0 +1,19 @@
+PREHOOK: query: create table dmv_basetable (a int, b varchar(256), c decimal(10,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dmv_basetable
+POSTHOOK: query: create table dmv_basetable (a int, b varchar(256), c decimal(10,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dmv_basetable
+PREHOOK: query: create materialized view dmv_mat_view as select a, b, c from dmv_basetable
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@dmv_basetable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dmv_mat_view
+POSTHOOK: query: create materialized view dmv_mat_view as select a, b, c from dmv_basetable
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@dmv_basetable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dmv_mat_view
+FAILED: SemanticException [Error 10402]: You cannot update or delete records in a view

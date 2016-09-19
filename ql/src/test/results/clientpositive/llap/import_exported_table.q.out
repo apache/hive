@@ -1,0 +1,28 @@
+#### A masked pattern was here ####
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+#### A masked pattern was here ####
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@j1_41
+PREHOOK: query: DESCRIBE j1_41
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@j1_41
+POSTHOOK: query: DESCRIBE j1_41
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@j1_41
+a                   	string              	                    
+b                   	int                 	                    
+PREHOOK: query: SELECT * from j1_41
+PREHOOK: type: QUERY
+PREHOOK: Input: default@j1_41
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from j1_41
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@j1_41
+#### A masked pattern was here ####
+johndee	1
+burks	2
+#### A masked pattern was here ####

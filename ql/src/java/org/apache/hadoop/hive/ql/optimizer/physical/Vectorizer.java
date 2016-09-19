@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Pattern;
@@ -648,11 +649,27 @@ public class Vectorizer implements PhysicalPlanResolver {
         if (inputFileFormatClassName.equals(TextInputFormat.class.getName()) &&
             deserializerClassName.equals(LazySimpleSerDe.class.getName())) {
 
-          pd.setVectorPartitionDesc(
-              VectorPartitionDesc.createVectorDeserialize(
-                  inputFileFormatClassName, VectorDeserializeType.LAZY_SIMPLE));
+          Properties properties = pd.getTableDesc().getProperties();
+          String lastColumnTakesRestString =
+              properties.getProperty(serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST);
+          boolean lastColumnTakesRest =
+              (lastColumnTakesRestString != null &&
+              lastColumnTakesRestString.equalsIgnoreCase("true"));
+          if (lastColumnTakesRest) {
 
-          return true;
+            // If row mode will not catch this, then inform.
+            if (useRowDeserialize) {
+              LOG.info("Input format: " + inputFileFormatClassName + " cannot be vectorized" +
+                  " when " + serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST + "is true");
+              return false;
+            }
+          } else {
+            pd.setVectorPartitionDesc(
+                VectorPartitionDesc.createVectorDeserialize(
+                    inputFileFormatClassName, VectorDeserializeType.LAZY_SIMPLE));
+
+            return true;
+          }
         } else if (inputFileFormatClassName.equals(SequenceFileInputFormat.class.getName()) &&
             deserializerClassName.equals(LazyBinarySerDe.class.getName())) {
 

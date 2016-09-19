@@ -47,6 +47,7 @@ public class ClassicTableTypeMapping implements TableTypeMapping {
   public enum ClassicTableTypes {
     TABLE,
     VIEW,
+    MATERIALIZED_VIEW,
   }
 
   private final Map<String, String> hiveToClientMap = new HashMap<String, String>();
@@ -56,10 +57,14 @@ public class ClassicTableTypeMapping implements TableTypeMapping {
     hiveToClientMap.put(TableType.MANAGED_TABLE.name(), ClassicTableTypes.TABLE.name());
     hiveToClientMap.put(TableType.EXTERNAL_TABLE.name(), ClassicTableTypes.TABLE.name());
     hiveToClientMap.put(TableType.VIRTUAL_VIEW.name(), ClassicTableTypes.VIEW.name());
+    hiveToClientMap.put(TableType.MATERIALIZED_VIEW.toString(),
+            ClassicTableTypes.MATERIALIZED_VIEW.toString());
 
     clientToHiveMap.putAll(ClassicTableTypes.TABLE.name(), Arrays.asList(
         TableType.MANAGED_TABLE.name(), TableType.EXTERNAL_TABLE.name()));
     clientToHiveMap.put(ClassicTableTypes.VIEW.name(), TableType.VIRTUAL_VIEW.name());
+    clientToHiveMap.put(ClassicTableTypes.MATERIALIZED_VIEW.toString(),
+            TableType.MATERIALIZED_VIEW.toString());
   }
 
   @Override

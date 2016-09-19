@@ -209,8 +209,11 @@ public class Table implements Serializable {
     }
 
     if (isView()) {
+      assert (getViewOriginalText() != null);
+      assert (getViewExpandedText() != null);
+    } else if (isMaterializedView()) {
       assert(getViewOriginalText() != null);
-      assert(getViewExpandedText() != null);
+      assert(getViewExpandedText() == null);
     } else {
       assert(getViewOriginalText() == null);
       assert(getViewExpandedText() == null);
@@ -822,6 +825,10 @@ public class Table implements Serializable {
    */
   public boolean isView() {
     return TableType.VIRTUAL_VIEW.equals(getTableType());
+  }
+
+  public boolean isMaterializedView() {
+    return TableType.MATERIALIZED_VIEW.equals(getTableType());
   }
 
   /**

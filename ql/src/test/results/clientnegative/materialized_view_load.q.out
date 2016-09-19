@@ -1,0 +1,19 @@
+PREHOOK: query: create table lmv_basetable (a int, b varchar(256), c decimal(10,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lmv_basetable
+POSTHOOK: query: create table lmv_basetable (a int, b varchar(256), c decimal(10,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lmv_basetable
+PREHOOK: query: create materialized view lmv_mat_view as select a, b, c from lmv_basetable
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@lmv_basetable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lmv_mat_view
+POSTHOOK: query: create materialized view lmv_mat_view as select a, b, c from lmv_basetable
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@lmv_basetable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lmv_mat_view
+FAILED: SemanticException [Error 10090]: A view cannot be used as target table for LOAD or INSERT

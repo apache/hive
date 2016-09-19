@@ -79,6 +79,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.io.IOUtils;
+import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -808,7 +809,7 @@ public class CliDriver {
     }
 
     // add shutdown hook to flush the history to history file
-    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+    ShutdownHookManager.addShutdownHook(new Runnable() {
       @Override
       public void run() {
         History h = reader.getHistory();
@@ -820,7 +821,7 @@ public class CliDriver {
           }
         }
       }
-    }));
+    });
   }
 
   protected void setupConsoleReader() throws IOException {

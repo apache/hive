@@ -257,6 +257,8 @@ public class Operation2Privilege {
 (OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.DROPVIEW, PrivRequirement.newIOPrivRequirement
 (OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.DROP_MATERIALIZED_VIEW, PrivRequirement.newIOPrivRequirement
+(OWNER_PRIV_AR, OWNER_PRIV_AR));
 
     op2Priv.put(HiveOperationType.ANALYZE_TABLE, PrivRequirement.newIOPrivRequirement
 (arr(SQLPrivTypeGrant.SELECT_NOGRANT, SQLPrivTypeGrant.INSERT_NOGRANT), null));
@@ -329,6 +331,10 @@ public class Operation2Privilege {
     // for now allow only create-view with 'select with grant'
     // the owner will also have select with grant privileges on new view
     op2Priv.put(HiveOperationType.CREATEVIEW, PrivRequirement.newPrivRequirementList(
+        new PrivRequirement(SEL_GRANT_AR, IOType.INPUT),
+        new PrivRequirement(OWNER_PRIV_AR, HivePrivilegeObjectType.DATABASE)));
+
+    op2Priv.put(HiveOperationType.CREATE_MATERIALIZED_VIEW, PrivRequirement.newPrivRequirementList(
         new PrivRequirement(SEL_GRANT_AR, IOType.INPUT),
         new PrivRequirement(OWNER_PRIV_AR, HivePrivilegeObjectType.DATABASE)));
 

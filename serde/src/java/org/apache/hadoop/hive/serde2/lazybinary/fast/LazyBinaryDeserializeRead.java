@@ -39,7 +39,7 @@ import org.apache.hadoop.io.WritableUtils;
  * Directly deserialize with the caller reading field-by-field the LazyBinary serialization format.
  *
  * The caller is responsible for calling the read method for the right type of each field
- * (after calling readCheckNull).
+ * (after calling readNextField).
  *
  * Reading some fields require a results object to receive value information.  A separate
  * results object is created by the caller at initialization per different field even for the same
@@ -65,17 +65,12 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
   private VInt tempVInt;
   private VLong tempVLong;
 
-  private boolean readBeyondConfiguredFieldsWarned;
-  private boolean bufferRangeHasExtraDataWarned;
-
   public LazyBinaryDeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer) {
     super(typeInfos, useExternalBuffer);
     fieldCount = typeInfos.length;
     tempVInt = new VInt();
     tempVLong = new VLong();
     currentExternalBufferNeeded = false;
-    readBeyondConfiguredFieldsWarned = false;
-    bufferRangeHasExtraDataWarned = false;
   }
 
   // Not public since we must have the field count so every 8 fields NULL bytes can be navigated.
@@ -122,22 +117,19 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
   }
 
   /*
-   * Reads the NULL information for a field.
+   * Reads the the next field.
    *
-   * @return Returns true when the field is NULL; reading is positioned to the next field.
-   *         Otherwise, false when the field is NOT NULL; reading is positioned to the field data.
+   * Afterwards, reading is positioned to the next field.
+   *
+   * @return  Return true when the field was not null and data is put in the appropriate
+   *          current* member.
+   *          Otherwise, false when the field is null.
+   *
    */
   @Override
-  public boolean readCheckNull() throws IOException {
+  public boolean readNextField() throws IOException {
     if (fieldIndex >= fieldCount) {
-      // Reading beyond the specified field count produces NULL.
-      if (!readBeyondConfiguredFieldsWarned) {
-        // Warn only once.
-        LOG.info("Reading beyond configured fields! Configured " + fieldCount + " fields but "
-            + " reading more (NULLs returned).  Ignoring similar problems.");
-        readBeyondConfiguredFieldsWarned = true;
-      }
-      return true;
+      return false;
     }
 
     fieldStart = offset;
@@ -151,12 +143,24 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
       nullByte = bytes[offset++];
     }
 
-    // NOTE: The bit is set to 1 if a field is NOT NULL.
-    boolean isNull;
+    // NOTE: The bit is set to 1 if a field is NOT NULL.    boolean isNull;
     if ((nullByte & (1 << (fieldIndex % 8))) == 0) {
-      isNull = true;
+
+      // Logically move past this field.
+      fieldIndex++;
+
+      // Every 8 fields we read a new NULL byte.
+      if (fieldIndex < fieldCount) {
+        if ((fieldIndex % 8) == 0) {
+          // Get next null byte.
+          if (offset >= end) {
+            throw new EOFException();
+          }
+          nullByte = bytes[offset++];
+        }
+      }
+      return false;
     } else {
-      isNull = false;    // Assume.
 
       // Make sure there is at least one byte that can be read for a value.
       if (offset >= end) {
@@ -336,23 +340,29 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
 
           HiveDecimal decimal = currentHiveDecimalWritable.getHiveDecimal(precision, scale);
           if (decimal == null) {
-            isNull = true;
-          } else {
-            // Put value back into writable.
-            currentHiveDecimalWritable.set(decimal);
+
+            // Logically move past this field.
+            fieldIndex++;
+
+            // Every 8 fields we read a new NULL byte.
+            if (fieldIndex < fieldCount) {
+              if ((fieldIndex % 8) == 0) {
+                // Get next null byte.
+                if (offset >= end) {
+                  throw new EOFException();
+                }
+                nullByte = bytes[offset++];
+              }
+            }
+            return false;
           }
+          // Put value back into writable.
+          currentHiveDecimalWritable.set(decimal);
         }
         break;
 
       default:
         throw new Error("Unexpected primitive category " + primitiveCategories[fieldIndex].name());
-      }
-
-      /*
-       * Now that we have read through the field -- did we really want it?
-       */
-      if (columnsToInclude != null && !columnsToInclude[fieldIndex]) {
-        isNull = true;
       }
     }
 
@@ -370,37 +380,32 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
       }
     }
 
-    return isNull;
+    return true;
   }
 
   /*
-   * Call this method after all fields have been read to check for extra fields.
+   * Reads through an undesired field.
+   *
+   * No data values are valid after this call.
+   * Designed for skipping columns that are not included.
    */
-  public void extraFieldsCheck() {
-    if (offset < end) {
-      // We did not consume all of the byte range.
-      if (!bufferRangeHasExtraDataWarned) {
-        // Warn only once.
-        int length = end - start;
-        int remaining = end - offset;
-        LOG.info("Not all fields were read in the buffer range! Buffer range " +  start
-            + " for length " + length + " but " + remaining + " bytes remain. "
-            + "(total buffer length " + bytes.length + ")"
-            + "  Ignoring similar problems.");
-        bufferRangeHasExtraDataWarned = true;
-      }
-    }
+  public void skipNextField() throws IOException {
+    // Not a known use case for LazyBinary -- so don't optimize.
+    readNextField();
   }
 
   /*
-   * Read integrity warning flags.
+   * Call this method may be called after all the all fields have been read to check
+   * for unread fields.
+   *
+   * Note that when optimizing reading to stop reading unneeded include columns, worrying
+   * about whether all data is consumed is not appropriate (often we aren't reading it all by
+   * design).
+   *
+   * Since LazySimpleDeserializeRead parses the line through the last desired column it does
+   * support this function.
    */
-  @Override
-  public boolean readBeyondConfiguredFieldsWarned() {
-    return readBeyondConfiguredFieldsWarned;
-  }
-  @Override
-  public boolean bufferRangeHasExtraDataWarned() {
-    return bufferRangeHasExtraDataWarned;
+  public boolean isEndOfInputReached() {
+    return (offset == end);
   }
 }

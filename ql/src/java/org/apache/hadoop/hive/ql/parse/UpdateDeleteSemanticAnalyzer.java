@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -139,6 +140,12 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       LOG.error("Failed to find table " + getDotName(tableName) + " got exception "
           + e.getMessage());
       throw new SemanticException(e.getMessage(), e);
+    }
+
+    if (mTable.getTableType() == TableType.VIRTUAL_VIEW ||
+        mTable.getTableType() == TableType.MATERIALIZED_VIEW) {
+      LOG.error("Table " + getDotName(tableName) + " is a view or materialized view");
+      throw new SemanticException(ErrorMsg.UPDATE_DELETE_VIEW.getMsg());
     }
 
     List<FieldSchema> partCols = mTable.getPartCols();

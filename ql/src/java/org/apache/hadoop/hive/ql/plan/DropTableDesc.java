@@ -18,13 +18,14 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
  * DropTableDesc.
@@ -53,10 +54,11 @@ public class DropTableDesc extends DDLDesc implements Serializable {
 
   String tableName;
   ArrayList<PartSpec> partSpecs;
-  boolean expectView;
+  TableType expectedType;
   boolean ifExists;
   boolean ifPurge;
   ReplicationSpec replicationSpec;
+  
 
   public DropTableDesc() {
   }
@@ -66,18 +68,18 @@ public class DropTableDesc extends DDLDesc implements Serializable {
    * @param ifPurge
    */
   public DropTableDesc(
-      String tableName, boolean expectView, boolean ifExists,
+      String tableName, TableType expectedType, boolean ifExists,
       boolean ifPurge, ReplicationSpec replicationSpec) {
     this.tableName = tableName;
     this.partSpecs = null;
-    this.expectView = expectView;
+    this.expectedType = expectedType;
     this.ifExists = ifExists;
     this.ifPurge = ifPurge;
     this.replicationSpec = replicationSpec;
   }
 
   public DropTableDesc(String tableName, Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs,
-      boolean expectView, boolean ifPurge, ReplicationSpec replicationSpec) {
+      TableType expectedType, boolean ifPurge, ReplicationSpec replicationSpec) {
     this.tableName = tableName;
     this.partSpecs = new ArrayList<PartSpec>(partSpecs.size());
     for (Map.Entry<Integer, List<ExprNodeGenericFuncDesc>> partSpec : partSpecs.entrySet()) {
@@ -86,7 +88,7 @@ public class DropTableDesc extends DDLDesc implements Serializable {
         this.partSpecs.add(new PartSpec(expr, prefixLength));
       }
     }
-    this.expectView = expectView;
+    this.expectedType = expectedType;
     this.ifPurge = ifPurge;
     this.replicationSpec = replicationSpec;
   }
@@ -118,15 +120,14 @@ public class DropTableDesc extends DDLDesc implements Serializable {
    * @return whether to expect a view being dropped
    */
   public boolean getExpectView() {
-    return expectView;
+    return expectedType != null && expectedType == TableType.VIRTUAL_VIEW;
   }
 
   /**
-   * @param expectView
-   *          set whether to expect a view being dropped
+   * @return whether to expect a materialized view being dropped
    */
-  public void setExpectView(boolean expectView) {
-    this.expectView = expectView;
+  public boolean getExpectMaterializedView() {
+    return expectedType != null && expectedType == TableType.MATERIALIZED_VIEW;
   }
 
   /**

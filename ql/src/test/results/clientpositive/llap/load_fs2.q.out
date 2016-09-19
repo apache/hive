@@ -1,0 +1,121 @@
+PREHOOK: query: -- HIVE-3300 [jira] LOAD DATA INPATH fails if a hdfs file with same name is added to table
+-- 'loader' table is used only for uploading kv1.txt to HDFS (!hdfs -put is not working on minMRDriver)
+
+create table result (key string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@result
+POSTHOOK: query: -- HIVE-3300 [jira] LOAD DATA INPATH fails if a hdfs file with same name is added to table
+-- 'loader' table is used only for uploading kv1.txt to HDFS (!hdfs -put is not working on minMRDriver)
+
+create table result (key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@result
+PREHOOK: query: create table loader (key string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@loader
+POSTHOOK: query: create table loader (key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@loader
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table loader
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@loader
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table loader
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@loader
+PREHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@result
+POSTHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@result
+PREHOOK: query: show table extended like result
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like result
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:result
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:1
+totalFileSize:5812
+maxFileSize:5812
+minFileSize:5812
+#### A masked pattern was here ####
+
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table loader
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@loader
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table loader
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@loader
+PREHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@result
+POSTHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@result
+PREHOOK: query: show table extended like result
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like result
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:result
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:2
+totalFileSize:11624
+maxFileSize:5812
+minFileSize:5812
+#### A masked pattern was here ####
+
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table loader
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@loader
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table loader
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@loader
+PREHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@result
+POSTHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@result
+PREHOOK: query: show table extended like result
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like result
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:result
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:3
+totalFileSize:17436
+maxFileSize:5812
+minFileSize:5812
+#### A masked pattern was here ####
+

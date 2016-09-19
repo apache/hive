@@ -18,15 +18,31 @@
  */
 package org.apache.hive.ptest.execution.conf;
 
-public interface TestBatch {
+import java.util.concurrent.atomic.AtomicInteger;
 
-  public String getTestArguments();
-  
-  public String getTestClass();
+public abstract class TestBatch {
 
-  public String getName();
+  public TestBatch(AtomicInteger BATCH_ID_GEN) {
+    this.batchId = BATCH_ID_GEN.getAndIncrement();
+  }
 
-  public boolean isParallel();
+  private final int batchId;
 
-  public String getTestModule();
+  public abstract String getTestArguments();
+
+  // TODO Get rid of this.
+  public abstract String getTestClass();
+
+  public abstract String getName();
+
+  public abstract boolean isParallel();
+
+  public abstract String getTestModuleRelativeDir();
+
+  public abstract int getNumTestsInBatch();
+
+  public final int getBatchId() {
+    return batchId;
+  }
+
 }

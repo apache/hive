@@ -137,7 +137,7 @@ public abstract class Phase {
   protected List<RemoteCommandResult> initalizeHost(HostExecutor hostExecutor)
       throws Exception {
     List<RemoteCommandResult> results = Lists.newArrayList();
-    results.add(hostExecutor.exec("killall -q -9 -f java || true").get());
+    results.add(hostExecutor.exec("killall -q -9 java || true").get());
     TimeUnit.SECONDS.sleep(1);
     // order matters in all of these so block
     results.addAll(toListOfResults(hostExecutor.execInstances("rm -rf $localDir/$instanceName/scratch $localDir/$instanceName/logs")));

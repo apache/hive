@@ -697,7 +697,9 @@ public final class FunctionRegistry {
   }
 
   /**
-   * Find a common class for union-all operator
+   * Find a common type for union-all operator. Only the common types for the same
+   * type group will resolve to a common type. No implicit conversion across different
+   * type groups will be done.
    */
   public static TypeInfo getCommonClassForUnionAll(TypeInfo a, TypeInfo b) {
     if (a.equals(b)) {
@@ -716,26 +718,21 @@ public final class FunctionRegistry {
 
     PrimitiveGrouping pgA = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcA);
     PrimitiveGrouping pgB = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcB);
-    // handle string types properly
-    if (pgA == PrimitiveGrouping.STRING_GROUP && pgB == PrimitiveGrouping.STRING_GROUP) {
+    if (pgA != pgB) {
+      return null;
+    }
+
+    switch(pgA) {
+    case STRING_GROUP:
       return getTypeInfoForPrimitiveCategory(
           (PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b,PrimitiveCategory.STRING);
+    case NUMERIC_GROUP:
+      return TypeInfoUtils.implicitConvertible(a, b) ? b : a;
+    case DATE_GROUP:
+      return TypeInfoFactory.timestampTypeInfo;
+    default:
+      return null;
     }
-
-    if (TypeInfoUtils.implicitConvertible(a, b)) {
-      return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, pcB);
-    }
-    if (TypeInfoUtils.implicitConvertible(b, a)) {
-      return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, pcA);
-    }
-    for (PrimitiveCategory t : TypeInfoUtils.numericTypeList) {
-      if (TypeInfoUtils.implicitConvertible(pcA, t)
-          && TypeInfoUtils.implicitConvertible(pcB, t)) {
-        return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, t);
-      }
-    }
-
-    return null;
   }
 
   /**
@@ -988,9 +985,6 @@ public final class FunctionRegistry {
     try {
       o = m.invoke(thisObject, arguments);
     } catch (Exception e) {
-      String thisObjectString = "" + thisObject + " of class "
-          + (thisObject == null ? "null" : thisObject.getClass().getName());
-
       StringBuilder argumentString = new StringBuilder();
       if (arguments == null) {
         argumentString.append("null");
@@ -998,21 +992,19 @@ public final class FunctionRegistry {
         argumentString.append("{");
         for (int i = 0; i < arguments.length; i++) {
           if (i > 0) {
-            argumentString.append(", ");
+            argumentString.append(",");
           }
-          if (arguments[i] == null) {
-            argumentString.append("null");
-          } else {
-            argumentString.append("" + arguments[i] + ":"
-                + arguments[i].getClass().getName());
-          }
+
+          argumentString.append(arguments[i]);
         }
-        argumentString.append("} of size " + arguments.length);
+        argumentString.append("}");
       }
 
-      throw new HiveException("Unable to execute method " + m + " "
-          + " on object " + thisObjectString + " with arguments "
-          + argumentString.toString(), e);
+      String detailedMsg = e instanceof java.lang.reflect.InvocationTargetException ?
+        e.getCause().getMessage() : e.getMessage();
+
+      throw new HiveException("Unable to execute method " + m + " with arguments "
+          + argumentString + ":" + detailedMsg, e);
     }
     return o;
   }
