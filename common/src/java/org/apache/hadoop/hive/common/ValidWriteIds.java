@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 public class ValidWriteIds {
   public static final ValidWriteIds NO_WRITE_IDS = new ValidWriteIds(-1, -1, false, null);
 
-  private static final String MM_PREFIX = "mm";
+  public static final String MM_PREFIX = "mm";
 
   private final static Logger LOG = LoggerFactory.getLogger(ValidWriteIds.class);
 
@@ -117,22 +117,8 @@ public class ValidWriteIds {
   }
 
   public boolean isValidInput(Path file) {
-    String fileName = file.getName();
-    String[] parts = fileName.split("_", 3);
-    if (parts.length < 2 || !MM_PREFIX.equals(parts[0])) {
-      LOG.info("Ignoring unknown file for a MM table: " + file
-          + " (" + Arrays.toString(parts) + ")");
-      return false;
-    }
-    long writeId = -1;
-    try {
-      writeId = Long.parseLong(parts[1]);
-    } catch (NumberFormatException ex) {
-      LOG.info("Ignoring unknown file for a MM table: " + file
-          + "; parsing " + parts[1] + " got " + ex.getMessage());
-      return false;
-    }
-    return isValid(writeId);
+    Long writeId = extractWriteId(file);
+    return (writeId != null) && isValid(writeId);
   }
 
   public static String getMmFilePrefix(long mmWriteId) {
@@ -154,5 +140,25 @@ public class ValidWriteIds {
       String name = path.getName();
       return isMatch == (name.startsWith(prefix) || name.startsWith(tmpPrefix));
     }
+  }
+
+
+  public static Long extractWriteId(Path file) {
+    String fileName = file.getName();
+    String[] parts = fileName.split("_", 3);
+    if (parts.length < 2 || !MM_PREFIX.equals(parts[0])) {
+      LOG.info("Cannot extract write ID for a MM table: " + file
+          + " (" + Arrays.toString(parts) + ")");
+      return null;
+    }
+    long writeId = -1;
+    try {
+      writeId = Long.parseLong(parts[1]);
+    } catch (NumberFormatException ex) {
+      LOG.info("Cannot extract write ID for a MM table: " + file
+          + "; parsing " + parts[1] + " got " + ex.getMessage());
+      return null;
+    }
+    return writeId;
   }
 }

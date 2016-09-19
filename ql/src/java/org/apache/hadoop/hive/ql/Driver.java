@@ -1493,7 +1493,8 @@ public class Driver implements CommandProcessor {
         break;
       default: return null;
     }
-    return (t != null && !t.isTemporary() && AcidUtils.isMmTable(t)) ? t : null;
+    return (t != null && !t.isTemporary()
+        && MetaStoreUtils.isMmTable(t.getParameters())) ? t : null;
   }
 
   private CommandProcessorResponse rollback(CommandProcessorResponse cpr) {

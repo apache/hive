@@ -6569,7 +6569,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean isNonNativeTable = dest_tab.isNonNative();
-      isMmTable = AcidUtils.isMmTable(dest_tab);
+      isMmTable = MetaStoreUtils.isMmTable(dest_tab.getParameters());
       if (isNonNativeTable || isMmTable) {
         queryTmpdir = dest_path;
       } else {
@@ -6642,7 +6642,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       dest_path = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
           .getAuthority(), partPath.toUri().getPath());
 
-      isMmTable = AcidUtils.isMmTable(dest_tab);
+      isMmTable = MetaStoreUtils.isMmTable(dest_tab.getParameters());
       queryTmpdir = isMmTable ? dest_path : ctx.getTempDirForPath(dest_path);
       Utilities.LOG14535.info("createFS for partition specifying " + queryTmpdir + " from " + dest_path);
       table_desc = Utilities.getTableDesc(dest_tab);

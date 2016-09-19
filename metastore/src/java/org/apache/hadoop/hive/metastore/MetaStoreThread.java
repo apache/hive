@@ -51,6 +51,7 @@ public interface MetaStoreThread {
    *               thread should then assure that the loop has been gone completely through at
    *               least once.
    */
+  // TODO: move these test parameters to more specific places... there's no need to have them here
   void init(AtomicBoolean stop, AtomicBoolean looped) throws MetaException;
 
   /**

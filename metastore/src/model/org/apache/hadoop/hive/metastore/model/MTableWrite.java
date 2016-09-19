@@ -23,14 +23,16 @@ public class MTableWrite {
   private long writeId;
   private String state;
   private long lastHeartbeat;
+  private long created;
 
   public MTableWrite() {}
 
-  public MTableWrite(MTable table, long writeId, String state, long lastHeartbeat) {
+  public MTableWrite(MTable table, long writeId, String state, long lastHeartbeat, long created) {
     this.table = table;
     this.writeId = writeId;
     this.state = state;
     this.lastHeartbeat = lastHeartbeat;
+    this.created = created;
   }
 
   public MTable getTable() {
@@ -49,6 +51,10 @@ public class MTableWrite {
     return lastHeartbeat;
   }
 
+  public long getCreated() {
+    return created;
+  }
+
   public void setTable(MTable table) {
     this.table = table;
   }
@@ -63,5 +69,9 @@ public class MTableWrite {
 
   public void setLastHeartbeat(long lastHeartbeat) {
     this.lastHeartbeat = lastHeartbeat;
+  }
+
+  public void setCreated(long created) {
+    this.created = created;
   }
 }

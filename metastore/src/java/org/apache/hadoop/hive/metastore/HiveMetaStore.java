@@ -6460,7 +6460,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           Thread.sleep(random.nextInt(deadlockRetryBackoffMs));
         }
 
-        // Do a separate txn after we have reserved the number. TODO: If we fail, ignore on read.
+        // Do a separate txn after we have reserved the number.
         boolean ok = false;
         ms.openTransaction();
         try {
@@ -6525,11 +6525,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("heartbeat_write_id", " : db="
           + dbName + " tbl=" + tblName + " writeId=" + writeId);
       Exception ex = null;
+      boolean wasAborted = false;
       try {
         boolean ok = false;
         ms.openTransaction();
         try {
           MTableWrite tw = getActiveTableWrite(ms, dbName, tblName, writeId);
+          long absTimeout = HiveConf.getTimeVar(getConf(),
+              ConfVars.HIVE_METASTORE_MM_ABSOLUTE_TIMEOUT, TimeUnit.MILLISECONDS);
+          if (tw.getCreated() + absTimeout < System.currentTimeMillis()) {
+            tw.setState(String.valueOf(MM_WRITE_ABORTED));
+            wasAborted = true;
+          }
           tw.setLastHeartbeat(System.currentTimeMillis());
           ms.updateTableWrite(tw);
           ok = true;
@@ -6542,6 +6549,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         endFunction("heartbeat_write_id", ex == null, ex, tblName);
       }
+      if (wasAborted) throw new MetaException("The write was aborted due to absolute timeout");
       return new HeartbeatWriteIdResult();
     }
 
@@ -6576,10 +6584,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           long watermarkId = tbl.isSetMmWatermarkWriteId() ? tbl.getMmWatermarkWriteId() : -1;
           if (nextId > (watermarkId + 1)) {
             // There may be some intermediate failed or active writes; get the valid ones.
-            List<Long> ids = ms.getWriteIds(
+            List<Long> ids = ms.getTableWriteIds(
                 dbName, tblName, watermarkId, nextId, MM_WRITE_COMMITTED);
             // TODO: we could optimize here and send the smaller of the lists, and also use ranges
-            if (ids != null) {
+            if (!ids.isEmpty()) {
               Iterator<Long> iter = ids.iterator();
               long oldWatermarkId = watermarkId;
               while (iter.hasNext()) {
@@ -7057,6 +7065,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           startCompactorInitiator(conf);
           startCompactorWorkers(conf);
           startCompactorCleaner(conf);
+          startMmHousekeepingThread(conf);
           startHouseKeeperService(conf);
         } catch (Throwable e) {
           LOG.error("Failure when starting the compactor, compactions may not happen, " +
@@ -7096,6 +7105,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
   }
 
+  private static void startMmHousekeepingThread(HiveConf conf) throws Exception {
+    long intervalMs = HiveConf.getTimeVar(conf,
+        ConfVars.HIVE_METASTORE_MM_THREAD_SCAN_INTERVAL, TimeUnit.MILLISECONDS);
+    if (intervalMs > 0) {
+      MetaStoreThread thread = new MmCleanerThread(intervalMs);
+      initializeAndStartThread(thread, conf);
+    }
+  }
+
+
   private static MetaStoreThread instantiateThread(String classname) throws Exception {
     Class<?> c = Class.forName(classname);
     Object o = c.newInstance();
@@ -7118,6 +7137,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     thread.init(new AtomicBoolean(), new AtomicBoolean());
     thread.start();
   }
+
   private static void startHouseKeeperService(HiveConf conf) throws Exception {
     if(!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_INITIATOR_ON)) {
       return;

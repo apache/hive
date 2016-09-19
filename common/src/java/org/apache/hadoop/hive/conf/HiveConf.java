@@ -297,7 +297,10 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_HBASE_AGGR_STATS_MEMORY_TTL,
       HiveConf.ConfVars.METASTORE_HBASE_AGGR_STATS_INVALIDATOR_FREQUENCY,
       HiveConf.ConfVars.METASTORE_HBASE_AGGR_STATS_HBASE_TTL,
-      HiveConf.ConfVars.METASTORE_HBASE_FILE_METADATA_THREADS
+      HiveConf.ConfVars.METASTORE_HBASE_FILE_METADATA_THREADS,
+      HiveConf.ConfVars.HIVE_METASTORE_MM_THREAD_SCAN_INTERVAL,
+      HiveConf.ConfVars.HIVE_METASTORE_MM_HEARTBEAT_TIMEOUT,
+      HiveConf.ConfVars.HIVE_METASTORE_MM_ABSOLUTE_TIMEOUT
       };
 
   /**
@@ -3104,6 +3107,22 @@ public class HiveConf extends Configuration {
         "Log tracing id that can be used by upstream clients for tracking respective logs. " +
         "Truncated to " + LOG_PREFIX_LENGTH + " characters. Defaults to use auto-generated session id."),
 
+    HIVE_METASTORE_MM_THREAD_SCAN_INTERVAL("hive.metastore.mm.thread.scan.interval", "900s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "MM table housekeeping thread interval in this metastore instance. 0 to disable."),
+
+    HIVE_METASTORE_MM_HEARTBEAT_TIMEOUT("hive.metastore.mm.heartbeat.timeout", "1800s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "MM write ID times out after this long if a heartbeat is not send. Currently disabled."), // TODO# heartbeating not implemented
+
+    HIVE_METASTORE_MM_ABSOLUTE_TIMEOUT("hive.metastore.mm.absolute.timeout", "7d",
+        new TimeValidator(TimeUnit.SECONDS),
+        "MM write ID cannot be outstanding for more than this long."),
+
+    HIVE_METASTORE_MM_ABORTED_GRACE_PERIOD("hive.metastore.mm.aborted.grace.period", "1d",
+        new TimeValidator(TimeUnit.SECONDS),
+        "MM write ID will not be removed up for that long after it has been aborted;\n" +
+        "this is to work around potential races e.g. with FS visibility, when deleting files."),
 
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
         "hive.security.authenticator.manager,hive.security.authorization.manager,hive.users.in.admin.role," +

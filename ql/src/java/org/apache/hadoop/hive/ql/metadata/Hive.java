@@ -1478,7 +1478,7 @@ public class Hive {
       boolean hasFollowingStatsTask, Long mmWriteId) throws HiveException {
     Table tbl = getTable(tableName);
     boolean isMmTableWrite = (mmWriteId != null);
-    Preconditions.checkState(isMmTableWrite == AcidUtils.isMmTable(tbl));
+    Preconditions.checkState(isMmTableWrite == MetaStoreUtils.isMmTable(tbl.getParameters()));
     loadPartition(loadPath, tbl, partSpec, replace, inheritTableSpecs,
         isSkewedStoreAsSubdir, isSrcLocal, isAcid, hasFollowingStatsTask, mmWriteId);
     if (isMmTableWrite) {

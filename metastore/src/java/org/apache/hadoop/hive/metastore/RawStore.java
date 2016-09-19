@@ -23,6 +23,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -697,5 +698,28 @@ public interface RawStore extends Configurable {
 
   void createTableWrite(Table tbl, long writeId, char state, long heartbeat);
 
-  List<Long> getWriteIds(String dbName, String tblName, long watermarkId, long nextWriteId, char state) throws MetaException;
+  List<Long> getTableWriteIds(String dbName, String tblName, long watermarkId, long nextWriteId, char state) throws MetaException;
+
+
+  public static final class FullTableName {
+    public final String dbName, tblName;
+
+    public FullTableName(String dbName, String tblName) {
+      this.dbName = dbName;
+      this.tblName = tblName;
+    }
+
+    @Override
+    public String toString() {
+      return dbName + "." + tblName;
+    }
+  }
+
+  List<FullTableName> getAllMmTablesForCleanup() throws MetaException;
+
+  public List<MTableWrite> getTableWrites(String dbName, String tblName, long from, long to) throws MetaException;
+
+  Collection<String> getAllPartitionLocations(String dbName, String tblName);
+
+  void deleteTableWrites(String dbName, String tblName, long from, long to) throws MetaException;
 }

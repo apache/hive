@@ -1082,6 +1082,9 @@
       <field name="state">
         <column name="STATE" length="1" jdbc-type="CHAR" allows-null="false"/>
       </field>
+      <field name="created">
+        <column name="CREATED" jdbc-type="BIGINT" allows-null="false"/>
+      </field>
       <field name="lastHeartbeat">
         <column name="LAST_HEARTBEAT" jdbc-type="BIGINT" allows-null="false"/>
       </field>

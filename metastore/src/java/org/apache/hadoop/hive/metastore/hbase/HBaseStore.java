@@ -2759,8 +2759,35 @@ public class HBaseStore implements RawStore {
  
 
   @Override
-  public List<Long> getWriteIds(
+  public List<Long> getTableWriteIds(
       String dbName, String tblName, long watermarkId, long nextWriteId, char state) {
+    // TODO: Auto-generated method stub
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<FullTableName> getAllMmTablesForCleanup() throws MetaException {
+    // TODO: Auto-generated method stub
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<MTableWrite> getTableWrites(String dbName, String tblName,
+      long from, long to) throws MetaException {
+    // TODO: Auto-generated method stub
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Collection<String> getAllPartitionLocations(String dbName,
+      String tblName) {
+    // TODO: Auto-generated method stub
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void deleteTableWrites(String dbName, String tblName, long from,
+      long to) throws MetaException {
     // TODO: Auto-generated method stub
     throw new UnsupportedOperationException();
   }

@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -1080,12 +1081,6 @@ public class AcidUtils {
     }
 
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
-  }
-
-  public static boolean isMmTable(Table table) {
-    // TODO: perhaps it should be a 3rd value for 'transactional'?
-    String value = table.getProperty(hive_metastoreConstants.TABLE_IS_MM);
-    return value != null && value.equalsIgnoreCase("true");
   }
 
   /**
