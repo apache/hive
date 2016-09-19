@@ -15,10 +15,13 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
+import java.util.List;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.hash.Hashing;
 
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.split.SplitLocationProvider;
@@ -39,46 +42,83 @@ import org.slf4j.LoggerFactory;
  */
 public class HostAffinitySplitLocationProvider implements SplitLocationProvider {
 
-  private final Logger LOG = LoggerFactory.getLogger(HostAffinitySplitLocationProvider.class);
+  private final static Logger LOG = LoggerFactory.getLogger(
+      HostAffinitySplitLocationProvider.class);
   private final boolean isDebugEnabled = LOG.isDebugEnabled();
 
-  private final String[] knownLocations;
+  private final List<String> locations;
 
-  public HostAffinitySplitLocationProvider(String[] knownLocations) {
-    Preconditions.checkState(knownLocations != null && knownLocations.length != 0,
+  public HostAffinitySplitLocationProvider(List<String> knownLocations) {
+    Preconditions.checkState(knownLocations != null && !knownLocations.isEmpty(),
         HostAffinitySplitLocationProvider.class.getName() +
-            "needs at least 1 location to function");
-    this.knownLocations = knownLocations;
+            " needs at least 1 location to function");
+    this.locations = knownLocations;
   }
 
   @Override
   public String[] getLocations(InputSplit split) throws IOException {
-    if (split instanceof FileSplit) {
-      FileSplit fsplit = (FileSplit) split;
-      int index = chooseBucket(fsplit.getPath().toString(), fsplit.getStart());
-      if (isDebugEnabled) {
-        LOG.debug(
-            "Split at " + fsplit.getPath() + " with offset= " + fsplit.getStart() + ", length=" +
-                fsplit.getLength() + " mapped to index=" + index + ", location=" +
-                knownLocations[index]);
-      }
-      return new String[]{knownLocations[index]};
-    } else {
+    if (!(split instanceof FileSplit)) {
       if (isDebugEnabled) {
         LOG.debug("Split: " + split + " is not a FileSplit. Using default locations");
       }
       return split.getLocations();
     }
+    FileSplit fsplit = (FileSplit) split;
+    String splitDesc = "Split at " + fsplit.getPath() + " with offset= " + fsplit.getStart()
+        + ", length=" + fsplit.getLength();
+    String location = locations.get(determineLocation(
+        locations, fsplit.getPath().toString(), fsplit.getStart(), splitDesc));
+    return (location != null) ? new String[] { location } : null;
   }
 
+  @VisibleForTesting
+  public static int determineLocation(
+      List<String> locations, String path, long start, String desc) {
+    byte[] bytes = getHashInputForSplit(path, start);
+    long hash1 = hash1(bytes);
+    int index = Hashing.consistentHash(hash1, locations.size());
+    String location = locations.get(index);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(desc + " mapped to index=" + index + ", location=" + location);
+    }
+    int iter = 1;
+    long hash2 = 0;
+    // Since our probing method is totally bogus, give up after some time.
+    while (location == null && iter < locations.size() * 2) {
+      if (iter == 1) {
+        hash2 = hash2(bytes);
+      }
+      // Note that this is not real double hashing since we have consistent hash on top.
+      index = Hashing.consistentHash(hash1 + iter * hash2, locations.size());
+      location = locations.get(index);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug(desc + " remapped to index=" + index + ", location=" + location);
+      }
+      ++iter;
+    }
+    return index;
+  }
 
-  private int chooseBucket(String path, long startOffset) throws IOException {
+  private static byte[] getHashInputForSplit(String path, long start) {
     // Explicitly using only the start offset of a split, and not the length. Splits generated on
     // block boundaries and stripe boundaries can vary slightly. Try hashing both to the same node.
     // There is the drawback of potentially hashing the same data on multiple nodes though, when a
     // large split is sent to 1 node, and a second invocation uses smaller chunks of the previous
     // large split and send them to different nodes.
-    long hashCode = ((startOffset >> 2) * 37) ^ Murmur3.hash64(path.getBytes());
-    return Hashing.consistentHash(hashCode, knownLocations.length);
+    byte[] pathBytes = path.getBytes();
+    byte[] allBytes = new byte[pathBytes.length + 8];
+    System.arraycopy(pathBytes, 0, allBytes, 0, pathBytes.length);
+    SerDeUtils.writeLong(allBytes, pathBytes.length, start >> 3);
+    return allBytes;
+  }
+
+  private static long hash1(byte[] bytes) {
+    final int PRIME = 104729; // Same as hash64's default seed.
+    return Murmur3.hash64(bytes, 0, bytes.length, PRIME);
+  }
+
+  private static long hash2(byte[] bytes) {
+    final int PRIME = 1366661;
+    return Murmur3.hash64(bytes, 0, bytes.length, PRIME);
   }
 }

@@ -14,7 +14,6 @@
 package org.apache.hadoop.hive.llap.registry;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 public interface ServiceInstanceSet {
@@ -32,9 +31,11 @@ public interface ServiceInstanceSet {
   /**
    * Gets a list containing all the instances. This list has the same iteration order across
    * different processes, assuming the list of registry entries is the same.
-   * @return
+   * @param consistentIndexes if true, also try to maintain the same exact index for each node
+   *                          across calls, by inserting inactive instances to replace the
+   *                          removed ones.
    */
-  public Collection<ServiceInstance> getAllInstancesOrdered();
+  public Collection<ServiceInstance> getAllInstancesOrdered(boolean consistentIndexes);
 
   /**
    * Get an instance by worker identity.

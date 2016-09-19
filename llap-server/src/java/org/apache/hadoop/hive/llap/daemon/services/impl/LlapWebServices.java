@@ -226,7 +226,7 @@ public class LlapWebServices extends AbstractService {
           }
           jg.writeStringField("identity", registry.getWorkerIdentity());
           jg.writeArrayFieldStart("peers");
-          for (ServiceInstance s : registry.getInstances().getAllInstancesOrdered()) {
+          for (ServiceInstance s : registry.getInstances().getAllInstancesOrdered(false)) {
             jg.writeStartObject();
             jg.writeStringField("identity", s.getWorkerIdentity());
             jg.writeStringField("host", s.getHost());

@@ -228,7 +228,7 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
     }
 
     @Override
-    public List<ServiceInstance> getAllInstancesOrdered() {
+    public List<ServiceInstance> getAllInstancesOrdered(boolean consistentIndexes) {
       List<ServiceInstance> list = new LinkedList<>();
       list.addAll(instances.values());
       Collections.sort(list, new Comparator<ServiceInstance>() {
