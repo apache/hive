@@ -118,6 +118,8 @@ else
 	echo "ISSUE: unspecified PROFILE: $BUILD_PROFILE"
 fi
 
+set +e
+
 call_ptest_server --testHandle "$TEST_HANDLE" --endpoint "$PTEST_API_ENDPOINT" --logsEndpoint "$PTEST_LOG_ENDPOINT" \
 	--profile "$BUILD_PROFILE" ${optionalArgs[@]} "$@"
 
