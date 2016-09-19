@@ -567,4 +567,15 @@ public final class SerDeUtils {
   public static Text transformTextFromUTF8(Text text, Charset targetCharset) {
     return new Text(new String(text.getBytes(), 0, text.getLength()).getBytes(targetCharset));
   }
+
+  public static void writeLong(byte[] writeBuffer, int offset, long value) {
+    writeBuffer[offset] = (byte) ((value >> 0)  & 0xff);
+    writeBuffer[offset + 1] = (byte) ((value >> 8)  & 0xff);
+    writeBuffer[offset + 2] = (byte) ((value >> 16) & 0xff);
+    writeBuffer[offset + 3] = (byte) ((value >> 24) & 0xff);
+    writeBuffer[offset + 4] = (byte) ((value >> 32) & 0xff);
+    writeBuffer[offset + 5] = (byte) ((value >> 40) & 0xff);
+    writeBuffer[offset + 6] = (byte) ((value >> 48) & 0xff);
+    writeBuffer[offset + 7] = (byte) ((value >> 56) & 0xff);
+  }
 }

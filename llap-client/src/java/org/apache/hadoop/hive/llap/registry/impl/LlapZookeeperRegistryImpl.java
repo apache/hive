@@ -542,8 +542,8 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     }
 
     @Override
-    public Collection<ServiceInstance> getAllInstancesOrdered() {
-      Map<String, String> slotByWorker = new HashMap<String, String>();
+    public Collection<ServiceInstance> getAllInstancesOrdered(boolean consistentIndexes) {
+      Map<String, Long> slotByWorker = new HashMap<String, Long>();
       List<ServiceInstance> unsorted = new LinkedList<ServiceInstance>();
       for (ChildData childData : instancesCache.getCurrentData()) {
         if (childData == null) continue;
@@ -560,20 +560,44 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
                 " Ignoring from current instances list..", childData.getPath());
           }
         } else if (nodeName.startsWith(SLOT_PREFIX)) {
-          slotByWorker.put(extractWorkerIdFromSlot(childData), nodeName);
+          slotByWorker.put(extractWorkerIdFromSlot(childData),
+              Long.parseLong(nodeName.substring(SLOT_PREFIX.length())));
         } else {
           LOG.info("Ignoring unknown node {}", childData.getPath());
         }
       }
 
-      TreeMap<String, ServiceInstance> sorted = new TreeMap<>();
+      TreeMap<Long, ServiceInstance> sorted = new TreeMap<>();
+      long maxSlot = Long.MIN_VALUE;
       for (ServiceInstance worker : unsorted) {
-        String slot = slotByWorker.get(worker.getWorkerIdentity());
+        Long slot = slotByWorker.get(worker.getWorkerIdentity());
         if (slot == null) {
           LOG.info("Unknown slot for {}", worker.getWorkerIdentity());
           continue;
         }
+        maxSlot = Math.max(maxSlot, slot);
         sorted.put(slot, worker);
+      }
+
+      if (consistentIndexes) {
+        // Add dummy instances to all slots where LLAPs are MIA... I can haz insert_iterator? 
+        TreeMap<Long, ServiceInstance> dummies = new TreeMap<>();
+        Iterator<Long> keyIter = sorted.keySet().iterator();
+        long expected = 0;
+        Long ts = null;
+        while (keyIter.hasNext()) {
+          Long slot = keyIter.next();
+          assert slot >= expected;
+          while (slot > expected) {
+            if (ts == null) {
+              ts = System.nanoTime(); // Inactive nodes restart every call!
+            }
+            dummies.put(expected, new InactiveServiceInstance("inactive-" + expected + "-" + ts));
+            ++expected;
+          }
+          ++expected;
+        }
+        sorted.putAll(dummies);
       }
       return sorted.values();
     }
