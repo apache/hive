@@ -105,7 +105,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
       };
 
   private static AtomicInteger heartbeaterMSClientCount = new AtomicInteger(0);
-  private int heartbeaterThreadPoolSize = 0;
+  private static int heartbeaterThreadPoolSize = 0;
 
   private static SynchronizedMetaStoreClient getThreadLocalMSClient() {
     return threadLocalMSClient.get();
@@ -625,6 +625,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
   public static class HeartbeaterThread extends Thread {
     public HeartbeaterThread(Runnable target, String name) {
       super(target, name);
+      setDaemon(true);
     }
 
     @Override
