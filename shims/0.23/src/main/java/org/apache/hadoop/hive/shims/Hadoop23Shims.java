@@ -98,6 +98,8 @@ import org.apache.hadoop.tools.DistCpOptions;
 import org.apache.hadoop.tools.DistCpOptions.FileAttribute;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.tez.dag.api.TezConfiguration;
+import org.apache.tez.runtime.library.api.TezRuntimeConfiguration;
 import org.apache.tez.test.MiniTezCluster;
 
 /**
@@ -326,6 +328,49 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
   }
 
+  @Override
+  public HadoopShims.MiniMrShim getLocalMiniTezCluster(Configuration conf, boolean usingLlap) {
+    return new MiniTezLocalShim(conf, usingLlap);
+  }
+
+  public class MiniTezLocalShim extends Hadoop23Shims.MiniMrShim {
+    private final Configuration conf;
+    private final boolean isLlap;
+
+    public MiniTezLocalShim(Configuration conf, boolean usingLlap) {
+      this.conf = conf;
+      this.isLlap = usingLlap;
+      setupConfiguration(conf);
+    }
+
+    @Override
+    public int getJobTrackerPort() throws UnsupportedOperationException {
+      throw new UnsupportedOperationException("No JobTracker port for local mode");
+    }
+
+    @Override
+    public void setupConfiguration(Configuration conf) {
+      conf.setBoolean(TezConfiguration.TEZ_LOCAL_MODE, true);
+
+      conf.setBoolean(TezRuntimeConfiguration.TEZ_RUNTIME_OPTIMIZE_LOCAL_FETCH, true);
+
+      conf.setBoolean(TezConfiguration.TEZ_IGNORE_LIB_URIS, true);
+
+      // TODO Force fs to file://, setup staging dir?
+      //      conf.set("fs.defaultFS", "file:///");
+      //      conf.set(TezConfiguration.TEZ_AM_STAGING_DIR, "/tmp");
+
+      if (!isLlap) {
+        conf.setBoolean("hive.llap.io.enabled", false);
+      }
+    }
+
+    @Override
+    public void shutdown() throws IOException {
+      // Nothing to do
+    }
+  }
+
   /**
    * Returns a shim to wrap MiniMrTez
    */
@@ -375,20 +420,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       Configuration config = mr.getConfig();
       for (Map.Entry<String, String> pair: config) {
         conf.set(pair.getKey(), pair.getValue());
-      }
-
-      Path jarPath = new Path("hdfs:///user/hive");
-      Path hdfsPath = new Path("hdfs:///user/");
-      try {
-        FileSystem fs = cluster.getFileSystem();
-        jarPath = fs.makeQualified(jarPath);
-        conf.set("hive.jar.directory", jarPath.toString());
-        fs.mkdirs(jarPath);
-        hdfsPath = fs.makeQualified(hdfsPath);
-        conf.set("hive.user.install.directory", hdfsPath.toString());
-        fs.mkdirs(hdfsPath);
-      } catch (Exception e) {
-        e.printStackTrace();
       }
     }
   }
@@ -457,20 +488,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       Configuration config = mr.getConfig();
       for (Map.Entry<String, String> pair : config) {
         conf.set(pair.getKey(), pair.getValue());
-      }
-
-      Path jarPath = new Path("hdfs:///user/hive");
-      Path hdfsPath = new Path("hdfs:///user/");
-      try {
-        FileSystem fs = cluster.getFileSystem();
-        jarPath = fs.makeQualified(jarPath);
-        conf.set("hive.jar.directory", jarPath.toString());
-        fs.mkdirs(jarPath);
-        hdfsPath = fs.makeQualified(hdfsPath);
-        conf.set("hive.user.install.directory", hdfsPath.toString());
-        fs.mkdirs(hdfsPath);
-      } catch (Exception e) {
-        e.printStackTrace();
       }
     }
   }

@@ -1,6 +1,18 @@
 <configuration>
+
   <property>
     <name>tez.am.dag.scheduler.class</name>
     <value>org.apache.tez.dag.app.dag.impl.DAGSchedulerNaturalOrderControlled</value>
   </property>
+
+  <!-- Fail fast during tests -->
+  <property>
+    <name>tez.am.task.max.failed.attempts</name>
+    <value>2</value>
+  </property>
+  <property>
+    <name>tez.runtime.shuffle.connect.timeout</name>
+    <value>20000</value>
+  </property>
+
 </configuration>
