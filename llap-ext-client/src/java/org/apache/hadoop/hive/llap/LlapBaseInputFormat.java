@@ -160,7 +160,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     SubmitWorkRequestProto request = constructSubmitWorkRequestProto(
         submitWorkInfo, llapSplit.getSplitNum(), attemptNum, llapClient.getAddress(),
         submitWorkInfo.getToken(), llapSplit.getFragmentBytes(),
-        llapSplit.getFragmentBytesSignature());
+        llapSplit.getFragmentBytesSignature(), job);
     llapClient.submitWork(request, host, llapSubmitPort);
 
     Socket socket = new Socket(host, serviceInstance.getOutputFormatPort());
@@ -290,7 +290,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
   private SubmitWorkRequestProto constructSubmitWorkRequestProto(SubmitWorkInfo submitWorkInfo,
       int taskNum, int attemptNum, InetSocketAddress address, Token<JobTokenIdentifier> token,
-      byte[] fragmentBytes, byte[] fragmentBytesSignature) throws IOException {
+      byte[] fragmentBytes, byte[] fragmentBytesSignature, JobConf job) throws IOException {
     ApplicationId appId = submitWorkInfo.getFakeAppId();
 
     // This works, assuming the executor is running within YARN.
@@ -325,7 +325,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     builder.setFragmentNumber(taskNum);
     builder.setAttemptNumber(attemptNum);
     builder.setContainerIdString(containerId.toString());
-    builder.setAmHost(address.getHostName());
+    builder.setAmHost(LlapUtil.getAmHostNameFromAddress(address, job));
     builder.setAmPort(address.getPort());
     builder.setCredentialsBinary(ByteString.copyFrom(credentialsBinary));
     builder.setFragmentRuntimeInfo(runtimeInfo.build());
