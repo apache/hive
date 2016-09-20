@@ -417,6 +417,11 @@ public class TestLlapTaskCommunicator {
     public InetSocketAddress getAddress() {
       return InetSocketAddress.createUnresolved("localhost", 15001);
     }
+
+    @Override
+    public String getAmHostString() {
+      return "localhost";
+    }
   }
 
 }
