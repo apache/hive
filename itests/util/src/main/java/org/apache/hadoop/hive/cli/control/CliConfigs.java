@@ -307,28 +307,6 @@ public class CliConfigs {
     }
   }
 
-  public static class HBaseMinimrCliConfig extends AbstractCliConfig {
-    public HBaseMinimrCliConfig() {
-      super(CoreHBaseCliDriver.class);
-      try {
-        setQueryDir("hbase-handler/src/test/queries/positive");
-        // XXX: i think this was non intentionally set to run only hbase_bulk.m???
-        // includeQuery("hbase_bulk.m"); => will be filter out because not ends with .q
-        // to keep existing behaviour i added this method
-        overrideUserQueryFile("hbase_bulk.m");
-
-        setResultsDir("hbase-handler/src/test/results/positive");
-        setLogDir("itests/qtest/target/qfile-results/hbase-handler/minimrpositive");
-        setInitScript("q_test_init_for_minimr.sql");
-        setCleanupScript("q_test_cleanup.sql");
-        setHiveConfDir("");
-        setClusterType(MiniClusterType.mr);
-      } catch (Exception e) {
-        throw new RuntimeException("can't construct cliconfig", e);
-      }
-    }
-  }
-
   public static class DummyConfig extends AbstractCliConfig {
     public DummyConfig() {
       super(CoreDummy.class);
