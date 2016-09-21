@@ -247,7 +247,7 @@ public class SortedDynPartitionOptimizer extends Transform {
         }
       }
       RowSchema selRS = new RowSchema(fsParent.getSchema());
-      if (!bucketColumns.isEmpty()) {
+      if (!bucketColumns.isEmpty() || fsOp.getConf().getWriteType() == Operation.DELETE || fsOp.getConf().getWriteType() == Operation.UPDATE) {
         descs.add(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, ReduceField.KEY.toString()+".'"+BUCKET_NUMBER_COL_NAME+"'", null, false));
         colNames.add("'"+BUCKET_NUMBER_COL_NAME+"'");
         ColumnInfo ci = new ColumnInfo(BUCKET_NUMBER_COL_NAME, TypeInfoFactory.stringTypeInfo, selRS.getSignature().get(0).getTabAlias(), true, true);
@@ -268,7 +268,7 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       // Set if partition sorted or partition bucket sorted
       fsOp.getConf().setDpSortState(FileSinkDesc.DPSortState.PARTITION_SORTED);
-      if (bucketColumns.size() > 0) {
+      if (bucketColumns.size() > 0 || fsOp.getConf().getWriteType() == Operation.DELETE || fsOp.getConf().getWriteType() == Operation.UPDATE) {
         fsOp.getConf().setDpSortState(FileSinkDesc.DPSortState.PARTITION_BUCKET_SORTED);
       }
 
