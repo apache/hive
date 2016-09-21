@@ -18,49 +18,38 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
-
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 // Validate the metastore client call validatePartitionNameCharacters to ensure it throws
 // an exception if partition fields contain Unicode characters or commas
 
-public class TestPartitionNameWhitelistValidation extends TestCase {
+public class TestPartitionNameWhitelistValidation {
 
   private static final String partitionValidationPattern = "[\\x20-\\x7E&&[^,]]*";
+  private static HiveConf hiveConf;
+  private static HiveMetaStoreClient msc;
 
-  private HiveConf hiveConf;
-  private HiveMetaStoreClient msc;
-  private Driver driver;
-
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  @BeforeClass
+  public static void setupBeforeClass() throws Exception {
     System.setProperty(HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.varname,
         partitionValidationPattern);
-    int port = MetaStoreUtils.findFreePort();
-    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
-    hiveConf = new HiveConf(this.getClass());
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
-    hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
+    hiveConf = new HiveConf();
     SessionState.start(new CliSessionState(hiveConf));
     msc = new HiveMetaStoreClient(hiveConf);
-    driver = new Driver(hiveConf);
   }
 
   // Runs an instance of DisallowUnicodePreEventListener
   // Returns whether or not it succeeded
   private boolean runValidation(List<String> partVals) {
-
     try {
       msc.validatePartitionNameCharacters(partVals);
     } catch (Exception e) {
@@ -72,74 +61,62 @@ public class TestPartitionNameWhitelistValidation extends TestCase {
 
   // Sample data
   private List<String> getPartValsWithUnicode() {
-
     List<String> partVals = new ArrayList<String>();
     partVals.add("klâwen");
     partVals.add("tägelîch");
 
     return partVals;
-
   }
 
   private List<String> getPartValsWithCommas() {
-
     List<String> partVals = new ArrayList<String>();
     partVals.add("a,b");
     partVals.add("c,d,e,f");
 
     return partVals;
-
   }
 
   private List<String> getPartValsWithValidCharacters() {
-
     List<String> partVals = new ArrayList<String>();
     partVals.add("part1");
     partVals.add("part2");
 
     return partVals;
-
   }
 
   @Test
   public void testAddPartitionWithCommas() {
-
-    Assert.assertFalse("Add a partition with commas in name",
+    assertFalse("Add a partition with commas in name",
         runValidation(getPartValsWithCommas()));
   }
 
   @Test
   public void testAddPartitionWithUnicode() {
-
-    Assert.assertFalse("Add a partition with unicode characters in name",
+    assertFalse("Add a partition with unicode characters in name",
         runValidation(getPartValsWithUnicode()));
   }
 
   @Test
   public void testAddPartitionWithValidPartVal() {
-
-    Assert.assertTrue("Add a partition with unicode characters in name",
+    assertTrue("Add a partition with unicode characters in name",
         runValidation(getPartValsWithValidCharacters()));
   }
 
   @Test
   public void testAppendPartitionWithUnicode() {
-
-    Assert.assertFalse("Append a partition with unicode characters in name",
+    assertFalse("Append a partition with unicode characters in name",
         runValidation(getPartValsWithUnicode()));
   }
 
   @Test
   public void testAppendPartitionWithCommas() {
-
-    Assert.assertFalse("Append a partition with unicode characters in name",
+    assertFalse("Append a partition with unicode characters in name",
         runValidation(getPartValsWithCommas()));
   }
 
   @Test
   public void testAppendPartitionWithValidCharacters() {
-
-    Assert.assertTrue("Append a partition with no unicode characters in name",
+    assertTrue("Append a partition with no unicode characters in name",
         runValidation(getPartValsWithValidCharacters()));
   }
 
