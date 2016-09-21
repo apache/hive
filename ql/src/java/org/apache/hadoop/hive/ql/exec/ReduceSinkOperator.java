@@ -35,6 +35,8 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
@@ -78,6 +80,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   private transient ObjectInspector[] partitionObjectInspectors;
   private transient ObjectInspector[] bucketObjectInspectors;
   private transient int buckColIdxInKey;
+  private transient int buckColIdxInKeyForAcid = -1;
   private boolean firstRow;
   private transient int tag;
   private boolean skipTag = false;
@@ -183,6 +186,9 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       keyEval = new ExprNodeEvaluator[keys.size()];
       int i = 0;
       for (ExprNodeDesc e : keys) {
+        if (e instanceof ExprNodeConstantDesc && ("_bucket_number").equals(((ExprNodeConstantDesc)e).getValue())) {
+          buckColIdxInKeyForAcid = i;
+        }
         keyEval[i++] = ExprNodeEvaluatorFactory.get(e);
       }
 
@@ -359,6 +365,9 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
         // In the non-partitioned case we still want to compute the bucket number for updates and
         // deletes.
         bucketNumber = computeBucketNumber(row, conf.getNumBuckets());
+        if (buckColIdxInKeyForAcid != -1) {
+          cachedKeys[0][buckColIdxInKeyForAcid] = new Text(String.valueOf(bucketNumber));
+        }
       }
 
       HiveKey firstKey = toHiveKey(cachedKeys[0], tag, null);
