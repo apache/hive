@@ -225,6 +225,13 @@ public final class Utilities {
   public static String REDUCENAME = "Reducer ";
 
   /**
+   * Constants for log masking
+   */
+  private static String KEY_TO_MASK_WITH = "password";
+  private static String MASKED_VALUE = "###_MASKED_###";
+
+
+  /**
    * ReduceField:
    * KEY: record key
    * VALUE: record value
@@ -3696,5 +3703,21 @@ public final class Utilities {
       result[i] = columnNameToType.get(readColumnNames.get(i));
     }
     return result;
+  }
+
+  /**
+   * Returns MASKED_VALUE if the key contains KEY_TO_MASK_WITH or the original property otherwise.
+   * Used to mask environment variables, and properties in logs which contain passwords
+   * @param key The property key to check
+   * @param value The original value of the property
+   * @return The masked property value
+   */
+  public static String maskIfPassword(String key, String value) {
+    if (key!=null && value!=null) {
+      if (key.toLowerCase().indexOf(KEY_TO_MASK_WITH) != -1) {
+        return MASKED_VALUE;
+      }
+    }
+    return value;
   }
 }

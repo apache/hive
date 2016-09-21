@@ -309,7 +309,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
         String name = entry.getKey();
         String value = entry.getValue();
         env[pos++] = name + "=" + value;
-        LOG.debug("Setting env: " + env[pos-1]);
+        LOG.debug("Setting env: " + name + "=" + Utilities.maskIfPassword(name, value));
       }
 
       LOG.info("Executing: " + cmdLine);
