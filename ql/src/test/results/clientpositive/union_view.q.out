@@ -352,6 +352,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_1
             filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -376,6 +378,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_2
             filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((key = 86) and (ds = '1')) (type: boolean)
@@ -400,6 +404,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_3
             filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((key = 86) and (ds = '1')) (type: boolean)
@@ -465,6 +471,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_1
             filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((key = 86) and (ds = '2')) (type: boolean)
@@ -489,6 +497,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_2
             filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -513,6 +523,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_3
             filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((key = 86) and (ds = '2')) (type: boolean)
@@ -578,6 +590,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_1
             filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((key = 86) and (ds = '3')) (type: boolean)
@@ -602,6 +616,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_2
             filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((key = 86) and (ds = '3')) (type: boolean)
@@ -626,6 +642,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_3
             filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -695,6 +713,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_1
             filterExpr: ((key = 86) and ds is not null) (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -717,6 +737,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_2
             filterExpr: ((key = 86) and ds is not null) (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -739,6 +761,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_3
             filterExpr: ((key = 86) and ds is not null) (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -870,6 +894,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_1
             filterExpr: (ds = '1') (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -889,6 +915,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_2
             filterExpr: (ds = '1') (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ds = '1') (type: boolean)
@@ -911,6 +939,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_3
             filterExpr: (ds = '1') (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ds = '1') (type: boolean)
@@ -985,6 +1015,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_1
             filterExpr: (ds = '2') (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ds = '2') (type: boolean)
@@ -1007,6 +1039,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_2
             filterExpr: (ds = '2') (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -1026,6 +1060,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_3
             filterExpr: (ds = '2') (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ds = '2') (type: boolean)
@@ -1100,6 +1136,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_1
             filterExpr: (ds = '3') (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ds = '3') (type: boolean)
@@ -1122,6 +1160,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_2
             filterExpr: (ds = '3') (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ds = '3') (type: boolean)
@@ -1144,6 +1184,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_3
             filterExpr: (ds = '3') (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
@@ -1220,6 +1262,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_1
             filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((key = 86) and (ds = '4')) (type: boolean)
@@ -1244,6 +1288,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_2
             filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((key = 86) and (ds = '4')) (type: boolean)
@@ -1268,6 +1314,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_3
             filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -1332,6 +1380,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_1
             filterExpr: (ds = '4') (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ds = '4') (type: boolean)
@@ -1354,6 +1404,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_2
             filterExpr: (ds = '4') (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ds = '4') (type: boolean)
@@ -1376,6 +1428,8 @@ STAGE PLANS:
           TableScan
             alias: src_union_3
             filterExpr: (ds = '4') (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE

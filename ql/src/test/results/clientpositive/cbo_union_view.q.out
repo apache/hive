@@ -64,6 +64,8 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src_union_1
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -87,6 +89,8 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             alias: src_union_2
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -110,6 +114,8 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             alias: src_union_3
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (key = 86) (type: boolean)
@@ -152,6 +158,8 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src_union_1
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((key = 86) and (ds = '1')) (type: boolean)
@@ -175,6 +183,8 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             alias: src_union_2
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((key = 86) and (ds = '1')) (type: boolean)
@@ -198,6 +208,8 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             alias: src_union_3
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((key = 86) and (ds = '1')) (type: boolean)

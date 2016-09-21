@@ -149,6 +149,8 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_old
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -170,6 +172,8 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: t1_mapping
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -322,6 +326,8 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_new
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -477,6 +483,8 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_old
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -498,6 +506,8 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: t1_mapping
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -554,6 +564,8 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_new
+            properties:
+              insideView TRUE
             Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
