@@ -276,8 +276,8 @@ public class CliConfigs {
         setResultsDir("ql/src/test/results/clientnegative");
         setLogDir("itests/qtest/target/qfile-results/clientnegative");
 
-        setInitScript("q_test_init.sql");
-        setCleanupScript("q_test_cleanup.sql");
+        setInitScript("q_test_init_for_encryption.sql");
+        setCleanupScript("q_test_cleanup_for_encryption.sql");
 
         setHiveConfDir("");
         setClusterType(MiniClusterType.mr);
