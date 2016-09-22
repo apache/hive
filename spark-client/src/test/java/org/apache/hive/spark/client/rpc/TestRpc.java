@@ -18,9 +18,10 @@
 package org.apache.hive.spark.client.rpc;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -138,6 +139,41 @@ public class TestRpc {
     }
 
     serverRpcFuture.cancel(true);
+  }
+
+  @Test
+  public void testServerPort() throws Exception {
+    Map<String, String> config = new HashMap<String, String>();
+
+    RpcServer server0 = new RpcServer(config);
+    assertTrue("Empty port range should return a random valid port: " + server0.getPort(), server0.getPort() >= 0);
+    IOUtils.closeQuietly(server0);
+
+    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, "49152-49222,49223,49224-49333");
+    RpcServer server1 = new RpcServer(config);
+    assertTrue("Port should be within configured port range:" + server1.getPort(), server1.getPort() >= 49152 && server1.getPort() <= 49333);
+    IOUtils.closeQuietly(server1);
+
+    int expectedPort = 65535;
+    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, String.valueOf(expectedPort));
+    RpcServer server2 = new RpcServer(config);
+    assertTrue("Port should match configured one: " + server2.getPort(), server2.getPort() == expectedPort);
+    IOUtils.closeQuietly(server2);
+
+    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, "49552-49222,49223,49224-49333");
+    try {
+      autoClose(new RpcServer(config));
+      assertTrue("Invalid port range should throw an exception", false); // Should not reach here
+    } catch(IOException e) {
+      assertEquals("Incorrect RPC server port configuration for HiveServer2", e.getMessage());
+    }
+
+    // Retry logic
+    expectedPort = 65535;
+    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, String.valueOf(expectedPort) + ",21-23");
+    RpcServer server3 = new RpcServer(config);
+    assertTrue("Port should match configured one:" + server3.getPort(), server3.getPort() == expectedPort);
+    IOUtils.closeQuietly(server3);
   }
 
   @Test

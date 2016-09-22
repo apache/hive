@@ -18,7 +18,9 @@
 package org.apache.hive.spark.client.rpc;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -105,6 +107,42 @@ public final class RpcConfiguration {
       }
     }
     return ServerUtils.getHostAddress(hiveHost).getHostName();
+  }
+
+  /**
+   * Parses the port string like 49152-49222,49228 into the port list. A default 0
+   * is added for the empty port string.
+   * @return a list of configured ports.
+   * @exception IOException is thrown if the property is not configured properly
+   */
+  List<Integer> getServerPorts() throws IOException {
+    String errMsg = "Incorrect RPC server port configuration for HiveServer2";
+    String portString = config.get(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname);
+    ArrayList<Integer> ports = new ArrayList<Integer>();
+    try {
+      if(!StringUtils.isEmpty(portString)) {
+        for (String portRange : portString.split(",")) {
+          String[] range = portRange.split("-");
+          if (range.length == 0 || range.length > 2
+              || (range.length == 2 && Integer.valueOf(range[0]) > Integer.valueOf(range[1]))) {
+            throw new IOException(errMsg);
+          }
+          if (range.length == 1) {
+            ports.add(Integer.valueOf(range[0]));
+          } else {
+            for (int i = Integer.valueOf(range[0]); i <= Integer.valueOf(range[1]); i++) {
+              ports.add(i);
+            }
+          }
+        }
+      } else {
+        ports.add(0);
+      }
+
+      return ports;
+    } catch(NumberFormatException e) {
+      throw new IOException(errMsg);
+    }
   }
 
   String getRpcChannelLogLevel() {
