@@ -18,26 +18,30 @@
 package org.apache.hive.spark.client.rpc;
 
 import java.io.Closeable;
+import java.net.InetAddress;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.security.sasl.SaslException;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.Future;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -114,6 +118,29 @@ public class TestRpc {
     Future<TestMessage> serverCall = serverRpc.call(serverMsg, TestMessage.class);
     TestMessage serverReply = serverCall.get(10, TimeUnit.SECONDS);
     assertEquals(serverMsg.message, serverReply.message);
+  }
+
+  @Test
+  public void testServerAddress() throws Exception {
+    String hostAddress = InetAddress.getLocalHost().getHostName();
+    Map<String, String> config = new HashMap<String, String>();
+
+    // Test if rpc_server_address is configured
+    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname, hostAddress);
+    RpcServer server1 = autoClose(new RpcServer(config));
+    assertTrue("Host address should match the expected one", server1.getAddress() == hostAddress);
+
+    // Test if rpc_server_address is not configured but HS2 server host is configured
+    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname, "");
+    config.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST.varname, hostAddress);
+    RpcServer server2 = autoClose(new RpcServer(config));
+    assertTrue("Host address should match the expected one", server2.getAddress() == hostAddress);
+
+    // Test if both are not configured
+    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname, "");
+    config.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST.varname, "");
+    RpcServer server3 = autoClose(new RpcServer(config));
+    assertTrue("Host address should match the expected one", server3.getAddress() == InetAddress.getLocalHost().getHostName());
   }
 
   @Test

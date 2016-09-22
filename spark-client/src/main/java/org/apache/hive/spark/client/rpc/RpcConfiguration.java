@@ -97,11 +97,11 @@ public final class RpcConfiguration {
    * @throws IOException
    */
   String getServerAddress() throws IOException {
-    String hiveHost = config.get(HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS);
+    String hiveHost = config.get(HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname);
     if(StringUtils.isEmpty(hiveHost)) {
       hiveHost = System.getenv("HIVE_SERVER2_THRIFT_BIND_HOST");
       if (hiveHost == null) {
-        hiveHost = config.get(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST);
+        hiveHost = config.get(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST.varname);
       }
     }
     return ServerUtils.getHostAddress(hiveHost).getHostName();
