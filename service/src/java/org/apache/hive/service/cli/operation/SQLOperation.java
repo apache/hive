@@ -399,6 +399,17 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   private synchronized void cleanup(OperationState state) throws HiveSQLException {
     setState(state);
+
+    if (shouldRunAsync()) {
+      Future<?> backgroundHandle = getBackgroundHandle();
+      if (backgroundHandle != null) {
+        boolean success = backgroundHandle.cancel(true);
+        if (success) {
+          LOG.info("The running operation has been successfully interrupted.");
+        }
+      }
+    }
+
     if (driver != null) {
       driver.close();
       driver.destroy();
@@ -411,13 +422,6 @@ public class SQLOperation extends ExecuteStatementOperation {
     } else {
       ss.deleteTmpOutputFile();
       ss.deleteTmpErrOutputFile();
-    }
-
-    if (shouldRunAsync()) {
-      Future<?> backgroundHandle = getBackgroundHandle();
-      if (backgroundHandle != null) {
-        backgroundHandle.cancel(true);
-      }
     }
 
     // Shutdown the timeout thread if any, while closing this operation
