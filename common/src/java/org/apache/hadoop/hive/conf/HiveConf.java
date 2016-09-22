@@ -3080,6 +3080,9 @@ public class HiveConf extends Configuration {
       "Default is empty, which means the address will be determined in the same way as for hive.server2.thrift.bind.host." +
       "This is only necessary if the host has mutiple network addresses and if a different network address other than " +
       "hive.server2.thrift.bind.host is to be used."),
+    SPARK_RPC_SERVER_PORT("hive.spark.client.rpc.server.port", "", "A list of port ranges which can be used by RPC server " +
+        "with the format of 49152-49222,49228 and a random one is selected from the list. Default is empty, which randomly " +
+        "selects one port from all available ones."),
     SPARK_DYNAMIC_PARTITION_PRUNING(
         "hive.spark.dynamic.partition.pruning", false,
         "When dynamic pruning is enabled, joins on partition keys will be processed by writing\n" +

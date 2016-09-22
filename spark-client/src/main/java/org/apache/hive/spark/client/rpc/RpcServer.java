@@ -21,10 +21,13 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.SecureRandom;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.TimeUnit;
+
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -39,8 +42,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -51,9 +56,9 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 import io.netty.util.concurrent.ScheduledFuture;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 
 /**
@@ -82,7 +87,7 @@ public class RpcServer implements Closeable {
             .setNameFormat("RPC-Handler-%d")
             .setDaemon(true)
             .build());
-    this.channel = new ServerBootstrap()
+     ServerBootstrap serverBootstrap = new ServerBootstrap()
       .group(group)
       .channel(NioServerSocketChannel.class)
       .childHandler(new ChannelInitializer<SocketChannel>() {
@@ -107,13 +112,40 @@ public class RpcServer implements Closeable {
       })
       .option(ChannelOption.SO_BACKLOG, 1)
       .option(ChannelOption.SO_REUSEADDR, true)
-      .childOption(ChannelOption.SO_KEEPALIVE, true)
-      .bind(0)
-      .sync()
-      .channel();
+      .childOption(ChannelOption.SO_KEEPALIVE, true);
+
+    this.channel = bindServerPort(serverBootstrap).channel();
     this.port = ((InetSocketAddress) channel.localAddress()).getPort();
     this.pendingClients = Maps.newConcurrentMap();
     this.address = this.config.getServerAddress();
+  }
+
+  /**
+   * Retry the list of configured ports until one is found
+   * @param serverBootstrap
+   * @return
+   * @throws InterruptedException
+   * @throws IOException
+   */
+  private ChannelFuture bindServerPort(ServerBootstrap serverBootstrap)
+      throws InterruptedException, IOException {
+    List<Integer> ports = config.getServerPorts();
+    if (ports.contains(0)) {
+      return serverBootstrap.bind(0).sync();
+    } else {
+      Random rand = new Random();
+      while(!ports.isEmpty()) {
+        int index = rand.nextInt(ports.size());
+        int port = ports.get(index);
+        ports.remove(index);
+        try {
+          return serverBootstrap.bind(port).sync();
+        } catch(Exception e) {
+          // Retry the next port
+        }
+      }
+      throw new IOException("No available ports from configured RPC Server ports for HiveServer2");
+    }
   }
 
   /**
