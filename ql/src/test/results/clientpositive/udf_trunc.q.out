@@ -2,12 +2,12 @@ PREHOOK: query: DESCRIBE FUNCTION trunc
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION trunc
 POSTHOOK: type: DESCFUNCTION
-trunc(date, fmt) - Returns returns date with the time portion of the day truncated to the unit specified by the format model fmt. If you omit fmt, then date is truncated to the nearest day. It now only supports 'MONTH'/'MON'/'MM' and 'YEAR'/'YYYY'/'YY' as format.
+trunc(date, fmt) / trunc(N,D) - Returns If input is date returns date with the time portion of the day truncated to the unit specified by the format model fmt. If you omit fmt, then date is truncated to the nearest day. It now only supports 'MONTH'/'MON'/'MM' and 'YEAR'/'YYYY'/'YY' as format.If input is a number group returns N truncated to D decimal places. If D is omitted, then N is truncated to 0 places.D can be negative to truncate (make zero) D digits left of the decimal point.
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED trunc
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED trunc
 POSTHOOK: type: DESCFUNCTION
-trunc(date, fmt) - Returns returns date with the time portion of the day truncated to the unit specified by the format model fmt. If you omit fmt, then date is truncated to the nearest day. It now only supports 'MONTH'/'MON'/'MM' and 'YEAR'/'YYYY'/'YY' as format.
+trunc(date, fmt) / trunc(N,D) - Returns If input is date returns date with the time portion of the day truncated to the unit specified by the format model fmt. If you omit fmt, then date is truncated to the nearest day. It now only supports 'MONTH'/'MON'/'MM' and 'YEAR'/'YYYY'/'YY' as format.If input is a number group returns N truncated to D decimal places. If D is omitted, then N is truncated to 0 places.D can be negative to truncate (make zero) D digits left of the decimal point.
 date is a string in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. The time part of date is ignored.
 Example:
   > SELECT trunc('2009-02-12', 'MM');
@@ -15,7 +15,17 @@ OK
  '2009-02-01'
  > SELECT trunc('2015-10-27', 'YEAR');
 OK
- '2015-01-01'
+ '2015-01-01' > SELECT trunc(1234567891.1234567891,4);
+OK
+ 1234567891.1234
+ > SELECT trunc(1234567891.1234567891,-4);
+OK
+ 1234560000 > SELECT trunc(1234567891.1234567891,0);
+OK
+ 1234567891
+ > SELECT trunc(1234567891.1234567891);
+OK
+ 1234567891
 PREHOOK: query: --test string with 'MM' as format
 EXPLAIN
 SELECT
