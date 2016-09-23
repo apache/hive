@@ -302,8 +302,11 @@ KW_CONF: 'CONF';
 KW_VALUES: 'VALUES';
 KW_RELOAD: 'RELOAD';
 KW_YEAR: 'YEAR';
+KW_QUARTER: 'QUARTER';
 KW_MONTH: 'MONTH';
+KW_WEEK: 'WEEK';
 KW_DAY: 'DAY';
+KW_DOW: 'DAYOFWEEK';
 KW_HOUR: 'HOUR';
 KW_MINUTE: 'MINUTE';
 KW_SECOND: 'SECOND';
@@ -335,6 +338,8 @@ KW_BATCH: 'BATCH';
 KW_STATUS: 'STATUS';
 KW_MERGE: 'MERGE';
 KW_MATCHED: 'MATCHED';
+KW_EXTRACT: 'EXTRACT';
+KW_FLOOR: 'FLOOR';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.
@@ -369,6 +374,7 @@ DIV : 'DIV';
 AMPERSAND : '&';
 TILDE : '~';
 BITWISEOR : '|';
+CONCATENATE : '||';
 BITWISEXOR : '^';
 QUESTION : '?';
 DOLLAR : '$';
