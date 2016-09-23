@@ -40,7 +40,6 @@ import com.google.common.collect.ImmutableMap;
 public abstract class UDFDateFloor extends UDF {
 
   private final QueryGranularity granularity;
-
   private final TimestampWritable result;
 
   public UDFDateFloor(String granularity) {
@@ -52,7 +51,12 @@ public abstract class UDFDateFloor extends UDF {
     if (t == null) {
       return null;
     }
-    long newTimestamp = granularity.truncate(t.getTimestamp().getTime());
+    final long originalTimestamp = t.getTimestamp().getTime(); // default
+    final long originalTimestampUTC = new DateTime(originalTimestamp)
+        .withZoneRetainFields(DateTimeZone.UTC).getMillis(); // default -> utc
+    final long newTimestampUTC = granularity.truncate(originalTimestampUTC); // utc
+    final long newTimestamp = new DateTime(newTimestampUTC, DateTimeZone.UTC)
+        .withZoneRetainFields(DateTimeZone.getDefault()).getMillis(); // utc -> default
     result.setTime(newTimestamp);
     return result;
   }

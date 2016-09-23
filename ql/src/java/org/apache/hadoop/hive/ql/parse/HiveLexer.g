@@ -302,7 +302,9 @@ KW_CONF: 'CONF';
 KW_VALUES: 'VALUES';
 KW_RELOAD: 'RELOAD';
 KW_YEAR: 'YEAR';
+KW_QUARTER: 'QUARTER';
 KW_MONTH: 'MONTH';
+KW_WEEK: 'WEEK';
 KW_DAY: 'DAY';
 KW_HOUR: 'HOUR';
 KW_MINUTE: 'MINUTE';
@@ -329,6 +331,7 @@ KW_RELY: 'RELY';
 KW_NORELY: 'NORELY';
 KW_KEY: 'KEY';
 KW_ABORT: 'ABORT';
+KW_FLOOR: 'FLOOR';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.
