@@ -150,12 +150,8 @@
                   <shadedPattern>org.apache.hive.druid.io.druid</shadedPattern>
                 </relocation>
                 <relocation>
-                  <pattern>com.metamx.emitter</pattern>
-                  <shadedPattern>org.apache.hive.druid.com.metamx.emitter</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.metamx.http.client</pattern>
-                  <shadedPattern>org.apache.hive.druid.com.metamx.http.client</shadedPattern>
+                  <pattern>com.metamx</pattern>
+                  <shadedPattern>org.apache.hive.druid.com.metamx</shadedPattern>
                 </relocation>
                 <relocation>
                   <pattern>io.netty</pattern>
@@ -173,8 +169,7 @@
               <artifactSet>
                 <includes>
                   <include>io.druid:*</include>
-                  <include>com.metamx:emitter:*</include>
-                  <include>com.metamx:http-client:*</include>
+                  <include>com.metamx:*</include>
                   <include>io.netty:*</include>
                   <include>com.fasterxml.jackson.core:*</include>
                   <include>com.fasterxml.jackson.datatype:*</include>
