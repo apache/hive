@@ -507,6 +507,9 @@ public class HiveServer2 extends CompositeService {
       LOG.info("Starting HiveServer2");
       HiveConf hiveConf = new HiveConf();
       maxAttempts = hiveConf.getLongVar(HiveConf.ConfVars.HIVE_SERVER2_MAX_START_ATTEMPTS);
+      long retrySleepIntervalMs = hiveConf
+          .getTimeVar(ConfVars.HIVE_SERVER2_SLEEP_INTERVAL_BETWEEN_START_ATTEMPTS,
+              TimeUnit.MILLISECONDS);
       HiveServer2 server = null;
       try {
         server = new HiveServer2();
@@ -550,9 +553,9 @@ public class HiveServer2 extends CompositeService {
           throw new Error("Max start attempts " + maxAttempts + " exhausted", throwable);
         } else {
           LOG.warn("Error starting HiveServer2 on attempt " + attempts
-              + ", will retry in 60 seconds", throwable);
+              + ", will retry in " + retrySleepIntervalMs + "ms", throwable);
           try {
-            Thread.sleep(60L * 1000L);
+            Thread.sleep(retrySleepIntervalMs);
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
           }
