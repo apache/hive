@@ -208,6 +208,28 @@ floorDateQualifiers
     | KW_SECOND -> Identifier["floor_second"]
     ;
 
+extractExpression
+    :
+    KW_EXTRACT
+    LPAREN
+          (timeUnit=timeQualifiers)
+          KW_FROM
+          expression
+    RPAREN -> ^(TOK_FUNCTION $timeUnit expression)
+    ;
+
+timeQualifiers
+    :
+    KW_YEAR -> Identifier["year"]
+    | KW_QUARTER -> Identifier["quarter"]
+    | KW_MONTH -> Identifier["month"]
+    | KW_WEEK -> Identifier["weekofyear"]
+    | KW_DAY -> Identifier["day"]
+    | KW_HOUR -> Identifier["hour"]
+    | KW_MINUTE -> Identifier["minute"]
+    | KW_SECOND -> Identifier["second"]
+    ;
+
 constant
 @init { gParent.pushMsg("constant", state); }
 @after { gParent.popMsg(state); }
@@ -292,6 +314,7 @@ atomExpression
     (KW_NULL) => KW_NULL -> TOK_NULL
     | (constant) => constant
     | castExpression
+    | extractExpression
     | floorExpression
     | caseExpression
     | whenExpression
