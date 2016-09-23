@@ -2172,9 +2172,13 @@ public class HiveConf extends Configuration {
         "SSL Versions to disable for all Hive Servers"),
 
      // HiveServer2 specific configs
+    HIVE_SERVER2_SLEEP_INTERVAL_BETWEEN_START_ATTEMPTS("hive.server2.sleep.interval.between.start.attempts",
+        "60s", new TimeValidator(TimeUnit.MILLISECONDS, 0l, true, Long.MAX_VALUE, true),
+        "Amount of time to sleep between HiveServer2 start attempts. Primarily meant for tests"),
     HIVE_SERVER2_MAX_START_ATTEMPTS("hive.server2.max.start.attempts", 30L, new RangeValidator(0L, null),
-        "Number of times HiveServer2 will attempt to start before exiting, sleeping 60 seconds " +
-        "between retries. \n The default of 30 will keep trying for 30 minutes."),
+        "Number of times HiveServer2 will attempt to start before exiting. The sleep interval between retries" +
+        " is determined by " + ConfVars.HIVE_SERVER2_SLEEP_INTERVAL_BETWEEN_START_ATTEMPTS.varname +
+        "\n The default of 30 will keep trying for 30 minutes."),
     HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY("hive.server2.support.dynamic.service.discovery", false,
         "Whether HiveServer2 supports dynamic service discovery for its clients. " +
         "To support this, each instance of HiveServer2 currently uses ZooKeeper to register itself, " +
