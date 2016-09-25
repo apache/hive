@@ -700,6 +700,18 @@
       <artifactId>jersey-servlet</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-server</artifactId>
+      <version>${glassfish.jersey.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.containers</groupId>
+      <artifactId>jersey-container-servlet-core</artifactId>
+      <version>${glassfish.jersey.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <profiles>
