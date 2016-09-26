@@ -27,6 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,6 +40,8 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -67,6 +70,7 @@ import org.apache.tez.dag.api.client.DAGClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -272,5 +276,18 @@ public class TestTezTask {
     when(utils.getBaseName(res)).thenReturn("foo.jar");
 
     assertEquals(resMap, task.getExtraLocalResources(conf, path, inputOutputJars));
+  }
+
+  @Test
+  public void tezTask_updates_Metrics() throws IOException {
+
+    Metrics mockMetrics = Mockito.mock(Metrics.class);
+
+    TezTask tezTask = new TezTask();
+    tezTask.updateTaskMetrics(mockMetrics);
+
+    verify(mockMetrics, times(1)).incrementCounter(MetricsConstant.HIVE_TEZ_TASKS);
+    verify(mockMetrics, never()).incrementCounter(MetricsConstant.HIVE_SPARK_TASKS);
+    verify(mockMetrics, never()).incrementCounter(MetricsConstant.HIVE_MR_TASKS);
   }
 }

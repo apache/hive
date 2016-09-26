@@ -29,6 +29,8 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryDisplay;
@@ -532,6 +534,13 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     }
   }
 
+  /**
+   * Provide metrics on the type and number of tasks executed by the HiveServer
+   * @param metrics
+   */
+  public void updateTaskMetrics(Metrics metrics) {
+    // no metrics gathered by default
+   }
 
   public int getTaskTag() {
     return taskTag;

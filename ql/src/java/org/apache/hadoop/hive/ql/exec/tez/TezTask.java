@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -30,6 +31,8 @@ import java.util.Set;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -413,6 +416,15 @@ public class TezTask extends Task<TezWork> {
       }
     }
     return rc;
+  }
+
+  @Override
+  public void updateTaskMetrics(Metrics metrics) {
+    try {
+      metrics.incrementCounter(MetricsConstant.HIVE_TEZ_TASKS);
+    } catch (IOException ex) {
+      LOG.warn("Could not increment metrics for " + this, ex);
+    }
   }
 
   @Override

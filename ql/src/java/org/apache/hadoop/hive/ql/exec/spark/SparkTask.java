@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -187,6 +189,15 @@ public class SparkTask extends Task<SparkWork> {
       }
     }
     return rc;
+  }
+
+  @Override
+  public void updateTaskMetrics(Metrics metrics) {
+    try {
+      metrics.incrementCounter(MetricsConstant.HIVE_SPARK_TASKS);
+    } catch (IOException ex) {
+      LOG.warn("Could not increment metrics for " + this, ex);
+    }
   }
 
   @Override
