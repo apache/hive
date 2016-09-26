@@ -1145,6 +1145,38 @@ public class TestJdbcDriver2 {
     assertFalse("Unexpected table", rs.next());
   }
 
+  @Test
+  public void testMetaDataGetTypeInfo() throws SQLException {
+    HiveBaseResultSet rs = (HiveBaseResultSet) con.getMetaData().getTypeInfo();
+    Set<String> typeInfos = new HashSet<String>();
+    typeInfos.add("BOOLEAN");
+    typeInfos.add("TINYINT");
+    typeInfos.add("SMALLINT");
+    typeInfos.add("INT");
+    typeInfos.add("BIGINT");
+    typeInfos.add("FLOAT");
+    typeInfos.add("DOUBLE");
+    typeInfos.add("STRING");
+    typeInfos.add("TIMESTAMP");
+    typeInfos.add("BINARY");
+    typeInfos.add("DECIMAL");
+    typeInfos.add("ARRAY");
+    typeInfos.add("MAP");
+    typeInfos.add("STRUCT");
+    typeInfos.add("UNIONTYPE");
+
+    int cnt = 0;
+    while (rs.next()) {
+      String typeInfo = rs.getString("TYPE_NAME");
+      assertEquals("Get by index different from get by name", rs.getString(1), typeInfo);
+      typeInfos.remove(typeInfo);
+      cnt++;
+    }
+    rs.close();
+    assertEquals("Incorrect typeInfo count.", 0, typeInfos.size());
+    assertTrue("Found less typeInfos than we test for.", cnt >= typeInfos.size());
+  }
+
   /**
    * Test the type returned for pre-created table type table and view type table
    * @param tableTypeNames expected table types
