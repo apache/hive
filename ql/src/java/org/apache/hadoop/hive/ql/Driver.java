@@ -1671,6 +1671,11 @@ public class Driver implements CommandProcessor {
         // incorrect results.
         assert tsk.getParentTasks() == null || tsk.getParentTasks().isEmpty();
         driverCxt.addToRunnable(tsk);
+
+        Metrics metrics = MetricsFactory.getInstance();
+        if (metrics != null) {
+          tsk.updateTaskMetrics(metrics);
+        }
       }
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RUN_TASKS);
