@@ -47,8 +47,8 @@ public class ShuffleWriteMetrics implements Serializable {
   }
 
   public ShuffleWriteMetrics(TaskMetrics metrics) {
-    this(metrics.shuffleWriteMetrics().get().shuffleBytesWritten(),
-      metrics.shuffleWriteMetrics().get().shuffleWriteTime());
+    this(metrics.shuffleWriteMetrics().shuffleBytesWritten(),
+      metrics.shuffleWriteMetrics().shuffleWriteTime());
   }
 
 }

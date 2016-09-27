@@ -361,7 +361,7 @@
       <version>${calcite.version}</version>
       <exclusions>
         <!-- hsqldb interferes with the use of derby as the default db
-          in hive's use of datanucleus. 
+          in hive's use of datanucleus.
         -->
         <exclusion>
           <groupId>org.hsqldb</groupId>
@@ -380,14 +380,14 @@
           <artifactId>jackson-core</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>   
+    </dependency>
     <dependency>
       <groupId>org.apache.calcite</groupId>
       <artifactId>calcite-avatica</artifactId>
       <version>${calcite.version}</version>
       <exclusions>
         <!-- hsqldb interferes with the use of derby as the default db
-          in hive's use of datanucleus. 
+          in hive's use of datanucleus.
         -->
         <exclusion>
           <groupId>org.hsqldb</groupId>
@@ -685,11 +685,31 @@
          <groupId>commmons-logging</groupId>
          <artifactId>commons-logging</artifactId>
        </exclusion>
+       <exclusion>
+         <groupId>org.glassfish.jersey.containers</groupId>
+         <artifactId>*</artifactId>
+       </exclusion>
+       <exclusion>
+         <groupId>org.glassfish.jersey.core</groupId>
+         <artifactId>*</artifactId>
+       </exclusion>
      </exclusions>
    </dependency>
     <dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-servlet</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-server</artifactId>
+      <version>${glassfish.jersey.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.containers</groupId>
+      <artifactId>jersey-container-servlet-core</artifactId>
+      <version>${glassfish.jersey.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

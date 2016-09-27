@@ -75,60 +75,52 @@ public class SortByShuffler implements SparkShuffler {
     private static final long serialVersionUID = 1L;
 
     @Override
-    public Iterable<Tuple2<HiveKey, Iterable<BytesWritable>>> call(
-        final Iterator<Tuple2<HiveKey, BytesWritable>> it) throws Exception {
+    public Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>> call(
+      final Iterator<Tuple2<HiveKey, BytesWritable>> it) throws Exception {
       // Use input iterator to back returned iterable object.
-      final Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>> resultIt =
-          new Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>>() {
-            HiveKey curKey = null;
-            List<BytesWritable> curValues = new ArrayList<BytesWritable>();
+      return new Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>>() {
+        HiveKey curKey = null;
+        List<BytesWritable> curValues = new ArrayList<BytesWritable>();
 
-            @Override
-            public boolean hasNext() {
-              return it.hasNext() || curKey != null;
-            }
-
-            @Override
-            public Tuple2<HiveKey, Iterable<BytesWritable>> next() {
-              // TODO: implement this by accumulating rows with the same key into a list.
-              // Note that this list needs to improved to prevent excessive memory usage, but this
-              // can be done in later phase.
-              while (it.hasNext()) {
-                Tuple2<HiveKey, BytesWritable> pair = it.next();
-                if (curKey != null && !curKey.equals(pair._1())) {
-                  HiveKey key = curKey;
-                  List<BytesWritable> values = curValues;
-                  curKey = pair._1();
-                  curValues = new ArrayList<BytesWritable>();
-                  curValues.add(pair._2());
-                  return new Tuple2<HiveKey, Iterable<BytesWritable>>(key, values);
-                }
-                curKey = pair._1();
-                curValues.add(pair._2());
-              }
-              if (curKey == null) {
-                throw new NoSuchElementException();
-              }
-              // if we get here, this should be the last element we have
-              HiveKey key = curKey;
-              curKey = null;
-              return new Tuple2<HiveKey, Iterable<BytesWritable>>(key, curValues);
-            }
-
-            @Override
-            public void remove() {
-              // Not implemented.
-              // throw Unsupported Method Invocation Exception.
-              throw new UnsupportedOperationException();
-            }
-
-          };
-
-      return new Iterable<Tuple2<HiveKey, Iterable<BytesWritable>>>() {
         @Override
-        public Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>> iterator() {
-          return resultIt;
+        public boolean hasNext() {
+          return it.hasNext() || curKey != null;
         }
+
+        @Override
+        public Tuple2<HiveKey, Iterable<BytesWritable>> next() {
+          // TODO: implement this by accumulating rows with the same key into a list.
+          // Note that this list needs to improved to prevent excessive memory usage, but this
+          // can be done in later phase.
+          while (it.hasNext()) {
+            Tuple2<HiveKey, BytesWritable> pair = it.next();
+            if (curKey != null && !curKey.equals(pair._1())) {
+              HiveKey key = curKey;
+              List<BytesWritable> values = curValues;
+              curKey = pair._1();
+              curValues = new ArrayList<BytesWritable>();
+              curValues.add(pair._2());
+              return new Tuple2<HiveKey, Iterable<BytesWritable>>(key, values);
+            }
+            curKey = pair._1();
+            curValues.add(pair._2());
+          }
+          if (curKey == null) {
+            throw new NoSuchElementException();
+          }
+          // if we get here, this should be the last element we have
+          HiveKey key = curKey;
+          curKey = null;
+          return new Tuple2<HiveKey, Iterable<BytesWritable>>(key, curValues);
+        }
+
+        @Override
+        public void remove() {
+          // Not implemented.
+          // throw Unsupported Method Invocation Exception.
+          throw new UnsupportedOperationException();
+        }
+
       };
     }
   }
