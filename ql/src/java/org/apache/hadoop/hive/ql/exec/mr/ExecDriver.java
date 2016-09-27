@@ -170,7 +170,11 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     initializeFiles("tmpfiles", getResource(conf, SessionState.ResourceType.FILE));
     initializeFiles("tmparchives", getResource(conf, SessionState.ResourceType.ARCHIVE));
 
-    conf.stripHiddenConfigurations(job);
+    // Hide sensitive configuration values from MR HistoryUI by telling MR to redact the following list.
+    // Note: We should not strip the values before submitting the job as there might be other variables used
+    // by MR, such as S3 credentials.
+    job.set("mapreduce.job.redacted-properties", job.get(HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname));
+
     this.jobExecHelper = new HadoopJobExecHelper(job, console, this, this);
   }
 
