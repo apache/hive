@@ -3777,8 +3777,8 @@ public class HiveConf extends Configuration {
 
     // setup list of conf vars that are not allowed to change runtime
     setupRestrictList();
-    setupHiddenSet();
-
+    hiddenSet.clear();
+    hiddenSet.addAll(HiveConfUtil.getHiddenSet(this));
   }
 
   /**
@@ -4130,25 +4130,11 @@ public class HiveConf extends Configuration {
     restrictList.add(ConfVars.HIVE_CONF_INTERNAL_VARIABLE_LIST.varname);
   }
 
-  private void setupHiddenSet() {
-    String hiddenListStr = this.getVar(ConfVars.HIVE_CONF_HIDDEN_LIST);
-    hiddenSet.clear();
-    if (hiddenListStr != null) {
-      for (String entry : hiddenListStr.split(",")) {
-        hiddenSet.add(entry.trim());
-      }
-    }
-  }
-
   /**
    * Strips hidden config entries from configuration
    */
   public void stripHiddenConfigurations(Configuration conf) {
-    for (String name : hiddenSet) {
-      if (conf.get(name) != null) {
-        conf.set(name, "");
-      }
-    }
+    HiveConfUtil.stripConfigurations(conf, hiddenSet);
   }
 
   /**
