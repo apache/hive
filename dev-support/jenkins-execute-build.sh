@@ -70,7 +70,9 @@ test -n "$TEST_HANDLE" || fail "TEST_HANDLE must be specified and cannot be empt
 test -n "$PTEST_API_ENDPOINT" || fail "PTEST_API_ENDPOINT must be specified and cannot be empty."
 test -n "$PTEST_LOG_ENDPOINT" || fail "PTEST_LOG_ENDPOINT must be specified and cannot be empty."
 
-MVN_REPO_LOCAL=${HOME}/.m2/repository
+# WORKSPACE is an environment variable created by Jenkins, and it is the directory where the build is executed.
+# If not set, then default to $HOME
+MVN_REPO_LOCAL=${WORKSPACE:-$HOME}/.m2/repository
 
 # Directory where to build the ptest framework
 PTEST_BUILD_DIR="$PWD/hive/build"
