@@ -36,8 +36,19 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
     switch (typeName) {
     case DECIMAL:
       return getMaxNumericScale();
-    case INTERVAL_DAY_TIME:
+    case INTERVAL_YEAR:
+    case INTERVAL_MONTH:
     case INTERVAL_YEAR_MONTH:
+    case INTERVAL_DAY:
+    case INTERVAL_DAY_HOUR:
+    case INTERVAL_DAY_MINUTE:
+    case INTERVAL_DAY_SECOND:
+    case INTERVAL_HOUR:
+    case INTERVAL_HOUR_MINUTE:
+    case INTERVAL_HOUR_SECOND:
+    case INTERVAL_MINUTE:
+    case INTERVAL_MINUTE_SECOND:
+    case INTERVAL_SECOND:
       return SqlTypeName.MAX_INTERVAL_FRACTIONAL_SECOND_PRECISION;
     default:
       return -1;
@@ -58,8 +69,19 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
       return getMaxPrecision(typeName);
     case DECIMAL:
       return DEFAULT_DECIMAL_PRECISION;
-    case INTERVAL_DAY_TIME:
+    case INTERVAL_YEAR:
+    case INTERVAL_MONTH:
     case INTERVAL_YEAR_MONTH:
+    case INTERVAL_DAY:
+    case INTERVAL_DAY_HOUR:
+    case INTERVAL_DAY_MINUTE:
+    case INTERVAL_DAY_SECOND:
+    case INTERVAL_HOUR:
+    case INTERVAL_HOUR_MINUTE:
+    case INTERVAL_HOUR_SECOND:
+    case INTERVAL_MINUTE:
+    case INTERVAL_MINUTE_SECOND:
+    case INTERVAL_SECOND:
       return SqlTypeName.DEFAULT_INTERVAL_START_PRECISION;
     default:
       return -1;
@@ -81,8 +103,19 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
     case TIME:
     case TIMESTAMP:
       return MAX_TIMESTAMP_PRECISION;
-    case INTERVAL_DAY_TIME:
+    case INTERVAL_YEAR:
+    case INTERVAL_MONTH:
     case INTERVAL_YEAR_MONTH:
+    case INTERVAL_DAY:
+    case INTERVAL_DAY_HOUR:
+    case INTERVAL_DAY_MINUTE:
+    case INTERVAL_DAY_SECOND:
+    case INTERVAL_HOUR:
+    case INTERVAL_HOUR_MINUTE:
+    case INTERVAL_HOUR_SECOND:
+    case INTERVAL_MINUTE:
+    case INTERVAL_MINUTE_SECOND:
+    case INTERVAL_SECOND:
       return SqlTypeName.MAX_INTERVAL_START_PRECISION;
     default:
       return -1;

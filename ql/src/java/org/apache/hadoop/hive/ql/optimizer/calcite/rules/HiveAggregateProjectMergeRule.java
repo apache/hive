@@ -141,7 +141,8 @@ public class HiveAggregateProjectMergeRule extends RelOptRule {
            i < newAggregate.getRowType().getFieldCount(); i++) {
         posList.add(i);
       }
-      rel = HiveRelOptUtil.createProject(HiveRelFactories.HIVE_PROJECT_FACTORY,
+      rel = HiveRelOptUtil.createProject(
+          HiveRelFactories.HIVE_BUILDER.create(aggregate.getCluster(), null),
           rel, posList);
 
     }

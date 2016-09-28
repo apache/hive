@@ -746,7 +746,14 @@ STAGE PLANS:
     Fetch Operator
       limit: 0
       Processor Tree:
-        ListSink
+        TableScan
+          alias: src
+          Select Operator
+            expressions: key (type: string), value (type: string)
+            outputColumnNames: _col0, _col1
+            Limit
+              Number of rows: 0
+              ListSink
 
 PREHOOK: query: select key,value from src order by key limit 0
 PREHOOK: type: QUERY

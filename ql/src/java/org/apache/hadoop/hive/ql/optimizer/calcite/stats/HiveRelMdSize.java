@@ -122,7 +122,18 @@ public class HiveRelMdSize extends RelMdSize {
     case BIGINT:
     case DOUBLE:
     case TIMESTAMP:
-    case INTERVAL_DAY_TIME:
+    case INTERVAL_DAY:
+    case INTERVAL_DAY_HOUR:
+    case INTERVAL_DAY_MINUTE:
+    case INTERVAL_DAY_SECOND:
+    case INTERVAL_HOUR:
+    case INTERVAL_HOUR_MINUTE:
+    case INTERVAL_HOUR_SECOND:
+    case INTERVAL_MINUTE:
+    case INTERVAL_MINUTE_SECOND:
+    case INTERVAL_MONTH:
+    case INTERVAL_SECOND:
+    case INTERVAL_YEAR:
     case INTERVAL_YEAR_MONTH:
       return 8d;
     case BINARY:

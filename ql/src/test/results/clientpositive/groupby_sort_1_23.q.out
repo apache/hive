@@ -1387,11 +1387,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string)
-              outputColumnNames: key
+              outputColumnNames: _col1
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(key)
-                keys: key (type: string)
+                aggregations: count(1)
+                keys: _col1 (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -1482,7 +1482,7 @@ STAGE PLANS:
               name: default.t1
             name: default.t1
       Truncated Path -> Alias:
-        /t1 [t1]
+        /t1 [$hdt$_0:t1]
 
   Stage: Stage-7
     Conditional Operator
@@ -1708,7 +1708,7 @@ SELECT 1, key, count(1) FROM T1 GROUP BY 1, key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@outputtbl3
-POSTHOOK: Lineage: outputtbl3.cnt EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl3.cnt EXPRESSION [(t1)t1.null, ]
 POSTHOOK: Lineage: outputtbl3.key1 SIMPLE []
 POSTHOOK: Lineage: outputtbl3.key2 EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM outputTbl3
@@ -1757,11 +1757,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string), val (type: string)
-              outputColumnNames: key, val
+              outputColumnNames: _col0, _col2
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(val)
-                keys: key (type: string), val (type: string)
+                aggregations: count(1)
+                keys: _col0 (type: string), _col2 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -1826,7 +1826,7 @@ STAGE PLANS:
               name: default.t1
             name: default.t1
       Truncated Path -> Alias:
-        /t1 [t1]
+        /t1 [$hdt$_0:t1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1912,7 +1912,7 @@ SELECT key, 1, val, count(1) FROM T1 GROUP BY key, 1, val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@outputtbl4
-POSTHOOK: Lineage: outputtbl4.cnt EXPRESSION [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl4.cnt EXPRESSION [(t1)t1.null, ]
 POSTHOOK: Lineage: outputtbl4.key1 EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl4.key2 SIMPLE []
 POSTHOOK: Lineage: outputtbl4.key3 SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
@@ -4123,11 +4123,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string), val (type: string)
-              outputColumnNames: key, val
+              outputColumnNames: _col0, _col2
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(val)
-                keys: key (type: string), val (type: string)
+                aggregations: count(1)
+                keys: _col0 (type: string), _col2 (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -4218,7 +4218,7 @@ STAGE PLANS:
               name: default.t2
             name: default.t2
       Truncated Path -> Alias:
-        /t2 [t2]
+        /t2 [$hdt$_0:t2]
 
   Stage: Stage-7
     Conditional Operator
@@ -4444,7 +4444,7 @@ SELECT key, 1, val, count(1) FROM T2 GROUP BY key, 1, val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Output: default@outputtbl4
-POSTHOOK: Lineage: outputtbl4.cnt EXPRESSION [(t2)t2.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl4.cnt EXPRESSION [(t2)t2.null, ]
 POSTHOOK: Lineage: outputtbl4.key1 EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl4.key2 SIMPLE []
 POSTHOOK: Lineage: outputtbl4.key3 SIMPLE [(t2)t2.FieldSchema(name:val, type:string, comment:null), ]
@@ -4502,11 +4502,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string), val (type: string)
-              outputColumnNames: key, val
+              outputColumnNames: _col0, _col2
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(val)
-                keys: key (type: string), val (type: string)
+                aggregations: count(1)
+                keys: _col0 (type: string), _col2 (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -4597,7 +4597,7 @@ STAGE PLANS:
               name: default.t2
             name: default.t2
       Truncated Path -> Alias:
-        /t2 [t2]
+        /t2 [$hdt$_0:t2]
 
   Stage: Stage-7
     Conditional Operator
@@ -4823,7 +4823,7 @@ SELECT key, 1, val, 2, count(1) FROM T2 GROUP BY key, 1, val, 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Output: default@outputtbl5
-POSTHOOK: Lineage: outputtbl5.cnt EXPRESSION [(t2)t2.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl5.cnt EXPRESSION [(t2)t2.null, ]
 POSTHOOK: Lineage: outputtbl5.key1 EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: outputtbl5.key2 SIMPLE []
 POSTHOOK: Lineage: outputtbl5.key3 SIMPLE [(t2)t2.FieldSchema(name:val, type:string, comment:null), ]

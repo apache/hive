@@ -133,9 +133,10 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
     // Split join condition
     final List<Integer> leftKeys = Lists.newArrayList();
     final List<Integer> rightKeys = Lists.newArrayList();
+    final List<Boolean> filterNulls = Lists.newArrayList();
     RexNode nonEquiConj =
         RelOptUtil.splitJoinCondition(join.getLeft(), join.getRight(),
-            join.getCondition(), leftKeys, rightKeys);
+            join.getCondition(), leftKeys, rightKeys, filterNulls);
     // If it contains non-equi join conditions, we bail out
     if (!nonEquiConj.isAlwaysTrue()) {
       return;
@@ -271,7 +272,8 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
       RelOptUtil.areRowTypesEqual(r.getRowType(), aggregate.getRowType(), false)) {
       // no need to aggregate
     } else {
-      r = RelOptUtil.createProject(r, projects, null, true, projectFactory);
+      r = RelOptUtil.createProject(r, projects, null, true,
+              relBuilderFactory.create(aggregate.getCluster(), null));
       if (allColumnsInAggregate) {
         // let's see if we can convert
         List<RexNode> projects2 = new ArrayList<>();
@@ -290,7 +292,8 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         if (projects2.size()
             == aggregate.getGroupSet().cardinality() + newAggCalls.size()) {
           // We successfully converted agg calls into projects.
-          r = RelOptUtil.createProject(r, projects2, null, true, projectFactory);
+          r = RelOptUtil.createProject(r, projects2, null, true,
+                  relBuilderFactory.create(aggregate.getCluster(), null));
           break b;
         }
       }

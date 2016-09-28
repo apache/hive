@@ -38,7 +38,6 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -131,7 +130,7 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
             && call.operands.get(0) instanceof RexLiteral) {
           ref = (RexInputRef) call.operands.get(1);
           literal = (RexLiteral) call.operands.get(0);
-          kind = HiveRexUtil.invert(call.getOperator().getKind());
+          kind = call.getOperator().getKind().reverse();
         }
 
         // Found an expression that we can try to reduce
@@ -252,7 +251,7 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
       // If we did not reduce, check the children nodes
       RexNode node = super.visitCall(call);
       if (node != call) {
-        node = HiveRexUtil.simplify(rexBuilder, node);
+        node = RexUtil.simplify(rexBuilder, node);
       }
       return node;
     }
