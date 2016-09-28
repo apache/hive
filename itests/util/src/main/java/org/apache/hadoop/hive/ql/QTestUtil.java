@@ -51,7 +51,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -86,9 +85,7 @@ import org.apache.hadoop.hive.common.io.SortPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapItUtils;
-import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
-import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -155,7 +152,6 @@ public class QTestUtil {
 
   private String testWarehouse;
   private final String testFiles;
-  private final boolean useLocalFs;
   private final boolean localMode;
   protected final String outDir;
   protected final String logDir;
@@ -170,6 +166,7 @@ public class QTestUtil {
   private static final String SORT_SUFFIX = ".sorted";
   private final HashSet<String> srcTables;
   private final MiniClusterType clusterType;
+  private final FsType fsType;
   private ParseDriver pd;
   protected Hive db;
   protected QueryState queryState;
@@ -414,14 +411,32 @@ public class QTestUtil {
     }
   }
 
+
+  public enum FsType {
+    local,
+    hdfs,
+    encrypted_hdfs,
+  }
+
   public enum MiniClusterType {
-    mr,
-    tez,
-    spark,
-    encrypted,
-    miniSparkOnYarn,
-    llap,
-    none;
+
+    mr(FsType.hdfs),
+    tez(FsType.hdfs),
+    spark(FsType.local),
+    miniSparkOnYarn(FsType.hdfs),
+    llap(FsType.hdfs),
+    none(FsType.local);
+
+
+    private final FsType defaultFsType;
+
+    MiniClusterType(FsType defaultFsType) {
+      this.defaultFsType = defaultFsType;
+    }
+
+    public FsType getDefaultFsType() {
+      return defaultFsType;
+    }
 
     public static MiniClusterType valueForString(String type) {
       if (type.equals("miniMR")) {
@@ -430,8 +445,6 @@ public class QTestUtil {
         return tez;
       } else if (type.equals("spark")) {
         return spark;
-      } else if (type.equals("encrypted")) {
-        return encrypted;
       } else if (type.equals("miniSparkOnYarn")) {
         return miniSparkOnYarn;
       } else if (type.equals("llap")) {
@@ -441,6 +454,7 @@ public class QTestUtil {
       }
     }
   }
+
 
   private String getKeyProviderURI() {
     // Use the target directory if it is not specified
@@ -473,19 +487,24 @@ public class QTestUtil {
                    String confDir, String hadoopVer, String initScript, String cleanupScript,
                    boolean useHBaseMetastore, boolean withLlapIo) throws Exception {
     this(outDir, logDir, clusterType, confDir, hadoopVer, initScript, cleanupScript,
-        useHBaseMetastore, withLlapIo, false, false);
+        useHBaseMetastore, withLlapIo, false, null);
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
       String confDir, String hadoopVer, String initScript, String cleanupScript,
-      boolean useHBaseMetastore, boolean withLlapIo, boolean localMode, boolean useLocalFs)
+      boolean useHBaseMetastore, boolean withLlapIo, boolean localMode, FsType fsType)
     throws Exception {
     LOG.info("Setting up QTestUtil with outDir={}, logDir={}, clusterType={}, confDir={}," +
         " hadoopVer={}, initScript={}, cleanupScript={}, useHbaseMetaStore={}, withLlapIo={}," +
-            " localMode={}, useLocalFs={}"
+            " localMode={}, fsType={}"
         , outDir, logDir, clusterType, confDir, hadoopVer, initScript, cleanupScript,
-        useHBaseMetastore, withLlapIo, localMode, useLocalFs);
-    this.useLocalFs = useLocalFs;
+        useHBaseMetastore, withLlapIo, localMode, fsType);
+    Preconditions.checkNotNull(clusterType, "ClusterType cannot be null");
+    if (fsType != null) {
+      this.fsType = fsType;
+    } else {
+      this.fsType = clusterType.getDefaultFsType();
+    }
     this.localMode = localMode;
     this.outDir = outDir;
     this.logDir = logDir;
@@ -555,16 +574,12 @@ public class QTestUtil {
 
   private void setupFileSystem(HadoopShims shims) throws IOException {
 
-    if (useLocalFs) {
-      Preconditions
-          .checkState(clusterType == MiniClusterType.tez || clusterType == MiniClusterType.llap,
-              "useLocalFs can currently only be set for tez or llap");
-    }
-
-    if (clusterType != MiniClusterType.none && clusterType != MiniClusterType.spark) {
+    if (fsType == FsType.local) {
+      fs = FileSystem.getLocal(conf);
+    } else if (fsType == FsType.hdfs || fsType == FsType.encrypted_hdfs) {
       int numDataNodes = 4;
 
-      if (clusterType == MiniClusterType.encrypted) {
+      if (fsType == FsType.encrypted_hdfs) {
         // Set the security key provider so that the MiniDFS cluster is initialized
         // with encryption
         conf.set(SECURITY_KEY_PROVIDER_URI_NAME, getKeyProviderURI());
@@ -578,16 +593,11 @@ public class QTestUtil {
 
         LOG.info("key provider is initialized");
       } else {
-        if (!useLocalFs) {
-          dfs = shims.getMiniDfs(conf, numDataNodes, true, null);
-          fs = dfs.getFileSystem();
-        } else {
-          fs = FileSystem.getLocal(conf);
-        }
+        dfs = shims.getMiniDfs(conf, numDataNodes, true, null);
+        fs = dfs.getFileSystem();
       }
     } else {
-      // Setup local file system
-      fs = FileSystem.getLocal(conf);
+      throw new IllegalArgumentException("Unknown or unhandled fsType [" + fsType + "]");
     }
   }
 
@@ -621,7 +631,7 @@ public class QTestUtil {
       }
     } else if (clusterType == MiniClusterType.miniSparkOnYarn) {
       mr = shims.getMiniSparkCluster(conf, 4, uriString, 1);
-    } else if (clusterType == MiniClusterType.mr || clusterType == MiniClusterType.encrypted) {
+    } else if (clusterType == MiniClusterType.mr) {
       mr = shims.getMiniMrCluster(conf, 4, uriString, 1);
     }
   }
@@ -900,7 +910,7 @@ public class QTestUtil {
           if(tblObj.isIndexTable()) {
             continue;
           }
-          db.dropTable(dbName, tblName, true, true, clusterType == MiniClusterType.encrypted);
+          db.dropTable(dbName, tblName, true, true, fsType == FsType.encrypted_hdfs);
         } else {
           // this table is defined in srcTables, drop all indexes on it
          List<Index> indexes = db.getIndexes(dbName, tblName, (short)-1);
@@ -1563,7 +1573,7 @@ public class QTestUtil {
     boolean partialMaskWasMatched = false;
     Matcher matcher;
     while (null != (line = in.readLine())) {
-      if (clusterType == MiniClusterType.encrypted) {
+      if (fsType == FsType.encrypted_hdfs) {
         for (Pattern pattern : partialReservedPlanMask) {
           matcher = pattern.matcher(line);
           if (matcher.find()) {
