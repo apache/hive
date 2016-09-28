@@ -25,11 +25,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
@@ -61,42 +59,7 @@ public class HiveConfUtil {
     dumpConfig(conf, sb);
     return sb.append("END========\"new HiveConf()\"========\n");
   }
-
-  /**
-   * Getting the set of the hidden configurations
-   * @param configuration The original configuration
-   * @return The list of the configuration values to hide
-   */
-  public static Set<String> getHiddenSet(Configuration configuration) {
-    Set<String> hiddenSet = new HashSet<String>();
-    String hiddenListStr = HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST);
-    if (hiddenListStr != null) {
-      for (String entry : hiddenListStr.split(",")) {
-        hiddenSet.add(entry.trim());
-      }
-    }
-    return hiddenSet;
-  }
-
-  /**
-   * Strips hidden config entries from configuration
-   * @param conf The configuration to strip from
-   * @param hiddenSet The values to strip
-   */
-  public static void stripConfigurations(Configuration conf, Set<String> hiddenSet) {
-    for (String name : hiddenSet) {
-      if (conf.get(name) != null) {
-        conf.set(name, "");
-      }
-    }
-  }
-
-  public static void dumpConfig(Configuration originalConf, StringBuilder sb) {
-    Set<String> hiddenSet = getHiddenSet(originalConf);
-    sb.append("Values omitted for security reason if present: ").append(hiddenSet).append("\n");
-    Configuration conf = new Configuration(originalConf);
-    stripConfigurations(conf, hiddenSet);
-
+  public static void dumpConfig(Configuration conf, StringBuilder sb) {
     Iterator<Map.Entry<String, String>> configIter = conf.iterator();
     List<Map.Entry<String, String>> configVals = new ArrayList<>();
     while(configIter.hasNext()) {
