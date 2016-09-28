@@ -742,10 +742,12 @@ public class Commands {
   private Map<String, String> getHiveVariables() {
     Map<String, String> result = new HashMap<>();
     BufferedRows rows = getConfInternal(true);
-    while (rows.hasNext()) {
-      Rows.Row row = (Rows.Row) rows.next();
-      if (!row.isMeta) {
-        result.put(row.values[0], row.values[1]);
+    if (rows != null) {
+      while (rows.hasNext()) {
+        Rows.Row row = (Rows.Row) rows.next();
+        if (!row.isMeta) {
+          result.put(row.values[0], row.values[1]);
+        }
       }
     }
     return result;
@@ -784,13 +786,19 @@ public class Commands {
     Statement stmnt = null;
     BufferedRows rows = null;
     try {
-      boolean hasResults;
-      if (call) {
-        stmnt = beeLine.getDatabaseConnection().getConnection().prepareCall("set");
-        hasResults = ((CallableStatement) stmnt).execute();
-      } else {
-        stmnt = beeLine.createStatement();
-        hasResults = stmnt.execute("set");
+      boolean hasResults = false;
+      DatabaseConnection dbconn = beeLine.getDatabaseConnection();
+      Connection conn = null;
+      if (dbconn != null)
+        conn = dbconn.getConnection();
+      if (conn != null) {
+        if (call) {
+          stmnt = conn.prepareCall("set");
+          hasResults = ((CallableStatement) stmnt).execute();
+        } else {
+          stmnt = beeLine.createStatement();
+          hasResults = stmnt.execute("set");
+        }
       }
       if (hasResults) {
         ResultSet rs = stmnt.getResultSet();
@@ -823,7 +831,8 @@ public class Commands {
       return;
     } else {
       String[] kv = val.split("=", 2);
-      hiveConf.set(kv[0], kv[1]);
+      if (kv.length == 2)
+        hiveConf.set(kv[0], kv[1]);
     }
   }
 
@@ -1088,7 +1097,8 @@ public class Commands {
     }
 
     line = line.substring("sh".length()).trim();
-    line = substituteVariables(getHiveConf(false), line.trim());
+    if (!beeLine.isBeeLine())
+      line = substituteVariables(getHiveConf(false), line.trim());
 
     try {
       ShellCmdExecutor executor = new ShellCmdExecutor(line, beeLine.getOutputStream(),
