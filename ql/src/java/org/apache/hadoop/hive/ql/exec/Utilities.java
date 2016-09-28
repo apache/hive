@@ -2944,7 +2944,6 @@ public final class Utilities {
    */
   public static List<Path> getInputPaths(JobConf job, MapWork work, Path hiveScratchDir,
       Context ctx, boolean skipDummy) throws Exception {
-    int sequenceNumber = 0;
 
     Set<Path> pathsProcessed = new HashSet<Path>();
     List<Path> pathsToAdd = new LinkedList<Path>();
@@ -2971,7 +2970,7 @@ public final class Utilities {
           if (!skipDummy
               && isEmptyPath(job, path, ctx)) {
             path = createDummyFileForEmptyPartition(path, job, work,
-                 hiveScratchDir, alias, sequenceNumber++);
+                 hiveScratchDir);
 
           }
           pathsToAdd.add(path);
@@ -2987,8 +2986,7 @@ public final class Utilities {
       // If T is empty and T2 contains 100 rows, the user expects: 0, 100 (2
       // rows)
       if (path == null && !skipDummy) {
-        path = createDummyFileForEmptyTable(job, work, hiveScratchDir,
-            alias, sequenceNumber++);
+        path = createDummyFileForEmptyTable(job, work, hiveScratchDir, alias);
         pathsToAdd.add(path);
       }
     }
@@ -2998,11 +2996,11 @@ public final class Utilities {
   @SuppressWarnings({"rawtypes", "unchecked"})
   private static Path createEmptyFile(Path hiveScratchDir,
       HiveOutputFormat outFileFormat, JobConf job,
-      int sequenceNumber, Properties props, boolean dummyRow)
+      Properties props, boolean dummyRow)
           throws IOException, InstantiationException, IllegalAccessException {
 
     // create a dummy empty file in a new directory
-    String newDir = hiveScratchDir + Path.SEPARATOR + sequenceNumber;
+    String newDir = hiveScratchDir + Path.SEPARATOR + UUID.randomUUID().toString();
     Path newPath = new Path(newDir);
     FileSystem fs = newPath.getFileSystem(job);
     fs.mkdirs(newPath);
@@ -3028,7 +3026,7 @@ public final class Utilities {
 
   @SuppressWarnings("rawtypes")
   private static Path createDummyFileForEmptyPartition(Path path, JobConf job, MapWork work,
-      Path hiveScratchDir, String alias, int sequenceNumber)
+      Path hiveScratchDir)
           throws Exception {
 
     String strPath = path.toString();
@@ -3047,7 +3045,7 @@ public final class Utilities {
     boolean oneRow = partDesc.getInputFileFormatClass() == OneNullRowInputFormat.class;
 
     Path newPath = createEmptyFile(hiveScratchDir, outFileFormat, job,
-        sequenceNumber, props, oneRow);
+        props, oneRow);
 
     if (LOG.isInfoEnabled()) {
       LOG.info("Changed input file " + strPath + " to empty file " + newPath);
@@ -3072,7 +3070,7 @@ public final class Utilities {
 
   @SuppressWarnings("rawtypes")
   private static Path createDummyFileForEmptyTable(JobConf job, MapWork work,
-      Path hiveScratchDir, String alias, int sequenceNumber)
+      Path hiveScratchDir, String alias)
           throws Exception {
 
     TableDesc tableDesc = work.getAliasToPartnInfo().get(alias).getTableDesc();
@@ -3085,7 +3083,7 @@ public final class Utilities {
     HiveOutputFormat outFileFormat = HiveFileFormatUtils.getHiveOutputFormat(job, tableDesc);
 
     Path newPath = createEmptyFile(hiveScratchDir, outFileFormat, job,
-        sequenceNumber, props, false);
+        props, false);
 
     if (LOG.isInfoEnabled()) {
       LOG.info("Changed input file for alias " + alias + " to " + newPath);

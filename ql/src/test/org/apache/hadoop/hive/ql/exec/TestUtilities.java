@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.apache.hadoop.hive.ql.exec.Utilities.getFileExtension;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -30,13 +31,19 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Properties;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -44,17 +51,25 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFromUtcTimestamp;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 
@@ -245,5 +260,65 @@ public class TestUtilities {
     Path taskOutputPath = new Path(tempDirPath, Utilities.getTaskId(hconf));
     FileSystem.getLocal(hconf).create(taskOutputPath).close();
     return tempDirPath;
+  }
+
+  /**
+   * Check that calling {@link Utilities#getInputPaths(JobConf, MapWork, Path, Context, boolean)}
+   * can process two different empty tables without throwing any exceptions.
+   */
+  @Test
+  public void testGetInputPathsWithEmptyTables() throws Exception {
+    String alias1Name = "alias1";
+    String alias2Name = "alias2";
+
+    MapWork mapWork1 = new MapWork();
+    MapWork mapWork2 = new MapWork();
+    JobConf jobConf = new JobConf();
+
+    String nonExistentPath1 = UUID.randomUUID().toString();
+    String nonExistentPath2 = UUID.randomUUID().toString();
+
+    PartitionDesc mockPartitionDesc = mock(PartitionDesc.class);
+    TableDesc mockTableDesc = mock(TableDesc.class);
+
+    when(mockTableDesc.isNonNative()).thenReturn(false);
+    when(mockTableDesc.getProperties()).thenReturn(new Properties());
+
+    when(mockPartitionDesc.getProperties()).thenReturn(new Properties());
+    when(mockPartitionDesc.getTableDesc()).thenReturn(mockTableDesc);
+    doReturn(HiveSequenceFileOutputFormat.class).when(
+            mockPartitionDesc).getOutputFileFormatClass();
+
+    mapWork1.setPathToAliases(new LinkedHashMap<>(
+            ImmutableMap.of(nonExistentPath1, Lists.newArrayList(alias1Name))));
+    mapWork1.setAliasToWork(new LinkedHashMap<String, Operator<? extends OperatorDesc>>(
+            ImmutableMap.of(alias1Name, (Operator<?>) mock(Operator.class))));
+    mapWork1.setPathToPartitionInfo(new LinkedHashMap<>(
+            ImmutableMap.of(nonExistentPath1, mockPartitionDesc)));
+
+    mapWork2.setPathToAliases(new LinkedHashMap<>(
+            ImmutableMap.of(nonExistentPath2, Lists.newArrayList(alias2Name))));
+    mapWork2.setAliasToWork(new LinkedHashMap<String, Operator<? extends OperatorDesc>>(
+            ImmutableMap.of(alias2Name, (Operator<?>) mock(Operator.class))));
+    mapWork2.setPathToPartitionInfo(new LinkedHashMap<>(
+            ImmutableMap.of(nonExistentPath2, mockPartitionDesc)));
+
+    List<Path> inputPaths = new ArrayList<>();
+    try {
+      Path scratchDir = new Path(HiveConf.getVar(jobConf, HiveConf.ConfVars.LOCALSCRATCHDIR));
+      inputPaths.addAll(Utilities.getInputPaths(jobConf, mapWork1, scratchDir,
+              mock(Context.class), false));
+      inputPaths.addAll(Utilities.getInputPaths(jobConf, mapWork2, scratchDir,
+              mock(Context.class), false));
+      assertEquals(inputPaths.size(), 2);
+    } finally {
+      File file;
+      for (Path path : inputPaths) {
+        file = new File(path.toString());
+        if (file.exists()) {
+          file.delete();
+        }
+      }
+    }
   }
 }
