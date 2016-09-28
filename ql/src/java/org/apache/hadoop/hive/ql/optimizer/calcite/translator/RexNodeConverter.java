@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.calcite.avatica.util.TimeUnit;
+import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
@@ -55,6 +56,8 @@ import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -230,9 +233,15 @@ public class RexNodeConverter {
       retType = TypeConverter.convert(func.getTypeInfo(), cluster.getTypeFactory());
       SqlOperator calciteOp = SqlFunctionConverter.getCalciteOperator(func.getFuncText(),
           func.getGenericUDF(), argTypeBldr.build(), retType);
-      // If it is a case operator, we need to rewrite it
       if (calciteOp.getKind() == SqlKind.CASE) {
+        // If it is a case operator, we need to rewrite it
         childRexNodeLst = rewriteCaseChildren(func, childRexNodeLst);
+      } else if (HiveExtractDate.ALL_FUNCTIONS.contains(calciteOp)) {
+        // If it is a extract operator, we need to rewrite it
+        childRexNodeLst = rewriteExtractDateChildren(calciteOp, childRexNodeLst);
+      } else if (HiveFloorDate.ALL_FUNCTIONS.contains(calciteOp)) {
+        // If it is a floor <date> operator, we need to rewrite it
+        childRexNodeLst = rewriteFloorDateChildren(calciteOp, childRexNodeLst);
       }
       expr = cluster.getRexBuilder().makeCall(calciteOp, childRexNodeLst);
     } else {
@@ -336,6 +345,56 @@ public class RexNodeConverter {
     if (newChildRexNodeLst.size() % 2 == 0) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeNullLiteral(
               newChildRexNodeLst.get(newChildRexNodeLst.size()-1).getType().getSqlTypeName()));
+    }
+    return newChildRexNodeLst;
+  }
+
+  private List<RexNode> rewriteExtractDateChildren(SqlOperator op, List<RexNode> childRexNodeLst)
+      throws SemanticException {
+    List<RexNode> newChildRexNodeLst = new ArrayList<RexNode>();
+    if (op == HiveExtractDate.YEAR) {
+      newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.YEAR));
+    } else if (op == HiveExtractDate.QUARTER) {
+      newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.QUARTER));
+    } else if (op == HiveExtractDate.MONTH) {
+      newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.MONTH));
+    } else if (op == HiveExtractDate.WEEK) {
+      newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.WEEK));
+    } else if (op == HiveExtractDate.DAY) {
+      newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.DAY));
+    } else if (op == HiveExtractDate.HOUR) {
+      newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.HOUR));
+    } else if (op == HiveExtractDate.MINUTE) {
+      newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.MINUTE));
+    } else if (op == HiveExtractDate.SECOND) {
+      newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.SECOND));
+    }
+    assert childRexNodeLst.size() == 1;
+    newChildRexNodeLst.add(childRexNodeLst.get(0));
+    return newChildRexNodeLst;
+  }
+
+  private List<RexNode> rewriteFloorDateChildren(SqlOperator op, List<RexNode> childRexNodeLst)
+      throws SemanticException {
+    List<RexNode> newChildRexNodeLst = new ArrayList<RexNode>();
+    assert childRexNodeLst.size() == 1;
+    newChildRexNodeLst.add(childRexNodeLst.get(0));
+    if (op == HiveFloorDate.YEAR) {
+      newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.YEAR));
+    } else if (op == HiveFloorDate.QUARTER) {
+      newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.QUARTER));
+    } else if (op == HiveFloorDate.MONTH) {
+      newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.MONTH));
+    } else if (op == HiveFloorDate.WEEK) {
+      newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.WEEK));
+    } else if (op == HiveFloorDate.DAY) {
+      newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.DAY));
+    } else if (op == HiveFloorDate.HOUR) {
+      newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.HOUR));
+    } else if (op == HiveFloorDate.MINUTE) {
+      newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.MINUTE));
+    } else if (op == HiveFloorDate.SECOND) {
+      newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.SECOND));
     }
     return newChildRexNodeLst;
   }

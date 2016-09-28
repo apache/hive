@@ -23,6 +23,7 @@ import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.junit.Test;
@@ -49,7 +50,7 @@ public class TestCBOMaxNumToCNF {
                     rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
                             rexBuilder.makeInputRef(typeFactory.createSqlType(SqlTypeName.INTEGER), 1),
                             rexBuilder.makeLiteral(8, typeFactory.createSqlType(SqlTypeName.INTEGER), false))));
-    final RexNode newCond = HiveRexUtil.toCnf(rexBuilder, maxNumNodesCNF, cond);
+    final RexNode newCond = RexUtil.toCnf(rexBuilder, maxNumNodesCNF, cond);
 
     assertEquals(newCond.toString(), "AND(OR(=($0, 1), =($0, 0)), OR(=($0, 1), =($1, 8)))");
   }
@@ -75,7 +76,7 @@ public class TestCBOMaxNumToCNF {
                     rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
                             rexBuilder.makeInputRef(typeFactory.createSqlType(SqlTypeName.INTEGER), 1),
                             rexBuilder.makeLiteral(8, typeFactory.createSqlType(SqlTypeName.INTEGER), false))));
-    final RexNode newCond = HiveRexUtil.toCnf(rexBuilder, maxNumNodesCNF, cond);
+    final RexNode newCond = RexUtil.toCnf(rexBuilder, maxNumNodesCNF, cond);
 
     assertEquals(newCond.toString(), "OR(=($0, 1), =($0, 2), AND(=($0, 0), =($1, 8)))");
   }

@@ -40,6 +40,10 @@ import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.core.Union;
+import org.apache.calcite.rel.metadata.BuiltInMetadata;
+import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
+import org.apache.calcite.rel.metadata.MetadataDef;
+import org.apache.calcite.rel.metadata.MetadataHandler;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdPredicates;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
@@ -72,13 +76,27 @@ import com.google.common.collect.Maps;
 
 
 //TODO: Move this to calcite
-public class HiveRelMdPredicates extends RelMdPredicates {
+public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Predicates> {
 
-  public static final RelMetadataProvider SOURCE = ReflectiveRelMetadataProvider.reflectiveSource(
-                                                     BuiltInMethod.PREDICATES.method,
-                                                     new HiveRelMdPredicates());
+  public static final RelMetadataProvider SOURCE =
+          ChainedRelMetadataProvider.of(
+                  ImmutableList.of(
+                          ReflectiveRelMetadataProvider.reflectiveSource(
+                                  BuiltInMethod.PREDICATES.method, new HiveRelMdPredicates()),
+                          RelMdPredicates.SOURCE));
 
   private static final List<RexNode> EMPTY_LIST = ImmutableList.of();
+
+  //~ Constructors -----------------------------------------------------------
+
+  private HiveRelMdPredicates() {}
+
+  //~ Methods ----------------------------------------------------------------
+
+  @Override
+  public MetadataDef<BuiltInMetadata.Predicates> getDef() {
+    return BuiltInMetadata.Predicates.DEF;
+  }
 
   /**
    * Infers predicates for a project.
@@ -99,8 +117,8 @@ public class HiveRelMdPredicates extends RelMdPredicates {
    *
    * </ol>
    */
-  @Override
   public RelOptPredicateList getPredicates(Project project, RelMetadataQuery mq) {
+
     RelNode child = project.getInput();
     final RexBuilder rexBuilder = project.getCluster().getRexBuilder();
     RelOptPredicateList childInfo = mq.getPulledUpPredicates(child);
@@ -151,7 +169,6 @@ public class HiveRelMdPredicates extends RelMdPredicates {
   }
 
   /** Infers predicates for a {@link org.apache.calcite.rel.core.Join}. */
-  @Override
   public RelOptPredicateList getPredicates(Join join, RelMetadataQuery mq) {
     RexBuilder rB = join.getCluster().getRexBuilder();
     RelNode left = join.getInput(0);
@@ -181,7 +198,6 @@ public class HiveRelMdPredicates extends RelMdPredicates {
    * pulledUpExprs    : { a &gt; 7}
    * </pre>
    */
-  @Override
   public RelOptPredicateList getPredicates(Aggregate agg, RelMetadataQuery mq) {
     final RelNode input = agg.getInput();
     final RelOptPredicateList inputInfo = mq.getPulledUpPredicates(input);
@@ -209,7 +225,6 @@ public class HiveRelMdPredicates extends RelMdPredicates {
   /**
    * Infers predicates for a Union.
    */
-  @Override
   public RelOptPredicateList getPredicates(Union union, RelMetadataQuery mq) {
     RexBuilder rB = union.getCluster().getRexBuilder();
 

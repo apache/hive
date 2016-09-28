@@ -48,7 +48,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunc
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveDateGranularity;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -216,6 +217,8 @@ public class SqlFunctionConverter {
         case IS_NOT_NULL:
         case IS_NULL:
         case CASE:
+        case EXTRACT:
+        case FLOOR:
         case OTHER_FUNCTION:
           node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
           node.addChild((ASTNode) ParseDriver.adaptor.create(hToken.type, hToken.text));
@@ -346,21 +349,37 @@ public class SqlFunctionConverter {
       registerFunction("when", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       registerDuplicateFunction("case", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       // timebased
-      registerFunction("floor_year", HiveDateGranularity.YEAR,
+      registerFunction("year", HiveExtractDate.YEAR,
+          hToken(HiveParser.Identifier, "year"));
+      registerFunction("quarter", HiveExtractDate.QUARTER,
+          hToken(HiveParser.Identifier, "quarter"));
+      registerFunction("month", HiveExtractDate.MONTH,
+          hToken(HiveParser.Identifier, "month"));
+      registerFunction("weekofyear", HiveExtractDate.WEEK,
+          hToken(HiveParser.Identifier, "weekofyear"));
+      registerFunction("day", HiveExtractDate.DAY,
+          hToken(HiveParser.Identifier, "day"));
+      registerFunction("hour", HiveExtractDate.HOUR,
+          hToken(HiveParser.Identifier, "hour"));
+      registerFunction("minute", HiveExtractDate.MINUTE,
+          hToken(HiveParser.Identifier, "minute"));
+      registerFunction("second", HiveExtractDate.SECOND,
+          hToken(HiveParser.Identifier, "second"));
+      registerFunction("floor_year", HiveFloorDate.YEAR,
           hToken(HiveParser.Identifier, "floor_year"));
-      registerFunction("floor_quarter", HiveDateGranularity.QUARTER,
+      registerFunction("floor_quarter", HiveFloorDate.QUARTER,
           hToken(HiveParser.Identifier, "floor_quarter"));
-      registerFunction("floor_month", HiveDateGranularity.MONTH,
+      registerFunction("floor_month", HiveFloorDate.MONTH,
           hToken(HiveParser.Identifier, "floor_month"));
-      registerFunction("floor_week", HiveDateGranularity.WEEK,
+      registerFunction("floor_week", HiveFloorDate.WEEK,
           hToken(HiveParser.Identifier, "floor_week"));
-      registerFunction("floor_day", HiveDateGranularity.DAY,
+      registerFunction("floor_day", HiveFloorDate.DAY,
           hToken(HiveParser.Identifier, "floor_day"));
-      registerFunction("floor_hour", HiveDateGranularity.HOUR,
+      registerFunction("floor_hour", HiveFloorDate.HOUR,
           hToken(HiveParser.Identifier, "floor_hour"));
-      registerFunction("floor_minute", HiveDateGranularity.MINUTE,
+      registerFunction("floor_minute", HiveFloorDate.MINUTE,
           hToken(HiveParser.Identifier, "floor_minute"));
-      registerFunction("floor_second", HiveDateGranularity.SECOND,
+      registerFunction("floor_second", HiveFloorDate.SECOND,
           hToken(HiveParser.Identifier, "floor_second"));
     }
 

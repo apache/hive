@@ -112,9 +112,10 @@
     <antlr.version>3.4</antlr.version>
     <apache-directory-server.version>1.5.6</apache-directory-server.version>
     <apache-directory-clientapi.version>0.1</apache-directory-clientapi.version>
+    <avatica.version>1.8.0</avatica.version>
     <avro.version>1.7.7</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
-    <calcite.version>1.6.0</calcite.version>
+    <calcite.version>1.10.0</calcite.version>
     <datanucleus-api-jdo.version>4.2.1</datanucleus-api-jdo.version>
     <datanucleus-core.version>4.1.6</datanucleus-core.version>
     <datanucleus-rdbms.version>4.1.7</datanucleus-rdbms.version>

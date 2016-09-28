@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.calcite.adapter.druid.DruidDateTimeUtils;
+import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -37,8 +39,6 @@ import org.apache.hadoop.hive.druid.serde.DruidSelectQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidTimeseriesQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidTopNQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidWritable;
-import org.apache.hadoop.hive.ql.optimizer.calcite.druid.DruidIntervalUtils;
-import org.apache.hadoop.hive.ql.optimizer.calcite.druid.DruidTable;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
@@ -273,7 +273,7 @@ public class HiveDruidQueryBasedInputFormat extends InputFormat<NullWritable, Dr
   }
 
   private static List<List<Interval>> createSplitsIntervals(List<Interval> intervals, int numSplits) {
-    final long totalTime = DruidIntervalUtils.extractTotalTime(intervals);
+    final long totalTime = DruidDateTimeUtils.extractTotalTime(intervals);
     long startTime = intervals.get(0).getStartMillis();
     long endTime = startTime;
     long currTime = 0;

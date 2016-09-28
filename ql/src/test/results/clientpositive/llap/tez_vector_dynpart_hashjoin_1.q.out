@@ -55,17 +55,17 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 12288 Data size: 3093170 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
-                    Statistics: Num rows: 3424 Data size: 862030 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
+                    Statistics: Num rows: 4586 Data size: 1154510 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
-                      Statistics: Num rows: 3424 Data size: 862030 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 4586 Data size: 1154510 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col2 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col2 (type: int)
-                        Statistics: Num rows: 3424 Data size: 862030 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 4586 Data size: 1154510 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: string), _col7 (type: string), _col8 (type: timestamp), _col9 (type: timestamp), _col10 (type: boolean), _col11 (type: boolean)
             Execution mode: llap
             LLAP IO: all inputs
@@ -79,11 +79,11 @@ STAGE PLANS:
                   0 _col2 (type: int)
                   1 _col2 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23
-                Statistics: Num rows: 7286 Data size: 4517320 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 9759 Data size: 6050580 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col2 (type: int)
                   sort order: +
-                  Statistics: Num rows: 7286 Data size: 4517320 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 9759 Data size: 6050580 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: string), _col7 (type: string), _col8 (type: timestamp), _col9 (type: timestamp), _col10 (type: boolean), _col11 (type: boolean), _col12 (type: tinyint), _col13 (type: smallint), _col14 (type: int), _col15 (type: bigint), _col16 (type: float), _col17 (type: double), _col18 (type: string), _col19 (type: string), _col20 (type: timestamp), _col21 (type: timestamp), _col22 (type: boolean), _col23 (type: boolean)
         Reducer 3 
             Execution mode: llap
@@ -91,10 +91,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), KEY.reducesinkkey0 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: double), VALUE._col5 (type: string), VALUE._col6 (type: string), VALUE._col7 (type: timestamp), VALUE._col8 (type: timestamp), VALUE._col9 (type: boolean), VALUE._col10 (type: boolean), VALUE._col11 (type: tinyint), VALUE._col12 (type: smallint), VALUE._col13 (type: int), VALUE._col14 (type: bigint), VALUE._col15 (type: float), VALUE._col16 (type: double), VALUE._col17 (type: string), VALUE._col18 (type: string), VALUE._col19 (type: timestamp), VALUE._col20 (type: timestamp), VALUE._col21 (type: boolean), VALUE._col22 (type: boolean)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23
-                Statistics: Num rows: 7286 Data size: 4517320 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 9759 Data size: 6050580 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 7286 Data size: 4517320 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 9759 Data size: 6050580 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -186,17 +186,17 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 12288 Data size: 110088 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
-                    Statistics: Num rows: 3424 Data size: 30684 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
+                    Statistics: Num rows: 4586 Data size: 41088 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cint (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 3424 Data size: 30684 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 4586 Data size: 41088 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 3424 Data size: 30684 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 4586 Data size: 41088 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -208,7 +208,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
-                Statistics: Num rows: 7286 Data size: 58288 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 9759 Data size: 78072 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -315,17 +315,17 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 12288 Data size: 110088 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
-                    Statistics: Num rows: 3424 Data size: 30684 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
+                    Statistics: Num rows: 4586 Data size: 41088 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cint (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 3424 Data size: 30684 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 4586 Data size: 41088 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 3424 Data size: 30684 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 4586 Data size: 41088 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -338,7 +338,7 @@ STAGE PLANS:
                   0 _col1 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 7286 Data size: 29144 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 9759 Data size: 39036 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   keys: _col0 (type: smallint)
@@ -468,7 +468,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
+                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
@@ -602,7 +602,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
+                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cint (type: int)
@@ -734,7 +734,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
+                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cint (type: int)

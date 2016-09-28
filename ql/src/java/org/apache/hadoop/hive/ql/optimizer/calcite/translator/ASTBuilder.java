@@ -22,15 +22,15 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import org.apache.calcite.adapter.druid.DruidQuery;
+import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
-import org.apache.hadoop.hive.ql.optimizer.calcite.druid.DruidQuery;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -58,19 +58,20 @@ class ASTBuilder {
                 "TOK_TMP_FILE")).node();
   }
 
-  static ASTNode table(TableScan scan) {
-    RelOptHiveTable hTbl = (RelOptHiveTable) scan.getTable();
-    ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF").add(
-        ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME")
-            .add(HiveParser.Identifier, hTbl.getHiveTableMD().getDbName())
-            .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName()));
-
+  static ASTNode table(RelNode scan) {
     HiveTableScan hts;
     if (scan instanceof DruidQuery) {
       hts = (HiveTableScan) ((DruidQuery)scan).getTableScan();
     } else {
       hts = (HiveTableScan) scan;
     }
+
+    RelOptHiveTable hTbl = (RelOptHiveTable) hts.getTable();
+    ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF").add(
+        ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME")
+            .add(HiveParser.Identifier, hTbl.getHiveTableMD().getDbName())
+            .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName()));
+
     ASTBuilder propList = ASTBuilder.construct(HiveParser.TOK_TABLEPROPLIST, "TOK_TABLEPROPLIST");
     if (scan instanceof DruidQuery) {
       // Pass possible query to Druid
@@ -181,8 +182,19 @@ class ASTBuilder {
     case DATE:
     case TIME:
     case TIMESTAMP:
+    case INTERVAL_DAY:
+    case INTERVAL_DAY_HOUR:
+    case INTERVAL_DAY_MINUTE:
+    case INTERVAL_DAY_SECOND:
+    case INTERVAL_HOUR:
+    case INTERVAL_HOUR_MINUTE:
+    case INTERVAL_HOUR_SECOND:
+    case INTERVAL_MINUTE:
+    case INTERVAL_MINUTE_SECOND:
+    case INTERVAL_MONTH:
+    case INTERVAL_SECOND:
+    case INTERVAL_YEAR:
     case INTERVAL_YEAR_MONTH:
-    case INTERVAL_DAY_TIME:
       if (literal.getValue() == null) {
         return ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node();
       }
@@ -273,14 +285,25 @@ class ASTBuilder {
       val = "'" + val + "'";
     }
       break;
+    case INTERVAL_YEAR:
+    case INTERVAL_MONTH:
     case INTERVAL_YEAR_MONTH: {
       type = HiveParser.TOK_INTERVAL_YEAR_MONTH_LITERAL;
       BigDecimal monthsBd = (BigDecimal) literal.getValue();
       HiveIntervalYearMonth intervalYearMonth = new HiveIntervalYearMonth(monthsBd.intValue());
       val = "'" + intervalYearMonth.toString() + "'";
-      break;
     }
-    case INTERVAL_DAY_TIME: {
+      break;
+    case INTERVAL_DAY:
+    case INTERVAL_DAY_HOUR:
+    case INTERVAL_DAY_MINUTE:
+    case INTERVAL_DAY_SECOND:
+    case INTERVAL_HOUR:
+    case INTERVAL_HOUR_MINUTE:
+    case INTERVAL_HOUR_SECOND:
+    case INTERVAL_MINUTE:
+    case INTERVAL_MINUTE_SECOND:
+    case INTERVAL_SECOND: {
       type = HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL;
       BigDecimal millisBd = (BigDecimal) literal.getValue();
 
@@ -288,8 +311,8 @@ class ASTBuilder {
       BigDecimal secsBd = millisBd.divide(BigDecimal.valueOf(1000));
       HiveIntervalDayTime intervalDayTime = new HiveIntervalDayTime(secsBd);
       val = "'" + intervalDayTime.toString() + "'";
-      break;
     }
+      break;
     case NULL:
       type = HiveParser.TOK_NULL;
       break;
