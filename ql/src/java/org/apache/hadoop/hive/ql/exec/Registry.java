@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionType;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -104,31 +105,37 @@ public class Registry {
    * @return true if udfClass's type was recognized (so registration
    *         succeeded); false otherwise
    */
-  @SuppressWarnings("unchecked")
   public FunctionInfo registerFunction(
       String functionName, Class<?> udfClass, FunctionResource... resources) {
+    FunctionType functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
+    return registerFunction(functionName, functionType, udfClass, resources);
+  }
+
+  @SuppressWarnings("unchecked")
+  private FunctionInfo registerFunction(
+      String functionName, FunctionType functionType, Class<?> udfClass, FunctionResource... resources) {
 
     FunctionUtils.UDFClassType udfClassType = FunctionUtils.getUDFClassType(udfClass);
     switch (udfClassType) {
       case UDF:
         return registerUDF(
-            functionName, (Class<? extends UDF>) udfClass, false, resources);
+            functionName, functionType, (Class<? extends UDF>) udfClass, false, functionName.toLowerCase(), resources);
       case GENERIC_UDF:
         return registerGenericUDF(
-            functionName, (Class<? extends GenericUDF>) udfClass, resources);
+            functionName, functionType, (Class<? extends GenericUDF>) udfClass, resources);
       case GENERIC_UDTF:
         return registerGenericUDTF(
-            functionName, (Class<? extends GenericUDTF>) udfClass, resources);
+            functionName, functionType, (Class<? extends GenericUDTF>) udfClass, resources);
       case UDAF:
         return registerUDAF(
-            functionName, (Class<? extends UDAF>) udfClass, resources);
+            functionName, functionType, (Class<? extends UDAF>) udfClass, resources);
       case GENERIC_UDAF_RESOLVER:
         return registerGenericUDAF(
-            functionName, (GenericUDAFResolver)
-            ReflectionUtil.newInstance(udfClass, null), resources);
+            functionName, functionType,
+            (GenericUDAFResolver) ReflectionUtil.newInstance(udfClass, null), resources);
       case TABLE_FUNCTION_RESOLVER:
         // native or not would be decided by annotation. need to evaluate that first
-        return registerTableFunction(functionName,
+        return registerTableFunction(functionName, functionType,
             (Class<? extends TableFunctionResolver>) udfClass, resources);
     }
     return null;
@@ -143,8 +150,15 @@ public class Registry {
   public FunctionInfo registerUDF(String functionName,
       Class<? extends UDF> UDFClass, boolean isOperator, String displayName,
       FunctionResource... resources) {
+    FunctionType functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
+    return registerUDF(functionName, functionType, UDFClass, isOperator, displayName);
+  }
+
+  private FunctionInfo registerUDF(String functionName, FunctionType functionType,
+      Class<? extends UDF> UDFClass, boolean isOperator, String displayName,
+      FunctionResource... resources) {
     validateClass(UDFClass, UDF.class);
-    FunctionInfo fI = new FunctionInfo(isNative, displayName,
+    FunctionInfo fI = new FunctionInfo(functionType, displayName,
         new GenericUDFBridge(displayName, isOperator, UDFClass.getName()), resources);
     addFunction(functionName, fI);
     return fI;
@@ -152,8 +166,14 @@ public class Registry {
 
   public FunctionInfo registerGenericUDF(String functionName,
       Class<? extends GenericUDF> genericUDFClass, FunctionResource... resources) {
+    FunctionType functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
+    return registerGenericUDF(functionName, functionType, genericUDFClass, resources);
+  }
+
+  private FunctionInfo registerGenericUDF(String functionName, FunctionType functionType,
+      Class<? extends GenericUDF> genericUDFClass, FunctionResource... resources) {
     validateClass(genericUDFClass, GenericUDF.class);
-    FunctionInfo fI = new FunctionInfo(isNative, functionName,
+    FunctionInfo fI = new FunctionInfo(functionType, functionName,
         ReflectionUtil.newInstance(genericUDFClass, null), resources);
     addFunction(functionName, fI);
     return fI;
@@ -177,8 +197,14 @@ public class Registry {
 
   public FunctionInfo registerGenericUDTF(String functionName,
       Class<? extends GenericUDTF> genericUDTFClass, FunctionResource... resources) {
+    FunctionType functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
+    return registerGenericUDTF(functionName, functionType, genericUDTFClass, resources);
+  }
+
+  private FunctionInfo registerGenericUDTF(String functionName, FunctionType functionType,
+      Class<? extends GenericUDTF> genericUDTFClass, FunctionResource... resources) {
     validateClass(genericUDTFClass, GenericUDTF.class);
-    FunctionInfo fI = new FunctionInfo(isNative, functionName,
+    FunctionInfo fI = new FunctionInfo(functionType, functionName,
         ReflectionUtil.newInstance(genericUDTFClass, null), resources);
     addFunction(functionName, fI);
     return fI;
@@ -186,8 +212,14 @@ public class Registry {
 
   public FunctionInfo registerGenericUDAF(String functionName,
       GenericUDAFResolver genericUDAFResolver, FunctionResource... resources) {
+    FunctionType functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
+    return registerGenericUDAF(functionName, functionType, genericUDAFResolver, resources);
+  }
+
+  private FunctionInfo registerGenericUDAF(String functionName, FunctionType functionType,
+      GenericUDAFResolver genericUDAFResolver, FunctionResource... resources) {
     FunctionInfo function =
-        new WindowFunctionInfo(isNative, functionName, genericUDAFResolver, resources);
+        new WindowFunctionInfo(functionType, functionName, genericUDAFResolver, resources);
     addFunction(functionName, function);
     addFunction(WINDOW_FUNC_PREFIX + functionName, function);
     return function;
@@ -195,8 +227,14 @@ public class Registry {
 
   public FunctionInfo registerUDAF(String functionName,
       Class<? extends UDAF> udafClass, FunctionResource... resources) {
+    FunctionType functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
+    return registerUDAF(functionName, functionType, udafClass, resources);
+  }
+
+  private FunctionInfo registerUDAF(String functionName, FunctionType functionType,
+      Class<? extends UDAF> udafClass, FunctionResource... resources) {
     validateClass(udafClass, UDAF.class);
-    FunctionInfo function = new WindowFunctionInfo(isNative, functionName,
+    FunctionInfo function = new WindowFunctionInfo(functionType, functionName,
         new GenericUDAFBridge(ReflectionUtil.newInstance(udafClass, null)), resources);
     addFunction(functionName, function);
     addFunction(WINDOW_FUNC_PREFIX + functionName, function);
@@ -205,8 +243,14 @@ public class Registry {
 
   public FunctionInfo registerTableFunction(String functionName,
       Class<? extends TableFunctionResolver> tFnCls, FunctionResource... resources) {
+    FunctionType functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
+    return registerTableFunction(functionName, functionType, tFnCls, resources);
+  }
+
+  private FunctionInfo registerTableFunction(String functionName, FunctionType functionType,
+      Class<? extends TableFunctionResolver> tFnCls, FunctionResource... resources) {
     validateClass(tFnCls, TableFunctionResolver.class);
-    FunctionInfo function = new FunctionInfo(isNative, functionName, tFnCls, resources);
+    FunctionInfo function = new FunctionInfo(functionType, functionName, tFnCls, resources);
     addFunction(functionName, function);
     return function;
   }
@@ -219,7 +263,7 @@ public class Registry {
   public FunctionInfo registerMacro(String macroName, ExprNodeDesc body,
       List<String> colNames, List<TypeInfo> colTypes, FunctionResource... resources) {
     GenericUDFMacro macro = new GenericUDFMacro(macroName, body, colNames, colTypes);
-    FunctionInfo fI = new FunctionInfo(isNative, macroName, macro, resources);
+    FunctionInfo fI = new FunctionInfo(FunctionType.TEMPORARY, macroName, macro, resources);
     addFunction(macroName, fI);
     return fI;
   }
@@ -252,7 +296,8 @@ public class Registry {
    * @param wFn
    */
   void registerWindowFunction(String name, GenericUDAFResolver wFn) {
-    addFunction(WINDOW_FUNC_PREFIX + name, new WindowFunctionInfo(isNative, name, wFn, null));
+    FunctionType functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
+    addFunction(WINDOW_FUNC_PREFIX + name, new WindowFunctionInfo(functionType, name, wFn, null));
   }
 
   private void validateClass(Class input, Class expected) {
@@ -310,6 +355,12 @@ public class Registry {
   }
 
   public boolean isPermanentFunc(Class<?> udfClass) {
+    // Note that permanent functions can only be properly checked from the session registry.
+    // If permanent functions are read from the metastore during Hive initialization,
+    // the JARs are not loaded for the UDFs during that time and so Hive is unable to instantiate
+    // the UDf classes to add to the persistent functions set.
+    // Once a permanent UDF has been referenced in a session its FunctionInfo should be registered
+    // in the session registry (and persistent set updated), so it can be looked up there.
     return udfClass != null && persistent.containsKey(udfClass);
   }
 
@@ -448,7 +499,10 @@ public class Registry {
   private void addFunction(String functionName, FunctionInfo function) {
     lock.lock();
     try {
-      if (isNative != function.isNative()) {
+      // Built-in functions shouldn't go in the session registry,
+      // and temp functions shouldn't go in the system registry.
+      // Persistent functions can be in either registry.
+      if ((!isNative && function.isBuiltIn()) || (isNative && !function.isNative())) {
         throw new RuntimeException("Function " + functionName + " is not for this registry");
       }
       functionName = functionName.toLowerCase();
@@ -463,7 +517,8 @@ public class Registry {
       mFunctions.put(functionName, function);
       if (function.isBuiltIn()) {
         builtIns.add(function.getFunctionClass());
-      } else if (function.isPersistent()) {
+      } else if (function.isPersistent() && !isNative) {
+        // System registry should not be used to check persistent functions - see isPermanentFunc()
         Class<?> functionClass = getPermanentUdfClass(function);
         Integer refCount = persistent.get(functionClass);
         persistent.put(functionClass, Integer.valueOf(refCount == null ? 1 : refCount + 1));
@@ -597,7 +652,10 @@ public class Registry {
       ClassLoader loader = Utilities.getSessionSpecifiedClassLoader();
       Class<?> udfClass = Class.forName(function.getClassName(), true, loader);
 
-      ret = FunctionRegistry.registerTemporaryUDF(qualifiedName, udfClass, resources);
+      // Make sure the FunctionInfo is listed as PERSISTENT (rather than TEMPORARY)
+      // when it is registered to the system registry.
+      ret = SessionState.getRegistryForWrite().registerFunction(
+          qualifiedName, FunctionType.PERSISTENT, udfClass, resources);
       if (ret == null) {
         LOG.error(function.getClassName() + " is not a valid UDF class and was not registered.");
       }

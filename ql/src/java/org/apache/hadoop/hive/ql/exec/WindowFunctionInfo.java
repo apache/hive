@@ -28,9 +28,9 @@ public class WindowFunctionInfo extends FunctionInfo {
   private final boolean pivotResult;
   private final boolean impliesOrder;
 
-  public WindowFunctionInfo(boolean isNative, String functionName,
+  public WindowFunctionInfo(FunctionType functionType, String functionName,
       GenericUDAFResolver resolver, FunctionResource[] resources) {
-    super(isNative, functionName, resolver, resources);
+    super(functionType, functionName, resolver, resources);
     WindowFunctionDescription def =
         AnnotationUtils.getAnnotation(resolver.getClass(), WindowFunctionDescription.class);
     supportsWindow = def == null ? true : def.supportsWindow();

@@ -1535,7 +1535,8 @@ public final class FunctionRegistry {
     }
 
     if (clazz != null) {
-      return system.isPermanentFunc(clazz);
+      // Use session registry - see Registry.isPermanentFunc()
+      return SessionState.getRegistryForWrite().isPermanentFunc(clazz);
     }
     return false;
   }

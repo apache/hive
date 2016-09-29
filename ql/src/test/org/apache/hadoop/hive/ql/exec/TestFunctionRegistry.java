@@ -27,7 +27,17 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionType;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.udf.UDFLn;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentTimestamp;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFExplode;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -405,5 +415,95 @@ public class TestFunctionRegistry extends TestCase {
     Assert.assertTrue(FunctionRegistry.impliesOrder("lead"));
     Assert.assertTrue(FunctionRegistry.impliesOrder("lag"));
     Assert.assertFalse(FunctionRegistry.impliesOrder("min"));
+  }
+
+  public void testRegisterTemporaryFunctions() throws Exception {
+    FunctionResource[] emptyResources = new FunctionResource[] {};
+
+    // UDF
+    FunctionRegistry.registerTemporaryUDF("tmp_ln", UDFLn.class, emptyResources);
+    FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo("tmp_ln");
+    assertFalse(functionInfo.isNative());
+
+    // GenericUDF
+    FunctionRegistry.registerTemporaryUDF("tmp_concat", GenericUDFConcat.class, emptyResources);
+    functionInfo = FunctionRegistry.getFunctionInfo("tmp_concat");
+    assertFalse(functionInfo.isNative());
+
+    // GenericUDAF
+    FunctionRegistry.registerTemporaryUDF("tmp_max",GenericUDAFMax.class, emptyResources);
+    functionInfo = FunctionRegistry.getFunctionInfo("tmp_max");
+    assertFalse(functionInfo.isNative());
+    functionInfo = FunctionRegistry.getWindowFunctionInfo("tmp_max");
+    assertFalse(functionInfo.isNative());
+
+    // UDTF
+    FunctionRegistry.registerTemporaryUDF("tmp_explode", GenericUDTFExplode.class, emptyResources);
+    functionInfo = FunctionRegistry.getFunctionInfo("tmp_explode");
+    assertFalse(functionInfo.isNative());
+  }
+
+  public void testRegisterPermanentFunction() throws Exception {
+    FunctionResource[] emptyResources = new FunctionResource[] {};
+
+    // UDF
+    FunctionRegistry.registerPermanentFunction("perm_ln", UDFLn.class.getName(), true, emptyResources);
+    FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo("perm_ln");
+    assertTrue(functionInfo.isPersistent());
+    assertTrue(functionInfo.isNative());
+    assertFalse(functionInfo.isBuiltIn());
+    functionInfo = FunctionRegistry.getFunctionInfo("default.perm_ln");
+    assertTrue(functionInfo.isPersistent());
+    assertTrue(functionInfo.isNative());
+    assertFalse(functionInfo.isBuiltIn());
+
+    // GenericUDF
+    FunctionRegistry.registerPermanentFunction("default.perm_concat",
+        GenericUDFConcat.class.getName(), true, emptyResources);
+    functionInfo = FunctionRegistry.getFunctionInfo("default.perm_concat");
+    assertTrue(functionInfo.isPersistent());
+    assertTrue(functionInfo.isNative());
+    assertFalse(functionInfo.isBuiltIn());
+
+    // GenericUDAF
+    FunctionRegistry.registerPermanentFunction("default.perm_max",
+        GenericUDAFMax.class.getName(), true, emptyResources);
+    functionInfo = FunctionRegistry.getFunctionInfo("default.perm_max");
+    assertTrue(functionInfo.isPersistent());
+    functionInfo = FunctionRegistry.getWindowFunctionInfo("default.perm_max");
+    assertTrue(functionInfo.isPersistent());
+    assertTrue(functionInfo.isNative());
+    assertFalse(functionInfo.isBuiltIn());
+
+    // UDTF
+    FunctionRegistry.registerPermanentFunction("default.perm_explode",
+        GenericUDTFExplode.class.getName(), true, emptyResources);
+    functionInfo = FunctionRegistry.getFunctionInfo("default.perm_explode");
+    assertTrue(functionInfo.isPersistent());
+    assertTrue(functionInfo.isNative());
+    assertFalse(functionInfo.isBuiltIn());
+  }
+
+  public void testBuiltInFunction() throws Exception {
+    FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo("ln");
+    assertTrue(functionInfo.isBuiltIn());
+    assertTrue(functionInfo.isNative());
+  }
+
+  public void testIsPermanentFunction() throws Exception {
+    // Setup exprNode
+    GenericUDF udf = new GenericUDFCurrentTimestamp();
+    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
+    ExprNodeGenericFuncDesc fnExpr =
+        new ExprNodeGenericFuncDesc(TypeInfoFactory.timestampTypeInfo, udf, children);
+
+    assertFalse("Function not added as permanent yet", FunctionRegistry.isPermanentFunction(fnExpr));
+
+    // Now register as permanent function
+    FunctionResource[] emptyResources = new FunctionResource[] {};
+    FunctionRegistry.registerPermanentFunction("default.perm_current_timestamp",
+        GenericUDFCurrentTimestamp.class.getName(), true, emptyResources);
+
+    assertTrue("Function should now be recognized as permanent function", FunctionRegistry.isPermanentFunction(fnExpr));
   }
 }
