@@ -30,6 +30,8 @@
 
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
+    <!-- Determines the log level of the console logger, hive.log is independent of this-->
+    <test.console.log.level>OFF</test.console.log.level>
 <!--    <initScript></initScript>-->
     <qfile></qfile>
     <qfile_regex></qfile_regex>
