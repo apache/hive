@@ -61,7 +61,7 @@ public class CoreCliDriver extends CliAdapter {
         @Override
         public QTestUtil invokeInternal() throws Exception {
           return new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR,
-              hiveConfDir, hadoopVer, initScript, cleanupScript, useHBaseMetastore, true, false,
+              hiveConfDir, hadoopVer, initScript, cleanupScript, useHBaseMetastore, true,
               cliConfig.getFsType());
         }
       }.invoke("QtestUtil instance created", LOG, true);
