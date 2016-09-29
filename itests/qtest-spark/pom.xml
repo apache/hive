@@ -30,6 +30,8 @@
 
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
+    <!-- Determines the log level of the console logger, hive.log is independent of this-->
+    <test.console.log.level>OFF</test.console.log.level>
 
     <!-- The following are to match the latest in spark project, overriding hive's versions -->
     <spark.jetty.version>8.1.14.v20131031</spark.jetty.version>
