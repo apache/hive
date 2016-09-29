@@ -50,6 +50,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -152,7 +153,6 @@ public class QTestUtil {
 
   private String testWarehouse;
   private final String testFiles;
-  private final boolean localMode;
   protected final String outDir;
   protected final String logDir;
   private final TreeMap<String, String> qMap;
@@ -411,6 +411,11 @@ public class QTestUtil {
     }
   }
 
+  private enum CoreClusterType {
+    MR,
+    TEZ,
+    SPARK
+  }
 
   public enum FsType {
     local,
@@ -420,18 +425,26 @@ public class QTestUtil {
 
   public enum MiniClusterType {
 
-    mr(FsType.hdfs),
-    tez(FsType.hdfs),
-    spark(FsType.local),
-    miniSparkOnYarn(FsType.hdfs),
-    llap(FsType.hdfs),
-    none(FsType.local);
+    mr(CoreClusterType.MR, FsType.hdfs),
+    tez(CoreClusterType.TEZ, FsType.hdfs),
+    tez_local(CoreClusterType.TEZ, FsType.local),
+    spark(CoreClusterType.SPARK, FsType.local),
+    miniSparkOnYarn(CoreClusterType.SPARK, FsType.hdfs),
+    llap(CoreClusterType.TEZ, FsType.hdfs),
+    llap_local(CoreClusterType.TEZ, FsType.local),
+    none(CoreClusterType.MR, FsType.local);
 
 
+    private final CoreClusterType coreClusterType;
     private final FsType defaultFsType;
 
-    MiniClusterType(FsType defaultFsType) {
+    MiniClusterType(CoreClusterType coreClusterType, FsType defaultFsType) {
+      this.coreClusterType = coreClusterType;
       this.defaultFsType = defaultFsType;
+    }
+
+    public CoreClusterType getCoreClusterType() {
+      return coreClusterType;
     }
 
     public FsType getDefaultFsType() {
@@ -439,16 +452,21 @@ public class QTestUtil {
     }
 
     public static MiniClusterType valueForString(String type) {
+      // Replace this with valueOf.
       if (type.equals("miniMR")) {
         return mr;
       } else if (type.equals("tez")) {
         return tez;
+      } else if (type.equals("tez_local")) {
+        return tez_local;
       } else if (type.equals("spark")) {
         return spark;
       } else if (type.equals("miniSparkOnYarn")) {
         return miniSparkOnYarn;
       } else if (type.equals("llap")) {
         return llap;
+      } else if (type.equals("llap_local")) {
+        return llap_local;
       } else {
         return none;
       }
@@ -487,25 +505,24 @@ public class QTestUtil {
                    String confDir, String hadoopVer, String initScript, String cleanupScript,
                    boolean useHBaseMetastore, boolean withLlapIo) throws Exception {
     this(outDir, logDir, clusterType, confDir, hadoopVer, initScript, cleanupScript,
-        useHBaseMetastore, withLlapIo, false, null);
+        useHBaseMetastore, withLlapIo, null);
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
       String confDir, String hadoopVer, String initScript, String cleanupScript,
-      boolean useHBaseMetastore, boolean withLlapIo, boolean localMode, FsType fsType)
+      boolean useHBaseMetastore, boolean withLlapIo, FsType fsType)
     throws Exception {
     LOG.info("Setting up QTestUtil with outDir={}, logDir={}, clusterType={}, confDir={}," +
         " hadoopVer={}, initScript={}, cleanupScript={}, useHbaseMetaStore={}, withLlapIo={}," +
-            " localMode={}, fsType={}"
+            " fsType={}"
         , outDir, logDir, clusterType, confDir, hadoopVer, initScript, cleanupScript,
-        useHBaseMetastore, withLlapIo, localMode, fsType);
+        useHBaseMetastore, withLlapIo, fsType);
     Preconditions.checkNotNull(clusterType, "ClusterType cannot be null");
     if (fsType != null) {
       this.fsType = fsType;
     } else {
       this.fsType = clusterType.getDefaultFsType();
     }
-    this.localMode = localMode;
     this.outDir = outDir;
     this.logDir = logDir;
     this.useHBaseMetastore = useHBaseMetastore;
@@ -604,28 +621,22 @@ public class QTestUtil {
   private void setupMiniCluster(HadoopShims shims, String confDir) throws
       IOException {
 
-    if (localMode) {
-      Preconditions
-          .checkState(clusterType == MiniClusterType.tez || clusterType == MiniClusterType.llap,
-              "localMode can currently only be set for tez or llap");
-    }
-
     String uriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
 
-    if (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.llap) {
+    if (clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
       if (confDir != null && !confDir.isEmpty()) {
         conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
             + "/tez-site.xml"));
       }
       int numTrackers;
-      if (clusterType == MiniClusterType.tez) {
-        numTrackers = 4;
-      } else {
+      if (EnumSet.of(MiniClusterType.llap, MiniClusterType.llap_local).contains(clusterType)) {
         llapCluster = LlapItUtils.startAndGetMiniLlapCluster(conf, setup.zooKeeperCluster, confDir);
         numTrackers = 2;
+      } else {
+        numTrackers = 4;
       }
-      if (localMode) {
-        mr = shims.getLocalMiniTezCluster(conf, clusterType == MiniClusterType.llap);
+      if (EnumSet.of(MiniClusterType.llap_local, MiniClusterType.tez_local).contains(clusterType)) {
+        mr = shims.getLocalMiniTezCluster(conf, clusterType == MiniClusterType.llap_local);
       } else {
         mr = shims.getMiniTezCluster(conf, numTrackers, uriString);
       }
@@ -642,7 +653,7 @@ public class QTestUtil {
       cleanUp();
     }
 
-    if (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.llap) {
+    if (clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
       SessionState.get().getTezSession().close(false);
     }
     setup.tearDown();
@@ -1152,8 +1163,7 @@ public class QTestUtil {
     SessionState oldSs = SessionState.get();
 
     boolean canReuseSession = !qNoSessionReuseQuerySet.contains(tname);
-    if (oldSs != null && canReuseSession
-        && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.llap)) {
+    if (oldSs != null && canReuseSession && clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
       // Copy the tezSessionState from the old CliSessionState.
       tezSessionState = oldSs.getTezSession();
       oldSs.setTezSession(null);
@@ -1161,8 +1171,7 @@ public class QTestUtil {
       oldSs.close();
     }
 
-    if (oldSs != null && (clusterType == MiniClusterType.spark
-        || clusterType == MiniClusterType.miniSparkOnYarn)) {
+    if (oldSs != null && clusterType.getCoreClusterType() == CoreClusterType.SPARK) {
       sparkSession = oldSs.getSparkSession();
       ss.setSparkSession(sparkSession);
       oldSs.setSparkSession(null);
@@ -1225,8 +1234,7 @@ public class QTestUtil {
     ss.err = System.out;
 
     SessionState oldSs = SessionState.get();
-    if (oldSs != null && canReuseSession
-        && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.llap)) {
+    if (oldSs != null && canReuseSession && clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
       // Copy the tezSessionState from the old CliSessionState.
       tezSessionState = oldSs.getTezSession();
       ss.setTezSession(tezSessionState);
@@ -1234,8 +1242,7 @@ public class QTestUtil {
       oldSs.close();
     }
 
-    if (oldSs != null && (clusterType == MiniClusterType.spark
-        || clusterType == MiniClusterType.miniSparkOnYarn)) {
+    if (oldSs != null && clusterType.getCoreClusterType() == CoreClusterType.SPARK) {
       sparkSession = oldSs.getSparkSession();
       ss.setSparkSession(sparkSession);
       oldSs.setSparkSession(null);
