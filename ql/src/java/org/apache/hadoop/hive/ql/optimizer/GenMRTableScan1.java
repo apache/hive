@@ -91,8 +91,8 @@ public class GenMRTableScan1 implements NodeProcessor {
         if (parseCtx.getQueryProperties().isAnalyzeCommand()) {
           boolean partialScan = parseCtx.getQueryProperties().isPartialScanAnalyzeCommand();
           boolean noScan = parseCtx.getQueryProperties().isNoScanAnalyzeCommand();
-          if (inputFormat.equals(OrcInputFormat.class) ||
-                  inputFormat.equals(MapredParquetInputFormat.class)) {
+          if (OrcInputFormat.class.isAssignableFrom(inputFormat) ||
+                  MapredParquetInputFormat.class.isAssignableFrom(inputFormat)) {
             // For ORC and Parquet, all the following statements are the same
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
