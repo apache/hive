@@ -130,6 +130,7 @@ locate
 log
 log10
 log2
+logged_in_user
 lower
 lpad
 ltrim
@@ -328,6 +329,7 @@ POSTHOOK: type: SHOWFUNCTIONS
 log
 log10
 log2
+logged_in_user
 PREHOOK: query: SHOW FUNCTIONS '.*date.*'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS '.*date.*'
@@ -408,6 +410,7 @@ POSTHOOK: type: SHOWFUNCTIONS
 log
 log10
 log2
+logged_in_user
 PREHOOK: query: SHOW FUNCTIONS LIKE "log*"
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS LIKE "log*"
@@ -415,6 +418,7 @@ POSTHOOK: type: SHOWFUNCTIONS
 log
 log10
 log2
+logged_in_user
 PREHOOK: query: SHOW FUNCTIONS LIKE `log*`
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS LIKE `log*`
@@ -422,3 +426,4 @@ POSTHOOK: type: SHOWFUNCTIONS
 log
 log10
 log2
+logged_in_user
