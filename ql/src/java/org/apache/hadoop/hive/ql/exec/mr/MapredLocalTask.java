@@ -126,11 +126,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
   @Override
   public void updateTaskMetrics(Metrics metrics) {
-    try {
-      metrics.incrementCounter(MetricsConstant.HIVE_MR_TASKS);
-    } catch (IOException ex) {
-      LOG.warn("Could not increment metrics for " + this, ex);
-    }
+    metrics.incrementCounter(MetricsConstant.HIVE_MR_TASKS);
   }
 
   @Override

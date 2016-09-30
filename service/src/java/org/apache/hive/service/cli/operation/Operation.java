@@ -428,19 +428,15 @@ public abstract class Operation {
       String completedOperationPrefix, OperationState state) {
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
-      try {
-        if (stateScope != null) {
-          metrics.endScope(stateScope);
-          stateScope = null;
-        }
-        if (scopeStates.contains(state)) {
-          stateScope = metrics.createScope(operationPrefix + state);
-        }
-        if (terminalStates.contains(state)) {
-          metrics.incrementCounter(completedOperationPrefix + state);
-        }
-      } catch (IOException e) {
-        LOG.warn("Error metrics", e);
+      if (stateScope != null) {
+        metrics.endScope(stateScope);
+        stateScope = null;
+      }
+      if (scopeStates.contains(state)) {
+        stateScope = metrics.createScope(operationPrefix + state);
+      }
+      if (terminalStates.contains(state)) {
+        metrics.incrementCounter(completedOperationPrefix + state);
       }
     }
     return stateScope;

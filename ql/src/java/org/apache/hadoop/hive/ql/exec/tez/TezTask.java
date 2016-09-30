@@ -532,11 +532,7 @@ public class TezTask extends Task<TezWork> {
 
   @Override
   public void updateTaskMetrics(Metrics metrics) {
-    try {
-      metrics.incrementCounter(MetricsConstant.HIVE_TEZ_TASKS);
-    } catch (IOException ex) {
-      LOG.warn("Could not increment metrics for " + this, ex);
-    }
+    metrics.incrementCounter(MetricsConstant.HIVE_TEZ_TASKS);
   }
 
   @Override

@@ -1210,12 +1210,7 @@ public class Driver implements CommandProcessor {
 
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
-      try {
-        metrics.incrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
-      } catch (IOException e) {
-        // This won't happen if we are using the newer CodaHale metrics. Same for below.
-        LOG.warn("Error while incrementing metrics counter.", e);
-      }
+      metrics.incrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
     }
 
     final ReentrantLock compileLock = tryAcquireCompileLock(isParallelEnabled,
@@ -1226,11 +1221,7 @@ public class Driver implements CommandProcessor {
 
     try {
       if (metrics != null) {
-        try {
-          metrics.decrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
-        } catch (IOException e) {
-          LOG.warn("Error while decrementing metrics counter.", e);
-        }
+        metrics.decrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
       }
       ret = compile(command);
     } finally {
