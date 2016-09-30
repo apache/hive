@@ -782,11 +782,11 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   }
 
   public String getURL() throws SQLException {
-    throw new SQLException("Method not supported");
+    return null;
   }
 
   public String getUserName() throws SQLException {
-    throw new SQLException("Method not supported");
+    return null;
   }
 
   public ResultSet getVersionColumns(String catalog, String schema, String table)
