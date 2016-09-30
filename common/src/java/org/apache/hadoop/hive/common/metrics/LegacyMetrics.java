@@ -21,11 +21,13 @@ import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 
+import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -47,6 +49,8 @@ import javax.management.ObjectName;
  */
 public class LegacyMetrics implements Metrics {
 
+  private static final Logger LOG = LoggerFactory.getLogger(LegacyMetrics.class);
+
   private LegacyMetrics() {
     // block
   }
@@ -59,12 +63,12 @@ public class LegacyMetrics implements Metrics {
    */
   public static class LegacyMetricsScope implements MetricsScope {
 
-    final LegacyMetrics metrics;
+    private final LegacyMetrics metrics;
 
-    final String name;
-    final String numCounter;
-    final String timeCounter;
-    final String avgTimeCounter;
+    private final String name;
+    private final String numCounter;
+    private final String timeCounter;
+    private final String avgTimeCounter;
 
     private boolean isOpen = false;
     private Long startTime = null;
@@ -72,9 +76,8 @@ public class LegacyMetrics implements Metrics {
     /**
      * Instantiates a named scope - intended to only be called by Metrics, so locally scoped.
      * @param name - name of the variable
-     * @throws IOException
      */
-    private LegacyMetricsScope(String name, LegacyMetrics metrics) throws IOException {
+    private LegacyMetricsScope(String name, LegacyMetrics metrics) {
       this.metrics = metrics;
       this.name = name;
       this.numCounter = name + ".n";
@@ -83,33 +86,41 @@ public class LegacyMetrics implements Metrics {
       open();
     }
 
-    public Long getNumCounter() throws IOException {
-      return (Long) metrics.get(numCounter);
+    public Long getNumCounter() {
+      try {
+        return (Long) metrics.get(numCounter);
+      } catch (JMException e) {
+        LOG.warn("Could not find counter value for " + numCounter + ", returning null instead. ", e);
+        return null;
+      }
     }
 
-    public Long getTimeCounter() throws IOException {
-      return (Long) metrics.get(timeCounter);
+    public Long getTimeCounter() {
+      try {
+        return (Long) metrics.get(timeCounter);
+      } catch (JMException e) {
+        LOG.warn("Could not find timer value for " + timeCounter + ", returning null instead. ", e);
+        return null;
+      }
     }
 
     /**
      * Opens scope, and makes note of the time started, increments run counter
-     * @throws IOException
      *
      */
-    public void open() throws IOException {
+    public void open() {
       if (!isOpen) {
         isOpen = true;
         startTime = System.currentTimeMillis();
       } else {
-        throw new IOException("Scope named " + name + " is not closed, cannot be opened.");
+        LOG.warn("Scope named " + name + " is not closed, cannot be opened.");
       }
     }
 
     /**
      * Closes scope, and records the time taken
-     * @throws IOException
      */
-    public void close() throws IOException {
+    public void close() {
       if (isOpen) {
         Long endTime = System.currentTimeMillis();
         synchronized(metrics) {
@@ -120,7 +131,7 @@ public class LegacyMetrics implements Metrics {
           }
         }
       } else {
-        throw new IOException("Scope named " + name + " is not open, cannot be closed.");
+        LOG.warn("Scope named " + name + " is not open, cannot be closed.");
       }
       isOpen = false;
     }
@@ -128,9 +139,8 @@ public class LegacyMetrics implements Metrics {
 
     /**
      * Closes scope if open, and reopens it
-     * @throws IOException
      */
-    public void reopen() throws IOException {
+    public void reopen() {
       if(isOpen) {
         close();
       }
@@ -164,37 +174,47 @@ public class LegacyMetrics implements Metrics {
     mbs.registerMBean(metrics, oname);
   }
 
-  public Long incrementCounter(String name) throws IOException {
+  public Long incrementCounter(String name) {
     return incrementCounter(name,Long.valueOf(1));
   }
 
-  public Long incrementCounter(String name, long increment) throws IOException {
-    Long value;
+  public Long incrementCounter(String name, long increment) {
+    Long value = null;
     synchronized(metrics) {
       if (!metrics.hasKey(name)) {
         value = Long.valueOf(increment);
         set(name, value);
       } else {
-        value = ((Long)get(name)) + increment;
-        set(name, value);
+        try {
+          value = ((Long)get(name)) + increment;
+          set(name, value);
+        } catch (JMException e) {
+          LOG.warn("Could not find counter value for " + name
+              + ", increment operation skipped.", e);
+        }
       }
     }
     return value;
   }
 
-  public Long decrementCounter(String name) throws IOException{
+  public Long decrementCounter(String name) {
     return decrementCounter(name, Long.valueOf(1));
   }
 
-  public Long decrementCounter(String name, long decrement) throws IOException {
-    Long value;
+  public Long decrementCounter(String name, long decrement) {
+    Long value = null;
     synchronized(metrics) {
       if (!metrics.hasKey(name)) {
         value = Long.valueOf(decrement);
         set(name, -value);
       } else {
-        value = ((Long)get(name)) - decrement;
-        set(name, value);
+        try {
+          value = ((Long)get(name)) - decrement;
+          set(name, value);
+        } catch (JMException e) {
+          LOG.warn("Could not find counter value for " + name
+              + ", decrement operation skipped.", e);
+        }
       }
     }
     return value;
@@ -205,15 +225,15 @@ public class LegacyMetrics implements Metrics {
     //Not implemented.
   }
 
-  public void set(String name, Object value) throws IOException{
+  public void set(String name, Object value) {
     metrics.put(name,value);
   }
 
-  public Object get(String name) throws IOException{
+  public Object get(String name) throws JMException {
     return metrics.get(name);
   }
 
-  public void startStoredScope(String name) throws IOException{
+  public void startStoredScope(String name) {
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).open();
     } else {
@@ -221,25 +241,25 @@ public class LegacyMetrics implements Metrics {
     }
   }
 
-  public MetricsScope getStoredScope(String name) throws IOException {
+  public MetricsScope getStoredScope(String name) throws IllegalStateException {
     if (threadLocalScopes.get().containsKey(name)) {
       return threadLocalScopes.get().get(name);
     } else {
-      throw new IOException("No metrics scope named " + name);
+      throw new IllegalStateException("No metrics scope named " + name);
     }
   }
 
-  public void endStoredScope(String name) throws IOException{
+  public void endStoredScope(String name) {
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).close();
     }
   }
 
-  public MetricsScope createScope(String name) throws IOException {
+  public MetricsScope createScope(String name) {
     return new LegacyMetricsScope(name, this);
   }
 
-  public void endScope(MetricsScope scope) throws IOException {
+  public void endScope(MetricsScope scope) {
     ((LegacyMetricsScope) scope).close();
   }
 

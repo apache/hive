@@ -71,6 +71,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Codahale-backed Metrics implementation.
  */
 public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.common.Metrics {
+
   public static final String API_PREFIX = "api_";
   public static final String ACTIVE_CALLS = "active_calls_";
 
@@ -96,64 +97,59 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     }
   };
 
-  public static class CodahaleMetricsScope implements MetricsScope {
+  public class CodahaleMetricsScope implements MetricsScope {
 
-    final String name;
-    final Timer timer;
-    Timer.Context timerContext;
-    CodahaleMetrics metrics;
+    private final String name;
+    private final Timer timer;
+    private Timer.Context timerContext;
 
     private boolean isOpen = false;
 
     /**
      * Instantiates a named scope - intended to only be called by Metrics, so locally scoped.
      * @param name - name of the variable
-     * @throws IOException
      */
-    private CodahaleMetricsScope(String name, CodahaleMetrics metrics) throws IOException {
+    private CodahaleMetricsScope(String name) {
       this.name = name;
-      this.metrics = metrics;
-      this.timer = metrics.getTimer(name);
+      this.timer = CodahaleMetrics.this.getTimer(name);
       open();
     }
 
     /**
      * Opens scope, and makes note of the time started, increments run counter
-     * @throws IOException
      *
      */
-    public void open() throws IOException {
+    public void open() {
       if (!isOpen) {
         isOpen = true;
         this.timerContext = timer.time();
-        metrics.incrementCounter(ACTIVE_CALLS + name);
+        CodahaleMetrics.this.incrementCounter(ACTIVE_CALLS + name);
       } else {
-        throw new IOException("Scope named " + name + " is not closed, cannot be opened.");
+        LOGGER.warn("Scope named " + name + " is not closed, cannot be opened.");
       }
     }
 
     /**
      * Closes scope, and records the time taken
-     * @throws IOException
      */
-    public void close() throws IOException {
+    public void close() {
       if (isOpen) {
         timerContext.close();
-        metrics.decrementCounter(ACTIVE_CALLS + name);
+        CodahaleMetrics.this.decrementCounter(ACTIVE_CALLS + name);
       } else {
-        throw new IOException("Scope named " + name + " is not open, cannot be closed.");
+        LOGGER.warn("Scope named " + name + " is not open, cannot be closed.");
       }
       isOpen = false;
     }
   }
 
-  public CodahaleMetrics(HiveConf conf) throws Exception {
+  public CodahaleMetrics(HiveConf conf) {
     this.conf = conf;
     //Codahale artifacts are lazily-created.
     timers = CacheBuilder.newBuilder().build(
       new CacheLoader<String, com.codahale.metrics.Timer>() {
         @Override
-        public com.codahale.metrics.Timer load(String key) throws Exception {
+        public com.codahale.metrics.Timer load(String key) {
           Timer timer = new Timer(new ExponentiallyDecayingReservoir());
           metricRegistry.register(key, timer);
           return timer;
@@ -163,7 +159,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     counters = CacheBuilder.newBuilder().build(
       new CacheLoader<String, Counter>() {
         @Override
-        public Counter load(String key) throws Exception {
+        public Counter load(String key) {
           Counter counter = new Counter();
           metricRegistry.register(key, counter);
           return counter;
@@ -211,17 +207,17 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
   }
 
   @Override
-  public void startStoredScope(String name) throws IOException {
+  public void startStoredScope(String name) {
     name = API_PREFIX + name;
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).open();
     } else {
-      threadLocalScopes.get().put(name, new CodahaleMetricsScope(name, this));
+      threadLocalScopes.get().put(name, new CodahaleMetricsScope(name));
     }
   }
 
   @Override
-  public void endStoredScope(String name) throws IOException {
+  public void endStoredScope(String name) {
     name = API_PREFIX + name;
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).close();
@@ -229,53 +225,56 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     }
   }
 
-  public MetricsScope getStoredScope(String name) throws IOException {
+  public MetricsScope getStoredScope(String name) throws IllegalArgumentException {
     if (threadLocalScopes.get().containsKey(name)) {
       return threadLocalScopes.get().get(name);
     } else {
-      throw new IOException("No metrics scope named " + name);
+      throw new IllegalArgumentException("No metrics scope named " + name);
     }
   }
 
-  public MetricsScope createScope(String name) throws IOException {
+  public MetricsScope createScope(String name) {
     name = API_PREFIX + name;
-    return new CodahaleMetricsScope(name, this);
+    return new CodahaleMetricsScope(name);
   }
 
-  public void endScope(MetricsScope scope) throws IOException {
+  public void endScope(MetricsScope scope) {
     ((CodahaleMetricsScope) scope).close();
   }
 
   @Override
-  public Long incrementCounter(String name) throws IOException {
+  public Long incrementCounter(String name) {
     return incrementCounter(name, 1L);
   }
 
-  public Long incrementCounter(String name, long increment) throws IOException {
+  @Override
+  public Long incrementCounter(String name, long increment) {
     String key = name;
     try {
       countersLock.lock();
       counters.get(key).inc(increment);
       return counters.get(key).getCount();
     } catch(ExecutionException ee) {
-      throw new RuntimeException(ee);
+      throw new IllegalStateException("Error retrieving counter from the metric registry ", ee);
     } finally {
       countersLock.unlock();
     }
   }
 
-  public Long decrementCounter(String name) throws IOException {
+  @Override
+  public Long decrementCounter(String name) {
     return decrementCounter(name, 1L);
   }
 
-  public Long decrementCounter(String name, long decrement) throws IOException {
+  @Override
+  public Long decrementCounter(String name, long decrement) {
     String key = name;
     try {
       countersLock.lock();
       counters.get(key).dec(decrement);
       return counters.get(key).getCount();
     } catch(ExecutionException ee) {
-      throw new RuntimeException(ee);
+      throw new IllegalStateException("Error retrieving counter from the metric registry ", ee);
     } finally {
       countersLock.unlock();
     }
@@ -304,14 +303,14 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
   }
 
   // This method is necessary to synchronize lazy-creation to the timers.
-  private Timer getTimer(String name) throws IOException {
+  private Timer getTimer(String name) {
     String key = name;
     try {
       timersLock.lock();
       Timer timer = timers.get(key);
       return timer;
     } catch (ExecutionException e) {
-      throw new IOException(e);
+      throw new IllegalStateException("Error retrieving timer from the metric registry ", e);
     } finally {
       timersLock.unlock();
     }
@@ -342,7 +341,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
   /**
    * Should be only called once to initialize the reporters
    */
-  private void initReporting(Set<MetricsReporting> reportingSet) throws Exception {
+  private void initReporting(Set<MetricsReporting> reportingSet) {
     for (MetricsReporting reporting : reportingSet) {
       switch(reporting) {
         case CONSOLE:
