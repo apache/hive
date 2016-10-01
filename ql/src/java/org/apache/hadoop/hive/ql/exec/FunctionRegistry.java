@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.udf.UDFConv;
 import org.apache.hadoop.hive.ql.udf.UDFCos;
 import org.apache.hadoop.hive.ql.udf.UDFCrc32;
 import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
+import org.apache.hadoop.hive.ql.udf.UDFDayOfWeek;
 import org.apache.hadoop.hive.ql.udf.UDFDegrees;
 import org.apache.hadoop.hive.ql.udf.UDFE;
 import org.apache.hadoop.hive.ql.udf.UDFExp;
@@ -261,6 +262,7 @@ public final class FunctionRegistry {
 
     system.registerUDF("day", UDFDayOfMonth.class, false);
     system.registerUDF("dayofmonth", UDFDayOfMonth.class, false);
+    system.registerUDF("dayofweek", UDFDayOfWeek.class, false);
     system.registerUDF("month", UDFMonth.class, false);
     system.registerUDF("year", UDFYear.class, false);
     system.registerUDF("hour", UDFHour.class, false);
