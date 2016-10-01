@@ -141,4 +141,35 @@ public class TestViewEntity {
 
   }
 
+  /**
+   * Verify that the the query with the subquery inside a view will have the correct
+   * direct and indirect inputs.
+   * @throws Exception
+   */
+  @Test
+  public void testSubQueryInSubView() throws Exception {
+    String prefix = "tvsubqueryinsubview" + NAME_PREFIX;
+    final String tab1 = prefix + "t";
+    final String view1 = prefix + "v";
+    final String view2 = prefix + "v2";
+
+    int ret = driver.run("create table " + tab1 + "(id int)").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+    ret = driver.run("create view " + view1 + " as select * from " + tab1).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+
+    ret = driver.run("create view " + view2 + " as select * from (select * from " + view1 + ") x").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+
+    driver.compile("select * from " + view2);
+    // view entity
+    assertEquals("default@" + view2, CheckInputReadEntity.readEntities[0].getName());
+
+    // table1 and view1 as second read entity
+    assertEquals("default@" + view1, CheckInputReadEntity.readEntities[1].getName());
+    assertFalse("Table is not direct input", CheckInputReadEntity.readEntities[1].isDirect());
+    assertEquals("default@" + tab1, CheckInputReadEntity.readEntities[2].getName());
+    assertFalse("Table is not direct input", CheckInputReadEntity.readEntities[2].isDirect());
+
+  }
 }

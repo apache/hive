@@ -26,7 +26,16 @@ build_ptest_client() {
 	test -d $PTEST_BUILD_DIR || mkdir -p $PTEST_BUILD_DIR
 	cd $PTEST_BUILD_DIR &&	rm -rf hive
 
-	git clone --depth 1 https://github.com/apache/hive.git
+  unset GIT_CLONE_ARGS
+  if [ -n "${PTEST_GIT_BRANCH}" ]; then
+    GIT_CLONE_ARGS=" -b ${PTEST_GIT_BRANCH}"
+  fi
+  if [ -z "${PTEST_GIT_REPO}" ]; then
+    PTEST_GIT_REPO=https://github.com/apache/hive.git
+  fi
+  GIT_CLONE_ARGS=${GIT_CLONE_ARGS}" ${PTEST_GIT_REPO} hive"
+
+	git clone --depth 1 ${GIT_CLONE_ARGS}
 	cd hive/testutils/ptest2
 	mvn clean package -DskipTests -Drat.numUnapprovedLicenses=1000 -Dmaven.repo.local=$MVN_REPO_LOCAL
 }
@@ -99,10 +108,13 @@ if [ -n "$JIRA_ISSUE" ]; then
 		fail "attachment $attachment_id is already tested for $JIRA_ISSUE"
 	fi
 
-	BUILD_PROFILE=`get_branch_profile $JIRA_PATCH_URL $JIRA_INFO_FILE`
-	if [ -z "$BUILD_PROFILE" ]; then
-		BUILD_PROFILE="$DEFAULT_BUILD_PROFILE"
-	fi
+  # Use the BUILD_PROFILE if it is provided. 
+  if [ -z ${BUILD_PROFILE} ]; then
+	  BUILD_PROFILE=`get_branch_profile $JIRA_PATCH_URL $JIRA_INFO_FILE`
+	  if [ -z "$BUILD_PROFILE" ]; then
+	  	BUILD_PROFILE="$DEFAULT_BUILD_PROFILE"
+	  fi
+  fi
 
 	if is_clear_cache_set $JIRA_INFO_FILE; then
 		optionalArgs+=(--clearLibraryCache)
@@ -112,11 +124,15 @@ if [ -n "$JIRA_ISSUE" ]; then
 
 	echo "ISSUE: $JIRA_ISSUE PROFILE: $BUILD_PROFILE"
 else
-	# If not JIRA is specified, then use a default profile
-	BUILD_PROFILE="$DEFAULT_BUILD_PROFILE"
+	# If not JIRA is specified, and no BUILD_PROFILE provided, then use a default profile
+  if [ -z ${BUILD_PROFILE} ]; then
+  	BUILD_PROFILE="$DEFAULT_BUILD_PROFILE"
+  fi
 
 	echo "ISSUE: unspecified PROFILE: $BUILD_PROFILE"
 fi
+
+set +e
 
 call_ptest_server --testHandle "$TEST_HANDLE" --endpoint "$PTEST_API_ENDPOINT" --logsEndpoint "$PTEST_LOG_ENDPOINT" \
 	--profile "$BUILD_PROFILE" ${optionalArgs[@]} "$@"

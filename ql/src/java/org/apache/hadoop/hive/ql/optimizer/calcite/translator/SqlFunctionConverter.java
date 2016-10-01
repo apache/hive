@@ -191,7 +191,7 @@ public class SqlFunctionConverter {
       throw new RuntimeException(e);
     }
     return new FunctionInfo(
-        fi.isNative(), fi.getDisplayName(), (GenericUDF) udf, fi.getResources());
+        fi.getFunctionType(), fi.getDisplayName(), (GenericUDF) udf, fi.getResources());
   }
 
   // TODO: 1) handle Agg Func Name translation 2) is it correct to add func

@@ -234,6 +234,17 @@ public abstract class Operation {
               operationLogFile.getAbsolutePath());
           operationLogFile.delete();
         }
+        if (!operationLogFile.getParentFile().exists()) {
+          LOG.warn("Operations log directory for this session does not exist, it could have been deleted " +
+              "externally. Recreating the directory for future queries in this session but the older operation " +
+              "logs for this session are no longer available");
+          if (!operationLogFile.getParentFile().mkdir()) {
+            LOG.warn("Log directory for this session could not be created, disabling " +
+                "operation logs: " + operationLogFile.getParentFile().getAbsolutePath());
+            isOperationLogEnabled = false;
+            return;
+          }
+        }
         if (!operationLogFile.createNewFile()) {
           // the log file already exists and cannot be deleted.
           // If it can be read/written, keep its contents and use it.
@@ -417,19 +428,15 @@ public abstract class Operation {
       String completedOperationPrefix, OperationState state) {
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
-      try {
-        if (stateScope != null) {
-          metrics.endScope(stateScope);
-          stateScope = null;
-        }
-        if (scopeStates.contains(state)) {
-          stateScope = metrics.createScope(operationPrefix + state);
-        }
-        if (terminalStates.contains(state)) {
-          metrics.incrementCounter(completedOperationPrefix + state);
-        }
-      } catch (IOException e) {
-        LOG.warn("Error metrics", e);
+      if (stateScope != null) {
+        metrics.endScope(stateScope);
+        stateScope = null;
+      }
+      if (scopeStates.contains(state)) {
+        stateScope = metrics.createScope(operationPrefix + state);
+      }
+      if (terminalStates.contains(state)) {
+        metrics.incrementCounter(completedOperationPrefix + state);
       }
     }
     return stateScope;

@@ -67,8 +67,11 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -92,6 +95,7 @@ import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -125,6 +129,7 @@ public class HiveConnection implements java.sql.Connection {
   private int loginTimeout = 0;
   private TProtocolVersion protocol;
   private int fetchSize = HiveStatement.DEFAULT_FETCH_SIZE;
+  private String initFile = null;
 
   public HiveConnection(String uri, Properties info) throws SQLException {
     setupLoginTimeout();
@@ -147,6 +152,9 @@ public class HiveConnection implements java.sql.Connection {
     if (sessConfMap.containsKey(JdbcConnectionParams.FETCH_SIZE)) {
       fetchSize = Integer.parseInt(sessConfMap.get(JdbcConnectionParams.FETCH_SIZE));
     }
+    if (sessConfMap.containsKey(JdbcConnectionParams.INIT_FILE)) {
+      initFile = sessConfMap.get(JdbcConnectionParams.INIT_FILE);
+    }
 
     // add supported protocols
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V1);
@@ -166,6 +174,7 @@ public class HiveConnection implements java.sql.Connection {
 
       // open client session
       openSession();
+      executeInitSql();
     } else {
       int maxRetries = 1;
       try {
@@ -184,6 +193,7 @@ public class HiveConnection implements java.sql.Connection {
           client = new TCLIService.Client(new TBinaryProtocol(transport));
           // open client session
           openSession();
+          executeInitSql();
 
           break;
         } catch (Exception e) {
@@ -217,6 +227,75 @@ public class HiveConnection implements java.sql.Connection {
     // Wrap the client with a thread-safe proxy to serialize the RPC calls
     client = newSynchronizedClient(client);
   }
+
+  private void executeInitSql() throws SQLException {
+    if (initFile != null) {
+      try {
+        List<String> sqlList = parseInitFile(initFile);
+        Statement st = createStatement();
+        for(String sql : sqlList) {
+          boolean hasResult = st.execute(sql);
+          if (hasResult) {
+            ResultSet rs = st.getResultSet();
+            while (rs.next()) {
+              System.out.println(rs.getString(1));
+            }
+          }
+        }
+      } catch(Exception e) {
+        LOG.error("Failed to execute initial SQL");
+        throw new SQLException(e.getMessage());
+      }
+    }
+  }
+
+  public static List<String> parseInitFile(String initFile) throws IOException {
+    File file = new File(initFile);
+    BufferedReader br = null;
+    List<String> initSqlList = null;
+    try {
+      FileInputStream input = new FileInputStream(file);
+      br = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+      String line;
+      StringBuilder sb = new StringBuilder("");
+      while ((line = br.readLine()) != null) {
+        line = line.trim();
+        if (line.length() != 0) {
+          if (line.startsWith("#") || line.startsWith("--")) {
+            continue;
+          } else {
+            line = line.concat(" ");
+            sb.append(line);
+          }
+        }
+      }
+      initSqlList = getInitSql(sb.toString());
+    } catch(IOException e) {
+      LOG.error("Failed to read initial SQL file", e);
+      throw new IOException(e);
+    } finally {
+      if (br != null) {
+        br.close();
+      }
+    }
+    return initSqlList;
+  }
+
+  private static List<String> getInitSql(String sbLine) {
+    char[] sqlArray = sbLine.toCharArray();
+    List<String> initSqlList = new ArrayList();
+    int index = 0;
+    int beginIndex = 0;
+    for (; index < sqlArray.length; index++) {
+      if (sqlArray[index] == ';') {
+        String sql = sbLine.substring(beginIndex, index).trim();
+        initSqlList.add(sql);
+        beginIndex = index + 1;
+      }
+    }
+    return initSqlList;
+  }
+
 
   private void openTransport() throws Exception {
       assumeSubject =

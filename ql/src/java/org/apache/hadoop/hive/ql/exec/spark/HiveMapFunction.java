@@ -38,7 +38,7 @@ public class HiveMapFunction extends HivePairFlatMapFunction<
 
   @SuppressWarnings("unchecked")
   @Override
-  public Iterable<Tuple2<HiveKey, BytesWritable>>
+  public Iterator<Tuple2<HiveKey, BytesWritable>>
   call(Iterator<Tuple2<BytesWritable, BytesWritable>> it) throws Exception {
     initJobConf();
 

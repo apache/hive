@@ -18,26 +18,30 @@
 package org.apache.hive.spark.client.rpc;
 
 import java.io.Closeable;
+import java.net.InetAddress;
+import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.security.sasl.SaslException;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.Future;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -117,6 +121,29 @@ public class TestRpc {
   }
 
   @Test
+  public void testServerAddress() throws Exception {
+    String hostAddress = InetAddress.getLocalHost().getHostName();
+    Map<String, String> config = new HashMap<String, String>();
+
+    // Test if rpc_server_address is configured
+    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname, hostAddress);
+    RpcServer server1 = autoClose(new RpcServer(config));
+    assertTrue("Host address should match the expected one", server1.getAddress() == hostAddress);
+
+    // Test if rpc_server_address is not configured but HS2 server host is configured
+    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname, "");
+    config.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST.varname, hostAddress);
+    RpcServer server2 = autoClose(new RpcServer(config));
+    assertTrue("Host address should match the expected one", server2.getAddress() == hostAddress);
+
+    // Test if both are not configured
+    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname, "");
+    config.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST.varname, "");
+    RpcServer server3 = autoClose(new RpcServer(config));
+    assertTrue("Host address should match the expected one", server3.getAddress() == InetAddress.getLocalHost().getHostName());
+  }
+
+  @Test
   public void testBadHello() throws Exception {
     RpcServer server = autoClose(new RpcServer(emptyConfig));
 
@@ -138,6 +165,41 @@ public class TestRpc {
     }
 
     serverRpcFuture.cancel(true);
+  }
+
+  @Test
+  public void testServerPort() throws Exception {
+    Map<String, String> config = new HashMap<String, String>();
+
+    RpcServer server0 = new RpcServer(config);
+    assertTrue("Empty port range should return a random valid port: " + server0.getPort(), server0.getPort() >= 0);
+    IOUtils.closeQuietly(server0);
+
+    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, "49152-49222,49223,49224-49333");
+    RpcServer server1 = new RpcServer(config);
+    assertTrue("Port should be within configured port range:" + server1.getPort(), server1.getPort() >= 49152 && server1.getPort() <= 49333);
+    IOUtils.closeQuietly(server1);
+
+    int expectedPort = 65535;
+    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, String.valueOf(expectedPort));
+    RpcServer server2 = new RpcServer(config);
+    assertTrue("Port should match configured one: " + server2.getPort(), server2.getPort() == expectedPort);
+    IOUtils.closeQuietly(server2);
+
+    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, "49552-49222,49223,49224-49333");
+    try {
+      autoClose(new RpcServer(config));
+      assertTrue("Invalid port range should throw an exception", false); // Should not reach here
+    } catch(IOException e) {
+      assertEquals("Incorrect RPC server port configuration for HiveServer2", e.getMessage());
+    }
+
+    // Retry logic
+    expectedPort = 65535;
+    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, String.valueOf(expectedPort) + ",21-23");
+    RpcServer server3 = new RpcServer(config);
+    assertTrue("Port should match configured one:" + server3.getPort(), server3.getPort() == expectedPort);
+    IOUtils.closeQuietly(server3);
   }
 
   @Test

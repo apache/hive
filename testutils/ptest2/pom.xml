@@ -107,6 +107,11 @@ limitations under the License.
       <version>${jclouds.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.jclouds.labs</groupId>
+      <artifactId>google-compute-engine</artifactId>
+      <version>${jclouds.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.jclouds.driver</groupId>
       <artifactId>jclouds-sshj</artifactId>
       <version>${jclouds.version}</version>

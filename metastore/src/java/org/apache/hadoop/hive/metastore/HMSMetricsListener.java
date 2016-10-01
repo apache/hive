@@ -30,8 +30,6 @@ import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-
 /**
  * Report metrics of metadata added, deleted by this Hive Metastore.
  */
@@ -47,67 +45,37 @@ public class HMSMetricsListener extends MetaStoreEventListener {
 
   @Override
   public void onCreateDatabase(CreateDatabaseEvent dbEvent) throws MetaException {
-    if (metrics != null) {
-      try {
-        metrics.incrementCounter(MetricsConstant.CREATE_TOTAL_DATABASES);
-      } catch (IOException e) {
-        LOGGER.warn("Error updating metadata metrics", e);
-      }
-    }
+    incrementCounterInternal(MetricsConstant.CREATE_TOTAL_DATABASES);
   }
 
   @Override
   public void onDropDatabase(DropDatabaseEvent dbEvent) throws MetaException {
-    if (metrics != null) {
-      try {
-        metrics.incrementCounter(MetricsConstant.DELETE_TOTAL_DATABASES);
-      } catch (IOException e) {
-        LOGGER.warn("Error updating metadata metrics", e);
-      }
-    }
+    incrementCounterInternal(MetricsConstant.DELETE_TOTAL_DATABASES);
   }
 
   @Override
   public void onCreateTable(CreateTableEvent tableEvent) throws MetaException {
-    if (metrics != null) {
-      try {
-        metrics.incrementCounter(MetricsConstant.CREATE_TOTAL_TABLES);
-      } catch (IOException e) {
-        LOGGER.warn("Error updating metadata metrics", e);
-      }
-    }
+    incrementCounterInternal(MetricsConstant.CREATE_TOTAL_TABLES);
   }
 
   @Override
   public void onDropTable(DropTableEvent tableEvent) throws MetaException {
-    if (metrics != null) {
-      try {
-        metrics.incrementCounter(MetricsConstant.DELETE_TOTAL_TABLES);
-      } catch (IOException e) {
-        LOGGER.warn("Error updating metadata metrics", e);
-      }
-    }
+    incrementCounterInternal(MetricsConstant.DELETE_TOTAL_TABLES);
   }
 
   @Override
   public void onDropPartition(DropPartitionEvent partitionEvent) throws MetaException {
-    if (metrics != null) {
-      try {
-        metrics.incrementCounter(MetricsConstant.DELETE_TOTAL_PARTITIONS);
-      } catch (IOException e) {
-        LOGGER.warn("Error updating metadata metrics", e);
-      }
-    }
+    incrementCounterInternal(MetricsConstant.DELETE_TOTAL_PARTITIONS);
   }
 
   @Override
   public void onAddPartition(AddPartitionEvent partitionEvent) throws MetaException {
+    incrementCounterInternal(MetricsConstant.CREATE_TOTAL_PARTITIONS);
+  }
+
+  private void incrementCounterInternal(String name) {
     if (metrics != null) {
-      try {
-        metrics.incrementCounter(MetricsConstant.CREATE_TOTAL_PARTITIONS);
-      } catch (IOException e) {
-        LOGGER.warn("Error updating metadata metrics", e);
-      }
+      metrics.incrementCounter(name);
     }
   }
 }

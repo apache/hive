@@ -120,6 +120,7 @@ public class Utils {
     static final String HTTP_HEADER_PREFIX = "http.header.";
     // Set the fetchSize
     static final String FETCH_SIZE = "fetchSize";
+    static final String INIT_FILE = "initFile";
 
     // --------------- Begin 2 way ssl options -------------------------
     // Use two way ssl. This param will take effect only when ssl=true

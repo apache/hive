@@ -30,9 +30,9 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 public class ShuffleReadMetrics implements Serializable {
 
   /** Number of remote blocks fetched in shuffles by tasks. */
-  public final int remoteBlocksFetched;
+  public final long remoteBlocksFetched;
   /** Number of local blocks fetched in shuffles by tasks. */
-  public final int localBlocksFetched;
+  public final long localBlocksFetched;
   /**
    * Time tasks spent waiting for remote shuffle blocks. This only includes the
    * time blocking on shuffle input data. For instance if block B is being
@@ -49,8 +49,8 @@ public class ShuffleReadMetrics implements Serializable {
   }
 
   public ShuffleReadMetrics(
-      int remoteBlocksFetched,
-      int localBlocksFetched,
+      long remoteBlocksFetched,
+      long localBlocksFetched,
       long fetchWaitTime,
       long remoteBytesRead) {
     this.remoteBlocksFetched = remoteBlocksFetched;
@@ -60,16 +60,16 @@ public class ShuffleReadMetrics implements Serializable {
   }
 
   public ShuffleReadMetrics(TaskMetrics metrics) {
-    this(metrics.shuffleReadMetrics().get().remoteBlocksFetched(),
-      metrics.shuffleReadMetrics().get().localBlocksFetched(),
-      metrics.shuffleReadMetrics().get().fetchWaitTime(),
-      metrics.shuffleReadMetrics().get().remoteBytesRead());
+    this(metrics.shuffleReadMetrics().remoteBlocksFetched(),
+      metrics.shuffleReadMetrics().localBlocksFetched(),
+      metrics.shuffleReadMetrics().fetchWaitTime(),
+      metrics.shuffleReadMetrics().remoteBytesRead());
   }
 
   /**
    * Number of blocks fetched in shuffle by tasks (remote or local).
    */
-  public int getTotalBlocksFetched() {
+  public long getTotalBlocksFetched() {
     return remoteBlocksFetched + localBlocksFetched;
   }
 

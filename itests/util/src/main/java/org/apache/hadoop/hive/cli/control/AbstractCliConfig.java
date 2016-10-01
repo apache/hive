@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.QTestUtil.FsType;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
@@ -63,6 +64,7 @@ public abstract class AbstractCliConfig {
   private String initScript;
   private String hiveConfDir;
   private MiniClusterType clusterType;
+  private FsType fsType;
 
   // FIXME: null value is treated differently on the other end..when those filter will be
   // moved...this may change
@@ -380,6 +382,14 @@ public abstract class AbstractCliConfig {
     }
   }
 
+  protected FsType getFsType() {
+    return this.fsType;
+  }
+
+  protected void setFsType(FsType fsType) {
+    this.fsType = fsType;
+  }
+
   private String getSysPropValue(String propName) {
     String propValue = System.getProperty(propName);
     if (propValue == null || propValue.trim().length() == 0) {
@@ -399,7 +409,18 @@ public abstract class AbstractCliConfig {
   }
 
   protected void setMetastoreType(MetastoreType mt) {
-    metastoreType=mt;
+    String metaStoreTypeProperty = getSysPropValue("metaStoreType");
+    if (metaStoreTypeProperty != null) {
+      if (metaStoreTypeProperty.equalsIgnoreCase("sql")) {
+        metastoreType = MetastoreType.sql;
+      } else if (metaStoreTypeProperty.equalsIgnoreCase("hbase")) {
+        metastoreType = MetastoreType.hbase;
+      } else {
+        throw new IllegalArgumentException("Unknown metastore type: " + metaStoreTypeProperty);
+      }
+    } else {
+      metastoreType = mt;
+    }
   }
 
   public MetastoreType getMetastoreType() {

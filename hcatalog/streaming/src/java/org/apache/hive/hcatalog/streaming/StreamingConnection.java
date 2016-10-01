@@ -22,6 +22,8 @@ import org.apache.hadoop.security.UserGroupInformation;
 
 /**
  * Represents a connection to a HiveEndPoint. Used to acquire transaction batches.
+ * Note: the expectation is that there is at most 1 TransactionBatch outstanding for any given
+ * StreamingConnection.  Violating this may result in "out of sequence response".
  */
 public interface StreamingConnection {
 

@@ -74,7 +74,7 @@ class BeeLineOpts implements Completer {
   private boolean autoCommit = false;
   private boolean verbose = false;
   private boolean force = false;
-  private boolean incremental = false;
+  private boolean incremental = true;
   private int incrementalBufferRows = DEFAULT_INCREMENTAL_BUFFER_ROWS;
   private boolean showWarnings = false;
   private boolean showNestedErrs = false;

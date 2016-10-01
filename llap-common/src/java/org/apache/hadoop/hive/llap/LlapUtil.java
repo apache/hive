@@ -14,6 +14,8 @@
 package org.apache.hadoop.hive.llap;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto.Builder;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
@@ -179,5 +182,14 @@ public class LlapUtil {
       sb.append(" writeOps: ").append(writeOps);
       return sb.toString();
     }
+  }
+
+  public static String getAmHostNameFromAddress(InetSocketAddress address, Configuration conf) {
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_DAEMON_AM_USE_FQDN)) {
+      return address.getHostName();
+    }
+    InetAddress ia = address.getAddress();
+    // getCanonicalHostName would either return FQDN, or an IP.
+    return (ia == null) ? address.getHostName() : ia.getCanonicalHostName();
   }
 }

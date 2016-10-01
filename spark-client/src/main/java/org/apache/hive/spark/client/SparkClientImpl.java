@@ -621,6 +621,14 @@ class SparkClientImpl implements SparkClient {
             }
           }
         }
+      } catch (IOException e) {
+        if (isAlive) {
+          LOG.warn("I/O error in redirector thread.", e);
+        } else {
+          // When stopping the remote driver the process might be destroyed during reading from the stream.
+          // We should not log the related exceptions in a visible level as they might mislead the user.
+          LOG.debug("I/O error in redirector thread while stopping the remote driver", e);
+        }
       } catch (Exception e) {
         LOG.warn("Error in redirector thread.", e);
       }

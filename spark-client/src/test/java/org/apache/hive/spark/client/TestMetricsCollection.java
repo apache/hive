@@ -95,22 +95,21 @@ public class TestMetricsCollection {
 
     long value = taskValue(1, 1, 1);
     Metrics metrics1 = new Metrics(value, value, value, value, value, value, value,
-      new InputMetrics(DataReadMethod.Memory, value), null, null);
+      new InputMetrics(value), null, null);
     Metrics metrics2 = new Metrics(value, value, value, value, value, value, value,
-      new InputMetrics(DataReadMethod.Disk, value), null, null);
+      new InputMetrics(value), null, null);
 
     collection.addMetrics(1, 1, 1, metrics1);
     collection.addMetrics(1, 1, 2, metrics2);
 
     Metrics global = collection.getAllMetrics();
     assertNotNull(global.inputMetrics);
-    assertEquals(DataReadMethod.Multiple, global.inputMetrics.readMethod);
   }
 
   private Metrics makeMetrics(int jobId, int stageId, long taskId) {
     long value = 1000000 * jobId + 1000 * stageId + taskId;
     return new Metrics(value, value, value, value, value, value, value,
-      new InputMetrics(DataReadMethod.Memory, value),
+      new InputMetrics(value),
       new ShuffleReadMetrics((int) value, (int) value, value, value),
       new ShuffleWriteMetrics(value, value));
   }
@@ -156,7 +155,6 @@ public class TestMetricsCollection {
     assertEquals(expected, metrics.memoryBytesSpilled);
     assertEquals(expected, metrics.diskBytesSpilled);
 
-    assertEquals(DataReadMethod.Memory, metrics.inputMetrics.readMethod);
     assertEquals(expected, metrics.inputMetrics.bytesRead);
 
     assertEquals(expected, metrics.shuffleReadMetrics.remoteBlocksFetched);

@@ -21,6 +21,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.apache.hadoop.hive.ql.parse.CoreParseNegative;
 
@@ -171,8 +172,15 @@ public class CliConfigs {
         setInitScript("q_test_init_for_encryption.sql");
         setCleanupScript("q_test_cleanup_for_encryption.sql");
 
-        setHiveConfDir("data/conf");
-        setClusterType(MiniClusterType.encrypted);
+
+        setClusterType(MiniClusterType.mr);
+        setFsType(QTestUtil.FsType.encrypted_hdfs);
+        if (getClusterType() == MiniClusterType.tez) {
+          setHiveConfDir("data/conf/tez");
+        } else {
+          setHiveConfDir("data/conf");
+        }
+
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -276,8 +284,8 @@ public class CliConfigs {
         setResultsDir("ql/src/test/results/clientnegative");
         setLogDir("itests/qtest/target/qfile-results/clientnegative");
 
-        setInitScript("q_test_init.sql");
-        setCleanupScript("q_test_cleanup.sql");
+        setInitScript("q_test_init_for_encryption.sql");
+        setCleanupScript("q_test_cleanup_for_encryption.sql");
 
         setHiveConfDir("");
         setClusterType(MiniClusterType.mr);
@@ -301,28 +309,6 @@ public class CliConfigs {
 
         setHiveConfDir("");
         setClusterType(MiniClusterType.none);
-      } catch (Exception e) {
-        throw new RuntimeException("can't construct cliconfig", e);
-      }
-    }
-  }
-
-  public static class HBaseMinimrCliConfig extends AbstractCliConfig {
-    public HBaseMinimrCliConfig() {
-      super(CoreHBaseCliDriver.class);
-      try {
-        setQueryDir("hbase-handler/src/test/queries/positive");
-        // XXX: i think this was non intentionally set to run only hbase_bulk.m???
-        // includeQuery("hbase_bulk.m"); => will be filter out because not ends with .q
-        // to keep existing behaviour i added this method
-        overrideUserQueryFile("hbase_bulk.m");
-
-        setResultsDir("hbase-handler/src/test/results/positive");
-        setLogDir("itests/qtest/target/qfile-results/hbase-handler/minimrpositive");
-        setInitScript("q_test_init_for_minimr.sql");
-        setCleanupScript("q_test_cleanup.sql");
-        setHiveConfDir("");
-        setClusterType(MiniClusterType.mr);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }

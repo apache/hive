@@ -151,7 +151,6 @@ public class MetricsCollection {
 
       // Input metrics.
       boolean hasInputMetrics = false;
-      DataReadMethod readMethod = null;
       long bytesRead = 0L;
 
       // Shuffle read metrics.
@@ -177,11 +176,6 @@ public class MetricsCollection {
 
         if (m.inputMetrics != null) {
           hasInputMetrics = true;
-          if (readMethod == null) {
-            readMethod = m.inputMetrics.readMethod;
-          } else if (readMethod != m.inputMetrics.readMethod) {
-            readMethod = DataReadMethod.Multiple;
-          }
           bytesRead += m.inputMetrics.bytesRead;
         }
 
@@ -201,7 +195,7 @@ public class MetricsCollection {
 
       InputMetrics inputMetrics = null;
       if (hasInputMetrics) {
-        inputMetrics = new InputMetrics(readMethod, bytesRead);
+        inputMetrics = new InputMetrics(bytesRead);
       }
 
       ShuffleReadMetrics shuffleReadMetrics = null;

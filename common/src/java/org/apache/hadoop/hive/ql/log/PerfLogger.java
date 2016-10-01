@@ -224,27 +224,20 @@ public class PerfLogger {
 
   private void beginMetrics(String method) {
     Metrics metrics = MetricsFactory.getInstance();
-    try {
-      if (metrics != null) {
-        MetricsScope scope = metrics.createScope(method);
-        openScopes.put(method, scope);
-      }
-    } catch (IOException e) {
-      LOG.warn("Error recording metrics", e);
+    if (metrics != null) {
+      MetricsScope scope = metrics.createScope(method);
+      openScopes.put(method, scope);
     }
+
   }
 
   private void endMetrics(String method) {
     Metrics metrics = MetricsFactory.getInstance();
-    try {
-      if (metrics != null) {
-        MetricsScope scope = openScopes.remove(method);
-        if (scope != null) {
-          metrics.endScope(scope);
-        }
+    if (metrics != null) {
+      MetricsScope scope = openScopes.remove(method);
+      if (scope != null) {
+        metrics.endScope(scope);
       }
-    } catch (IOException e) {
-      LOG.warn("Error recording metrics", e);
     }
   }
 
@@ -253,14 +246,10 @@ public class PerfLogger {
    */
   public void cleanupPerfLogMetrics() {
     Metrics metrics = MetricsFactory.getInstance();
-    try {
-      if (metrics != null) {
-        for (MetricsScope openScope : openScopes.values()) {
-          metrics.endScope(openScope);
-        }
+    if (metrics != null) {
+      for (MetricsScope openScope : openScopes.values()) {
+        metrics.endScope(openScope);
       }
-    } catch (IOException e) {
-      LOG.warn("Error cleaning up metrics", e);
     }
     openScopes.clear();
   }

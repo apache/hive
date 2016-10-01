@@ -28,6 +28,7 @@ import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,6 +46,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
+import javax.jdo.JDOCanRetryException;
 import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
 import javax.jdo.JDOHelper;
@@ -328,6 +330,75 @@ public class ObjectStore implements RawStore, Configurable {
 
   @SuppressWarnings("nls")
   private void initialize(Properties dsProps) {
+    int retryLimit = HiveConf.getIntVar(hiveConf,
+        HiveConf.ConfVars.HMSHANDLERATTEMPTS);
+    long retryInterval = HiveConf.getTimeVar(hiveConf,
+        HiveConf.ConfVars.HMSHANDLERINTERVAL, TimeUnit.MILLISECONDS);
+    int numTries = retryLimit;
+
+    while (numTries > 0){
+      try {
+        initializeHelper(dsProps);
+        return; // If we reach here, we succeed.
+      } catch (Exception e){
+        numTries--;
+        boolean retriable = isRetriableException(e);
+        if ((numTries > 0) && retriable){
+          LOG.info("Retriable exception while instantiating ObjectStore, retrying. "
+              + numTries + " tries left", e);
+          try {
+            Thread.sleep(retryInterval);
+          } catch (InterruptedException ie) {
+            // Restore the interrupted status, since we do not want to catch it.
+            LOG.debug("Interrupted while sleeping before retrying.",ie);
+            Thread.currentThread().interrupt();
+          }
+          // If we're here, we'll proceed down the next while loop iteration.
+        } else {
+          // we've reached our limit, throw the last one.
+          if (retriable){
+            LOG.warn("Exception retry limit reached, not retrying any longer.",
+              e);
+          } else {
+            LOG.debug("Non-retriable exception during ObjectStore initialize.", e);
+          }
+          throw e;
+        }
+      }
+    }
+  }
+
+  private static final Set<Class<? extends Throwable>> retriableExceptionClasses =
+      new HashSet<Class<? extends Throwable>>(Arrays.asList(JDOCanRetryException.class));
+  /**
+   * Helper function for initialize to determine if we should retry an exception.
+   * We return true if the exception is of a known type of retriable exceptions, or if one
+   * of its recursive .getCause returns a known type of retriable exception.
+   */
+  private boolean isRetriableException(Throwable e) {
+    if (e == null){
+      return false;
+    }
+    if (retriableExceptionClasses.contains(e.getClass())){
+      return true;
+    }
+    for (Class<? extends Throwable> c : retriableExceptionClasses){
+      if (c.isInstance(e)){
+        return true;
+      }
+    }
+
+    if (e.getCause() == null){
+      return false;
+    }
+    return isRetriableException(e.getCause());
+  }
+
+  /**
+   * private helper to do initialization routine, so we can retry if needed if it fails.
+   * @param dsProps
+   */
+  private void initializeHelper(Properties dsProps) {
     LOG.info("ObjectStore, initialize called");
     prop = dsProps;
     pm = getPersistenceManager();

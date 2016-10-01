@@ -841,19 +841,19 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         if (fpaths.acidLastBucket != bucketNum) {
           fpaths.acidLastBucket = bucketNum;
           // Switch files
-          fpaths.updaters[++fpaths.acidFileOffset] = HiveFileFormatUtils.getAcidRecordUpdater(
-              jc, conf.getTableInfo(), bucketNum, conf, fpaths.outPaths[fpaths.acidFileOffset],
+          fpaths.updaters[conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED) ? 0 : ++fpaths.acidFileOffset] = HiveFileFormatUtils.getAcidRecordUpdater(
+              jc, conf.getTableInfo(), bucketNum, conf, fpaths.outPaths[conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED) ? 0 :fpaths.acidFileOffset],
               rowInspector, reporter, 0);
           if (isDebugEnabled) {
             LOG.debug("Created updater for bucket number " + bucketNum + " using file " +
-                fpaths.outPaths[fpaths.acidFileOffset]);
+                fpaths.outPaths[conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED) ? 0 :fpaths.acidFileOffset]);
           }
         }
 
         if (conf.getWriteType() == AcidUtils.Operation.UPDATE) {
-          fpaths.updaters[fpaths.acidFileOffset].update(conf.getTransactionId(), row);
+          fpaths.updaters[conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED) ? 0 :fpaths.acidFileOffset].update(conf.getTransactionId(), row);
         } else if (conf.getWriteType() == AcidUtils.Operation.DELETE) {
-          fpaths.updaters[fpaths.acidFileOffset].delete(conf.getTransactionId(), row);
+          fpaths.updaters[conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED) ? 0 :fpaths.acidFileOffset].delete(conf.getTransactionId(), row);
         } else {
           throw new HiveException("Unknown write type " + conf.getWriteType().toString());
         }

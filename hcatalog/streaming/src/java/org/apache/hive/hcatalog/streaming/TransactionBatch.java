@@ -24,8 +24,12 @@ import java.util.Collection;
 /**
  * Represents a set of Transactions returned by Hive. Supports opening, writing to
  * and commiting/aborting each transaction. The interface is designed to ensure
- * transactions in a batch are used up sequentially. Multiple transaction batches can be
- * used (initialized with separate RecordWriters) for concurrent streaming
+ * transactions in a batch are used up sequentially. To stream to the same HiveEndPoint
+ * concurrently, create separate StreamingConnections.
+ *
+ * Note on thread safety: At most 2 threads can run through a given TransactionBatch at the same
+ * time.  One thread may call {@link #heartbeat()} and the other all other methods.
+ * Violating this may result in "out of sequence response".
  *
  */
 public interface TransactionBatch  {
