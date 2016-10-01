@@ -154,6 +154,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@extract_udf
 #### A masked pattern was here ####
 7
+PREHOOK: query: select extract(dayofweek from t)
+from extract_udf
+PREHOOK: type: QUERY
+PREHOOK: Input: default@extract_udf
+#### A masked pattern was here ####
+POSTHOOK: query: select extract(dayofweek from t)
+from extract_udf
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@extract_udf
+#### A masked pattern was here ####
+6
 PREHOOK: query: select extract(week from t)
 from extract_udf
 PREHOOK: type: QUERY
