@@ -95,6 +95,7 @@ import org.apache.hive.beeline.cli.CliOptionsProcessor;
 
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import org.apache.thrift.transport.TTransportException;
 
 /**
  * A console SQL shell with command completion.
@@ -1753,6 +1754,28 @@ public class BeeLine implements Closeable {
   void handleSQLException(SQLException e) {
     if (e instanceof SQLWarning && !(getOpts().getShowWarnings())) {
       return;
+    }
+
+    if (e.getCause() instanceof TTransportException) {
+      switch (((TTransportException)e.getCause()).getType()) {
+        case TTransportException.ALREADY_OPEN:
+          error(loc("hs2-connection-already-open"));
+          break;
+        case TTransportException.END_OF_FILE:
+          error(loc("hs2-unexpected-end-of-file"));
+          break;
+        case TTransportException.NOT_OPEN:
+          error(loc("hs2-could-not-open-connection"));
+          break;
+        case TTransportException.TIMED_OUT:
+          error(loc("hs2-connection-timed-out"));
+          break;
+        case TTransportException.UNKNOWN:
+          error(loc("hs2-unknown-connection-problem"));
+          break;
+        default:
+          error(loc("hs2-unexpected-error"));
+      }
     }
 
     error(loc(e instanceof SQLWarning ? "Warning" : "Error",
