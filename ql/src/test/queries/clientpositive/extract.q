@@ -30,6 +30,9 @@ from extract_udf;
 select extract(hour from t)
 from extract_udf;
 
+select extract(dayofweek from t)
+from extract_udf;
+
 select extract(week from t)
 from extract_udf;
 

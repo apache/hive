@@ -68,6 +68,7 @@ date_sub
 datediff
 day
 dayofmonth
+dayofweek
 decode
 default.qtest_get_java_boolean
 degrees
