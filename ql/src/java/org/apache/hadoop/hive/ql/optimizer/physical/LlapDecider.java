@@ -156,6 +156,7 @@ public class LlapDecider implements PhysicalPlanResolver {
         if (tezWork.getChildren(work).isEmpty()
             && work instanceof ReduceWork
             && ((ReduceWork) work).getNumReduceTasks() == 1) {
+          LOG.info("Converting work to uber: {}", work);
           work.setUberMode(true);
         }
       }

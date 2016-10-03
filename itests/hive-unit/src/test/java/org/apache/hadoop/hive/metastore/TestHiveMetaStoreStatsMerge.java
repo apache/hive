@@ -66,7 +66,7 @@ public class TestHiveMetaStoreStatsMerge extends TestCase {
   private final Database db = new Database();
   private Table table = new Table();
 
-  private static final String dbName = "hive3252";
+  private static final String dbName = "hive3253";
   private static final String tblName = "tmptbl";
 
   @Override
