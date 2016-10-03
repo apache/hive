@@ -77,6 +77,16 @@ public class TestMetaStoreMetrics {
 
   @Test
   public void testMetaDataCounts() throws Exception {
+    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
+    String json = metrics.dumpJson();
+
+    int initDbCount = (new Integer((MetricsTestUtils.getJsonNode(json, MetricsTestUtils.GAUGE,
+        MetricsConstant.INIT_TOTAL_DATABASES)).asText())).intValue();
+    int initTblCount = (new Integer((MetricsTestUtils.getJsonNode(json, MetricsTestUtils.GAUGE,
+        MetricsConstant.INIT_TOTAL_TABLES)).asText())).intValue();
+    int initPartCount = (new Integer((MetricsTestUtils.getJsonNode(json, MetricsTestUtils.GAUGE,
+        MetricsConstant.INIT_TOTAL_PARTITIONS)).asText())).intValue();
+
     //1 databases created
     driver.run("create database testdb1");
 
@@ -113,9 +123,7 @@ public class TestMetaStoreMetrics {
     driver.run("use default");
     driver.run("drop database tempdb cascade");
 
-    //give timer thread a chance to print the metrics
-    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
-    String json = metrics.dumpJson();
+    json = metrics.dumpJson();
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.CREATE_TOTAL_DATABASES, 2);
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.CREATE_TOTAL_TABLES, 7);
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.CREATE_TOTAL_PARTITIONS, 9);
@@ -130,11 +138,10 @@ public class TestMetaStoreMetrics {
     baseHandler.init();
     baseHandler.updateMetrics();
 
-    //1 new db + default
     json = metrics.dumpJson();
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_DATABASES, 2);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_TABLES, 4);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_PARTITIONS, 6);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_DATABASES, initDbCount + 1);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_TABLES, initTblCount + 4);
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.INIT_TOTAL_PARTITIONS, initPartCount + 6);
   }
 
 
