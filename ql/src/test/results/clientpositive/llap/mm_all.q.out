@@ -1,0 +1,467 @@
+PREHOOK: query: -- Force multiple writers when reading
+drop table intermediate
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- Force multiple writers when reading
+drop table intermediate
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table intermediate(key int) partitioned by (p int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@intermediate
+POSTHOOK: query: create table intermediate(key int) partitioned by (p int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@intermediate
+PREHOOK: query: insert into table intermediate partition(p='455') select key from src limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@intermediate@p=455
+POSTHOOK: query: insert into table intermediate partition(p='455') select key from src limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@intermediate@p=455
+POSTHOOK: Lineage: intermediate PARTITION(p=455).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into table intermediate partition(p='456') select key from src limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@intermediate@p=456
+POSTHOOK: query: insert into table intermediate partition(p='456') select key from src limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@intermediate@p=456
+POSTHOOK: Lineage: intermediate PARTITION(p=456).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: drop table part_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table part_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table part_mm(key int) partitioned by (key_mm int) stored as orc tblproperties ('hivecommit'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_mm
+POSTHOOK: query: create table part_mm(key int) partitioned by (key_mm int) stored as orc tblproperties ('hivecommit'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_mm
+PREHOOK: query: explain insert into table part_mm partition(key_mm='455') select key from intermediate
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert into table part_mm partition(key_mm='455') select key from intermediate
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: intermediate
+                  Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          name: default.part_mm
+            Execution mode: llap
+            LLAP IO: all inputs
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            key_mm 455
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.part_mm
+          micromanaged table: true
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+PREHOOK: query: insert into table part_mm partition(key_mm='455') select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: default@part_mm@key_mm=455
+POSTHOOK: query: insert into table part_mm partition(key_mm='455') select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: default@part_mm@key_mm=455
+POSTHOOK: Lineage: part_mm PARTITION(key_mm=455).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: insert into table part_mm partition(key_mm='456') select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: default@part_mm@key_mm=456
+POSTHOOK: query: insert into table part_mm partition(key_mm='456') select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: default@part_mm@key_mm=456
+POSTHOOK: Lineage: part_mm PARTITION(key_mm=456).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: insert into table part_mm partition(key_mm='455') select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: default@part_mm@key_mm=455
+POSTHOOK: query: insert into table part_mm partition(key_mm='455') select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: default@part_mm@key_mm=455
+POSTHOOK: Lineage: part_mm PARTITION(key_mm=455).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from part_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_mm
+PREHOOK: Input: default@part_mm@key_mm=455
+PREHOOK: Input: default@part_mm@key_mm=456
+#### A masked pattern was here ####
+POSTHOOK: query: select * from part_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_mm
+POSTHOOK: Input: default@part_mm@key_mm=455
+POSTHOOK: Input: default@part_mm@key_mm=456
+#### A masked pattern was here ####
+238	455
+86	455
+238	455
+86	455
+238	455
+86	455
+238	455
+86	455
+238	456
+86	456
+238	456
+86	456
+PREHOOK: query: drop table part_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@part_mm
+PREHOOK: Output: default@part_mm
+POSTHOOK: query: drop table part_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@part_mm
+POSTHOOK: Output: default@part_mm
+PREHOOK: query: drop table simple_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table simple_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table simple_mm(key int) stored as orc tblproperties ('hivecommit'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@simple_mm
+POSTHOOK: query: create table simple_mm(key int) stored as orc tblproperties ('hivecommit'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@simple_mm
+PREHOOK: query: insert into table simple_mm select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: default@simple_mm
+POSTHOOK: query: insert into table simple_mm select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: default@simple_mm
+POSTHOOK: Lineage: simple_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: insert overwrite table simple_mm select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: default@simple_mm
+POSTHOOK: query: insert overwrite table simple_mm select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: default@simple_mm
+POSTHOOK: Lineage: simple_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from simple_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@simple_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from simple_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@simple_mm
+#### A masked pattern was here ####
+238
+86
+238
+86
+PREHOOK: query: drop table simple_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@simple_mm
+PREHOOK: Output: default@simple_mm
+POSTHOOK: query: drop table simple_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@simple_mm
+POSTHOOK: Output: default@simple_mm
+PREHOOK: query: -- simple DP (no bucketing, no sorting?)
+drop table dp_no_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- simple DP (no bucketing, no sorting?)
+drop table dp_no_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table dp_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dp_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table dp_no_mm (key int) partitioned by (key1 string, key2 int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dp_no_mm
+POSTHOOK: query: create table dp_no_mm (key int) partitioned by (key1 string, key2 int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dp_no_mm
+PREHOOK: query: create table dp_mm (key int) partitioned by (key1 string, key2 int) stored as orc
+  tblproperties ('hivecommit'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dp_mm
+POSTHOOK: query: create table dp_mm (key int) partitioned by (key1 string, key2 int) stored as orc
+  tblproperties ('hivecommit'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dp_mm
+PREHOOK: query: insert into table dp_no_mm partition (key1='123', key2) select key, key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: default@dp_no_mm@key1=123
+POSTHOOK: query: insert into table dp_no_mm partition (key1='123', key2) select key, key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: default@dp_no_mm@key1=123/key2=238
+POSTHOOK: Output: default@dp_no_mm@key1=123/key2=86
+POSTHOOK: Lineage: dp_no_mm PARTITION(key1=123,key2=238).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dp_no_mm PARTITION(key1=123,key2=86).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: insert into table dp_mm partition (key1='123', key2) select key, key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: default@dp_mm@key1=123
+POSTHOOK: query: insert into table dp_mm partition (key1='123', key2) select key, key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: default@dp_mm@key1=123/key2=238
+POSTHOOK: Output: default@dp_mm@key1=123/key2=86
+POSTHOOK: Lineage: dp_mm PARTITION(key1=123,key2=238).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dp_mm PARTITION(key1=123,key2=86).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from dp_no_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dp_no_mm
+PREHOOK: Input: default@dp_no_mm@key1=123/key2=238
+PREHOOK: Input: default@dp_no_mm@key1=123/key2=86
+#### A masked pattern was here ####
+POSTHOOK: query: select * from dp_no_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dp_no_mm
+POSTHOOK: Input: default@dp_no_mm@key1=123/key2=238
+POSTHOOK: Input: default@dp_no_mm@key1=123/key2=86
+#### A masked pattern was here ####
+238	123	238
+238	123	238
+86	123	86
+86	123	86
+PREHOOK: query: select * from dp_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dp_mm
+PREHOOK: Input: default@dp_mm@key1=123/key2=238
+PREHOOK: Input: default@dp_mm@key1=123/key2=86
+#### A masked pattern was here ####
+POSTHOOK: query: select * from dp_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dp_mm
+POSTHOOK: Input: default@dp_mm@key1=123/key2=238
+POSTHOOK: Input: default@dp_mm@key1=123/key2=86
+#### A masked pattern was here ####
+238	123	238
+238	123	238
+86	123	86
+86	123	86
+PREHOOK: query: drop table dp_no_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dp_no_mm
+PREHOOK: Output: default@dp_no_mm
+POSTHOOK: query: drop table dp_no_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dp_no_mm
+POSTHOOK: Output: default@dp_no_mm
+PREHOOK: query: drop table dp_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dp_mm
+PREHOOK: Output: default@dp_mm
+POSTHOOK: query: drop table dp_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dp_mm
+POSTHOOK: Output: default@dp_mm
+PREHOOK: query: -- future
+
+
+
+
+
+--drop table partunion_mm;
+--drop table merge_mm;
+--drop table ctas_mm;
+--drop table T1;
+--drop table T2;
+--drop table skew_mm;
+--
+--
+--create table ctas_mm tblproperties ('hivecommit'='true') as select * from src limit 3;
+--
+--create table partunion_mm(id_mm int) partitioned by (key_mm int)  tblproperties ('hivecommit'='true');
+--
+--
+--insert into table partunion_mm partition(key_mm)
+--select temps.* from (
+--select key as key_mm, key from ctas_mm 
+--union all 
+--select key as key_mm, key from simple_mm ) temps;
+--
+--set hive.merge.mapredfiles=true;
+--set hive.merge.sparkfiles=true;
+--set hive.merge.tezfiles=true;
+--
+--CREATE TABLE merge_mm (key INT, value STRING) 
+--    PARTITIONED BY (ds STRING, part STRING) STORED AS ORC tblproperties ('hivecommit'='true');
+--
+--EXPLAIN
+--INSERT OVERWRITE TABLE merge_mm PARTITION (ds='123', part)
+--        SELECT key, value, PMOD(HASH(key), 2) as part
+--        FROM src;
+--
+--INSERT OVERWRITE TABLE merge_mm PARTITION (ds='123', part)
+--        SELECT key, value, PMOD(HASH(key), 2) as part
+--        FROM src;
+--
+--
+--set hive.optimize.skewjoin.compiletime = true;
+---- the test case is wrong?
+--
+--CREATE TABLE T1(key STRING, val STRING)
+--SKEWED BY (key) ON ((2)) STORED AS TEXTFILE;
+--LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1;
+--CREATE TABLE T2(key STRING, val STRING)
+--SKEWED BY (key) ON ((3)) STORED AS TEXTFILE;
+--LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2;
+--
+--EXPLAIN
+--SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key;
+--
+--create table skew_mm(k1 string, k2 string, k3 string, k4 string) SKEWED BY (key) ON ((2)) tblproperties ('hivecommit'='true');
+--INSERT OVERWRITE TABLE skew_mm
+--SELECT a.key as k1, a.val as k2, b.key as k3, b.val as k4 FROM T1 a JOIN T2 b ON a.key = b.key;
+--
+---- TODO load, acid, etc
+--
+--
+
+drop table intermediate
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@intermediate
+PREHOOK: Output: default@intermediate
+POSTHOOK: query: -- future
+
+
+
+
+
+--drop table partunion_mm;
+--drop table merge_mm;
+--drop table ctas_mm;
+--drop table T1;
+--drop table T2;
+--drop table skew_mm;
+--
+--
+--create table ctas_mm tblproperties ('hivecommit'='true') as select * from src limit 3;
+--
+--create table partunion_mm(id_mm int) partitioned by (key_mm int)  tblproperties ('hivecommit'='true');
+--
+--
+--insert into table partunion_mm partition(key_mm)
+--select temps.* from (
+--select key as key_mm, key from ctas_mm 
+--union all 
+--select key as key_mm, key from simple_mm ) temps;
+--
+--set hive.merge.mapredfiles=true;
+--set hive.merge.sparkfiles=true;
+--set hive.merge.tezfiles=true;
+--
+--CREATE TABLE merge_mm (key INT, value STRING) 
+--    PARTITIONED BY (ds STRING, part STRING) STORED AS ORC tblproperties ('hivecommit'='true');
+--
+--EXPLAIN
+--INSERT OVERWRITE TABLE merge_mm PARTITION (ds='123', part)
+--        SELECT key, value, PMOD(HASH(key), 2) as part
+--        FROM src;
+--
+--INSERT OVERWRITE TABLE merge_mm PARTITION (ds='123', part)
+--        SELECT key, value, PMOD(HASH(key), 2) as part
+--        FROM src;
+--
+--
+--set hive.optimize.skewjoin.compiletime = true;
+---- the test case is wrong?
+--
+--CREATE TABLE T1(key STRING, val STRING)
+--SKEWED BY (key) ON ((2)) STORED AS TEXTFILE;
+--LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1;
+--CREATE TABLE T2(key STRING, val STRING)
+--SKEWED BY (key) ON ((3)) STORED AS TEXTFILE;
+--LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2;
+--
+--EXPLAIN
+--SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key;
+--
+--create table skew_mm(k1 string, k2 string, k3 string, k4 string) SKEWED BY (key) ON ((2)) tblproperties ('hivecommit'='true');
+--INSERT OVERWRITE TABLE skew_mm
+--SELECT a.key as k1, a.val as k2, b.key as k3, b.val as k4 FROM T1 a JOIN T2 b ON a.key = b.key;
+--
+---- TODO load, acid, etc
+--
+--
+
+drop table intermediate
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Output: default@intermediate

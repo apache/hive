@@ -225,32 +225,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
     }
 
-    private void commit(FileSystem fs) throws HiveException {
-      List<Path> commitPaths = null;
-      if (isMmTable) {
-        commitPaths = new ArrayList<>();
-      }
+    private void commit(FileSystem fs, List<Path> commitPaths) throws HiveException {
       for (int idx = 0; idx < outPaths.length; ++idx) {
         try {
           commitOneOutPath(idx, fs, commitPaths);
         } catch (IOException e) {
           throw new HiveException("Unable to rename output from: " +
               outPaths[idx] + " to: " + finalPaths[idx], e);
-        }
-      }
-      if (isMmTable) {
-        Path manifestPath = new Path(specPath, "_tmp." + ValidWriteIds.getMmFilePrefix(
-            conf.getMmWriteId()) + "_" + taskId + MANIFEST_EXTENSION);
-        Utilities.LOG14535.info("Writing manifest to " + manifestPath + " with " + commitPaths);
-        try {
-          try (FSDataOutputStream out = fs.create(manifestPath)) {
-            out.writeInt(commitPaths.size());
-            for (Path path : commitPaths) {
-              out.writeUTF(path.toString());
-            }
-          }
-        } catch (IOException e) {
-          throw new HiveException(e);
         }
       }
     }
@@ -328,8 +309,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           if (!bDynParts && !isSkewedStoredAsSubDirectories) {
             finalPaths[filesIdx] = getFinalPath(subdirPath, specPath, extension);
           } else {
-            // TODO# wrong! special case #N bucketing
-            finalPaths[filesIdx] = getFinalPath(subdirPath, specPath, extension);
+            // TODO# does this need extra special handing for bucketing?
+            // Note: tmpPath here has the correct partition key
+            finalPaths[filesIdx] = getFinalPath(subdirPath, tmpPath, extension);
           }
           outPaths[filesIdx] = finalPaths[filesIdx];
         }
@@ -921,7 +903,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     FSPaths fsp2 = new FSPaths(specPath, conf.isMmTable()); // TODO# this will break
     fsp2.configureDynPartPath(dirName, childSpecPathDynLinkedPartitions);
     Utilities.LOG14535.info("creating new paths for " + dirName + ", childSpec " + childSpecPathDynLinkedPartitions
-        + ": tmpPath " + fsp2.getTmpPath() + ", task path " + fsp2.getTaskOutputTempPath());
+        + ": tmpPath " + fsp2.getTmpPath() + ", task path " + fsp2.getTaskOutputTempPath()/*, new Exception()*/);
     if(!conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED)) {
       createBucketFiles(fsp2);
       valToPaths.put(dirName, fsp2);
@@ -1104,6 +1086,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
             throw new HiveException(e);
           }
       }
+      List<Path> commitPaths = new ArrayList<>();
       for (FSPaths fsp : valToPaths.values()) {
         fsp.closeWriters(abort);
         // before closing the operator check if statistics gathering is requested
@@ -1139,7 +1122,27 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
 
         if (isNativeTable) {
-          fsp.commit(fs);
+          fsp.commit(fs, commitPaths);
+        }
+      }
+      if (!commitPaths.isEmpty()) {
+        Path manifestPath = new Path(specPath, "_tmp." + ValidWriteIds.getMmFilePrefix(
+            conf.getMmWriteId()) + "_" + taskId + MANIFEST_EXTENSION);
+        Utilities.LOG14535.info("Writing manifest to " + manifestPath + " with " + commitPaths);
+        try {
+          // Don't overwrite the manifest... should fail if we have collisions.
+          // We assume one FSOP per task (per specPath), so we create it in specPath.
+          try (FSDataOutputStream out = fs.create(manifestPath, false)) {
+            if (out == null) {
+              throw new HiveException("Failed to create manifest at " + manifestPath);
+            }
+            out.writeInt(commitPaths.size());
+            for (Path path : commitPaths) {
+              out.writeUTF(path.toString());
+            }
+          }
+        } catch (IOException e) {
+          throw new HiveException(e);
         }
       }
       // Only publish stats if this operator's flag was set to gather stats
@@ -1197,30 +1200,27 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       DynamicPartitionCtx dpCtx, FileSinkDesc conf, Reporter reporter)
           throws IOException, HiveException {
     FileSystem fs = specPath.getFileSystem(hconf);
-    int targetLevel = (dpCtx == null) ? 1 : dpCtx.getNumDPCols();
+    // Manifests would be at the root level, but the results at target level.
+    // TODO# special case - doesn't take bucketing into account
+    int targetLevel = (dpCtx == null) ? 1 : (dpCtx.getNumDPCols() + 1);
+    int manifestLevel = 1;
+    ValidWriteIds.IdPathFilter filter = new ValidWriteIds.IdPathFilter(conf.getMmWriteId(), true);
     if (!success) {
-      FileStatus[] statuses = HiveStatsUtils.getFileStatusRecurse(specPath, targetLevel, fs,
-          new ValidWriteIds.IdPathFilter(conf.getMmWriteId(), true));
-      for (FileStatus status : statuses) {
-        Utilities.LOG14535.info("Deleting " + status.getPath() + " on failure");
-        tryDelete(fs, status.getPath());
-      }
+      deleteMatchingFiles(specPath, fs, targetLevel, filter);
+      deleteMatchingFiles(specPath, fs, manifestLevel, filter);
       return;
     }
-    FileStatus[] statuses = HiveStatsUtils.getFileStatusRecurse(specPath, targetLevel, fs,
-        new ValidWriteIds.IdPathFilter(conf.getMmWriteId(), true));
-    if (statuses == null) return;
-    LinkedList<FileStatus> results = new LinkedList<>();
-    List<Path> manifests = new ArrayList<>(statuses.length);
-    for (FileStatus status : statuses) {
-      if (status.getPath().getName().endsWith(MANIFEST_EXTENSION)) {
-        manifests.add(status.getPath());
-      } else if (!status.isDirectory()) {
-        Path path = status.getPath();
-        Utilities.LOG14535.warn("Unknown file found - neither a manifest nor directory: " + path);
-        tryDelete(fs, path);
-      } else {
-        results.addAll(Lists.newArrayList(fs.listStatus(status.getPath())));
+    FileStatus[] files = HiveStatsUtils.getFileStatusRecurse(specPath, manifestLevel, fs, filter);
+    List<Path> manifests = new ArrayList<>(files.length);
+    if (files != null) {
+      for (FileStatus status : files) {
+        if (status.getPath().getName().endsWith(MANIFEST_EXTENSION)) {
+          manifests.add(status.getPath());
+        } else if (!status.isDirectory()) {
+          Path path = status.getPath();
+          Utilities.LOG14535.warn("Unknown file found - neither a manifest nor directory: " + path);
+          tryDelete(fs, path);
+        }
       }
     }
     HashSet<String> committed = new HashSet<>();
@@ -1235,18 +1235,27 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
     }
-    Iterator<FileStatus> iter = results.iterator();
-    while (iter.hasNext()) {
-      FileStatus rfs = iter.next();
-      if (!committed.remove(rfs.getPath().toString())) {
-        iter.remove();
-        Utilities.LOG14535.info("Deleting " + rfs.getPath() + " that was not committed");
-        // We should actually succeed here - if we fail, don't commit the query.
-        if (!fs.delete(rfs.getPath(), true)) {
-          throw new HiveException("Failed to delete an uncommitted path " + rfs.getPath());
+
+    files = HiveStatsUtils.getFileStatusRecurse(specPath, targetLevel, fs, filter);
+    LinkedList<FileStatus> results = new LinkedList<>();
+    for (FileStatus status : files) {
+      if (!status.isDirectory()) {
+        Path path = status.getPath();
+        Utilities.LOG14535.warn("Unknown file found - neither a manifest nor directory: " + path);
+        tryDelete(fs, path);
+      } else {
+        for (FileStatus child : fs.listStatus(status.getPath())) {
+          Path path = child.getPath();
+          if (committed.remove(path.toString())) continue; // A good file.
+          Utilities.LOG14535.info("Deleting " + path + " that was not committed");
+          // We should actually succeed here - if we fail, don't commit the query.
+          if (!fs.delete(path, true)) {
+            throw new HiveException("Failed to delete an uncommitted path " + path);
+          }
         }
       }
     }
+
     if (!committed.isEmpty()) {
       throw new HiveException("The following files were committed but not found: " + committed);
     }
@@ -1258,12 +1267,21 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     if (results.isEmpty()) return;
     FileStatus[] finalResults = results.toArray(new FileStatus[results.size()]);
 
-    // TODO# dp will break - removeTempOrDuplicateFiles assumes dirs in results. Why? We recurse...
+    // TODO# dp may break - removeTempOrDuplicateFiles assumes dirs in results. Why? We recurse...
     List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(
         fs, finalResults, dpCtx, conf, hconf);
     // create empty buckets if necessary
     if (emptyBuckets.size() > 0) {
       Utilities.createEmptyBuckets(hconf, emptyBuckets, conf, reporter);
+    }
+  }
+
+  private void deleteMatchingFiles(Path specPath, FileSystem fs,
+      int targetLevel, ValidWriteIds.IdPathFilter filter) throws IOException {
+    for (FileStatus status : HiveStatsUtils.getFileStatusRecurse(specPath, targetLevel, fs,
+        filter)) {
+      Utilities.LOG14535.info("Deleting " + status.getPath() + " on failure");
+      tryDelete(fs, status.getPath());
     }
   }
 

@@ -1850,7 +1850,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public Map<Map<String, String>, Partition> loadDynamicPartitions(final Path loadPath,
       final String tableName, final Map<String, String> partSpec, final boolean replace,
       final int numDP, final boolean listBucketingEnabled, final boolean isAcid, final long txnId,
-      final boolean hasFollowingStatsTask, final AcidUtils.Operation operation)
+      final boolean hasFollowingStatsTask, final AcidUtils.Operation operation, final Long mmWriteId)
       throws HiveException {
 
     final Map<Map<String, String>, Partition> partitionsMap =
@@ -1895,7 +1895,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               Utilities.LOG14535.info("loadPartition called for DPP from " + partPath + " to " + tbl.getTableName());
               Partition newPartition = loadPartition(partPath, tbl, fullPartSpec,
                   replace, true, listBucketingEnabled,
-                  false, isAcid, hasFollowingStatsTask, null); // TODO# special case #N
+                  false, isAcid, hasFollowingStatsTask, mmWriteId);
               partitionsMap.put(fullPartSpec, newPartition);
 
               if (inPlaceEligible) {
@@ -1927,7 +1927,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       for (Future future : futures) {
         future.get();
       }
-      // TODO# special case #N - DP - we would commit the txn to metastore here
+      if (mmWriteId != null) {
+        // Commit after we have processed all the partitions.
+        commitMmTableWrite(tbl, mmWriteId);
+      }
     } catch (InterruptedException | ExecutionException e) {
       LOG.debug("Cancelling " + futures.size() + " dynamic loading tasks");
       //cancel other futures

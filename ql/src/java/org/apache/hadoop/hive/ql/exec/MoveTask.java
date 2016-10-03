@@ -435,7 +435,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         isSkewedStoredAsDirs(tbd),
         work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
         SessionState.get().getTxnMgr().getCurrentTxnId(), hasFollowingStatsTask(),
-        work.getLoadTableWork().getWriteType());
+        work.getLoadTableWork().getWriteType(),
+        tbd.getMmWriteId());
 
     console.printInfo("\t Time taken to load dynamic partitions: "  +
         (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
