@@ -47,6 +47,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) = 0;
   virtual void drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context) = 0;
   virtual void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern) = 0;
+  virtual void get_tables_by_type(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern, const std::string& tableType) = 0;
   virtual void get_table_meta(std::vector<TableMeta> & _return, const std::string& db_patterns, const std::string& tbl_patterns, const std::vector<std::string> & tbl_types) = 0;
   virtual void get_all_tables(std::vector<std::string> & _return, const std::string& db_name) = 0;
   virtual void get_table(Table& _return, const std::string& dbname, const std::string& tbl_name) = 0;
@@ -279,6 +280,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_tables(std::vector<std::string> & /* _return */, const std::string& /* db_name */, const std::string& /* pattern */) {
+    return;
+  }
+  void get_tables_by_type(std::vector<std::string> & /* _return */, const std::string& /* db_name */, const std::string& /* pattern */, const std::string& /* tableType */) {
     return;
   }
   void get_table_meta(std::vector<TableMeta> & /* _return */, const std::string& /* db_patterns */, const std::string& /* tbl_patterns */, const std::vector<std::string> & /* tbl_types */) {
@@ -3769,6 +3773,132 @@ class ThriftHiveMetastore_get_tables_presult {
   MetaException o1;
 
   _ThriftHiveMetastore_get_tables_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_tables_by_type_args__isset {
+  _ThriftHiveMetastore_get_tables_by_type_args__isset() : db_name(false), pattern(false), tableType(false) {}
+  bool db_name :1;
+  bool pattern :1;
+  bool tableType :1;
+} _ThriftHiveMetastore_get_tables_by_type_args__isset;
+
+class ThriftHiveMetastore_get_tables_by_type_args {
+ public:
+
+  ThriftHiveMetastore_get_tables_by_type_args(const ThriftHiveMetastore_get_tables_by_type_args&);
+  ThriftHiveMetastore_get_tables_by_type_args& operator=(const ThriftHiveMetastore_get_tables_by_type_args&);
+  ThriftHiveMetastore_get_tables_by_type_args() : db_name(), pattern(), tableType() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_tables_by_type_args() throw();
+  std::string db_name;
+  std::string pattern;
+  std::string tableType;
+
+  _ThriftHiveMetastore_get_tables_by_type_args__isset __isset;
+
+  void __set_db_name(const std::string& val);
+
+  void __set_pattern(const std::string& val);
+
+  void __set_tableType(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_get_tables_by_type_args & rhs) const
+  {
+    if (!(db_name == rhs.db_name))
+      return false;
+    if (!(pattern == rhs.pattern))
+      return false;
+    if (!(tableType == rhs.tableType))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_tables_by_type_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_tables_by_type_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_tables_by_type_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_tables_by_type_pargs() throw();
+  const std::string* db_name;
+  const std::string* pattern;
+  const std::string* tableType;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_tables_by_type_result__isset {
+  _ThriftHiveMetastore_get_tables_by_type_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_tables_by_type_result__isset;
+
+class ThriftHiveMetastore_get_tables_by_type_result {
+ public:
+
+  ThriftHiveMetastore_get_tables_by_type_result(const ThriftHiveMetastore_get_tables_by_type_result&);
+  ThriftHiveMetastore_get_tables_by_type_result& operator=(const ThriftHiveMetastore_get_tables_by_type_result&);
+  ThriftHiveMetastore_get_tables_by_type_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_tables_by_type_result() throw();
+  std::vector<std::string>  success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_tables_by_type_result__isset __isset;
+
+  void __set_success(const std::vector<std::string> & val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_tables_by_type_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_tables_by_type_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_tables_by_type_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_tables_by_type_presult__isset {
+  _ThriftHiveMetastore_get_tables_by_type_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_tables_by_type_presult__isset;
+
+class ThriftHiveMetastore_get_tables_by_type_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_tables_by_type_presult() throw();
+  std::vector<std::string> * success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_tables_by_type_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -19649,6 +19779,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern);
   void send_get_tables(const std::string& db_name, const std::string& pattern);
   void recv_get_tables(std::vector<std::string> & _return);
+  void get_tables_by_type(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern, const std::string& tableType);
+  void send_get_tables_by_type(const std::string& db_name, const std::string& pattern, const std::string& tableType);
+  void recv_get_tables_by_type(std::vector<std::string> & _return);
   void get_table_meta(std::vector<TableMeta> & _return, const std::string& db_patterns, const std::string& tbl_patterns, const std::vector<std::string> & tbl_types);
   void send_get_table_meta(const std::string& db_patterns, const std::string& tbl_patterns, const std::vector<std::string> & tbl_types);
   void recv_get_table_meta(std::vector<TableMeta> & _return);
@@ -20068,6 +20201,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_drop_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_table_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_tables(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_tables_by_type(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_table_meta(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_all_tables(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -20225,6 +20359,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["drop_table"] = &ThriftHiveMetastoreProcessor::process_drop_table;
     processMap_["drop_table_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_drop_table_with_environment_context;
     processMap_["get_tables"] = &ThriftHiveMetastoreProcessor::process_get_tables;
+    processMap_["get_tables_by_type"] = &ThriftHiveMetastoreProcessor::process_get_tables_by_type;
     processMap_["get_table_meta"] = &ThriftHiveMetastoreProcessor::process_get_table_meta;
     processMap_["get_all_tables"] = &ThriftHiveMetastoreProcessor::process_get_all_tables;
     processMap_["get_table"] = &ThriftHiveMetastoreProcessor::process_get_table;
@@ -20619,6 +20754,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->get_tables(_return, db_name, pattern);
     }
     ifaces_[i]->get_tables(_return, db_name, pattern);
+    return;
+  }
+
+  void get_tables_by_type(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern, const std::string& tableType) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_tables_by_type(_return, db_name, pattern, tableType);
+    }
+    ifaces_[i]->get_tables_by_type(_return, db_name, pattern, tableType);
     return;
   }
 
@@ -21944,6 +22089,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern);
   int32_t send_get_tables(const std::string& db_name, const std::string& pattern);
   void recv_get_tables(std::vector<std::string> & _return, const int32_t seqid);
+  void get_tables_by_type(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern, const std::string& tableType);
+  int32_t send_get_tables_by_type(const std::string& db_name, const std::string& pattern, const std::string& tableType);
+  void recv_get_tables_by_type(std::vector<std::string> & _return, const int32_t seqid);
   void get_table_meta(std::vector<TableMeta> & _return, const std::string& db_patterns, const std::string& tbl_patterns, const std::vector<std::string> & tbl_types);
   int32_t send_get_table_meta(const std::string& db_patterns, const std::string& tbl_patterns, const std::vector<std::string> & tbl_types);
   void recv_get_table_meta(std::vector<TableMeta> & _return, const int32_t seqid);

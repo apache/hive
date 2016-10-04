@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
@@ -222,6 +223,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public List<String> getTables(String dbName, String pattern) throws MetaException {
     return objectStore.getTables(dbName, pattern);
+  }
+
+  @Override
+  public List<String> getTables(String dbName, String pattern, TableType tableType) throws MetaException {
+    return objectStore.getTables(dbName, pattern, tableType);
   }
 
   @Override

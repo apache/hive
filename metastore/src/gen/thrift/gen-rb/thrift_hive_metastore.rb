@@ -432,6 +432,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_tables failed: unknown result')
     end
 
+    def get_tables_by_type(db_name, pattern, tableType)
+      send_get_tables_by_type(db_name, pattern, tableType)
+      return recv_get_tables_by_type()
+    end
+
+    def send_get_tables_by_type(db_name, pattern, tableType)
+      send_message('get_tables_by_type', Get_tables_by_type_args, :db_name => db_name, :pattern => pattern, :tableType => tableType)
+    end
+
+    def recv_get_tables_by_type()
+      result = receive_message(Get_tables_by_type_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_tables_by_type failed: unknown result')
+    end
+
     def get_table_meta(db_patterns, tbl_patterns, tbl_types)
       send_get_table_meta(db_patterns, tbl_patterns, tbl_types)
       return recv_get_table_meta()
@@ -2888,6 +2904,17 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'get_tables', seqid)
     end
 
+    def process_get_tables_by_type(seqid, iprot, oprot)
+      args = read_args(iprot, Get_tables_by_type_args)
+      result = Get_tables_by_type_result.new()
+      begin
+        result.success = @handler.get_tables_by_type(args.db_name, args.pattern, args.tableType)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_tables_by_type', seqid)
+    end
+
     def process_get_table_meta(seqid, iprot, oprot)
       args = read_args(iprot, Get_table_meta_args)
       result = Get_table_meta_result.new()
@@ -5332,6 +5359,44 @@ module ThriftHiveMetastore
   end
 
   class Get_tables_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_tables_by_type_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    PATTERN = 2
+    TABLETYPE = 3
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      PATTERN => {:type => ::Thrift::Types::STRING, :name => 'pattern'},
+      TABLETYPE => {:type => ::Thrift::Types::STRING, :name => 'tableType'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_tables_by_type_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1

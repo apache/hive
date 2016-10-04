@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
@@ -164,6 +165,9 @@ public interface RawStore extends Configurable {
       throws InvalidObjectException, MetaException;
 
   public List<String> getTables(String dbName, String pattern)
+      throws MetaException;
+
+  public List<String> getTables(String dbName, String pattern, TableType tableType)
       throws MetaException;
 
   public List<TableMeta> getTableMeta(

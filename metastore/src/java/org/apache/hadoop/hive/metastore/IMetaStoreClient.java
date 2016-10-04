@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -170,6 +171,20 @@ public interface IMetaStoreClient {
    * @throws UnknownDBException
    */
   List<String> getTables(String dbName, String tablePattern)
+      throws MetaException, TException, UnknownDBException;
+
+  /**
+   * Get the names of all tables in the specified database that satisfy the supplied
+   * table name pattern and table type (MANAGED_TABLE || EXTERNAL_TABLE || VIRTUAL_VIEW)
+   * @param dbName Name of the database to fetch tables in.
+   * @param tablePattern pattern to match for table names.
+   * @param tableType Type of the table in the HMS store. VIRTUAL_VIEW is for views.
+   * @return List of table names.
+   * @throws MetaException
+   * @throws TException
+   * @throws UnknownDBException
+   */
+  List<String> getTables(String dbName, String tablePattern, TableType tableType)
       throws MetaException, TException, UnknownDBException;
 
   /**

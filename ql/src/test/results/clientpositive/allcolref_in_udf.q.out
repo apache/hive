@@ -85,33 +85,41 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key + 1) is not null and (key < 100)) (type: boolean)
+              predicate: (UDFToDouble(key) < 100.0) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: (key + 1) (type: double)
-                sort order: +
-                Map-reduce partition columns: (key + 1) (type: double)
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                value expressions: key (type: string), value (type: string)
+                Reduce Output Operator
+                  key expressions: (UDFToDouble(_col0) + 1.0) (type: double)
+                  sort order: +
+                  Map-reduce partition columns: (UDFToDouble(_col0) + 1.0) (type: double)
+                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string), _col1 (type: string)
           TableScan
             alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: UDFToDouble(key) is not null (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: UDFToDouble(key) (type: double)
-                sort order: +
-                Map-reduce partition columns: UDFToDouble(key) (type: double)
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                value expressions: key (type: string), value (type: string)
+                Reduce Output Operator
+                  key expressions: UDFToDouble(_col0) (type: double)
+                  sort order: +
+                  Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
-            0 (key + 1) (type: double)
-            1 UDFToDouble(key) (type: double)
+            0 (UDFToDouble(_col0) + 1.0) (type: double)
+            1 UDFToDouble(_col0) (type: double)
           outputColumnNames: _col0, _col1, _col5, _col6
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -121,16 +129,20 @@ STAGE PLANS:
             UDTF Operator
               Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
               function name: stack
-              Limit
-                Number of rows: 10
-                Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
+              Select Operator
+                expressions: col0 (type: string), col1 (type: string), col2 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
                   Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -195,16 +207,20 @@ STAGE PLANS:
               UDTF Operator
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 function name: explode
-                Limit
-                  Number of rows: 10
-                  Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
+                Select Operator
+                  expressions: col (type: string)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Limit
+                    Number of rows: 10
                     Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

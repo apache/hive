@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNegative;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPositive;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -106,6 +107,14 @@ public class SqlFunctionConverter {
       name = FunctionRegistry.getNormalizedFunctionName(funcTextName);
     }
     return getCalciteFn(name, calciteArgTypes, retType, FunctionRegistry.isDeterministic(hiveUDF));
+  }
+
+  public static SqlOperator getCalciteOperator(String funcTextName, GenericUDTF hiveUDTF,
+      ImmutableList<RelDataType> calciteArgTypes, RelDataType retType) throws SemanticException {
+    // We could just do toLowerCase here and let SA qualify it, but
+    // let's be proper...
+    String name = FunctionRegistry.getNormalizedFunctionName(funcTextName);
+    return getCalciteFn(name, calciteArgTypes, retType, false);
   }
 
   public static GenericUDF getHiveUDF(SqlOperator op, RelDataType dt, int argsLength) {

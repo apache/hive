@@ -1277,6 +1277,11 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<String> getTables(String dbName, String pattern) throws MetaException {
+    return getTables(dbName, pattern, null);
+  }
+
+  @Override
+  public List<String> getTables(String dbName, String pattern, TableType tableType) throws MetaException {
     boolean commited = false;
     Query query = null;
     List<String> tbls = null;
@@ -1299,6 +1304,9 @@ public class ObjectStore implements RawStore, Configurable {
         first = false;
       }
       queryStr = queryStr + ")";
+      if (tableType != null) {
+        queryStr = queryStr + " && tableType.matches(\"" + tableType.toString() + "\")";
+      }
       query = pm.newQuery(queryStr);
       query.declareParameters("java.lang.String dbName");
       query.setResult("tableName");

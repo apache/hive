@@ -28,6 +28,7 @@ import junit.framework.Assert;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
@@ -228,6 +229,11 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public List<String> getTables(String dbName, String pattern) throws MetaException {
 
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<String> getTables(String dbName, String pattern, TableType tableType) throws MetaException {
     return Collections.emptyList();
   }
 
