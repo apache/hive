@@ -468,6 +468,7 @@ public final class FunctionRegistry {
 
     // Generic UDTF's
     system.registerGenericUDTF("explode", GenericUDTFExplode.class);
+    system.registerGenericUDTF("replicate_rows", GenericUDTFReplicateRows.class);
     system.registerGenericUDTF("inline", GenericUDTFInline.class);
     system.registerGenericUDTF("json_tuple", GenericUDTFJSONTuple.class);
     system.registerGenericUDTF("parse_url_tuple", GenericUDTFParseUrlTuple.class);

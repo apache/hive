@@ -186,6 +186,7 @@ regexp_extract
 regexp_replace
 repeat
 replace
+replicate_rows
 reverse
 rlike
 round
