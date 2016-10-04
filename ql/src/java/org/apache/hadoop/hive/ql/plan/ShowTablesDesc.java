@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
@@ -34,6 +35,7 @@ public class ShowTablesDesc extends DDLDesc implements Serializable {
   String pattern;
   String dbName;
   String resFile;
+  TableType type;
   /**
    * table name for the result of show tables.
    */
@@ -82,6 +84,17 @@ public class ShowTablesDesc extends DDLDesc implements Serializable {
   }
 
   /**
+   * @param type
+   *          type of the tables to show
+   */
+  public ShowTablesDesc(Path resFile, String dbName, String pattern, TableType type) {
+    this.resFile = resFile.toString();
+    this.dbName = dbName;
+    this.pattern = pattern;
+    this.type    = type;
+  }
+
+  /**
    * @return the pattern
    */
   @Explain(displayName = "pattern")
@@ -95,6 +108,22 @@ public class ShowTablesDesc extends DDLDesc implements Serializable {
    */
   public void setPattern(String pattern) {
     this.pattern = pattern;
+  }
+
+  /**
+   * @return the table type to be fetched
+   */
+  @Explain(displayName = "type")
+  public TableType getType() {
+    return type;
+  }
+
+  /**
+   * @param type
+   *          the table type to set
+   */
+  public void setType(TableType type) {
+    this.type = type;
   }
 
   /**

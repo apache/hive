@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
@@ -3739,6 +3740,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       } finally {
         endFunction("get_tables", ret != null, ex);
+      }
+      return ret;
+    }
+
+    @Override
+    public List<String> get_tables_by_type(final String dbname, final String pattern, final String tableType)
+        throws MetaException {
+      startFunction("get_tables_by_type", ": db=" + dbname + " pat=" + pattern + ",type=" + tableType);
+
+      List<String> ret = null;
+      Exception ex = null;
+      try {
+        ret = getMS().getTables(dbname, pattern, TableType.valueOf(tableType));
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("get_tables_by_type", ret != null, ex);
       }
       return ret;
     }

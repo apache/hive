@@ -524,7 +524,7 @@ public class DDLWork implements Serializable {
     this.cacheMetadataDesc = cacheMetadataDesc;
   }
 
-    /**
+  /**
    * @return Create Database descriptor
    */
   public CreateDatabaseDesc getCreateDatabaseDesc() {

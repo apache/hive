@@ -394,6 +394,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowConf(ast);
       break;
+    case HiveParser.TOK_SHOWVIEWS:
+      ctx.setResFile(ctx.getLocalTmpPath());
+      analyzeShowViews(ast);
+      break;
     case HiveParser.TOK_DESCFUNCTION:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeDescFunction(ast);
@@ -2400,6 +2404,45 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showConfDesc), conf));
     setFetchTask(createFetchTask(showConfDesc.getSchema()));
+  }
+
+  private void analyzeShowViews(ASTNode ast) throws SemanticException {
+    ShowTablesDesc showViewsDesc;
+    String dbName = SessionState.get().getCurrentDatabase();
+    String viewNames = null;
+
+    if (ast.getChildCount() > 3) {
+      throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg());
+    }
+
+    switch (ast.getChildCount()) {
+    case 1: // Uses a pattern
+      viewNames = unescapeSQLString(ast.getChild(0).getText());
+      showViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, viewNames, TableType.VIRTUAL_VIEW);
+      break;
+    case 2: // Specifies a DB
+      assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
+      dbName = unescapeIdentifier(ast.getChild(1).getText());
+      validateDatabase(dbName);
+      showViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
+      showViewsDesc.setType(TableType.VIRTUAL_VIEW);
+      break;
+    case 3: // Uses a pattern and specifies a DB
+      assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
+      dbName = unescapeIdentifier(ast.getChild(1).getText());
+      viewNames = unescapeSQLString(ast.getChild(2).getText());
+      validateDatabase(dbName);
+      showViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, viewNames, TableType.VIRTUAL_VIEW);
+      break;
+    default: // No pattern or DB
+      showViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
+      showViewsDesc.setType(TableType.VIRTUAL_VIEW);
+      break;
+    }
+
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        showViewsDesc), conf));
+    setFetchTask(createFetchTask(showViewsDesc.getSchema()));
   }
 
   /**
