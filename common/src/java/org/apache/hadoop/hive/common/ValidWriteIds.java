@@ -116,11 +116,6 @@ public class ValidWriteIds {
     return ids != null && (areIdsValid == ids.contains(writeId));
   }
 
-  public boolean isValidInput(Path file) {
-    Long writeId = extractWriteId(file);
-    return (writeId != null) && isValid(writeId);
-  }
-
   public static String getMmFilePrefix(long mmWriteId) {
     return MM_PREFIX + "_" + mmWriteId;
   }

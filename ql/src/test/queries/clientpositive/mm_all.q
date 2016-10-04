@@ -1,6 +1,10 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
+set tez.grouping.min-size=1;
+set tez.grouping.max-size=2;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
 
 -- Force multiple writers when reading
 drop table intermediate;
@@ -21,6 +25,8 @@ drop table simple_mm;
 create table simple_mm(key int) stored as orc tblproperties ('hivecommit'='true');
 insert into table simple_mm select key from intermediate;
 insert overwrite table simple_mm select key from intermediate;
+select * from simple_mm;
+insert into table simple_mm select key from intermediate;
 select * from simple_mm;
 drop table simple_mm;
 
@@ -48,6 +54,65 @@ select * from dp_mm;
 
 drop table dp_no_mm;
 drop table dp_mm;
+
+
+-- union
+
+create table union_mm(id int)  tblproperties ('hivecommit'='true'); 
+insert into table union_mm 
+select temps.p from (
+select key as p from intermediate 
+union all 
+select key + 1 as p from intermediate ) temps;
+
+select * from union_mm order by id;
+
+insert into table union_mm 
+select p from
+(
+select key + 1 as p from intermediate
+union all
+select key from intermediate
+) tab group by p
+union all
+select key + 2 as p from intermediate;
+
+select * from union_mm order by id;
+
+insert into table union_mm
+SELECT p FROM
+(
+  SELECT key + 1 as p FROM intermediate
+  UNION ALL
+  SELECT key as p FROM ( 
+    SELECT distinct key FROM (
+      SELECT key FROM (
+        SELECT key + 2 as key FROM intermediate
+        UNION ALL
+        SELECT key FROM intermediate
+      )t1 
+    group by key)t2
+  )t3
+)t4
+group by p;
+
+
+select * from union_mm order by id;
+drop table union_mm;
+
+
+create table partunion_mm(id int) partitioned by (key int) tblproperties ('hivecommit'='true'); 
+insert into table partunion_mm partition(key)
+select temps.* from (
+select key as p, key from intermediate 
+union all 
+select key + 1 as p, key + 1 from intermediate ) temps;
+
+select * from partunion_mm;
+drop table partunion_mm;
+
+-- TODO# from here, fix it
+
 
 
 
@@ -110,7 +175,7 @@ drop table dp_mm;
 --INSERT OVERWRITE TABLE skew_mm
 --SELECT a.key as k1, a.val as k2, b.key as k3, b.val as k4 FROM T1 a JOIN T2 b ON a.key = b.key;
 --
----- TODO load, acid, etc
+---- TODO load, multi-insert etc
 --
 --
 

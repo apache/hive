@@ -20,15 +20,12 @@ package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -40,6 +37,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -96,6 +94,7 @@ import com.google.common.collect.Lists;
 /**
  * File Sink operator implementation.
  **/
+@SuppressWarnings("deprecation")
 public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     Serializable {
 
@@ -386,12 +385,16 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     // 'Parent'
     if ((!conf.isLinkedFileSink()) || (dpCtx == null)) {
       specPath = conf.getDirName();
+      Utilities.LOG14535.info("Setting up FSOP " + System.identityHashCode(this) + " ("
+          + conf.isLinkedFileSink() + ") with " + taskId + " and " + specPath);
       childSpecPathDynLinkedPartitions = null;
       return;
     }
 
     specPath = conf.getParentDir();
     childSpecPathDynLinkedPartitions = conf.getDirName().getName();
+    Utilities.LOG14535.info("Setting up FSOP " + System.identityHashCode(this) + " ("
+        + conf.isLinkedFileSink() + ") with " + taskId + " and " + specPath);
   }
 
   /** Kryo ctor. */
@@ -1126,7 +1129,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
       if (!commitPaths.isEmpty()) {
-        Path manifestPath = new Path(specPath, "_tmp." + ValidWriteIds.getMmFilePrefix(
+        Path manifestPath = getManifestDir(specPath, childSpecPathDynLinkedPartitions);
+        manifestPath = new Path(manifestPath, "_tmp." + ValidWriteIds.getMmFilePrefix(
             conf.getMmWriteId()) + "_" + taskId + MANIFEST_EXTENSION);
         Utilities.LOG14535.info("Writing manifest to " + manifestPath + " with " + commitPaths);
         try {
@@ -1161,6 +1165,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     super.closeOp(abort);
   }
 
+  private static Path getManifestDir(Path specPath, String unionSuffix) {
+    return (unionSuffix == null) ? specPath : new Path(specPath, unionSuffix);
+  }
+
   /**
    * @return the name of the operator
    */
@@ -1179,15 +1187,17 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     try {
       if ((conf != null) && isNativeTable) {
         Path specPath = conf.getDirName();
+        String unionSuffix = null;
         DynamicPartitionCtx dpCtx = conf.getDynPartCtx();
         if (conf.isLinkedFileSink() && (dpCtx != null)) {
           specPath = conf.getParentDir();
           Utilities.LOG14535.info("Setting specPath to " + specPath + " for dynparts");
+          unionSuffix = conf.getDirName().getName();
         }
         if (!conf.isMmTable()) {
           Utilities.mvFileToFinalPath(specPath, hconf, success, LOG, dpCtx, conf, reporter); // TODO# other callers
         } else {
-          handleMmTable(specPath, hconf, success, dpCtx, conf, reporter);
+          handleMmTable(specPath, unionSuffix, hconf, success, dpCtx, conf, reporter);
         }
       }
     } catch (IOException e) {
@@ -1196,33 +1206,64 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     super.jobCloseOp(hconf, success);
   }
 
-  private void handleMmTable(Path specPath, Configuration hconf, boolean success,
-      DynamicPartitionCtx dpCtx, FileSinkDesc conf, Reporter reporter)
+  private static FileStatus[] getMmDirectoryCandidates(FileSystem fs, Path path,
+      int dpLevels, String unionSuffix, PathFilter filter) throws IOException {
+    StringBuilder sb = new StringBuilder(path.toUri().getPath());
+    for (int i = 0; i < dpLevels; i++) {
+      sb.append(Path.SEPARATOR).append("*");
+    }
+    if (unionSuffix != null) {
+      sb.append(Path.SEPARATOR).append(unionSuffix);
+    }
+    sb.append(Path.SEPARATOR).append("*"); // TODO: we could add exact mm prefix here
+    Path pathPattern = new Path(path, sb.toString());
+    return fs.globStatus(pathPattern, filter);
+  }
+
+  private void handleMmTable(Path specPath, String unionSuffix, Configuration hconf,
+      boolean success, DynamicPartitionCtx dpCtx, FileSinkDesc conf, Reporter reporter)
           throws IOException, HiveException {
     FileSystem fs = specPath.getFileSystem(hconf);
     // Manifests would be at the root level, but the results at target level.
     // TODO# special case - doesn't take bucketing into account
-    int targetLevel = (dpCtx == null) ? 1 : (dpCtx.getNumDPCols() + 1);
-    int manifestLevel = 1;
+    Path manifestDir = getManifestDir(specPath, unionSuffix);
+
     ValidWriteIds.IdPathFilter filter = new ValidWriteIds.IdPathFilter(conf.getMmWriteId(), true);
     if (!success) {
-      deleteMatchingFiles(specPath, fs, targetLevel, filter);
-      deleteMatchingFiles(specPath, fs, manifestLevel, filter);
+      tryDeleteAllMmFiles(fs, specPath, manifestDir, dpCtx, unionSuffix, filter);
       return;
     }
-    FileStatus[] files = HiveStatsUtils.getFileStatusRecurse(specPath, manifestLevel, fs, filter);
-    List<Path> manifests = new ArrayList<>(files.length);
+    FileStatus[] files = HiveStatsUtils.getFileStatusRecurse(manifestDir, 1, fs, filter);
+    Utilities.LOG14535.info("Looking for manifests in: " + manifestDir);
+    List<Path> manifests = new ArrayList<>();
     if (files != null) {
       for (FileStatus status : files) {
-        if (status.getPath().getName().endsWith(MANIFEST_EXTENSION)) {
-          manifests.add(status.getPath());
-        } else if (!status.isDirectory()) {
-          Path path = status.getPath();
-          Utilities.LOG14535.warn("Unknown file found - neither a manifest nor directory: " + path);
-          tryDelete(fs, path);
+        Path path = status.getPath();
+        if (path.getName().endsWith(MANIFEST_EXTENSION)) {
+          manifests.add(path);
         }
       }
     }
+
+    Utilities.LOG14535.info("Looking for files in: " + specPath);
+    files = getMmDirectoryCandidates(fs, specPath,
+        dpCtx == null ? 0 : dpCtx.getNumDPCols(), unionSuffix, filter);
+    ArrayList<FileStatus> results = new ArrayList<>();
+    if (files != null) {
+      for (FileStatus status : files) {
+        Path path = status.getPath();
+        Utilities.LOG14535.info("Looking at path: " + path + " from " + System.identityHashCode(this));
+        if (!status.isDirectory()) {
+          if (!path.getName().endsWith(MANIFEST_EXTENSION)) {
+            Utilities.LOG14535.warn("Unknown file found, deleting: " + path);
+            tryDelete(fs, path);
+          }
+        } else {
+          results.add(status);
+        }
+      }
+    }
+
     HashSet<String> committed = new HashSet<>();
     for (Path mfp : manifests) {
       try (FSDataInputStream mdis = fs.open(mfp)) {
@@ -1236,22 +1277,14 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
     }
 
-    files = HiveStatsUtils.getFileStatusRecurse(specPath, targetLevel, fs, filter);
-    LinkedList<FileStatus> results = new LinkedList<>();
-    for (FileStatus status : files) {
-      if (!status.isDirectory()) {
-        Path path = status.getPath();
-        Utilities.LOG14535.warn("Unknown file found - neither a manifest nor directory: " + path);
-        tryDelete(fs, path);
-      } else {
-        for (FileStatus child : fs.listStatus(status.getPath())) {
-          Path path = child.getPath();
-          if (committed.remove(path.toString())) continue; // A good file.
-          Utilities.LOG14535.info("Deleting " + path + " that was not committed");
-          // We should actually succeed here - if we fail, don't commit the query.
-          if (!fs.delete(path, true)) {
-            throw new HiveException("Failed to delete an uncommitted path " + path);
-          }
+    for (FileStatus status : results) {
+      for (FileStatus child : fs.listStatus(status.getPath())) {
+        Path childPath = child.getPath();
+        if (committed.remove(childPath.toString())) continue; // A good file.
+        Utilities.LOG14535.info("Deleting " + childPath + " that was not committed");
+        // We should actually succeed here - if we fail, don't commit the query.
+        if (!fs.delete(childPath, true)) {
+          throw new HiveException("Failed to delete an uncommitted path " + childPath);
         }
       }
     }
@@ -1263,11 +1296,19 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       Utilities.LOG14535.info("Deleting manifest " + mfp);
       tryDelete(fs, mfp);
     }
+    // Delete the manifest directory if we only created it for manifests; otherwise the
+    // dynamic partition loader will find it and try to load it as a partition... what a mess.
+    if (manifestDir != specPath) {
+      FileStatus[] remainingFiles = fs.listStatus(manifestDir);
+      if (remainingFiles == null || remainingFiles.length == 0) {
+        Utilities.LOG14535.info("Deleting directory " + manifestDir);
+        tryDelete(fs, manifestDir);
+      }
+    }
 
     if (results.isEmpty()) return;
     FileStatus[] finalResults = results.toArray(new FileStatus[results.size()]);
 
-    // TODO# dp may break - removeTempOrDuplicateFiles assumes dirs in results. Why? We recurse...
     List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(
         fs, finalResults, dpCtx, conf, hconf);
     // create empty buckets if necessary
@@ -1276,14 +1317,26 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
   }
 
-  private void deleteMatchingFiles(Path specPath, FileSystem fs,
-      int targetLevel, ValidWriteIds.IdPathFilter filter) throws IOException {
-    for (FileStatus status : HiveStatsUtils.getFileStatusRecurse(specPath, targetLevel, fs,
-        filter)) {
-      Utilities.LOG14535.info("Deleting " + status.getPath() + " on failure");
-      tryDelete(fs, status.getPath());
+  private void tryDeleteAllMmFiles(FileSystem fs, Path specPath, Path manifestDir,
+      DynamicPartitionCtx dpCtx, String unionSuffix,
+      ValidWriteIds.IdPathFilter filter) throws IOException {
+    FileStatus[] files = getMmDirectoryCandidates(fs, specPath,
+        dpCtx == null ? 0 : dpCtx.getNumDPCols(), unionSuffix, filter);
+    if (files != null) {
+      for (FileStatus status : files) {
+        Utilities.LOG14535.info("Deleting " + status.getPath() + " on failure");
+        tryDelete(fs, status.getPath());
+      }
+    }
+    files = HiveStatsUtils.getFileStatusRecurse(manifestDir, 1, fs, filter);
+    if (files != null) {
+      for (FileStatus status : files) {
+        Utilities.LOG14535.info("Deleting " + status.getPath() + " on failure");
+        tryDelete(fs, status.getPath());
+      }
     }
   }
+
 
   private void tryDelete(FileSystem fs, Path path) {
     try {

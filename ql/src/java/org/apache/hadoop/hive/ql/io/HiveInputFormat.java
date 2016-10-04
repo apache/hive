@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidWriteIds;
@@ -352,7 +354,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       TableDesc table, Map<String, ValidWriteIds> writeIdMap, List<InputSplit> result)
           throws IOException {
     ValidWriteIds writeIds = extractWriteIds(writeIdMap, conf, table.getTableName());
-    Utilities.LOG14535.info("Observing " + table.getTableName() + ": " + writeIds);
+    if (writeIds != null) {
+      Utilities.LOG14535.info("Observing " + table.getTableName() + ": " + writeIds);
+    }
 
     Utilities.copyTablePropertiesToConf(table, conf);
 
@@ -394,20 +398,38 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
   private void processForWriteIds(Path dir, JobConf conf,
       ValidWriteIds writeIds, List<Path> finalPaths) throws IOException {
-    FileStatus[] files = dir.getFileSystem(conf).listStatus(dir); // TODO: batch?
+    FileSystem fs = dir.getFileSystem(conf);
+    FileStatus[] files = fs.listStatus(dir); // TODO: batch?
+    LinkedList<Path> subdirs = new LinkedList<>();
     for (FileStatus file : files) {
-      Path subdir = file.getPath();
-      if (!file.isDirectory()) {
-        Utilities.LOG14535.warn("Found a file not in subdirectory " + subdir);
-        continue;
-      }
-      if (!writeIds.isValidInput(subdir)) {
-        Utilities.LOG14535.warn("Ignoring an uncommitted directory " + subdir);
-        continue;
-      }
-      Utilities.LOG14535.info("Adding input " + subdir);
-      finalPaths.add(subdir);
+      handleNonMmDirChild(file, writeIds, subdirs, finalPaths);
     }
+    while (!subdirs.isEmpty()) {
+      Path subdir = subdirs.poll();
+      for (FileStatus file : fs.listStatus(subdir)) {
+        handleNonMmDirChild(file, writeIds, subdirs, finalPaths);
+      }
+    }
+  }
+
+  private void handleNonMmDirChild(FileStatus file, ValidWriteIds writeIds,
+      LinkedList<Path> subdirs, List<Path> finalPaths) {
+    Path path = file.getPath();
+    if (!file.isDirectory()) {
+      Utilities.LOG14535.warn("Ignoring a file not in MM directory " + path);
+      return;
+    }
+    Long writeId = ValidWriteIds.extractWriteId(path);
+    if (writeId == null) {
+      subdirs.add(path);
+      return;
+    }
+    if (!writeIds.isValid(writeId)) {
+      Utilities.LOG14535.warn("Ignoring an uncommitted directory " + path);
+      return;
+    }
+    Utilities.LOG14535.info("Adding input " + path);
+    finalPaths.add(path);
   }
 
   Path[] getInputPaths(JobConf job) throws IOException {

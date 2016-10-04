@@ -12,27 +12,28 @@ insert into table intermediate partition(p='455') select key from src limit 2;
 insert into table intermediate partition(p='456') select key from src limit 2;
 
 
+create table partunion_no_mm(id int) partitioned by (key int); 
+insert into table partunion_no_mm partition(key)
+select temps.* from (
+select key as p, key from intermediate 
+union all 
+select key + 1 as p, key + 1 from intermediate ) temps;
 
-drop table dp_no_mm;
-drop table dp_mm;
+select * from partunion_no_mm;
+drop table partunion_no_mm;
 
-set hive.merge.mapredfiles=false;
-set hive.merge.sparkfiles=false;
-set hive.merge.tezfiles=false;
 
-create table dp_no_mm (key int) partitioned by (key1 string, key2 int) stored as orc;
-create table dp_mm (key int) partitioned by (key1 string, key2 int) stored as orc
-  tblproperties ('hivecommit'='true');
+create table partunion_mm(id int) partitioned by (key int) tblproperties ('hivecommit'='true'); 
+insert into table partunion_mm partition(key)
+select temps.* from (
+select key as p, key from intermediate 
+union all 
+select key + 1 as p, key + 1 from intermediate ) temps;
 
-insert into table dp_no_mm partition (key1='123', key2) select key, key from intermediate;
+select * from partunion_mm;
+drop table partunion_mm;
 
-insert into table dp_mm partition (key1='123', key2) select key, key from intermediate;
 
-select * from dp_no_mm;
-select * from dp_mm;
-
-drop table dp_no_mm;
-drop table dp_mm;
 
 drop table intermediate;
 
