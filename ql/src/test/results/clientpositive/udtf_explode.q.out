@@ -31,10 +31,14 @@ STAGE PLANS:
             UDTF Operator
               Statistics: Num rows: 500 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
               function name: explode
-              Limit
-                Number of rows: 3
-                Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                ListSink
+              Select Operator
+                expressions: col (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  ListSink
 
 PREHOOK: query: EXPLAIN EXTENDED SELECT a.myCol, count(1) FROM (SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3) a GROUP BY a.myCol
 PREHOOK: type: QUERY
@@ -60,16 +64,20 @@ STAGE PLANS:
               UDTF Operator
                 Statistics: Num rows: 500 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
                 function name: explode
-                Limit
-                  Number of rows: 3
-                  Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    null sort order: 
-                    sort order: 
-                    Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                    tag: -1
-                    value expressions: col (type: int)
-                    auto parallelism: false
+                Select Operator
+                  expressions: col (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Limit
+                    Number of rows: 3
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: -1
+                      value expressions: _col0 (type: int)
+                      auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -118,7 +126,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [a:src]
+        /src [$hdt$_0:$hdt$_0:$hdt$_0:src]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -283,10 +291,14 @@ STAGE PLANS:
             UDTF Operator
               Statistics: Num rows: 500 Data size: 259500 Basic stats: COMPLETE Column stats: COMPLETE
               function name: explode
-              Limit
-                Number of rows: 3
-                Statistics: Num rows: 3 Data size: 1557 Basic stats: COMPLETE Column stats: COMPLETE
-                ListSink
+              Select Operator
+                expressions: key (type: int), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  ListSink
 
 PREHOOK: query: EXPLAIN EXTENDED SELECT a.myKey, a.myVal, count(1) FROM (SELECT explode(map(1,'one',2,'two',3,'three')) as (myKey,myVal) FROM src LIMIT 3) a GROUP BY a.myKey, a.myVal
 PREHOOK: type: QUERY
@@ -312,16 +324,20 @@ STAGE PLANS:
               UDTF Operator
                 Statistics: Num rows: 500 Data size: 259500 Basic stats: COMPLETE Column stats: COMPLETE
                 function name: explode
-                Limit
-                  Number of rows: 3
-                  Statistics: Num rows: 3 Data size: 1557 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    null sort order: 
-                    sort order: 
-                    Statistics: Num rows: 3 Data size: 1557 Basic stats: COMPLETE Column stats: COMPLETE
-                    tag: -1
-                    value expressions: key (type: int), value (type: string)
-                    auto parallelism: false
+                Select Operator
+                  expressions: key (type: int), value (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Limit
+                    Number of rows: 3
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: -1
+                      value expressions: _col0 (type: int), _col1 (type: string)
+                      auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -370,7 +386,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [a:src]
+        /src [$hdt$_0:$hdt$_0:$hdt$_0:src]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator

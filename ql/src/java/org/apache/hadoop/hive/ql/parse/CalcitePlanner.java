@@ -91,6 +91,7 @@ import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlLiteral;
 import org.apache.calcite.sql.SqlNode;
+import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.SqlWindow;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.SqlTypeName;
@@ -144,6 +145,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateJoinTransposeRule;
@@ -208,8 +210,11 @@ import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -3017,24 +3022,70 @@ public class CalcitePlanner extends SemanticAnalyzer {
         throw new CalciteSemanticException(msg, UnsupportedFeature.Select_transform);
       }
 
-      // 5. Bailout if select involves UDTF
+      // 5. Check if select involves UDTF
+      String udtfTableAlias = null;
+      GenericUDTF genericUDTF = null;
+      String genericUDTFName = null;
+      ArrayList<String> udtfColAliases = new ArrayList<String>();
       ASTNode expr = (ASTNode) selExprList.getChild(posn).getChild(0);
       int exprType = expr.getType();
       if (exprType == HiveParser.TOK_FUNCTION || exprType == HiveParser.TOK_FUNCTIONSTAR) {
         String funcName = TypeCheckProcFactory.DefaultExprProcessor.getFunctionText(expr, true);
         FunctionInfo fi = FunctionRegistry.getFunctionInfo(funcName);
         if (fi != null && fi.getGenericUDTF() != null) {
-          String msg = String.format("UDTF " + funcName + " is currently not supported in CBO,"
-              + " turn off cbo to use UDTF " + funcName);
-          LOG.debug(msg);
-          throw new CalciteSemanticException(msg, UnsupportedFeature.UDTF);
+          LOG.debug("Find UDTF " + funcName);
+          genericUDTF = fi.getGenericUDTF();
+          genericUDTFName = funcName;
+          if (genericUDTF != null && (selectStar = exprType == HiveParser.TOK_FUNCTIONSTAR)) {
+            genColListRegex(".*", null, (ASTNode) expr.getChild(0),
+                col_list, null, inputRR, starRR, pos, out_rwsch, qb.getAliases(), false);
+          }
         }
       }
 
+      if (genericUDTF != null) {
+        // Only support a single expression when it's a UDTF
+        if (selExprList.getChildCount() > 1) {
+          throw new SemanticException(generateErrorMessage(
+              (ASTNode) selExprList.getChild(1),
+              ErrorMsg.UDTF_MULTIPLE_EXPR.getMsg()));
+        }
+
+        ASTNode selExpr = (ASTNode) selExprList.getChild(posn);
+
+        // Get the column / table aliases from the expression. Start from 1 as
+        // 0 is the TOK_FUNCTION
+        // column names also can be inferred from result of UDTF
+        for (int i = 1; i < selExpr.getChildCount(); i++) {
+          ASTNode selExprChild = (ASTNode) selExpr.getChild(i);
+          switch (selExprChild.getType()) {
+          case HiveParser.Identifier:
+            udtfColAliases.add(unescapeIdentifier(selExprChild.getText().toLowerCase()));
+            break;
+          case HiveParser.TOK_TABALIAS:
+            assert (selExprChild.getChildCount() == 1);
+            udtfTableAlias = unescapeIdentifier(selExprChild.getChild(0)
+                .getText());
+            qb.addAlias(udtfTableAlias);
+            break;
+          default:
+            throw new SemanticException("Find invalid token type " + selExprChild.getType()
+                + " in UDTF.");
+          }
+        }
+        LOG.debug("UDTF table alias is " + udtfTableAlias);
+        LOG.debug("UDTF col aliases are " + udtfColAliases);
+      }
+
       // 6. Iterate over all expression (after SELECT)
-      ASTNode exprList = selExprList;
-      int startPosn = posn;
-      List<String> tabAliasesForAllProjs = getTabAliases(starRR);
+      ASTNode exprList;
+      if (genericUDTF != null) {
+        exprList = expr;
+      } else {
+        exprList = selExprList;
+      }
+      // For UDTF's, skip the function name to get the expressions
+      int startPosn = genericUDTF != null ? posn + 1 : posn;
       for (int i = startPosn; i < exprList.getChildCount(); ++i) {
 
         // 6.1 child can be EXPR AS ALIAS, or EXPR.
@@ -3045,7 +3096,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // This check is not needed and invalid when there is a transform b/c
         // the
         // AST's are slightly different.
-        if (child.getChildCount() > 2) {
+        if (genericUDTF == null && child.getChildCount() > 2) {
           throw new SemanticException(SemanticAnalyzer.generateErrorMessage(
               (ASTNode) child.getChild(2), ErrorMsg.INVALID_AS.getMsg()));
         }
@@ -3053,12 +3104,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
         String tabAlias;
         String colAlias;
 
-        // 6.3 Get rid of TOK_SELEXPR
-        expr = (ASTNode) child.getChild(0);
-        String[] colRef = SemanticAnalyzer.getColAlias(child, getAutogenColAliasPrfxLbl(), inputRR,
-            autogenColAliasPrfxIncludeFuncName(), i);
-        tabAlias = colRef[0];
-        colAlias = colRef[1];
+        if (genericUDTF != null) {
+          tabAlias = null;
+          colAlias = getAutogenColAliasPrfxLbl() + i;
+          expr = child;
+        } else {
+          // 6.3 Get rid of TOK_SELEXPR
+          expr = (ASTNode) child.getChild(0);
+          String[] colRef = SemanticAnalyzer.getColAlias(child, getAutogenColAliasPrfxLbl(),
+              inputRR, autogenColAliasPrfxIncludeFuncName(), i);
+          tabAlias = colRef[0];
+          colAlias = colRef[1];
+        }
 
         // 6.4 Build ExprNode corresponding to colums
         if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
@@ -3143,7 +3200,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       // 8. Build Calcite Rel
-      RelNode outputRel = genSelectRelNode(calciteColLst, out_rwsch, srcRel);
+      RelNode outputRel = null;
+      if (genericUDTF != null) {
+        // The basic idea for CBO support of UDTF is to treat UDTF as a special project.
+        // In AST return path, as we just need to generate a SEL_EXPR, we just need to remember the expressions and the alias.
+        // In OP return path, we need to generate a SEL and then a UDTF following old semantic analyzer.
+        outputRel = genUDTFPlan(genericUDTF, genericUDTFName, udtfTableAlias, udtfColAliases, qb, calciteColLst, out_rwsch, srcRel);
+      }
+      else{
+        outputRel = genSelectRelNode(calciteColLst, out_rwsch, srcRel);
+      }
 
       // 9. Handle select distinct as GBY if there exist windowing functions
       if (selForWindow != null && selExprList.getToken().getType() == HiveParser.TOK_SELECTDI) {
@@ -3163,6 +3229,119 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       return outputRel;
+    }
+
+    private RelNode genUDTFPlan(GenericUDTF genericUDTF, String genericUDTFName, String outputTableAlias,
+        ArrayList<String> colAliases, QB qb, List<RexNode> selectColLst, RowResolver selectRR, RelNode input) throws SemanticException {
+
+      // No GROUP BY / DISTRIBUTE BY / SORT BY / CLUSTER BY
+      QBParseInfo qbp = qb.getParseInfo();
+      if (!qbp.getDestToGroupBy().isEmpty()) {
+        throw new SemanticException(ErrorMsg.UDTF_NO_GROUP_BY.getMsg());
+      }
+      if (!qbp.getDestToDistributeBy().isEmpty()) {
+        throw new SemanticException(ErrorMsg.UDTF_NO_DISTRIBUTE_BY.getMsg());
+      }
+      if (!qbp.getDestToSortBy().isEmpty()) {
+        throw new SemanticException(ErrorMsg.UDTF_NO_SORT_BY.getMsg());
+      }
+      if (!qbp.getDestToClusterBy().isEmpty()) {
+        throw new SemanticException(ErrorMsg.UDTF_NO_CLUSTER_BY.getMsg());
+      }
+      if (!qbp.getAliasToLateralViews().isEmpty()) {
+        throw new SemanticException(ErrorMsg.UDTF_LATERAL_VIEW.getMsg());
+      }
+
+      LOG.debug("Table alias: " + outputTableAlias + " Col aliases: " + colAliases);
+
+      // Use the RowResolver from the input operator to generate a input
+      // ObjectInspector that can be used to initialize the UDTF. Then, the
+      // resulting output object inspector can be used to make the RowResolver
+      // for the UDTF operator
+      ArrayList<ColumnInfo> inputCols = selectRR.getColumnInfos();
+
+      // Create the object inspector for the input columns and initialize the
+      // UDTF
+      ArrayList<String> colNames = new ArrayList<String>();
+      ObjectInspector[] colOIs = new ObjectInspector[inputCols.size()];
+      for (int i = 0; i < inputCols.size(); i++) {
+        colNames.add(inputCols.get(i).getInternalName());
+        colOIs[i] = inputCols.get(i).getObjectInspector();
+      }
+      StandardStructObjectInspector rowOI = ObjectInspectorFactory
+          .getStandardStructObjectInspector(colNames, Arrays.asList(colOIs));
+      StructObjectInspector outputOI = genericUDTF.initialize(rowOI);
+
+      int numUdtfCols = outputOI.getAllStructFieldRefs().size();
+      if (colAliases.isEmpty()) {
+        // user did not specfied alias names, infer names from outputOI
+        for (StructField field : outputOI.getAllStructFieldRefs()) {
+          colAliases.add(field.getFieldName());
+        }
+      }
+      // Make sure that the number of column aliases in the AS clause matches
+      // the number of columns output by the UDTF
+      int numSuppliedAliases = colAliases.size();
+      if (numUdtfCols != numSuppliedAliases) {
+        throw new SemanticException(ErrorMsg.UDTF_ALIAS_MISMATCH.getMsg("expected " + numUdtfCols
+            + " aliases " + "but got " + numSuppliedAliases));
+      }
+
+      // Generate the output column info's / row resolver using internal names.
+      ArrayList<ColumnInfo> udtfCols = new ArrayList<ColumnInfo>();
+
+      Iterator<String> colAliasesIter = colAliases.iterator();
+      for (StructField sf : outputOI.getAllStructFieldRefs()) {
+
+        String colAlias = colAliasesIter.next();
+        assert (colAlias != null);
+
+        // Since the UDTF operator feeds into a LVJ operator that will rename
+        // all the internal names, we can just use field name from the UDTF's OI
+        // as the internal name
+        ColumnInfo col = new ColumnInfo(sf.getFieldName(),
+            TypeInfoUtils.getTypeInfoFromObjectInspector(sf.getFieldObjectInspector()),
+            outputTableAlias, false);
+        udtfCols.add(col);
+      }
+
+      // Create the row resolver for this operator from the output columns
+      RowResolver out_rwsch = new RowResolver();
+      for (int i = 0; i < udtfCols.size(); i++) {
+        out_rwsch.put(outputTableAlias, colAliases.get(i), udtfCols.get(i));
+      }
+
+      // Add the UDTFOperator to the operator DAG
+      RelTraitSet traitSet = TraitsUtil.getDefaultTraitSet(cluster);
+
+      // Build row type from field <type, name>
+      RelDataType retType = TypeConverter.getType(cluster, out_rwsch, null);
+
+      Builder<RelDataType> argTypeBldr = ImmutableList.<RelDataType> builder();
+
+      RexBuilder rexBuilder = cluster.getRexBuilder();
+      RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
+      RowSchema rs = selectRR.getRowSchema();
+      for (ColumnInfo ci : rs.getSignature()) {
+        argTypeBldr.add(TypeConverter.convert(ci.getType(), dtFactory));
+      }
+ 
+      SqlOperator calciteOp = SqlFunctionConverter.getCalciteOperator(genericUDTFName, genericUDTF,
+             argTypeBldr.build(), retType);
+
+      // Hive UDTF only has a single input
+      List<RelNode> list = new ArrayList<>();
+      list.add(input);
+
+      RexNode rexNode = cluster.getRexBuilder().makeCall(calciteOp, selectColLst);
+
+      RelNode udtf = HiveTableFunctionScan.create(cluster, traitSet, list, rexNode, null, retType,
+          null);
+      // Add new rel & its RR to the maps
+      relToHiveColNameCalcitePosMap.put(udtf, this.buildHiveToCalciteColumnMap(out_rwsch, udtf));
+      relToHiveRR.put(udtf, out_rwsch);
+
+      return udtf;
     }
 
     private RelNode genLogicalPlan(QBExpr qbexpr) throws SemanticException {
