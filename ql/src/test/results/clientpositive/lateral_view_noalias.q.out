@@ -81,10 +81,14 @@ STAGE PLANS:
             UDTF Operator
               Statistics: Num rows: 500 Data size: 192000 Basic stats: COMPLETE Column stats: COMPLETE
               function name: explode
-              Limit
-                Number of rows: 2
-                Statistics: Num rows: 2 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
-                ListSink
+              Select Operator
+                expressions: key (type: string), value (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 2
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  ListSink
 
 PREHOOK: query: SELECT explode(map('key1', 100, 'key2', 200)) from src limit 2
 PREHOOK: type: QUERY
