@@ -3116,8 +3116,9 @@ public class HiveConf extends Configuration {
 
 
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
-        "hive.security.authenticator.manager,hive.security.authorization.manager,hive.users.in.admin.role," +
-        "hive.server2.xsrf.filter.enabled",
+        "hive.security.authenticator.manager,hive.security.authorization.manager," +
+        "hive.security.metastore.authorization.manager,hive.security.metastore.authenticator.manager," +
+        "hive.users.in.admin.role,hive.server2.xsrf.filter.enabled,hive.security.authorization.enabled",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
