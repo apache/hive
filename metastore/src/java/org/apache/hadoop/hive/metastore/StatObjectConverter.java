@@ -579,6 +579,35 @@ public class StatObjectConverter {
         longStats.setNumDVs(lowerBound);
       }
       data.setLongStats(longStats);
+    } else if (colType.equals("date")) {
+      DateColumnStatsData dateStats = new DateColumnStatsData();
+      dateStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
+      if (lhigh != null) {
+        dateStats.setHighValue(new Date(MetaStoreDirectSql.extractSqlLong(lhigh)));
+      }
+      if (llow != null) {
+        dateStats.setLowValue(new Date(MetaStoreDirectSql.extractSqlLong(llow)));
+      }
+      long lowerBound = MetaStoreDirectSql.extractSqlLong(dist);
+      long higherBound = MetaStoreDirectSql.extractSqlLong(sumDist);
+      if (useDensityFunctionForNDVEstimation && lhigh != null && llow != null && avgLong != null
+          && MetaStoreDirectSql.extractSqlDouble(avgLong) != 0.0) {
+        // We have estimation, lowerbound and higherbound. We use estimation if
+        // it is between lowerbound and higherbound.
+        long estimation = MetaStoreDirectSql
+            .extractSqlLong((MetaStoreDirectSql.extractSqlLong(lhigh) - MetaStoreDirectSql
+                .extractSqlLong(llow)) / MetaStoreDirectSql.extractSqlDouble(avgLong));
+        if (estimation < lowerBound) {
+          dateStats.setNumDVs(lowerBound);
+        } else if (estimation > higherBound) {
+          dateStats.setNumDVs(higherBound);
+        } else {
+          dateStats.setNumDVs(estimation);
+        }
+      } else {
+        dateStats.setNumDVs(lowerBound);
+      }
+      data.setDateStats(dateStats);
     } else if (colType.equals("double") || colType.equals("float")) {
       DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
       doubleStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
