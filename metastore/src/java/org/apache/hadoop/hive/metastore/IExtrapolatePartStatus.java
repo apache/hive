@@ -39,6 +39,7 @@ public interface IExtrapolatePartStatus {
       put("int", new Integer[] { 0, 1, 6, 7, 12, 15 });
       put("smallint", new Integer[] { 0, 1, 6, 7, 12, 15 });
       put("tinyint", new Integer[] { 0, 1, 6, 7, 12, 15 });
+      put("date", new Integer[] { 0, 1, 6, 7, 12, 15 });
       put("timestamp", new Integer[] { 0, 1, 6, 7, 12, 15 });
       put("long", new Integer[] { 0, 1, 6, 7, 12, 15 });
       put("double", new Integer[] { 2, 3, 6, 7, 13, 15 });
