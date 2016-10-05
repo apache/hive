@@ -674,9 +674,9 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	field.delim         	,                   
 	serialization.format	,                   
-PREHOOK: query: explain extended create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10
+PREHOOK: query: explain create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: explain extended create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10
+POSTHOOK: query: explain create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -697,71 +697,16 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  GatherStats: false
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
-                      null sort order: aa
                       sort order: ++
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                      tag: -1
-                      TopN: 10
                       TopN Hash Memory Usage: 0.1
-                      auto parallelism: false
-            Path -> Alias:
-#### A masked pattern was here ####
-            Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  base file name: src
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count -1
-                    columns key,value
-                    columns.comments 'default','default'
-                    columns.types string:string
-#### A masked pattern was here ####
-                    name default.src
-                    numFiles 1
-                    numRows 500
-                    rawDataSize 5312
-                    serialization.ddl struct src { string key, string value}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 5812
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                      bucket_count -1
-                      columns key,value
-                      columns.comments 'default','default'
-                      columns.types string:string
-#### A masked pattern was here ####
-                      name default.src
-                      numFiles 1
-                      numRows 500
-                      rawDataSize 5312
-                      serialization.ddl struct src { string key, string value}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 5812
-#### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.src
-                  name: default.src
-            Truncated Path -> Alias:
-              /src [src]
         Reducer 2 
-            Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -772,15 +717,10 @@ STAGE PLANS:
                   Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
-                    null sort order: aa
                     sort order: ++
                     Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-                    tag: -1
-                    TopN: 10
                     TopN Hash Memory Usage: 0.1
-                    auto parallelism: false
         Reducer 3 
-            Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -791,28 +731,12 @@ STAGE PLANS:
                   Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    GlobalTableId: 1
-#### A masked pattern was here ####
-                    NumFilesPerFileSink: 1
                     Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        properties:
-                          columns key,value
-                          columns.types string:string
-                          field.delim ,
-                          line.delim 
-
-                          name default.nzhang_ctas5
-                          serialization.format ,
-                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.nzhang_ctas5
-                    TotalFiles: 1
-                    GatherStats: true
-                    MultiFileSpray: false
 
   Stage: Stage-0
     Move Operator
@@ -834,7 +758,6 @@ STAGE PLANS:
 
   Stage: Stage-2
     Stats-Aggr Operator
-#### A masked pattern was here ####
 
 PREHOOK: query: create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
