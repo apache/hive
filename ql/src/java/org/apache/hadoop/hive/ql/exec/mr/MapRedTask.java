@@ -138,9 +138,24 @@ public class MapRedTask extends ExecDriver implements Serializable {
       runningViaChild = conf.getBoolVar(HiveConf.ConfVars.SUBMITVIACHILD);
 
       if (!runningViaChild) {
+        // since we are running the mapred task in the same jvm, we should update the job conf
+        // in ExecDriver as well to have proper local properties.
+        if (this.isLocalMode()) {
+          // save the original job tracker
+          ctx.setOriginalTracker(ShimLoader.getHadoopShims().getJobLauncherRpcAddress(job));
+          // change it to local
+          ShimLoader.getHadoopShims().setJobLauncherRpcAddress(job, "local");
+        }
         // we are not running this mapred task via child jvm
         // so directly invoke ExecDriver
-        return super.execute(driverContext);
+        int ret = super.execute(driverContext);
+
+        // restore the previous properties for framework name, RM address etc.
+        if (this.isLocalMode()) {
+          // restore the local job tracker back to original
+          ctx.restoreOriginalTracker();
+        }
+        return ret;
       }
 
       // we need to edit the configuration to setup cmdline. clone it first

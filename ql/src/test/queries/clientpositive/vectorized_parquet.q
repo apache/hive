@@ -1,6 +1,6 @@
 set hive.explain.user=false;
-set hive.exec.submitviachild=true;
-set hive.exec.submit.local.task.via.child=true;
+set hive.exec.submitviachild=false;
+set hive.exec.submit.local.task.via.child=false;
 
 create table if not exists alltypes_parquet (
   cint int, 

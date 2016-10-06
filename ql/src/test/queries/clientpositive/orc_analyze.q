@@ -1,6 +1,6 @@
 set hive.mapred.mode=nonstrict;
-set hive.exec.submitviachild=true;
-set hive.exec.submit.local.task.via.child=true;
+set hive.exec.submitviachild=false;
+set hive.exec.submit.local.task.via.child=false;
 
 CREATE TABLE orc_create_people_staging (
   id int,

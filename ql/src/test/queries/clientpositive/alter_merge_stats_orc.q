@@ -1,5 +1,5 @@
-set hive.exec.submitviachild=true;
-set hive.exec.submit.local.task.via.child=true;
+set hive.exec.submitviachild=false;
+set hive.exec.submit.local.task.via.child=false;
 create table src_orc_merge_test_stat(key int, value string) stored as orc;
 
 insert overwrite table src_orc_merge_test_stat select * from src;
