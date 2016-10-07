@@ -54,6 +54,8 @@ public class SetProcessor implements CommandProcessor {
   private static final String prefix = "set: ";
   private static final Set<String> removedConfigs = Sets.newHashSet("hive.mapred.supports.subdirectories","hive.enforce.sorting","hive.enforce.bucketing");
 
+  private static final String[] PASSWORD_STRINGS = new String[] {"password", "paswd", "pswd"};
+
   public static boolean getBoolean(String value) {
     if (value.equals("on") || value.equals("true")) {
       return true;
@@ -88,14 +90,33 @@ public class SetProcessor implements CommandProcessor {
     }
 
     for (Map.Entry<String, String> entry : mapToSortedMap(System.getenv()).entrySet()) {
+      if(isHidden(entry.getKey())) {
+        continue;
+      }
       ss.out.println(ENV_PREFIX+entry.getKey() + "=" + entry.getValue());
     }
 
     for (Map.Entry<String, String> entry :
       propertiesToSortedMap(System.getProperties()).entrySet() ) {
+      if(isHidden(entry.getKey())) {
+        continue;
+      }
       ss.out.println(SYSTEM_PREFIX+entry.getKey() + "=" + entry.getValue());
     }
 
+  }
+
+  /*
+   * Checks if the value contains any of the PASSWORD_STRINGS and if yes
+   * return true
+   */
+  private boolean isHidden(String key) {
+    for(String p : PASSWORD_STRINGS) {
+      if(key.toLowerCase().contains(p)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private void dumpOption(String s) {
@@ -249,7 +270,11 @@ public class SetProcessor implements CommandProcessor {
       String propName = varname.substring(SYSTEM_PREFIX.length());
       String result = System.getProperty(propName);
       if (result != null) {
-        ss.out.println(SYSTEM_PREFIX + propName + "=" + result);
+        if(isHidden(propName)) {
+          ss.out.println(SYSTEM_PREFIX + propName + " is a hidden config");
+        } else {
+          ss.out.println(SYSTEM_PREFIX + propName + "=" + result);
+        }
         return createProcessorSuccessResponse();
       } else {
         ss.out.println(propName + " is undefined as a system property");
@@ -258,7 +283,11 @@ public class SetProcessor implements CommandProcessor {
     } else if (varname.indexOf(ENV_PREFIX) == 0) {
       String var = varname.substring(ENV_PREFIX.length());
       if (System.getenv(var) != null) {
-        ss.out.println(ENV_PREFIX + var + "=" + System.getenv(var));
+        if(isHidden(var)) {
+          ss.out.println(ENV_PREFIX + var + " is a hidden config");
+        } else {
+          ss.out.println(ENV_PREFIX + var + "=" + System.getenv(var));
+        }
         return createProcessorSuccessResponse();
       } else {
         ss.out.println(varname + " is undefined as an environmental variable");
