@@ -1551,7 +1551,7 @@ STAGE PLANS:
                 tag: 1
                 auto parallelism: false
       Path -> Alias:
-        nullscan://null/default.src/part_ [null-subquery2:a-subquery2:src]
+        nullscan://null/default.src/part_ [a-subquery2:_u1-subquery2:src]
       Path -> Partition:
         nullscan://null/default.src/part_ 
           Partition
@@ -1597,7 +1597,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        nullscan://null/default.src/part_ [null-subquery2:a-subquery2:src]
+        nullscan://null/default.src/part_ [a-subquery2:_u1-subquery2:src]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -1693,7 +1693,7 @@ STAGE PLANS:
                 MultiFileSpray: false
       Path -> Alias:
 #### A masked pattern was here ####
-        nullscan://null/default.src/part_ [null-subquery1:a-subquery1:src]
+        nullscan://null/default.src/part_ [a-subquery1:_u1-subquery1:src]
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
@@ -1760,7 +1760,7 @@ STAGE PLANS:
             name: default.src
       Truncated Path -> Alias:
 #### A masked pattern was here ####
-        nullscan://null/default.src/part_ [null-subquery1:a-subquery1:src]
+        nullscan://null/default.src/part_ [a-subquery1:_u1-subquery1:src]
 
   Stage: Stage-0
     Fetch Operator
