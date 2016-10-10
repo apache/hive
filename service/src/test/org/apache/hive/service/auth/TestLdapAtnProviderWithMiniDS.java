@@ -20,41 +20,28 @@
 
 package org.apache.hive.service.auth;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Iterator;
 
-import javax.naming.NamingEnumeration;
-import javax.naming.ldap.LdapContext;
 import javax.security.sasl.AuthenticationException;
 
-import static org.apache.directory.server.integ.ServerIntegrationUtils.getWiredContext;
 import org.apache.directory.server.annotations.CreateLdapServer;
 import org.apache.directory.server.annotations.CreateTransport;
-import org.apache.directory.server.core.annotations.ApplyLdifs;
+import org.apache.directory.server.core.annotations.ApplyLdifFiles;
 import org.apache.directory.server.core.annotations.ContextEntry;
 import org.apache.directory.server.core.annotations.CreateDS;
 import org.apache.directory.server.core.annotations.CreateIndex;
 import org.apache.directory.server.core.annotations.CreatePartition;
 import org.apache.directory.server.core.integ.AbstractLdapTestUnit;
 import org.apache.directory.server.core.integ.FrameworkRunner;
-import org.apache.directory.server.ldap.LdapServer;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hive.service.auth.LdapAuthenticationProviderImpl;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -65,146 +52,34 @@ import org.junit.runner.RunWith;
  *
  */
 @RunWith(FrameworkRunner.class)
-@CreateLdapServer(transports =
-    { @CreateTransport(protocol = "LDAP"), @CreateTransport(protocol = "LDAPS") })
-// Define the DirectoryService
-@CreateDS(
-partitions = {
-    @CreatePartition(
-        name = "example",
-        suffix = "dc=example,dc=com",
-        contextEntry = @ContextEntry(
-            entryLdif = "dn: dc=example,dc=com\n" +
-            "dc: example\n" +
-            "objectClass: top\n" +
-            "objectClass: domain\n\n"
-        ),
-        indexes = {
-            @CreateIndex( attribute = "objectClass" ),
-            @CreateIndex( attribute = "dc" ),
-            @CreateIndex( attribute = "ou"),
-            @CreateIndex( attribute = "distinguishedName")
-        } )
-    }
-)
-
-@ApplyLdifs(
-    {
-      "dn: ou=People,dc=example,dc=com",
-      "distinguishedName: ou=People,dc=example,dc=com",
-      "objectClass: top",
-      "objectClass: organizationalUnit",
-      "objectClass: ExtensibleObject",
-      "ou: People",
-      "description: Contains entries which describe persons (seamen)",
-
-      "dn: ou=Groups,dc=example,dc=com",
-      "distinguishedName: ou=Groups,dc=example,dc=com",
-      "objectClass: top",
-      "objectClass: organizationalUnit",
-      "objectClass: ExtensibleObject",
-      "ou: Groups",
-      "description: Contains entries which describe groups (crews, for instance)",
-
-      "dn: uid=group1,ou=Groups,dc=example,dc=com",
-      "distinguishedName: uid=group1,ou=Groups,dc=example,dc=com",
-      "objectClass: top",
-      "objectClass: groupOfNames",
-      "objectClass: ExtensibleObject",
-      "cn: group1",
-      "ou: Groups",
-      "sn: group1",
-      "member: uid=user1,ou=People,dc=example,dc=com",
-
-      "dn: uid=group2,ou=Groups,dc=example,dc=com",
-      "distinguishedName: uid=group2,ou=Groups,dc=example,dc=com",
-      "objectClass: top",
-      "objectClass: groupOfNames",
-      "objectClass: ExtensibleObject",
-      "givenName: Group2",
-      "ou: Groups",
-      "cn: group2",
-      "sn: group2",
-      "member: uid=user2,ou=People,dc=example,dc=com",
-
-      "dn: cn=group3,ou=Groups,dc=example,dc=com",
-      "distinguishedName: cn=group3,ou=Groups,dc=example,dc=com",
-      "objectClass: top",
-      "objectClass: groupOfNames",
-      "objectClass: ExtensibleObject",
-      "cn: group3",
-      "ou: Groups",
-      "sn: group3",
-      "member: cn=user3,ou=People,dc=example,dc=com",
-
-      "dn: cn=group4,ou=Groups,dc=example,dc=com",
-      "distinguishedName: cn=group4,ou=Groups,dc=example,dc=com",
-      "objectClass: top",
-      "objectClass: groupOfUniqueNames",
-      "objectClass: ExtensibleObject",
-      "ou: Groups",
-      "cn: group4",
-      "sn: group4",
-      "uniqueMember: cn=user4,ou=People,dc=example,dc=com",
-
-      "dn: uid=user1,ou=People,dc=example,dc=com",
-      "distinguishedName: uid=user1,ou=People,dc=example,dc=com",
-      "objectClass: inetOrgPerson",
-      "objectClass: person",
-      "objectClass: top",
-      "objectClass: ExtensibleObject",
-      "givenName: Test1",
-      "cn: Test User1",
-      "sn: user1",
-      "uid: user1",
-      "userPassword: user1",
-
-      "dn: uid=user2,ou=People,dc=example,dc=com",
-      "distinguishedName: uid=user2,ou=People,dc=example,dc=com",
-      "objectClass: inetOrgPerson",
-      "objectClass: person",
-      "objectClass: top",
-      "objectClass: ExtensibleObject",
-      "givenName: Test2",
-      "cn: Test User2",
-      "sn: user2",
-      "uid: user2",
-      "userPassword: user2",
-
-      "dn: cn=user3,ou=People,dc=example,dc=com",
-      "distinguishedName: cn=user3,ou=People,dc=example,dc=com",
-      "objectClass: inetOrgPerson",
-      "objectClass: person",
-      "objectClass: top",
-      "objectClass: ExtensibleObject",
-      "givenName: Test1",
-      "cn: Test User3",
-      "sn: user3",
-      "uid: user3",
-      "userPassword: user3",
-
-      "dn: cn=user4,ou=People,dc=example,dc=com",
-      "distinguishedName: cn=user4,ou=People,dc=example,dc=com",
-      "objectClass: inetOrgPerson",
-      "objectClass: person",
-      "objectClass: top",
-      "objectClass: ExtensibleObject",
-      "givenName: Test4",
-      "cn: Test User4",
-      "sn: user4",
-      "uid: user4",
-      "userPassword: user4"
-
+@CreateLdapServer(transports = {
+  @CreateTransport(protocol = "LDAP"),
+  @CreateTransport(protocol = "LDAPS")
 })
 
+@CreateDS(partitions = {
+  @CreatePartition(
+      name = "example",
+      suffix = "dc=example,dc=com",
+      contextEntry = @ContextEntry(entryLdif =
+          "dn: dc=example,dc=com\n" +
+          "dc: example\n" +
+          "objectClass: top\n" +
+          "objectClass: domain\n\n"
+      ),
+    indexes = {
+      @CreateIndex(attribute = "objectClass"),
+      @CreateIndex(attribute = "cn"),
+      @CreateIndex(attribute = "uid")
+    }
+  )
+})
+
+@ApplyLdifFiles("ldap/example.com.ldif")
 public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
 
-  private static String ldapUrl;
-  private static LdapServer server;
-  private static HiveConf hiveConf;
-  private static byte[] hiveConfBackup;
-  private static LdapContext ctx;
   private static LdapAuthenticationProviderImpl ldapProvider;
+  Map<String, String> ldapProperties;
 
   static final User USER1 = new User("user1", "user1", "uid=user1,ou=People,dc=example,dc=com");
   static final User USER2 = new User("user2", "user2", "uid=user2,ou=People,dc=example,dc=com");
@@ -213,18 +88,12 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
 
   @Before
   public void setup() throws Exception {
-    ctx = ( LdapContext ) getWiredContext( ldapServer, null ).lookup( "dc=example,dc=com" );
-  }
-
-  @After
-  public void shutdown() throws Exception {
+    ldapProperties = new HashMap<>();
   }
 
   @BeforeClass
   public static void init() throws Exception {
-    hiveConf = new HiveConf();
-
-    ldapProvider = new LdapAuthenticationProviderImpl(hiveConf);
+    ldapProvider = new LdapAuthenticationProviderImpl(new HiveConf());
   }
 
   @AfterClass
@@ -234,28 +103,15 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     }
   }
 
-  private static void initLdapAtn(Map<String, String> hiveProperties)
-        throws Exception {
-    hiveConf = new HiveConf();
+  private void initLdapAtn() throws Exception {
+    String ldapUrl = "ldap://localhost:" + ldapServer.getPort();
 
-    int port;
-    if (ldapUrl == null) {
-      port = ldapServer.getPort();
-      ldapUrl = new String("ldap://localhost:" + port);
-    }
-
+    HiveConf hiveConf = new HiveConf();
     hiveConf.set("hive.root.logger", "DEBUG,console");
     hiveConf.set("hive.server2.authentication.ldap.url", ldapUrl);
 
-    if (hiveProperties != null) {
-      String key;
-      String value;
-      Iterator<String> iter = hiveProperties.keySet().iterator();
-      while (iter.hasNext()) {
-        key = iter.next();
-        value = hiveProperties.get(key);
-        hiveConf.set(key, value);
-      }
+    for (Map.Entry<String, String> entry : ldapProperties.entrySet()) {
+      hiveConf.set(entry.getKey(), entry.getValue());
     }
 
     ldapProvider = new LdapAuthenticationProviderImpl(hiveConf);
@@ -263,17 +119,16 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
 
   @Test
   public void testLDAPServer() throws Exception {
-    initLdapAtn(null);
+    initLdapAtn();
     assertTrue(ldapServer.isStarted());
     assertTrue(ldapServer.getPort() > 0);
   }
 
   @Test
   public void testUserBindPositiveWithShortname() throws Exception {
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
     String user;
 
     user = USER1.getUID();
@@ -297,9 +152,8 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
 
   @Test
   public void testUserBindPositiveWithShortnameOldConfig() throws Exception {
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=People,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
     String user;
 
     user = USER1.getUID();
@@ -323,10 +177,9 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
 
   @Test
   public void testUserBindNegativeWithShortname() throws Exception {
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     try {
       ldapProvider.Authenticate(USER1.getUID(), USER2.getPassword());
@@ -346,9 +199,8 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
 
   @Test
   public void testUserBindNegativeWithShortnameOldConfig() throws Exception {
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=People,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     try {
       ldapProvider.Authenticate(USER1.getUID(), USER2.getPassword());
@@ -369,11 +221,9 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testUserBindPositiveWithDN() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
     assertTrue(ldapServer.getPort() > 0);
 
     user = USER1.getDN();
@@ -398,10 +248,8 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testUserBindPositiveWithDNOldConfig() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-
     ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=People,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
     assertTrue(ldapServer.getPort() > 0);
 
     user = USER1.getDN();
@@ -426,10 +274,8 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testUserBindPositiveWithDNWrongOldConfig() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-
     ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=DummyPeople,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
     assertTrue(ldapServer.getPort() > 0);
 
     user = USER1.getDN();
@@ -455,11 +301,9 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testUserBindPositiveWithDNWrongConfig() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=DummyPeople,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=DummyGroups,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
     assertTrue(ldapServer.getPort() > 0);
 
     user = USER1.getDN();
@@ -484,11 +328,9 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testUserBindPositiveWithDNBlankConfig() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", " ");
     ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", " ");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
     assertTrue(ldapServer.getPort() > 0);
 
     user = USER1.getDN();
@@ -513,10 +355,8 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testUserBindPositiveWithDNBlankOldConfig() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-
     ldapProperties.put("hive.server2.authentication.ldap.baseDN", "");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
     assertTrue(ldapServer.getPort() > 0);
 
     user = USER1.getDN();
@@ -541,10 +381,9 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testUserBindNegativeWithDN() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
     assertTrue(ldapServer.getPort() > 0);
 
     user = USER1.getDN();
@@ -569,9 +408,8 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testUserBindNegativeWithDNOldConfig() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=People,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
     assertTrue(ldapServer.getPort() > 0);
 
     user = USER1.getDN();
@@ -596,10 +434,9 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testUserFilterPositive() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER2.getUID());
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER2.getDN();
     try {
@@ -613,10 +450,10 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
       Assert.fail("testUserFilterPositive: Authentication failed for " + user + ",user expected to pass userfilter");
     }
 
-    ldapProperties = new HashMap<String, String>();
+    ldapProperties = new HashMap<>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER1.getUID());
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     try {
       user = USER1.getDN();
@@ -630,10 +467,10 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
       Assert.fail("testUserFilterPositive: Authentication failed for " + user + ",user expected to pass userfilter");
     }
 
-    ldapProperties = new HashMap<String, String>();
+    ldapProperties = new HashMap<>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER2.getUID() + "," + USER1.getUID());
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     try {
       user = USER1.getDN();
@@ -652,10 +489,9 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testUserFilterNegative() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER2.getUID());
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER1.getDN();
     try {
@@ -673,10 +509,10 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
       assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
     }
 
-    ldapProperties = new HashMap<String, String>();
+    ldapProperties = new HashMap<>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER1.getUID());
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER2.getDN();
     try {
@@ -694,10 +530,10 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
       assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
     }
 
-    ldapProperties = new HashMap<String, String>();
+    ldapProperties = new HashMap<>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER3.getUID());
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER1.getUID();
     try {
@@ -719,11 +555,10 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testGroupFilterPositive() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group1,group2");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER1.getDN();
     try {
@@ -741,11 +576,11 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
       Assert.fail("testGroupFilterPositive: Authentication failed for " + user + ",user expected to pass groupfilter");
     }
 
-    ldapProperties = new HashMap<String, String>();
+    ldapProperties = new HashMap<>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group2");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER2.getDN();
     try {
@@ -759,11 +594,10 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testGroupFilterNegative() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group1");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER2.getDN();
     try {
@@ -773,11 +607,11 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
       assertTrue("testGroupFilterNegative: Authentication failed for " + user + " as expected", true);
     }
 
-    ldapProperties = new HashMap<String, String>();
+    ldapProperties = new HashMap<>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group2");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER1.getDN();
     try {
@@ -791,12 +625,11 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testUserAndGroupFilterPositive() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER1.getUID() + "," + USER2.getUID());
     ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group1,group2");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER1.getDN();
     try {
@@ -823,12 +656,11 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testUserAndGroupFilterNegative() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER1.getUID() + "," + USER2.getUID());
     ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group1");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER2.getDN();
     try {
@@ -850,13 +682,12 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testCustomQueryPositive() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com:uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "cn=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery", "(&(objectClass=person)(|(uid="
                        + USER1.getUID() + ")(uid=" + USER4.getUID() + ")))");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER1.getDN();
     try {
@@ -878,12 +709,11 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testCustomQueryNegative() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=People,dc=example,dc=com");
     // ldap query will only return user1
     ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery", "(&(objectClass=person)(uid="
                        + USER1.getUID() + "))");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER2.getDN();
     try {
@@ -912,12 +742,11 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testCustomQueryWithGroupsPositive() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.baseDN", "dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com:uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery",
                          "(&(objectClass=groupOfNames)(|(cn=group1)(cn=group2)))");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER1.getDN();
     try {
@@ -940,7 +769,7 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     // following query should return group1 and user2
     ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery",
                          "(|(&(objectClass=groupOfNames)(cn=group1))(&(objectClass=person)(sn=user4)))");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER1.getUID();
     try {
@@ -959,7 +788,7 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     ldapProperties.put("hive.server2.authentication.ldap.groupMembershipKey", "uniqueMember");
     ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery",
                          "(&(objectClass=groupOfUniqueNames)(cn=group4))");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER4.getDN();
     try {
@@ -977,12 +806,11 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testCustomQueryWithGroupsNegative() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.baseDN", "dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com:uid=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery",
                          "(&(objectClass=groupOfNames)(|(cn=group1)(cn=group2)))");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER3.getDN();
     try {
@@ -1004,12 +832,11 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testGroupFilterPositiveWithCustomGUID() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "cn=%s,ou=Groups,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.guidKey", "cn");
     ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group3");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER3.getDN();
     try {
@@ -1027,14 +854,13 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
   @Test
   public void testGroupFilterPositiveWithCustomAttributes() throws Exception {
     String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
     ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "cn=%s,ou=Groups,dc=example,dc=com");
     ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group4");
     ldapProperties.put("hive.server2.authentication.ldap.guidKey", "cn");
     ldapProperties.put("hive.server2.authentication.ldap.groupMembershipKey", "uniqueMember");
     ldapProperties.put("hive.server2.authentication.ldap.groupClassKey", "groupOfUniqueNames");
-    initLdapAtn(ldapProperties);
+    initLdapAtn();
 
     user = USER4.getDN();
     try {
@@ -1049,28 +875,29 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     }
 
   }
+
+  private static class User {
+    String uid;
+    String pwd;
+    String ldapDN;
+
+    User(String uid, String password, String ldapDN) {
+      this.uid    = uid;
+      this.pwd    = password;
+      this.ldapDN = ldapDN;
+    }
+
+    public String getUID() {
+      return uid;
+    }
+
+    public String getPassword() {
+      return pwd;
+    }
+
+    public String getDN() {
+      return ldapDN;
+    }
+  }
 }
 
-class User {
-  String uid;
-  String pwd;
-  String ldapDN;
-
-  User(String uid, String password, String ldapDN) {
-    this.uid    = uid;
-    this.pwd    = password;
-    this.ldapDN = ldapDN;
-  }
-
-  public String getUID() {
-    return uid;
-  }
-
-  public String getPassword() {
-    return pwd;
-  }
-
-  public String getDN() {
-    return ldapDN;
-  }
-}
