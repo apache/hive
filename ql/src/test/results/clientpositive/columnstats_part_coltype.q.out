@@ -96,7 +96,7 @@ PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') value
@@ -105,7 +105,7 @@ PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 value               	string              	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr=2, part) compute statistics for columns
@@ -144,7 +144,7 @@ PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') value
@@ -153,7 +153,7 @@ PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 value               	string              	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr, part) compute statistics for columns
@@ -194,7 +194,7 @@ PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') value
@@ -203,7 +203,7 @@ PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 value               	string              	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') key
@@ -212,7 +212,7 @@ PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') value
@@ -221,7 +221,7 @@ PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 value               	string              	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table partcolstats partition (ds, hr, part) compute statistics for columns

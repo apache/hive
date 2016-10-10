@@ -77,6 +77,15 @@ public class HiveStringUtils {
       }).with(
         new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE()));
 
+  private static final CharSequenceTranslator ESCAPE_HIVE_COMMAND =
+      new LookupTranslator(
+        new String[][] {
+          {"'", "\\'"},
+          {";", "\\;"},
+          {"\\", "\\\\"},
+      }).with(
+        new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE()));
+
   /**
    * Maintain a String pool to reduce memory.
    */
@@ -622,7 +631,19 @@ public class HiveStringUtils {
    */
   public static String escapeJava(String str) {
     return ESCAPE_JAVA.translate(str);
-}
+  }
+
+  /**
+   * Escape non-unicode characters, and ', and ;
+   * Like StringEscapeUtil.escapeJava() will escape
+   * unicode characters as well but in some cases it's not desired.
+   *
+   * @param str Original string
+   * @return Escaped string
+   */
+  public static String escapeHiveCommand(String str) {
+    return ESCAPE_HIVE_COMMAND.translate(str);
+  }
 
   /**
    * Unescape commas in the string using the default escape char

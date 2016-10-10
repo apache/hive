@@ -296,7 +296,7 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 col1                	int                 	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col2
@@ -305,7 +305,7 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 col2                	string              	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col3
@@ -314,7 +314,7 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 col3                	string              	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: alter table statsdb1.testpart1 replace columns (col1 int, col2 string, col4 string) cascade
@@ -353,7 +353,7 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 col4                	string              	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: alter table statsdb1.testpart1 change column col1 col1 string
@@ -382,7 +382,7 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 col1                	string              	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
@@ -400,7 +400,7 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 col4                	string              	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: alter table statsdb1.testpart1 rename to statsdb2.testpart2
@@ -762,7 +762,7 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 col1                	int                 	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col2
@@ -771,7 +771,7 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 col2                	string              	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col3
@@ -780,7 +780,7 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 col3                	string              	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: alter table statsdb1.testpart1 replace columns (col1 int, col2 string, col4 string) cascade
@@ -819,7 +819,7 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 col4                	string              	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: alter table statsdb1.testpart1 change column col1 col1 string
@@ -848,7 +848,7 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 col1                	string              	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
@@ -866,7 +866,7 @@ PREHOOK: Input: statsdb1@testpart1
 POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
-# col_name            	data_type           	comment             		 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 col4                	string              	from deserializer   	 	 	 	 	 	 	 	 
 PREHOOK: query: alter table statsdb1.testpart1 rename to statsdb2.testpart2

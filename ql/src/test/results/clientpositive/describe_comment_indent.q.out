@@ -34,10 +34,10 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table
 col1                	int                 	col1 one line comment
 col2                	string              	col2                
-                    	                    	two lines comment
+                    	                    	two lines comment   
 col3                	string              	col3                
-                    	                    	three lines
-                    	                    	comment
+                    	                    	three lines         
+                    	                    	comment             
 PREHOOK: query: DESCRIBE FORMATTED test_table
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test_table
@@ -48,10 +48,10 @@ POSTHOOK: Input: default@test_table
 	 	 
 col1                	int                 	col1 one line comment
 col2                	string              	col2                
-                    	                    	two lines comment
+                    	                    	two lines comment   
 col3                	string              	col3                
-                    	                    	three lines
-                    	                    	comment
+                    	                    	three lines         
+                    	                    	comment             
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -61,7 +61,8 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	comment             	table comment\ntwo lines
+	comment             	table comment       
+	                    	two lines           
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   

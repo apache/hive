@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -139,7 +140,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
           if (part != null) {
             output = MetaDataFormatUtils.getPartitionInformation(part);
           } else {
-            output = MetaDataFormatUtils.getTableInformation(tbl);
+            output = MetaDataFormatUtils.getTableInformation(tbl, isOutputPadded);
           }
           outStream.write(output.getBytes("UTF-8"));
 
@@ -460,7 +461,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       outStream.write(database.getBytes("UTF-8"));
       outStream.write(separator);
       if (comment != null) {
-        outStream.write(comment.getBytes("UTF-8"));
+        outStream.write(HiveStringUtils.escapeJava(comment).getBytes("UTF-8"));
       }
       outStream.write(separator);
       if (location != null) {

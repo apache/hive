@@ -86,12 +86,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT key, value	 
-FROM src	 	 
-WHERE key=86	 	 
+View Original Text: 	SELECT key, value   	 
+	                    	FROM src            
+	                    	WHERE key=86        
 View Expanded Text: 	SELECT `src`.`key`, `src`.`value`	 
-FROM `default`.`src`	 	 
-WHERE `src`.`key`=86	 	 
+	                    	FROM `default`.`src`
+	                    	WHERE `src`.`key`=86
 PREHOOK: query: SELECT * FROM vp1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -406,12 +406,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT key, value	 
-FROM src	 	 
-WHERE key=86	 	 
+View Original Text: 	SELECT key, value   	 
+	                    	FROM src            
+	                    	WHERE key=86        
 View Expanded Text: 	SELECT `key` AS `k`, `value` AS `v` FROM (SELECT `src`.`key`, `src`.`value`	 
-FROM `default`.`src`	 	 
-WHERE `src`.`key`=86) `default.vp3`	 	 
+	                    	FROM `default`.`src`
+	                    	WHERE `src`.`key`=86) `default.vp3`
 PREHOOK: query: ALTER VIEW vp3
 ADD PARTITION (v='val_86')
 PREHOOK: type: ALTERTABLE_ADDPARTS
