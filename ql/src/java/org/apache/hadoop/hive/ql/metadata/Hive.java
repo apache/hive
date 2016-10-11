@@ -128,6 +128,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.InPlaceUpdates;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.metastore.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
@@ -1567,6 +1568,8 @@ public class Hive {
         newPartPath = oldPartPath;
       }
       List<Path> newFiles = null;
+      PerfLogger perfLogger = SessionState.getPerfLogger();
+      perfLogger.PerfLogBegin("MoveTask", "FileMoves");
       if (replace || (oldPart == null && !isAcid)) {
         replaceFiles(tbl.getPath(), loadPath, newPartPath, oldPartPath, getConf(),
             isSrcLocal);
@@ -1578,6 +1581,7 @@ public class Hive {
         FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
         Hive.copyFiles(conf, loadPath, newPartPath, fs, isSrcLocal, isAcid, newFiles);
       }
+      perfLogger.PerfLogEnd("MoveTask", "FileMoves");
       Partition newTPart = oldPart != null ? oldPart : new Partition(tbl, partSpec, newPartPath);
       alterPartitionSpecInMemory(tbl, partSpec, newTPart.getTPartition(), inheritTableSpecs, newPartPath.toString());
       validatePartition(newTPart);
