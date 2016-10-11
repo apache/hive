@@ -1599,7 +1599,7 @@ public final class Utilities {
         }
       } else {
         String taskId = getPrefixedTaskIdFromFilename(one.getPath().getName());
-        Utilities.LOG14535.info("removeTempOrDuplicateFiles pondering " + one.getPath() + ", taskId " + taskId/*, new Exception()*/);
+        Utilities.LOG14535.info("removeTempOrDuplicateFiles pondering " + one.getPath() + ", taskId " + taskId);
 
         FileStatus otherFile = taskIdToFile.get(taskId);
         if (otherFile == null) {

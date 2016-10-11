@@ -1587,12 +1587,12 @@ public class Hive {
       List<Path> newFiles = null;
       if (mmWriteId != null) {
         Utilities.LOG14535.info("not moving " + loadPath + " to " + newPartPath);
-        assert !isAcid && !replace;
+        assert !isAcid;
         if (areEventsForDmlNeeded(tbl, oldPart)) {
           newFiles = listFilesCreatedByQuery(loadPath, mmWriteId);
         }
-        if (replace) {
-          Path tableDest = tbl.getPath();
+        Utilities.LOG14535.info("maybe deleting stuff from " + oldPartPath + " (new " + newPartPath + ") for replace");
+        if (replace && oldPartPath != null) { // TODO# is this correct? ignore until iow jira
           deleteOldPathForReplace(newPartPath, oldPartPath,
               getConf(), new ValidWriteIds.IdPathFilter(mmWriteId, false));
         }

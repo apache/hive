@@ -1189,6 +1189,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         Path specPath = conf.getDirName();
         String unionSuffix = null;
         DynamicPartitionCtx dpCtx = conf.getDynPartCtx();
+        ListBucketingCtx lbCtx = conf.getLbCtx();
         if (conf.isLinkedFileSink() && (dpCtx != null)) {
           specPath = conf.getParentDir();
           Utilities.LOG14535.info("Setting specPath to " + specPath + " for dynparts");
@@ -1197,7 +1198,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         if (!conf.isMmTable()) {
           Utilities.mvFileToFinalPath(specPath, hconf, success, LOG, dpCtx, conf, reporter); // TODO# other callers
         } else {
-          handleMmTable(specPath, unionSuffix, hconf, success, dpCtx, conf, reporter);
+          handleMmTable(specPath, unionSuffix, hconf, success, dpCtx, lbCtx, conf, reporter);
         }
       }
     } catch (IOException e) {
@@ -1207,22 +1208,26 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   private static FileStatus[] getMmDirectoryCandidates(FileSystem fs, Path path,
-      int dpLevels, String unionSuffix, PathFilter filter) throws IOException {
+      DynamicPartitionCtx dpCtx, ListBucketingCtx lbCtx, String unionSuffix, PathFilter filter)
+          throws IOException {
     StringBuilder sb = new StringBuilder(path.toUri().getPath());
-    for (int i = 0; i < dpLevels; i++) {
+    int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols(),
+        lbLevels = lbCtx == null ? 0 : lbCtx.getSkewedColNames().size();
+    for (int i = 0; i < dpLevels + lbLevels; i++) {
       sb.append(Path.SEPARATOR).append("*");
     }
     if (unionSuffix != null) {
       sb.append(Path.SEPARATOR).append(unionSuffix);
     }
     sb.append(Path.SEPARATOR).append("*"); // TODO: we could add exact mm prefix here
+    Utilities.LOG14535.info("Looking for files via: " + sb.toString());
     Path pathPattern = new Path(path, sb.toString());
     return fs.globStatus(pathPattern, filter);
   }
 
   private void handleMmTable(Path specPath, String unionSuffix, Configuration hconf,
-      boolean success, DynamicPartitionCtx dpCtx, FileSinkDesc conf, Reporter reporter)
-          throws IOException, HiveException {
+      boolean success, DynamicPartitionCtx dpCtx, ListBucketingCtx lbCtx, FileSinkDesc conf,
+      Reporter reporter) throws IOException, HiveException {
     FileSystem fs = specPath.getFileSystem(hconf);
     // Manifests would be at the root level, but the results at target level.
     // TODO# special case - doesn't take bucketing into account
@@ -1230,7 +1235,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
     ValidWriteIds.IdPathFilter filter = new ValidWriteIds.IdPathFilter(conf.getMmWriteId(), true);
     if (!success) {
-      tryDeleteAllMmFiles(fs, specPath, manifestDir, dpCtx, unionSuffix, filter);
+      tryDeleteAllMmFiles(fs, specPath, manifestDir, dpCtx, lbCtx, unionSuffix, filter);
       return;
     }
     FileStatus[] files = HiveStatsUtils.getFileStatusRecurse(manifestDir, 1, fs, filter);
@@ -1240,14 +1245,14 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       for (FileStatus status : files) {
         Path path = status.getPath();
         if (path.getName().endsWith(MANIFEST_EXTENSION)) {
+          Utilities.LOG14535.info("Reading manifest " + path);
           manifests.add(path);
         }
       }
     }
 
     Utilities.LOG14535.info("Looking for files in: " + specPath);
-    files = getMmDirectoryCandidates(fs, specPath,
-        dpCtx == null ? 0 : dpCtx.getNumDPCols(), unionSuffix, filter);
+    files = getMmDirectoryCandidates(fs, specPath, dpCtx, lbCtx, unionSuffix, filter);
     ArrayList<FileStatus> results = new ArrayList<>();
     if (files != null) {
       for (FileStatus status : files) {
@@ -1307,8 +1312,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
 
     if (results.isEmpty()) return;
-    FileStatus[] finalResults = results.toArray(new FileStatus[results.size()]);
 
+    // TODO: see HIVE-14886 - removeTempOrDuplicateFiles is broken for list bucketing,
+    //       so maintain parity here by not calling it at all.
+    if (lbCtx != null) return;
+    FileStatus[] finalResults = results.toArray(new FileStatus[results.size()]);
     List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(
         fs, finalResults, dpCtx, conf, hconf);
     // create empty buckets if necessary
@@ -1318,10 +1326,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   private void tryDeleteAllMmFiles(FileSystem fs, Path specPath, Path manifestDir,
-      DynamicPartitionCtx dpCtx, String unionSuffix,
+      DynamicPartitionCtx dpCtx, ListBucketingCtx lbCtx, String unionSuffix,
       ValidWriteIds.IdPathFilter filter) throws IOException {
-    FileStatus[] files = getMmDirectoryCandidates(fs, specPath,
-        dpCtx == null ? 0 : dpCtx.getNumDPCols(), unionSuffix, filter);
+    FileStatus[] files = getMmDirectoryCandidates(fs, specPath, dpCtx, lbCtx, unionSuffix, filter);
     if (files != null) {
       for (FileStatus status : files) {
         Utilities.LOG14535.info("Deleting " + status.getPath() + " on failure");

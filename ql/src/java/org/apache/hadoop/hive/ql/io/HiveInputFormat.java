@@ -399,6 +399,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   private void processForWriteIds(Path dir, JobConf conf,
       ValidWriteIds writeIds, List<Path> finalPaths) throws IOException {
     FileSystem fs = dir.getFileSystem(conf);
+    Utilities.LOG14535.warn("Checking " + dir + " (root) for inputs");
     FileStatus[] files = fs.listStatus(dir); // TODO: batch?
     LinkedList<Path> subdirs = new LinkedList<>();
     for (FileStatus file : files) {
@@ -415,6 +416,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   private void handleNonMmDirChild(FileStatus file, ValidWriteIds writeIds,
       LinkedList<Path> subdirs, List<Path> finalPaths) {
     Path path = file.getPath();
+    Utilities.LOG14535.warn("Checking " + path + " for inputs");
     if (!file.isDirectory()) {
       Utilities.LOG14535.warn("Ignoring a file not in MM directory " + path);
       return;
