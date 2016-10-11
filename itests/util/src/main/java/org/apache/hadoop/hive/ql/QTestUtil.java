@@ -1965,12 +1965,14 @@ public class QTestUtil {
    * @return one QTestUtil for each query file
    */
   public static QTestUtil[] queryListRunnerSetup(File[] qfiles, String resDir,
-      String logDir) throws Exception
+      String logDir, String initScript, String cleanupScript) throws Exception
   {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
     for (int i = 0; i < qfiles.length; i++) {
       qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, null, "0.20",
-          defaultInitScript, defaultCleanupScript, false, false);
+        initScript == null ? defaultInitScript : initScript,
+        cleanupScript == null ? defaultCleanupScript : cleanupScript,
+        false, false);
       qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }

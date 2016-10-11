@@ -134,14 +134,14 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT * FROM src	 
-WHERE key > 80 AND key < 100	 	 
-ORDER BY key, value	 	 
-LIMIT 10	 	 
+View Original Text: 	SELECT * FROM src   	 
+	                    	WHERE key > 80 AND key < 100
+	                    	ORDER BY key, value 
+	                    	LIMIT 10            
 View Expanded Text: 	SELECT `src`.`key`, `src`.`value` FROM `default`.`src`	 
-WHERE `src`.`key` > 80 AND `src`.`key` < 100	 	 
-ORDER BY `src`.`key`, `src`.`value`	 	 
-LIMIT 10	 	 
+	                    	WHERE `src`.`key` > 80 AND `src`.`key` < 100
+	                    	ORDER BY `src`.`key`, `src`.`value`
+	                    	LIMIT 10            
 PREHOOK: query: DROP VIEW tv.testView
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: tv@testview

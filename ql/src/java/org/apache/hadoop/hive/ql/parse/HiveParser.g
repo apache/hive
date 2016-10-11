@@ -717,7 +717,7 @@ explainStatement
 	: KW_EXPLAIN (
 	    explainOption* execStatement -> ^(TOK_EXPLAIN execStatement explainOption*)
         |
-        KW_REWRITE queryStatementExpression[true] -> ^(TOK_EXPLAIN_SQ_REWRITE queryStatementExpression))
+        KW_REWRITE queryStatementExpression -> ^(TOK_EXPLAIN_SQ_REWRITE queryStatementExpression))
 	;
 
 explainOption
@@ -729,7 +729,7 @@ explainOption
 execStatement
 @init { pushMsg("statement", state); }
 @after { popMsg(state); }
-    : queryStatementExpression[true]
+    : queryStatementExpression
     | loadStatement
     | exportStatement
     | importStatement
@@ -2310,14 +2310,14 @@ setOperator
     | KW_UNION KW_DISTINCT? -> ^(TOK_UNIONDISTINCT)
     ;
 
-queryStatementExpression[boolean topLevel]
+queryStatementExpression
     :
     /* Would be nice to do this as a gated semantic perdicate
        But the predicate gets pushed as a lookahead decision.
        Calling rule doesnot know about topLevel
     */
-    (w=withClause {topLevel}?)?
-    queryStatementExpressionBody[topLevel] {
+    (w=withClause)?
+    queryStatementExpressionBody {
       if ($w.tree != null) {
       $queryStatementExpressionBody.tree.insertChild(0, $w.tree);
       }
@@ -2325,10 +2325,10 @@ queryStatementExpression[boolean topLevel]
     ->  queryStatementExpressionBody
     ;
 
-queryStatementExpressionBody[boolean topLevel]
+queryStatementExpressionBody
     :
-    fromStatement[topLevel]
-    | regularBody[topLevel]
+    fromStatement
+    | regularBody
     ;
 
 withClause
@@ -2338,16 +2338,16 @@ withClause
 
 cteStatement
    :
-   identifier KW_AS LPAREN queryStatementExpression[false] RPAREN
+   identifier KW_AS LPAREN queryStatementExpression RPAREN
    -> ^(TOK_SUBQUERY queryStatementExpression identifier)
 ;
 
-fromStatement[boolean topLevel]
+fromStatement
 : (singleFromStatement  -> singleFromStatement)
 	(u=setOperator r=singleFromStatement
 	  -> ^($u {$fromStatement.tree} $r)
 	)*
-	 -> {u != null && topLevel}? ^(TOK_QUERY
+	 -> {u != null}? ^(TOK_QUERY
 	       ^(TOK_FROM
 	         ^(TOK_SUBQUERY
 	           {$fromStatement.tree}
@@ -2376,11 +2376,11 @@ The valuesClause rule below ensures that the parse tree for
 very similar to the tree for "insert into table FOO select a,b from BAR".  Since virtual table name
 is implicit, it's represented as TOK_ANONYMOUS.
 */
-regularBody[boolean topLevel]
+regularBody
    :
    i=insertClause
    (
-   s=selectStatement[topLevel]
+   s=selectStatement
      {$s.tree.getFirstChildWithType(TOK_INSERT).replaceChildren(0, 0, $i.tree);} -> {$s.tree}
      |
      valuesClause
@@ -2392,38 +2392,63 @@ regularBody[boolean topLevel]
           )
    )
    |
-   selectStatement[topLevel]
+   selectStatement
    ;
 
-selectStatement[boolean topLevel]
+atomSelectStatement
    :
-   (
    s=selectClause
    f=fromClause?
    w=whereClause?
    g=groupByClause?
    h=havingClause?
+   win=window_clause?
+   -> ^(TOK_QUERY $f? ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
+                     $s $w? $g? $h? $win?))
+   |
+   LPAREN! selectStatement RPAREN!
+   ;
+
+selectStatement
+   :
+   a=atomSelectStatement
+   set=setOpSelectStatement[$atomSelectStatement.tree]?
    o=orderByClause?
    c=clusterByClause?
    d=distributeByClause?
    sort=sortByClause?
-   win=window_clause?
    l=limitClause?
-   -> ^(TOK_QUERY $f? ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
-                     $s $w? $g? $h? $o? $c?
-                     $d? $sort? $win? $l?))
-   )
-   (set=setOpSelectStatement[$selectStatement.tree, topLevel])?
+   {
+   if(set == null){
+   $a.tree.getFirstChildWithType(TOK_INSERT).addChild($o.tree);
+   $a.tree.getFirstChildWithType(TOK_INSERT).addChild($c.tree);
+   $a.tree.getFirstChildWithType(TOK_INSERT).addChild($d.tree);
+   $a.tree.getFirstChildWithType(TOK_INSERT).addChild($sort.tree);
+   $a.tree.getFirstChildWithType(TOK_INSERT).addChild($l.tree);
+   }
+   }
    -> {set == null}?
-      {$selectStatement.tree}
+      {$a.tree}
    -> {o==null && c==null && d==null && sort==null && l==null}?
       {$set.tree}
-   -> {throwSetOpException()}
+   -> ^(TOK_QUERY
+          ^(TOK_FROM
+            ^(TOK_SUBQUERY
+              {$set.tree}
+              {adaptor.create(Identifier, generateUnionAlias())}
+             )
+          )
+          ^(TOK_INSERT
+             ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
+             ^(TOK_SELECT ^(TOK_SELEXPR TOK_ALLCOLREF))
+             $o? $c? $d? $sort? $l?
+          )
+      )
    ;
 
-setOpSelectStatement[CommonTree t, boolean topLevel]
+setOpSelectStatement[CommonTree t]
    :
-   (u=setOperator b=simpleSelectStatement
+   (u=setOperator b=atomSelectStatement
    -> {$setOpSelectStatement.tree != null && u.tree.getType()==HiveParser.TOK_UNIONDISTINCT}?
       ^(TOK_QUERY
           ^(TOK_FROM
@@ -2454,15 +2479,8 @@ setOpSelectStatement[CommonTree t, boolean topLevel]
        )
    -> ^(TOK_UNIONALL {$t} $b)
    )+
-   o=orderByClause?
-   c=clusterByClause?
-   d=distributeByClause?
-   sort=sortByClause?
-   win=window_clause?
-   l=limitClause?
-   -> {o==null && c==null && d==null && sort==null && win==null && l==null && !topLevel}?
-      {$setOpSelectStatement.tree}
-   -> ^(TOK_QUERY
+   -> {$setOpSelectStatement.tree.getChild(0).getType()==HiveParser.TOK_UNIONALL}?
+      ^(TOK_QUERY
           ^(TOK_FROM
             ^(TOK_SUBQUERY
               {$setOpSelectStatement.tree}
@@ -2472,27 +2490,15 @@ setOpSelectStatement[CommonTree t, boolean topLevel]
           ^(TOK_INSERT
              ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
              ^(TOK_SELECT ^(TOK_SELEXPR TOK_ALLCOLREF))
-             $o? $c? $d? $sort? $win? $l?
           )
        )
-   ;
-
-simpleSelectStatement
-   :
-   selectClause
-   fromClause?
-   whereClause?
-   groupByClause?
-   havingClause?
-   ((window_clause) => window_clause)?
-   -> ^(TOK_QUERY fromClause? ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
-                     selectClause whereClause? groupByClause? havingClause? window_clause?))
+   -> {$setOpSelectStatement.tree}
    ;
 
 selectStatementWithCTE
     :
     (w=withClause)?
-    selectStatement[true] {
+    selectStatement {
       if ($w.tree != null) {
       $selectStatement.tree.insertChild(0, $w.tree);
       }

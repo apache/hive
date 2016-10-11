@@ -1,6 +1,6 @@
 set hive.mapred.mode=nonstrict;
-set hive.exec.submitviachild=true;
-set hive.exec.submit.local.task.via.child=true;
+set hive.exec.submitviachild=false;
+set hive.exec.submit.local.task.via.child=false;
 
 -- small 2 part, 2 bucket & big 2 part, 4 bucket
 CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;

@@ -282,6 +282,7 @@ timeQualifiers
     | KW_MONTH -> Identifier["month"]
     | KW_WEEK -> Identifier["weekofyear"]
     | KW_DAY -> Identifier["day"]
+    | KW_DOW -> Identifier["dayofweek"]
     | KW_HOUR -> Identifier["hour"]
     | KW_MINUTE -> Identifier["minute"]
     | KW_SECOND -> Identifier["second"]
@@ -475,7 +476,7 @@ precedenceEqualOperator
 
 subQueryExpression 
     : 
-    LPAREN! selectStatement[true] RPAREN!     
+    LPAREN! selectStatement RPAREN!
     ;
 
 precedenceEqualExpression
@@ -696,7 +697,7 @@ nonReserved
     | KW_CASCADE | KW_CHANGE | KW_CLUSTER | KW_CLUSTERED | KW_CLUSTERSTATUS | KW_COLLECTION | KW_COLUMNS
     | KW_COMMENT | KW_COMPACT | KW_COMPACTIONS | KW_COMPUTE | KW_CONCATENATE | KW_CONTINUE | KW_DATA | KW_DAY
     | KW_DATABASES | KW_DATETIME | KW_DBPROPERTIES | KW_DEFERRED | KW_DEFINED | KW_DELIMITED | KW_DEPENDENCY 
-    | KW_DESC | KW_DIRECTORIES | KW_DIRECTORY | KW_DISABLE | KW_DISTRIBUTE | KW_ELEM_TYPE 
+    | KW_DESC | KW_DIRECTORIES | KW_DIRECTORY | KW_DISABLE | KW_DISTRIBUTE | KW_DOW | KW_ELEM_TYPE 
     | KW_ENABLE | KW_ESCAPED | KW_EXCLUSIVE | KW_EXPLAIN | KW_EXPORT | KW_FIELDS | KW_FILE | KW_FILEFORMAT
     | KW_FIRST | KW_FORMAT | KW_FORMATTED | KW_FUNCTIONS | KW_HOLD_DDLTIME | KW_HOUR | KW_IDXPROPERTIES | KW_IGNORE
     | KW_INDEX | KW_INDEXES | KW_INPATH | KW_INPUTDRIVER | KW_INPUTFORMAT | KW_ITEMS | KW_JAR

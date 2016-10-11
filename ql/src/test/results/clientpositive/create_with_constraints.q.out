@@ -259,7 +259,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table1      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	a                   	
+Column Names:       	a                   	 
 PREHOOK: query: DESCRIBE FORMATTED table2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table2
@@ -301,7 +301,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table2      	 
 Constraint Name:    	pk1                 	 
-Column Names:       	a                   	
+Column Names:       	a                   	 
 PREHOOK: query: DESCRIBE FORMATTED table3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table3
@@ -342,7 +342,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table3      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	x                   	
+Column Names:       	x                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	default.table3      	 
@@ -390,7 +390,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table4      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	x                   	
+Column Names:       	x                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	default.table4      	 
@@ -440,7 +440,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table5      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	x                   	
+Column Names:       	x                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	default.table5      	 
@@ -488,7 +488,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table6      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	x                   	
+Column Names:       	x                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	default.table6      	 
@@ -539,7 +539,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table7      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	a                   	
+Column Names:       	a                   	 
 PREHOOK: query: DESCRIBE FORMATTED table8
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table8
@@ -581,7 +581,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table8      	 
 Constraint Name:    	pk8                 	 
-Column Names:       	a                   	
+Column Names:       	a                   	 
 PREHOOK: query: DESCRIBE FORMATTED table9
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table9
@@ -665,7 +665,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table10     	 
 Constraint Name:    	pk10                	 
-Column Names:       	a                   	
+Column Names:       	a                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	default.table10     	 
@@ -715,7 +715,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table11     	 
 Constraint Name:    	pk11                	 
-Column Names:       	a                   	
+Column Names:       	a                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	default.table11     	 
@@ -844,7 +844,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table3      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	x                   	
+Column Names:       	x                   	 
 PREHOOK: query: DESCRIBE FORMATTED table6
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table6
@@ -886,7 +886,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table6      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	x                   	
+Column Names:       	x                   	 
 PREHOOK: query: ALTER TABLE table2 ADD CONSTRAINT pkt2 primary key (a) disable novalidate
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: ALTER TABLE table2 ADD CONSTRAINT pkt2 primary key (a) disable novalidate
@@ -940,7 +940,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table2      	 
 Constraint Name:    	pkt2                	 
-Column Names:       	a                   	
+Column Names:       	a                   	 
 PREHOOK: query: DESCRIBE FORMATTED table3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table3
@@ -981,7 +981,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table3      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	x                   	
+Column Names:       	x                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	default.table3      	 
@@ -1029,7 +1029,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	default.table6      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	x                   	
+Column Names:       	x                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	default.table6      	 
@@ -1117,7 +1117,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	dbconstraint.table2 	 
 Constraint Name:    	pk1                 	 
-Column Names:       	a                   	
+Column Names:       	a                   	 
 PREHOOK: query: ALTER TABLE dbconstraint.table2 DROP CONSTRAINT pk1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
 POSTHOOK: query: ALTER TABLE dbconstraint.table2 DROP CONSTRAINT pk1
@@ -1212,7 +1212,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	dbconstraint.table2 	 
 Constraint Name:    	pk1                 	 
-Column Names:       	a                   	
+Column Names:       	a                   	 
 PREHOOK: query: ALTER TABLE dbconstraint.table2  ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1(a)  DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: ALTER TABLE dbconstraint.table2  ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1(a)  DISABLE NOVALIDATE
@@ -1258,7 +1258,7 @@ Storage Desc Params:
 # Primary Key	 	 
 Table:              	dbconstraint.table2 	 
 Constraint Name:    	pk1                 	 
-Column Names:       	a                   	
+Column Names:       	a                   	 
 	 	 
 # Foreign Keys	 	 
 Table:              	dbconstraint.table2 	 

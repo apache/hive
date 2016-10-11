@@ -42,6 +42,22 @@ POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@acid2
 POSTHOOK: Lineage: acid2.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: acid2.value SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: alter table acid2 update statistics set('numRows'='210', 'rawDataSize'='840')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@acid2
+PREHOOK: Output: default@acid2
+POSTHOOK: query: alter table acid2 update statistics set('numRows'='210', 'rawDataSize'='840')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@acid2
+POSTHOOK: Output: default@acid2
+PREHOOK: query: alter table acid1 update statistics set('numRows'='316', 'rawDataSize'='1265')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@acid1
+PREHOOK: Output: default@acid1
+POSTHOOK: query: alter table acid1 update statistics set('numRows'='316', 'rawDataSize'='1265')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@acid1
+POSTHOOK: Output: default@acid1
 PREHOOK: query: explain
 select count(*) from acid1 join acid2 on acid1.key = acid2.key
 PREHOOK: type: QUERY
@@ -64,14 +80,14 @@ STAGE PLANS:
         $hdt$_1:acid2 
           TableScan
             alias: acid2
-            Statistics: Num rows: 209 Data size: 839 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 209 Data size: 839 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 209 Data size: 839 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -82,21 +98,21 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid1
-            Statistics: Num rows: 312 Data size: 1251 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 316 Data size: 1265 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 312 Data size: 1251 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 316 Data size: 1265 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 312 Data size: 1251 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 316 Data size: 1265 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
                   keys:
                     0 _col0 (type: int)
                     1 _col0 (type: int)
-                  Statistics: Num rows: 343 Data size: 1376 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 347 Data size: 1391 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash

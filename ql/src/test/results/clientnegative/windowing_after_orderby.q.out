@@ -1,0 +1,9 @@
+PREHOOK: query: create table empsalary (depname varchar(10), salary int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@empsalary
+POSTHOOK: query: create table empsalary (depname varchar(10), salary int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@empsalary
+FAILED: ParseException line 6:2 missing EOF at 'WINDOW' near 's'
