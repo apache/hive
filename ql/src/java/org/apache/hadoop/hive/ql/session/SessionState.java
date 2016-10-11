@@ -144,6 +144,10 @@ public class SessionState {
    */
   private boolean isUsingThriftJDBCBinarySerDe = false;
 
+  /**
+   * The flag to indicate if the session already started so we can skip the init
+   */
+  private boolean isStarted = false;
   /*
    * HiveHistory Object
    */
@@ -547,8 +551,13 @@ public class SessionState {
     startSs.tezSessionState.endOpen();
   }
 
-  private static void start(SessionState startSs, boolean isAsync, LogHelper console) {
+  synchronized private static void start(SessionState startSs, boolean isAsync, LogHelper console) {
     setCurrentSessionState(startSs);
+
+    if (startSs.isStarted) {
+      return;
+    }
+    startSs.isStarted = true;
 
     if (startSs.hiveHist == null){
       if (startSs.getConf().getBoolVar(HiveConf.ConfVars.HIVE_SESSION_HISTORY_ENABLED)) {
