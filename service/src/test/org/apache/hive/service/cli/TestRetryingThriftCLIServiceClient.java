@@ -97,7 +97,7 @@ public class TestRetryingThriftCLIServiceClient {
       ICLIService cliService =
         (ICLIService) Proxy.newProxyInstance(RetryingThriftCLIServiceClientTest.class.getClassLoader(),
           CLIServiceClient.class.getInterfaces(), handlerInst);
-      return new CLIServiceClientWrapper(cliService, tTransport);
+      return new CLIServiceClientWrapper(cliService, tTransport, conf);
     }
 
     @Override
