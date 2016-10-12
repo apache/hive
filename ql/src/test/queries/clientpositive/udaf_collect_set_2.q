@@ -1,5 +1,3 @@
-set hive.support.sql11.reserved.keywords=false;
-
 DESCRIBE FUNCTION collect_set;
 DESCRIBE FUNCTION EXTENDED collect_set;
 
@@ -15,13 +13,13 @@ FIELDS TERMINATED BY ',';
 
 LOAD DATA LOCAL INPATH "../../data/files/customers.txt" INTO TABLE customers;
 
-CREATE TABLE orders (id int, cid int, date date, amount double)
+CREATE TABLE orders (id int, cid int, d date, amount double)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ',';
 
 LOAD DATA LOCAL INPATH "../../data/files/orders.txt" INTO TABLE orders;
 
-CREATE TABLE nested_orders (id int, cid int, date date, sub map<string,double>)
+CREATE TABLE nested_orders (id int, cid int, d date, sub map<string,double>)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
 COLLECTION ITEMS TERMINATED BY '$'
@@ -33,35 +31,35 @@ LOAD DATA LOCAL INPATH "../../data/files/nested_orders.txt" INTO TABLE nested_or
 
 -- 1.1 when field is primitive
 
-SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.date, "amount", o.amount)))
+SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.d, "amount", o.amount)))
 FROM customers c
 INNER JOIN orders o
 ON (c.id = o.cid) GROUP BY c.id;
 
-SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.date, "amount", o.amount)))
+SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.d, "amount", o.amount)))
 FROM customers c
 INNER JOIN orders o
 ON (c.id = o.cid) GROUP BY c.id;
 
 -- cast decimal
 
-SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.date, "amount", cast(o.amount as decimal(10,1)))))
+SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.d, "amount", cast(o.amount as decimal(10,1)))))
 FROM customers c
 INNER JOIN orders o
 ON (c.id = o.cid) GROUP BY c.id;
 
-SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.date, "amount", cast(o.amount as decimal(10,1)))))
+SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.d, "amount", cast(o.amount as decimal(10,1)))))
 FROM customers c
 INNER JOIN orders o
 ON (c.id = o.cid) GROUP BY c.id;
 
 
-SELECT c.id, sort_array(collect_set(struct(c.name, o.date, o.amount)))
+SELECT c.id, sort_array(collect_set(struct(c.name, o.d, o.amount)))
 FROM customers c
 INNER JOIN orders o
 ON (c.id = o.cid) GROUP BY c.id;
 
-SELECT c.id, sort_array(collect_list(struct(c.name, o.date, o.amount)))
+SELECT c.id, sort_array(collect_list(struct(c.name, o.d, o.amount)))
 FROM customers c
 INNER JOIN orders o
 ON (c.id = o.cid) GROUP BY c.id;
@@ -69,22 +67,22 @@ ON (c.id = o.cid) GROUP BY c.id;
 
 -- 1.2 when field is map
 
-SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.date, "sub", o.sub)))
+SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.d, "sub", o.sub)))
 FROM customers c
 INNER JOIN nested_orders o
 ON (c.id = o.cid) GROUP BY c.id;
 
-SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.date, "sub", o.sub)))
+SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.d, "sub", o.sub)))
 FROM customers c
 INNER JOIN nested_orders o
 ON (c.id = o.cid) GROUP BY c.id;
 
-SELECT c.id, sort_array(collect_set(struct(c.name, o.date, o.sub)))
+SELECT c.id, sort_array(collect_set(struct(c.name, o.d, o.sub)))
 FROM customers c
 INNER JOIN nested_orders o
 ON (c.id = o.cid) GROUP BY c.id;
 
-SELECT c.id, sort_array(collect_list(struct(c.name, o.date, o.sub)))
+SELECT c.id, sort_array(collect_list(struct(c.name, o.d, o.sub)))
 FROM customers c
 INNER JOIN nested_orders o
 ON (c.id = o.cid) GROUP BY c.id;
@@ -92,22 +90,22 @@ ON (c.id = o.cid) GROUP BY c.id;
 
 -- 1.3 when field is list
 
-SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.date, "sub", map_values(o.sub))))
+SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.d, "sub", map_values(o.sub))))
 FROM customers c
 INNER JOIN nested_orders o
 ON (c.id = o.cid) GROUP BY c.id;
 
-SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.date, "sub", map_values(o.sub))))
+SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.d, "sub", map_values(o.sub))))
 FROM customers c
 INNER JOIN nested_orders o
 ON (c.id = o.cid) GROUP BY c.id;
 
-SELECT c.id, sort_array(collect_set(struct(c.name, o.date, map_values(o.sub))))
+SELECT c.id, sort_array(collect_set(struct(c.name, o.d, map_values(o.sub))))
 FROM customers c
 INNER JOIN nested_orders o
 ON (c.id = o.cid) GROUP BY c.id;
 
-SELECT c.id, sort_array(collect_list(struct(c.name, o.date, map_values(o.sub))))
+SELECT c.id, sort_array(collect_list(struct(c.name, o.d, map_values(o.sub))))
 FROM customers c
 INNER JOIN nested_orders o
 ON (c.id = o.cid) GROUP BY c.id;
