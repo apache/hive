@@ -115,11 +115,15 @@ public class ExecutionPhase extends Phase {
           batchLogDir = new File(succeededLogDir, batch.getName());
         }
         JUnitReportParser parser = new JUnitReportParser(logger, batchLogDir);
-        executedTests.addAll(parser.getExecutedTests());
-        failedTests.addAll(parser.getFailedTests());
+        executedTests.addAll(parser.getAllExecutedTests());
+        failedTests.addAll(parser.getAllFailedTests());
         // if the TEST*.xml was not generated or was corrupt, let someone know
-        if (parser.getNumAttemptedTests() == 0) {
-          failedTests.add(batch.getName() + " - did not produce a TEST-*.xml file");
+        if (parser.getTestClassesWithReportAvailable().size() < batch.getTestClasses().size()) {
+          Set<String> expTestClasses = new HashSet<>(batch.getTestClasses());
+          expTestClasses.removeAll(parser.getTestClassesWithReportAvailable());
+          for (String testClass : expTestClasses) {
+            failedTests.add(testClass + " - did not produce a TEST-*.xml file");
+          }
         }
       }
     } finally {
