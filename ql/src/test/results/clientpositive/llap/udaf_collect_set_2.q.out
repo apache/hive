@@ -1,0 +1,742 @@
+PREHOOK: query: DESCRIBE FUNCTION collect_set
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION collect_set
+POSTHOOK: type: DESCFUNCTION
+collect_set(x) - Returns a set of objects with duplicate elements eliminated
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED collect_set
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED collect_set
+POSTHOOK: type: DESCFUNCTION
+collect_set(x) - Returns a set of objects with duplicate elements eliminated
+PREHOOK: query: DESCRIBE FUNCTION collect_list
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION collect_list
+POSTHOOK: type: DESCFUNCTION
+collect_list(x) - Returns a list of objects with duplicates
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED collect_list
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED collect_list
+POSTHOOK: type: DESCFUNCTION
+collect_list(x) - Returns a list of objects with duplicates
+PREHOOK: query: -- initialize tables
+
+CREATE TABLE customers (id int, name varchar(10), age int)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@customers
+POSTHOOK: query: -- initialize tables
+
+CREATE TABLE customers (id int, name varchar(10), age int)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@customers
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/customers.txt" INTO TABLE customers
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@customers
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/customers.txt" INTO TABLE customers
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@customers
+PREHOOK: query: CREATE TABLE orders (id int, cid int, date date, amount double)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orders
+POSTHOOK: query: CREATE TABLE orders (id int, cid int, date date, amount double)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orders
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/orders.txt" INTO TABLE orders
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@orders
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/orders.txt" INTO TABLE orders
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@orders
+PREHOOK: query: CREATE TABLE nested_orders (id int, cid int, date date, sub map<string,double>)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+COLLECTION ITEMS TERMINATED BY '$'
+MAP KEYS TERMINATED BY ':'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nested_orders
+POSTHOOK: query: CREATE TABLE nested_orders (id int, cid int, date date, sub map<string,double>)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+COLLECTION ITEMS TERMINATED BY '$'
+MAP KEYS TERMINATED BY ':'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@nested_orders
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/nested_orders.txt" INTO TABLE nested_orders
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@nested_orders
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/nested_orders.txt" INTO TABLE nested_orders
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@nested_orders
+PREHOOK: query: -- 1. test struct
+
+-- 1.1 when field is primitive
+
+SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.date, "amount", o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@orders
+#### A masked pattern was here ####
+POSTHOOK: query: -- 1. test struct
+
+-- 1.1 when field is primitive
+
+SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.date, "amount", o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@orders
+#### A masked pattern was here ####
+1	[{"name":"Chris","date":"2013-06-21","amount":21.45},{"name":"Chris","date":"2014-10-11","amount":29.36}]
+2	[{"name":"John","date":"2013-08-10","amount":126.57},{"name":"John","date":"2014-06-25","amount":3.65},{"name":"John","date":"2015-01-15","amount":27.45}]
+3	[{"name":"Martin","date":"2014-05-11","amount":30.5},{"name":"Martin","date":"2014-12-12","amount":210.03}]
+PREHOOK: query: SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.date, "amount", o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.date, "amount", o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@orders
+#### A masked pattern was here ####
+1	[{"name":"Chris","date":"2013-06-21","amount":21.45},{"name":"Chris","date":"2013-06-21","amount":21.45},{"name":"Chris","date":"2014-10-11","amount":29.36}]
+2	[{"name":"John","date":"2013-08-10","amount":126.57},{"name":"John","date":"2014-06-25","amount":3.65},{"name":"John","date":"2015-01-15","amount":27.45}]
+3	[{"name":"Martin","date":"2014-05-11","amount":30.5},{"name":"Martin","date":"2014-12-12","amount":210.03}]
+PREHOOK: query: -- cast decimal
+
+SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.date, "amount", cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@orders
+#### A masked pattern was here ####
+POSTHOOK: query: -- cast decimal
+
+SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.date, "amount", cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@orders
+#### A masked pattern was here ####
+1	[{"name":"Chris","date":"2013-06-21","amount":21.5},{"name":"Chris","date":"2014-10-11","amount":29.4}]
+2	[{"name":"John","date":"2013-08-10","amount":126.6},{"name":"John","date":"2014-06-25","amount":3.7},{"name":"John","date":"2015-01-15","amount":27.5}]
+3	[{"name":"Martin","date":"2014-05-11","amount":30.5},{"name":"Martin","date":"2014-12-12","amount":210}]
+PREHOOK: query: SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.date, "amount", cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.date, "amount", cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@orders
+#### A masked pattern was here ####
+1	[{"name":"Chris","date":"2013-06-21","amount":21.5},{"name":"Chris","date":"2013-06-21","amount":21.5},{"name":"Chris","date":"2014-10-11","amount":29.4}]
+2	[{"name":"John","date":"2013-08-10","amount":126.6},{"name":"John","date":"2014-06-25","amount":3.7},{"name":"John","date":"2015-01-15","amount":27.5}]
+3	[{"name":"Martin","date":"2014-05-11","amount":30.5},{"name":"Martin","date":"2014-12-12","amount":210}]
+PREHOOK: query: SELECT c.id, sort_array(collect_set(struct(c.name, o.date, o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_set(struct(c.name, o.date, o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@orders
+#### A masked pattern was here ####
+1	[{"col1":"Chris","col2":"2013-06-21","col3":21.45},{"col1":"Chris","col2":"2014-10-11","col3":29.36}]
+2	[{"col1":"John","col2":"2013-08-10","col3":126.57},{"col1":"John","col2":"2014-06-25","col3":3.65},{"col1":"John","col2":"2015-01-15","col3":27.45}]
+3	[{"col1":"Martin","col2":"2014-05-11","col3":30.5},{"col1":"Martin","col2":"2014-12-12","col3":210.03}]
+PREHOOK: query: SELECT c.id, sort_array(collect_list(struct(c.name, o.date, o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_list(struct(c.name, o.date, o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@orders
+#### A masked pattern was here ####
+1	[{"col1":"Chris","col2":"2013-06-21","col3":21.45},{"col1":"Chris","col2":"2013-06-21","col3":21.45},{"col1":"Chris","col2":"2014-10-11","col3":29.36}]
+2	[{"col1":"John","col2":"2013-08-10","col3":126.57},{"col1":"John","col2":"2014-06-25","col3":3.65},{"col1":"John","col2":"2015-01-15","col3":27.45}]
+3	[{"col1":"Martin","col2":"2014-05-11","col3":30.5},{"col1":"Martin","col2":"2014-12-12","col3":210.03}]
+PREHOOK: query: -- 1.2 when field is map
+
+SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.date, "sub", o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+POSTHOOK: query: -- 1.2 when field is map
+
+SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.date, "sub", o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+1	[{"name":"Chris","date":"2013-06-21","sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"name":"Chris","date":"2014-10-11","sub":{"\"grape\"":1200.5,"\"rice\"":29.36}}]
+2	[{"name":"John","date":"2013-08-10","sub":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"name":"John","date":"2014-06-25","sub":{"\"chocolate\"":3.65,"\"water\"":420.36}},{"name":"John","date":"2015-01-15","sub":{"\"milk\"":27.45}}]
+3	[{"name":"Martin","date":"2014-05-11","sub":{"\"apple\"":30.5,"\"orange\"":41.35}},{"name":"Martin","date":"2014-12-12","sub":{"\"icecream\"":210.03,"\"banana\"":100.56,"\"coffee":500.0}}]
+PREHOOK: query: SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.date, "sub", o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.date, "sub", o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+1	[{"name":"Chris","date":"2013-06-21","sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"name":"Chris","date":"2013-06-21","sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"name":"Chris","date":"2014-10-11","sub":{"\"grape\"":1200.5,"\"rice\"":29.36}}]
+2	[{"name":"John","date":"2013-08-10","sub":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"name":"John","date":"2014-06-25","sub":{"\"chocolate\"":3.65,"\"water\"":420.36}},{"name":"John","date":"2015-01-15","sub":{"\"milk\"":27.45}}]
+3	[{"name":"Martin","date":"2014-05-11","sub":{"\"apple\"":30.5,"\"orange\"":41.35}},{"name":"Martin","date":"2014-12-12","sub":{"\"icecream\"":210.03,"\"banana\"":100.56,"\"coffee":500.0}}]
+PREHOOK: query: SELECT c.id, sort_array(collect_set(struct(c.name, o.date, o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_set(struct(c.name, o.date, o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+1	[{"col1":"Chris","col2":"2013-06-21","col3":{"\"juice\"":21.45,"\"bread\"":15.2}},{"col1":"Chris","col2":"2014-10-11","col3":{"\"grape\"":1200.5,"\"rice\"":29.36}}]
+2	[{"col1":"John","col2":"2013-08-10","col3":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"col1":"John","col2":"2014-06-25","col3":{"\"chocolate\"":3.65,"\"water\"":420.36}},{"col1":"John","col2":"2015-01-15","col3":{"\"milk\"":27.45}}]
+3	[{"col1":"Martin","col2":"2014-05-11","col3":{"\"apple\"":30.5,"\"orange\"":41.35}},{"col1":"Martin","col2":"2014-12-12","col3":{"\"icecream\"":210.03,"\"banana\"":100.56,"\"coffee":500.0}}]
+PREHOOK: query: SELECT c.id, sort_array(collect_list(struct(c.name, o.date, o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_list(struct(c.name, o.date, o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+1	[{"col1":"Chris","col2":"2013-06-21","col3":{"\"juice\"":21.45,"\"bread\"":15.2}},{"col1":"Chris","col2":"2013-06-21","col3":{"\"juice\"":21.45,"\"bread\"":15.2}},{"col1":"Chris","col2":"2014-10-11","col3":{"\"grape\"":1200.5,"\"rice\"":29.36}}]
+2	[{"col1":"John","col2":"2013-08-10","col3":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"col1":"John","col2":"2014-06-25","col3":{"\"chocolate\"":3.65,"\"water\"":420.36}},{"col1":"John","col2":"2015-01-15","col3":{"\"milk\"":27.45}}]
+3	[{"col1":"Martin","col2":"2014-05-11","col3":{"\"apple\"":30.5,"\"orange\"":41.35}},{"col1":"Martin","col2":"2014-12-12","col3":{"\"icecream\"":210.03,"\"banana\"":100.56,"\"coffee":500.0}}]
+PREHOOK: query: -- 1.3 when field is list
+
+SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.date, "sub", map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+POSTHOOK: query: -- 1.3 when field is list
+
+SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.date, "sub", map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+1	[{"name":"Chris","date":"2013-06-21","sub":[21.45,15.2]},{"name":"Chris","date":"2014-10-11","sub":[1200.5,29.36]}]
+2	[{"name":"John","date":"2013-08-10","sub":[126.57,210.57]},{"name":"John","date":"2014-06-25","sub":[3.65,420.36]},{"name":"John","date":"2015-01-15","sub":[27.45]}]
+3	[{"name":"Martin","date":"2014-05-11","sub":[30.5,41.35]},{"name":"Martin","date":"2014-12-12","sub":[210.03,100.56,500.0]}]
+PREHOOK: query: SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.date, "sub", map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.date, "sub", map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+1	[{"name":"Chris","date":"2013-06-21","sub":[21.45,15.2]},{"name":"Chris","date":"2013-06-21","sub":[21.45,15.2]},{"name":"Chris","date":"2014-10-11","sub":[1200.5,29.36]}]
+2	[{"name":"John","date":"2013-08-10","sub":[126.57,210.57]},{"name":"John","date":"2014-06-25","sub":[3.65,420.36]},{"name":"John","date":"2015-01-15","sub":[27.45]}]
+3	[{"name":"Martin","date":"2014-05-11","sub":[30.5,41.35]},{"name":"Martin","date":"2014-12-12","sub":[210.03,100.56,500.0]}]
+PREHOOK: query: SELECT c.id, sort_array(collect_set(struct(c.name, o.date, map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_set(struct(c.name, o.date, map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+1	[{"col1":"Chris","col2":"2013-06-21","col3":[21.45,15.2]},{"col1":"Chris","col2":"2014-10-11","col3":[1200.5,29.36]}]
+2	[{"col1":"John","col2":"2013-08-10","col3":[126.57,210.57]},{"col1":"John","col2":"2014-06-25","col3":[3.65,420.36]},{"col1":"John","col2":"2015-01-15","col3":[27.45]}]
+3	[{"col1":"Martin","col2":"2014-05-11","col3":[30.5,41.35]},{"col1":"Martin","col2":"2014-12-12","col3":[210.03,100.56,500.0]}]
+PREHOOK: query: SELECT c.id, sort_array(collect_list(struct(c.name, o.date, map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_list(struct(c.name, o.date, map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+1	[{"col1":"Chris","col2":"2013-06-21","col3":[21.45,15.2]},{"col1":"Chris","col2":"2013-06-21","col3":[21.45,15.2]},{"col1":"Chris","col2":"2014-10-11","col3":[1200.5,29.36]}]
+2	[{"col1":"John","col2":"2013-08-10","col3":[126.57,210.57]},{"col1":"John","col2":"2014-06-25","col3":[3.65,420.36]},{"col1":"John","col2":"2015-01-15","col3":[27.45]}]
+3	[{"col1":"Martin","col2":"2014-05-11","col3":[30.5,41.35]},{"col1":"Martin","col2":"2014-12-12","col3":[210.03,100.56,500.0]}]
+PREHOOK: query: -- 2. test array
+
+-- 2.1 when field is primitive
+
+SELECT c.id, sort_array(collect_set(array(o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@orders
+#### A masked pattern was here ####
+POSTHOOK: query: -- 2. test array
+
+-- 2.1 when field is primitive
+
+SELECT c.id, sort_array(collect_set(array(o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@orders
+#### A masked pattern was here ####
+1	[[21.45],[29.36]]
+2	[[3.65],[27.45],[126.57]]
+3	[[30.5],[210.03]]
+PREHOOK: query: SELECT c.id, sort_array(collect_list(array(o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_list(array(o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@orders
+#### A masked pattern was here ####
+1	[[21.45],[21.45],[29.36]]
+2	[[3.65],[27.45],[126.57]]
+3	[[30.5],[210.03]]
+PREHOOK: query: -- cast decimal
+
+SELECT c.id, sort_array(collect_set(array(cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@orders
+#### A masked pattern was here ####
+POSTHOOK: query: -- cast decimal
+
+SELECT c.id, sort_array(collect_set(array(cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@orders
+#### A masked pattern was here ####
+1	[[21.5],[29.4]]
+2	[[3.7],[27.5],[126.6]]
+3	[[30.5],[210]]
+PREHOOK: query: SELECT c.id, sort_array(collect_list(array(cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_list(array(cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@orders
+#### A masked pattern was here ####
+1	[[21.5],[21.5],[29.4]]
+2	[[3.7],[27.5],[126.6]]
+3	[[30.5],[210]]
+PREHOOK: query: -- 2.2 when field is struct
+
+SELECT c.id, sort_array(collect_set(array(o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+POSTHOOK: query: -- 2.2 when field is struct
+
+SELECT c.id, sort_array(collect_set(array(o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+1	[[{"\"juice\"":21.45,"\"bread\"":15.2}],[{"\"grape\"":1200.5,"\"rice\"":29.36}]]
+2	[[{"\"milk\"":27.45}],[{"\"yogurt\"":126.57,"\"beef\"":210.57}],[{"\"chocolate\"":3.65,"\"water\"":420.36}]]
+3	[[{"\"apple\"":30.5,"\"orange\"":41.35}],[{"\"icecream\"":210.03,"\"banana\"":100.56,"\"coffee":500.0}]]
+PREHOOK: query: SELECT c.id, sort_array(collect_list(array(o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_list(array(o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+1	[[{"\"juice\"":21.45,"\"bread\"":15.2}],[{"\"juice\"":21.45,"\"bread\"":15.2}],[{"\"grape\"":1200.5,"\"rice\"":29.36}]]
+2	[[{"\"milk\"":27.45}],[{"\"yogurt\"":126.57,"\"beef\"":210.57}],[{"\"chocolate\"":3.65,"\"water\"":420.36}]]
+3	[[{"\"apple\"":30.5,"\"orange\"":41.35}],[{"\"icecream\"":210.03,"\"banana\"":100.56,"\"coffee":500.0}]]
+PREHOOK: query: -- 2.3 when field is list
+
+SELECT c.id, sort_array(collect_set(array(map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+POSTHOOK: query: -- 2.3 when field is list
+
+SELECT c.id, sort_array(collect_set(array(map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+1	[[[21.45,15.2]],[[1200.5,29.36]]]
+2	[[[3.65,420.36]],[[27.45]],[[126.57,210.57]]]
+3	[[[30.5,41.35]],[[210.03,100.56,500.0]]]
+PREHOOK: query: SELECT c.id, sort_array(collect_list(array(map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_list(array(map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+1	[[[21.45,15.2]],[[21.45,15.2]],[[1200.5,29.36]]]
+2	[[[3.65,420.36]],[[27.45]],[[126.57,210.57]]]
+3	[[[30.5,41.35]],[[210.03,100.56,500.0]]]
+PREHOOK: query: -- 3. test map
+
+-- 3.1 when field is primitive
+
+SELECT c.id, sort_array(collect_set(map("amount", o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@orders
+#### A masked pattern was here ####
+POSTHOOK: query: -- 3. test map
+
+-- 3.1 when field is primitive
+
+SELECT c.id, sort_array(collect_set(map("amount", o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@orders
+#### A masked pattern was here ####
+1	[{"amount":21.45},{"amount":29.36}]
+2	[{"amount":3.65},{"amount":27.45},{"amount":126.57}]
+3	[{"amount":30.5},{"amount":210.03}]
+PREHOOK: query: SELECT c.id, sort_array(collect_list(map("amount", o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_list(map("amount", o.amount)))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@orders
+#### A masked pattern was here ####
+1	[{"amount":21.45},{"amount":21.45},{"amount":29.36}]
+2	[{"amount":3.65},{"amount":27.45},{"amount":126.57}]
+3	[{"amount":30.5},{"amount":210.03}]
+PREHOOK: query: -- cast decimal
+
+SELECT c.id, sort_array(collect_set(map("amount", cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@orders
+#### A masked pattern was here ####
+POSTHOOK: query: -- cast decimal
+
+SELECT c.id, sort_array(collect_set(map("amount", cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@orders
+#### A masked pattern was here ####
+1	[{"amount":21.5},{"amount":29.4}]
+2	[{"amount":3.7},{"amount":27.5},{"amount":126.6}]
+3	[{"amount":30.5},{"amount":210}]
+PREHOOK: query: SELECT c.id, sort_array(collect_list(map("amount", cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_list(map("amount", cast(o.amount as decimal(10,1)))))
+FROM customers c
+INNER JOIN orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@orders
+#### A masked pattern was here ####
+1	[{"amount":21.5},{"amount":21.5},{"amount":29.4}]
+2	[{"amount":3.7},{"amount":27.5},{"amount":126.6}]
+3	[{"amount":30.5},{"amount":210}]
+PREHOOK: query: -- 3.2 when field is struct
+
+SELECT c.id, sort_array(collect_set(map("sub", o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+POSTHOOK: query: -- 3.2 when field is struct
+
+SELECT c.id, sort_array(collect_set(map("sub", o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+1	[{"sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"sub":{"\"grape\"":1200.5,"\"rice\"":29.36}}]
+2	[{"sub":{"\"milk\"":27.45}},{"sub":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"sub":{"\"chocolate\"":3.65,"\"water\"":420.36}}]
+3	[{"sub":{"\"apple\"":30.5,"\"orange\"":41.35}},{"sub":{"\"icecream\"":210.03,"\"banana\"":100.56,"\"coffee":500.0}}]
+PREHOOK: query: SELECT c.id, sort_array(collect_list(map("sub", o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_list(map("sub", o.sub)))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+1	[{"sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"sub":{"\"grape\"":1200.5,"\"rice\"":29.36}}]
+2	[{"sub":{"\"milk\"":27.45}},{"sub":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"sub":{"\"chocolate\"":3.65,"\"water\"":420.36}}]
+3	[{"sub":{"\"apple\"":30.5,"\"orange\"":41.35}},{"sub":{"\"icecream\"":210.03,"\"banana\"":100.56,"\"coffee":500.0}}]
+PREHOOK: query: -- 3.3 when field is list
+
+SELECT c.id, sort_array(collect_set(map("sub", map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+POSTHOOK: query: -- 3.3 when field is list
+
+SELECT c.id, sort_array(collect_set(map("sub", map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+1	[{"sub":[21.45,15.2]},{"sub":[1200.5,29.36]}]
+2	[{"sub":[3.65,420.36]},{"sub":[27.45]},{"sub":[126.57,210.57]}]
+3	[{"sub":[30.5,41.35]},{"sub":[210.03,100.56,500.0]}]
+PREHOOK: query: SELECT c.id, sort_array(collect_list(map("sub", map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customers
+PREHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c.id, sort_array(collect_list(map("sub", map_values(o.sub))))
+FROM customers c
+INNER JOIN nested_orders o
+ON (c.id = o.cid) GROUP BY c.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customers
+POSTHOOK: Input: default@nested_orders
+#### A masked pattern was here ####
+1	[{"sub":[21.45,15.2]},{"sub":[21.45,15.2]},{"sub":[1200.5,29.36]}]
+2	[{"sub":[3.65,420.36]},{"sub":[27.45]},{"sub":[126.57,210.57]}]
+3	[{"sub":[30.5,41.35]},{"sub":[210.03,100.56,500.0]}]
+PREHOOK: query: -- clean up
+
+DROP TABLE customer
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- clean up
+
+DROP TABLE customer
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE orders
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orders
+PREHOOK: Output: default@orders
+POSTHOOK: query: DROP TABLE orders
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orders
+POSTHOOK: Output: default@orders
+PREHOOK: query: DROP TABLE nested_orders
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@nested_orders
+PREHOOK: Output: default@nested_orders
+POSTHOOK: query: DROP TABLE nested_orders
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@nested_orders
+POSTHOOK: Output: default@nested_orders
