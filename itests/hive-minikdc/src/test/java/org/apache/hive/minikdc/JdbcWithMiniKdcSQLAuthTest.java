@@ -97,6 +97,8 @@ public abstract class JdbcWithMiniKdcSQLAuthTest {
 
       Statement stmt = hs2Conn.createStatement();
 
+      stmt.execute("drop table if exists " + tableName1);
+      stmt.execute("drop table if exists " + tableName2);
       // create tables
       stmt.execute("create table " + tableName1 + "(i int) ");
       stmt.execute("create table " + tableName2 + "(i int) ");
