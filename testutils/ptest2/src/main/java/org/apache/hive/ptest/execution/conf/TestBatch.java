@@ -18,6 +18,7 @@
  */
 package org.apache.hive.ptest.execution.conf;
 
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class TestBatch {
@@ -26,12 +27,13 @@ public abstract class TestBatch {
     this.batchId = BATCH_ID_GEN.getAndIncrement();
   }
 
+  public final int getBatchId() {
+    return batchId;
+  }
+
   private final int batchId;
 
   public abstract String getTestArguments();
-
-  // TODO Get rid of this.
-  public abstract String getTestClass();
 
   public abstract String getName();
 
@@ -41,8 +43,7 @@ public abstract class TestBatch {
 
   public abstract int getNumTestsInBatch();
 
-  public final int getBatchId() {
-    return batchId;
-  }
+  /* Comma separated list of classes in a batch */
+  public abstract Collection<String> getTestClasses();
 
 }

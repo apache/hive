@@ -240,7 +240,6 @@ class HostExecutor {
     Map<String, String> templateVariables = Maps.newHashMap(mTemplateDefaults);
     templateVariables.put("instanceName", drone.getInstanceName());
     templateVariables.put("batchName", batch.getName());
-    templateVariables.put("testClass", batch.getTestClass());
     templateVariables.put("testArguments", batch.getTestArguments());
     templateVariables.put("localDir", drone.getLocalDirectory());
     templateVariables.put("logDir", drone.getLocalLogDirectory());
