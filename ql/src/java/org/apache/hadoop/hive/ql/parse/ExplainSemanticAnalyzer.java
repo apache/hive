@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
@@ -103,11 +104,15 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         // runCtx and ctx share the configuration
         runCtx.setExplainConfig(config);
         Driver driver = new Driver(conf, runCtx);
-        driver.run(query);
+        CommandProcessorResponse ret = driver.run(query);
+        if(ret.getResponseCode() == 0) {
           // Note that we need to call getResults for simple fetch optimization.
           // However, we need to skip all the results.
           while (driver.getResults(new ArrayList<String>())) {
           }
+        } else {
+          throw new SemanticException(ret.getErrorMessage(), ret.getException());
+        }
         config.setOpIdToRuntimeNumRows(aggregateStats(config.getExplainRootPath()));
       } catch (IOException e1) {
         throw new SemanticException(e1);
