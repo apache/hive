@@ -144,7 +144,8 @@ public class PTest {
       @Override
       public HostExecutor build(Host host) {
         return new HostExecutor(host, executionContext.getPrivateKey(), mExecutor, sshCommandExecutor,
-            rsyncCommandExecutor, templateDefaults, scratchDir, succeededLogDir, failedLogDir, 10, logger);
+            rsyncCommandExecutor, templateDefaults, scratchDir, succeededLogDir, failedLogDir, 10,
+            configuration.shouldFetchLogsForSuccessfulTests(), logger);
       }
 
     };

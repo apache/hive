@@ -91,18 +91,19 @@ echo $pid >> batch.pid
 wait $pid
 ret=$?
 date +"%Y-%m-%d %T.%3N"
-find ./ -type f -name hive.log -o -name spark.log -o -name derby.log | \
-  xargs -I {} sh -c 'f=$(basename {}); test -f /some/log/dir/$f && f=$f-$(uuidgen); mv {} /some/log/dir/$f'
+mkdir /some/log/dir/logs
 find ./ -type f -name 'TEST-*.xml' | \
-  xargs -I {} sh -c 'f=TEST-batch-1-$(basename {}); test -f /some/log/dir/$f && f=$f-$(uuidgen); mv {} /some/log/dir/$f'
+xargs -I {} sh -c 'f=TEST-batch-1-$(basename {}); test -f /some/log/dir/$f && f=$f-$(uuidgen); mv {} /some/log/dir/$f'
+find ./ -type f -name hive.log -o -name spark.log -o -name derby.log | \
+  xargs -I {} sh -c 'f=$(basename {}); test -f /some/log/dir/logs/$f && f=$f-$(uuidgen); mv {} /some/log/dir/logs/$f'
 find ./ -path "*/spark/work" | \
-  xargs -I {} sh -c 'mv {} /some/log/dir/spark-log'
+  xargs -I {} sh -c 'mv {} /some/log/dir/logs/spark-log'
 find ./ -type f -name 'syslog*' | \
-  xargs -I {} sh -c 'mkdir -p /some/log/dir/syslogs; mv {} /some/log/dir/syslogs'
+  xargs -I {} sh -c 'mkdir -p /some/log/dir/logs/syslogs; mv {} /some/log/dir/logs/syslogs'
 date +"%Y-%m-%d %T.%3N"
 
 if [[ -f /some/log/dir/.log ]]
 then
-  mv /some/log/dir/.log /some/log/dir/dot.log
+  mv /some/log/dir/.log /some/log/dir/logs/dot.log
 fi
 exit $ret
