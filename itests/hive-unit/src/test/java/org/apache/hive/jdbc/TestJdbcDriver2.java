@@ -106,43 +106,16 @@ public class TestJdbcDriver2 {
   private static final String dataTypeTableComment = "Table with many column data types";
   private static final String externalTableName = "testjdbcdriverexttbl";
   private static final String externalTableComment = "An external table";
-
-  private final HiveConf conf;
-  public static String dataFileDir;
-  private final Path dataFilePath;
-  private final int dataFileRowCount;
-  private final Path dataTypeDataFilePath;
+  private static HiveConf conf;
+  private static String dataFileDir;
+  private static Path dataFilePath;
+  private static int dataFileRowCount;
+  private static Path dataTypeDataFilePath;
   // Creating a new connection is expensive, so we'll reuse this object
   private static Connection con;
   private static final float floatCompareDelta = 0.0001f;
 
   @Rule public ExpectedException thrown = ExpectedException.none();
-
-  @SuppressWarnings("deprecation")
-  public TestJdbcDriver2() throws SQLException, ClassNotFoundException {
-    conf = new HiveConf(TestJdbcDriver2.class);
-    dataFileDir = conf.get("test.data.files").replace('\\', '/')
-        .replace("c:", "");
-    dataFilePath = new Path(dataFileDir, "kv1.txt");
-    dataFileRowCount = 500;
-    dataTypeDataFilePath = new Path(dataFileDir, "datatypes.txt");
-    // Create test database and base tables once for all the test
-    Class.forName(driverName);
-    con = getConnection(defaultDbName + ";create=true");
-    System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
-    System.setProperty(ConfVars.HIVEMAPREDMODE.varname, "nonstrict");
-    System.setProperty(ConfVars.HIVE_AUTHORIZATION_MANAGER.varname,
-        "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
-    System.setProperty(ConfVars.HIVE_SERVER2_PARALLEL_OPS_IN_SESSION.varname, "false");
-    Statement stmt = con.createStatement();
-    assertNotNull("Statement is null", stmt);
-    stmt.execute("set hive.support.concurrency = false");
-    stmt.execute("drop database if exists " + testDbName + " cascade");
-    stmt.execute("create database " + testDbName);
-    stmt.execute("use " + testDbName);
-    createTestTables(stmt, testDbName);
-    stmt.close();
-  }
 
   private static Connection getConnection(String postfix) throws SQLException {
     Connection con1;
@@ -152,7 +125,7 @@ public class TestJdbcDriver2 {
     return con1;
   }
 
-  private void createTestTables(Statement stmt, String testDbName) throws SQLException{
+  private static void createTestTables(Statement stmt, String testDbName) throws SQLException{
     // We've already dropped testDbName in constructor & we also drop it in tearDownAfterClass
     String prefix = testDbName + ".";
     String tableName = prefix + TestJdbcDriver2.tableName;
@@ -202,8 +175,31 @@ public class TestJdbcDriver2 {
     stmt.close();
   }
 
+  @SuppressWarnings("deprecation")
   @BeforeClass
   public static void setUpBeforeClass() throws SQLException, ClassNotFoundException {
+    conf = new HiveConf(TestJdbcDriver2.class);
+    dataFileDir = conf.get("test.data.files").replace('\\', '/')
+        .replace("c:", "");
+    dataFilePath = new Path(dataFileDir, "kv1.txt");
+    dataFileRowCount = 500;
+    dataTypeDataFilePath = new Path(dataFileDir, "datatypes.txt");
+    // Create test database and base tables once for all the test
+    Class.forName(driverName);
+    System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
+    System.setProperty(ConfVars.HIVEMAPREDMODE.varname, "nonstrict");
+    System.setProperty(ConfVars.HIVE_AUTHORIZATION_MANAGER.varname,
+        "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
+    System.setProperty(ConfVars.HIVE_SERVER2_PARALLEL_OPS_IN_SESSION.varname, "false");
+    con = getConnection(defaultDbName + ";create=true");
+    Statement stmt = con.createStatement();
+    assertNotNull("Statement is null", stmt);
+    stmt.execute("set hive.support.concurrency = false");
+    stmt.execute("drop database if exists " + testDbName + " cascade");
+    stmt.execute("create database " + testDbName);
+    stmt.execute("use " + testDbName);
+    createTestTables(stmt, testDbName);
+    stmt.close();
   }
 
   @AfterClass
@@ -214,14 +210,6 @@ public class TestJdbcDriver2 {
     stmt.execute("drop database if exists " + testDbName + " cascade");
     stmt.close();
     con.close();
-  }
-
-  @Before
-  public void setUp() throws Exception {
-  }
-
-  @After
-  public void tearDown() throws Exception {
   }
 
   @Test
@@ -267,6 +255,10 @@ public class TestJdbcDriver2 {
   public void testSerializedExecution() throws Exception {
     HiveStatement stmt1 = (HiveStatement) con.createStatement();
     HiveStatement stmt2 = (HiveStatement) con.createStatement();
+    stmt1.execute("SET hive.driver.parallel.compilation=false");
+    stmt1.execute("SET hive.server2.async.exec.async.compile=false");
+    stmt2.execute("SET hive.driver.parallel.compilation=false");
+    stmt2.execute("SET hive.server2.async.exec.async.compile=false");
     stmt1.execute("create temporary function sleepMsUDF as '" + SleepMsUDF.class.getName() + "'");
     stmt1.execute("create table test_ser_1(i int)");
     stmt1.executeAsync("insert into test_ser_1 select sleepMsUDF(under_col, 500) from "
