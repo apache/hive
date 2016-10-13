@@ -1887,8 +1887,9 @@ window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-Manufacturer#1	almond antique burnished rose metallic	2	42
-Manufacturer#1	almond antique chartreuse lavender yellow	34	70
+Manufacturer#1	almond antique burnished rose metallic	2	38
+Manufacturer#1	almond antique burnished rose metallic	2	44
+Manufacturer#1	almond antique chartreuse lavender yellow	34	72
 Manufacturer#1	almond antique salmon chartreuse burlywood	6	112
 Manufacturer#1	almond aquamarine burnished black steel	28	110
 Manufacturer#1	almond aquamarine pink moccasin thistle	42	76

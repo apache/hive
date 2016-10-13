@@ -362,6 +362,12 @@ window w1 as (distribute by p_mfgr sort by p_name range between 2 preceding and 
        w3 as (distribute by p_mfgr sort by p_name range between unbounded preceding and current row); 
 
 -- 35. testDistinctWithWindowing
+explain
+select DISTINCT p_mfgr, p_name, p_size,
+sum(p_size) over w1 as s
+from part
+window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and 2 following);
+
 select DISTINCT p_mfgr, p_name, p_size,
 sum(p_size) over w1 as s
 from part
