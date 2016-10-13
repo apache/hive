@@ -3844,24 +3844,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       List<ASTNode> result = new ArrayList<ASTNode>(selectExprs == null ? 0
           : selectExprs.getChildCount());
       if (selectExprs != null) {
-        HashMap<String, ASTNode> windowingExprs = parseInfo.getWindowingExprsForClause(dest);
-
         for (int i = 0; i < selectExprs.getChildCount(); ++i) {
           if (((ASTNode) selectExprs.getChild(i)).getToken().getType() == HiveParser.TOK_HINTLIST) {
             continue;
           }
           // table.column AS alias
           ASTNode grpbyExpr = (ASTNode) selectExprs.getChild(i).getChild(0);
-          /*
-           * If this is handled by Windowing then ignore it.
-           */
-          if (windowingExprs != null && windowingExprs.containsKey(grpbyExpr.toStringTree())) {
-            if (!isCBOExecuted()) {
-              throw new SemanticException("SELECT DISTINCT not allowed in the presence of windowing"
-                      + " functions when CBO is off");
-            }
-            continue;
-          }
           result.add(grpbyExpr);
         }
       }
@@ -9337,8 +9325,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             // Preserve operator before the GBY - we'll use it to resolve '*'
             Operator<?> gbySource = curr;
 
-            if (qbp.getAggregationExprsForClause(dest).size() != 0
-                || getGroupByForClause(qbp, dest).size() > 0) {
+            if ((qbp.getAggregationExprsForClause(dest).size() != 0
+                || getGroupByForClause(qbp, dest).size() > 0)
+                    && (qbp.getSelForClause(dest).getToken().getType() != HiveParser.TOK_SELECTDI
+                      || qbp.getWindowingExprsForClause(dest) == null)) {
               // multiple distincts is not supported with skew in data
               if (conf.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW) &&
                   qbp.getDistinctFuncExprsForClause(dest).size() > 1) {
@@ -9422,12 +9412,29 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       curr = genHavingPlan(dest, qb, curr, aliasToOpInfo);
     }
 
-
     if(queryProperties.hasWindowing() && qb.getWindowingSpec(dest) != null) {
       curr = genWindowingPlan(qb.getWindowingSpec(dest), curr);
+      // GBy for DISTINCT after windowing
+      if ((qbp.getAggregationExprsForClause(dest).size() != 0
+              || getGroupByForClause(qbp, dest).size() > 0)
+                  && qbp.getSelForClause(dest).getToken().getType() == HiveParser.TOK_SELECTDI
+                  && qbp.getWindowingExprsForClause(dest) != null) {
+        if (conf.getBoolVar(HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE)) {
+          if (!conf.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
+            curr = genGroupByPlanMapAggrNoSkew(dest, qb, curr);
+          } else {
+            curr = genGroupByPlanMapAggr2MR(dest, qb, curr);
+          }
+        } else if (conf.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
+          curr = genGroupByPlan2MR(dest, qb, curr);
+        } else {
+          curr = genGroupByPlan1MR(dest, qb, curr);
+        }
+      }
     }
 
     curr = genSelectPlan(dest, qb, curr, gbySource);
+
     Integer limit = qbp.getDestLimit(dest);
     Integer offset = (qbp.getDestLimitOffset(dest) == null) ? 0 : qbp.getDestLimitOffset(dest);
 
