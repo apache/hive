@@ -1,3 +1,5 @@
+set hive.fetch.task.conversion=none;
+
 create table s1(id smallint) stored as orc;
 
 insert into table s1 values (1000),(1001),(1002),(1003),(1000);

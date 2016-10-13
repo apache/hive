@@ -19,10 +19,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.ts EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: EXPLAIN
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT ts FROM test
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT ts FROM test
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
@@ -48,10 +48,10 @@ POSTHOOK: Input: default@test
 #### A masked pattern was here ####
 0001-01-01 00:00:00
 9999-12-31 23:59:59.999999999
-PREHOOK: query: EXPLAIN
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
@@ -87,10 +87,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test
 #### A masked pattern was here ####
 0001-01-01 00:00:00	9999-12-31 23:59:59.999999999	3652060 23:59:59.999999999
-PREHOOK: query: EXPLAIN
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT ts FROM test
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT ts FROM test
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
@@ -116,10 +116,10 @@ POSTHOOK: Input: default@test
 #### A masked pattern was here ####
 0001-01-01 00:00:00
 9999-12-31 23:59:59.999999999
-PREHOOK: query: EXPLAIN
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
 POSTHOOK: type: QUERY
 Plan optimized by CBO.

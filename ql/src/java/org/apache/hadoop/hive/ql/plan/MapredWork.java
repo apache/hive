@@ -24,14 +24,15 @@ import java.util.List;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
 
 /**
  * MapredWork.
  *
  */
-@Explain(displayName = "Map Reduce", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+@Explain(displayName = "Map Reduce", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
+    vectorization = Vectorization.SUMMARY_PATH)
 public class MapredWork extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
 
@@ -40,7 +41,8 @@ public class MapredWork extends AbstractOperatorDesc {
 
   private boolean finalMapRed;
 
-  @Explain(skipHeader = true, displayName = "Map", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(skipHeader = true, displayName = "Map", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
+      vectorization = Vectorization.SUMMARY_PATH)
   public MapWork getMapWork() {
     return mapWork;
   }
@@ -49,7 +51,8 @@ public class MapredWork extends AbstractOperatorDesc {
     this.mapWork = mapWork;
   }
 
-  @Explain(skipHeader = true, displayName = "Reduce", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(skipHeader = true, displayName = "Reduce", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
+      vectorization = Vectorization.SUMMARY_PATH)
   public ReduceWork getReduceWork() {
     return reduceWork;
   }

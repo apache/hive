@@ -130,6 +130,10 @@ public abstract class FuncLongToDecimal extends VectorExpression {
     this.inputColumn = inputColumn;
   }
 
+  public String vectorExpressionParameters() {
+    return "col " + inputColumn;
+  }
+
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();

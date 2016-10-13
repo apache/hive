@@ -83,6 +83,12 @@ public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
     }
 
     private VectorExpression inputExpression;
+
+    @Override
+    public VectorExpression inputExpression() {
+      return inputExpression;
+    }
+
     transient private LongWritable resultCount;
     transient private DoubleWritable resultSum;
     transient private DoubleWritable resultVariance;

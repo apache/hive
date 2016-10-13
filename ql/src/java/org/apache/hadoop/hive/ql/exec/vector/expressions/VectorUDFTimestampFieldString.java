@@ -177,6 +177,15 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
   }
 
   @Override
+  public String vectorExpressionParameters() {
+    if (fieldStart == -1) {
+      return "col " + colNum;
+    } else {
+      return "col " + colNum + ", fieldStart " + fieldStart + ", fieldLength " + fieldLength;
+    }
+  }
+
+  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)

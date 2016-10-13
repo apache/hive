@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.nio.charset.StandardCharsets;
+
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -130,6 +132,11 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
   @Override
   public String getOutputType() {
     return "String";
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "col " + arg1Column + ", val "+ new String(arg2Scalar, StandardCharsets.UTF_8) + ", val "+ new String(arg3Scalar, StandardCharsets.UTF_8);
   }
 
   @Override

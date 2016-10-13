@@ -1,5 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
+set hive.fetch.task.conversion=none;
+
 create table store(s_store_sk int, s_city string)
 stored as orc;
 insert overwrite table store
@@ -26,7 +28,7 @@ set hive.vectorized.execution.enabled=true;
 
 set hive.mapjoin.hybridgrace.hashtable=false;
 
-explain 
+explain vectorization 
 select store.s_city, ss_net_profit
 from store_sales
 JOIN store ON store_sales.ss_store_sk = store.s_store_sk

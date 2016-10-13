@@ -27,12 +27,27 @@ import org.apache.hadoop.fs.Path;
  */
 
 public class ExplainConfiguration {
+
+  public enum VectorizationDetailLevel {
+
+    SUMMARY(4), OPERATOR(3), EXPRESSION(2), DETAIL(1);
+
+    public final int rank;
+    VectorizationDetailLevel(int rank) {
+      this.rank = rank;
+    }
+  };
+
   private boolean extended = false;
   private boolean formatted = false;
   private boolean dependency = false;
   private boolean logical = false;
   private boolean authorize = false;
   private boolean userLevelExplain = false;
+  private boolean vectorization = false;
+  private boolean vectorizationOnly = false;
+  private VectorizationDetailLevel vectorizationDetailLevel = VectorizationDetailLevel.SUMMARY;
+
   private Path explainRootPath;
   private Map<String, Long> opIdToRuntimeNumRows;
 
@@ -96,6 +111,30 @@ public class ExplainConfiguration {
 
   public void setUserLevelExplain(boolean userLevelExplain) {
     this.userLevelExplain = userLevelExplain;
+  }
+
+  public boolean isVectorization() {
+    return vectorization;
+  }
+
+  public void setVectorization(boolean vectorization) {
+    this.vectorization = vectorization;
+  }
+
+  public boolean isVectorizationOnly() {
+    return vectorizationOnly;
+  }
+
+  public void setVectorizationOnly(boolean vectorizationOnly) {
+    this.vectorizationOnly = vectorizationOnly;
+  }
+
+  public VectorizationDetailLevel getVectorizationDetailLevel() {
+    return vectorizationDetailLevel;
+  }
+
+  public void setVectorizationDetailLevel(VectorizationDetailLevel vectorizationDetailLevel) {
+    this.vectorizationDetailLevel = vectorizationDetailLevel;
   }
 
   public Path getExplainRootPath() {

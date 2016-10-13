@@ -21,7 +21,7 @@ insert overwrite table alltypes_parquet
   
 SET hive.vectorized.execution.enabled=true;
   
-explain select * 
+explain vectorization select * 
   from alltypes_parquet
   where cint = 528534767 
   limit 10;
@@ -30,7 +30,7 @@ select *
   where cint = 528534767 
   limit 10;
 
-explain select ctinyint, 
+explain vectorization select ctinyint, 
   max(cint), 
   min(csmallint), 
   count(cstring1), 

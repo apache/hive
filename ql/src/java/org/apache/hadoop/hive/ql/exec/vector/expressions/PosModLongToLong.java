@@ -55,6 +55,11 @@ public class PosModLongToLong extends MathFuncLongToLong
   }
 
   @Override
+  public String vectorExpressionParameters() {
+    return "col " + colNum + ", divisor " + divisor;
+  }
+
+  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())
         .setMode(

@@ -62,14 +62,18 @@ POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create
 POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
 orc_create_staging.str	orc_create_staging.mp	orc_create_staging.lst	orc_create_staging.strct
 PREHOOK: query: -- Since complex types are not supported, this query should not vectorize.
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT * FROM orc_create_complex
 PREHOOK: type: QUERY
 POSTHOOK: query: -- Since complex types are not supported, this query should not vectorize.
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT * FROM orc_create_complex
 POSTHOOK: type: QUERY
 Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -92,6 +96,12 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          notVectorizedReason: Select expression for SELECT operator: Data type map<string,string> of Column[mp] not supported
+          vectorized: false
 
   Stage: Stage-0
     Fetch Operator
@@ -112,14 +122,18 @@ line1	{"key13":"value13","key11":"value11","key12":"value12"}	["a","b","c"]	{"a"
 line2	{"key21":"value21","key22":"value22","key23":"value23"}	["d","e","f"]	{"a":"three","b":"four"}
 line3	{"key31":"value31","key32":"value32","key33":"value33"}	["g","h","i"]	{"a":"five","b":"six"}
 PREHOOK: query: -- However, since this query is not referencing the complex fields, it should vectorize.
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT COUNT(*) FROM orc_create_complex
 PREHOOK: type: QUERY
 POSTHOOK: query: -- However, since this query is not referencing the complex fields, it should vectorize.
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT COUNT(*) FROM orc_create_complex
 POSTHOOK: type: QUERY
 Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -131,18 +145,48 @@ STAGE PLANS:
           TableScan
             alias: orc_create_complex
             Statistics: Num rows: 3 Data size: 3177 Basic stats: COMPLETE Column stats: COMPLETE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1, 2, 3]
             Select Operator
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumns: []
               Statistics: Num rows: 3 Data size: 3177 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountStar(*) -> bigint
+                    className: VectorGroupByOperator
+                    vectorOutput: true
+                    native: false
+                    projectedOutputColumns: [0]
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkOperator
+                      native: false
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Uniform Hash IS false
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -174,14 +218,18 @@ POSTHOOK: Input: default@orc_create_complex
 c0
 3
 PREHOOK: query: -- Also, since this query is not referencing the complex fields, it should vectorize.
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT str FROM orc_create_complex ORDER BY str
 PREHOOK: type: QUERY
 POSTHOOK: query: -- Also, since this query is not referencing the complex fields, it should vectorize.
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT str FROM orc_create_complex ORDER BY str
 POSTHOOK: type: QUERY
 Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -193,15 +241,39 @@ STAGE PLANS:
           TableScan
             alias: orc_create_complex
             Statistics: Num rows: 3 Data size: 3177 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1, 2, 3]
             Select Operator
               expressions: str (type: string)
               outputColumnNames: _col0
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumns: [0]
               Statistics: Num rows: 3 Data size: 3177 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string)
                 sort order: +
+                Reduce Sink Vectorization:
+                    className: VectorReduceSinkOperator
+                    native: false
+                    nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                    nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Uniform Hash IS false
                 Statistics: Num rows: 3 Data size: 3177 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)

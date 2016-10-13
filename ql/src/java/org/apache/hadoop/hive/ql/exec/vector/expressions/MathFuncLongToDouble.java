@@ -133,4 +133,9 @@ public abstract class MathFuncLongToDouble extends VectorExpression {
   public String getOutputType() {
     return "double";
   }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "col " + colNum;
+  }
 }

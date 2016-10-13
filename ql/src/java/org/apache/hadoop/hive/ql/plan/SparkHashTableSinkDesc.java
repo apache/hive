@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
+
 /**
  * Map Join operator Descriptor implementation.
  *
@@ -43,4 +46,26 @@ public class SparkHashTableSinkDesc extends HashTableSinkDesc {
   public void setTag(byte tag) {
     this.tag = tag;
   }
+
+  public class SparkHashTableSinkOperatorExplainVectorization extends OperatorExplainVectorization {
+
+    private final HashTableSinkDesc filterDesc;
+    private final VectorSparkHashTableSinkDesc vectorHashTableSinkDesc;
+
+    public SparkHashTableSinkOperatorExplainVectorization(HashTableSinkDesc filterDesc, VectorDesc vectorDesc) {
+      // Native vectorization supported.
+      super(vectorDesc, true);
+      this.filterDesc = filterDesc;
+      vectorHashTableSinkDesc = (VectorSparkHashTableSinkDesc) vectorDesc;
+    }
+  }
+
+  @Explain(vectorization = Vectorization.OPERATOR, displayName = "Spark Hash Table Sink Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public SparkHashTableSinkOperatorExplainVectorization getHashTableSinkVectorization() {
+    if (vectorDesc == null) {
+      return null;
+    }
+    return new SparkHashTableSinkOperatorExplainVectorization(this, vectorDesc);
+  }
+
 }

@@ -1,6 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
+set hive.fetch.task.conversion=none;
 
 create table web_sales_txt
 (
@@ -104,7 +105,7 @@ select ws_sold_date_sk, ws_sold_time_sk, ws_ship_date_sk, ws_item_sk,
 
 ------------------------------------------------------------------------------------------
 
-explain
+explain vectorization expression
 select count(distinct ws_order_number) from web_sales;
 
 select count(distinct ws_order_number) from web_sales;

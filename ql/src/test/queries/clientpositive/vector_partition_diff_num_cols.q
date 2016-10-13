@@ -1,7 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=minimal;
+set hive.fetch.task.conversion=none;
 
 create table inventory_txt
 (
@@ -27,7 +27,7 @@ partitioned by (par string) stored as orc;
 insert into table inventory_part_0 partition(par='1') select * from inventory_txt;
 insert into table inventory_part_0 partition(par='2') select * from inventory_txt;
 
-explain
+explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_0;
 
 select sum(inv_quantity_on_hand) from inventory_part_0;
@@ -47,7 +47,7 @@ alter table inventory_part_1 add columns (fifthcol string);
 
 insert into table inventory_part_1 partition(par='5cols') select *, '5th' as fifthcol from inventory_txt;
 
-explain
+explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_1;
 
 select sum(inv_quantity_on_hand) from inventory_part_1;
@@ -66,7 +66,7 @@ insert into table inventory_part_2a partition(par='1') select * from inventory_t
 insert into table inventory_part_2a partition(par='2') select * from inventory_txt;
 alter table inventory_part_2a partition (par='2') change inv_item_sk other_name int;
 
-explain
+explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_2a;
 
 create table inventory_part_2b(
@@ -80,7 +80,7 @@ insert into table inventory_part_2b partition(par1='1',par2=4) select * from inv
 insert into table inventory_part_2b partition(par1='2',par2=3) select * from inventory_txt;
 alter table inventory_part_2b partition (par1='2',par2=3) change inv_quantity_on_hand other_name int;
 
-explain
+explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_2b;
 
 -- Verify we do not vectorize when a partition column type is different.
@@ -97,5 +97,5 @@ insert into table inventory_part_3 partition(par='1') select * from inventory_tx
 insert into table inventory_part_3 partition(par='2') select * from inventory_txt;
 alter table inventory_part_3 partition (par='2') change inv_warehouse_sk inv_warehouse_sk bigint;
 
-explain
+explain vectorization expression
 select sum(inv_quantity_on_hand) from inventory_part_3;

@@ -93,14 +93,17 @@ public abstract class MapJoinKey {
     return true;
   }
 
-  public static boolean isSupportedField(String typeName) {
-    TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
-
+  public static boolean isSupportedField(TypeInfo typeInfo) {
     if (typeInfo.getCategory() != Category.PRIMITIVE) return false; // not supported
     PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
     PrimitiveCategory pc = primitiveTypeInfo.getPrimitiveCategory();
     if (!SUPPORTED_PRIMITIVES.contains(pc)) return false; // not supported
     return true;
+  }
+
+  public static boolean isSupportedField(String typeName) {
+    TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+    return isSupportedField(typeInfo);
   }
 
 

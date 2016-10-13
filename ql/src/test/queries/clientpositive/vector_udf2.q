@@ -7,7 +7,7 @@ create table varchar_udf_2 (c1 string, c2 string, c3 varchar(10), c4 varchar(20)
 insert overwrite table varchar_udf_2
   select key, value, key, value from src where key = '238' limit 1;
 
-explain
+explain vectorization expression
 select 
   c1 LIKE '%38%',
   c2 LIKE 'val_%',

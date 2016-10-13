@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.MathExpr;
 import org.apache.hadoop.hive.ql.exec.vector.*;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 public class CastTimestampToLong extends VectorExpression {
   private static final long serialVersionUID = 1L;
@@ -117,6 +115,11 @@ public class CastTimestampToLong extends VectorExpression {
 
   public void setOutputColumn(int outputColumn) {
     this.outputColumn = outputColumn;
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "col " + colNum;
   }
 
   @Override

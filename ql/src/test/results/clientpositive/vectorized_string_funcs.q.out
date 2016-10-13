@@ -1,6 +1,6 @@
 PREHOOK: query: -- Test string functions in vectorized mode to verify end-to-end functionality.
 
-explain 
+explain vectorization 
 select 
    substr(cstring1, 1, 2)
   ,substr(cstring1, 2)
@@ -24,7 +24,7 @@ and cstring1 like '%'
 PREHOOK: type: QUERY
 POSTHOOK: query: -- Test string functions in vectorized mode to verify end-to-end functionality.
 
-explain 
+explain vectorization 
 select 
    substr(cstring1, 1, 2)
   ,substr(cstring1, 2)
@@ -46,6 +46,10 @@ where cbigint % 237 = 0
 and length(substr(cstring1, 1, 2)) <= 2
 and cstring1 like '%'
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -72,6 +76,14 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
 
   Stage: Stage-0
     Fetch Operator

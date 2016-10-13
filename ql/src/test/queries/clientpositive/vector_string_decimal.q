@@ -13,7 +13,7 @@ insert overwrite table orc_decimal select id from staging;
 
 set hive.vectorized.execution.enabled=true;
 
-explain
+explain vectorization expression
 select * from orc_decimal where id in ('100000000', '200000000');
 select * from orc_decimal where id in ('100000000', '200000000');
 
