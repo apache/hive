@@ -1,0 +1,25 @@
+The folder structure details are:
+
+ * ./src/test/queries          - contains the queries to be tested on s3
+ * ./src/test/results          - contains the expected hive console output for the queries
+ * ./target/qfile-results      - Hive console output goes here
+ * ../../data/conf/blobstore/  - contains hive-site.xml
+
+To run blobstore integration tests:
+
+ 1. Create blobstore-conf.xml in ./src/test/resources/ with the blobstore credentials and test blobstore path (see blobstore-conf.xml.template).
+
+ 2. Run following command:
+   mvn test -Dtest=TestBlobstore[Negative]CliDriver
+
+To run a single integration test:
+
+ 2. Example command:
+   mvn test -Dtest=TestBlobstoreCliDriver -Dqfile=insert_into.q
+
+To run the tests on Tez:
+
+ 2. Example command:
+   mvn test -Dtest=TestBlobstoreCliDriver -Dqfile=insert_into.q -Dhive.execution.engine=tez -Dclustermode=tez_local
+
+Use ${hiveconf:test.blobstore.path.unique} in .q test files to access the blobstore path.
