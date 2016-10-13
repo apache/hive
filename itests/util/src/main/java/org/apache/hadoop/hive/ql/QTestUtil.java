@@ -130,7 +130,7 @@ public class QTestUtil {
   private static final String CRLF = System.getProperty("line.separator");
 
   private static final Log LOG = LogFactory.getLog("QTestUtil");
-  private static final String QTEST_LEAVE_FILES = "QTEST_LEAVE_FILES";
+  public static final String QTEST_LEAVE_FILES = "QTEST_LEAVE_FILES";
   private final static String defaultInitScript = "q_test_init.sql";
   private final static String defaultCleanupScript = "q_test_cleanup.sql";
   private final String[] testOnlyCommands = new String[]{"crypto"};
@@ -997,6 +997,17 @@ public class QTestUtil {
     return ss;
   }
 
+  public int executeAdhocCommand(String q) {
+    if (!q.contains(";")) {
+      return -1;
+    }
+
+    String q1 = q.split(";")[0] + ";";
+
+    LOG.debug("Executing " + q1);
+    return cliDriver.processLine(q1);
+  }
+
   public int executeOne(String tname) {
     String q = qMap.get(tname);
 
@@ -1527,7 +1538,9 @@ public class QTestUtil {
       ".*Input:.*/data/files/.*",
       ".*Output:.*/data/files/.*",
       ".*total number of created files now is.*",
-      ".*.hive-staging.*"
+      ".*.hive-staging.*",
+      "org\\.apache\\.hadoop\\.hive\\.metastore\\.model\\.MConstraint@([0-9]|[a-z])*",
+      "(s3.?|swift|wasb.?):\\/\\/[\\w\\.\\/-]*"
   });
 
   private final Pattern[] partialReservedPlanMask = toPattern(new String[] {
@@ -2204,7 +2217,7 @@ public class QTestUtil {
       int i = 0;
       while (!statements.isEmpty()) {
         // PreparedStatement extend Statement
-        Statement st = (Statement)statements.remove(i);
+        Statement st = statements.remove(i);
         try {
           if (st != null) {
             st.close();
