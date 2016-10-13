@@ -96,9 +96,9 @@ cd $workingDir/
         cd ..
       done
     #end
-    mvn -B clean install -DskipTests -Dmaven.repo.local=$workingDir/maven $mavenArgs $mavenBuildArgs
+    mvn -B clean install -DskipTests -T 4 -q -Dmaven.repo.local=$workingDir/maven $mavenArgs $mavenBuildArgs
     cd itests
-    mvn -B clean install -DskipTests -Dmaven.repo.local=$workingDir/maven $mavenArgs $mavenBuildArgs
+    mvn -B clean install -DskipTests -T 4 -q -Dmaven.repo.local=$workingDir/maven $mavenArgs $mavenBuildArgs
   elif [[ "${buildTool}" == "ant" ]]
   then
     ant $antArgs -Divy.default.ivy.user.dir=$workingDir/ivy \
