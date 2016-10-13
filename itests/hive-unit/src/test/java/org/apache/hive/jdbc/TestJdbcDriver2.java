@@ -2249,6 +2249,47 @@ public class TestJdbcDriver2 {
   }
 
   /**
+   *  Tests for query cancellation
+   */
+
+  @Test
+  public void testCancelQueryNotRun() throws Exception {
+    try (final Statement stmt = con.createStatement()){
+      System.out.println("Cancel the Statement without running query ...");
+      stmt.cancel();
+      System.out.println("Executing query: ");
+      stmt.executeQuery(" show databases");
+    }
+  }
+
+  @Test
+  public void testCancelQueryFinished() throws Exception {
+    try (final Statement stmt = con.createStatement()){
+      System.out.println("Executing query: ");
+      stmt.executeQuery(" show databases");
+      System.out.println("Cancel the Statement after running query ...");
+      stmt.cancel();
+    }
+  }
+
+  @Test
+  public void testCancelQueryErrored() throws Exception {
+    final Statement stmt = con.createStatement();
+    try {
+      System.out.println("Executing query: ");
+      stmt.executeQuery("list dbs");
+      fail("Expecting SQLException");
+    } catch (SQLException e) {
+      // No-op
+    }
+
+    // Cancel the query
+    System.out.println("Cancel the Statement ...");
+    stmt.cancel();
+    stmt.close();
+  }
+
+  /**
    * Test the cancellation of a query that is running.
    * We spawn 2 threads - one running the query and
    * the other attempting to cancel.
@@ -2289,6 +2330,62 @@ public class TestJdbcDriver2 {
           // Sleep for 100ms
           Thread.sleep(100);
           System.out.println("Cancelling query: ");
+          stmt.cancel();
+        } catch (Exception e) {
+          // No-op
+        }
+      }
+    });
+    tExecute.start();
+    tCancel.start();
+    tExecute.join();
+    tCancel.join();
+    stmt.close();
+  }
+
+  @Test
+  public void testQueryCancelTwice() throws Exception {
+    String udfName = SleepMsUDF.class.getName();
+    Statement stmt1 = con.createStatement();
+    stmt1.execute("create temporary function sleepMsUDF as '" + udfName + "'");
+    stmt1.close();
+    final Statement stmt = con.createStatement();
+    // Thread executing the query
+    Thread tExecute = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          System.out.println("Executing query: ");
+          // The test table has 500 rows, so total query time should be ~ 500*500ms
+          stmt.executeQuery("select sleepMsUDF(t1.under_col, 1) as u0, t1.under_col as u1, " +
+                  "t2.under_col as u2 from " + tableName +  " t1 join " + tableName +
+                  " t2 on t1.under_col = t2.under_col");
+          fail("Expecting SQLException");
+        } catch (SQLException e) {
+          // This thread should throw an exception
+          assertNotNull(e);
+          System.out.println(e.toString());
+        }
+      }
+    });
+    // Thread cancelling the query
+    Thread tCancel = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        // 1st Cancel
+        try {
+          // Sleep for 100ms
+          Thread.sleep(100);
+          System.out.println("Cancelling query: ");
+          stmt.cancel();
+        } catch (Exception e) {
+          // No-op
+        }
+        // 2nd cancel
+        try {
+          // Sleep for 5ms and cancel again
+          Thread.sleep(5);
+          System.out.println("Cancelling query again: ");
           stmt.cancel();
         } catch (Exception e) {
           // No-op
