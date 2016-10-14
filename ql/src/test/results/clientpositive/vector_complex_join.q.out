@@ -21,13 +21,17 @@ POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.a SIMPLE []
 POSTHOOK: Lineage: test.b EXPRESSION []
 c0	c1
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select * from alltypesorc join test where alltypesorc.cint=test.a
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select * from alltypesorc join test where alltypesorc.cint=test.a
 POSTHOOK: type: QUERY
 Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -85,6 +89,12 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          notVectorizedReason: Small Table expression for MAPJOIN operator: Data type map<int,string> of Column[_col1] not supported
+          vectorized: false
       Local Work:
         Map Reduce Local Work
 
@@ -142,13 +152,17 @@ POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@test2b
 POSTHOOK: Lineage: test2b.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select *  from test2b join test2a on test2b.a = test2a.a[1]
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select *  from test2b join test2a on test2b.a = test2a.a[1]
 POSTHOOK: type: QUERY
 Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -202,6 +216,12 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          notVectorizedReason: Predicate expression for FILTER operator: UDF GenericUDFIndex(Column[a], Const int 1) not supported
+          vectorized: false
       Local Work:
         Map Reduce Local Work
 

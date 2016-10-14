@@ -8,7 +8,7 @@ SET hive.vectorized.execution.enabled = true;
 -- Currently, vectorization is not supported in fetch task (hive.fetch.task.conversion=none)
 -- Test type casting in vectorized mode to verify end-to-end functionality.
 
-explain 
+explain vectorization 
 select 
 -- to boolean
    cast (ctinyint as boolean)

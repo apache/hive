@@ -82,20 +82,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@household_demographics
 POSTHOOK: Lineage: household_demographics.hd_demo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-PREHOOK: query: explain 
+PREHOOK: query: explain vectorization 
 select store.s_city, ss_net_profit
 from store_sales
 JOIN store ON store_sales.ss_store_sk = store.s_store_sk
 JOIN household_demographics ON store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
 limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain 
+POSTHOOK: query: explain vectorization 
 select store.s_city, ss_net_profit
 from store_sales
 JOIN store ON store_sales.ss_store_sk = store.s_store_sk
 JOIN household_demographics ON store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
 limit 100
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
   Stage-5 depends on stages: Stage-7
@@ -187,6 +191,14 @@ STAGE PLANS:
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
       Local Work:
         Map Reduce Local Work
 

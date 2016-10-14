@@ -18,6 +18,7 @@
  */
 package org.apache.hive.ptest.execution.conf;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -59,11 +60,6 @@ public class UnitTestBatch extends TestBatch {
     // Used for logDir, failure messages etc.
     return batchName;
   }
-  @Override
-  public String getTestClass() {
-    // Used to identify the module name. Return any.
-    return testList.get(0);
-  }
 
   @Override
   public String toString() {
@@ -84,6 +80,11 @@ public class UnitTestBatch extends TestBatch {
   @Override
   public int getNumTestsInBatch() {
     return testList.size();
+  }
+
+  @Override
+  public Collection<String> getTestClasses() {
+    return testList;
   }
 
   @Override

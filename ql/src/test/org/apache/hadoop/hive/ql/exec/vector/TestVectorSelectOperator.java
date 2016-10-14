@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.VectorSelectDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -51,6 +53,7 @@ public class TestVectorSelectOperator {
     public ValidatorVectorSelectOperator(CompilationOpContext ctx,
         VectorizationContext ctxt, OperatorDesc conf) throws HiveException {
       super(ctx, ctxt, conf);
+
       initializeOp(null);
     }
 
@@ -114,6 +117,19 @@ public class TestVectorSelectOperator {
     outputColNames.add("_col0");
     outputColNames.add("_col1");
     selDesc.setOutputColumnNames(outputColNames);
+
+    // CONSIDER unwinding ValidatorVectorSelectOperator as a subclass of VectorSelectOperator.
+    VectorSelectDesc vectorSelectDesc = new VectorSelectDesc();
+    selDesc.setVectorDesc(vectorSelectDesc);
+    List<ExprNodeDesc> selectColList = selDesc.getColList();
+    VectorExpression[] vectorSelectExprs = new VectorExpression[selectColList.size()];
+    for (int i = 0; i < selectColList.size(); i++) {
+      ExprNodeDesc expr = selectColList.get(i);
+      VectorExpression ve = vc.getVectorExpression(expr);
+      vectorSelectExprs[i] = ve;
+    }
+    vectorSelectDesc.setSelectExpressions(vectorSelectExprs);
+    vectorSelectDesc.setProjectedOutputColumns(new int[] {3, 2});
 
     ValidatorVectorSelectOperator vso = new ValidatorVectorSelectOperator(
         new CompilationOpContext(), vc, selDesc);

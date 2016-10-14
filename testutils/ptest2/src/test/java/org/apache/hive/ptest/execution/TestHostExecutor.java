@@ -138,7 +138,8 @@ public class TestHostExecutor {
   }
   private HostExecutor createHostExecutor() {
     return new HostExecutor(host, PRIVATE_KEY, executor, sshCommandExecutor,
-        rsyncCommandExecutor, templateDefaults, scratchDir, succeededLogDir, failedLogDir, 1, logger);
+        rsyncCommandExecutor, templateDefaults, scratchDir, succeededLogDir, failedLogDir, 1, true,
+        logger);
   }
 
   private String getExecutedCommands() {

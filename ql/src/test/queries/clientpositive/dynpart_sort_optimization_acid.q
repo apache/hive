@@ -10,6 +10,8 @@ set hive.optimize.sort.dynamic.partition=false;
 drop table acid;
 CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true');
 insert into table acid partition(ds)  select key,value,ds from srcpart;
+-- explicitly set statistics to avoid flakiness
+alter table acid partition(ds='2008-04-08') update statistics set('numRows'='1600', 'rawDataSize'='18000');
 select count(*) from acid where ds='2008-04-08';
 
 insert into table acid partition(ds='2008-04-08') values("foo", "bar");
@@ -32,6 +34,7 @@ set hive.optimize.sort.dynamic.partition=true;
 drop table acid;
 CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true');
 insert into table acid partition(ds)  select key,value,ds from srcpart;
+alter table acid partition(ds='2008-04-08') update statistics set('numRows'='1600', 'rawDataSize'='18000');
 select count(*) from acid where ds='2008-04-08';
 
 insert into table acid partition(ds='2008-04-08') values("foo", "bar");
@@ -54,6 +57,7 @@ set hive.optimize.sort.dynamic.partition=false;
 drop table acid;
 CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string, hr int) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true');
 insert into table acid partition(ds,hr)  select * from srcpart;
+alter table acid partition(ds='2008-04-08') update statistics set('numRows'='1600', 'rawDataSize'='18000');
 select count(*) from acid where ds='2008-04-08' and hr=11;
 
 insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar");
@@ -82,6 +86,7 @@ set hive.optimize.sort.dynamic.partition=true;
 drop table acid;
 CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string, hr int) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true');
 insert into table acid partition(ds,hr)  select * from srcpart;
+alter table acid partition(ds='2008-04-08') update statistics set('numRows'='1600', 'rawDataSize'='18000');
 select count(*) from acid where ds='2008-04-08' and hr=11;
 
 insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar");
@@ -112,6 +117,7 @@ set hive.optimize.constant.propagation=false;
 drop table acid;
 CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string, hr int) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true');
 insert into table acid partition(ds,hr)  select * from srcpart;
+alter table acid partition(ds='2008-04-08') update statistics set('numRows'='1600', 'rawDataSize'='18000');
 select count(*) from acid where ds='2008-04-08' and hr=11;
 
 insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar");

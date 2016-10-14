@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import javax.security.sasl.SaslException;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.cli.CLIServiceClient;
@@ -73,7 +74,8 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
     private final ICLIService cliService;
     private TTransport tTransport;
 
-    public CLIServiceClientWrapper(ICLIService icliService, TTransport tTransport) {
+    public CLIServiceClientWrapper(ICLIService icliService, TTransport tTransport, HiveConf conf) {
+      super(conf);
       cliService = icliService;
       this.tTransport = tTransport;
     }
@@ -249,7 +251,7 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
     ICLIService cliService =
       (ICLIService) Proxy.newProxyInstance(RetryingThriftCLIServiceClient.class.getClassLoader(),
         CLIServiceClient.class.getInterfaces(), retryClient);
-    return new CLIServiceClientWrapper(cliService, tTransport);
+    return new CLIServiceClientWrapper(cliService, tTransport, conf);
   }
 
   protected TTransport connectWithRetry(int retries) throws HiveSQLException {
@@ -299,7 +301,7 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
 
     TProtocol protocol = new TBinaryProtocol(transport);
     transport.open();
-    base = new ThriftCLIServiceClient(new TCLIService.Client(protocol));
+    base = new ThriftCLIServiceClient(new TCLIService.Client(protocol), conf);
     LOG.info("Connected!");
     return transport;
   }

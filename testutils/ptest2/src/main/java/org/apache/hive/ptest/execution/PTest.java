@@ -144,7 +144,8 @@ public class PTest {
       @Override
       public HostExecutor build(Host host) {
         return new HostExecutor(host, executionContext.getPrivateKey(), mExecutor, sshCommandExecutor,
-            rsyncCommandExecutor, templateDefaults, scratchDir, succeededLogDir, failedLogDir, 10, logger);
+            rsyncCommandExecutor, templateDefaults, scratchDir, succeededLogDir, failedLogDir, 10,
+            configuration.shouldFetchLogsForSuccessfulTests(), logger);
       }
 
     };
@@ -285,7 +286,7 @@ public class PTest {
     options.addOption(null, REPOSITORY_NAME, true, "Overrides git repository *name* in properties file");
     options.addOption(null, BRANCH, true, "Overrides git branch in properties file");
     options.addOption(null, PATCH, true, "URI to patch, either file:/// or http(s)://");
-    options.addOption(ANT_ARG, null, true, "Supplemntal ant arguments");
+    options.addOption(ANT_ARG, null, true, "Supplemental ant arguments");
     options.addOption(null, JAVA_HOME, true, "Java Home for compiling and running tests (unless " + JAVA_HOME_TEST + " is specified)");
     options.addOption(null, JAVA_HOME_TEST, true, "Java Home for running tests (optional)");
     options.addOption(null, ANT_TEST_ARGS, true, "Arguments to ant test on slave nodes only");

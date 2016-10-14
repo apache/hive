@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration;
+import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.VectorizationDetailLevel;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 
 /**
@@ -115,6 +116,18 @@ public class ExplainWork implements Serializable {
 
   public boolean isFormatted() {
     return config.isFormatted();
+  }
+
+  public boolean isVectorization() {
+    return config.isVectorization();
+  }
+
+  public boolean isVectorizationOnly() {
+    return config.isVectorizationOnly();
+  }
+
+  public VectorizationDetailLevel isVectorizationDetailLevel() {
+    return config.getVectorizationDetailLevel();
   }
 
   public ParseContext getParseContext() {

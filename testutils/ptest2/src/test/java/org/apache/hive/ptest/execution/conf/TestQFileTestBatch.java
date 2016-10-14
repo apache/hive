@@ -48,7 +48,7 @@ public class TestQFileTestBatch {
         new QFileTestBatch(new AtomicInteger(1), "testcase", DRIVER, QUERY_FILES_PROPERTY, tests, true, TEST_MODULE_NAME);
     Assert.assertTrue(batch.isParallel());
     Assert.assertEquals(DRIVER, batch.getDriver());
-    Assert.assertEquals(Joiner.on("-").join(DRIVER, "a", "b", "c"), batch.getName());
+    Assert.assertEquals(Joiner.on("-").join("1", DRIVER, "a", "b", "c"), batch.getName());
     Assert.assertEquals(String.format("-Dtestcase=%s -D%s=a,b,c", DRIVER,
         QUERY_FILES_PROPERTY), batch.getTestArguments());
     Assert.assertEquals(TEST_MODULE_NAME, batch.getTestModuleRelativeDir());
@@ -58,7 +58,7 @@ public class TestQFileTestBatch {
     Assert.assertTrue(tests.add("d"));
     QFileTestBatch batch =
         new QFileTestBatch(new AtomicInteger(1), "testcase", DRIVER, QUERY_FILES_PROPERTY, tests, true, TEST_MODULE_NAME);
-    Assert.assertEquals(Joiner.on("-").join(DRIVER, "a", "b", "c", "and", "1", "more"),
+    Assert.assertEquals(Joiner.on("-").join("1", DRIVER, "a", "b", "c", "and", "1", "more"),
         batch.getName());
   }
   @Test

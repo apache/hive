@@ -177,4 +177,11 @@ public class FilterLongColumnInList extends VectorExpression implements ILongInE
   public void setInListValues(long [] a) {
     this.inListValues = a;
   }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "col " + inputCol + ", values " + Arrays.toString(inListValues);
+  }
+
+
 }

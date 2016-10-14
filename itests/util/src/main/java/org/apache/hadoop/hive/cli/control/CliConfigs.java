@@ -515,4 +515,44 @@ public class CliConfigs {
       }
     }
   }
+
+  public static class BlobstoreCliConfig extends AbstractCliConfig {
+    public BlobstoreCliConfig() {
+      super(CoreBlobstoreCliDriver.class);
+      try {
+        setQueryDir("itests/hive-blobstore/src/test/queries/clientpositive");
+
+        setResultsDir("itests/hive-blobstore/src/test/results/clientpositive");
+        setLogDir("itests/hive-blobstore/target/qfile-results/clientpositive");
+
+        setInitScript("blobstore_test_init.q");
+        setCleanupScript("blobstore_test_cleanup.q");
+
+        setHiveConfDir("itests/hive-blobstore/src/test/resources");
+        setClusterType(MiniClusterType.none);
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
+  public static class BlobstoreNegativeCliConfig extends AbstractCliConfig {
+    public BlobstoreNegativeCliConfig() {
+      super(CoreBlobstoreNegativeCliDriver.class);
+      try {
+        setQueryDir("itests/hive-blobstore/src/test/queries/clientnegative");
+
+        setResultsDir("itests/hive-blobstore/src/test/results/clientnegative");
+        setLogDir("itests/hive-blobstore/target/qfile-results/clientnegative");
+
+        setInitScript("blobstore_test_init.q");
+        setCleanupScript("blobstore_test_cleanup.q");
+
+        setHiveConfDir("itests/hive-blobstore/src/test/resources");
+        setClusterType(MiniClusterType.none);
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
 }

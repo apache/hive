@@ -299,14 +299,8 @@ public class OperationManager extends AbstractService {
     return getOperation(opHandle).getResultSetSchema();
   }
 
-  public RowSet getOperationNextRowSet(OperationHandle opHandle)
-      throws HiveSQLException {
-    return getOperation(opHandle).getNextRowSet();
-  }
-
   public RowSet getOperationNextRowSet(OperationHandle opHandle,
-      FetchOrientation orientation, long maxRows)
-          throws HiveSQLException {
+      FetchOrientation orientation, long maxRows) throws HiveSQLException {
     return getOperation(opHandle).getNextRowSet(orientation, maxRows);
   }
 

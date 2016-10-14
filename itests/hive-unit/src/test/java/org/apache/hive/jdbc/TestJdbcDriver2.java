@@ -106,43 +106,16 @@ public class TestJdbcDriver2 {
   private static final String dataTypeTableComment = "Table with many column data types";
   private static final String externalTableName = "testjdbcdriverexttbl";
   private static final String externalTableComment = "An external table";
-
-  private final HiveConf conf;
-  public static String dataFileDir;
-  private final Path dataFilePath;
-  private final int dataFileRowCount;
-  private final Path dataTypeDataFilePath;
+  private static HiveConf conf;
+  private static String dataFileDir;
+  private static Path dataFilePath;
+  private static int dataFileRowCount;
+  private static Path dataTypeDataFilePath;
   // Creating a new connection is expensive, so we'll reuse this object
   private static Connection con;
   private static final float floatCompareDelta = 0.0001f;
 
   @Rule public ExpectedException thrown = ExpectedException.none();
-
-  @SuppressWarnings("deprecation")
-  public TestJdbcDriver2() throws SQLException, ClassNotFoundException {
-    conf = new HiveConf(TestJdbcDriver2.class);
-    dataFileDir = conf.get("test.data.files").replace('\\', '/')
-        .replace("c:", "");
-    dataFilePath = new Path(dataFileDir, "kv1.txt");
-    dataFileRowCount = 500;
-    dataTypeDataFilePath = new Path(dataFileDir, "datatypes.txt");
-    // Create test database and base tables once for all the test
-    Class.forName(driverName);
-    con = getConnection(defaultDbName + ";create=true");
-    System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
-    System.setProperty(ConfVars.HIVEMAPREDMODE.varname, "nonstrict");
-    System.setProperty(ConfVars.HIVE_AUTHORIZATION_MANAGER.varname,
-        "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
-    System.setProperty(ConfVars.HIVE_SERVER2_PARALLEL_OPS_IN_SESSION.varname, "false");
-    Statement stmt = con.createStatement();
-    assertNotNull("Statement is null", stmt);
-    stmt.execute("set hive.support.concurrency = false");
-    stmt.execute("drop database if exists " + testDbName + " cascade");
-    stmt.execute("create database " + testDbName);
-    stmt.execute("use " + testDbName);
-    createTestTables(stmt, testDbName);
-    stmt.close();
-  }
 
   private static Connection getConnection(String postfix) throws SQLException {
     Connection con1;
@@ -152,7 +125,7 @@ public class TestJdbcDriver2 {
     return con1;
   }
 
-  private void createTestTables(Statement stmt, String testDbName) throws SQLException{
+  private static void createTestTables(Statement stmt, String testDbName) throws SQLException{
     // We've already dropped testDbName in constructor & we also drop it in tearDownAfterClass
     String prefix = testDbName + ".";
     String tableName = prefix + TestJdbcDriver2.tableName;
@@ -202,8 +175,31 @@ public class TestJdbcDriver2 {
     stmt.close();
   }
 
+  @SuppressWarnings("deprecation")
   @BeforeClass
   public static void setUpBeforeClass() throws SQLException, ClassNotFoundException {
+    conf = new HiveConf(TestJdbcDriver2.class);
+    dataFileDir = conf.get("test.data.files").replace('\\', '/')
+        .replace("c:", "");
+    dataFilePath = new Path(dataFileDir, "kv1.txt");
+    dataFileRowCount = 500;
+    dataTypeDataFilePath = new Path(dataFileDir, "datatypes.txt");
+    // Create test database and base tables once for all the test
+    Class.forName(driverName);
+    System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
+    System.setProperty(ConfVars.HIVEMAPREDMODE.varname, "nonstrict");
+    System.setProperty(ConfVars.HIVE_AUTHORIZATION_MANAGER.varname,
+        "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
+    System.setProperty(ConfVars.HIVE_SERVER2_PARALLEL_OPS_IN_SESSION.varname, "false");
+    con = getConnection(defaultDbName + ";create=true");
+    Statement stmt = con.createStatement();
+    assertNotNull("Statement is null", stmt);
+    stmt.execute("set hive.support.concurrency = false");
+    stmt.execute("drop database if exists " + testDbName + " cascade");
+    stmt.execute("create database " + testDbName);
+    stmt.execute("use " + testDbName);
+    createTestTables(stmt, testDbName);
+    stmt.close();
   }
 
   @AfterClass
@@ -214,14 +210,6 @@ public class TestJdbcDriver2 {
     stmt.execute("drop database if exists " + testDbName + " cascade");
     stmt.close();
     con.close();
-  }
-
-  @Before
-  public void setUp() throws Exception {
-  }
-
-  @After
-  public void tearDown() throws Exception {
   }
 
   @Test
@@ -267,6 +255,10 @@ public class TestJdbcDriver2 {
   public void testSerializedExecution() throws Exception {
     HiveStatement stmt1 = (HiveStatement) con.createStatement();
     HiveStatement stmt2 = (HiveStatement) con.createStatement();
+    stmt1.execute("SET hive.driver.parallel.compilation=false");
+    stmt1.execute("SET hive.server2.async.exec.async.compile=false");
+    stmt2.execute("SET hive.driver.parallel.compilation=false");
+    stmt2.execute("SET hive.server2.async.exec.async.compile=false");
     stmt1.execute("create temporary function sleepMsUDF as '" + SleepMsUDF.class.getName() + "'");
     stmt1.execute("create table test_ser_1(i int)");
     stmt1.executeAsync("insert into test_ser_1 select sleepMsUDF(under_col, 500) from "
@@ -2257,6 +2249,47 @@ public class TestJdbcDriver2 {
   }
 
   /**
+   *  Tests for query cancellation
+   */
+
+  @Test
+  public void testCancelQueryNotRun() throws Exception {
+    try (final Statement stmt = con.createStatement()){
+      System.out.println("Cancel the Statement without running query ...");
+      stmt.cancel();
+      System.out.println("Executing query: ");
+      stmt.executeQuery(" show databases");
+    }
+  }
+
+  @Test
+  public void testCancelQueryFinished() throws Exception {
+    try (final Statement stmt = con.createStatement()){
+      System.out.println("Executing query: ");
+      stmt.executeQuery(" show databases");
+      System.out.println("Cancel the Statement after running query ...");
+      stmt.cancel();
+    }
+  }
+
+  @Test
+  public void testCancelQueryErrored() throws Exception {
+    final Statement stmt = con.createStatement();
+    try {
+      System.out.println("Executing query: ");
+      stmt.executeQuery("list dbs");
+      fail("Expecting SQLException");
+    } catch (SQLException e) {
+      // No-op
+    }
+
+    // Cancel the query
+    System.out.println("Cancel the Statement ...");
+    stmt.cancel();
+    stmt.close();
+  }
+
+  /**
    * Test the cancellation of a query that is running.
    * We spawn 2 threads - one running the query and
    * the other attempting to cancel.
@@ -2297,6 +2330,62 @@ public class TestJdbcDriver2 {
           // Sleep for 100ms
           Thread.sleep(100);
           System.out.println("Cancelling query: ");
+          stmt.cancel();
+        } catch (Exception e) {
+          // No-op
+        }
+      }
+    });
+    tExecute.start();
+    tCancel.start();
+    tExecute.join();
+    tCancel.join();
+    stmt.close();
+  }
+
+  @Test
+  public void testQueryCancelTwice() throws Exception {
+    String udfName = SleepMsUDF.class.getName();
+    Statement stmt1 = con.createStatement();
+    stmt1.execute("create temporary function sleepMsUDF as '" + udfName + "'");
+    stmt1.close();
+    final Statement stmt = con.createStatement();
+    // Thread executing the query
+    Thread tExecute = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          System.out.println("Executing query: ");
+          // The test table has 500 rows, so total query time should be ~ 500*500ms
+          stmt.executeQuery("select sleepMsUDF(t1.under_col, 1) as u0, t1.under_col as u1, " +
+                  "t2.under_col as u2 from " + tableName +  " t1 join " + tableName +
+                  " t2 on t1.under_col = t2.under_col");
+          fail("Expecting SQLException");
+        } catch (SQLException e) {
+          // This thread should throw an exception
+          assertNotNull(e);
+          System.out.println(e.toString());
+        }
+      }
+    });
+    // Thread cancelling the query
+    Thread tCancel = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        // 1st Cancel
+        try {
+          // Sleep for 100ms
+          Thread.sleep(100);
+          System.out.println("Cancelling query: ");
+          stmt.cancel();
+        } catch (Exception e) {
+          // No-op
+        }
+        // 2nd cancel
+        try {
+          // Sleep for 5ms and cancel again
+          Thread.sleep(5);
+          System.out.println("Cancelling query again: ");
           stmt.cancel();
         } catch (Exception e) {
           // No-op

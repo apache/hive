@@ -68,6 +68,7 @@ public class CLIService extends CompositeService implements ICLIService {
   private UserGroupInformation httpUGI;
   // The HiveServer2 instance running this service
   private final HiveServer2 hiveServer2;
+  private int defaultFetchRows;
 
   public CLIService(HiveServer2 hiveServer2) {
     super(CLIService.class.getSimpleName());
@@ -78,6 +79,7 @@ public class CLIService extends CompositeService implements ICLIService {
   public synchronized void init(HiveConf hiveConf) {
     this.hiveConf = hiveConf;
     sessionManager = new SessionManager(hiveServer2);
+    defaultFetchRows = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_RESULTSET_DEFAULT_FETCH_SIZE);
     addService(sessionManager);
     //  If the hadoop cluster is secure, do a kerberos login for the service from the keytab
     if (UserGroupInformation.isSecurityEnabled()) {
@@ -500,7 +502,7 @@ public class CLIService extends CompositeService implements ICLIService {
   public RowSet fetchResults(OperationHandle opHandle)
       throws HiveSQLException {
     return fetchResults(opHandle, Operation.DEFAULT_FETCH_ORIENTATION,
-        Operation.DEFAULT_FETCH_MAX_ROWS, FetchType.QUERY_OUTPUT);
+        defaultFetchRows, FetchType.QUERY_OUTPUT);
   }
 
   @Override

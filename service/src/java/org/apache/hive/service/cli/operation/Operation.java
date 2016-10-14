@@ -64,7 +64,7 @@ public abstract class Operation {
   private final OperationHandle opHandle;
   public static final FetchOrientation DEFAULT_FETCH_ORIENTATION = FetchOrientation.FETCH_NEXT;
   public static final Logger LOG = LoggerFactory.getLogger(Operation.class.getName());
-  public static final long DEFAULT_FETCH_MAX_ROWS = 100;
+  public static final long DEFAULT_FETCH_MAX_ROWS = 100; // TODO# remove this
   protected boolean hasResultSet;
   protected volatile HiveSQLException operationException;
   protected volatile Future<?> backgroundHandle;
@@ -361,10 +361,6 @@ public abstract class Operation {
   public abstract TableSchema getResultSetSchema() throws HiveSQLException;
 
   public abstract RowSet getNextRowSet(FetchOrientation orientation, long maxRows) throws HiveSQLException;
-
-  public RowSet getNextRowSet() throws HiveSQLException {
-    return getNextRowSet(FetchOrientation.FETCH_NEXT, DEFAULT_FETCH_MAX_ROWS);
-  }
 
   public String getTaskStatus() throws HiveSQLException {
     return null;

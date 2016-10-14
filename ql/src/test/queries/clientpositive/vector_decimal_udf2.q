@@ -1,7 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=minimal;
+set hive.fetch.task.conversion=none;
 
 DROP TABLE IF EXISTS DECIMAL_UDF2_txt;
 DROP TABLE IF EXISTS DECIMAL_UDF2;
@@ -18,14 +18,14 @@ STORED AS ORC;
 
 INSERT OVERWRITE TABLE DECIMAL_UDF2 SELECT * FROM DECIMAL_UDF2_txt;
 
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
 FROM DECIMAL_UDF2 WHERE key = 10;
 
 SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
 FROM DECIMAL_UDF2 WHERE key = 10;
 
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT
   exp(key), ln(key),
   log(key), log(key, key), log(key, value), log(value, key),

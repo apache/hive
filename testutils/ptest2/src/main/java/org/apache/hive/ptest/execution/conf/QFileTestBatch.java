@@ -18,6 +18,8 @@
  */
 package org.apache.hive.ptest.execution.conf;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -42,7 +44,7 @@ public class QFileTestBatch extends TestBatch {
     this.driver = driver;
     this.queryFilesProperty = queryFilesProperty;
     this.tests = tests;
-    String name = Joiner.on("-").join(driver, Joiner.on("-").join(
+    String name = Joiner.on("-").join(getBatchId(), driver, Joiner.on("-").join(
         Iterators.toArray(Iterators.limit(tests.iterator(), 3), String.class)));
     if(tests.size() > 3) {
       name = Joiner.on("-").join(name, "and", (tests.size() - 3), "more");
@@ -57,10 +59,6 @@ public class QFileTestBatch extends TestBatch {
   @Override
   public String getName() {
     return name;
-  }
-  @Override
-  public String getTestClass() {
-    return driver;
   }
   @Override
   public String getTestArguments() {
@@ -88,6 +86,11 @@ public class QFileTestBatch extends TestBatch {
   @Override
   public int getNumTestsInBatch() {
     return tests.size();
+  }
+
+  @Override
+  public Collection<String> getTestClasses() {
+    return Collections.singleton(driver);
   }
 
   @Override

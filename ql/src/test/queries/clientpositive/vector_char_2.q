@@ -1,6 +1,8 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
+set hive.fetch.task.conversion=none;
+
 drop table char_2;
 
 create table char_2 (
@@ -16,7 +18,7 @@ group by value
 order by value asc
 limit 5;
 
-explain select value, sum(cast(key as int)), count(*) numrows
+explain vectorization expression select value, sum(cast(key as int)), count(*) numrows
 from char_2
 group by value
 order by value asc
@@ -35,7 +37,7 @@ group by value
 order by value desc
 limit 5;
 
-explain select value, sum(cast(key as int)), count(*) numrows
+explain vectorization expression select value, sum(cast(key as int)), count(*) numrows
 from char_2
 group by value
 order by value desc

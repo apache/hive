@@ -54,4 +54,24 @@ public class DateUtils {
     }
     return result;
   }
+
+  // From java.util.Calendar
+  private static final String[] FIELD_NAME = {
+    "ERA", "YEAR", "MONTH", "WEEK_OF_YEAR", "WEEK_OF_MONTH", "DAY_OF_MONTH",
+    "DAY_OF_YEAR", "DAY_OF_WEEK", "DAY_OF_WEEK_IN_MONTH", "AM_PM", "HOUR",
+    "HOUR_OF_DAY", "MINUTE", "SECOND", "MILLISECOND", "ZONE_OFFSET",
+    "DST_OFFSET"
+  };
+
+  /**
+   * Returns the name of the specified calendar field.
+   *
+   * @param field the calendar field
+   * @return the calendar field name
+   * @exception IndexOutOfBoundsException if <code>field</code> is negative,
+   * equal to or greater then <code>FIELD_COUNT</code>.
+   */
+  public static String getFieldName(int field) {
+      return FIELD_NAME[field];
+  }
 }

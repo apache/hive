@@ -59,12 +59,12 @@ public class TestReportParser {
       }
     }
     JUnitReportParser parser = new JUnitReportParser(LOG, baseDir);
-    Assert.assertEquals(3, parser.getFailedTests().size());
+    Assert.assertEquals(3, parser.getAllFailedTests().size());
     Assert.assertEquals(Sets.
         newHashSet("org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_skewjoin_union_remove_1",
             "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_union_remove_9",
             "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_skewjoin"),
-            parser.getFailedTests());
+            parser.getAllFailedTests());
     Assert.assertEquals(Sets.
         newHashSet("org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_shutdown", 
             "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_binary_constant", 
@@ -83,6 +83,6 @@ public class TestReportParser {
             "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_union_remove_9", 
             "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_skewjoin", 
             "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_multi_insert_gby"),
-            parser.getExecutedTests());
+            parser.getAllExecutedTests());
   }
 }

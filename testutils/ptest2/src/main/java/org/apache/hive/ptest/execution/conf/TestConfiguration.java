@@ -61,6 +61,7 @@ public class TestConfiguration {
   // This ends up being set to "test" | mvn ${testCasePropertyName} for instance
   private static final String TEST_CASE_PROPERTY_NAME = "testCasePropertyName";
   private static final String BUILD_TOOL = "buildTool";
+  private static final String FETCH_LOGS_FOR_SUCCESSFUL_TESTS = "fetchLogsForSuccessfulTests";
   // The following parameters are not supported yet. TODO Add support
   private static final String APPLY_PATCH_SCRIPT_PATH = "applyPatchScriptPath";
   private static final String PREP_TEMPLATE_PATH = "prepTemplatePath";
@@ -92,6 +93,7 @@ public class TestConfiguration {
   private final String jiraPassword;
   private final String testCasePropertyName;
   private final String buildTool;
+  private final boolean fetchLogsForSuccessfulTests;
   private final String applyPathScriptPath;
   private final String prepTemplatePath;
   private final String batchExecTemplatePath;
@@ -137,6 +139,7 @@ public class TestConfiguration {
     logsURL = context.getString(LOGS_URL, "").trim();
     testCasePropertyName = context.getString(TEST_CASE_PROPERTY_NAME, "testcase").trim();
     sshOpts = context.getString(SSH_OPTS, "").trim();
+    fetchLogsForSuccessfulTests = context.getBoolean(FETCH_LOGS_FOR_SUCCESSFUL_TESTS, true);
 
     applyPathScriptPath = context.getString(APPLY_PATCH_SCRIPT_PATH, null);
     prepTemplatePath = context.getString(PREP_TEMPLATE_PATH, null);
@@ -226,6 +229,7 @@ public class TestConfiguration {
   public String getTestCasePropertyName() {
     return testCasePropertyName;
   }
+  public boolean shouldFetchLogsForSuccessfulTests() {return fetchLogsForSuccessfulTests;}
 
   // TODO Make sure this method is eventually used to find the prep / batch scripts.
   public String getApplyPathScriptPath() {

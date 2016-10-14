@@ -75,7 +75,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     this.desc = joinOp.getConf();
     if (desc.getVectorMode() && HiveConf.getBoolVar(
         hconf, HiveConf.ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_FAST_HASHTABLE_ENABLED)) {
-      VectorMapJoinDesc vectorDesc = desc.getVectorDesc();
+      VectorMapJoinDesc vectorDesc = (VectorMapJoinDesc) desc.getVectorDesc();
       useFastContainer = vectorDesc != null && vectorDesc.hashTableImplementationType() ==
           VectorMapJoinDesc.HashTableImplementationType.FAST;
     }

@@ -13,7 +13,7 @@ insert overwrite table interval_arithmetic_1
 SET hive.vectorized.execution.enabled=true;
 
 -- interval year-month arithmetic
-explain
+explain vectorization expression
 select
   dateval,
   dateval - interval '2-2' year to month,
@@ -36,7 +36,7 @@ select
 from interval_arithmetic_1
 order by dateval;
 
-explain
+explain vectorization expression
 select
   dateval,
   dateval - date '1999-06-07',
@@ -53,7 +53,7 @@ select
 from interval_arithmetic_1
 order by dateval;
 
-explain
+explain vectorization expression
 select
   tsval,
   tsval - interval '2-2' year to month,
@@ -76,7 +76,7 @@ select
 from interval_arithmetic_1
 order by tsval;
 
-explain
+explain vectorization expression
 select
   interval '2-2' year to month + interval '3-3' year to month,
   interval '2-2' year to month - interval '3-3' year to month
@@ -93,7 +93,7 @@ limit 2;
 
 
 -- interval day-time arithmetic
-explain
+explain vectorization expression
 select
   dateval,
   dateval - interval '99 11:22:33.123456789' day to second,
@@ -116,7 +116,7 @@ select
 from interval_arithmetic_1
 order by dateval;
 
-explain
+explain vectorization expression
 select
   dateval,
   tsval,
@@ -135,7 +135,7 @@ select
 from interval_arithmetic_1
 order by dateval;
 
-explain
+explain vectorization expression
 select
   tsval,
   tsval - interval '99 11:22:33.123456789' day to second,
@@ -158,7 +158,7 @@ select
 from interval_arithmetic_1
 order by tsval;
 
-explain
+explain vectorization expression
 select
   interval '99 11:22:33.123456789' day to second + interval '10 9:8:7.123456789' day to second,
   interval '99 11:22:33.123456789' day to second - interval '10 9:8:7.123456789' day to second

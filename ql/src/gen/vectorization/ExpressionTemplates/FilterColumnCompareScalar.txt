@@ -32,8 +32,8 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private <OperandType2> value;
+  protected int colNum;
+  protected <OperandType2> value;
 
   public <ClassName>(int colNum, <OperandType2> value) { 
     this.colNum = colNum;
@@ -155,6 +155,11 @@ public class <ClassName> extends VectorExpression {
 
   public void setValue(<OperandType2> value) {
     this.value = value;
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "col " + colNum + ", val " + value;
   }
 
   @Override

@@ -39,16 +39,20 @@ import java.util.Set;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeCaptureOutputOperator;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromConcat;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromLongIterables;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromObjectIterables;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromRepeats;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc;
 import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc.ProcessingMode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
@@ -128,9 +132,11 @@ public class TestVectorGroupByOperator {
     outputColumnNames.add("_col0");
 
     GroupByDesc desc = new GroupByDesc();
+    desc.setVectorDesc(new VectorGroupByDesc());
+
     desc.setOutputColumnNames(outputColumnNames);
     desc.setAggregators(aggs);
-    desc.getVectorDesc().setProcessingMode(ProcessingMode.GLOBAL);
+    ((VectorGroupByDesc) desc.getVectorDesc()).setProcessingMode(ProcessingMode.GLOBAL);
 
     return desc;
   }
@@ -146,6 +152,8 @@ public class TestVectorGroupByOperator {
     outputColumnNames.add("_col0");
 
     GroupByDesc desc = new GroupByDesc();
+    desc.setVectorDesc(new VectorGroupByDesc());
+
     desc.setOutputColumnNames(outputColumnNames);
     desc.setAggregators(aggs);
 
@@ -162,7 +170,7 @@ public class TestVectorGroupByOperator {
       TypeInfo keyTypeInfo) {
 
     GroupByDesc desc = buildGroupByDescType(ctx, aggregate, GenericUDAFEvaluator.Mode.PARTIAL1, column, dataTypeInfo);
-    desc.getVectorDesc().setProcessingMode(ProcessingMode.HASH);
+    ((VectorGroupByDesc) desc.getVectorDesc()).setProcessingMode(ProcessingMode.HASH);
 
     ExprNodeDesc keyExp = buildColumnDesc(ctx, key, keyTypeInfo);
     ArrayList<ExprNodeDesc> keys = new ArrayList<ExprNodeDesc>();
@@ -196,7 +204,11 @@ public class TestVectorGroupByOperator {
     desc.setMemoryThreshold(treshold);
 
     CompilationOpContext cCtx = new CompilationOpContext();
-    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
+
+    Operator<? extends OperatorDesc> groupByOp = OperatorFactory.get(cCtx, desc);
+
+    VectorGroupByOperator vgo =
+        (VectorGroupByOperator) Vectorizer.vectorizeGroupByOperator(groupByOp, ctx);
 
     FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
@@ -1735,13 +1747,19 @@ public class TestVectorGroupByOperator {
     }
 
     GroupByDesc desc = new GroupByDesc();
+    desc.setVectorDesc(new VectorGroupByDesc());
+
     desc.setOutputColumnNames(outputColumnNames);
     desc.setAggregators(aggs);
     desc.setKeys(keysDesc);
-    desc.getVectorDesc().setProcessingMode(ProcessingMode.HASH);
+    ((VectorGroupByDesc) desc.getVectorDesc()).setProcessingMode(ProcessingMode.HASH);
 
     CompilationOpContext cCtx = new CompilationOpContext();
-    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
+
+    Operator<? extends OperatorDesc> groupByOp = OperatorFactory.get(cCtx, desc);
+
+    VectorGroupByOperator vgo =
+        (VectorGroupByOperator) Vectorizer.vectorizeGroupByOperator(groupByOp, ctx);
 
     FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
@@ -1846,9 +1864,11 @@ public class TestVectorGroupByOperator {
     outputColumnNames.add("_col1");
 
     GroupByDesc desc = new GroupByDesc();
+    desc.setVectorDesc(new VectorGroupByDesc());
+
     desc.setOutputColumnNames(outputColumnNames);
     desc.setAggregators(aggs);
-    desc.getVectorDesc().setProcessingMode(ProcessingMode.HASH);
+    ((VectorGroupByDesc) desc.getVectorDesc()).setProcessingMode(ProcessingMode.HASH);
 
     ExprNodeDesc keyExp = buildColumnDesc(ctx, "Key",
         TypeInfoFactory.getPrimitiveTypeInfo(data.getTypes()[0]));
@@ -1857,7 +1877,11 @@ public class TestVectorGroupByOperator {
     desc.setKeys(keysDesc);
 
     CompilationOpContext cCtx = new CompilationOpContext();
-    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
+
+    Operator<? extends OperatorDesc> groupByOp = OperatorFactory.get(cCtx, desc);
+
+    VectorGroupByOperator vgo =
+        (VectorGroupByOperator) Vectorizer.vectorizeGroupByOperator(groupByOp, ctx);
 
     FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
@@ -2252,10 +2276,14 @@ public class TestVectorGroupByOperator {
     VectorizationContext ctx = new VectorizationContext("name", mapColumnNames);
 
     GroupByDesc desc = buildGroupByDescCountStar (ctx);
-    desc.getVectorDesc().setProcessingMode(ProcessingMode.HASH);
+    ((VectorGroupByDesc) desc.getVectorDesc()).setProcessingMode(ProcessingMode.HASH);
 
     CompilationOpContext cCtx = new CompilationOpContext();
-    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
+
+    Operator<? extends OperatorDesc> groupByOp = OperatorFactory.get(cCtx, desc);
+
+    VectorGroupByOperator vgo =
+        (VectorGroupByOperator) Vectorizer.vectorizeGroupByOperator(groupByOp, ctx);
 
     FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
@@ -2283,10 +2311,14 @@ public class TestVectorGroupByOperator {
     VectorizationContext ctx = new VectorizationContext("name", mapColumnNames);
 
     GroupByDesc desc = buildGroupByDescType(ctx, "count", GenericUDAFEvaluator.Mode.FINAL, "A", TypeInfoFactory.longTypeInfo);
-    VectorGroupByDesc vectorDesc = desc.getVectorDesc();
+    VectorGroupByDesc vectorDesc = (VectorGroupByDesc) desc.getVectorDesc();
     vectorDesc.setProcessingMode(ProcessingMode.GLOBAL);  // Use GLOBAL when no key for Reduce.
     CompilationOpContext cCtx = new CompilationOpContext();
-    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
+
+    Operator<? extends OperatorDesc> groupByOp = OperatorFactory.get(cCtx, desc);
+
+    VectorGroupByOperator vgo =
+        (VectorGroupByOperator) Vectorizer.vectorizeGroupByOperator(groupByOp, ctx);
 
     FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
@@ -2318,7 +2350,11 @@ public class TestVectorGroupByOperator {
         TypeInfoFactory.stringTypeInfo);
 
     CompilationOpContext cCtx = new CompilationOpContext();
-    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
+
+    Operator<? extends OperatorDesc> groupByOp = OperatorFactory.get(cCtx, desc);
+
+    VectorGroupByOperator vgo =
+        (VectorGroupByOperator) Vectorizer.vectorizeGroupByOperator(groupByOp, ctx);
 
     FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
@@ -2350,7 +2386,11 @@ public class TestVectorGroupByOperator {
         buildGroupByDescType(ctx, aggregateName, GenericUDAFEvaluator.Mode.PARTIAL1, "A", TypeInfoFactory.getDecimalTypeInfo(30, 4));
 
     CompilationOpContext cCtx = new CompilationOpContext();
-    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
+
+    Operator<? extends OperatorDesc> groupByOp = OperatorFactory.get(cCtx, desc);
+
+    VectorGroupByOperator vgo =
+        (VectorGroupByOperator) Vectorizer.vectorizeGroupByOperator(groupByOp, ctx);
 
     FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
@@ -2383,7 +2423,11 @@ public class TestVectorGroupByOperator {
         TypeInfoFactory.doubleTypeInfo);
 
     CompilationOpContext cCtx = new CompilationOpContext();
-    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
+
+    Operator<? extends OperatorDesc> groupByOp = OperatorFactory.get(cCtx, desc);
+
+    VectorGroupByOperator vgo =
+        (VectorGroupByOperator) Vectorizer.vectorizeGroupByOperator(groupByOp, ctx);
 
     FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
@@ -2414,7 +2458,11 @@ public class TestVectorGroupByOperator {
     GroupByDesc desc = buildGroupByDescType(ctx, aggregateName, GenericUDAFEvaluator.Mode.PARTIAL1, "A", TypeInfoFactory.longTypeInfo);
 
     CompilationOpContext cCtx = new CompilationOpContext();
-    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
+
+    Operator<? extends OperatorDesc> groupByOp = OperatorFactory.get(cCtx, desc);
+
+    VectorGroupByOperator vgo =
+        (VectorGroupByOperator) Vectorizer.vectorizeGroupByOperator(groupByOp, ctx);
 
     FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(null, null);
@@ -2449,7 +2497,11 @@ public class TestVectorGroupByOperator {
         TypeInfoFactory.longTypeInfo, "Key", TypeInfoFactory.longTypeInfo);
 
     CompilationOpContext cCtx = new CompilationOpContext();
-    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
+
+    Operator<? extends OperatorDesc> groupByOp = OperatorFactory.get(cCtx, desc);
+
+    VectorGroupByOperator vgo =
+        (VectorGroupByOperator) Vectorizer.vectorizeGroupByOperator(groupByOp, ctx);
 
     FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
@@ -2515,7 +2567,11 @@ public class TestVectorGroupByOperator {
        dataTypeInfo, "Key", TypeInfoFactory.stringTypeInfo);
 
     CompilationOpContext cCtx = new CompilationOpContext();
-    VectorGroupByOperator vgo = new VectorGroupByOperator(cCtx, ctx, desc);
+
+    Operator<? extends OperatorDesc> groupByOp = OperatorFactory.get(cCtx, desc);
+
+    VectorGroupByOperator vgo =
+        (VectorGroupByOperator) Vectorizer.vectorizeGroupByOperator(groupByOp, ctx);
 
     FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);

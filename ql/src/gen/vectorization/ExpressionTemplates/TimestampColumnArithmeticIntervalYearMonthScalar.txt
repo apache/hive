@@ -128,6 +128,11 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
+  public String vectorExpressionParameters() {
+    return "col " + colNum + ", val " + value.toString();
+  }
+
+  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())
         .setMode(

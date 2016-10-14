@@ -97,6 +97,7 @@ public class TestExecutor extends Thread {
           String profile = startRequest.getProfile();
           File profileConfFile = new File(mExecutionContextConfiguration.getProfileDirectory(),
               String.format("%s.properties", profile));
+          LOG.info("Attempting to run using profile file: {}", profileConfFile);
           if(!profileConfFile.isFile()) {
             test.setStatus(Status.illegalArgument(
                 "Profile " + profile + " not found in directory " +

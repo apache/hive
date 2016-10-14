@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.HashSet;
 
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
@@ -149,5 +150,10 @@ public class TimestampColumnInList extends VectorExpression implements ITimestam
 
   public void setInListValues(Timestamp[] a) {
     this.inListValues = a;
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "col " + inputCol + ", values " + Arrays.toString(inListValues);
   }
 }

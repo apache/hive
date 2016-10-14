@@ -16,10 +16,14 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dtest
 POSTHOOK: Lineage: dtest.a SCRIPT []
 POSTHOOK: Lineage: dtest.b SIMPLE []
-PREHOOK: query: explain select sum(distinct a), count(distinct a) from dtest
+PREHOOK: query: explain vectorization select sum(distinct a), count(distinct a) from dtest
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select sum(distinct a), count(distinct a) from dtest
+POSTHOOK: query: explain vectorization select sum(distinct a), count(distinct a) from dtest
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -57,8 +61,23 @@ STAGE PLANS:
                           value expressions: _col0 (type: bigint), _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
@@ -88,10 +107,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dtest
 #### A masked pattern was here ####
 300	1
-PREHOOK: query: explain select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc
+PREHOOK: query: explain vectorization select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc
+POSTHOOK: query: explain vectorization select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -126,8 +149,23 @@ STAGE PLANS:
                         Statistics: Num rows: 5775 Data size: 17248 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: false
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int)
@@ -145,6 +183,11 @@ STAGE PLANS:
                     value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: struct<count:bigint,sum:double,input:int>), _col3 (type: struct<count:bigint,sum:double,variance:double>)
         Reducer 3 
             Execution mode: llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                notVectorizedReason: Aggregation Function UDF avg parameter expression for GROUPBY operator: Data type struct<count:bigint,sum:double,input:int> of Column[VALUE._col2] not supported
+                vectorized: false
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1), avg(VALUE._col2), std(VALUE._col3)

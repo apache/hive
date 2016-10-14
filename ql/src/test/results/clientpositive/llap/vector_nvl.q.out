@@ -1,31 +1,82 @@
-PREHOOK: query: EXPLAIN SELECT cdouble, nvl(cdouble, 100) as n
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cdouble, nvl(cdouble, 100) as n
 FROM alltypesorc
 WHERE (cdouble IS NULL)
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT cdouble, nvl(cdouble, 100) as n
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cdouble, nvl(cdouble, 100) as n
 FROM alltypesorc
 WHERE (cdouble IS NULL)
 LIMIT 10
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 73400 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNull(col 5) -> boolean
+                    predicate: cdouble is null (type: boolean)
+                    Statistics: Num rows: 3114 Data size: 18608 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: null (type: double), 100.0 (type: double)
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: [12, 13]
+                          selectExpressions: ConstantVectorExpression(val null) -> 12:double, ConstantVectorExpression(val 100.0) -> 13:double
+                      Statistics: Num rows: 3114 Data size: 24920 Basic stats: COMPLETE Column stats: COMPLETE
+                      Limit
+                        Number of rows: 10
+                        Limit Vectorization:
+                            className: VectorLimitOperator
+                            native: true
+                        Statistics: Num rows: 10 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          File Sink Vectorization:
+                              className: VectorFileSinkOperator
+                              native: false
+                          Statistics: Num rows: 10 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
   Stage: Stage-0
     Fetch Operator
       limit: 10
       Processor Tree:
-        TableScan
-          alias: alltypesorc
-          Filter Operator
-            predicate: cdouble is null (type: boolean)
-            Select Operator
-              expressions: null (type: double), 100.0 (type: double)
-              outputColumnNames: _col0, _col1
-              Limit
-                Number of rows: 10
-                ListSink
+        ListSink
 
 PREHOOK: query: SELECT cdouble, nvl(cdouble, 100) as n
 FROM alltypesorc
@@ -51,30 +102,76 @@ NULL	100.0
 NULL	100.0
 NULL	100.0
 NULL	100.0
-PREHOOK: query: EXPLAIN SELECT cfloat, nvl(cfloat, 1) as n
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cfloat, nvl(cfloat, 1) as n
 FROM alltypesorc
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT cfloat, nvl(cfloat, 1) as n
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cfloat, nvl(cfloat, 1) as n
 FROM alltypesorc
 LIMIT 10
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                  Select Operator
+                    expressions: cfloat (type: float), NVL(cfloat,1) (type: float)
+                    outputColumnNames: _col0, _col1
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [4, 13]
+                        selectExpressions: VectorCoalesce(columns [4, 12])(children: col 4, ConstantVectorExpression(val 1.0) -> 12:double) -> 13:float
+                    Statistics: Num rows: 12288 Data size: 85848 Basic stats: COMPLETE Column stats: COMPLETE
+                    Limit
+                      Number of rows: 10
+                      Limit Vectorization:
+                          className: VectorLimitOperator
+                          native: true
+                      Statistics: Num rows: 10 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
+                        Statistics: Num rows: 10 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
   Stage: Stage-0
     Fetch Operator
       limit: 10
       Processor Tree:
-        TableScan
-          alias: alltypesorc
-          Select Operator
-            expressions: cfloat (type: float), NVL(cfloat,1) (type: float)
-            outputColumnNames: _col0, _col1
-            Limit
-              Number of rows: 10
-              ListSink
+        ListSink
 
 PREHOOK: query: SELECT cfloat, nvl(cfloat, 1) as n
 FROM alltypesorc
@@ -98,30 +195,76 @@ NULL	1.0
 27.0	27.0
 -11.0	-11.0
 61.0	61.0
-PREHOOK: query: EXPLAIN SELECT nvl(null, 10) as n
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT nvl(null, 10) as n
 FROM alltypesorc
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT nvl(null, 10) as n
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT nvl(null, 10) as n
 FROM alltypesorc
 LIMIT 10
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                  Select Operator
+                    expressions: 10 (type: int)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [12]
+                        selectExpressions: ConstantVectorExpression(val 10) -> 12:long
+                    Statistics: Num rows: 12288 Data size: 49152 Basic stats: COMPLETE Column stats: COMPLETE
+                    Limit
+                      Number of rows: 10
+                      Limit Vectorization:
+                          className: VectorLimitOperator
+                          native: true
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
+                        Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
   Stage: Stage-0
     Fetch Operator
       limit: 10
       Processor Tree:
-        TableScan
-          alias: alltypesorc
-          Select Operator
-            expressions: 10 (type: int)
-            outputColumnNames: _col0
-            Limit
-              Number of rows: 10
-              ListSink
+        ListSink
 
 PREHOOK: query: SELECT nvl(null, 10) as n
 FROM alltypesorc
@@ -145,30 +288,60 @@ POSTHOOK: Input: default@alltypesorc
 10
 10
 10
-PREHOOK: query: EXPLAIN SELECT nvl(null, null) as n
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT nvl(null, null) as n
 FROM alltypesorc
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT nvl(null, null) as n
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT nvl(null, null) as n
 FROM alltypesorc
 LIMIT 10
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesorc
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: null (type: void)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 12288 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Limit
+                      Number of rows: 10
+                      Statistics: Num rows: 10 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 10 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                notVectorizedReason: Select expression for SELECT operator: Data type void of Const void null not supported
+                vectorized: false
+
   Stage: Stage-0
     Fetch Operator
       limit: 10
       Processor Tree:
-        TableScan
-          alias: alltypesorc
-          Select Operator
-            expressions: null (type: void)
-            outputColumnNames: _col0
-            Limit
-              Number of rows: 10
-              ListSink
+        ListSink
 
 PREHOOK: query: SELECT nvl(null, null) as n
 FROM alltypesorc

@@ -1,1 +1,1 @@
-FAILED: ParseException line 1:59 Failed to recognize predicate 'AS'. Failed rule: 'identifier' in table alias
+FAILED: ParseException line 1:59 cannot recognize input near 'AS' 'myTable' 'JOIN' in table alias
