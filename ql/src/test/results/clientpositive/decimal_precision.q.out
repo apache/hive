@@ -631,3 +631,39 @@ POSTHOOK: query: DROP TABLE DECIMAL_PRECISION
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_precision
 POSTHOOK: Output: default@decimal_precision
+PREHOOK: query: -- Expect overflow and return null as the value
+CREATE TABLE DECIMAL_PRECISION(dec decimal(38,18))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DECIMAL_PRECISION
+POSTHOOK: query: -- Expect overflow and return null as the value
+CREATE TABLE DECIMAL_PRECISION(dec decimal(38,18))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DECIMAL_PRECISION
+PREHOOK: query: INSERT INTO DECIMAL_PRECISION VALUES(98765432109876543210.12345), (98765432109876543210.12345)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@decimal_precision
+POSTHOOK: query: INSERT INTO DECIMAL_PRECISION VALUES(98765432109876543210.12345), (98765432109876543210.12345)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@decimal_precision
+POSTHOOK: Lineage: decimal_precision.dec EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: SELECT SUM(dec) FROM DECIMAL_PRECISION
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_precision
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(dec) FROM DECIMAL_PRECISION
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_precision
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: DROP TABLE DECIMAL_PRECISION
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@decimal_precision
+PREHOOK: Output: default@decimal_precision
+POSTHOOK: query: DROP TABLE DECIMAL_PRECISION
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@decimal_precision
+POSTHOOK: Output: default@decimal_precision
