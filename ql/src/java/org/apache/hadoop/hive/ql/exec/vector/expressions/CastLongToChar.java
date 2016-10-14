@@ -51,9 +51,4 @@ public class CastLongToChar extends CastLongToString implements TruncStringOutpu
   public void setMaxLength(int maxLength) {
     this.maxLength = maxLength;
   }
-
-  @Override
-  public String vectorExpressionParameters() {
-    return "col " + inputColumn + ", maxLength " + maxLength;
-  }
 }

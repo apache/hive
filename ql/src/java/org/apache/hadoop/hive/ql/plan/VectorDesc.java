@@ -22,9 +22,4 @@ import java.io.Serializable;
 
 public interface VectorDesc extends Serializable, Cloneable {
   public Object clone() throws CloneNotSupportedException;
-
-  public void setVectorOp(Class<?> vectorOpClass);
-
-  public Class<?> getVectorOpClass();
-
 }

@@ -1,5 +1,5 @@
 set hive.mapred.mode=nonstrict;
-set hive.explain.user=false;
+set hive.explain.user=true;
 SET hive.vectorized.execution.enabled = true;
 set hive.fetch.task.conversion=none;
 SET hive.auto.convert.join=true;
@@ -8,7 +8,7 @@ SET hive.auto.convert.join.noconditionaltask.size=1000000000;
 set hive.exec.dynamic.partition.mode=nonstrict;
 
 -- HIVE-12738 -- We are checking if a MapJoin after a GroupBy will work properly.
-explain vectorization expression
+explain
 select *
 from src
 where not key in

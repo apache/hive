@@ -138,11 +138,6 @@ public class SelectColumnIsTrue extends VectorExpression {
   }
 
   @Override
-  public String vectorExpressionParameters() {
-    return "col " + colNum1;
-  }
-
-  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();
     b.setMode(VectorExpressionDescriptor.Mode.FILTER)

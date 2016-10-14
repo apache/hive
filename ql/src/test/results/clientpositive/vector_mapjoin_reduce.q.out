@@ -4,7 +4,7 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 -- Query copied from subquery_in.q
 
 -- non agg, non corr, with join in Parent Query
-explain vectorization expression
+explain
 select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
@@ -16,16 +16,12 @@ POSTHOOK: query: -- SORT_QUERY_RESULTS
 -- Query copied from subquery_in.q
 
 -- non agg, non corr, with join in Parent Query
-explain vectorization expression
+explain
 select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR')
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-7 depends on stages: Stage-4, Stage-8 , consists of Stage-9, Stage-10, Stage-2
@@ -58,14 +54,6 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
-      Map Vectorization:
-          enabled: false
-          enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
-          inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-      Reduce Vectorization:
-          enabled: false
-          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
-          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
@@ -119,10 +107,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Map Vectorization:
-          enabled: false
-          enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
-          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
       Local Work:
         Map Reduce Local Work
 
@@ -163,10 +147,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Map Vectorization:
-          enabled: false
-          enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
-          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
       Local Work:
         Map Reduce Local Work
 
@@ -262,10 +242,6 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-      Map Vectorization:
-          enabled: false
-          enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
-          inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
       Local Work:
         Map Reduce Local Work
 
@@ -300,23 +276,19 @@ POSTHOOK: Input: default@lineitem
 64128	9141
 82704	7721
 PREHOOK: query: -- non agg, corr, with join in Parent Query
-explain vectorization expression
+explain
 select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
 PREHOOK: type: QUERY
 POSTHOOK: query: -- non agg, corr, with join in Parent Query
-explain vectorization expression
+explain
 select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-7 depends on stages: Stage-4, Stage-8 , consists of Stage-9, Stage-10, Stage-2
@@ -349,14 +321,6 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
-      Map Vectorization:
-          enabled: false
-          enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
-          inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-      Reduce Vectorization:
-          enabled: false
-          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
-          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
@@ -410,10 +374,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Map Vectorization:
-          enabled: false
-          enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
-          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
       Local Work:
         Map Reduce Local Work
 
@@ -454,10 +414,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Map Vectorization:
-          enabled: false
-          enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
-          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
       Local Work:
         Map Reduce Local Work
 
@@ -553,10 +509,6 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-      Map Vectorization:
-          enabled: false
-          enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
-          inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
       Local Work:
         Map Reduce Local Work
 

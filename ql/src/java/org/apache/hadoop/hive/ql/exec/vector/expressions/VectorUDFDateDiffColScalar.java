@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.io.Text;
 
-import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -295,11 +294,6 @@ public class VectorUDFDateDiffColScalar extends VectorExpression {
 
   public void setStringValue(byte[] stringValue) {
     this.stringValue = stringValue;
-  }
-
-  @Override
-  public String vectorExpressionParameters() {
-    return "col " + colNum + ", val " + new String(stringValue, StandardCharsets.UTF_8);
   }
 
   @Override

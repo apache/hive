@@ -130,11 +130,6 @@ public class IfExprIntervalDayTimeColumnScalar extends VectorExpression {
   }
 
   @Override
-  public String vectorExpressionParameters() {
-    return "col " + arg1Column + ", col "+ arg2Column + ", val "+ arg3Scalar.toString();
-  }
-
-  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())
         .setMode(

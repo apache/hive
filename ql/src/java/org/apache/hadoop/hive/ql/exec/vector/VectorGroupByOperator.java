@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc;
 import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc.ProcessingMode;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
@@ -65,8 +64,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
 
   private static final Logger LOG = LoggerFactory.getLogger(
       VectorGroupByOperator.class.getName());
-
-  private VectorGroupByDesc vectorDesc;
 
   /**
    * This is the vector of aggregators. They are stateless and only implement
@@ -759,10 +756,16 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
     this(ctx);
     GroupByDesc desc = (GroupByDesc) conf;
     this.conf = desc;
-    vectorDesc = (VectorGroupByDesc) desc.getVectorDesc();
-    keyExpressions = vectorDesc.getKeyExpressions();
-    aggregators = vectorDesc.getAggregators();
-    isVectorOutput = vectorDesc.isVectorOutput();
+    List<ExprNodeDesc> keysDesc = desc.getKeys();
+    keyExpressions = vContext.getVectorExpressions(keysDesc);
+    ArrayList<AggregationDesc> aggrDesc = desc.getAggregators();
+    aggregators = new VectorAggregateExpression[aggrDesc.size()];
+    for (int i = 0; i < aggrDesc.size(); ++i) {
+      AggregationDesc aggDesc = aggrDesc.get(i);
+      aggregators[i] = vContext.getAggregatorExpression(aggDesc);
+    }
+
+    isVectorOutput = desc.getVectorDesc().isVectorOutput();
 
     vOutContext = new VectorizationContext(getName(), desc.getOutputColumnNames(),
         /* vContextEnvironment */ vContext);
@@ -831,7 +834,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
 
     forwardCache = new Object[outputKeyLength + aggregators.length];
 
-    switch (vectorDesc.getProcessingMode()) {
+    switch (conf.getVectorDesc().getProcessingMode()) {
     case GLOBAL:
       Preconditions.checkState(outputKeyLength == 0);
       processingMode = this.new ProcessingModeGlobalAggregate();
@@ -847,7 +850,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
       break;
     default:
       throw new RuntimeException("Unsupported vector GROUP BY processing mode " +
-          vectorDesc.getProcessingMode().name());
+          conf.getVectorDesc().getProcessingMode().name());
     }
     processingMode.initialize(hconf);
   }

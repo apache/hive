@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.<BaseClassName>;
 
-import java.nio.charset.StandardCharsets;
-
 import org.apache.hadoop.hive.common.type.<TruncStringHiveType>;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
@@ -43,11 +41,6 @@ public class <ClassName> extends <BaseClassName> {
   }
 
   public <ClassName>() {
-  }
-
-  @Override
-  public String vectorExpressionParameters() {
-    return "col " + colNum + ", val " + new String(value, StandardCharsets.UTF_8);
   }
 
   @Override

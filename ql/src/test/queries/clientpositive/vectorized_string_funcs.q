@@ -1,10 +1,9 @@
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled = true;
-set hive.fetch.task.conversion=none;
 
 -- Test string functions in vectorized mode to verify end-to-end functionality.
 
-explain vectorization 
+explain 
 select 
    substr(cstring1, 1, 2)
   ,substr(cstring1, 2)

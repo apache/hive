@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 public abstract class MathFuncDoubleToDouble extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  protected int colNum;
+  private int colNum;
   private int outputColumn;
 
   // Subclasses must override this with a function that implements the desired logic.
@@ -132,10 +132,5 @@ public abstract class MathFuncDoubleToDouble extends VectorExpression {
   @Override
   public String getOutputType() {
     return "double";
-  }
-
-  @Override
-  public String vectorExpressionParameters() {
-    return "col " + colNum;
   }
 }

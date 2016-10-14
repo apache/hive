@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.util.Arrays;
-
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -154,10 +152,6 @@ public class LongColumnInList extends VectorExpression implements ILongInExpr {
 
   public void setInListValues(long [] a) {
     this.inListValues = a;
-  }
-
-  public String vectorExpressionParameters() {
-    return "col " + colNum + ", values " + Arrays.toString(inListValues);
   }
 
   @Override

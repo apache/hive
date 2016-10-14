@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorColumnOrderedMap.Mapping;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  * This class collects column information for copying a row from one VectorizedRowBatch to
@@ -36,9 +35,9 @@ public class VectorColumnOutputMapping extends VectorColumnMapping {
   }
 
   @Override
-  public void add(int sourceColumn, int outputColumn, TypeInfo typeInfo) {
+  public void add(int sourceColumn, int outputColumn, String typeName) {
     // Order on outputColumn.
-    vectorColumnMapping.add(outputColumn, sourceColumn, typeInfo);
+    vectorColumnMapping.add(outputColumn, sourceColumn, typeName);
   }
 
   public boolean containsOutputColumn(int outputColumn) {
@@ -52,7 +51,7 @@ public class VectorColumnOutputMapping extends VectorColumnMapping {
     // Ordered columns are the output columns.
     sourceColumns = mapping.getValueColumns();
     outputColumns = mapping.getOrderedColumns();
-    typeInfos = mapping.getTypeInfos();
+    typeNames = mapping.getTypeNames();
 
     // Not needed anymore.
     vectorColumnMapping = null;

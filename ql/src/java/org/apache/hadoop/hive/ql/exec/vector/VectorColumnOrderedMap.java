@@ -23,10 +23,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.ArrayUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  * This class collects column information for mapping vector columns, including the hive type name.
@@ -45,17 +43,17 @@ public class VectorColumnOrderedMap {
   private class Value {
     int valueColumn;
 
-    TypeInfo typeInfo;
+    String typeName;
 
-    Value(int valueColumn, TypeInfo typeInfo) {
+    Value(int valueColumn, String typeName) {
       this.valueColumn = valueColumn;
-      this.typeInfo = typeInfo;
+      this.typeName = typeName;
     }
 
     public String toString() {
       StringBuilder sb = new StringBuilder();
       sb.append("(value column: " + valueColumn);
-      sb.append(", type info: " + typeInfo.toString() + ")");
+      sb.append(", type name: " + typeName + ")");
       return sb.toString();
     }
   }
@@ -64,12 +62,12 @@ public class VectorColumnOrderedMap {
 
     private final int[] orderedColumns;
     private final int[] valueColumns;
-    private final TypeInfo[] typeInfos;
+    private final String[] typeNames;
 
-    Mapping(int[] orderedColumns, int[] valueColumns, TypeInfo[] typeInfos) {
+    Mapping(int[] orderedColumns, int[] valueColumns, String[] typeNames) {
       this.orderedColumns = orderedColumns;
       this.valueColumns = valueColumns;
-      this.typeInfos = typeInfos;
+      this.typeNames = typeNames;
     }
 
     public int getCount() {
@@ -84,8 +82,8 @@ public class VectorColumnOrderedMap {
       return valueColumns;
     }
 
-    public TypeInfo[] getTypeInfos() {
-      return typeInfos;
+    public String[] getTypeNames() {
+      return typeNames;
     }
   }
 
@@ -94,14 +92,14 @@ public class VectorColumnOrderedMap {
     orderedTreeMap = new TreeMap<Integer, Value>();
   }
 
-  public void add(int orderedColumn, int valueColumn, TypeInfo typeInfo) {
+  public void add(int orderedColumn, int valueColumn, String typeName) {
     if (orderedTreeMap.containsKey(orderedColumn)) {
       throw new RuntimeException(
           name + " duplicate column " + orderedColumn +
           " in ordered column map " + orderedTreeMap.toString() +
-          " when adding value column " + valueColumn + ", type into " + typeInfo.toString());
+          " when adding value column " + valueColumn + ", type " + typeName);
     }
-    orderedTreeMap.put(orderedColumn, new Value(valueColumn, typeInfo));
+    orderedTreeMap.put(orderedColumn, new Value(valueColumn, typeName));
   }
 
   public boolean orderedColumnsContain(int orderedColumn) {
@@ -111,16 +109,17 @@ public class VectorColumnOrderedMap {
   public Mapping getMapping() {
     ArrayList<Integer> orderedColumns = new ArrayList<Integer>();
     ArrayList<Integer> valueColumns = new ArrayList<Integer>();
-    ArrayList<TypeInfo> typeInfos = new ArrayList<TypeInfo>();
+    ArrayList<String> typeNames = new ArrayList<String>();
     for (Map.Entry<Integer, Value> entry : orderedTreeMap.entrySet()) {
       orderedColumns.add(entry.getKey());
       Value value = entry.getValue();
       valueColumns.add(value.valueColumn);
-      typeInfos.add(value.typeInfo);
+      typeNames.add(value.typeName);
     }
     return new Mapping(
             ArrayUtils.toPrimitive(orderedColumns.toArray(new Integer[0])),
             ArrayUtils.toPrimitive(valueColumns.toArray(new Integer[0])),
-            typeInfos.toArray(new TypeInfo[0]));
+            typeNames.toArray(new String[0]));
+    
   }
 }

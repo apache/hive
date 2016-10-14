@@ -1,7 +1,5 @@
 set hive.mapred.mode=nonstrict;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=none;
-
 SELECT AVG(cbigint),
        (-(AVG(cbigint))),
        (-6432 + AVG(cbigint)),

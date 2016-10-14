@@ -1,7 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=none;
 
 create table vectortab2k(
             t tinyint,
@@ -40,7 +39,7 @@ STORED AS ORC;
 
 INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k;
 
-explain vectorization expression
+explain
 select bo, max(b) from vectortab2korc group by bo order by bo desc;
 
 select bo, max(b) from vectortab2korc group by bo order by bo desc;

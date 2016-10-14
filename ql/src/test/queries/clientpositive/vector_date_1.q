@@ -1,7 +1,8 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
+
 set hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=none;
+set hive.fetch.task.conversion=minimal;
 
 drop table if exists vector_date_1;
 create table vector_date_1 (dt1 date, dt2 date) stored as orc;

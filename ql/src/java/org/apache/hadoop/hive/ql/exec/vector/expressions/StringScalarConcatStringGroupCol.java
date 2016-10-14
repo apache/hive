@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.nio.charset.StandardCharsets;
-
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -148,11 +146,6 @@ public class StringScalarConcatStringGroupCol extends VectorExpression {
 
   public void setOutputColumn(int outputColumn) {
     this.outputColumn = outputColumn;
-  }
-
-  @Override
-  public String vectorExpressionParameters() {
-    return "val " + new String(value, StandardCharsets.UTF_8) + ", col " + colNum;
   }
 
   @Override

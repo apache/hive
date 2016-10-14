@@ -55,11 +55,6 @@ public class PosModDoubleToDouble extends MathFuncDoubleToDouble
   }
 
   @Override
-  public String vectorExpressionParameters() {
-    return "col " + colNum + ", divisor " + divisor;
-  }
-
-  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())
         .setMode(

@@ -3,7 +3,7 @@ PREHOOK: query: -- SORT_QUERY_RESULTS
 -- Currently, vectorization is not supported in fetch task (hive.fetch.task.conversion=none)
 -- Test type casting in vectorized mode to verify end-to-end functionality.
 
-explain vectorization 
+explain 
 select 
 -- to boolean
    cast (ctinyint as boolean)
@@ -82,7 +82,7 @@ POSTHOOK: query: -- SORT_QUERY_RESULTS
 -- Currently, vectorization is not supported in fetch task (hive.fetch.task.conversion=none)
 -- Test type casting in vectorized mode to verify end-to-end functionality.
 
-explain vectorization 
+explain 
 select 
 -- to boolean
    cast (ctinyint as boolean)
@@ -156,10 +156,6 @@ from alltypesorc
 -- limit output to a reasonably small number of rows
 where cbigint % 250 = 0
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -190,14 +186,6 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
-                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: false
-                usesVectorUDFAdaptor: true
-                vectorized: true
 
   Stage: Stage-0
     Fetch Operator

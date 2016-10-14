@@ -272,11 +272,6 @@ public class StringSubstrColStartLen extends VectorExpression {
   }
 
   @Override
-  public String vectorExpressionParameters() {
-    return "col " + colNum + ", start " + startIdx + ", length " + length;
-  }
-
-  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)

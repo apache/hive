@@ -1,7 +1,5 @@
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=none;
-
 drop table char_2;
 
 create table char_2 (
@@ -16,7 +14,7 @@ from src
 order by key asc
 limit 5;
 
-explain vectorization only select key, value
+explain select key, value
 from char_2
 order by key asc
 limit 5;
@@ -32,7 +30,7 @@ from src
 order by key desc
 limit 5;
 
-explain vectorization only select key, value
+explain select key, value
 from char_2
 order by key desc
 limit 5;
@@ -51,7 +49,7 @@ create table char_3 (
   field char(12)
 ) stored as orc;
 
-explain vectorization only operator
+explain
 insert into table char_3 select cint from alltypesorc limit 10;
 
 insert into table char_3 select cint from alltypesorc limit 10;

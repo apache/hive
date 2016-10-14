@@ -2,7 +2,7 @@ set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
 set hive.vectorized.execution.enabled = true
 ;
-explain vectorization expression
+explain
 select 
   csmallint,
   case 
@@ -37,7 +37,7 @@ where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
 ;
-explain vectorization expression
+explain
 select 
   csmallint,
   case 

@@ -136,11 +136,6 @@ public class LongColGreaterLongScalar extends VectorExpression {
   }
 
   @Override
-  public String vectorExpressionParameters() {
-    return "col " + colNum + ", val " + value;
-  }
-
-  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())
         .setMode(

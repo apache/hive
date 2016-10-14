@@ -57,13 +57,6 @@ public class VectorUDAFCountStar extends VectorAggregateExpression {
       }
     }
 
-
-    @Override
-    public VectorExpression inputExpression() {
-      // None.
-      return null;
-    }
-
     transient private final LongWritable result;
 
     public VectorUDAFCountStar(VectorExpression inputExpression) {

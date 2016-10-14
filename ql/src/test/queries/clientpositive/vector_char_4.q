@@ -1,6 +1,5 @@
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=none;
 
 drop table if exists vectortab2k;
 drop table if exists vectortab2korc;
@@ -45,7 +44,7 @@ INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k;
 drop table if exists char_lazy_binary_columnar; 
 create table char_lazy_binary_columnar(ct char(10), csi char(10), ci char(20), cb char(30), cf char(20), cd char(20), cs char(50)) row format serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe' stored as rcfile;
 
-explain vectorization expression
+explain
 insert overwrite table char_lazy_binary_columnar select t, si, i, b, f, d, s from vectortab2korc;
 
 -- insert overwrite table char_lazy_binary_columnar select t, si, i, b, f, d, s from vectortab2korc;
