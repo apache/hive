@@ -236,7 +236,7 @@
 
 <property>
   <name>spark.executor.memory</name>
-  <value>1g</value>
+  <value>512m</value>
 </property>
 
 <property>
@@ -246,7 +246,7 @@
 
 <property>
   <name>spark.driver.memory</name>
-  <value>1g</value>
+  <value>512m</value>
 </property>
 
 <property>
