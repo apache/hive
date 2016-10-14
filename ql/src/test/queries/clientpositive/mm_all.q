@@ -131,6 +131,42 @@ drop table skew_dp_union_mm;
 
 
 
+set hive.merge.orcfile.stripe.level=true;
+set hive.merge.tezfiles=true;
+set hive.merge.mapfiles=true;
+set hive.merge.mapredfiles=true;
+
+
+create table merge0_mm (id int) stored as orc tblproperties('hivecommit'='true');
+
+insert into table merge0_mm select key from intermediate;
+select * from merge0_mm;
+
+set tez.grouping.split-count=1;
+insert into table merge0_mm select key from intermediate;
+set tez.grouping.split-count=0;
+select * from merge0_mm;
+
+drop table merge0_mm;
+
+
+create table merge1_mm (id int) partitioned by (key int) stored as orc tblproperties('hivecommit'='true');
+
+insert into table merge1_mm partition (key) select key, key from intermediate;
+select * from merge1_mm;
+
+set tez.grouping.split-count=1;
+insert into table merge1_mm partition (key) select key, key from intermediate;
+set tez.grouping.split-count=0;
+select * from merge1_mm;
+
+drop table merge1_mm;
+
+
+-- TODO: need to include merge+union, but it's broken for now
+
+
+
 
 
 
@@ -140,29 +176,12 @@ drop table skew_dp_union_mm;
 
 
 
---drop table merge_mm;
+
+
 --drop table ctas_mm;
 --
 --
 --create table ctas_mm tblproperties ('hivecommit'='true') as select * from src limit 3;
---
---
---set hive.merge.mapredfiles=true;
---set hive.merge.sparkfiles=true;
---set hive.merge.tezfiles=true;
---
---CREATE TABLE merge_mm (key INT, value STRING) 
---    PARTITIONED BY (ds STRING, part STRING) STORED AS ORC tblproperties ('hivecommit'='true');
---
---EXPLAIN
---INSERT OVERWRITE TABLE merge_mm PARTITION (ds='123', part)
---        SELECT key, value, PMOD(HASH(key), 2) as part
---        FROM src;
---
---INSERT OVERWRITE TABLE merge_mm PARTITION (ds='123', part)
---        SELECT key, value, PMOD(HASH(key), 2) as part
---        FROM src;
---
 --
 --
 ---- TODO load, multi-insert etc

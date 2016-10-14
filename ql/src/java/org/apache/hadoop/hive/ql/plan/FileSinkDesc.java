@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -182,6 +183,13 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     return linkedFileSink ? parentDir : dirName;
   }
 
+  /** getFinalDirName that takes into account MM, but not DP, LB or buckets. */
+  public Path getMergeInputDirName() {
+    Path root = getFinalDirName();
+    if (mmWriteId == null) return root;
+    return new Path(root, ValidWriteIds.getMmFilePrefix(mmWriteId));
+  }
+
   @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public TableDesc getTableInfo() {
     return tableInfo;
@@ -255,7 +263,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     return mmWriteId != null;
   }
 
-  public long getMmWriteId() {
+  public Long getMmWriteId() {
     return mmWriteId;
   }
 
@@ -483,6 +491,10 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   public void setStatsTmpDir(String statsCollectionTempDir) {
     this.statsTmpDir = statsCollectionTempDir;
+  }
+
+  public void setMmWriteId(Long mmWriteId) {
+    this.mmWriteId = mmWriteId;
   }
 
   public class FileSinkOperatorExplainVectorization extends OperatorExplainVectorization {

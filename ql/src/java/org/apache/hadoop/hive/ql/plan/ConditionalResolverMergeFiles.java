@@ -76,14 +76,6 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     }
 
     /**
-     * @param dir
-     *          the dir to set
-     */
-    public void setDir(String dir) {
-      this.dir = dir;
-    }
-
-    /**
      * @return the listTasks
      */
     public List<Task<? extends Serializable>> getListTasks() {
@@ -121,8 +113,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     }
   }
 
-  public List<Task<? extends Serializable>> getTasks(HiveConf conf,
-      Object objCtx) {
+  public List<Task<? extends Serializable>> getTasks(HiveConf conf, Object objCtx) {
     ConditionalResolverMergeFilesCtx ctx = (ConditionalResolverMergeFilesCtx) objCtx;
     String dirName = ctx.getDir();
 
@@ -179,6 +170,8 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           if(lbLevel == 0) {
             // static partition without list bucketing
             long totalSz = getMergeSize(inpFs, dirPath, avgConditionSize);
+            Utilities.LOG14535.info("merge resolve simple case - totalSz " + totalSz + " from " + dirPath);
+
             if (totalSz >= 0) { // add the merge job
               setupMapRedWork(conf, work, trgtSize, totalSz);
               resTsks.add(mrTask);
@@ -192,6 +185,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           }
         }
       } else {
+        Utilities.LOG14535.info("Resolver returning movetask for " + dirPath);
         resTsks.add(mvTask);
       }
     } catch (IOException e) {
@@ -234,6 +228,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       Task<? extends Serializable> mrTask, Task<? extends Serializable> mrAndMvTask, Path dirPath,
       FileSystem inpFs, ConditionalResolverMergeFilesCtx ctx, MapWork work, int dpLbLevel)
       throws IOException {
+    Utilities.LOG14535.info("generateActualTasks for " + dirPath);
     DynamicPartitionCtx dpCtx = ctx.getDPCtx();
     // get list of dynamic partitions
     FileStatus[] status = HiveStatsUtils.getFileStatusRecurse(dirPath, dpLbLevel, inpFs);
@@ -281,6 +276,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
 
       // add the move task for those partitions that do not need merging
       if (toMove.size() > 0) {
+        // Note: this path should be specific to concatenate; never executed in a select query.
         // modify the existing move task as it is already in the candidate running tasks
 
         // running the MoveTask and MR task in parallel may
@@ -362,6 +358,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       long totalSz = 0;
       int numFiles = 0;
       for (FileStatus fStat : fStats) {
+        Utilities.LOG14535.info("Resolver looking at " + fStat.getPath());
         if (fStat.isDir()) {
           AverageSize avgSzDir = getAverageSize(inpFs, fStat.getPath());
           if (avgSzDir.getTotalSize() < 0) {

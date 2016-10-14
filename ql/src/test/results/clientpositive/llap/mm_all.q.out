@@ -153,12 +153,12 @@ POSTHOOK: Input: default@part_mm@key_mm=456
 10	456
 10	455
 10	455
+97	455
 97	456
 97	455
-97	455
-98	455
 98	455
 98	456
+98	455
 PREHOOK: query: drop table part_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_mm
@@ -735,35 +735,193 @@ POSTHOOK: query: drop table skew_dp_union_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@skew_dp_union_mm
 POSTHOOK: Output: default@skew_dp_union_mm
-PREHOOK: query: -- future
+PREHOOK: query: create table merge0_mm (id int) stored as orc tblproperties('hivecommit'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@merge0_mm
+POSTHOOK: query: create table merge0_mm (id int) stored as orc tblproperties('hivecommit'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@merge0_mm
+PREHOOK: query: insert into table merge0_mm select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: default@merge0_mm
+POSTHOOK: query: insert into table merge0_mm select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: default@merge0_mm
+POSTHOOK: Lineage: merge0_mm.id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from merge0_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@merge0_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from merge0_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge0_mm
+#### A masked pattern was here ####
+98
+97
+0
+10
+PREHOOK: query: insert into table merge0_mm select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: default@merge0_mm
+POSTHOOK: query: insert into table merge0_mm select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: default@merge0_mm
+POSTHOOK: Lineage: merge0_mm.id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from merge0_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@merge0_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from merge0_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge0_mm
+#### A masked pattern was here ####
+98
+97
+0
+10
+98
+97
+0
+10
+PREHOOK: query: drop table merge0_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@merge0_mm
+PREHOOK: Output: default@merge0_mm
+POSTHOOK: query: drop table merge0_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@merge0_mm
+POSTHOOK: Output: default@merge0_mm
+PREHOOK: query: create table merge1_mm (id int) partitioned by (key int) stored as orc tblproperties('hivecommit'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@merge1_mm
+POSTHOOK: query: create table merge1_mm (id int) partitioned by (key int) stored as orc tblproperties('hivecommit'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@merge1_mm
+PREHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: default@merge1_mm
+POSTHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: default@merge1_mm@key=0
+POSTHOOK: Output: default@merge1_mm@key=10
+POSTHOOK: Output: default@merge1_mm@key=97
+POSTHOOK: Output: default@merge1_mm@key=98
+POSTHOOK: Lineage: merge1_mm PARTITION(key=0).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=10).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=97).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=98).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from merge1_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@merge1_mm
+PREHOOK: Input: default@merge1_mm@key=0
+PREHOOK: Input: default@merge1_mm@key=10
+PREHOOK: Input: default@merge1_mm@key=97
+PREHOOK: Input: default@merge1_mm@key=98
+#### A masked pattern was here ####
+POSTHOOK: query: select * from merge1_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge1_mm
+POSTHOOK: Input: default@merge1_mm@key=0
+POSTHOOK: Input: default@merge1_mm@key=10
+POSTHOOK: Input: default@merge1_mm@key=97
+POSTHOOK: Input: default@merge1_mm@key=98
+#### A masked pattern was here ####
+97	97
+98	98
+0	0
+10	10
+PREHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: default@merge1_mm
+POSTHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: default@merge1_mm@key=0
+POSTHOOK: Output: default@merge1_mm@key=10
+POSTHOOK: Output: default@merge1_mm@key=97
+POSTHOOK: Output: default@merge1_mm@key=98
+POSTHOOK: Lineage: merge1_mm PARTITION(key=0).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=10).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=97).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=98).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from merge1_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@merge1_mm
+PREHOOK: Input: default@merge1_mm@key=0
+PREHOOK: Input: default@merge1_mm@key=10
+PREHOOK: Input: default@merge1_mm@key=97
+PREHOOK: Input: default@merge1_mm@key=98
+#### A masked pattern was here ####
+POSTHOOK: query: select * from merge1_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge1_mm
+POSTHOOK: Input: default@merge1_mm@key=0
+POSTHOOK: Input: default@merge1_mm@key=10
+POSTHOOK: Input: default@merge1_mm@key=97
+POSTHOOK: Input: default@merge1_mm@key=98
+#### A masked pattern was here ####
+97	97
+97	97
+98	98
+98	98
+0	0
+0	0
+10	10
+10	10
+PREHOOK: query: drop table merge1_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@merge1_mm
+PREHOOK: Output: default@merge1_mm
+POSTHOOK: query: drop table merge1_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@merge1_mm
+POSTHOOK: Output: default@merge1_mm
+PREHOOK: query: -- TODO: need to include merge+union, but it's broken for now
 
 
 
 
 
---drop table merge_mm;
+
+-- future
+
+
+
+
+
+
+
 --drop table ctas_mm;
 --
 --
 --create table ctas_mm tblproperties ('hivecommit'='true') as select * from src limit 3;
---
---
---set hive.merge.mapredfiles=true;
---set hive.merge.sparkfiles=true;
---set hive.merge.tezfiles=true;
---
---CREATE TABLE merge_mm (key INT, value STRING) 
---    PARTITIONED BY (ds STRING, part STRING) STORED AS ORC tblproperties ('hivecommit'='true');
---
---EXPLAIN
---INSERT OVERWRITE TABLE merge_mm PARTITION (ds='123', part)
---        SELECT key, value, PMOD(HASH(key), 2) as part
---        FROM src;
---
---INSERT OVERWRITE TABLE merge_mm PARTITION (ds='123', part)
---        SELECT key, value, PMOD(HASH(key), 2) as part
---        FROM src;
---
 --
 --
 ---- TODO load, multi-insert etc
@@ -774,35 +932,25 @@ drop table intermediate
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate
 PREHOOK: Output: default@intermediate
-POSTHOOK: query: -- future
+POSTHOOK: query: -- TODO: need to include merge+union, but it's broken for now
 
 
 
 
 
---drop table merge_mm;
+
+-- future
+
+
+
+
+
+
+
 --drop table ctas_mm;
 --
 --
 --create table ctas_mm tblproperties ('hivecommit'='true') as select * from src limit 3;
---
---
---set hive.merge.mapredfiles=true;
---set hive.merge.sparkfiles=true;
---set hive.merge.tezfiles=true;
---
---CREATE TABLE merge_mm (key INT, value STRING) 
---    PARTITIONED BY (ds STRING, part STRING) STORED AS ORC tblproperties ('hivecommit'='true');
---
---EXPLAIN
---INSERT OVERWRITE TABLE merge_mm PARTITION (ds='123', part)
---        SELECT key, value, PMOD(HASH(key), 2) as part
---        FROM src;
---
---INSERT OVERWRITE TABLE merge_mm PARTITION (ds='123', part)
---        SELECT key, value, PMOD(HASH(key), 2) as part
---        FROM src;
---
 --
 --
 ---- TODO load, multi-insert etc

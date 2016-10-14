@@ -1842,6 +1842,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         if (!s.isDirectory()) {
           throw new HiveException("partition " + s.getPath() + " is not a directory!");
         }
+        Utilities.LOG14535.info("Found DP " + s.getPath());
         validPartitions.add(s.getPath());
       }
     } catch (IOException e) {

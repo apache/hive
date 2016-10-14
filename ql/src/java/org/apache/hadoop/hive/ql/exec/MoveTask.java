@@ -256,6 +256,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
   @Override
   public int execute(DriverContext driverContext) {
+    Utilities.LOG14535.info("Executing MoveWork " + System.identityHashCode(work)
+        + " with " + work.getLoadFileWork() + "; " + work.getLoadTableWork() + "; "
+        + work.getLoadMultiFilesWork(), new Exception());
 
     try {
       if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
@@ -315,15 +318,14 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
         boolean isAcid = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID;
         if (tbd.isMmTable() && isAcid) {
-          // TODO# need to make sure ACID writes to final directories. Otherwise, might need to move.
-          throw new HiveException("ACID and MM are not supported");
+           throw new HiveException("ACID and MM are not supported");
         }
 
         // Create a data container
         DataContainer dc = null;
         if (tbd.getPartitionSpec().size() == 0) {
           dc = new DataContainer(table.getTTable());
-          Utilities.LOG14535.info("loadTable called from " + tbd.getSourcePath() + " into " + tbd.getTable());
+          Utilities.LOG14535.info("loadTable called from " + tbd.getSourcePath() + " into " + tbd.getTable().getTableName(), new Exception());
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getReplace(),
               work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isAcid, hasFollowingStatsTask(),
               tbd.getMmWriteId());

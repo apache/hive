@@ -6575,7 +6575,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         queryTmpdir = ctx.getTempDirForPath(dest_path);
       }
-      Utilities.LOG14535.info("createFS for table specifying " + queryTmpdir + " from " + dest_path);
+      Utilities.LOG14535.info("create filesink w/DEST_TABLE specifying " + queryTmpdir + " from " + dest_path);
       if (dpCtx != null) {
         // set the root of the temporary path where dynamic partition columns will populate
         dpCtx.setRootPath(queryTmpdir);
@@ -6644,7 +6644,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       isMmTable = MetaStoreUtils.isMmTable(dest_tab.getParameters());
       queryTmpdir = isMmTable ? dest_path : ctx.getTempDirForPath(dest_path);
-      Utilities.LOG14535.info("createFS for partition specifying " + queryTmpdir + " from " + dest_path);
+      Utilities.LOG14535.info("create filesink w/DEST_PARTITION specifying " + queryTmpdir + " from " + dest_path);
       table_desc = Utilities.getTableDesc(dest_tab);
 
       // Add sorting/bucketing if needed

@@ -3122,7 +3122,7 @@ public class HiveConf extends Configuration {
 
     HIVE_METASTORE_MM_HEARTBEAT_TIMEOUT("hive.metastore.mm.heartbeat.timeout", "1800s",
         new TimeValidator(TimeUnit.SECONDS),
-        "MM write ID times out after this long if a heartbeat is not send. Currently disabled."), // TODO# heartbeating not implemented
+        "MM write ID times out after this long if a heartbeat is not send. Currently disabled."),
 
     HIVE_METASTORE_MM_ABSOLUTE_TIMEOUT("hive.metastore.mm.absolute.timeout", "7d",
         new TimeValidator(TimeUnit.SECONDS),

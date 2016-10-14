@@ -234,6 +234,7 @@ public class ColumnTruncateMapper extends MapReduceBase implements
       ) throws HiveException, IOException {
     FileSystem fs = outputPath.getFileSystem(job);
     Path backupPath = backupOutputPath(fs, outputPath, job);
+    // TODO# special case - what is this about?
     Utilities.mvFileToFinalPath(outputPath, job, success, LOG, dynPartCtx, null,
       reporter);
     fs.delete(backupPath, true);
