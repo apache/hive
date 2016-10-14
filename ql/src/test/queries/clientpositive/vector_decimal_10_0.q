@@ -1,7 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=minimal;
+set hive.fetch.task.conversion=none;
 
 DROP TABLE IF EXISTS decimal_txt;
 DROP TABLE IF EXISTS `decimal`;

@@ -1,4 +1,4 @@
-set hive.explain.user=true;
+set hive.explain.user=false;
 set hive.cli.print.header=true;
 SET hive.exec.schema.evolution=true;
 SET hive.vectorized.use.vectorized.input.format=false;
@@ -38,7 +38,7 @@ alter table table_add_int_permute_select add columns(c int);
 
 insert into table table_add_int_permute_select VALUES (111, 80000, 'new', 80000);
 
-explain
+explain vectorization detail
 select insert_num,a,b from table_add_int_permute_select;
 
 -- SELECT permutation columns to make sure NULL defaulting works right
@@ -61,7 +61,7 @@ alter table table_add_int_string_permute_select add columns(c int, d string);
 
 insert into table table_add_int_string_permute_select VALUES (111, 80000, 'new', 80000, 'filler');
 
-explain
+explain vectorization detail
 select insert_num,a,b from table_add_int_string_permute_select;
 
 -- SELECT permutation columns to make sure NULL defaulting works right
@@ -93,7 +93,7 @@ alter table table_change_string_group_double replace columns (insert_num int, c1
 
 insert into table table_change_string_group_double VALUES (111, 789.321, 789.321, 789.321, 'new');
 
-explain
+explain vectorization detail
 select insert_num,c1,c2,c3,b from table_change_string_group_double;
 
 select insert_num,c1,c2,c3,b from table_change_string_group_double;
@@ -160,7 +160,7 @@ insert into table table_change_numeric_group_string_group_multi_ints_string_grou
             'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
             'new');
 
-explain
+explain vectorization detail
 select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from table_change_numeric_group_string_group_multi_ints_string_group;
 
 select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from table_change_numeric_group_string_group_multi_ints_string_group;
@@ -203,7 +203,7 @@ insert into table table_change_numeric_group_string_group_floating_string_group 
              'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
              'new');
 
-explain
+explain vectorization detail
 select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group;
 
 select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group;

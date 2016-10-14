@@ -35,7 +35,7 @@ SET hive.vectorized.execution.enabled=true;
 --
 -- Projection LongCol<Compare>LongScalar
 --
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT sum(hash(*)) FROM
     (SELECT t, si, i, (t < 0) as compare1, (si <= 0) as compare2, (i = 0) as compare3 from vectortab2k_orc
         order by t, si, i) as q;
@@ -44,7 +44,7 @@ SELECT sum(hash(*)) FROM
     (SELECT t, si, i, (t < 0) as compare1, (si <= 0) as compare2, (i = 0) as compare3 from vectortab2k_orc
         order by t, si, i) as q;
 
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT sum(hash(*)) FROM
     (SELECT t, si, i, b, (t > 0) as compare1, (si >= 0) as compare2, (i != 0) as compare3, (b > 0) as compare4 from vectortab2k_orc
         order by t, si, i, b) as q;

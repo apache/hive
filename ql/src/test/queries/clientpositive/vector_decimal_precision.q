@@ -1,7 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=minimal;
+set hive.fetch.task.conversion=none;
 
 DROP TABLE IF EXISTS DECIMAL_PRECISION_txt;
 DROP TABLE IF EXISTS DECIMAL_PRECISION;
@@ -26,7 +26,7 @@ SELECT dec, dec / 9 FROM DECIMAL_PRECISION ORDER BY dec;
 SELECT dec, dec / 27 FROM DECIMAL_PRECISION ORDER BY dec;
 SELECT dec, dec * dec FROM DECIMAL_PRECISION ORDER BY dec;
 
-EXPLAIN SELECT avg(dec), sum(dec) FROM DECIMAL_PRECISION;
+EXPLAIN VECTORIZATION EXPRESSION SELECT avg(dec), sum(dec) FROM DECIMAL_PRECISION;
 SELECT avg(dec), sum(dec) FROM DECIMAL_PRECISION;
 
 SELECT dec * cast('12345678901234567890.12345678' as decimal(38,18)) FROM DECIMAL_PRECISION LIMIT 1;

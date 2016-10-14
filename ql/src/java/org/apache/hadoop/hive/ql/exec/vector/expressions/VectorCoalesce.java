@@ -141,6 +141,11 @@ public class VectorCoalesce extends VectorExpression {
   }
 
   @Override
+  public String vectorExpressionParameters() {
+    return "columns " + Arrays.toString(inputColumns);
+  }
+
+  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
 
     // Descriptor is not defined because it takes variable number of arguments with different

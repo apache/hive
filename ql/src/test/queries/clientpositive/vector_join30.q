@@ -10,7 +10,7 @@ SET hive.auto.convert.join.noconditionaltask.size=1000000000;
 
 CREATE TABLE orcsrc STORED AS ORC AS SELECT * FROM src;
 
-explain
+explain vectorization expression
 FROM 
 (SELECT orcsrc.* FROM orcsrc sort by key) x
 JOIN
@@ -25,7 +25,7 @@ JOIN
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value));
 
-explain
+explain vectorization expression
 FROM 
 (SELECT orcsrc.* FROM orcsrc sort by key) x
 LEFT OUTER JOIN
@@ -40,7 +40,7 @@ LEFT OUTER JOIN
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value));
 
-explain
+explain vectorization expression
 FROM 
 (SELECT orcsrc.* FROM orcsrc sort by key) x
 RIGHT OUTER JOIN
@@ -55,7 +55,7 @@ RIGHT OUTER JOIN
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value));
 
-explain
+explain vectorization expression
 FROM 
 (SELECT orcsrc.* FROM orcsrc sort by key) x
 JOIN
@@ -76,7 +76,7 @@ JOIN
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value));
 
-explain
+explain vectorization expression
 FROM 
 (SELECT orcsrc.* FROM orcsrc sort by key) x
 JOIN
@@ -97,7 +97,7 @@ LEFT OUTER JOIN
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value));
 
-explain
+explain vectorization expression
 FROM 
 (SELECT orcsrc.* FROM orcsrc sort by key) x
 LEFT OUTER JOIN
@@ -118,7 +118,7 @@ LEFT OUTER JOIN
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value));
 
-explain
+explain vectorization expression
 FROM 
 (SELECT orcsrc.* FROM orcsrc sort by key) x
 LEFT OUTER JOIN
@@ -139,7 +139,7 @@ RIGHT OUTER JOIN
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value));
 
-explain
+explain vectorization expression
 FROM 
 (SELECT orcsrc.* FROM orcsrc sort by key) x
 RIGHT OUTER JOIN

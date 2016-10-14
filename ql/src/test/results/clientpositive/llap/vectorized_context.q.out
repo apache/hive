@@ -82,20 +82,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@household_demographics
 POSTHOOK: Lineage: household_demographics.hd_demo_sk SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-PREHOOK: query: explain 
+PREHOOK: query: explain vectorization 
 select store.s_city, ss_net_profit
 from store_sales
 JOIN store ON store_sales.ss_store_sk = store.s_store_sk
 JOIN household_demographics ON store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
 limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain 
+POSTHOOK: query: explain vectorization 
 select store.s_city, ss_net_profit
 from store_sales
 JOIN store ON store_sales.ss_store_sk = store.s_store_sk
 JOIN household_demographics ON store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
 limit 100
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -128,6 +132,14 @@ STAGE PLANS:
                         value expressions: _col1 (type: int), _col2 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -176,6 +188,14 @@ STAGE PLANS:
                                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -195,6 +215,14 @@ STAGE PLANS:
                         Statistics: Num rows: 6075 Data size: 24300 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
 
   Stage: Stage-0
     Fetch Operator

@@ -1,5 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=true;
+set hive.fetch.task.conversion=none;
+
 create table testvec(id int, dt int, greg_dt string) stored as orc;
 insert into table testvec
 values 
@@ -12,5 +14,5 @@ values
 (7,20150404, '2015-04-04');
 set hive.vectorized.execution.enabled=true;
 set hive.map.aggr=true;
-explain select max(dt), max(greg_dt) from testvec where id=5;
+explain vectorization select max(dt), max(greg_dt) from testvec where id=5;
 select max(dt), max(greg_dt) from testvec where id=5;

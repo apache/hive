@@ -1,10 +1,11 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
+set hive.fetch.task.conversion=none;
 
 -- SORT_QUERY_RESULTS
 
-EXPLAIN 
+EXPLAIN VECTORIZATION 
 SELECT   cfloat,
          cboolean1,
          cdouble,

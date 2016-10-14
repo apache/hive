@@ -2,6 +2,7 @@ set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 SET hive.auto.convert.join=true;
+set hive.fetch.task.conversion=none;
 
 create table vectortab_a_1k(
             t tinyint,
@@ -45,7 +46,7 @@ LOAD DATA LOCAL INPATH '../../data/files/vectortab_b_1k' OVERWRITE INTO TABLE ve
 
 CREATE TABLE vectortab_b_1korc STORED AS ORC AS SELECT * FROM vectortab_b_1k;
 
-explain
+explain vectorization expression
 select
    v1.s,
    v2.s,

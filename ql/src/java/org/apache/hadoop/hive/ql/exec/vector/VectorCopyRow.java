@@ -262,8 +262,7 @@ public class VectorCopyRow {
     for (int i = 0; i < count; i++) {
       int inputColumn = columnMapping.getInputColumns()[i];
       int outputColumn = columnMapping.getOutputColumns()[i];
-      String typeName = columnMapping.getTypeNames()[i].toLowerCase();
-      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+      TypeInfo typeInfo = columnMapping.getTypeInfos()[i];
       Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
 
       CopyRow copyRowByValue = null;

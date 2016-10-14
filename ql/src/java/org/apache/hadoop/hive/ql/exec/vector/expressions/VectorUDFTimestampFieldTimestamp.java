@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hive.common.util.DateUtils;
 
 import com.google.common.base.Preconditions;
 
@@ -146,6 +147,14 @@ public abstract class VectorUDFTimestampFieldTimestamp extends VectorExpression 
 
   public void setOutputColumn(int outputColumn) {
     this.outputColumn = outputColumn;
+  }
+
+  public String vectorExpressionParameters() {
+    if (field == -1) {
+      return "col " + colNum;
+    } else {
+      return "col " + colNum + ", field " + DateUtils.getFieldName(field);
+    }
   }
 
   @Override

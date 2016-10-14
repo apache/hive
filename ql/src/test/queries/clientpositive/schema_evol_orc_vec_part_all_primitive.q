@@ -1,4 +1,4 @@
-set hive.explain.user=true;
+set hive.explain.user=false;
 set hive.mapred.mode=nonstrict;
 set hive.cli.print.header=true;
 SET hive.exec.schema.evolution=true;
@@ -72,7 +72,7 @@ insert into table part_change_various_various_boolean_to_bigint partition(part=1
              bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, 
               'new' FROM schema_evolution_data;
 
-explain
+explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint;
 
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint;
@@ -114,7 +114,7 @@ insert into table part_change_various_various_decimal_to_double partition(part=1
              double1, double1, double1, double1, double1, double1, double1, double1, double1, double1, double1,
              'new' FROM schema_evolution_data_2 WHERE insert_num=111;
 
-explain
+explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double;
 
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double;
@@ -138,7 +138,7 @@ alter table part_change_various_various_timestamp replace columns (insert_num in
 
 insert into table part_change_various_various_timestamp partition(part=1) SELECT insert_num, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, 'new' FROM schema_evolution_data_2 WHERE insert_num=111;
 
-explain
+explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp;
 
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp;
@@ -159,7 +159,7 @@ alter table part_change_various_various_date replace columns (insert_num int, c1
 
 insert into table part_change_various_various_date partition(part=1) SELECT insert_num, date1, date1, date1, date1, 'new' FROM schema_evolution_data_2 WHERE insert_num=111;
 
-explain
+explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date;
 
 select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date;
@@ -198,7 +198,7 @@ load data local inpath '../../data/files/schema_evolution/same_type1_c.txt' over
 
 insert into table part_change_same_type_different_params partition(part=2) select * from same_type1_c_txt;
 
-explain
+explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params;
 
 select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params;
