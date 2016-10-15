@@ -2302,8 +2302,9 @@ public class HiveConf extends Configuration {
         "Domain for the HS2 generated cookies"),
     HIVE_SERVER2_THRIFT_HTTP_COOKIE_PATH("hive.server2.thrift.http.cookie.path", null,
         "Path for the HS2 generated cookies"),
+    @Deprecated
     HIVE_SERVER2_THRIFT_HTTP_COOKIE_IS_SECURE("hive.server2.thrift.http.cookie.is.secure", true,
-        "Secure attribute of the HS2 generated cookie."),
+        "Deprecated: Secure attribute of the HS2 generated cookie (this is automatically enabled for SSL enabled HiveServer2)."),
     HIVE_SERVER2_THRIFT_HTTP_COOKIE_IS_HTTPONLY("hive.server2.thrift.http.cookie.is.httponly", true,
         "HttpOnly attribute of the HS2 generated cookie."),
 
