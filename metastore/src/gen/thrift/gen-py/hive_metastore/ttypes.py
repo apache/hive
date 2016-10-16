@@ -8027,6 +8027,8 @@ class TxnInfo:
    - agentInfo
    - heartbeatCount
    - metaInfo
+   - startedTime
+   - lastHeartbeatTime
   """
 
   thrift_spec = (
@@ -8038,9 +8040,11 @@ class TxnInfo:
     (5, TType.STRING, 'agentInfo', None, "Unknown", ), # 5
     (6, TType.I32, 'heartbeatCount', None, 0, ), # 6
     (7, TType.STRING, 'metaInfo', None, None, ), # 7
+    (8, TType.I64, 'startedTime', None, None, ), # 8
+    (9, TType.I64, 'lastHeartbeatTime', None, None, ), # 9
   )
 
-  def __init__(self, id=None, state=None, user=None, hostname=None, agentInfo=thrift_spec[5][4], heartbeatCount=thrift_spec[6][4], metaInfo=None,):
+  def __init__(self, id=None, state=None, user=None, hostname=None, agentInfo=thrift_spec[5][4], heartbeatCount=thrift_spec[6][4], metaInfo=None, startedTime=None, lastHeartbeatTime=None,):
     self.id = id
     self.state = state
     self.user = user
@@ -8048,6 +8052,8 @@ class TxnInfo:
     self.agentInfo = agentInfo
     self.heartbeatCount = heartbeatCount
     self.metaInfo = metaInfo
+    self.startedTime = startedTime
+    self.lastHeartbeatTime = lastHeartbeatTime
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -8093,6 +8099,16 @@ class TxnInfo:
           self.metaInfo = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.I64:
+          self.startedTime = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 9:
+        if ftype == TType.I64:
+          self.lastHeartbeatTime = iprot.readI64()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -8131,6 +8147,14 @@ class TxnInfo:
       oprot.writeFieldBegin('metaInfo', TType.STRING, 7)
       oprot.writeString(self.metaInfo)
       oprot.writeFieldEnd()
+    if self.startedTime is not None:
+      oprot.writeFieldBegin('startedTime', TType.I64, 8)
+      oprot.writeI64(self.startedTime)
+      oprot.writeFieldEnd()
+    if self.lastHeartbeatTime is not None:
+      oprot.writeFieldBegin('lastHeartbeatTime', TType.I64, 9)
+      oprot.writeI64(self.lastHeartbeatTime)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -8155,6 +8179,8 @@ class TxnInfo:
     value = (value * 31) ^ hash(self.agentInfo)
     value = (value * 31) ^ hash(self.heartbeatCount)
     value = (value * 31) ^ hash(self.metaInfo)
+    value = (value * 31) ^ hash(self.startedTime)
+    value = (value * 31) ^ hash(self.lastHeartbeatTime)
     return value
 
   def __repr__(self):

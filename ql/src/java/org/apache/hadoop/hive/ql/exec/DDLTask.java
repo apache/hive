@@ -2791,6 +2791,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       os.write(separator);
       os.writeBytes("Transaction State");
       os.write(separator);
+      os.writeBytes("Started Time");
+      os.write(separator);
+      os.writeBytes("Last Heartbeat Time");
+      os.write(separator);
       os.writeBytes("User");
       os.write(separator);
       os.writeBytes("Hostname");
@@ -2800,6 +2804,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         os.writeBytes(Long.toString(txn.getId()));
         os.write(separator);
         os.writeBytes(txn.getState().toString());
+        os.write(separator);
+        os.writeBytes(Long.toString(txn.getStartedTime()));
+        os.write(separator);
+        os.writeBytes(Long.toString(txn.getLastHeartbeatTime()));
         os.write(separator);
         os.writeBytes(txn.getUser());
         os.write(separator);

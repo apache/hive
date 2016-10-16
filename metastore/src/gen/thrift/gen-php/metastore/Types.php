@@ -11683,6 +11683,14 @@ class TxnInfo {
    * @var string
    */
   public $metaInfo = null;
+  /**
+   * @var int
+   */
+  public $startedTime = null;
+  /**
+   * @var int
+   */
+  public $lastHeartbeatTime = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -11715,6 +11723,14 @@ class TxnInfo {
           'var' => 'metaInfo',
           'type' => TType::STRING,
           ),
+        8 => array(
+          'var' => 'startedTime',
+          'type' => TType::I64,
+          ),
+        9 => array(
+          'var' => 'lastHeartbeatTime',
+          'type' => TType::I64,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -11738,6 +11754,12 @@ class TxnInfo {
       }
       if (isset($vals['metaInfo'])) {
         $this->metaInfo = $vals['metaInfo'];
+      }
+      if (isset($vals['startedTime'])) {
+        $this->startedTime = $vals['startedTime'];
+      }
+      if (isset($vals['lastHeartbeatTime'])) {
+        $this->lastHeartbeatTime = $vals['lastHeartbeatTime'];
       }
     }
   }
@@ -11810,6 +11832,20 @@ class TxnInfo {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 8:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->startedTime);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 9:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->lastHeartbeatTime);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -11856,6 +11892,16 @@ class TxnInfo {
     if ($this->metaInfo !== null) {
       $xfer += $output->writeFieldBegin('metaInfo', TType::STRING, 7);
       $xfer += $output->writeString($this->metaInfo);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->startedTime !== null) {
+      $xfer += $output->writeFieldBegin('startedTime', TType::I64, 8);
+      $xfer += $output->writeI64($this->startedTime);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->lastHeartbeatTime !== null) {
+      $xfer += $output->writeFieldBegin('lastHeartbeatTime', TType::I64, 9);
+      $xfer += $output->writeI64($this->lastHeartbeatTime);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
