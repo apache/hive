@@ -223,7 +223,6 @@ public final class UnionProcFactory {
           FileSinkDesc fileSinkDesc = (FileSinkDesc) fileSinkOp.getConf().clone();
           fileSinkDesc.setDirName(new Path(parentDirName, parent.getIdentifier()));
           fileSinkDesc.setLinkedFileSink(true);
-          fileSinkDesc.setParentDir(parentDirName);
           Utilities.LOG14535.info("Created LinkedFileSink for union " + fileSinkDesc.getDirName() + "; parent " + parentDirName);
           parent.setChildOperators(null);
           Operator<? extends OperatorDesc> tmpFileSinkOp =

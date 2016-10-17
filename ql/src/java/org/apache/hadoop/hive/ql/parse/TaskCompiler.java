@@ -34,7 +34,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
+import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context;
@@ -62,6 +64,7 @@ import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
@@ -205,7 +208,7 @@ public abstract class TaskCompiler {
       }
     } else if (!isCStats) {
       for (LoadTableDesc ltd : loadTableWork) {
-        // TODO# move task is created here; handle MM tables
+        // TODO#  What is this path? special case for MM?
         Task<MoveWork> tsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false), conf);
         mvTask.add(tsk);
         // Check to see if we are stale'ing any indexes and auto-update them if we want
@@ -224,45 +227,15 @@ public abstract class TaskCompiler {
         }
       }
 
-      boolean oneLoadFile = true;
+      boolean oneLoadFileForCtas = true;
       for (LoadFileDesc lfd : loadFileWork) {
         if (pCtx.getQueryProperties().isCTAS() || pCtx.getQueryProperties().isMaterializedView()) {
-          assert (oneLoadFile); // should not have more than 1 load file for
-          // CTAS
-          // make the movetask's destination directory the table's destination.
-          Path location;
-          String loc = pCtx.getQueryProperties().isCTAS() ?
-                  pCtx.getCreateTable().getLocation() : pCtx.getCreateViewDesc().getLocation();
-          if (loc == null) {
-            // get the default location
-            Path targetPath;
-            try {
-              String protoName = null;
-              if (pCtx.getQueryProperties().isCTAS()) {
-                protoName = pCtx.getCreateTable().getTableName();
-              } else if (pCtx.getQueryProperties().isMaterializedView()) {
-                protoName = pCtx.getCreateViewDesc().getViewName();
-              }
-              String[] names = Utilities.getDbTableName(protoName);
-              if (!db.databaseExists(names[0])) {
-                throw new SemanticException("ERROR: The database " + names[0]
-                    + " does not exist.");
-              }
-              Warehouse wh = new Warehouse(conf);
-              targetPath = wh.getTablePath(db.getDatabase(names[0]), names[1]);
-            } catch (HiveException e) {
-              throw new SemanticException(e);
-            } catch (MetaException e) {
-              throw new SemanticException(e);
-            }
-
-            location = targetPath;
-          } else {
-            location = new Path(loc);
+          if (!oneLoadFileForCtas) { // should not have more than 1 load file for CTAS.
+            throw new SemanticException(
+                "One query is not expected to contain multiple CTAS loads statements");
           }
-          lfd.setTargetDir(location);
-
-          oneLoadFile = false;
+          setLoadFileLocation(pCtx, lfd);
+          oneLoadFileForCtas = false;
         }
         mvTask.add(TaskFactory.get(new MoveWork(null, null, null, lfd, false), conf));
       }
@@ -288,28 +261,7 @@ public abstract class TaskCompiler {
      * a column stats task instead of a fetch task to persist stats to the metastore.
      */
     if (isCStats || !pCtx.getColumnStatsAutoGatherContexts().isEmpty()) {
-      Set<Task<? extends Serializable>> leafTasks = new LinkedHashSet<Task<? extends Serializable>>();
-      getLeafTasks(rootTasks, leafTasks);
-      if (isCStats) {
-        genColumnStatsTask(pCtx.getAnalyzeRewrite(), loadFileWork, leafTasks, outerQueryLimit, 0);
-      } else {
-        for (ColumnStatsAutoGatherContext columnStatsAutoGatherContext : pCtx
-            .getColumnStatsAutoGatherContexts()) {
-          if (!columnStatsAutoGatherContext.isInsertInto()) {
-            genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
-                columnStatsAutoGatherContext.getLoadFileWork(), leafTasks, outerQueryLimit, 0);
-          } else {
-            int numBitVector;
-            try {
-              numBitVector = HiveStatsUtils.getNumBitVectorsForNDVEstimation(conf);
-            } catch (Exception e) {
-              throw new SemanticException(e.getMessage());
-            }
-            genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
-                columnStatsAutoGatherContext.getLoadFileWork(), leafTasks, outerQueryLimit, numBitVector);
-          }
-        }
-      }
+      createColumnStatsTasks(pCtx, rootTasks, loadFileWork, isCStats, outerQueryLimit);
     }
 
     decideExecMode(rootTasks, ctx, globalLimitCtx);
@@ -353,6 +305,80 @@ public abstract class TaskCompiler {
     for (Task<? extends Serializable> rootTask : rootTasks) {
       GenMapRedUtils.internTableDesc(rootTask, interner);
       GenMapRedUtils.deriveFinalExplainAttributes(rootTask, pCtx.getConf());
+    }
+  }
+
+  private void setLoadFileLocation(
+      final ParseContext pCtx, LoadFileDesc lfd) throws SemanticException {
+    // CTAS; make the movetask's destination directory the table's destination.
+    Long mmWriteIdForCtas = null;
+    FileSinkDesc dataSinkForCtas = null;
+    String loc = null;
+    if (pCtx.getQueryProperties().isCTAS()) {
+      CreateTableDesc ctd = pCtx.getCreateTable();
+      dataSinkForCtas = ctd.getAndUnsetWriter();
+      mmWriteIdForCtas = ctd.getInitialWriteId();
+      loc = ctd.getLocation();
+    } else {
+      loc = pCtx.getCreateViewDesc().getLocation();
+    }
+    Path location = (loc == null) ? getDefaultCtasLocation(pCtx) : new Path(loc);
+    if (mmWriteIdForCtas != null) {
+      dataSinkForCtas.setDirName(location);
+      location = new Path(location, ValidWriteIds.getMmFilePrefix(mmWriteIdForCtas));
+      lfd.setSourcePath(location);
+      Utilities.LOG14535.info("Setting MM CTAS to  " + location);
+    }
+    Utilities.LOG14535.info("Location for LFD is being set to " + location + "; moving from " + lfd.getSourcePath());
+    lfd.setTargetDir(location);
+  }
+
+  private void createColumnStatsTasks(final ParseContext pCtx,
+      final List<Task<? extends Serializable>> rootTasks,
+      List<LoadFileDesc> loadFileWork, boolean isCStats, int outerQueryLimit)
+      throws SemanticException {
+    Set<Task<? extends Serializable>> leafTasks = new LinkedHashSet<Task<? extends Serializable>>();
+    getLeafTasks(rootTasks, leafTasks);
+    if (isCStats) {
+      genColumnStatsTask(pCtx.getAnalyzeRewrite(), loadFileWork, leafTasks, outerQueryLimit, 0);
+    } else {
+      for (ColumnStatsAutoGatherContext columnStatsAutoGatherContext : pCtx
+          .getColumnStatsAutoGatherContexts()) {
+        if (!columnStatsAutoGatherContext.isInsertInto()) {
+          genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
+              columnStatsAutoGatherContext.getLoadFileWork(), leafTasks, outerQueryLimit, 0);
+        } else {
+          int numBitVector;
+          try {
+            numBitVector = HiveStatsUtils.getNumBitVectorsForNDVEstimation(conf);
+          } catch (Exception e) {
+            throw new SemanticException(e.getMessage());
+          }
+          genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
+              columnStatsAutoGatherContext.getLoadFileWork(), leafTasks, outerQueryLimit, numBitVector);
+        }
+      }
+    }
+  }
+
+  private Path getDefaultCtasLocation(final ParseContext pCtx) throws SemanticException {
+    try {
+      String protoName = null;
+      if (pCtx.getQueryProperties().isCTAS()) {
+        protoName = pCtx.getCreateTable().getTableName();
+      } else if (pCtx.getQueryProperties().isMaterializedView()) {
+        protoName = pCtx.getCreateViewDesc().getViewName();
+      }
+      String[] names = Utilities.getDbTableName(protoName);
+      if (!db.databaseExists(names[0])) {
+        throw new SemanticException("ERROR: The database " + names[0] + " does not exist.");
+      }
+      Warehouse wh = new Warehouse(conf);
+      return wh.getTablePath(db.getDatabase(names[0]), names[1]);
+    } catch (HiveException e) {
+      throw new SemanticException(e);
+    } catch (MetaException e) {
+      throw new SemanticException(e);
     }
   }
 

@@ -3773,26 +3773,23 @@ public final class Utilities {
     }
   }
 
-  private static FileStatus[] getMmDirectoryCandidates(FileSystem fs, Path path,
-      int dpLevels, int lbLevels, String unionSuffix, PathFilter filter) throws IOException {
+  private static FileStatus[] getMmDirectoryCandidates(FileSystem fs, Path path, int dpLevels,
+      int lbLevels, PathFilter filter, long mmWriteId) throws IOException {
     StringBuilder sb = new StringBuilder(path.toUri().getPath());
     for (int i = 0; i < dpLevels + lbLevels; i++) {
       sb.append(Path.SEPARATOR).append("*");
     }
-    if (unionSuffix != null) {
-      sb.append(Path.SEPARATOR).append(unionSuffix);
-    }
-    sb.append(Path.SEPARATOR).append("*"); // TODO: we could add exact mm prefix here
+    sb.append(Path.SEPARATOR).append(ValidWriteIds.getMmFilePrefix(mmWriteId));
     Utilities.LOG14535.info("Looking for files via: " + sb.toString());
     Path pathPattern = new Path(path, sb.toString());
     return fs.globStatus(pathPattern, filter);
   }
 
   private static void tryDeleteAllMmFiles(FileSystem fs, Path specPath, Path manifestDir,
-      int dpLevels, int lbLevels, String unionSuffix, ValidWriteIds.IdPathFilter filter)
-          throws IOException {
+      int dpLevels, int lbLevels, String unionSuffix, ValidWriteIds.IdPathFilter filter,
+      long mmWriteId) throws IOException {
     FileStatus[] files = getMmDirectoryCandidates(
-        fs, specPath, dpLevels, lbLevels, unionSuffix, filter);
+        fs, specPath, dpLevels, lbLevels, filter, mmWriteId);
     if (files != null) {
       for (FileStatus status : files) {
         Utilities.LOG14535.info("Deleting " + status.getPath() + " on failure");
@@ -3854,7 +3851,8 @@ public final class Utilities {
 
     ValidWriteIds.IdPathFilter filter = new ValidWriteIds.IdPathFilter(mmWriteId, true);
     if (!success) {
-      tryDeleteAllMmFiles(fs, specPath, manifestDir, dpLevels, lbLevels, unionSuffix, filter);
+      tryDeleteAllMmFiles(fs, specPath, manifestDir, dpLevels, lbLevels,
+          unionSuffix, filter, mmWriteId);
       return;
     }
     FileStatus[] files = HiveStatsUtils.getFileStatusRecurse(manifestDir, 1, fs, filter);
@@ -3871,8 +3869,9 @@ public final class Utilities {
     }
 
     Utilities.LOG14535.info("Looking for files in: " + specPath);
-    files = getMmDirectoryCandidates(fs, specPath, dpLevels, lbLevels, unionSuffix, filter);
-    ArrayList<FileStatus> results = new ArrayList<>();
+    files = getMmDirectoryCandidates(
+        fs, specPath, dpLevels, lbLevels, filter, mmWriteId);
+    ArrayList<FileStatus> mmDirectories = new ArrayList<>();
     if (files != null) {
       for (FileStatus status : files) {
         Path path = status.getPath();
@@ -3883,7 +3882,7 @@ public final class Utilities {
             tryDelete(fs, path);
           }
         } else {
-          results.add(status);
+          mmDirectories.add(status);
         }
       }
     }
@@ -3901,16 +3900,8 @@ public final class Utilities {
       }
     }
 
-    for (FileStatus status : results) {
-      for (FileStatus child : fs.listStatus(status.getPath())) {
-        Path childPath = child.getPath();
-        if (committed.remove(childPath.toString())) continue; // A good file.
-        Utilities.LOG14535.info("Deleting " + childPath + " that was not committed");
-        // We should actually succeed here - if we fail, don't commit the query.
-        if (!fs.delete(childPath, true)) {
-          throw new HiveException("Failed to delete an uncommitted path " + childPath);
-        }
-      }
+    for (FileStatus status : mmDirectories) {
+      cleanMmDirectory(status.getPath(), fs, unionSuffix, committed);
     }
 
     if (!committed.isEmpty()) {
@@ -3930,18 +3921,51 @@ public final class Utilities {
       }
     }
 
-    if (results.isEmpty()) return;
+    if (mmDirectories.isEmpty()) return;
 
     // TODO: see HIVE-14886 - removeTempOrDuplicateFiles is broken for list bucketing,
     //       so maintain parity here by not calling it at all.
     if (lbLevels != 0) return;
-    FileStatus[] finalResults = results.toArray(new FileStatus[results.size()]);
+    FileStatus[] finalResults = mmDirectories.toArray(new FileStatus[mmDirectories.size()]);
     List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(
         fs, finalResults, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf);
     // create empty buckets if necessary
     if (emptyBuckets.size() > 0) {
       assert mbc != null;
       Utilities.createEmptyBuckets(hconf, emptyBuckets, mbc.isCompressed, mbc.tableInfo, reporter);
+    }
+  }
+
+  private static void cleanMmDirectory(Path dir, FileSystem fs,
+      String unionSuffix, HashSet<String> committed) throws IOException, HiveException {
+    for (FileStatus child : fs.listStatus(dir)) {
+      Path childPath = child.getPath();
+      if (unionSuffix == null) {
+        if (committed.remove(childPath.toString())) continue; // A good file.
+        deleteUncommitedFile(childPath, fs);
+      } else if (!child.isDirectory()) {
+        if (childPath.getName().endsWith(MANIFEST_EXTENSION)) continue;
+        if (committed.contains(childPath.toString())) {
+          throw new HiveException("Union FSOP has commited "
+              + childPath + " outside of union directory" + unionSuffix);
+        }
+        deleteUncommitedFile(childPath, fs);
+      } else if (childPath.getName().equals(unionSuffix)) {
+        // Found the right union directory; treat it as "our" MM directory.
+        cleanMmDirectory(childPath, fs, null, committed);
+      } else {
+        Utilities.LOG14535.info("FSOP for " + unionSuffix
+            + " is ignoring the other side of the union " + childPath.getName());
+      }
+    }
+  }
+
+  private static void deleteUncommitedFile(Path childPath, FileSystem fs)
+      throws IOException, HiveException {
+    Utilities.LOG14535.info("Deleting " + childPath + " that was not committed");
+    // We should actually succeed here - if we fail, don't commit the query.
+    if (!fs.delete(childPath, true)) {
+      throw new HiveException("Failed to delete an uncommitted path " + childPath);
     }
   }
 

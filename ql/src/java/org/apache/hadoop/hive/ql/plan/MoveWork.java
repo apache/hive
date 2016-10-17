@@ -70,7 +70,7 @@ public class MoveWork implements Serializable {
       boolean checkFileFormat, boolean srcLocal) {
     this(inputs, outputs);
     Utilities.LOG14535.info("Creating MoveWork " + System.identityHashCode(this)
-        + " with " + loadTableWork + "; " + loadFileWork);
+        + " with " + loadTableWork + "; " + loadFileWork, new Exception());
     this.loadTableWork = loadTableWork;
     this.loadFileWork = loadFileWork;
     this.checkFileFormat = checkFileFormat;

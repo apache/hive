@@ -82,7 +82,6 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   // the sub-queries write to sub-directories of a common directory. So, the file sink
   // descriptors for subq1 and subq2 are linked.
   private boolean linkedFileSink = false;
-  private Path parentDir;
   transient private List<FileSinkDesc> linkedFileSinkDesc;
 
   private boolean statsReliable;
@@ -152,7 +151,6 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     ret.setStaticSpec(staticSpec);
     ret.setStatsAggPrefix(statsKeyPref);
     ret.setLinkedFileSink(linkedFileSink);
-    ret.setParentDir(parentDir);
     ret.setLinkedFileSinkDesc(linkedFileSinkDesc);
     ret.setStatsReliable(statsReliable);
     ret.setDpSortState(dpSortState);
@@ -180,7 +178,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   }
 
   public Path getFinalDirName() {
-    return linkedFileSink ? parentDir : dirName;
+    return linkedFileSink ? dirName.getParent() : dirName;
   }
 
   /** getFinalDirName that takes into account MM, but not DP, LB or buckets. */
@@ -395,11 +393,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   }
 
   public Path getParentDir() {
-    return parentDir;
-  }
-
-  public void setParentDir(Path parentDir) {
-    this.parentDir = parentDir;
+    return dirName.getParent();
   }
 
   public boolean isStatsReliable() {

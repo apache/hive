@@ -307,7 +307,6 @@ public class GenTezUtils {
         desc.setDirName(new Path(path, "" + linked.size()));
         Utilities.LOG14535.info("removing union - new desc with " + desc.getDirName() + "; parent " + path);
         desc.setLinkedFileSink(true);
-        desc.setParentDir(path);
         desc.setLinkedFileSinkDesc(linked);
       }
 

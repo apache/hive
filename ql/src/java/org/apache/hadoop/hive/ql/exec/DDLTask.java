@@ -4059,8 +4059,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       } else {
         db.createTable(tbl, crtTbl.getIfNotExists());
       }
-      if ( crtTbl.isCTAS()) {
+      if (crtTbl.isCTAS()) {
         Table createdTable = db.getTable(tbl.getDbName(), tbl.getTableName());
+        if (crtTbl.getInitialWriteId() != null) {
+          // TODO# this would be retrieved via ACID before the query runs; for now we rely on it
+          //       being zero at start; we can't create a write ID before we create the table here.
+          long initialWriteId = db.getNextTableWriteId(tbl.getDbName(), tbl.getTableName());
+          if (initialWriteId != crtTbl.getInitialWriteId()) {
+            throw new HiveException("Initial write ID mismatch - expected "
+                + crtTbl.getInitialWriteId() + " but got " + initialWriteId);
+          }
+          db.commitMmTableWrite(tbl, initialWriteId);
+        }
         DataContainer dc = new DataContainer(createdTable.getTTable());
         SessionState.get().getLineageState().setLineage(
                 createdTable.getPath(), dc, createdTable.getCols()

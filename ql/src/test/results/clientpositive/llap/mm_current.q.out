@@ -28,6 +28,48 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@intermediate@p=456
 POSTHOOK: Lineage: intermediate PARTITION(p=456).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: create table ctas1_mm tblproperties ('hivecommit'='true') as
+  select * from intermediate union all select * from intermediate
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas1_mm
+POSTHOOK: query: create table ctas1_mm tblproperties ('hivecommit'='true') as
+  select * from intermediate union all select * from intermediate
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas1_mm
+POSTHOOK: Lineage: ctas1_mm.key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: ctas1_mm.p EXPRESSION [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+PREHOOK: query: select * from ctas1_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas1_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ctas1_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas1_mm
+#### A masked pattern was here ####
+98	455
+97	455
+0	456
+10	456
+98	455
+97	455
+0	456
+10	456
+PREHOOK: query: drop table ctas1_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ctas1_mm
+PREHOOK: Output: default@ctas1_mm
+POSTHOOK: query: drop table ctas1_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ctas1_mm
+POSTHOOK: Output: default@ctas1_mm
 PREHOOK: query: drop table intermediate
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate

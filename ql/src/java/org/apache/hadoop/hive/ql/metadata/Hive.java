@@ -1515,7 +1515,7 @@ public class Hive {
   }
 
 
-  private void commitMmTableWrite(Table tbl, Long mmWriteId)
+  public void commitMmTableWrite(Table tbl, Long mmWriteId)
       throws HiveException {
     try {
       getMSC().finalizeTableWrite(tbl.getDbName(), tbl.getTableName(), mmWriteId, true);

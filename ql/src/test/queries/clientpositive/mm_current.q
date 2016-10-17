@@ -12,15 +12,13 @@ insert into table intermediate partition(p='455') select distinct key from src w
 insert into table intermediate partition(p='456') select distinct key from src where key is not null order by key asc limit 2;
 
 
-set hive.merge.orcfile.stripe.level=true;
-set hive.merge.tezfiles=true;
-set hive.merge.mapfiles=true;
-set hive.merge.mapredfiles=true;
+
+create table ctas1_mm tblproperties ('hivecommit'='true') as
+  select * from intermediate union all select * from intermediate;
 
 
-
-
-
+select * from ctas1_mm;
+drop table ctas1_mm;
 
 drop table intermediate;
 

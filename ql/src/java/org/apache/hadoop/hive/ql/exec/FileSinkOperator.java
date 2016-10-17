@@ -112,7 +112,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient Path parent;
   protected transient HiveOutputFormat<?, ?> hiveOutputFormat;
   protected transient Path specPath;
-  protected transient String childSpecPathDynLinkedPartitions;
+  protected transient String unionPath;
+  protected transient boolean isUnionDp;
   protected transient int dpStartCol; // start column # for DP columns
   protected transient List<String> dpVals; // array of values corresponding to DP columns
   protected transient List<Object> dpWritables;
@@ -304,7 +305,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           }
           outPaths[filesIdx] = getTaskOutPath(taskId);
         } else {
-          String subdirPath = ValidWriteIds.getMmFilePrefix(conf.getMmWriteId()) + "/" + taskId;
+          String subdirPath = ValidWriteIds.getMmFilePrefix(conf.getMmWriteId());
+          if (unionPath != null) {
+            // Create the union directory inside the MM directory.
+            subdirPath += Path.SEPARATOR + unionPath;
+          }
+          subdirPath += Path.SEPARATOR + taskId;
           if (!bDynParts && !isSkewedStoredAsSubDirectories) {
             finalPaths[filesIdx] = getFinalPath(subdirPath, specPath, extension);
           } else {
@@ -369,7 +375,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected boolean filesCreated = false;
 
   private void initializeSpecPath() {
-    // TODO# special case #N
     // For a query of the type:
     // insert overwrite table T1
     // select * from (subq1 union all subq2)u;
@@ -383,18 +388,25 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     // and Parent/DynamicPartition/Child_1 respectively.
     // The movetask that follows subQ1 and subQ2 tasks still moves the directory
     // 'Parent'
-    if ((!conf.isLinkedFileSink()) || (dpCtx == null)) {
+    boolean isLinked = conf.isLinkedFileSink();
+    if (!isLinked) {
+      // Simple case - no union.
       specPath = conf.getDirName();
-      Utilities.LOG14535.info("Setting up FSOP " + System.identityHashCode(this) + " ("
-          + conf.isLinkedFileSink() + ") with " + taskId + " and " + specPath);
-      childSpecPathDynLinkedPartitions = null;
-      return;
+      unionPath = null;
+    } else {
+      isUnionDp = (dpCtx != null);
+      if (conf.isMmTable() || isUnionDp) {
+        // MM tables need custom handling for union suffix; DP tables use parent too.
+        specPath = conf.getParentDir();
+        unionPath = conf.getDirName().getName();
+      } else {
+        // For now, keep the old logic for non-MM non-DP union case. Should probably be unified.
+        specPath = conf.getDirName();
+        unionPath = null;
+      }
     }
-
-    specPath = conf.getParentDir();
-    childSpecPathDynLinkedPartitions = conf.getDirName().getName();
     Utilities.LOG14535.info("Setting up FSOP " + System.identityHashCode(this) + " ("
-        + conf.isLinkedFileSink() + ") with " + taskId + " and " + specPath);
+        + conf.isLinkedFileSink() + ") with " + taskId + " and " + specPath + " + " + unionPath);
   }
 
   /** Kryo ctor. */
@@ -903,9 +915,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
    * @throws HiveException
    */
   private FSPaths createNewPaths(String dirName) throws HiveException {
-    FSPaths fsp2 = new FSPaths(specPath, conf.isMmTable()); // TODO# this will break
-    fsp2.configureDynPartPath(dirName, childSpecPathDynLinkedPartitions);
-    Utilities.LOG14535.info("creating new paths for " + dirName + ", childSpec " + childSpecPathDynLinkedPartitions
+    FSPaths fsp2 = new FSPaths(specPath, conf.isMmTable());
+    fsp2.configureDynPartPath(dirName, !conf.isMmTable() && isUnionDp ? unionPath : null);
+    Utilities.LOG14535.info("creating new paths for " + dirName + ", childSpec " + unionPath
         + ": tmpPath " + fsp2.getTmpPath() + ", task path " + fsp2.getTaskOutputTempPath()/*, new Exception()*/);
     if(!conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED)) {
       createBucketFiles(fsp2);
@@ -1129,8 +1141,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
       if (conf.getMmWriteId() != null) {
-        Utilities.writeMmCommitManifest(commitPaths, specPath, fs, taskId, conf.getMmWriteId(),
-            childSpecPathDynLinkedPartitions);
+        Utilities.writeMmCommitManifest(
+            commitPaths, specPath, fs, taskId, conf.getMmWriteId(), unionPath);
       }
       // Only publish stats if this operator's flag was set to gather stats
       if (conf.isGatherStats()) {
@@ -1170,16 +1182,16 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         String unionSuffix = null;
         DynamicPartitionCtx dpCtx = conf.getDynPartCtx();
         ListBucketingCtx lbCtx = conf.getLbCtx();
-        if (conf.isLinkedFileSink() && (dpCtx != null)) {
+        if (conf.isLinkedFileSink() && (dpCtx != null || conf.isMmTable())) {
           specPath = conf.getParentDir();
-          Utilities.LOG14535.info("Setting specPath to " + specPath + " for dynparts");
           unionSuffix = conf.getDirName().getName();
         }
+        Utilities.LOG14535.info("jobCloseOp using specPath " + specPath);
         if (!conf.isMmTable()) {
           Utilities.mvFileToFinalPath(specPath, hconf, success, LOG, dpCtx, conf, reporter);
         } else {
           int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols(),
-              lbLevels = lbCtx.calculateListBucketingLevel();
+              lbLevels = lbCtx == null ? 0 : lbCtx.calculateListBucketingLevel();
           // TODO: why is it stored in both?
           int numBuckets = (conf.getTable() != null) ? conf.getTable().getNumBuckets()
               : (dpCtx != null ? dpCtx.getNumBuckets() : 0);

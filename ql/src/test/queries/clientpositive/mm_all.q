@@ -162,30 +162,22 @@ select * from merge1_mm;
 
 drop table merge1_mm;
 
-
--- TODO: need to include merge+union, but it's broken for now
-
+-- TODO: need to include merge+union+DP, but it's broken for now
 
 
+drop table ctas0_mm;
+create table ctas0_mm tblproperties ('hivecommit'='true') as select * from intermediate;
+select * from ctas0_mm;
+drop table ctas0_mm;
+
+drop table ctas1_mm;
+create table ctas1_mm tblproperties ('hivecommit'='true') as
+  select * from intermediate union all select * from intermediate;
+select * from ctas1_mm;
+drop table ctas1_mm;
 
 
 
--- future
-
-
-
-
-
-
-
---drop table ctas_mm;
---
---
---create table ctas_mm tblproperties ('hivecommit'='true') as select * from src limit 3;
---
---
----- TODO load, multi-insert etc
---
---
+-- TODO load, multi-insert, buckets
 
 drop table intermediate;

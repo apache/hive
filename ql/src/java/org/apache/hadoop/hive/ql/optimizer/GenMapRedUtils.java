@@ -1840,10 +1840,9 @@ public final class GenMapRedUtils {
 
         // Change all the linked file sink descriptors
         if (fileSinkDesc.isLinkedFileSink()) {
-          for (FileSinkDesc fsConf:fileSinkDesc.getLinkedFileSinkDesc()) {
-            fsConf.setParentDir(tmpDir);
+          for (FileSinkDesc fsConf : fileSinkDesc.getLinkedFileSinkDesc()) {
             fsConf.setDirName(new Path(tmpDir, fsConf.getDirName().getName()));
-            Utilities.LOG14535.info("createMoveTask setting tmpDir for LinkedFileSink chDir " + fsConf.getDirName() + "; new parent " + tmpDir + ", dest was " + fileSinkDesc.getDestPath());
+            Utilities.LOG14535.info("createMoveTask setting tmpDir for LinkedFileSink chDir " + fsConf.getDirName() + "; dest was " + fileSinkDesc.getDestPath());
           }
         } else {
           fileSinkDesc.setDirName(tmpDir);

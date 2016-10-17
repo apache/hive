@@ -244,6 +244,7 @@ import com.google.common.collect.Sets;
 
 public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
+
   public static final String DUMMY_DATABASE = "_dummy_database";
   public static final String DUMMY_TABLE = "_dummy_table";
   public static final String SUBQUERY_TAG_1 = "-subquery1";
@@ -6532,7 +6533,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LoadTableDesc ltd = null;
     ListBucketingCtx lbCtx = null;
     Map<String, String> partSpec = null;
-    boolean isMmTable = false;
+    boolean isMmTable = false, isMmCtas = false;
     Long mmWriteId = null;
 
     switch (dest_type.intValue()) {
@@ -6676,26 +6677,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case QBMetaData.DEST_DFS_FILE: {
       dest_path = new Path(qbm.getDestFileForAlias(dest));
 
-      if (isLocal) {
-        // for local directory - we always write to map-red intermediate
-        // store and then copy to local fs
-        queryTmpdir = ctx.getMRTmpPath();
-      } else {
-        // otherwise write to the file system implied by the directory
-        // no copy is required. we may want to revisit this policy in future
-
-        try {
-          Path qPath = FileUtils.makeQualified(dest_path, conf);
-          queryTmpdir = ctx.getTempDirForPath(qPath);
-        } catch (Exception e) {
-          throw new SemanticException("Error creating temporary folder on: "
-              + dest_path, e);
-        }
-      }
-      String cols = "";
-      String colTypes = "";
-      ArrayList<ColumnInfo> colInfos = inputRR.getColumnInfos();
-
       // CTAS case: the file output format and serde are defined by the create
       // table command rather than taking the default value
       List<FieldSchema> field_schemas = null;
@@ -6705,63 +6686,38 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         field_schemas = new ArrayList<FieldSchema>();
         destTableIsTemporary = tblDesc.isTemporary();
         destTableIsMaterialization = tblDesc.isMaterialization();
+        if (MetaStoreUtils.isMmTable(tblDesc.getTblProps())) {
+          isMmTable = isMmCtas = true;
+          // TODO# this should really get current ACID txn; assuming ACID works correctly the txn
+          //       should have been opened to create the ACID table. For now use the first ID.
+          mmWriteId = 0l;
+          tblDesc.setInitialWriteId(mmWriteId);
+        }
       } else if (viewDesc != null) {
         field_schemas = new ArrayList<FieldSchema>();
         destTableIsTemporary = false;
       }
 
-      boolean first = true;
-      for (ColumnInfo colInfo : colInfos) {
-        String[] nm = inputRR.reverseLookup(colInfo.getInternalName());
-
-        if (nm[1] != null) { // non-null column alias
-          colInfo.setAlias(nm[1]);
-        }
-
-        String colName = colInfo.getInternalName();  //default column name
-        if (field_schemas != null) {
-          FieldSchema col = new FieldSchema();
-          if (!("".equals(nm[0])) && nm[1] != null) {
-            colName = unescapeIdentifier(colInfo.getAlias()).toLowerCase(); // remove ``
-          }
-          colName = fixCtasColumnName(colName);
-          col.setName(colName);
-          String typeName = colInfo.getType().getTypeName();
-          // CTAS should NOT create a VOID type
-          if (typeName.equals(serdeConstants.VOID_TYPE_NAME)) {
-              throw new SemanticException(ErrorMsg.CTAS_CREATES_VOID_TYPE
-              .getMsg(colName));
-          }
-          col.setType(typeName);
-          field_schemas.add(col);
-        }
-
-        if (!first) {
-          cols = cols.concat(",");
-          colTypes = colTypes.concat(":");
-        }
-
-        first = false;
-        cols = cols.concat(colName);
-
-        // Replace VOID type with string when the output is a temp table or
-        // local files.
-        // A VOID type can be generated under the query:
-        //
-        // select NULL from tt;
-        // or
-        // insert overwrite local directory "abc" select NULL from tt;
-        //
-        // where there is no column type to which the NULL value should be
-        // converted.
-        //
-        String tName = colInfo.getType().getTypeName();
-        if (tName.equals(serdeConstants.VOID_TYPE_NAME)) {
-          colTypes = colTypes.concat(serdeConstants.STRING_TYPE_NAME);
-        } else {
-          colTypes = colTypes.concat(tName);
+      if (isLocal) {
+        assert !isMmTable;
+        // for local directory - we always write to map-red intermediate
+        // store and then copy to local fs
+        queryTmpdir = ctx.getMRTmpPath();
+      } else {
+        // otherwise write to the file system implied by the directory
+        // no copy is required. we may want to revisit this policy in future
+        try {
+          Path qPath = FileUtils.makeQualified(dest_path, conf);
+          queryTmpdir = isMmTable ? qPath : ctx.getTempDirForPath(qPath);
+          Utilities.LOG14535.info("Setting query directory " + queryTmpdir + " from " + dest_path + " (" + isMmTable + ")");
+        } catch (Exception e) { 
+          throw new SemanticException("Error creating temporary folder on: "
+              + dest_path, e);
         }
       }
+
+      ColsAndTypes ct = deriveFileSinkColTypes(inputRR, field_schemas);
+      String cols = ct.cols, colTypes = ct.colTypes;
 
       // update the create table descriptor with the resulting schema.
       if (tblDesc != null) {
@@ -6779,8 +6735,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean isDfsDir = (dest_type.intValue() == QBMetaData.DEST_DFS_FILE);
-      loadFileWork.add(new LoadFileDesc(tblDesc, viewDesc, queryTmpdir, dest_path, isDfsDir, cols,
-          colTypes));
+      // Create LFD even for MM CTAS - it's a no-op move, but it still seems to be uses for stats.
+      loadFileWork.add(new LoadFileDesc(tblDesc, viewDesc,
+          queryTmpdir, dest_path, isDfsDir, cols, colTypes));
 
       if (tblDesc == null) {
         if (viewDesc != null) {
@@ -6866,6 +6823,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         dest_path, currentTableId, destTableIsAcid, destTableIsTemporary,
         destTableIsMaterialization, queryTmpdir, rsCtx, dpCtx, lbCtx, fsRS,
         canBeMerged, mmWriteId);
+    if (isMmCtas) {
+      // Add FSD so that the LoadTask compilation could fix up its path to avoid the move.
+      tableDesc.setWriter(fileSinkDesc);
+    }
 
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
         fileSinkDesc, fsRS, input), inputRR);
@@ -6895,6 +6856,64 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return output;
+  }
+
+  private ColsAndTypes deriveFileSinkColTypes(
+      RowResolver inputRR, List<FieldSchema> field_schemas) throws SemanticException {
+    ColsAndTypes result = new ColsAndTypes("", "");
+    ArrayList<ColumnInfo> colInfos = inputRR.getColumnInfos();
+    boolean first = true;
+    for (ColumnInfo colInfo : colInfos) {
+      String[] nm = inputRR.reverseLookup(colInfo.getInternalName());
+
+      if (nm[1] != null) { // non-null column alias
+        colInfo.setAlias(nm[1]);
+      }
+
+      String colName = colInfo.getInternalName();  //default column name
+      if (field_schemas != null) {
+        FieldSchema col = new FieldSchema();
+        if (!("".equals(nm[0])) && nm[1] != null) {
+          colName = unescapeIdentifier(colInfo.getAlias()).toLowerCase(); // remove ``
+        }
+        colName = fixCtasColumnName(colName);
+        col.setName(colName);
+        String typeName = colInfo.getType().getTypeName();
+        // CTAS should NOT create a VOID type
+        if (typeName.equals(serdeConstants.VOID_TYPE_NAME)) {
+            throw new SemanticException(ErrorMsg.CTAS_CREATES_VOID_TYPE.getMsg(colName));
+        }
+        col.setType(typeName);
+        field_schemas.add(col);
+      }
+
+      if (!first) {
+        result.cols = result.cols.concat(",");
+        result.colTypes = result.colTypes.concat(":");
+      }
+
+      first = false;
+      result.cols = result.cols.concat(colName);
+
+      // Replace VOID type with string when the output is a temp table or
+      // local files.
+      // A VOID type can be generated under the query:
+      //
+      // select NULL from tt;
+      // or
+      // insert overwrite local directory "abc" select NULL from tt;
+      //
+      // where there is no column type to which the NULL value should be
+      // converted.
+      //
+      String tName = colInfo.getType().getTypeName();
+      if (tName.equals(serdeConstants.VOID_TYPE_NAME)) {
+        result.colTypes = result.colTypes.concat(serdeConstants.STRING_TYPE_NAME);
+      } else {
+        result.colTypes = result.colTypes.concat(tName);
+      }
+    }
+    return result;
   }
 
   private static Long getMmWriteId(Table tbl, boolean isMmTable) throws HiveException {
@@ -10145,7 +10164,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (partitions != null) {
           for (Partition partn : partitions) {
             // inputs.add(new ReadEntity(partn)); // is this needed at all?
-	      LOG.info("XXX: adding part: "+partn);
+        LOG.info("XXX: adding part: "+partn);
             outputs.add(new WriteEntity(partn, WriteEntity.WriteType.DDL_NO_LOCK));
           }
         }
@@ -11809,7 +11828,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
-      if(location != null && location.length() != 0) {
+      if (location != null && location.length() != 0) {
         Path locPath = new Path(location);
         FileSystem curFs = null;
         FileStatus locStats = null;
@@ -11818,7 +11837,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if(curFs != null) {
             locStats = curFs.getFileStatus(locPath);
           }
-          if(locStats != null && locStats.isDir()) {
+          if (locStats != null && locStats.isDir()) {
             FileStatus[] lStats = curFs.listStatus(locPath);
             if(lStats != null && lStats.length != 0) {
               throw new SemanticException(ErrorMsg.CTAS_LOCATION_NONEMPTY.getMsg(location));
@@ -11835,14 +11854,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       tblProps = addDefaultProperties(tblProps);
-
       tableDesc = new CreateTableDesc(qualifiedTabName[0], dbDotTab, isExt, isTemporary, cols,
           partCols, bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
           rowFormatParams.fieldEscape, rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim,
           rowFormatParams.lineDelim, comment, storageFormat.getInputFormat(),
           storageFormat.getOutputFormat(), location, storageFormat.getSerde(),
           storageFormat.getStorageHandler(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
-	  skewedColNames, skewedValues, true, primaryKeys, foreignKeys);
+    skewedColNames, skewedValues, true, primaryKeys, foreignKeys);
       tableDesc.setMaterialization(isMaterialization);
       tableDesc.setStoredAsSubDirectories(storedAsDirs);
       tableDesc.setNullFormat(rowFormatParams.nullFormat);
@@ -13177,4 +13195,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.loadFileWork = loadFileWork;
   }
 
+  private static final class ColsAndTypes {
+    public ColsAndTypes(String cols, String colTypes) {
+      this.cols = cols;
+      this.colTypes = colTypes;
+    }
+    public String cols;
+    public String colTypes;
+  }
 }

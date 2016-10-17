@@ -94,6 +94,10 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   private boolean isCTAS = false;
   List<SQLPrimaryKey> primaryKeys;
   List<SQLForeignKey> foreignKeys;
+  private Long initialWriteId;
+  // The FSOP configuration for the FSOP that is going to write initial data during ctas.
+  // This is not needed beyond compilation, so it is transient.
+  private transient FileSinkDesc writer;
 
   public CreateTableDesc() {
   }
@@ -823,6 +827,24 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
           StatsSetupConst.FALSE);
     }
     return tbl;
+  }
+
+  public void setInitialWriteId(Long mmWriteId) {
+    this.initialWriteId = mmWriteId;
+  }
+
+  public Long getInitialWriteId() {
+    return initialWriteId;
+  }
+
+  public FileSinkDesc getAndUnsetWriter() {
+    FileSinkDesc fsd = writer;
+    writer = null;
+    return fsd;
+  }
+
+  public void setWriter(FileSinkDesc writer) {
+    this.writer = writer;
   }
 
 

@@ -154,10 +154,10 @@ POSTHOOK: Input: default@part_mm@key_mm=456
 10	455
 10	455
 97	455
-97	456
 97	455
-98	455
+97	456
 98	456
+98	455
 98	455
 PREHOOK: query: drop table part_mm
 PREHOOK: type: DROPTABLE
@@ -903,59 +903,105 @@ POSTHOOK: query: drop table merge1_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@merge1_mm
 POSTHOOK: Output: default@merge1_mm
-PREHOOK: query: -- TODO: need to include merge+union, but it's broken for now
+PREHOOK: query: -- TODO: need to include merge+union+DP, but it's broken for now
 
 
+drop table ctas0_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- TODO: need to include merge+union+DP, but it's broken for now
 
 
-
-
--- future
-
-
-
-
-
-
-
---drop table ctas_mm;
---
---
---create table ctas_mm tblproperties ('hivecommit'='true') as select * from src limit 3;
---
---
----- TODO load, multi-insert etc
---
---
+drop table ctas0_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table ctas0_mm tblproperties ('hivecommit'='true') as select * from intermediate
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas0_mm
+POSTHOOK: query: create table ctas0_mm tblproperties ('hivecommit'='true') as select * from intermediate
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas0_mm
+POSTHOOK: Lineage: ctas0_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: ctas0_mm.p SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+PREHOOK: query: select * from ctas0_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas0_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ctas0_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas0_mm
+#### A masked pattern was here ####
+98	455
+97	455
+0	456
+10	456
+PREHOOK: query: drop table ctas0_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ctas0_mm
+PREHOOK: Output: default@ctas0_mm
+POSTHOOK: query: drop table ctas0_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ctas0_mm
+POSTHOOK: Output: default@ctas0_mm
+PREHOOK: query: drop table ctas1_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table ctas1_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table ctas1_mm tblproperties ('hivecommit'='true') as
+  select * from intermediate union all select * from intermediate
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas1_mm
+POSTHOOK: query: create table ctas1_mm tblproperties ('hivecommit'='true') as
+  select * from intermediate union all select * from intermediate
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas1_mm
+POSTHOOK: Lineage: ctas1_mm.key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: ctas1_mm.p EXPRESSION [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+PREHOOK: query: select * from ctas1_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas1_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ctas1_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas1_mm
+#### A masked pattern was here ####
+98	455
+97	455
+0	456
+10	456
+98	455
+97	455
+0	456
+10	456
+PREHOOK: query: drop table ctas1_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ctas1_mm
+PREHOOK: Output: default@ctas1_mm
+POSTHOOK: query: drop table ctas1_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ctas1_mm
+POSTHOOK: Output: default@ctas1_mm
+PREHOOK: query: -- TODO load, multi-insert, buckets
 
 drop table intermediate
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate
 PREHOOK: Output: default@intermediate
-POSTHOOK: query: -- TODO: need to include merge+union, but it's broken for now
-
-
-
-
-
-
--- future
-
-
-
-
-
-
-
---drop table ctas_mm;
---
---
---create table ctas_mm tblproperties ('hivecommit'='true') as select * from src limit 3;
---
---
----- TODO load, multi-insert etc
---
---
+POSTHOOK: query: -- TODO load, multi-insert, buckets
 
 drop table intermediate
 POSTHOOK: type: DROPTABLE
