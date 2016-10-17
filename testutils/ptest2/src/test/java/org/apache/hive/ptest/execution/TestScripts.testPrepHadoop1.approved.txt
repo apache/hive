@@ -99,11 +99,11 @@ cd /some/working/dir/
         cd ..
         fi
       done
-        mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven $mavenArgs $mavenBuildArgs
+        mvn -B clean install -DskipTests -T 4 -q -Dmaven.repo.local=/some/working/dir/maven $mavenArgs $mavenBuildArgs
     if [[ -d "itests" ]]
     then
       cd itests
-      mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven $mavenArgs $mavenBuildArgs
+      mvn -B clean install -DskipTests -T 4 -q -Dmaven.repo.local=/some/working/dir/maven $mavenArgs $mavenBuildArgs
     fi
   elif [[ "maven" == "ant" ]]
   then

@@ -126,7 +126,7 @@ public class TestExecutionPhase extends AbstractTestPhase {
     Assert.assertEquals(1, sshCommandExecutor.getMatchCount());
     Approvals.verify(getExecutedCommands());
     Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), executedTests);
-    Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), failedTests);
+    Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME + " (batchId=1)"), failedTests);
   }
   @Test
   public void testPassingUnitTest() throws Throwable {
@@ -147,10 +147,10 @@ public class TestExecutionPhase extends AbstractTestPhase {
     Assert.assertEquals(1, sshCommandExecutor.getMatchCount());
     Approvals.verify(getExecutedCommands());
     Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), executedTests);
-    Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), failedTests);
+    Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME + " (batchId=1)"), failedTests);
   }
 
-  @Test(timeout = 2000000)
+  @Test(timeout = 20000)
   public void testTimedOutUnitTest() throws Throwable {
     setupUnitTest(3);
     copyTestOutput("SomeTest-success.xml", succeededLogDir, testBatch.getName(), "TEST-TestClass-0.xml");
@@ -158,6 +158,6 @@ public class TestExecutionPhase extends AbstractTestPhase {
     getPhase().execute();
     Approvals.verify(getExecutedCommands());
     Assert.assertEquals(1, failedTests.size());
-    Assert.assertEquals("TestClass-2 - did not produce a TEST-*.xml file", failedTests.iterator().next());
+    Assert.assertEquals("TestClass-2 - did not produce a TEST-*.xml file (likely timed out) (batchId=1)", failedTests.iterator().next());
   }
 }
