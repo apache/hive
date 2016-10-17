@@ -53,6 +53,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.Utils;
@@ -206,6 +207,7 @@ class SparkClientImpl implements SparkClient {
 
     if (conf.containsKey(SparkClientFactory.CONF_KEY_IN_PROCESS)) {
       // Mostly for testing things quickly. Do not do this in production.
+      // when invoked in-process it inherits the environment variables of the parent
       LOG.warn("!!!! Running remote driver in-process. !!!!");
       runnable = new Runnable() {
         @Override
@@ -440,7 +442,12 @@ class SparkClientImpl implements SparkClient {
       // Prevent hive configurations from being visible in Spark.
       pb.environment().remove("HIVE_HOME");
       pb.environment().remove("HIVE_CONF_DIR");
-
+      // Add credential provider password to the child process's environment
+      // In case of Spark the credential provider location is provided in the jobConf when the job is submitted
+      String password = getSparkJobCredentialProviderPassword();
+      if(password != null) {
+        pb.environment().put(Constants.HADOOP_CREDENTIAL_PASSWORD_ENVVAR, password);
+      }
       if (isTesting != null) {
         pb.environment().put("SPARK_TESTING", isTesting);
       }
@@ -483,6 +490,15 @@ class SparkClientImpl implements SparkClient {
     thread.setName("Driver");
     thread.start();
     return thread;
+  }
+
+  private String getSparkJobCredentialProviderPassword() {
+    if (conf.containsKey("spark.yarn.appMasterEnv.HADOOP_CREDSTORE_PASSWORD")) {
+      return conf.get("spark.yarn.appMasterEnv.HADOOP_CREDSTORE_PASSWORD");
+    } else if (conf.containsKey("spark.executorEnv.HADOOP_CREDSTORE_PASSWORD")) {
+      return conf.get("spark.executorEnv.HADOOP_CREDSTORE_PASSWORD");
+    }
+    return null;
   }
 
   private void redirect(String name, Redirector redirector) {

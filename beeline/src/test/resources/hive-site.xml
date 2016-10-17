@@ -45,4 +45,9 @@
     <value>${test.tmp.dir}/warehouse</value>
     <description></description>
   </property>
+  <property>
+    <name>test.data.files</name>
+    <value>${hive.root}/data/files</value>
+    <description></description>
+  </property>
 </configuration>

@@ -4785,10 +4785,12 @@ inline std::ostream& operator<<(std::ostream& out, const Function& obj)
 }
 
 typedef struct _TxnInfo__isset {
-  _TxnInfo__isset() : agentInfo(true), heartbeatCount(true), metaInfo(false) {}
+  _TxnInfo__isset() : agentInfo(true), heartbeatCount(true), metaInfo(false), startedTime(false), lastHeartbeatTime(false) {}
   bool agentInfo :1;
   bool heartbeatCount :1;
   bool metaInfo :1;
+  bool startedTime :1;
+  bool lastHeartbeatTime :1;
 } _TxnInfo__isset;
 
 class TxnInfo {
@@ -4796,7 +4798,7 @@ class TxnInfo {
 
   TxnInfo(const TxnInfo&);
   TxnInfo& operator=(const TxnInfo&);
-  TxnInfo() : id(0), state((TxnState::type)0), user(), hostname(), agentInfo("Unknown"), heartbeatCount(0), metaInfo() {
+  TxnInfo() : id(0), state((TxnState::type)0), user(), hostname(), agentInfo("Unknown"), heartbeatCount(0), metaInfo(), startedTime(0), lastHeartbeatTime(0) {
   }
 
   virtual ~TxnInfo() throw();
@@ -4807,6 +4809,8 @@ class TxnInfo {
   std::string agentInfo;
   int32_t heartbeatCount;
   std::string metaInfo;
+  int64_t startedTime;
+  int64_t lastHeartbeatTime;
 
   _TxnInfo__isset __isset;
 
@@ -4823,6 +4827,10 @@ class TxnInfo {
   void __set_heartbeatCount(const int32_t val);
 
   void __set_metaInfo(const std::string& val);
+
+  void __set_startedTime(const int64_t val);
+
+  void __set_lastHeartbeatTime(const int64_t val);
 
   bool operator == (const TxnInfo & rhs) const
   {
@@ -4845,6 +4853,14 @@ class TxnInfo {
     if (__isset.metaInfo != rhs.__isset.metaInfo)
       return false;
     else if (__isset.metaInfo && !(metaInfo == rhs.metaInfo))
+      return false;
+    if (__isset.startedTime != rhs.__isset.startedTime)
+      return false;
+    else if (__isset.startedTime && !(startedTime == rhs.startedTime))
+      return false;
+    if (__isset.lastHeartbeatTime != rhs.__isset.lastHeartbeatTime)
+      return false;
+    else if (__isset.lastHeartbeatTime && !(lastHeartbeatTime == rhs.lastHeartbeatTime))
       return false;
     return true;
   }

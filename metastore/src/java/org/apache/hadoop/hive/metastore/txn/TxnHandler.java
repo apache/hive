@@ -292,9 +292,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             "initialized, null record found in next_txn_id");
         }
         close(rs);
-        List<TxnInfo> txnInfo = new ArrayList<TxnInfo>();
+        List<TxnInfo> txnInfos = new ArrayList<TxnInfo>();
         //need the WHERE clause below to ensure consistent results with READ_COMMITTED
-        s = "select txn_id, txn_state, txn_user, txn_host from TXNS where txn_id <= " + hwm;
+        s = "select txn_id, txn_state, txn_user, txn_host, txn_started, txn_last_heartbeat from " +
+            "TXNS where txn_id <= " + hwm;
         LOG.debug("Going to execute query<" + s + ">");
         rs = stmt.executeQuery(s);
         while (rs.next()) {
@@ -313,11 +314,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               throw new MetaException("Unexpected transaction state " + c +
                 " found in txns table");
           }
-          txnInfo.add(new TxnInfo(rs.getLong(1), state, rs.getString(3), rs.getString(4)));
+          TxnInfo txnInfo = new TxnInfo(rs.getLong(1), state, rs.getString(3), rs.getString(4));
+          txnInfo.setStartedTime(rs.getLong(5));
+          txnInfo.setLastHeartbeatTime(rs.getLong(6));
+          txnInfos.add(txnInfo);
         }
         LOG.debug("Going to rollback");
         dbConn.rollback();
-        return new GetOpenTxnsInfoResponse(hwm, txnInfo);
+        return new GetOpenTxnsInfoResponse(hwm, txnInfos);
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);

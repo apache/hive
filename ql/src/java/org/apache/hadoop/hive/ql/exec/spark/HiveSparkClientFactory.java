@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
@@ -195,7 +196,20 @@ public class HiveSparkClientFactory {
       sparkConf.put(SPARK_WAIT_APP_COMPLETE, "false");
     }
 
+    // Set the credential provider passwords if found, if there is job specific password
+    // the credential provider location is set directly in the execute method of LocalSparkClient
+    // and submit method of RemoteHiveSparkClient when the job config is created
+    String password = HiveConfUtil.getJobCredentialProviderPassword(hiveConf);
+    if(password != null) {
+      addCredentialProviderPassword(sparkConf, password);
+    }
     return sparkConf;
+  }
+
+  private static void addCredentialProviderPassword(Map<String, String> sparkConf,
+      String jobCredstorePassword) {
+    sparkConf.put("spark.yarn.appMasterEnv.HADOOP_CREDSTORE_PASSWORD", jobCredstorePassword);
+    sparkConf.put("spark.executorEnv.HADOOP_CREDSTORE_PASSWORD", jobCredstorePassword);
   }
 
   static SparkConf generateSparkConf(Map<String, String> conf) {

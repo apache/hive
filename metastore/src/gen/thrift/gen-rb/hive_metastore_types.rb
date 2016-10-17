@@ -1797,6 +1797,8 @@ class TxnInfo
   AGENTINFO = 5
   HEARTBEATCOUNT = 6
   METAINFO = 7
+  STARTEDTIME = 8
+  LASTHEARTBEATTIME = 9
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id'},
@@ -1805,7 +1807,9 @@ class TxnInfo
     HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostname'},
     AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :default => %q"Unknown", :optional => true},
     HEARTBEATCOUNT => {:type => ::Thrift::Types::I32, :name => 'heartbeatCount', :default => 0, :optional => true},
-    METAINFO => {:type => ::Thrift::Types::STRING, :name => 'metaInfo', :optional => true}
+    METAINFO => {:type => ::Thrift::Types::STRING, :name => 'metaInfo', :optional => true},
+    STARTEDTIME => {:type => ::Thrift::Types::I64, :name => 'startedTime', :optional => true},
+    LASTHEARTBEATTIME => {:type => ::Thrift::Types::I64, :name => 'lastHeartbeatTime', :optional => true}
   }
 
   def struct_fields; FIELDS; end

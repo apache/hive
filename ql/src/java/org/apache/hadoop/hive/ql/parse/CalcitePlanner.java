@@ -2366,6 +2366,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
       }
 
+      // Select DISTINCT + windowing; GBy handled by genSelectForWindowing
+      if (selExprList.getToken().getType() == HiveParser.TOK_SELECTDI &&
+              !qb.getAllWindowingSpecs().isEmpty()) {
+        return null;
+      }
+
       List<ASTNode> grpByAstExprs = getGroupByForClause(qbp, detsClauseName);
       HashMap<String, ASTNode> aggregationTrees = qbp.getAggregationExprsForClause(detsClauseName);
       boolean hasGrpByAstExprs = (grpByAstExprs != null && !grpByAstExprs.isEmpty()) ? true : false;

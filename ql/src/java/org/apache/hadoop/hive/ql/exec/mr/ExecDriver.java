@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -413,6 +414,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         TezSessionPoolManager.getInstance().closeIfNotDefault(session, true);
       }
 
+      HiveConfUtil.updateJobCredentialProviders(job);
       // Finally SUBMIT the JOB!
       rj = jc.submitJob(job);
       this.jobID = rj.getJobID();

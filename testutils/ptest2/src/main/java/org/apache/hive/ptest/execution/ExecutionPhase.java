@@ -20,6 +20,7 @@ package org.apache.hive.ptest.execution;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -28,7 +29,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Joiner;
 import org.apache.hive.ptest.execution.conf.Host;
+import org.apache.hive.ptest.execution.conf.QFileTestBatch;
 import org.apache.hive.ptest.execution.conf.TestBatch;
 import org.apache.hive.ptest.execution.context.ExecutionContext;
 import org.slf4j.Logger;
@@ -116,13 +119,27 @@ public class ExecutionPhase extends Phase {
         }
         JUnitReportParser parser = new JUnitReportParser(logger, batchLogDir);
         executedTests.addAll(parser.getAllExecutedTests());
-        failedTests.addAll(parser.getAllFailedTests());
+        for (String failedTest : parser.getAllFailedTests()) {
+          failedTests.add(failedTest + " (batchId=" + batch.getBatchId() + ")");
+        }
+
         // if the TEST*.xml was not generated or was corrupt, let someone know
         if (parser.getTestClassesWithReportAvailable().size() < batch.getTestClasses().size()) {
           Set<String> expTestClasses = new HashSet<>(batch.getTestClasses());
           expTestClasses.removeAll(parser.getTestClassesWithReportAvailable());
           for (String testClass : expTestClasses) {
-            failedTests.add(testClass + " - did not produce a TEST-*.xml file");
+            StringBuilder messageBuilder = new StringBuilder();
+            messageBuilder.append(testClass).append(" - did not produce a TEST-*.xml file (likely timed out)")
+                .append(" (batchId=").append(batch.getBatchId()).append(")");
+            if (batch instanceof QFileTestBatch) {
+              Collection<String> tests = ((QFileTestBatch)batch).getTests();
+              if (tests.size() != 0) {
+                messageBuilder.append("\n\t[");
+                messageBuilder.append(Joiner.on(",").join(tests));
+                messageBuilder.append("]");
+              }
+            }
+            failedTests.add(messageBuilder.toString());
           }
         }
       }

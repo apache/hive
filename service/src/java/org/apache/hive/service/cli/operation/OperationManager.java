@@ -274,6 +274,9 @@ public class OperationManager extends AbstractService {
     } else {
       LOG.debug(opHandle + ": Attempting to cancel from state - " + opState);
       operation.cancel(OperationState.CANCELED);
+      if (operation instanceof SQLOperation) {
+        removeSaveSqlOperationDisplay(opHandle);
+      }
     }
   }
 
