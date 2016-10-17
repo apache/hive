@@ -2521,7 +2521,10 @@ public class HiveConf extends Configuration {
         "if an X-XSRF-HEADER header is not present"),
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,list,delete,reload,compile",
         "Comma separated list of non-SQL Hive commands users are authorized to execute"),
-
+    HIVE_SERVER2_JOB_CREDENTIAL_PROVIDER_PATH("hive.server2.job.credential.provider.path", "",
+        "If set, this configuration property should provide a comma-separated list of URLs that indicates the type and " +
+        "location of providers to be used by hadoop credential provider API. It provides HiveServer2 the ability to provide job-specific " +
+        "credential providers for jobs run using MR and Spark execution engines. This functionality has not been tested against Tez."),
     HIVE_MOVE_FILES_THREAD_COUNT("hive.mv.files.thread", 15, new  SizeValidator(0L, true, 1024L, true), "Number of threads"
          + " used to move files in move task. Set it to 0 to disable multi-threaded file moves. This parameter is also used by"
          + " MSCK to check tables."),
