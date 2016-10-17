@@ -177,7 +177,7 @@ public class TestBeeLineWithArgs {
    * Attempt to execute a simple script file with the -f and -i option to
    * BeeLine to test for presence of an expected pattern in the output (stdout
    * or stderr), fail if not found. Print PASSED or FAILED
-   * 
+   *
    * @param expectedRegex
    *          Text to look for in command output (stdout)
    * @param shouldMatch
@@ -205,7 +205,7 @@ public class TestBeeLineWithArgs {
       boolean shouldMatch, List<String> argList, OutStream outType) throws Throwable {
     testScriptFile(scriptText, expectedRegex, shouldMatch, argList, true, true, outType);
   }
-  
+
   /**
    * Attempt to execute a simple script file with the -f or -i option
    * to BeeLine (or both) to  test for presence of an expected pattern
@@ -330,7 +330,7 @@ public class TestBeeLineWithArgs {
     List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
     testScriptFile( SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
   }
-  
+
   /**
    * Test Beeline -hivevar option. User can specify --hivevar name=value on Beeline command line.
    * In the script, user should be able to use it in the form of ${name}, which will be substituted with
@@ -931,6 +931,21 @@ public class TestBeeLineWithArgs {
     List<String> argList = new ArrayList<String>();
     final String SCRIPT_TEXT = "!sh echo hello world";
     final String EXPECTED_PATTERN = "hello world";
-    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList,true,false);
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList,true,false, OutStream.OUT);
+  }
+
+  /**
+   * Attempt to execute Beeline with force option to continue running script even after errors.
+   * Test for presence of an expected pattern to match the output of a valid command at the end.
+   */
+  @Test
+  public void testBeelineWithForce() throws Throwable {
+    final String SCRIPT_TEXT = "drop table does_not_exist;\ncreate table incomplete_syntax(a, string, );\n "
+            + "drop table if exists new_table;\n create table new_table(foo int, bar string);\n "
+            + "desc new_table;\n";
+    final String EXPECTED_PATTERN = "col_name[ \\|]+data_type[ \\|]+comment";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--force");
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
   }
 }
