@@ -377,7 +377,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
         fetchedRowsItr = fetchedRows.iterator();
       }
 
-      String rowStr = "";
       if (fetchedRowsItr.hasNext()) {
         row = fetchedRowsItr.next();
       } else {
@@ -385,10 +384,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       }
 
       rowsFetched++;
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Fetched row string: " + rowStr);
-      }
-
     } catch (SQLException eS) {
       throw eS;
     } catch (Exception ex) {
