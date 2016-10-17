@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -112,6 +113,11 @@ public class LocalHiveSparkClient implements HiveSparkClient {
     emptyScratchDir = ctx.getMRTmpPath();
     FileSystem fs = emptyScratchDir.getFileSystem(jobConf);
     fs.mkdirs(emptyScratchDir);
+
+    // Update credential provider location
+    // the password to the credential provider in already set in the sparkConf
+    // in HiveSparkClientFactory
+    HiveConfUtil.updateJobCredentialProviders(jobConf);
 
     SparkCounters sparkCounters = new SparkCounters(sc);
     Map<String, List<String>> prefixes = sparkWork.getRequiredCounterPrefix();

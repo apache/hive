@@ -41,6 +41,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -190,6 +191,9 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     final HiveConf hiveConf = (HiveConf) ctx.getConf();
     refreshLocalResources(sparkWork, hiveConf);
     final JobConf jobConf = new JobConf(hiveConf);
+
+    //update the credential provider location in the jobConf
+    HiveConfUtil.updateJobCredentialProviders(jobConf);
 
     // Create temporary scratch dir
     final Path emptyScratchDir = ctx.getMRTmpPath();

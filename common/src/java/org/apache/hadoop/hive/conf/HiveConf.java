@@ -1929,7 +1929,6 @@ public class HiveConf extends Configuration {
         "Session will be considered to be idle only if there is no activity, and there is no pending operation.\n" +
         "This setting takes effect only if session idle timeout (hive.server2.idle.session.timeout) and checking\n" +
         "(hive.server2.session.check.interval) are enabled."),
-
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
         "hive.security.authenticator.manager,hive.security.authorization.manager,hive.users.in.admin.role",
         "Comma separated list of configuration options which are immutable at runtime"),
@@ -1944,6 +1943,10 @@ public class HiveConf extends Configuration {
         + ",fs.s3a.secret.key"
         + ",fs.s3a.proxy.password",
         "Comma separated list of configuration options which should not be read by normal user like passwords"),
+    HIVE_SERVER2_JOB_CREDENTIAL_PROVIDER_PATH("hive.server2.job.credential.provider.path", "",
+        "If set, this configuration property should provide a comma-separated list of URLs that indicates the type and " +
+        "location of providers to be used by hadoop credential provider API. It provides HiveServer2 the ability to provide job-specific " +
+        "credential providers for jobs run using MR and Spark execution engines. This functionality has not been tested against Tez."),
     HIVE_MOVE_FILES_THREAD_COUNT("hive.mv.files.thread", 25, "Number of threads"
          + " used to move files in move task. Set it to 0 to disable multi-threaded file moves. This parameter is also used by"
          + " MSCK to check tables."),

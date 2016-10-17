@@ -435,6 +435,7 @@ public class HiveStringUtils {
 
   final public static String[] emptyStringArray = {};
   final public static char COMMA = ',';
+  final public static char EQUALS = '=';
   final public static String COMMA_STR = ",";
   final public static char ESCAPE_CHAR = '\\';
 
@@ -531,6 +532,37 @@ public class HiveStringUtils {
       }
     }
     return result;
+  }
+
+  /**
+   * In a given string of comma-separated key=value pairs insert a new value of a given key
+   *
+   * @param key The key whose value needs to be replaced
+   * @param newValue The new value of the key
+   * @param strKvPairs Comma separated key=value pairs Eg: "k1=v1, k2=v2, k3=v3"
+   * @return Comma separated string of key=value pairs with the new value for key keyName
+   */
+  public static String insertValue(String key, String newValue,
+      String strKvPairs) {
+    String[] keyValuePairs = HiveStringUtils.split(strKvPairs);
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < keyValuePairs.length; i++) {
+      String[] pair = HiveStringUtils.split(keyValuePairs[i], ESCAPE_CHAR, EQUALS);
+      if (pair.length != 2) {
+        throw new RuntimeException("Error parsing the keyvalue pair " + keyValuePairs[i]);
+      }
+      sb.append(pair[0]);
+      sb.append(EQUALS);
+      if (pair[0].equals(key)) {
+        sb.append(newValue);
+      } else {
+        sb.append(pair[1]);
+      }
+      if (i < (keyValuePairs.length - 1)) {
+        sb.append(COMMA);
+      }
+    }
+    return sb.toString();
   }
 
   /**
