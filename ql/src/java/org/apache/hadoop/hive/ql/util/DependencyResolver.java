@@ -81,7 +81,7 @@ public class DependencyResolver {
     if (authority == null) {
       throw new URISyntaxException(authority, "Invalid url: Expected 'org:module:version', found null");
     }
-    String[] authorityTokens = authority.toLowerCase().split(":");
+    String[] authorityTokens = authority.split(":");
 
     if (authorityTokens.length != 3) {
       throw new URISyntaxException(authority, "Invalid url: Expected 'org:module:version', found " + authority);
