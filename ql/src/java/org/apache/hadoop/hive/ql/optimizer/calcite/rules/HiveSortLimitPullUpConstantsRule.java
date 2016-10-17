@@ -26,6 +26,7 @@ import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
@@ -158,7 +159,15 @@ public class HiveSortLimitPullUpConstantsRule extends RelOptRule {
     relBuilder.project(topChildExprs, topChildExprsFields);
     relBuilder.convert(sort.getRowType(), false);
 
-    call.transformTo(parent.copy(parent.getTraitSet(), ImmutableList.of(relBuilder.build())));
+    List<RelNode> inputs = new ArrayList<>();
+    for (RelNode child : parent.getInputs()) {
+      if (!((HepRelVertex) child).getCurrentRel().equals(sort)) {
+        inputs.add(child);
+      } else {
+        inputs.add(relBuilder.build());
+      }
+    }
+    call.transformTo(parent.copy(parent.getTraitSet(), inputs));
   }
 
 }
