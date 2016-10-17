@@ -366,6 +366,7 @@ public class Partition implements Serializable {
   // TODO: add test case and clean it up
   @SuppressWarnings("nls")
   public Path getBucketPath(int bucketNum) {
+    // Note: this makes assumptions that won't work with MM tables, unions, etc.
     FileStatus srcs[] = getSortedPaths();
     if (srcs == null) {
       return null;

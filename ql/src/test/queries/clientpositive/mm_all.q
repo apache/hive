@@ -11,6 +11,8 @@ drop table intermediate;
 create table intermediate(key int) partitioned by (p int) stored as orc;
 insert into table intermediate partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2;
 insert into table intermediate partition(p='456') select distinct key from src where key is not null order by key asc limit 2;
+insert into table intermediate partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2;
+
 
 drop table part_mm;
 create table part_mm(key int) partitioned by (key_mm int) stored as orc tblproperties ('hivecommit'='true');
@@ -18,7 +20,7 @@ explain insert into table part_mm partition(key_mm='455') select key from interm
 insert into table part_mm partition(key_mm='455') select key from intermediate;
 insert into table part_mm partition(key_mm='456') select key from intermediate;
 insert into table part_mm partition(key_mm='455') select key from intermediate;
-select * from part_mm order by key;
+select * from part_mm order by key, key_mm;
 drop table part_mm;
 
 drop table simple_mm;
@@ -176,8 +178,5 @@ create table ctas1_mm tblproperties ('hivecommit'='true') as
 select * from ctas1_mm;
 drop table ctas1_mm;
 
-
-
--- TODO load, multi-insert, buckets
 
 drop table intermediate;

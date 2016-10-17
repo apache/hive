@@ -30,6 +30,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@intermediate@p=456
 POSTHOOK: Lineage: intermediate PARTITION(p=456).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into table intermediate partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@intermediate@p=457
+POSTHOOK: query: insert into table intermediate partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@intermediate@p=457
+POSTHOOK: Lineage: intermediate PARTITION(p=457).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: drop table part_mm
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table part_mm
@@ -61,14 +70,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: intermediate
-                  Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                           output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -101,12 +110,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@part_mm@key_mm=455
 POSTHOOK: query: insert into table part_mm partition(key_mm='455') select key from intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@part_mm@key_mm=455
 POSTHOOK: Lineage: part_mm PARTITION(key_mm=455).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: insert into table part_mm partition(key_mm='456') select key from intermediate
@@ -114,12 +125,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@part_mm@key_mm=456
 POSTHOOK: query: insert into table part_mm partition(key_mm='456') select key from intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@part_mm@key_mm=456
 POSTHOOK: Lineage: part_mm PARTITION(key_mm=456).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: insert into table part_mm partition(key_mm='455') select key from intermediate
@@ -127,21 +140,23 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@part_mm@key_mm=455
 POSTHOOK: query: insert into table part_mm partition(key_mm='455') select key from intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@part_mm@key_mm=455
 POSTHOOK: Lineage: part_mm PARTITION(key_mm=455).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: select * from part_mm order by key
+PREHOOK: query: select * from part_mm order by key, key_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_mm
 PREHOOK: Input: default@part_mm@key_mm=455
 PREHOOK: Input: default@part_mm@key_mm=456
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part_mm order by key
+POSTHOOK: query: select * from part_mm order by key, key_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_mm
 POSTHOOK: Input: default@part_mm@key_mm=455
@@ -150,15 +165,21 @@ POSTHOOK: Input: default@part_mm@key_mm=456
 0	455
 0	455
 0	456
+10	455
+10	455
 10	456
-10	455
-10	455
 97	455
 97	455
 97	456
+98	455
+98	455
 98	456
-98	455
-98	455
+100	455
+100	455
+100	456
+103	455
+103	455
+103	456
 PREHOOK: query: drop table part_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_mm
@@ -184,12 +205,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@simple_mm
 POSTHOOK: query: insert into table simple_mm select key from intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@simple_mm
 POSTHOOK: Lineage: simple_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: insert overwrite table simple_mm select key from intermediate
@@ -197,12 +220,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@simple_mm
 POSTHOOK: query: insert overwrite table simple_mm select key from intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@simple_mm
 POSTHOOK: Lineage: simple_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from simple_mm order by key
@@ -217,17 +242,21 @@ POSTHOOK: Input: default@simple_mm
 10
 97
 98
+100
+103
 PREHOOK: query: insert into table simple_mm select key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@simple_mm
 POSTHOOK: query: insert into table simple_mm select key from intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@simple_mm
 POSTHOOK: Lineage: simple_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from simple_mm order by key
@@ -246,6 +275,10 @@ POSTHOOK: Input: default@simple_mm
 97
 98
 98
+100
+100
+103
+103
 PREHOOK: query: drop table simple_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@simple_mm
@@ -275,17 +308,23 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@dp_mm@key1=123
 POSTHOOK: query: insert into table dp_mm partition (key1='123', key2) select key, key from intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@dp_mm@key1=123/key2=0
 POSTHOOK: Output: default@dp_mm@key1=123/key2=10
+POSTHOOK: Output: default@dp_mm@key1=123/key2=100
+POSTHOOK: Output: default@dp_mm@key1=123/key2=103
 POSTHOOK: Output: default@dp_mm@key1=123/key2=97
 POSTHOOK: Output: default@dp_mm@key1=123/key2=98
 POSTHOOK: Lineage: dp_mm PARTITION(key1=123,key2=0).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dp_mm PARTITION(key1=123,key2=100).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dp_mm PARTITION(key1=123,key2=103).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dp_mm PARTITION(key1=123,key2=10).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dp_mm PARTITION(key1=123,key2=97).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dp_mm PARTITION(key1=123,key2=98).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
@@ -294,6 +333,8 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@dp_mm
 PREHOOK: Input: default@dp_mm@key1=123/key2=0
 PREHOOK: Input: default@dp_mm@key1=123/key2=10
+PREHOOK: Input: default@dp_mm@key1=123/key2=100
+PREHOOK: Input: default@dp_mm@key1=123/key2=103
 PREHOOK: Input: default@dp_mm@key1=123/key2=97
 PREHOOK: Input: default@dp_mm@key1=123/key2=98
 #### A masked pattern was here ####
@@ -302,6 +343,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dp_mm
 POSTHOOK: Input: default@dp_mm@key1=123/key2=0
 POSTHOOK: Input: default@dp_mm@key1=123/key2=10
+POSTHOOK: Input: default@dp_mm@key1=123/key2=100
+POSTHOOK: Input: default@dp_mm@key1=123/key2=103
 POSTHOOK: Input: default@dp_mm@key1=123/key2=97
 POSTHOOK: Input: default@dp_mm@key1=123/key2=98
 #### A masked pattern was here ####
@@ -309,6 +352,8 @@ POSTHOOK: Input: default@dp_mm@key1=123/key2=98
 10	123	10
 97	123	97
 98	123	98
+100	123	100
+103	123	103
 PREHOOK: query: drop table dp_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dp_mm
@@ -338,6 +383,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@union_mm
 POSTHOOK: query: insert into table union_mm 
 select temps.p from (
@@ -348,6 +394,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@union_mm
 POSTHOOK: Lineage: union_mm.id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from union_mm order by id
@@ -366,6 +413,10 @@ POSTHOOK: Input: default@union_mm
 98
 98
 99
+100
+101
+103
+104
 PREHOOK: query: insert into table union_mm 
 select p from
 (
@@ -379,6 +430,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@union_mm
 POSTHOOK: query: insert into table union_mm 
 select p from
@@ -393,6 +445,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@union_mm
 POSTHOOK: Lineage: union_mm.id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from union_mm order by id
@@ -422,6 +475,16 @@ POSTHOOK: Input: default@union_mm
 99
 99
 100
+100
+100
+101
+101
+102
+103
+103
+104
+104
+105
 PREHOOK: query: insert into table union_mm
 SELECT p FROM
 (
@@ -442,6 +505,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@union_mm
 POSTHOOK: query: insert into table union_mm
 SELECT p FROM
@@ -463,6 +527,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@union_mm
 POSTHOOK: Lineage: union_mm.id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from union_mm order by id
@@ -502,6 +567,21 @@ POSTHOOK: Input: default@union_mm
 99
 100
 100
+100
+100
+101
+101
+101
+102
+102
+103
+103
+103
+104
+104
+104
+105
+105
 PREHOOK: query: drop table union_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@union_mm
@@ -527,6 +607,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@partunion_mm
 POSTHOOK: query: insert into table partunion_mm partition(key)
 select temps.* from (
@@ -537,14 +618,23 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@partunion_mm@key=0
 POSTHOOK: Output: default@partunion_mm@key=1
 POSTHOOK: Output: default@partunion_mm@key=10
+POSTHOOK: Output: default@partunion_mm@key=100
+POSTHOOK: Output: default@partunion_mm@key=101
+POSTHOOK: Output: default@partunion_mm@key=103
+POSTHOOK: Output: default@partunion_mm@key=104
 POSTHOOK: Output: default@partunion_mm@key=11
 POSTHOOK: Output: default@partunion_mm@key=97
 POSTHOOK: Output: default@partunion_mm@key=98
 POSTHOOK: Output: default@partunion_mm@key=99
 POSTHOOK: Lineage: partunion_mm PARTITION(key=0).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: partunion_mm PARTITION(key=100).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: partunion_mm PARTITION(key=101).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: partunion_mm PARTITION(key=103).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: partunion_mm PARTITION(key=104).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: partunion_mm PARTITION(key=10).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: partunion_mm PARTITION(key=11).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: partunion_mm PARTITION(key=1).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
@@ -557,6 +647,10 @@ PREHOOK: Input: default@partunion_mm
 PREHOOK: Input: default@partunion_mm@key=0
 PREHOOK: Input: default@partunion_mm@key=1
 PREHOOK: Input: default@partunion_mm@key=10
+PREHOOK: Input: default@partunion_mm@key=100
+PREHOOK: Input: default@partunion_mm@key=101
+PREHOOK: Input: default@partunion_mm@key=103
+PREHOOK: Input: default@partunion_mm@key=104
 PREHOOK: Input: default@partunion_mm@key=11
 PREHOOK: Input: default@partunion_mm@key=97
 PREHOOK: Input: default@partunion_mm@key=98
@@ -568,6 +662,10 @@ POSTHOOK: Input: default@partunion_mm
 POSTHOOK: Input: default@partunion_mm@key=0
 POSTHOOK: Input: default@partunion_mm@key=1
 POSTHOOK: Input: default@partunion_mm@key=10
+POSTHOOK: Input: default@partunion_mm@key=100
+POSTHOOK: Input: default@partunion_mm@key=101
+POSTHOOK: Input: default@partunion_mm@key=103
+POSTHOOK: Input: default@partunion_mm@key=104
 POSTHOOK: Input: default@partunion_mm@key=11
 POSTHOOK: Input: default@partunion_mm@key=97
 POSTHOOK: Input: default@partunion_mm@key=98
@@ -581,6 +679,10 @@ POSTHOOK: Input: default@partunion_mm@key=99
 98	98
 98	98
 99	99
+100	100
+101	101
+103	103
+104	104
 PREHOOK: query: drop table partunion_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partunion_mm
@@ -605,6 +707,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@skew_mm
 POSTHOOK: query: insert into table skew_mm 
 select key, key, key from intermediate
@@ -612,6 +715,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@skew_mm
 POSTHOOK: Lineage: skew_mm.k1 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: skew_mm.k2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
@@ -628,6 +732,8 @@ POSTHOOK: Input: default@skew_mm
 10	10	10
 97	97	97
 98	98	98
+100	100	100
+103	103	103
 PREHOOK: query: drop table skew_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@skew_mm
@@ -654,6 +760,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@skew_dp_union_mm
 POSTHOOK: query: insert into table skew_dp_union_mm partition (k3)
 select key as i, key as j, key as k, key as l from intermediate
@@ -663,10 +770,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@skew_dp_union_mm@k3=0
 POSTHOOK: Output: default@skew_dp_union_mm@k3=10
+POSTHOOK: Output: default@skew_dp_union_mm@k3=100
 POSTHOOK: Output: default@skew_dp_union_mm@k3=101
 POSTHOOK: Output: default@skew_dp_union_mm@k3=102
+POSTHOOK: Output: default@skew_dp_union_mm@k3=103
+POSTHOOK: Output: default@skew_dp_union_mm@k3=104
+POSTHOOK: Output: default@skew_dp_union_mm@k3=107
 POSTHOOK: Output: default@skew_dp_union_mm@k3=14
 POSTHOOK: Output: default@skew_dp_union_mm@k3=4
 POSTHOOK: Output: default@skew_dp_union_mm@k3=97
@@ -674,12 +786,24 @@ POSTHOOK: Output: default@skew_dp_union_mm@k3=98
 POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=0).k1 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=0).k2 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=0).k4 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=100).k1 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=100).k2 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=100).k4 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=101).k1 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=101).k2 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=101).k4 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=102).k1 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=102).k2 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=102).k4 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=103).k1 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=103).k2 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=103).k4 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=104).k1 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=104).k2 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=104).k4 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=107).k1 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=107).k2 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=107).k4 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=10).k1 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=10).k2 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: skew_dp_union_mm PARTITION(k3=10).k4 EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
@@ -700,8 +824,12 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@skew_dp_union_mm
 PREHOOK: Input: default@skew_dp_union_mm@k3=0
 PREHOOK: Input: default@skew_dp_union_mm@k3=10
+PREHOOK: Input: default@skew_dp_union_mm@k3=100
 PREHOOK: Input: default@skew_dp_union_mm@k3=101
 PREHOOK: Input: default@skew_dp_union_mm@k3=102
+PREHOOK: Input: default@skew_dp_union_mm@k3=103
+PREHOOK: Input: default@skew_dp_union_mm@k3=104
+PREHOOK: Input: default@skew_dp_union_mm@k3=107
 PREHOOK: Input: default@skew_dp_union_mm@k3=14
 PREHOOK: Input: default@skew_dp_union_mm@k3=4
 PREHOOK: Input: default@skew_dp_union_mm@k3=97
@@ -712,8 +840,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@skew_dp_union_mm
 POSTHOOK: Input: default@skew_dp_union_mm@k3=0
 POSTHOOK: Input: default@skew_dp_union_mm@k3=10
+POSTHOOK: Input: default@skew_dp_union_mm@k3=100
 POSTHOOK: Input: default@skew_dp_union_mm@k3=101
 POSTHOOK: Input: default@skew_dp_union_mm@k3=102
+POSTHOOK: Input: default@skew_dp_union_mm@k3=103
+POSTHOOK: Input: default@skew_dp_union_mm@k3=104
+POSTHOOK: Input: default@skew_dp_union_mm@k3=107
 POSTHOOK: Input: default@skew_dp_union_mm@k3=14
 POSTHOOK: Input: default@skew_dp_union_mm@k3=4
 POSTHOOK: Input: default@skew_dp_union_mm@k3=97
@@ -727,6 +859,10 @@ POSTHOOK: Input: default@skew_dp_union_mm@k3=98
 98	98	98	98
 98	99	100	101
 99	100	101	102
+100	100	100	100
+101	102	103	104
+103	103	103	103
+104	105	106	107
 PREHOOK: query: drop table skew_dp_union_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@skew_dp_union_mm
@@ -748,12 +884,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@merge0_mm
 POSTHOOK: query: insert into table merge0_mm select key from intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@merge0_mm
 POSTHOOK: Lineage: merge0_mm.id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from merge0_mm
@@ -766,6 +904,8 @@ POSTHOOK: Input: default@merge0_mm
 #### A masked pattern was here ####
 98
 97
+100
+103
 0
 10
 PREHOOK: query: insert into table merge0_mm select key from intermediate
@@ -773,12 +913,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@merge0_mm
 POSTHOOK: query: insert into table merge0_mm select key from intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@merge0_mm
 POSTHOOK: Lineage: merge0_mm.id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from merge0_mm
@@ -791,10 +933,14 @@ POSTHOOK: Input: default@merge0_mm
 #### A masked pattern was here ####
 98
 97
+100
+103
 0
 10
 98
 97
+100
+103
 0
 10
 PREHOOK: query: drop table merge0_mm
@@ -818,17 +964,23 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@merge1_mm
 POSTHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@merge1_mm@key=0
 POSTHOOK: Output: default@merge1_mm@key=10
+POSTHOOK: Output: default@merge1_mm@key=100
+POSTHOOK: Output: default@merge1_mm@key=103
 POSTHOOK: Output: default@merge1_mm@key=97
 POSTHOOK: Output: default@merge1_mm@key=98
 POSTHOOK: Lineage: merge1_mm PARTITION(key=0).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=100).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=103).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: merge1_mm PARTITION(key=10).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: merge1_mm PARTITION(key=97).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: merge1_mm PARTITION(key=98).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
@@ -837,6 +989,8 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@merge1_mm
 PREHOOK: Input: default@merge1_mm@key=0
 PREHOOK: Input: default@merge1_mm@key=10
+PREHOOK: Input: default@merge1_mm@key=100
+PREHOOK: Input: default@merge1_mm@key=103
 PREHOOK: Input: default@merge1_mm@key=97
 PREHOOK: Input: default@merge1_mm@key=98
 #### A masked pattern was here ####
@@ -845,9 +999,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge1_mm
 POSTHOOK: Input: default@merge1_mm@key=0
 POSTHOOK: Input: default@merge1_mm@key=10
+POSTHOOK: Input: default@merge1_mm@key=100
+POSTHOOK: Input: default@merge1_mm@key=103
 POSTHOOK: Input: default@merge1_mm@key=97
 POSTHOOK: Input: default@merge1_mm@key=98
 #### A masked pattern was here ####
+100	100
+103	103
 97	97
 98	98
 0	0
@@ -857,17 +1015,23 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@merge1_mm
 POSTHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@merge1_mm@key=0
 POSTHOOK: Output: default@merge1_mm@key=10
+POSTHOOK: Output: default@merge1_mm@key=100
+POSTHOOK: Output: default@merge1_mm@key=103
 POSTHOOK: Output: default@merge1_mm@key=97
 POSTHOOK: Output: default@merge1_mm@key=98
 POSTHOOK: Lineage: merge1_mm PARTITION(key=0).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=100).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=103).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: merge1_mm PARTITION(key=10).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: merge1_mm PARTITION(key=97).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: merge1_mm PARTITION(key=98).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
@@ -876,6 +1040,8 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@merge1_mm
 PREHOOK: Input: default@merge1_mm@key=0
 PREHOOK: Input: default@merge1_mm@key=10
+PREHOOK: Input: default@merge1_mm@key=100
+PREHOOK: Input: default@merge1_mm@key=103
 PREHOOK: Input: default@merge1_mm@key=97
 PREHOOK: Input: default@merge1_mm@key=98
 #### A masked pattern was here ####
@@ -884,9 +1050,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge1_mm
 POSTHOOK: Input: default@merge1_mm@key=0
 POSTHOOK: Input: default@merge1_mm@key=10
+POSTHOOK: Input: default@merge1_mm@key=100
+POSTHOOK: Input: default@merge1_mm@key=103
 POSTHOOK: Input: default@merge1_mm@key=97
 POSTHOOK: Input: default@merge1_mm@key=98
 #### A masked pattern was here ####
+100	100
+100	100
+103	103
+103	103
 97	97
 97	97
 98	98
@@ -918,6 +1090,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ctas0_mm
 POSTHOOK: query: create table ctas0_mm tblproperties ('hivecommit'='true') as select * from intermediate
@@ -925,6 +1098,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas0_mm
 POSTHOOK: Lineage: ctas0_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
@@ -939,6 +1113,8 @@ POSTHOOK: Input: default@ctas0_mm
 #### A masked pattern was here ####
 98	455
 97	455
+100	457
+103	457
 0	456
 10	456
 PREHOOK: query: drop table ctas0_mm
@@ -959,6 +1135,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ctas1_mm
 POSTHOOK: query: create table ctas1_mm tblproperties ('hivecommit'='true') as
@@ -967,6 +1144,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas1_mm
 POSTHOOK: Lineage: ctas1_mm.key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
@@ -981,10 +1159,14 @@ POSTHOOK: Input: default@ctas1_mm
 #### A masked pattern was here ####
 98	455
 97	455
+100	457
+103	457
 0	456
 10	456
 98	455
 97	455
+100	457
+103	457
 0	456
 10	456
 PREHOOK: query: drop table ctas1_mm
@@ -995,15 +1177,11 @@ POSTHOOK: query: drop table ctas1_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ctas1_mm
 POSTHOOK: Output: default@ctas1_mm
-PREHOOK: query: -- TODO load, multi-insert, buckets
-
-drop table intermediate
+PREHOOK: query: drop table intermediate
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate
 PREHOOK: Output: default@intermediate
-POSTHOOK: query: -- TODO load, multi-insert, buckets
-
-drop table intermediate
+POSTHOOK: query: drop table intermediate
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Output: default@intermediate

@@ -1525,23 +1525,22 @@ public final class Utilities {
     int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols(),
         numBuckets = (conf != null && conf.getTable() != null)
           ? conf.getTable().getNumBuckets() : 0;
-    return removeTempOrDuplicateFiles(fs, fileStats, dpLevels, numBuckets, hconf);
+    return removeTempOrDuplicateFiles(fs, fileStats, dpLevels, numBuckets, hconf, null);
   }
 
   public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, FileStatus[] fileStats,
-      int dpLevels, int numBuckets, Configuration hconf) throws IOException {
+      int dpLevels, int numBuckets, Configuration hconf, Long mmWriteId) throws IOException {
     if (fileStats == null) {
       return null;
     }
-
     List<Path> result = new ArrayList<Path>();
     HashMap<String, FileStatus> taskIDToFile = null;
     if (dpLevels > 0) {
       FileStatus parts[] = fileStats;
-
       for (int i = 0; i < parts.length; ++i) {
         assert parts[i].isDir() : "dynamic partition " + parts[i].getPath()
             + " is not a directory";
+        Utilities.LOG14535.info("removeTempOrDuplicateFiles looking at DP " + parts[i].getPath());
         FileStatus[] items = fs.listStatus(parts[i].getPath());
 
         // remove empty directory since DP insert should not generate empty partitions.
@@ -1551,46 +1550,80 @@ public final class Utilities {
             LOG.error("Cannot delete empty directory " + parts[i].getPath());
             throw new IOException("Cannot delete empty directory " + parts[i].getPath());
           }
+          parts[i] = null;
+          continue;
         }
 
-        taskIDToFile = removeTempOrDuplicateFiles(items, fs);
-        // if the table is bucketed and enforce bucketing, we should check and generate all buckets
-        if (numBuckets > 0 && taskIDToFile != null && !"tez".equalsIgnoreCase(hconf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname))) {
-          // refresh the file list
-          items = fs.listStatus(parts[i].getPath());
-          // get the missing buckets and generate empty buckets
-          String taskID1 = taskIDToFile.keySet().iterator().next();
-          Path bucketPath = taskIDToFile.values().iterator().next().getPath();
-          Utilities.LOG14535.info("Bucket path " + bucketPath);
-          for (int j = 0; j < numBuckets; ++j) {
-            addBucketFileIfMissing(result, taskIDToFile, taskID1, bucketPath, j);
+        if (mmWriteId != null) {
+          Path mmDir = parts[i].getPath();
+          if (!mmDir.getName().equals(ValidWriteIds.getMmFilePrefix(mmWriteId))) {
+            throw new IOException("Unexpected non-MM directory name " + mmDir);
           }
+          Utilities.LOG14535.info("removeTempOrDuplicateFiles processing files in MM directory " + mmDir);
         }
+        taskIDToFile = removeTempOrDuplicateFilesNonMm(items, fs);
+
+        // TODO: not clear why two if conditions are different. Preserve the existing logic for now.
+        addBucketFileToResults(taskIDToFile, numBuckets, hconf, result);
       }
     } else {
       FileStatus[] items = fileStats;
       if (items.length == 0) {
         return result;
       }
-      taskIDToFile = removeTempOrDuplicateFiles(items, fs);
-      if(taskIDToFile != null && taskIDToFile.size() > 0 && (numBuckets > taskIDToFile.size())
-          && !"tez".equalsIgnoreCase(hconf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname))) {
-          // get the missing buckets and generate empty buckets for non-dynamic partition
-        String taskID1 = taskIDToFile.keySet().iterator().next();
-        Path bucketPath = taskIDToFile.values().iterator().next().getPath();
-        Utilities.LOG14535.info("Bucket path " + bucketPath);
-        for (int j = 0; j < numBuckets; ++j) {
-          addBucketFileIfMissing(result, taskIDToFile, taskID1, bucketPath, j);
+      if (mmWriteId == null) {
+        taskIDToFile = removeTempOrDuplicateFilesNonMm(items, fs);
+      } else {
+        if (items.length > 1) {
+          throw new IOException("Unexpected directories for non-DP MM: " + Arrays.toString(items));
         }
+        Path mmDir = items[0].getPath();
+        if (!items[0].isDirectory()
+            || !mmDir.getName().equals(ValidWriteIds.getMmFilePrefix(mmWriteId))) {
+          throw new IOException("Unexpected non-MM directory " + mmDir);
+        }
+        Utilities.LOG14535.info(
+            "removeTempOrDuplicateFiles processing files in MM directory "  + mmDir);
+        taskIDToFile = removeTempOrDuplicateFilesNonMm(fs.listStatus(mmDir), fs);
       }
+      // TODO: not clear why two if conditions are different. Preserve the existing logic for now.
+      addBucketFileToResults2(taskIDToFile, numBuckets, hconf, result);
     }
 
     return result;
   }
 
+  // TODO: not clear why two if conditions are different. Preserve the existing logic for now.
+  private static void addBucketFileToResults2(HashMap<String, FileStatus> taskIDToFile,
+      int numBuckets, Configuration hconf, List<Path> result) {
+    if(taskIDToFile != null && taskIDToFile.size() > 0 && (numBuckets > taskIDToFile.size())
+        && !"tez".equalsIgnoreCase(hconf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname))) {
+        addBucketsToResultsCommon(taskIDToFile, numBuckets, result);
+    }
+  }
+
+  // TODO: not clear why two if conditions are different. Preserve the existing logic for now.
+  private static void addBucketFileToResults(HashMap<String, FileStatus> taskIDToFile,
+      int numBuckets, Configuration hconf, List<Path> result) {
+    // if the table is bucketed and enforce bucketing, we should check and generate all buckets
+    if (numBuckets > 0 && taskIDToFile != null
+        && !"tez".equalsIgnoreCase(hconf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname))) {
+      addBucketsToResultsCommon(taskIDToFile, numBuckets, result);
+    }
+  }
+
+  private static void addBucketsToResultsCommon(
+      HashMap<String, FileStatus> taskIDToFile, int numBuckets, List<Path> result) {
+    String taskID1 = taskIDToFile.keySet().iterator().next();
+    Path bucketPath = taskIDToFile.values().iterator().next().getPath();
+    Utilities.LOG14535.info("Bucket path " + bucketPath);
+    for (int j = 0; j < numBuckets; ++j) {
+      addBucketFileIfMissing(result, taskIDToFile, taskID1, bucketPath, j);
+    }
+  }
+
   private static void addBucketFileIfMissing(List<Path> result,
       HashMap<String, FileStatus> taskIDToFile, String taskID1, Path bucketPath, int j) {
-    // TODO# this will probably break with directories cause buckets would be above (or not?)
     String taskID2 = replaceTaskId(taskID1, j);
     if (!taskIDToFile.containsKey(taskID2)) {
       // create empty bucket, file name should be derived from taskID2
@@ -1601,75 +1634,79 @@ public final class Utilities {
     }
   }
 
-  public static HashMap<String, FileStatus> removeTempOrDuplicateFiles(FileStatus[] items,
-      FileSystem fs) throws IOException {
-
-    if (items == null || fs == null) {
+  private static HashMap<String, FileStatus> removeTempOrDuplicateFilesNonMm(
+      FileStatus[] files, FileSystem fs) throws IOException {
+    if (files == null || fs == null) {
       return null;
     }
-
     HashMap<String, FileStatus> taskIdToFile = new HashMap<String, FileStatus>();
 
-    for (FileStatus one : items) {
+    for (FileStatus one : files) {
       if (isTempPath(one)) {
         Utilities.LOG14535.info("removeTempOrDuplicateFiles deleting " + one.getPath()/*, new Exception()*/);
         if (!fs.delete(one.getPath(), true)) {
           throw new IOException("Unable to delete tmp file: " + one.getPath());
         }
       } else {
-        String taskId = getPrefixedTaskIdFromFilename(one.getPath().getName());
-        Utilities.LOG14535.info("removeTempOrDuplicateFiles pondering " + one.getPath() + ", taskId " + taskId);
-
-        FileStatus otherFile = taskIdToFile.get(taskId);
-        if (otherFile == null) {
-          taskIdToFile.put(taskId, one);
-        } else {
-          // Compare the file sizes of all the attempt files for the same task, the largest win
-          // any attempt files could contain partial results (due to task failures or
-          // speculative runs), but the largest should be the correct one since the result
-          // of a successful run should never be smaller than a failed/speculative run.
-          FileStatus toDelete = null;
-
-          // "LOAD .. INTO" and "INSERT INTO" commands will generate files with
-          // "_copy_x" suffix. These files are usually read by map tasks and the
-          // task output gets written to some tmp path. The output file names will
-          // be of format taskId_attemptId. The usual path for all these tasks is
-          // srcPath -> taskTmpPath -> tmpPath -> finalPath.
-          // But, MergeFileTask can move files directly from src path to final path
-          // without copying it to tmp path. In such cases, different files with
-          // "_copy_x" suffix will be identified as duplicates (change in value
-          // of x is wrongly identified as attempt id) and will be deleted.
-          // To avoid that we will ignore files with "_copy_x" suffix from duplicate
-          // elimination.
-          if (!isCopyFile(one.getPath().getName())) {
-            if (otherFile.getLen() >= one.getLen()) {
-              toDelete = one;
-            } else {
-              toDelete = otherFile;
-              taskIdToFile.put(taskId, one);
-            }
-            long len1 = toDelete.getLen();
-            long len2 = taskIdToFile.get(taskId).getLen();
-            if (!fs.delete(toDelete.getPath(), true)) {
-              throw new IOException(
-                  "Unable to delete duplicate file: " + toDelete.getPath()
-                      + ". Existing file: " +
-                      taskIdToFile.get(taskId).getPath());
-            } else {
-              LOG.warn("Duplicate taskid file removed: " + toDelete.getPath() +
-                  " with length "
-                  + len1 + ". Existing file: " +
-                  taskIdToFile.get(taskId).getPath() + " with length "
-                  + len2);
-            }
-          } else {
-            LOG.info(one.getPath() + " file identified as duplicate. This file is" +
-                " not deleted as it has copySuffix.");
-          }
-        }
+        // This would be a single file. See if we need to remove it.
+        ponderRemovingTempOrDuplicateFile(fs, one, taskIdToFile);
       }
     }
     return taskIdToFile;
+  }
+
+  private static void ponderRemovingTempOrDuplicateFile(FileSystem fs,
+      FileStatus file, HashMap<String, FileStatus> taskIdToFile) throws IOException {
+    String taskId = getPrefixedTaskIdFromFilename(file.getPath().getName());
+    Utilities.LOG14535.info("removeTempOrDuplicateFiles pondering " + file.getPath() + ", taskId " + taskId);
+
+    FileStatus otherFile = taskIdToFile.get(taskId);
+    taskIdToFile.put(taskId, (otherFile == null) ? file :
+      compareTempOrDuplicateFiles(fs, file, otherFile));
+  }
+
+  private static FileStatus compareTempOrDuplicateFiles(FileSystem fs,
+      FileStatus file, FileStatus existingFile) throws IOException {
+    // Compare the file sizes of all the attempt files for the same task, the largest win
+    // any attempt files could contain partial results (due to task failures or
+    // speculative runs), but the largest should be the correct one since the result
+    // of a successful run should never be smaller than a failed/speculative run.
+    FileStatus toDelete = null, toRetain = null;
+
+    // "LOAD .. INTO" and "INSERT INTO" commands will generate files with
+    // "_copy_x" suffix. These files are usually read by map tasks and the
+    // task output gets written to some tmp path. The output file names will
+    // be of format taskId_attemptId. The usual path for all these tasks is
+    // srcPath -> taskTmpPath -> tmpPath -> finalPath.
+    // But, MergeFileTask can move files directly from src path to final path
+    // without copying it to tmp path. In such cases, different files with
+    // "_copy_x" suffix will be identified as duplicates (change in value
+    // of x is wrongly identified as attempt id) and will be deleted.
+    // To avoid that we will ignore files with "_copy_x" suffix from duplicate
+    // elimination.
+    if (isCopyFile(file.getPath().getName())) {
+      LOG.info(file.getPath() + " file identified as duplicate. This file is" +
+          " not deleted as it has copySuffix.");
+      return existingFile;
+    }
+
+    if (existingFile.getLen() >= file.getLen()) {
+      toDelete = file;
+      toRetain = existingFile;
+    } else {
+      toDelete = existingFile;
+      toRetain = file;
+    }
+    if (!fs.delete(toDelete.getPath(), true)) {
+      throw new IOException(
+          "Unable to delete duplicate file: " + toDelete.getPath()
+              + ". Existing file: " + toRetain.getPath());
+    } else {
+      LOG.warn("Duplicate taskid file removed: " + toDelete.getPath() + " with length "
+          + toDelete.getLen() + ". Existing file: " + toRetain.getPath() + " with length "
+          + toRetain.getLen());
+    }
+    return toRetain;
   }
 
   public static boolean isCopyFile(String filename) {
@@ -3928,7 +3965,7 @@ public final class Utilities {
     if (lbLevels != 0) return;
     FileStatus[] finalResults = mmDirectories.toArray(new FileStatus[mmDirectories.size()]);
     List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(
-        fs, finalResults, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf);
+        fs, finalResults, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf, mmWriteId);
     // create empty buckets if necessary
     if (emptyBuckets.size() > 0) {
       assert mbc != null;
