@@ -162,12 +162,8 @@ public class SelectStringColLikeStringScalar extends VectorExpression {
     return "String_Family";
   }
 
-  public String vectorExpressionParameters() {
-    return "col " + colNum;
-  }
-
-@Override
-public Descriptor getDescriptor() {
+	@Override
+	public Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())
         .setMode(
             VectorExpressionDescriptor.Mode.PROJECTION)
@@ -178,6 +174,6 @@ public Descriptor getDescriptor() {
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
-}
+	}
 
 }

@@ -1,7 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=none;
 
 create table date_dim
 (
@@ -105,7 +104,7 @@ stored as orc;
 -- For MR, we are verifying this query DOES NOT vectorize the Map vertex with
 -- the 2 TableScanOperators that have different schema.
 
-explain vectorization select
+explain select
         s_state, count(1)
  from store_sales,
  store,

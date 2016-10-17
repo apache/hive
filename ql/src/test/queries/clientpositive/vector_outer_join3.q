@@ -2,7 +2,6 @@ set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 SET hive.auto.convert.join=true;
 SET hive.vectorized.execution.mapjoin.native.enabled=true;
-set hive.fetch.task.conversion=none;
 
 -- Using cint and cstring1 in test queries
 create table small_alltypesorc1a as select * from alltypesorc where cint is not null and cstring1 is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5;
@@ -28,7 +27,7 @@ ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS;
 ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS FOR COLUMNS;
 
 select * from small_alltypesorc_a;
-explain vectorization detail formatted
+explain
 select count(*) from (select c.cstring1 
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a cd
@@ -48,7 +47,7 @@ left outer join small_alltypesorc_a hd
   on hd.cstring1 = c.cstring1
 ) t1;
 
-explain vectorization detail formatted
+explain
 select count(*) from (select c.cstring1 
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a cd
@@ -68,7 +67,7 @@ left outer join small_alltypesorc_a hd
   on hd.cstring1 = c.cstring1
 ) t1;
 
-explain vectorization detail formatted
+explain
 select count(*) from (select c.cstring1 
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a cd

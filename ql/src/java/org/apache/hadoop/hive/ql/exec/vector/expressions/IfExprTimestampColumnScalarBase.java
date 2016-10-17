@@ -130,10 +130,4 @@ public abstract class IfExprTimestampColumnScalarBase extends VectorExpression {
   public String getOutputType() {
     return "timestamp";
   }
-
-  @Override
-  public String vectorExpressionParameters() {
-    return "col " + arg1Column + ", col "+ arg2Column + ", val "+ arg3Scalar;
-  }
-
 }

@@ -129,10 +129,6 @@ public class <ClassName> extends VectorExpression {
     return "long";
   }
 
-  @Override
-  public String vectorExpressionParameters() {
-    return "col " + colNum + ", val " + value;
-  }
 
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {

@@ -61,12 +61,6 @@ public class VectorUDAFCountMerge extends VectorAggregateExpression {
     }
 
     private VectorExpression inputExpression = null;
-
-    @Override
-    public VectorExpression inputExpression() {
-      return inputExpression;
-    }
-
     transient private final LongWritable result;
 
     public VectorUDAFCountMerge(VectorExpression inputExpression) {

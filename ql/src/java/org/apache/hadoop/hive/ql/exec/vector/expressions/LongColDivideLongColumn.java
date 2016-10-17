@@ -174,11 +174,6 @@ public class LongColDivideLongColumn extends VectorExpression {
   }
 
   @Override
-  public String vectorExpressionParameters() {
-    return "col " + colNum1 + ", col " + colNum2;
-  }
-
-  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())
         .setMode(

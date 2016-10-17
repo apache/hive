@@ -335,11 +335,6 @@ KW_KEY: 'KEY';
 KW_ABORT: 'ABORT';
 KW_EXTRACT: 'EXTRACT';
 KW_FLOOR: 'FLOOR';
-KW_VECTORIZATION: 'VECTORIZATION';
-KW_SUMMARY: 'SUMMARY';
-KW_OPERATOR: 'OPERATOR';
-KW_EXPRESSION: 'EXPRESSION';
-KW_DETAIL: 'DETAIL';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

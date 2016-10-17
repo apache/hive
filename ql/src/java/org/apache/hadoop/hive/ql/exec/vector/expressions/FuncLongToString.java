@@ -143,10 +143,6 @@ public abstract class FuncLongToString extends VectorExpression {
     return "String";
   }
 
-  @Override
-  public String vectorExpressionParameters() {
-    return "col " + inputCol;
-  }
 
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {

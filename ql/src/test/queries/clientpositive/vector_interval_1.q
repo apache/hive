@@ -1,7 +1,8 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
+
 set hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=none;
+set hive.fetch.task.conversion=minimal;
 
 drop table if exists vector_interval_1;
 create table vector_interval_1 (ts timestamp, dt date, str1 string, str2 string) stored as orc;
@@ -12,7 +13,7 @@ insert into vector_interval_1
   select null, null, null, null from src limit 1;
 
 -- constants/cast from string
-explain vectorization expression
+explain
 select
   str1,
   interval '1-2' year to month, interval_year_month(str1),
@@ -27,7 +28,7 @@ from vector_interval_1 order by str1;
 
 
 -- interval arithmetic
-explain vectorization expression
+explain
 select
   dt,
   interval '1-2' year to month + interval '1-2' year to month,
@@ -48,7 +49,7 @@ select
   interval '1-2' year to month - interval_year_month(str1)
 from vector_interval_1 order by dt;
 
-explain vectorization expression
+explain
 select
   dt,
   interval '1 2:3:4' day to second + interval '1 2:3:4' day to second,
@@ -71,7 +72,7 @@ from vector_interval_1 order by dt;
 
 
 -- date-interval arithmetic
-explain vectorization expression
+explain
 select
   dt,
   dt + interval '1-2' year to month,
@@ -106,7 +107,7 @@ from vector_interval_1 order by dt;
 
 
 -- timestamp-interval arithmetic
-explain vectorization expression
+explain
 select
   ts,
   ts + interval '1-2' year to month,
@@ -141,7 +142,7 @@ from vector_interval_1 order by ts;
 
 
 -- timestamp-timestamp arithmetic
-explain vectorization expression
+explain
 select
   ts,
   ts - ts,
@@ -158,7 +159,7 @@ from vector_interval_1 order by ts;
 
 
 -- date-date arithmetic
-explain vectorization expression
+explain
 select
   dt,
   dt - dt,
@@ -175,7 +176,7 @@ from vector_interval_1 order by dt;
 
 
 -- date-timestamp arithmetic
-explain vectorization expression
+explain
 select
   dt,
   ts - dt,

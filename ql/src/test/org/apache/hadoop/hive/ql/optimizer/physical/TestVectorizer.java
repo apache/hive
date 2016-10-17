@@ -96,8 +96,6 @@ public class TestVectorizer {
     outputColumnNames.add("_col0");
 
     GroupByDesc desc = new GroupByDesc();
-    desc.setVectorDesc(new VectorGroupByDesc());
-
     desc.setOutputColumnNames(outputColumnNames);
     ArrayList<AggregationDesc> aggDescList = new ArrayList<AggregationDesc>();
     aggDescList.add(aggDesc);
@@ -108,14 +106,13 @@ public class TestVectorizer {
     grpByKeys.add(colExprB);
     desc.setKeys(grpByKeys);
 
-    Operator<? extends OperatorDesc> gbyOp = OperatorFactory.get(new CompilationOpContext(), desc);
-
+    GroupByOperator gbyOp = new GroupByOperator(new CompilationOpContext());
+    gbyOp.setConf(desc);
     desc.setMode(GroupByDesc.Mode.HASH);
 
     Vectorizer v = new Vectorizer();
-    v.testSetCurrentBaseWork(new MapWork());
     Assert.assertTrue(v.validateMapWorkOperator(gbyOp, null, false));
-    VectorGroupByOperator vectorOp = (VectorGroupByOperator) v.vectorizeOperator(gbyOp, vContext, false, null);
+    VectorGroupByOperator vectorOp = (VectorGroupByOperator) v.vectorizeOperator(gbyOp, vContext, false);
     Assert.assertEquals(VectorUDAFSumLong.class, vectorOp.getAggregators()[0].getClass());
     VectorUDAFSumLong udaf = (VectorUDAFSumLong) vectorOp.getAggregators()[0];
     Assert.assertEquals(FuncAbsLongToLong.class, udaf.getInputExpression().getClass());
@@ -150,9 +147,8 @@ public class TestVectorizer {
     andExprDesc.setChildren(children3);
 
     Vectorizer v = new Vectorizer();
-    v.testSetCurrentBaseWork(new MapWork());
-    Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, "test", VectorExpressionDescriptor.Mode.FILTER));
-    Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, "test", VectorExpressionDescriptor.Mode.PROJECTION));
+    Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, VectorExpressionDescriptor.Mode.FILTER));
+    Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, VectorExpressionDescriptor.Mode.PROJECTION));
   }
 
   /**
@@ -200,7 +196,6 @@ public class TestVectorizer {
     map.setConf(mjdesc);
 
     Vectorizer vectorizer = new Vectorizer();
-    vectorizer.testSetCurrentBaseWork(new MapWork());
     Assert.assertTrue(vectorizer.validateMapWorkOperator(map, null, false));
   }
 
@@ -217,7 +212,6 @@ public class TestVectorizer {
       map.setConf(mjdesc);
 
       Vectorizer vectorizer = new Vectorizer();
-      vectorizer.testSetCurrentBaseWork(new MapWork());
       Assert.assertTrue(vectorizer.validateMapWorkOperator(map, null, false));
   }
 }

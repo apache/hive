@@ -719,12 +719,6 @@ nonReserved
     | KW_VALIDATE
     | KW_NOVALIDATE
     | KW_KEY
-    | KW_VECTORIZATION
-    | KW_SUMMARY
-    | KW_OPERATOR
-    | KW_EXPRESSION
-    | KW_DETAIL
-
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.

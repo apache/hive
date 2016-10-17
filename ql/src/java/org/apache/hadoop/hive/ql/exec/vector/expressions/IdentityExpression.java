@@ -81,11 +81,6 @@ public class IdentityExpression extends VectorExpression {
   }
 
   @Override
-  public String vectorExpressionParameters() {
-    return "col " + colNum;
-  }
-
-  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder()).build();
   }

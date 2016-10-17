@@ -374,11 +374,6 @@ public class VectorUDFAdaptor extends VectorExpression {
   }
 
   @Override
-  public String vectorExpressionParameters() {
-    return expr.getExprString();
-  }
-
-  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder()).build();
   }

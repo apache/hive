@@ -4,7 +4,6 @@ SET hive.auto.convert.join=true;
 SET hive.auto.convert.join.noconditionaltask=true;
 SET hive.auto.convert.join.noconditionaltask.size=1000000000;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=none;
 
 CREATE TABLE over1k(t tinyint,
            si smallint,
@@ -27,7 +26,7 @@ INSERT INTO TABLE t1 select dec from over1k;
 CREATE TABLE t2(dec decimal(4,0)) STORED AS ORC;
 INSERT INTO TABLE t2 select dec from over1k;
 
-explain vectorization expression
+explain
 select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec);
 
 -- SORT_QUERY_RESULTS

@@ -41,8 +41,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
-import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
-import org.apache.hadoop.hive.ql.plan.AbstractVectorDesc;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
@@ -75,7 +73,6 @@ import org.apache.hadoop.hive.ql.plan.SparkHashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
-import org.apache.hadoop.hive.ql.plan.VectorDesc;
 
 import com.google.common.base.Preconditions;
 
@@ -145,8 +142,6 @@ public final class OperatorFactory {
     Class<? extends Operator<?>> opClass, CompilationOpContext cContext, T conf,
         VectorizationContext vContext) throws HiveException {
     try {
-      VectorDesc vectorDesc = ((AbstractOperatorDesc) conf).getVectorDesc();
-      vectorDesc.setVectorOp(opClass);
       Operator<T> op = (Operator<T>) opClass.getDeclaredConstructor(
           CompilationOpContext.class, VectorizationContext.class, OperatorDesc.class)
           .newInstance(cContext, vContext, conf);

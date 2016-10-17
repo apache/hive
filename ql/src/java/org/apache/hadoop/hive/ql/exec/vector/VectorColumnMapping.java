@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-
 /**
  * This class collects column information for copying a row from one VectorizedRowBatch to
  * same/another batch.
@@ -32,7 +30,7 @@ public abstract class VectorColumnMapping {
 
   protected int[] sourceColumns;
   protected int[] outputColumns;
-  protected TypeInfo[] typeInfos;
+  protected String[] typeNames;
 
   protected VectorColumnOrderedMap vectorColumnMapping;
 
@@ -40,7 +38,7 @@ public abstract class VectorColumnMapping {
     this.vectorColumnMapping = new VectorColumnOrderedMap(name);
   }
 
-  public abstract void add(int sourceColumn, int outputColumn, TypeInfo typeInfo);
+  public abstract void add(int sourceColumn, int outputColumn, String typeName);
 
   public abstract void finalize();
 
@@ -56,8 +54,8 @@ public abstract class VectorColumnMapping {
     return outputColumns;
   }
 
-  public TypeInfo[] getTypeInfos() {
-    return typeInfos;
+  public String[] getTypeNames() {
+    return typeNames;
   }
 
   @Override
@@ -67,7 +65,7 @@ public abstract class VectorColumnMapping {
     sb.append(", ");
     sb.append("output columns: " + Arrays.toString(outputColumns));
     sb.append(", ");
-    sb.append("type infos: " + Arrays.toString(typeInfos));
+    sb.append("type names: " + Arrays.toString(typeNames));
     return sb.toString();
   }
 }

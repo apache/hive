@@ -100,24 +100,20 @@ POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@count_case_groupby
 POSTHOOK: Lineage: count_case_groupby.bool EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: count_case_groupby.key SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain
 select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
 from varchar_udf_1 limit 1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain
 select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
 from varchar_udf_1 limit 1
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -143,12 +139,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Map Vectorization:
-          enabled: true
-          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          notVectorizedReason: Select expression for SELECT operator: Could not vectorize expression (mode = PROJECTION): GenericUDFRegExp(Column[c2], Const string val) because hive.vectorized.adaptor.usage.mode=none
-          vectorized: false
 
   Stage: Stage-0
     Fetch Operator
@@ -173,24 +163,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_udf_1
 #### A masked pattern was here ####
 true	true	true
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain
 select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
 from varchar_udf_1 limit 1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain
 select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
 from varchar_udf_1 limit 1
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -216,12 +202,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Map Vectorization:
-          enabled: true
-          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          notVectorizedReason: Select expression for SELECT operator: Could not vectorize expression (mode = PROJECTION): GenericUDFBridge ==> regexp_extract (Column[c2], Const string val_([0-9]+), Const int 1) because hive.vectorized.adaptor.usage.mode=none
-          vectorized: false
 
   Stage: Stage-0
     Fetch Operator
@@ -246,24 +226,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_udf_1
 #### A masked pattern was here ####
 238	238	true
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain
 select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
 from varchar_udf_1 limit 1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain
 select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
 from varchar_udf_1 limit 1
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -289,12 +265,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Map Vectorization:
-          enabled: true
-          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          notVectorizedReason: Select expression for SELECT operator: Could not vectorize expression (mode = PROJECTION): GenericUDFBridge ==> regexp_replace (Column[c2], Const string val, Const string replaced) because hive.vectorized.adaptor.usage.mode=none
-          vectorized: false
 
   Stage: Stage-0
     Fetch Operator
@@ -319,24 +289,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_udf_1
 #### A masked pattern was here ####
 replaced_238	replaced_238	true
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain
 select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
 from varchar_udf_1 limit 1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain
 select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
 from varchar_udf_1 limit 1
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -362,12 +328,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Map Vectorization:
-          enabled: true
-          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          notVectorizedReason: Select expression for SELECT operator: Could not vectorize expression (mode = PROJECTION): GenericUDFRegExp(Column[c2], Const string val) because hive.vectorized.adaptor.usage.mode=chosen and the UDF wasn't one of the chosen ones
-          vectorized: false
 
   Stage: Stage-0
     Fetch Operator
@@ -392,24 +352,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_udf_1
 #### A masked pattern was here ####
 true	true	true
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain
 select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
 from varchar_udf_1 limit 1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain
 select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
 from varchar_udf_1 limit 1
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -421,43 +377,21 @@ STAGE PLANS:
           TableScan
             alias: varchar_udf_1
             Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: NONE
-            TableScan Vectorization:
-                native: true
-                projectedOutputColumns: [0, 1, 2, 3]
             Select Operator
               expressions: regexp_extract(c2, 'val_([0-9]+)', 1) (type: string), regexp_extract(c4, 'val_([0-9]+)', 1) (type: string), (regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)) (type: boolean)
               outputColumnNames: _col0, _col1, _col2
-              Select Vectorization:
-                  className: VectorSelectOperator
-                  native: true
-                  projectedOutputColumns: [4, 5, 8]
-                  selectExpressions: VectorUDFAdaptor(regexp_extract(c2, 'val_([0-9]+)', 1)) -> 4:String, VectorUDFAdaptor(regexp_extract(c4, 'val_([0-9]+)', 1)) -> 5:String, StringGroupColEqualStringGroupColumn(col 6, col 7)(children: VectorUDFAdaptor(regexp_extract(c2, 'val_([0-9]+)', 1)) -> 6:String, VectorUDFAdaptor(regexp_extract(c4, 'val_([0-9]+)', 1)) -> 7:String) -> 8:boolean
               Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 1
-                Limit Vectorization:
-                    className: VectorLimitOperator
-                    native: true
                 Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  File Sink Vectorization:
-                      className: VectorFileSinkOperator
-                      native: false
                   Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Map Vectorization:
-          enabled: true
-          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
-          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          allNative: false
-          usesVectorUDFAdaptor: true
-          vectorized: true
 
   Stage: Stage-0
     Fetch Operator
@@ -482,24 +416,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_udf_1
 #### A masked pattern was here ####
 238	238	true
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain
 select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
 from varchar_udf_1 limit 1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain
 select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
 from varchar_udf_1 limit 1
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -511,43 +441,21 @@ STAGE PLANS:
           TableScan
             alias: varchar_udf_1
             Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: NONE
-            TableScan Vectorization:
-                native: true
-                projectedOutputColumns: [0, 1, 2, 3]
             Select Operator
               expressions: regexp_replace(c2, 'val', 'replaced') (type: string), regexp_replace(c4, 'val', 'replaced') (type: string), (regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')) (type: boolean)
               outputColumnNames: _col0, _col1, _col2
-              Select Vectorization:
-                  className: VectorSelectOperator
-                  native: true
-                  projectedOutputColumns: [4, 5, 8]
-                  selectExpressions: VectorUDFAdaptor(regexp_replace(c2, 'val', 'replaced')) -> 4:String, VectorUDFAdaptor(regexp_replace(c4, 'val', 'replaced')) -> 5:String, StringGroupColEqualStringGroupColumn(col 6, col 7)(children: VectorUDFAdaptor(regexp_replace(c2, 'val', 'replaced')) -> 6:String, VectorUDFAdaptor(regexp_replace(c4, 'val', 'replaced')) -> 7:String) -> 8:boolean
               Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 1
-                Limit Vectorization:
-                    className: VectorLimitOperator
-                    native: true
                 Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  File Sink Vectorization:
-                      className: VectorFileSinkOperator
-                      native: false
                   Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
-      Map Vectorization:
-          enabled: true
-          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
-          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          allNative: false
-          usesVectorUDFAdaptor: true
-          vectorized: true
 
   Stage: Stage-0
     Fetch Operator
@@ -572,14 +480,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_udf_1
 #### A masked pattern was here ####
 replaced_238	replaced_238	true
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF
+PREHOOK: query: EXPLAIN SELECT POWER(key, 2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF
+POSTHOOK: query: EXPLAIN SELECT POWER(key, 2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -602,12 +506,6 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Map Vectorization:
-          enabled: true
-          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          notVectorizedReason: Select expression for SELECT operator: Could not vectorize expression (mode = PROJECTION): GenericUDFPower(Column[key], Const int 2) because hive.vectorized.adaptor.usage.mode=none
-          vectorized: false
 
   Stage: Stage-0
     Fetch Operator
@@ -661,24 +559,20 @@ POSTHOOK: Input: default@decimal_udf
 9.8596
 9.8596
 NULL
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+PREHOOK: query: EXPLAIN
 SELECT
   exp(key), ln(key),
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
 FROM DECIMAL_UDF WHERE key = 10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+POSTHOOK: query: EXPLAIN
 SELECT
   exp(key), ln(key),
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
 FROM DECIMAL_UDF WHERE key = 10
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -704,12 +598,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Map Vectorization:
-          enabled: true
-          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          notVectorizedReason: Select expression for SELECT operator: Could not vectorize expression (mode = PROJECTION): GenericUDFBridge ==> log (Column[value], Const decimal(20,10) 10) because hive.vectorized.adaptor.usage.mode=none
-          vectorized: false
 
   Stage: Stage-0
     Fetch Operator
@@ -734,14 +622,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
 22026.465794806718	2.302585092994046	2.302585092994046	1.0	1.0	1.0	1.0	3.1622776601683795
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF
+PREHOOK: query: EXPLAIN SELECT POWER(key, 2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF
+POSTHOOK: query: EXPLAIN SELECT POWER(key, 2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -764,12 +648,6 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Map Vectorization:
-          enabled: true
-          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          notVectorizedReason: Select expression for SELECT operator: Could not vectorize expression (mode = PROJECTION): GenericUDFPower(Column[key], Const int 2) because hive.vectorized.adaptor.usage.mode=chosen and the UDF wasn't one of the chosen ones
-          vectorized: false
 
   Stage: Stage-0
     Fetch Operator
@@ -823,24 +701,20 @@ POSTHOOK: Input: default@decimal_udf
 9.8596
 9.8596
 NULL
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+PREHOOK: query: EXPLAIN
 SELECT
   exp(key), ln(key),
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
 FROM DECIMAL_UDF WHERE key = 10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+POSTHOOK: query: EXPLAIN
 SELECT
   exp(key), ln(key),
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
 FROM DECIMAL_UDF WHERE key = 10
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -866,12 +740,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Map Vectorization:
-          enabled: true
-          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          notVectorizedReason: Select expression for SELECT operator: Could not vectorize expression (mode = PROJECTION): GenericUDFBridge ==> log (Column[value], Const decimal(20,10) 10) because hive.vectorized.adaptor.usage.mode=chosen and the UDF wasn't one of the chosen ones
-          vectorized: false
 
   Stage: Stage-0
     Fetch Operator
@@ -896,16 +764,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
 22026.465794806718	2.302585092994046	2.302585092994046	1.0	1.0	1.0	1.0	3.1622776601683795
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain
 SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain
 SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -933,16 +797,6 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 5 Data size: 452 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
-      Map Vectorization:
-          enabled: true
-          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          notVectorizedReason: Select expression for SELECT operator: Could not vectorize expression (mode = PROJECTION): GenericUDFWhen(Column[bool], Const int 1, GenericUDFOPNot(Column[bool]), Const int 0, Const void null) because hive.vectorized.adaptor.usage.mode=none
-          vectorized: false
-      Reduce Vectorization:
-          enabled: false
-          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
-          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -977,16 +831,12 @@ key2	1
 key3	0
 key4	1
 key5	0
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain
 SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain
 SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -998,27 +848,12 @@ STAGE PLANS:
           TableScan
             alias: count_case_groupby
             Statistics: Num rows: 5 Data size: 452 Basic stats: COMPLETE Column stats: NONE
-            TableScan Vectorization:
-                native: true
-                projectedOutputColumns: [0, 1]
             Select Operator
               expressions: key (type: string), CASE WHEN (bool) THEN (1) WHEN ((not bool)) THEN (0) ELSE (null) END (type: int)
               outputColumnNames: _col0, _col1
-              Select Vectorization:
-                  className: VectorSelectOperator
-                  native: true
-                  projectedOutputColumns: [0, 3]
-                  selectExpressions: VectorUDFAdaptor(CASE WHEN (bool) THEN (1) WHEN ((not bool)) THEN (0) ELSE (null) END)(children: NotCol(col 1) -> 2:boolean) -> 3:Long
               Statistics: Num rows: 5 Data size: 452 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(_col1)
-                Group By Vectorization:
-                    aggregators: VectorUDAFCount(col 3) -> bigint
-                    className: VectorGroupByOperator
-                    vectorOutput: true
-                    keyExpressions: col 0
-                    native: false
-                    projectedOutputColumns: [0]
                 keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -1027,26 +862,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Reduce Sink Vectorization:
-                      className: VectorReduceSinkOperator
-                      native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Uniform Hash IS false
                   Statistics: Num rows: 5 Data size: 452 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
       Execution mode: vectorized
-      Map Vectorization:
-          enabled: true
-          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
-          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          allNative: false
-          usesVectorUDFAdaptor: true
-          vectorized: true
-      Reduce Vectorization:
-          enabled: false
-          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
-          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

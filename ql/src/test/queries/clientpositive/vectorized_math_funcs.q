@@ -1,10 +1,9 @@
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled = true;
-set hive.fetch.task.conversion=none;
 
 -- Test math functions in vectorized mode to verify they run correctly end-to-end.
 
-explain vectorization expression
+explain 
 select
    cdouble
   ,Round(cdouble, 2)

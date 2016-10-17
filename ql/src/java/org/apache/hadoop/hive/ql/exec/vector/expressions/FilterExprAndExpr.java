@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.util.Arrays;
-
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
@@ -50,12 +48,6 @@ public class FilterExprAndExpr extends VectorExpression {
   @Override
   public String getOutputType() {
     return "boolean";
-  }
-
-  @Override
-  public String vectorExpressionParameters() {
-    // The children are input.
-    return null;
   }
 
   @Override

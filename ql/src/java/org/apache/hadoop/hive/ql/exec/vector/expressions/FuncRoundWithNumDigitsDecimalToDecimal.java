@@ -120,10 +120,6 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
     return outputType;
   }
 
-  public String vectorExpressionParameters() {
-    return "col " + colNum + ", decimalPlaces " + decimalPlaces;
-  }
-
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())

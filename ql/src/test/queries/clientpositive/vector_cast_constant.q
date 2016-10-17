@@ -1,7 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=none;
+
 
 DROP TABLE over1k;
 DROP TABLE over1korc;
@@ -38,7 +38,7 @@ STORED AS ORC;
 
 INSERT INTO TABLE over1korc SELECT * FROM over1k;
 
-EXPLAIN VECTORIZATION EXPRESSION SELECT 
+EXPLAIN SELECT 
   i,
   AVG(CAST(50 AS INT)) AS `avg_int_ok`,
   AVG(CAST(50 AS DOUBLE)) AS `avg_double_ok`,

@@ -27,19 +27,19 @@ CREATE TABLE orc_create_complex (
 INSERT OVERWRITE TABLE orc_create_complex SELECT * FROM orc_create_staging;
 
 -- Since complex types are not supported, this query should not vectorize.
-EXPLAIN VECTORIZATION EXPRESSION
+EXPLAIN
 SELECT * FROM orc_create_complex;
 
 SELECT * FROM orc_create_complex;
 
 -- However, since this query is not referencing the complex fields, it should vectorize.
-EXPLAIN VECTORIZATION EXPRESSION
+EXPLAIN
 SELECT COUNT(*) FROM orc_create_complex;
 
 SELECT COUNT(*) FROM orc_create_complex;
 
 -- Also, since this query is not referencing the complex fields, it should vectorize.
-EXPLAIN VECTORIZATION EXPRESSION
+EXPLAIN
 SELECT str FROM orc_create_complex ORDER BY str;
 
 SELECT str FROM orc_create_complex ORDER BY str;

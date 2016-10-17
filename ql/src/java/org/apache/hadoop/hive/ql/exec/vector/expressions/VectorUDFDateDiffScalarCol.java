@@ -296,11 +296,6 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
   }
 
   @Override
-  public String vectorExpressionParameters() {
-    return "val " + stringValue + ", col " + colNum;
-  }
-
-  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
