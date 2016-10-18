@@ -1787,10 +1787,12 @@ public class HiveConf extends Configuration {
 
     HIVE_TXN_OPERATIONAL_PROPERTIES("hive.txn.operational.properties", 0,
         "Sets the operational properties that control the appropriate behavior for various\n"
-        + "versions of the Hive ACID subsystem. Setting it to zero will turn on the legacy mode\n"
-        + "for ACID, while setting it to one will enable a split-update feature found in the newer\n"
-        + "version of Hive ACID subsystem. Mostly it is intended to be used as an internal property\n"
-        + "for future versions of ACID. (See HIVE-14035 for details.)"),
+        + "versions of the Hive ACID subsystem. Mostly it is intended to be used as an internal property\n"
+        + "for future versions of ACID. (See HIVE-14035 for details.)\n"
+        + "0: Turn on the legacy mode for ACID\n"
+        + "1: Enable split-update feature found in the newer version of Hive ACID subsystem\n"
+        + "2: Hash-based merge, which combines delta files using GRACE hash join based approach (not implemented)\n"
+        + "3: Make the table 'quarter-acid' as it only supports insert. But it doesn't require ORC or bucketing."),
 
     HIVE_MAX_OPEN_TXNS("hive.max.open.txns", 100000, "Maximum number of open transactions. If \n" +
         "current open transactions reach this limit, future open transaction requests will be \n" +

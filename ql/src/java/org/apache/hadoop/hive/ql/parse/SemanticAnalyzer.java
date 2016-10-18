@@ -6455,7 +6455,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         nullOrder.append(sortOrder == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC ? 'a' : 'z');
       }
       input = genReduceSinkPlan(input, partnCols, sortCols, order.toString(), nullOrder.toString(),
-              maxReducers, (AcidUtils.isAcidTable(dest_tab) ? getAcidType() : AcidUtils.Operation.NOT_ACID));
+              maxReducers, (AcidUtils.isAcidTable(dest_tab) ?
+              getAcidType(dest_tab, table_desc.getOutputFileFormatClass()) : AcidUtils.Operation.NOT_ACID));
       reduceSinkOperatorsAddedByEnforceBucketingSorting.add((ReduceSinkOperator)input.getParentOperators().get(0));
       ctx.setMultiFileSpray(multiFileSpray);
       ctx.setNumFiles(numFiles);
@@ -6588,8 +6589,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!isNonNativeTable) {
         AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
         if (destTableIsAcid) {
-          acidOp = getAcidType(table_desc.getOutputFileFormatClass());
-          checkAcidConstraints(qb, table_desc, dest_tab);
+          acidOp = getAcidType(dest_tab, table_desc.getOutputFileFormatClass());
+          checkAcidConstraints(qb, table_desc, dest_tab, acidOp);
         }
         try {
           mmWriteId = getMmWriteId(dest_tab, isMmTable);
@@ -6648,8 +6649,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           dest_part.isStoredAsSubDirectories(), conf);
       AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
       if (destTableIsAcid) {
-        acidOp = getAcidType(table_desc.getOutputFileFormatClass());
-        checkAcidConstraints(qb, table_desc, dest_tab);
+        acidOp = getAcidType(dest_tab, table_desc.getOutputFileFormatClass());
+        checkAcidConstraints(qb, table_desc, dest_tab, acidOp);
       }
       try {
         mmWriteId = getMmWriteId(dest_tab, isMmTable);
@@ -6945,7 +6946,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     fileSinkDesc.setHiveServerQuery(SessionState.get().isHiveServerQuery());
     // If this is an insert, update, or delete on an ACID table then mark that so the
     // FileSinkOperator knows how to properly write to it.
-    if (destTableIsAcid) {
+    if (destTableIsAcid && !AcidUtils.isInsertOnlyTable(dest_part.getTable())) {
       AcidUtils.Operation wt = updating() ? AcidUtils.Operation.UPDATE :
           (deleting() ? AcidUtils.Operation.DELETE : AcidUtils.Operation.INSERT);
       fileSinkDesc.setWriteType(wt);
@@ -7141,7 +7142,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // This method assumes you have already decided that this is an Acid write.  Don't call it if
   // that isn't true.
   private void checkAcidConstraints(QB qb, TableDesc tableDesc,
-                                    Table table) throws SemanticException {
+                                    Table table, AcidUtils.Operation acidOp) throws SemanticException {
     String tableName = tableDesc.getTableName();
     if (!qb.getParseInfo().isInsertIntoTable(tableName)) {
       LOG.debug("Couldn't find table " + tableName + " in insertIntoTable");
@@ -7158,15 +7159,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     */
     conf.set(AcidUtils.CONF_ACID_KEY, "true");
 
-    if (table.getNumBuckets() < 1) {
-      throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TABLE, table.getTableName());
+    if (!Operation.NOT_ACID.equals(acidOp) && !Operation.INSERT_ONLY.equals(acidOp)) {
+      if (table.getNumBuckets() < 1) {
+        throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TABLE, table.getTableName());
+      }
+      if (table.getSortCols() != null && table.getSortCols().size() > 0) {
+        throw new SemanticException(ErrorMsg.ACID_NO_SORTED_BUCKETS, table.getTableName());
+      }
     }
-    if (table.getSortCols() != null && table.getSortCols().size() > 0) {
-      throw new SemanticException(ErrorMsg.ACID_NO_SORTED_BUCKETS, table.getTableName());
-    }
-
-
-
   }
 
   /**
@@ -13118,9 +13118,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             AcidUtils.Operation.INSERT);
   }
 
-  private AcidUtils.Operation getAcidType(Class<? extends OutputFormat> of) {
+  private AcidUtils.Operation getAcidType(Table table, Class<? extends OutputFormat> of) {
     if (SessionState.get() == null || !SessionState.get().getTxnMgr().supportsAcid()) {
       return AcidUtils.Operation.NOT_ACID;
+    } else if (AcidUtils.isInsertOnlyTable(table)) {
+      return AcidUtils.Operation.INSERT_ONLY;
     } else if (isAcidOutputFormat(of)) {
       return getAcidType();
     } else {

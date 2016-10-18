@@ -389,7 +389,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     db.loadSinglePartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
         tbd.getPartitionSpec(), tbd.getReplace(),
         tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
-        work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
+        (work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
+         work.getLoadTableWork().getWriteType() != AcidUtils.Operation.INSERT_ONLY),
         hasFollowingStatsTask(), tbd.getMmWriteId());
     Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
 

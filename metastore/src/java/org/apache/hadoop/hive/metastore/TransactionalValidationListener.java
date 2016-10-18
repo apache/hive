@@ -40,6 +40,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
   // These constants are also imported by org.apache.hadoop.hive.ql.io.AcidUtils.
   public static final String DEFAULT_TRANSACTIONAL_PROPERTY = "default";
   public static final String LEGACY_TRANSACTIONAL_PROPERTY = "legacy";
+  public static final String INSERTONLY_TRANSACTIONAL_PROPERTY = "insert_only";
 
   TransactionalValidationListener(Configuration conf) {
     super(conf);
@@ -105,8 +106,11 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     }
     if ("true".equalsIgnoreCase(transactionalValue)) {
       if (!conformToAcid(newTable)) {
-        throw new MetaException("The table must be bucketed and stored using an ACID compliant" +
-            " format (such as ORC)");
+        // INSERT_ONLY tables don't have to conform to ACID requirement like ORC or bucketing
+        if (transactionalPropertiesValue == null || !"insert_only".equalsIgnoreCase(transactionalPropertiesValue)) {
+          throw new MetaException("The table must be bucketed and stored using an ACID compliant" +
+              " format (such as ORC)");
+        }
       }
 
       if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
@@ -172,32 +176,40 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     if (parameters == null || parameters.isEmpty()) {
       return;
     }
-    String transactionalValue = null;
-    boolean transactionalPropFound = false;
+    String transactional = null;
+    String transactionalProperties = null;
     Set<String> keys = new HashSet<>(parameters.keySet());
     for(String key : keys) {
-      if(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.equalsIgnoreCase(key)) {
-        transactionalPropFound = true;
-        transactionalValue = parameters.get(key);
+      // Get the "transactional" tblproperties value
+      if (hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.equalsIgnoreCase(key)) {
+        transactional = parameters.get(key);
         parameters.remove(key);
+      }
+
+      // Get the "transactional_properties" tblproperties value
+      if (hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES.equalsIgnoreCase(key)) {
+        transactionalProperties = parameters.get(key);
       }
     }
 
-    if (!transactionalPropFound) {
+    if (transactional == null) {
       return;
     }
 
-    if ("false".equalsIgnoreCase(transactionalValue)) {
+    if ("false".equalsIgnoreCase(transactional)) {
       // just drop transactional=false.  For backward compatibility in case someone has scripts
       // with transactional=false
       LOG.info("'transactional'='false' is no longer a valid property and will be ignored");
       return;
     }
 
-    if ("true".equalsIgnoreCase(transactionalValue)) {
+    if ("true".equalsIgnoreCase(transactional)) {
       if (!conformToAcid(newTable)) {
-        throw new MetaException("The table must be bucketed and stored using an ACID compliant" +
-            " format (such as ORC)");
+        // INSERT_ONLY tables don't have to conform to ACID requirement like ORC or bucketing
+        if (transactionalProperties == null || !"insert_only".equalsIgnoreCase(transactionalProperties)) {
+          throw new MetaException("The table must be bucketed and stored using an ACID compliant" +
+              " format (such as ORC)");
+        }
       }
 
       if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
@@ -211,7 +223,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       return;
     }
 
-    // transactional prop is found, but the value is not in expected range
+    // transactional is found, but the value is not in expected range
     throw new MetaException("'transactional' property of TBLPROPERTIES may only have value 'true'");
   }
 
@@ -277,6 +289,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     switch (transactionalProperties) {
       case DEFAULT_TRANSACTIONAL_PROPERTY:
       case LEGACY_TRANSACTIONAL_PROPERTY:
+      case INSERTONLY_TRANSACTIONAL_PROPERTY:
         isValid = true;
         break;
       default:
