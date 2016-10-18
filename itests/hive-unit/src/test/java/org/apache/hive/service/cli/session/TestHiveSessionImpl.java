@@ -48,7 +48,7 @@ public class TestHiveSessionImpl {
     String password = "";
     HiveConf serverhiveConf = new HiveConf();
     String ipAddress = null;
-    HiveSessionImpl session = new HiveSessionImpl(protocol, username, password,
+    HiveSessionImpl session = new HiveSessionImpl(null, protocol, username, password,
       serverhiveConf, ipAddress) {
       @Override
       protected synchronized void acquire(boolean userAccess, boolean isOperation) {

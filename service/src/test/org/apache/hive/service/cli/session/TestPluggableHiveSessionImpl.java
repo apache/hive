@@ -17,56 +17,100 @@
  */
 package org.apache.hive.service.cli.session;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
-import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.cli.thrift.ThriftBinaryCLIService;
-import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIServiceClient;
-import org.junit.Before;
+import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.junit.Test;
 
-public class TestPluggableHiveSessionImpl extends TestCase {
-
-  private HiveConf hiveConf;
-  private CLIService cliService;
-  private ThriftCLIServiceClient client;
-  private ThriftCLIService service;
-
-  @Override
-  @Before
-  public void setUp() {
-    hiveConf = new HiveConf();
-    hiveConf.setVar(HiveConf.ConfVars.HIVE_SESSION_IMPL_CLASSNAME, TestHiveSessionImpl.class.getName());
-    cliService = new CLIService(null);
-    service = new ThriftBinaryCLIService(cliService, null);
-    service.init(hiveConf);
-    client = new ThriftCLIServiceClient(service);
-  }
-
+public class TestPluggableHiveSessionImpl {
 
   @Test
-  public void testSessionImpl() {
+  public void testSessionImpl() throws Exception {
+
+    HiveConf hiveConf = new HiveConf();
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+        HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER.getDefaultValue());
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_SESSION_IMPL_CLASSNAME,
+        SampleHiveSessionImpl.class.getName());
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
+
+    CLIService cliService = new CLIService(null);
+    cliService.init(hiveConf);
+    ThriftBinaryCLIService service = new ThriftBinaryCLIService(cliService, null);
+    service.init(hiveConf);
+    ThriftCLIServiceClient client = new ThriftCLIServiceClient(service);
+
     SessionHandle sessionHandle = null;
-    try {
-      sessionHandle = client.openSession("tom", "password");
-      Assert.assertEquals(TestHiveSessionImpl.class.getName(),
-              service.getHiveConf().getVar(HiveConf.ConfVars.HIVE_SESSION_IMPL_CLASSNAME));
-      Assert.assertTrue(cliService.getSessionManager().getSession(sessionHandle) instanceof TestHiveSessionImpl);
-      client.closeSession(sessionHandle);
-    } catch (HiveSQLException e) {
-      e.printStackTrace();
+    sessionHandle = client.openSession("tom", "password");
+    assertEquals(SampleHiveSessionImpl.class.getName(),
+        service.getHiveConf().getVar(HiveConf.ConfVars.HIVE_SESSION_IMPL_CLASSNAME));
+    HiveSession session = cliService.getSessionManager().getSession(sessionHandle);
+
+    assertEquals(SampleHiveSessionImpl.MAGIC_RETURN_VALUE, session.getNoOperationTime());
+
+    client.closeSession(sessionHandle);
+  }
+
+  @Test
+  public void testSessionImplWithUGI() throws Exception {
+    HiveConf hiveConf = new HiveConf();
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+        HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER.getDefaultValue());
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_SESSION_IMPL_WITH_UGI_CLASSNAME,
+        SampleHiveSessionImplWithUGI.class.getName());
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, true);
+
+    CLIService cliService = new CLIService(null);
+    cliService.init(hiveConf);
+    ThriftBinaryCLIService service = new ThriftBinaryCLIService(cliService, null);
+    service.init(hiveConf);
+    ThriftCLIServiceClient client = new ThriftCLIServiceClient(service);
+
+    SessionHandle sessionHandle = null;
+    sessionHandle = client.openSession("tom", "password");
+    assertEquals(SampleHiveSessionImplWithUGI.class.getName(),
+        service.getHiveConf().getVar(HiveConf.ConfVars.HIVE_SESSION_IMPL_WITH_UGI_CLASSNAME));
+    HiveSession session = cliService.getSessionManager().getSession(sessionHandle);
+
+    assertEquals(SampleHiveSessionImplWithUGI.MAGIC_RETURN_VALUE, session.getNoOperationTime());
+
+    client.closeSession(sessionHandle);
+  }
+
+  public static class SampleHiveSessionImpl extends HiveSessionImpl {
+    public static final int MAGIC_RETURN_VALUE = 0xbeef0001;
+
+    public SampleHiveSessionImpl(SessionHandle sessionHandle, TProtocolVersion protocol,
+        String username, String password, HiveConf serverhiveConf, String ipAddress) {
+      super(sessionHandle, protocol, username, password, serverhiveConf, ipAddress);
+    }
+
+    @Override
+    public long getNoOperationTime() {
+      return MAGIC_RETURN_VALUE;
     }
   }
 
-  class TestHiveSessionImpl extends HiveSessionImpl {
+  public static class SampleHiveSessionImplWithUGI extends HiveSessionImplwithUGI {
 
-    public TestHiveSessionImpl(TProtocolVersion protocol, String username, String password, HiveConf serverhiveConf, String ipAddress) {
-      super(protocol, username, password, serverhiveConf, ipAddress);
+    public static final int MAGIC_RETURN_VALUE = 0xbeef0002;
+
+    public SampleHiveSessionImplWithUGI(SessionHandle sessionHandle, TProtocolVersion protocol,
+        String username, String password, HiveConf serverhiveConf, String ipAddress,
+        String delegationToken) throws HiveSQLException {
+      super(sessionHandle, protocol, username, password, serverhiveConf, ipAddress,
+          delegationToken);
+    }
+
+    @Override
+    public long getNoOperationTime() {
+      return MAGIC_RETURN_VALUE;
     }
   }
 }

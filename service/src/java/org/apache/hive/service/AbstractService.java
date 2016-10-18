@@ -50,7 +50,7 @@ public abstract class AbstractService implements Service {
   /**
    * The configuration. Will be null until the service is initialized.
    */
-  private HiveConf hiveConf;
+  protected HiveConf hiveConf;
 
   /**
    * List of state change listeners; it is final to ensure
