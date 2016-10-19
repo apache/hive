@@ -1257,7 +1257,6 @@ public final class GenMapRedUtils {
    List<Task<MoveWork>> mvTasks, HiveConf conf,
    Task<? extends Serializable> currTask) throws SemanticException {
 
-
     //
     // 1. create the operator tree
     //
@@ -1265,20 +1264,29 @@ public final class GenMapRedUtils {
     Utilities.LOG14535.info("Creating merge work from " + System.identityHashCode(fsInput)
         + " with write ID " + (fsInputDesc.isMmTable() ? fsInputDesc.getMmWriteId() : null) + " into " + finalName);
 
-    // Create a TableScan operator
+    boolean isBlockMerge = (conf.getBoolVar(ConfVars.HIVEMERGERCFILEBLOCKLEVEL) &&
+        fsInputDesc.getTableInfo().getInputFileFormatClass().equals(RCFileInputFormat.class)) ||
+        (conf.getBoolVar(ConfVars.HIVEMERGEORCFILESTRIPELEVEL) &&
+            fsInputDesc.getTableInfo().getInputFileFormatClass().equals(OrcInputFormat.class));
+
     RowSchema inputRS = fsInput.getSchema();
-    TableScanOperator tsMerge = GenMapRedUtils.createTemporaryTableScanOperator(
-        fsInput.getCompilationOpContext(), inputRS);
-
     Long srcMmWriteId = fsInputDesc.isMmTable() ? fsInputDesc.getMmWriteId() : null;
+    FileSinkDesc fsOutputDesc = null;
+    TableScanOperator tsMerge = null;
+    if (!isBlockMerge) {
+      // Create a TableScan operator
+      tsMerge = GenMapRedUtils.createTemporaryTableScanOperator(
+          fsInput.getCompilationOpContext(), inputRS);
 
-    // Create a FileSink operator
-    TableDesc ts = (TableDesc) fsInputDesc.getTableInfo().clone();
-    FileSinkDesc fsOutputDesc = new FileSinkDesc(
-        finalName, ts, conf.getBoolVar(ConfVars.COMPRESSRESULT));
-    fsOutputDesc.setMmWriteId(srcMmWriteId);
-    // Create and attach the filesink for the merge. We don't actually need it for anything here.
-    OperatorFactory.getAndMakeChild(fsOutputDesc, inputRS, tsMerge);
+      // Create a FileSink operator
+      TableDesc ts = (TableDesc) fsInputDesc.getTableInfo().clone();
+      Path mergeDest = srcMmWriteId == null ? finalName : finalName.getParent();
+      fsOutputDesc = new FileSinkDesc(mergeDest, ts, conf.getBoolVar(ConfVars.COMPRESSRESULT));
+      fsOutputDesc.setMmWriteId(srcMmWriteId);
+      fsOutputDesc.setIsMerge(true);
+      // Create and attach the filesink for the merge.
+      OperatorFactory.getAndMakeChild(fsOutputDesc, inputRS, tsMerge);
+    }
 
     // If the input FileSinkOperator is a dynamic partition enabled, the tsMerge input schema
     // needs to include the partition column, and the fsOutput should have
@@ -1296,9 +1304,11 @@ public final class GenMapRedUtils {
       }
       inputRS.setSignature(signature);
 
+      if (!isBlockMerge) {
       // create another DynamicPartitionCtx, which has a different input-to-DP column mapping
-      DynamicPartitionCtx dpCtx2 = new DynamicPartitionCtx(dpCtx);
-      fsOutputDesc.setDynPartCtx(dpCtx2);
+        DynamicPartitionCtx dpCtx2 = new DynamicPartitionCtx(dpCtx);
+        fsOutputDesc.setDynPartCtx(dpCtx2);
+      }
 
       // update the FileSinkOperator to include partition columns
       usePartitionColumns(fsInputDesc.getTableInfo().getProperties(), dpCtx.getDPColNames());
@@ -1315,11 +1325,7 @@ public final class GenMapRedUtils {
     MapWork cplan;
     Serializable work;
 
-    if ((conf.getBoolVar(ConfVars.HIVEMERGERCFILEBLOCKLEVEL) &&
-        fsInputDesc.getTableInfo().getInputFileFormatClass().equals(RCFileInputFormat.class)) ||
-        (conf.getBoolVar(ConfVars.HIVEMERGEORCFILESTRIPELEVEL) &&
-            fsInputDesc.getTableInfo().getInputFileFormatClass().equals(OrcInputFormat.class))) {
-
+    if (isBlockMerge) {
       cplan = GenMapRedUtils.createMergeTask(fsInputDesc, finalName,
           dpCtx != null && dpCtx.getNumDPCols() > 0, fsInput.getCompilationOpContext());
       if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
@@ -1375,8 +1381,7 @@ public final class GenMapRedUtils {
     // MM directory, the original MoveTask still commits based on the parent. Note that this path
     // can only be triggered for a merge that's part of insert for now; MM tables do not support
     // concatenate. Keeping the old logic for non-MM tables with temp directories and stuff.
-    Path fsopPath = srcMmWriteId != null
-        ? fsInputDesc.getFinalDirName() : fsOutputDesc.getFinalDirName();
+    Path fsopPath = srcMmWriteId != null ? fsInputDesc.getFinalDirName() : finalName;
     linkMoveTask(fsopPath, cndTsk, mvTasks, conf, dependencyTask);
   }
 

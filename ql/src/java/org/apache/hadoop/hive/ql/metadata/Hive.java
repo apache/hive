@@ -1832,18 +1832,35 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return Set of valid partitions
    * @throws HiveException
    */
-  private Set<Path> getValidPartitionsInPath(int numDP, Path loadPath) throws HiveException {
+  private Set<Path> getValidPartitionsInPath(
+      int numDP, int numLB, Path loadPath, Long mmWriteId) throws HiveException {
     Set<Path> validPartitions = new HashSet<Path>();
     try {
       FileSystem fs = loadPath.getFileSystem(conf);
-      FileStatus[] leafStatus = HiveStatsUtils.getFileStatusRecurse(loadPath, numDP, fs);
+      FileStatus[] leafStatus = null;
+      if (mmWriteId == null) {
+        leafStatus = HiveStatsUtils.getFileStatusRecurse(loadPath, numDP, fs);
+      } else {
+        // The non-MM path only finds new partitions, as it is looking at the temp path.
+        // To produce the same effect, we will find all the partitions affected by this write ID.
+        // TODO# how would this work with multi-insert into the same table? how does the existing one work?
+        leafStatus = Utilities.getMmDirectoryCandidates(
+            fs, loadPath, numDP, numLB, null, mmWriteId);
+      }
       // Check for empty partitions
       for (FileStatus s : leafStatus) {
-        if (!s.isDirectory()) {
+        if (mmWriteId == null && !s.isDirectory()) {
           throw new HiveException("partition " + s.getPath() + " is not a directory!");
         }
-        Utilities.LOG14535.info("Found DP " + s.getPath());
-        validPartitions.add(s.getPath());
+        Path dpPath = s.getPath();
+        if (mmWriteId != null) {
+          dpPath = dpPath.getParent(); // Skip the MM directory that we have found.
+          for (int i = 0; i < numLB; ++i) {
+            dpPath = dpPath.getParent(); // Now skip the LB directories, if any...
+          }
+        }
+        Utilities.LOG14535.info("Found DP " + dpPath);
+        validPartitions.add(dpPath);
       }
     } catch (IOException e) {
       throw new HiveException(e);
@@ -1881,7 +1898,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   public Map<Map<String, String>, Partition> loadDynamicPartitions(final Path loadPath,
       final String tableName, final Map<String, String> partSpec, final boolean replace,
-      final int numDP, final boolean listBucketingEnabled, final boolean isAcid, final long txnId,
+      final int numDP, final int numLB, final boolean isAcid, final long txnId,
       final boolean hasFollowingStatsTask, final AcidUtils.Operation operation, final Long mmWriteId)
       throws HiveException {
 
@@ -1897,7 +1914,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     // Get all valid partition paths and existing partitions for them (if any)
     final Table tbl = getTable(tableName);
-    final Set<Path> validPartitions = getValidPartitionsInPath(numDP, loadPath);
+    final Set<Path> validPartitions = getValidPartitionsInPath(numDP, numLB, loadPath, mmWriteId);
 
     final int partsToLoad = validPartitions.size();
     final AtomicInteger partitionsLoaded = new AtomicInteger(0);
@@ -1926,7 +1943,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               // load the partition
               Utilities.LOG14535.info("loadPartition called for DPP from " + partPath + " to " + tbl.getTableName());
               Partition newPartition = loadPartition(partPath, tbl, fullPartSpec,
-                  replace, true, listBucketingEnabled,
+                  replace, true, numLB > 0,
                   false, isAcid, hasFollowingStatsTask, mmWriteId);
               partitionsMap.put(fullPartSpec, newPartition);
 
@@ -1945,7 +1962,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
                   + " table=" + tbl.getTableName() + ", "
                   + " partSpec=" + fullPartSpec + ", "
                   + " replace=" + replace + ", "
-                  + " listBucketingEnabled=" + listBucketingEnabled + ", "
+                  + " listBucketingLevel=" + numLB + ", "
                   + " isAcid=" + isAcid + ", "
                   + " hasFollowingStatsTask=" + hasFollowingStatsTask, t);
               throw t;
@@ -3475,7 +3492,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       isOldPathUnderDestf = isSubDir(oldPath, destPath, oldFs, destFs, false);
       if (isOldPathUnderDestf) {
         FileStatus[] statuses = oldFs.listStatus(oldPath, pathFilter);
-        if (statuses != null && statuses.length > 0 && !trashFiles(oldFs, statuses, conf)) {
+        if (statuses == null || statuses.length == 0) return;
+        String s = "Deleting files under " + oldPath + " for replace: ";
+        for (FileStatus file : statuses) {
+          s += file.getPath().getName() + ", ";
+        }
+        Utilities.LOG14535.info(s);
+        if (!trashFiles(oldFs, statuses, conf)) {
           throw new HiveException("Destination directory " + destPath
               + " has not been cleaned up.");
         }

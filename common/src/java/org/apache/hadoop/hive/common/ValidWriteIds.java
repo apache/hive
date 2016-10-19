@@ -122,18 +122,18 @@ public class ValidWriteIds {
 
 
   public static class IdPathFilter implements PathFilter {
-    private final String prefix, tmpPrefix;
+    private final String mmDirName, tmpPrefix;
     private final boolean isMatch;
     public IdPathFilter(long writeId, boolean isMatch) {
-      this.prefix = ValidWriteIds.getMmFilePrefix(writeId);
-      this.tmpPrefix = "_tmp." + prefix;
+      this.mmDirName = ValidWriteIds.getMmFilePrefix(writeId);
+      this.tmpPrefix = "_tmp." + mmDirName;
       this.isMatch = isMatch;
     }
 
     @Override
     public boolean accept(Path path) {
       String name = path.getName();
-      return isMatch == (name.startsWith(prefix) || name.startsWith(tmpPrefix));
+      return isMatch == (name.equals(mmDirName) || name.startsWith(tmpPrefix));
     }
   }
 

@@ -951,6 +951,86 @@ POSTHOOK: query: drop table merge0_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@merge0_mm
 POSTHOOK: Output: default@merge0_mm
+PREHOOK: query: create table merge2_mm (id int) tblproperties('hivecommit'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@merge2_mm
+POSTHOOK: query: create table merge2_mm (id int) tblproperties('hivecommit'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@merge2_mm
+PREHOOK: query: insert into table merge2_mm select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@merge2_mm
+POSTHOOK: query: insert into table merge2_mm select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@merge2_mm
+POSTHOOK: Lineage: merge2_mm.id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from merge2_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@merge2_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from merge2_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge2_mm
+#### A masked pattern was here ####
+98
+97
+100
+103
+0
+10
+PREHOOK: query: insert into table merge2_mm select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@merge2_mm
+POSTHOOK: query: insert into table merge2_mm select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@merge2_mm
+POSTHOOK: Lineage: merge2_mm.id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from merge2_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@merge2_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from merge2_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge2_mm
+#### A masked pattern was here ####
+98
+97
+100
+103
+0
+10
+98
+97
+100
+103
+0
+10
+PREHOOK: query: drop table merge2_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@merge2_mm
+PREHOOK: Output: default@merge2_mm
+POSTHOOK: query: drop table merge2_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@merge2_mm
+POSTHOOK: Output: default@merge2_mm
 PREHOOK: query: create table merge1_mm (id int) partitioned by (key int) stored as orc tblproperties('hivecommit'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1177,11 +1257,488 @@ POSTHOOK: query: drop table ctas1_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ctas1_mm
 POSTHOOK: Output: default@ctas1_mm
-PREHOOK: query: drop table intermediate
+PREHOOK: query: drop table iow0_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table iow0_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table iow0_mm(key int) tblproperties('hivecommit'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iow0_mm
+POSTHOOK: query: create table iow0_mm(key int) tblproperties('hivecommit'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iow0_mm
+PREHOOK: query: insert overwrite table iow0_mm select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@iow0_mm
+POSTHOOK: query: insert overwrite table iow0_mm select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@iow0_mm
+POSTHOOK: Lineage: iow0_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: insert into table iow0_mm select key + 1 from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@iow0_mm
+POSTHOOK: query: insert into table iow0_mm select key + 1 from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@iow0_mm
+POSTHOOK: Lineage: iow0_mm.key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from iow0_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iow0_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from iow0_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iow0_mm
+#### A masked pattern was here ####
+98
+97
+100
+103
+0
+10
+99
+98
+101
+104
+1
+11
+PREHOOK: query: insert overwrite table iow0_mm select key + 2 from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@iow0_mm
+POSTHOOK: query: insert overwrite table iow0_mm select key + 2 from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@iow0_mm
+POSTHOOK: Lineage: iow0_mm.key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from iow0_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iow0_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from iow0_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iow0_mm
+#### A masked pattern was here ####
+100
+99
+102
+105
+2
+12
+PREHOOK: query: drop table iow0_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@iow0_mm
+PREHOOK: Output: default@iow0_mm
+POSTHOOK: query: drop table iow0_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@iow0_mm
+POSTHOOK: Output: default@iow0_mm
+PREHOOK: query: drop table iow1_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table iow1_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table iow1_mm(key int) partitioned by (key2 int)  tblproperties('hivecommit'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iow1_mm
+POSTHOOK: query: create table iow1_mm(key int) partitioned by (key2 int)  tblproperties('hivecommit'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iow1_mm
+PREHOOK: query: insert overwrite table iow1_mm partition (key2)
+select key as k1, key from intermediate union all select key as k1, key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@iow1_mm
+POSTHOOK: query: insert overwrite table iow1_mm partition (key2)
+select key as k1, key from intermediate union all select key as k1, key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@iow1_mm@key2=0
+POSTHOOK: Output: default@iow1_mm@key2=10
+POSTHOOK: Output: default@iow1_mm@key2=100
+POSTHOOK: Output: default@iow1_mm@key2=103
+POSTHOOK: Output: default@iow1_mm@key2=97
+POSTHOOK: Output: default@iow1_mm@key2=98
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=0).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=100).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=103).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=10).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=97).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=98).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: insert into table iow1_mm partition (key2)
+select key + 1 as k1, key from intermediate union all select key as k1, key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@iow1_mm
+POSTHOOK: query: insert into table iow1_mm partition (key2)
+select key + 1 as k1, key from intermediate union all select key as k1, key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@iow1_mm@key2=0
+POSTHOOK: Output: default@iow1_mm@key2=10
+POSTHOOK: Output: default@iow1_mm@key2=100
+POSTHOOK: Output: default@iow1_mm@key2=103
+POSTHOOK: Output: default@iow1_mm@key2=97
+POSTHOOK: Output: default@iow1_mm@key2=98
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=0).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=100).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=103).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=10).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=97).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=98).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from iow1_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iow1_mm
+PREHOOK: Input: default@iow1_mm@key2=0
+PREHOOK: Input: default@iow1_mm@key2=10
+PREHOOK: Input: default@iow1_mm@key2=100
+PREHOOK: Input: default@iow1_mm@key2=103
+PREHOOK: Input: default@iow1_mm@key2=97
+PREHOOK: Input: default@iow1_mm@key2=98
+#### A masked pattern was here ####
+POSTHOOK: query: select * from iow1_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iow1_mm
+POSTHOOK: Input: default@iow1_mm@key2=0
+POSTHOOK: Input: default@iow1_mm@key2=10
+POSTHOOK: Input: default@iow1_mm@key2=100
+POSTHOOK: Input: default@iow1_mm@key2=103
+POSTHOOK: Input: default@iow1_mm@key2=97
+POSTHOOK: Input: default@iow1_mm@key2=98
+#### A masked pattern was here ####
+0	0
+0	0
+1	0
+0	0
+10	10
+10	10
+11	10
+10	10
+100	100
+100	100
+101	100
+100	100
+103	103
+103	103
+104	103
+103	103
+97	97
+97	97
+98	97
+97	97
+98	98
+98	98
+99	98
+98	98
+PREHOOK: query: insert overwrite table iow1_mm partition (key2)
+select key + 3 as k1, key from intermediate union all select key + 4 as k1, key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@iow1_mm
+POSTHOOK: query: insert overwrite table iow1_mm partition (key2)
+select key + 3 as k1, key from intermediate union all select key + 4 as k1, key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@iow1_mm@key2=0
+POSTHOOK: Output: default@iow1_mm@key2=10
+POSTHOOK: Output: default@iow1_mm@key2=100
+POSTHOOK: Output: default@iow1_mm@key2=103
+POSTHOOK: Output: default@iow1_mm@key2=97
+POSTHOOK: Output: default@iow1_mm@key2=98
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=0).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=100).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=103).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=10).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=97).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=98).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from iow1_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iow1_mm
+PREHOOK: Input: default@iow1_mm@key2=0
+PREHOOK: Input: default@iow1_mm@key2=10
+PREHOOK: Input: default@iow1_mm@key2=100
+PREHOOK: Input: default@iow1_mm@key2=103
+PREHOOK: Input: default@iow1_mm@key2=97
+PREHOOK: Input: default@iow1_mm@key2=98
+#### A masked pattern was here ####
+POSTHOOK: query: select * from iow1_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iow1_mm
+POSTHOOK: Input: default@iow1_mm@key2=0
+POSTHOOK: Input: default@iow1_mm@key2=10
+POSTHOOK: Input: default@iow1_mm@key2=100
+POSTHOOK: Input: default@iow1_mm@key2=103
+POSTHOOK: Input: default@iow1_mm@key2=97
+POSTHOOK: Input: default@iow1_mm@key2=98
+#### A masked pattern was here ####
+3	0
+4	0
+13	10
+14	10
+103	100
+104	100
+106	103
+107	103
+100	97
+101	97
+101	98
+102	98
+PREHOOK: query: insert overwrite table iow1_mm partition (key2)
+select key + 3 as k1, key + 3 from intermediate union all select key + 2 as k1, key + 2 from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@iow1_mm
+POSTHOOK: query: insert overwrite table iow1_mm partition (key2)
+select key + 3 as k1, key + 3 from intermediate union all select key + 2 as k1, key + 2 from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@iow1_mm@key2=100
+POSTHOOK: Output: default@iow1_mm@key2=101
+POSTHOOK: Output: default@iow1_mm@key2=102
+POSTHOOK: Output: default@iow1_mm@key2=103
+POSTHOOK: Output: default@iow1_mm@key2=105
+POSTHOOK: Output: default@iow1_mm@key2=106
+POSTHOOK: Output: default@iow1_mm@key2=12
+POSTHOOK: Output: default@iow1_mm@key2=13
+POSTHOOK: Output: default@iow1_mm@key2=2
+POSTHOOK: Output: default@iow1_mm@key2=3
+POSTHOOK: Output: default@iow1_mm@key2=99
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=100).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=101).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=102).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=103).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=105).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=106).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=12).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=13).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=2).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=3).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: iow1_mm PARTITION(key2=99).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from iow1_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iow1_mm
+PREHOOK: Input: default@iow1_mm@key2=0
+PREHOOK: Input: default@iow1_mm@key2=10
+PREHOOK: Input: default@iow1_mm@key2=100
+PREHOOK: Input: default@iow1_mm@key2=101
+PREHOOK: Input: default@iow1_mm@key2=102
+PREHOOK: Input: default@iow1_mm@key2=103
+PREHOOK: Input: default@iow1_mm@key2=105
+PREHOOK: Input: default@iow1_mm@key2=106
+PREHOOK: Input: default@iow1_mm@key2=12
+PREHOOK: Input: default@iow1_mm@key2=13
+PREHOOK: Input: default@iow1_mm@key2=2
+PREHOOK: Input: default@iow1_mm@key2=3
+PREHOOK: Input: default@iow1_mm@key2=97
+PREHOOK: Input: default@iow1_mm@key2=98
+PREHOOK: Input: default@iow1_mm@key2=99
+#### A masked pattern was here ####
+POSTHOOK: query: select * from iow1_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iow1_mm
+POSTHOOK: Input: default@iow1_mm@key2=0
+POSTHOOK: Input: default@iow1_mm@key2=10
+POSTHOOK: Input: default@iow1_mm@key2=100
+POSTHOOK: Input: default@iow1_mm@key2=101
+POSTHOOK: Input: default@iow1_mm@key2=102
+POSTHOOK: Input: default@iow1_mm@key2=103
+POSTHOOK: Input: default@iow1_mm@key2=105
+POSTHOOK: Input: default@iow1_mm@key2=106
+POSTHOOK: Input: default@iow1_mm@key2=12
+POSTHOOK: Input: default@iow1_mm@key2=13
+POSTHOOK: Input: default@iow1_mm@key2=2
+POSTHOOK: Input: default@iow1_mm@key2=3
+POSTHOOK: Input: default@iow1_mm@key2=97
+POSTHOOK: Input: default@iow1_mm@key2=98
+POSTHOOK: Input: default@iow1_mm@key2=99
+#### A masked pattern was here ####
+3	0
+4	0
+13	10
+14	10
+100	100
+100	100
+101	101
+102	102
+103	103
+105	105
+106	106
+12	12
+13	13
+2	2
+3	3
+100	97
+101	97
+101	98
+102	98
+99	99
+PREHOOK: query: drop table iow1_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@iow1_mm
+PREHOOK: Output: default@iow1_mm
+POSTHOOK: query: drop table iow1_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@iow1_mm
+POSTHOOK: Output: default@iow1_mm
+PREHOOK: query: -- TODO# future
+--
+#### A masked pattern was here ####
+--
+--load data local inpath '../../data/files/kv1.txt' into table load_overwrite;
+--load data local inpath '../../data/files/kv2.txt' into table load_overwrite;
+--load data local inpath '../../data/files/kv3.txt' into table load_overwrite;
+--
+--show table extended like load_overwrite;
+--desc extended load_overwrite;
+--select count(*) from load_overwrite;
+--
+#### A masked pattern was here ####
+--
+--
+--load data local inpath '../../data/files/orc_split_elim.orc' into table orc_test partition (ds='10')
+--
+--
+--
+--
+--
+--create table exim_department ( dep_id int) stored as textfile;
+--load data local inpath "../../data/files/test.dat" into table exim_department;
+#### A masked pattern was here ####
+--export table exim_department to 'ql/test/data/exports/exim_department';
+--drop table exim_department;
+--
+--create database importer;
+--use importer;
+--
+--create table exim_department ( dep_id int) stored as textfile;
+--set hive.security.authorization.enabled=true;
+--import from 'ql/test/data/exports/exim_department';
+--
+--
+--create table exim_department ( dep_id int) stored as textfile;
+--load data local inpath "../../data/files/test.dat" into table exim_department;
+#### A masked pattern was here ####
+--export table exim_department to 'ql/test/data/exports/exim_department';
+--drop table exim_department;
+--
+--create database importer;
+--use importer;
+--
+--set hive.security.authorization.enabled=true;
+--import from 'ql/test/data/exports/exim_department';
+
+
+
+-- TODO multi-insert
+
+
+
+drop table intermediate
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate
 PREHOOK: Output: default@intermediate
-POSTHOOK: query: drop table intermediate
+POSTHOOK: query: -- TODO# future
+--
+#### A masked pattern was here ####
+--
+--load data local inpath '../../data/files/kv1.txt' into table load_overwrite;
+--load data local inpath '../../data/files/kv2.txt' into table load_overwrite;
+--load data local inpath '../../data/files/kv3.txt' into table load_overwrite;
+--
+--show table extended like load_overwrite;
+--desc extended load_overwrite;
+--select count(*) from load_overwrite;
+--
+#### A masked pattern was here ####
+--
+--
+--load data local inpath '../../data/files/orc_split_elim.orc' into table orc_test partition (ds='10')
+--
+--
+--
+--
+--
+--create table exim_department ( dep_id int) stored as textfile;
+--load data local inpath "../../data/files/test.dat" into table exim_department;
+#### A masked pattern was here ####
+--export table exim_department to 'ql/test/data/exports/exim_department';
+--drop table exim_department;
+--
+--create database importer;
+--use importer;
+--
+--create table exim_department ( dep_id int) stored as textfile;
+--set hive.security.authorization.enabled=true;
+--import from 'ql/test/data/exports/exim_department';
+--
+--
+--create table exim_department ( dep_id int) stored as textfile;
+--load data local inpath "../../data/files/test.dat" into table exim_department;
+#### A masked pattern was here ####
+--export table exim_department to 'ql/test/data/exports/exim_department';
+--drop table exim_department;
+--
+--create database importer;
+--use importer;
+--
+--set hive.security.authorization.enabled=true;
+--import from 'ql/test/data/exports/exim_department';
+
+
+
+-- TODO multi-insert
+
+
+
+drop table intermediate
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Output: default@intermediate

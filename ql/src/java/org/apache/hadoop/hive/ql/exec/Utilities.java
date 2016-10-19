@@ -3810,7 +3810,7 @@ public final class Utilities {
     }
   }
 
-  private static FileStatus[] getMmDirectoryCandidates(FileSystem fs, Path path, int dpLevels,
+  public static FileStatus[] getMmDirectoryCandidates(FileSystem fs, Path path, int dpLevels,
       int lbLevels, PathFilter filter, long mmWriteId) throws IOException {
     StringBuilder sb = new StringBuilder(path.toUri().getPath());
     for (int i = 0; i < dpLevels + lbLevels; i++) {
@@ -3819,7 +3819,11 @@ public final class Utilities {
     sb.append(Path.SEPARATOR).append(ValidWriteIds.getMmFilePrefix(mmWriteId));
     Utilities.LOG14535.info("Looking for files via: " + sb.toString());
     Path pathPattern = new Path(path, sb.toString());
-    return fs.globStatus(pathPattern, filter);
+    if (filter == null) {
+      // TODO: do we need this? Likely yes; we don't want mm_10 when we use ".../mm_1" pattern.
+      filter = new ValidWriteIds.IdPathFilter(mmWriteId, true);
+    }
+    return filter == null ? fs.globStatus(pathPattern) : fs.globStatus(pathPattern, filter);
   }
 
   private static void tryDeleteAllMmFiles(FileSystem fs, Path specPath, Path manifestDir,
@@ -3883,7 +3887,6 @@ public final class Utilities {
       Reporter reporter) throws IOException, HiveException {
     FileSystem fs = specPath.getFileSystem(hconf);
     // Manifests would be at the root level, but the results at target level.
-    // TODO# special case - doesn't take bucketing into account
     Path manifestDir = getManifestDir(specPath, unionSuffix);
 
     ValidWriteIds.IdPathFilter filter = new ValidWriteIds.IdPathFilter(mmWriteId, true);

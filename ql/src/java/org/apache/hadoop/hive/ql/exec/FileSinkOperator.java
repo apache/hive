@@ -311,10 +311,14 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
             subdirPath += Path.SEPARATOR + unionPath;
           }
           subdirPath += Path.SEPARATOR + taskId;
+          if (conf.isMerge()) {
+            // Make sure we don't collide with the source files.
+            // MM tables don't support concat so we don't expect the merge of merged files.
+            subdirPath += ".merged";
+          }
           if (!bDynParts && !isSkewedStoredAsSubDirectories) {
             finalPaths[filesIdx] = getFinalPath(subdirPath, specPath, extension);
           } else {
-            // TODO# does this need extra special handing for bucketing?
             // Note: tmpPath here has the correct partition key
             finalPaths[filesIdx] = getFinalPath(subdirPath, tmpPath, extension);
           }

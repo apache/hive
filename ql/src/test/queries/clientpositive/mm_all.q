@@ -152,6 +152,19 @@ select * from merge0_mm;
 drop table merge0_mm;
 
 
+create table merge2_mm (id int) tblproperties('hivecommit'='true');
+
+insert into table merge2_mm select key from intermediate;
+select * from merge2_mm;
+
+set tez.grouping.split-count=1;
+insert into table merge2_mm select key from intermediate;
+set tez.grouping.split-count=0;
+select * from merge2_mm;
+
+drop table merge2_mm;
+
+
 create table merge1_mm (id int) partitioned by (key int) stored as orc tblproperties('hivecommit'='true');
 
 insert into table merge1_mm partition (key) select key, key from intermediate;
@@ -177,6 +190,93 @@ create table ctas1_mm tblproperties ('hivecommit'='true') as
   select * from intermediate union all select * from intermediate;
 select * from ctas1_mm;
 drop table ctas1_mm;
+
+
+set hive.merge.tezfiles=false;
+set hive.merge.mapfiles=false;
+set hive.merge.mapredfiles=false;
+
+drop table iow0_mm;
+create table iow0_mm(key int) tblproperties('hivecommit'='true');
+insert overwrite table iow0_mm select key from intermediate;
+insert into table iow0_mm select key + 1 from intermediate;
+select * from iow0_mm;
+insert overwrite table iow0_mm select key + 2 from intermediate;
+select * from iow0_mm;
+drop table iow0_mm;
+
+
+drop table iow1_mm; 
+create table iow1_mm(key int) partitioned by (key2 int)  tblproperties('hivecommit'='true');
+insert overwrite table iow1_mm partition (key2)
+select key as k1, key from intermediate union all select key as k1, key from intermediate;
+insert into table iow1_mm partition (key2)
+select key + 1 as k1, key from intermediate union all select key as k1, key from intermediate;
+select * from iow1_mm;
+insert overwrite table iow1_mm partition (key2)
+select key + 3 as k1, key from intermediate union all select key + 4 as k1, key from intermediate;
+select * from iow1_mm;
+insert overwrite table iow1_mm partition (key2)
+select key + 3 as k1, key + 3 from intermediate union all select key + 2 as k1, key + 2 from intermediate;
+select * from iow1_mm;
+drop table iow1_mm;
+
+
+
+-- TODO# future
+--
+--create table load_overwrite (key string, value string) stored as textfile location 'file:${system:test.tmp.dir}/load_overwrite';
+--create table load_overwrite2 (key string, value string) stored as textfile location 'file:${system:test.tmp.dir}/load2_overwrite2';
+--
+--load data local inpath '../../data/files/kv1.txt' into table load_overwrite;
+--load data local inpath '../../data/files/kv2.txt' into table load_overwrite;
+--load data local inpath '../../data/files/kv3.txt' into table load_overwrite;
+--
+--show table extended like load_overwrite;
+--desc extended load_overwrite;
+--select count(*) from load_overwrite;
+--
+--load data inpath '${system:test.tmp.dir}/load_overwrite/kv*.txt' overwrite into table load_overwrite2;
+--
+--
+--load data local inpath '../../data/files/orc_split_elim.orc' into table orc_test partition (ds='10')
+--
+--
+--
+--
+--
+--create table exim_department ( dep_id int) stored as textfile;
+--load data local inpath "../../data/files/test.dat" into table exim_department;
+--dfs ${system:test.dfs.mkdir} target/tmp/ql/test/data/exports/exim_department/temp;
+--dfs -rmr target/tmp/ql/test/data/exports/exim_department;
+--export table exim_department to 'ql/test/data/exports/exim_department';
+--drop table exim_department;
+--
+--create database importer;
+--use importer;
+--
+--create table exim_department ( dep_id int) stored as textfile;
+--set hive.security.authorization.enabled=true;
+--import from 'ql/test/data/exports/exim_department';
+--
+--
+--create table exim_department ( dep_id int) stored as textfile;
+--load data local inpath "../../data/files/test.dat" into table exim_department;
+--dfs ${system:test.dfs.mkdir} target/tmp/ql/test/data/exports/exim_department/test;
+--dfs -rmr target/tmp/ql/test/data/exports/exim_department;
+--export table exim_department to 'ql/test/data/exports/exim_department';
+--drop table exim_department;
+--
+--create database importer;
+--use importer;
+--
+--set hive.security.authorization.enabled=true;
+--import from 'ql/test/data/exports/exim_department';
+
+
+
+-- TODO multi-insert
+
 
 
 drop table intermediate;

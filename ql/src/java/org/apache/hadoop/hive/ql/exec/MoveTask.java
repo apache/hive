@@ -258,7 +258,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   public int execute(DriverContext driverContext) {
     Utilities.LOG14535.info("Executing MoveWork " + System.identityHashCode(work)
         + " with " + work.getLoadFileWork() + "; " + work.getLoadTableWork() + "; "
-        + work.getLoadMultiFilesWork(), new Exception());
+        + work.getLoadMultiFilesWork());
 
     try {
       if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
@@ -435,7 +435,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         tbd.getPartitionSpec(),
         tbd.getReplace(),
         dpCtx.getNumDPCols(),
-        isSkewedStoredAsDirs(tbd),
+        (tbd.getLbCtx() == null) ? 0 : tbd.getLbCtx().calculateListBucketingLevel(),
         work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
         SessionState.get().getTxnMgr().getCurrentTxnId(), hasFollowingStatsTask(),
         work.getLoadTableWork().getWriteType(),

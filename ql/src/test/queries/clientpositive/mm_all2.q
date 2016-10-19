@@ -6,6 +6,8 @@ set tez.grouping.max-size=2;
 set hive.exec.dynamic.partition.mode=nonstrict;
 
 
+-- Bucketing tests are slow and some tablesample ones don't work w/o MM
+
 -- Force multiple writers when reading
 drop table intermediate;
 create table intermediate(key int) partitioned by (p int) stored as orc;
@@ -58,13 +60,5 @@ select * from bucket2_mm;
 select * from bucket2_mm tablesample (bucket 1 out of 10) s;
 select * from bucket2_mm tablesample (bucket 4 out of 10) s;
 drop table bucket2_mm;
-
-
-
--- TODO# future
-
-
-
--- TODO load, multi-insert, buckets
 
 drop table intermediate;

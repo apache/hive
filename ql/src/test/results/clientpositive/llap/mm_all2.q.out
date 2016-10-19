@@ -1,7 +1,11 @@
-PREHOOK: query: -- Force multiple writers when reading
+PREHOOK: query: -- Bucketing tests are slow and some tablesample ones don't work w/o MM
+
+-- Force multiple writers when reading
 drop table intermediate
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Force multiple writers when reading
+POSTHOOK: query: -- Bucketing tests are slow and some tablesample ones don't work w/o MM
+
+-- Force multiple writers when reading
 drop table intermediate
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table intermediate(key int) partitioned by (p int) stored as orc
@@ -79,12 +83,12 @@ POSTHOOK: query: select * from bucket0_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket0_mm
 #### A masked pattern was here ####
-100	100
+98	98
 0	0
 10	10
-98	98
-103	103
+100	100
 97	97
+103	103
 PREHOOK: query: select * from bucket0_mm tablesample (bucket 1 out of 2) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket0_mm
@@ -93,10 +97,10 @@ POSTHOOK: query: select * from bucket0_mm tablesample (bucket 1 out of 2) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket0_mm
 #### A masked pattern was here ####
-100	100
+98	98
 0	0
 10	10
-98	98
+100	100
 PREHOOK: query: select * from bucket0_mm tablesample (bucket 2 out of 2) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket0_mm
@@ -105,8 +109,8 @@ POSTHOOK: query: select * from bucket0_mm tablesample (bucket 2 out of 2) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket0_mm
 #### A masked pattern was here ####
-103	103
 97	97
+103	103
 PREHOOK: query: insert into table bucket0_mm select key, key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
@@ -131,12 +135,12 @@ POSTHOOK: query: select * from bucket0_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket0_mm
 #### A masked pattern was here ####
-100	100
+98	98
 0	0
 10	10
-98	98
-103	103
+100	100
 97	97
+103	103
 98	98
 0	0
 10	10
@@ -151,10 +155,10 @@ POSTHOOK: query: select * from bucket0_mm tablesample (bucket 1 out of 2) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket0_mm
 #### A masked pattern was here ####
-100	100
+98	98
 0	0
 10	10
-98	98
+100	100
 98	98
 0	0
 10	10
@@ -167,8 +171,8 @@ POSTHOOK: query: select * from bucket0_mm tablesample (bucket 2 out of 2) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket0_mm
 #### A masked pattern was here ####
-103	103
 97	97
+103	103
 97	97
 103	103
 PREHOOK: query: drop table bucket0_mm
@@ -481,23 +485,11 @@ POSTHOOK: query: drop table bucket2_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@bucket2_mm
 POSTHOOK: Output: default@bucket2_mm
-PREHOOK: query: -- TODO# future
-
-
-
--- TODO load, multi-insert, buckets
-
-drop table intermediate
+PREHOOK: query: drop table intermediate
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate
 PREHOOK: Output: default@intermediate
-POSTHOOK: query: -- TODO# future
-
-
-
--- TODO load, multi-insert, buckets
-
-drop table intermediate
+POSTHOOK: query: drop table intermediate
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Output: default@intermediate
