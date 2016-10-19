@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.cost;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelDistribution;
+import org.apache.calcite.rel.RelDistributions;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
@@ -92,12 +93,12 @@ public class HiveDefaultCostModel extends HiveCostModel {
 
     @Override
     public ImmutableList<RelCollation> getCollation(HiveJoin join) {
-      return null;
+      return ImmutableList.of();
     }
 
     @Override
     public RelDistribution getDistribution(HiveJoin join) {
-      return null;
+      return RelDistributions.SINGLETON;
     }
 
     @Override
@@ -117,7 +118,7 @@ public class HiveDefaultCostModel extends HiveCostModel {
 
     @Override
     public Integer getSplitCount(HiveJoin join) {
-      return null;
+      return 1;
     }
   }
 

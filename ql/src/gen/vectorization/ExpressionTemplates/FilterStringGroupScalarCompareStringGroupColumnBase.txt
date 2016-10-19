@@ -18,8 +18,6 @@
  
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
-import java.nio.charset.StandardCharsets;
-
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -157,10 +155,4 @@ public abstract class <ClassName> extends VectorExpression {
   public void setValue(byte[] value) {
     this.value = value;
   }
-
-  @Override
-  public String vectorExpressionParameters() {
-    return "val " + new String(value, StandardCharsets.UTF_8) + ", col " + + colNum;
-  }
-
 }

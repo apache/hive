@@ -133,9 +133,4 @@ public abstract class IfExprTimestampColumnColumnBase extends VectorExpression {
   public String getOutputType() {
     return "long";
   }
-
-  @Override
-  public String vectorExpressionParameters() {
-    return "col " + arg1Column + ", col "+ arg2Column + ", col "+ arg3Column;
-  }
 }

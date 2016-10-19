@@ -39,7 +39,6 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,9 +49,7 @@ import com.google.common.collect.Sets;
 
 public class HivePreFilteringRule extends RelOptRule {
 
-  protected static final Logger            LOG        = LoggerFactory
-                                                          .getLogger(HivePreFilteringRule.class
-                                                              .getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(HivePreFilteringRule.class);
 
   private static final Set<SqlKind>        COMPARISON = EnumSet.of(SqlKind.EQUALS,
                                                           SqlKind.GREATER_THAN_OR_EQUAL,
@@ -209,7 +206,7 @@ public class HivePreFilteringRule extends RelOptRule {
     for (int i = 0; i < operands.size(); i++) {
       final RexNode operand = operands.get(i);
 
-      final RexNode operandCNF = HiveRexUtil.toCnf(rexBuilder, maxCNFNodeCount, operand);
+      final RexNode operandCNF = RexUtil.toCnf(rexBuilder, maxCNFNodeCount, operand);
       final List<RexNode> conjunctions = RelOptUtil.conjunctions(operandCNF);
 
       Set<String> refsInCurrentOperand = Sets.newHashSet();

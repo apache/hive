@@ -177,10 +177,4 @@ public class FilterDoubleColumnInList extends VectorExpression implements IDoubl
   public void setInListValues(double [] a) {
     this.inListValues = a;
   }
-
-  @Override
-  public String vectorExpressionParameters() {
-    return "col " + inputCol + ", values " + Arrays.toString(inListValues);
-  }
-
 }

@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
+
 
 /**
  * FileSinkDesc.
@@ -489,21 +489,5 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   public void setMmWriteId(Long mmWriteId) {
     this.mmWriteId = mmWriteId;
-  }
-
-  public class FileSinkOperatorExplainVectorization extends OperatorExplainVectorization {
-
-    public FileSinkOperatorExplainVectorization(VectorDesc vectorDesc) {
-      // Native vectorization not supported.
-      super(vectorDesc, false);
-    }
-  }
-
-  @Explain(vectorization = Vectorization.OPERATOR, displayName = "File Sink Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-  public FileSinkOperatorExplainVectorization getFileSinkVectorization() {
-    if (vectorDesc == null) {
-      return null;
-    }
-    return new FileSinkOperatorExplainVectorization(vectorDesc);
   }
 }

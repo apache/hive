@@ -133,10 +133,6 @@ abstract public class TimestampToStringUnaryUDF extends VectorExpression {
     return "String";
   }
 
-  public String vectorExpressionParameters() {
-    return "col " + inputColumn;
-  }
-
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();

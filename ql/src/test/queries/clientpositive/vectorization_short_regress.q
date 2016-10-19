@@ -2,7 +2,7 @@ set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=none;
+set hive.fetch.task.conversion=minimal;
 
 -- SORT_QUERY_RESULTS
 
@@ -36,8 +36,7 @@ set hive.fetch.task.conversion=none;
 -- ArithmeticOps: Add, Multiply, Subtract, Divide
 -- FilterOps: Equal, NotEqual, GreaterThan, LessThan, LessThanOrEqual
 -- GroupBy: NoGroupByProjectAggs
-EXPLAIN VECTORIZATION EXPRESSION
-SELECT AVG(cint),
+EXPLAIN SELECT AVG(cint),
        (AVG(cint) + -3728),
        (-((AVG(cint) + -3728))),
        (-((-((AVG(cint) + -3728))))),
@@ -113,8 +112,7 @@ WHERE  ((762 = cbigint)
 -- ArithmeticOps: Divide, Multiply, Remainder, Subtract
 -- FilterOps: LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual, Like, RLike
 -- GroupBy: NoGroupByProjectAggs
-EXPLAIN VECTORIZATION EXPRESSION
-SELECT MAX(cint),
+EXPLAIN SELECT MAX(cint),
        (MAX(cint) / -3728),
        (MAX(cint) * -3728),
        VAR_POP(cbigint),
@@ -184,8 +182,7 @@ WHERE  (((cbigint <= 197)
 -- ArithmeticOps: Subtract, Remainder, Multiply, Add
 -- FilterOps: Equal, LessThanOrEqual, GreaterThan, Like, LessThan
 -- GroupBy: NoGroupByProjectAggs
-EXPLAIN VECTORIZATION EXPRESSION
-SELECT VAR_POP(cbigint),
+EXPLAIN SELECT VAR_POP(cbigint),
        (-(VAR_POP(cbigint))),
        (VAR_POP(cbigint) - (-(VAR_POP(cbigint)))),
        COUNT(*),
@@ -253,8 +250,7 @@ WHERE  ((ctimestamp1 = ctimestamp2)
 -- ArithmeticOps: Add, Divide, Remainder, Multiply
 -- FilterOps: LessThanOrEqual, NotEqual, GreaterThanOrEqual, LessThan, Equal
 -- GroupBy: NoGroupByProjectAggs
-EXPLAIN VECTORIZATION EXPRESSION
-SELECT AVG(ctinyint),
+EXPLAIN SELECT AVG(ctinyint),
        (AVG(ctinyint) + 6981),
        ((AVG(ctinyint) + 6981) + AVG(ctinyint)),
        MAX(cbigint),
@@ -302,8 +298,7 @@ WHERE  (((ctimestamp2 <= ctimestamp1)
 -- ArithmeticOps: Multiply, Subtract, Add, Divide
 -- FilterOps: Like, NotEqual, LessThan, GreaterThanOrEqual, GreaterThan, RLike
 -- GroupBy: NoGroupByProjectColumns
-EXPLAIN VECTORIZATION EXPRESSION
-SELECT cint,
+EXPLAIN SELECT cint,
        cdouble,
        ctimestamp2,
        cstring1,
@@ -381,8 +376,7 @@ LIMIT 50;
 -- ArithmeticOps: Divide, Remainder, Subtract, Multiply
 -- FilterOps: Equal, LessThanOrEqual, LessThan, Like, GreaterThanOrEqual, NotEqual, GreaterThan
 -- GroupBy: NoGroupByProjectColumns
-EXPLAIN VECTORIZATION EXPRESSION
-SELECT cint,
+EXPLAIN SELECT cint,
        cbigint,
        cstring1,
        cboolean1,
@@ -457,8 +451,7 @@ LIMIT 25;
 -- ArithmeticOps: Add, Subtract, Divide, Multiply, Remainder
 -- FilterOps: NotEqual, GreaterThanOrEqual, Like, LessThanOrEqual, Equal, GreaterThan
 -- GroupBy: NoGroupByProjectColumns
-EXPLAIN VECTORIZATION EXPRESSION
-SELECT   cint,
+EXPLAIN SELECT   cint,
          cstring1,
          cboolean2,
          ctimestamp2,
@@ -531,8 +524,7 @@ LIMIT 75;
 -- ArithmeticOps: Divide, Subtract, Multiply, Remainder
 -- FilterOps: GreaterThan, LessThan, LessThanOrEqual, GreaterThanOrEqual, Like
 -- GroupBy: NoGroupByProjectColumns
-EXPLAIN VECTORIZATION EXPRESSION
-SELECT   ctimestamp1,
+EXPLAIN SELECT   ctimestamp1,
          cstring2,
          cdouble,
          cfloat,
@@ -591,8 +583,7 @@ LIMIT 45;
 -- ArithmeticOps: Remainder, Divide, Subtract
 -- FilterOps: GreaterThanOrEqual, Equal, LessThanOrEqual
 -- GroupBy: GroupBy
-EXPLAIN VECTORIZATION EXPRESSION
-SELECT   csmallint,
+EXPLAIN SELECT   csmallint,
          (csmallint % -75) as c1,
          STDDEV_SAMP(csmallint) as c2,
          (-1.389 / csmallint) as c3,
@@ -637,8 +628,7 @@ LIMIT 20;
 -- ArithmeticOps: Multiply, Add, Subtract, Remainder
 -- FilterOps: GreaterThan, LessThan, Equal, LessThanOrEqual, GreaterThanOrEqual
 -- GroupBy: GroupBy
-EXPLAIN VECTORIZATION EXPRESSION
-SELECT   cdouble,
+EXPLAIN SELECT   cdouble,
          VAR_SAMP(cdouble),
          (2563.58 * VAR_SAMP(cdouble)),
          (-(VAR_SAMP(cdouble))),
@@ -696,8 +686,7 @@ ORDER BY cdouble;
 -- ArithmeticOps: Multiply, Subtract, Add, Divide, Remainder
 -- FilterOps: NotEqual, LessThan, Like, Equal, RLike
 -- GroupBy: GroupBy
-EXPLAIN VECTORIZATION EXPRESSION
-SELECT   ctimestamp1,
+EXPLAIN SELECT   ctimestamp1,
          cstring1,
          STDDEV_POP(cint) as c1,
          (STDDEV_POP(cint) * 10.175) as c2,
@@ -812,8 +801,7 @@ LIMIT 50;
 -- ArithmeticOps: Divide, Subtract, Remainder, Add, Multiply
 -- FilterOps: GreaterThan, LessThanOrEqual, Equal, LessThan, GreaterThanOrEqual, NotEqual, Like, RLike
 -- GroupBy: GroupBy
-EXPLAIN VECTORIZATION EXPRESSION
-SELECT   cboolean1,
+EXPLAIN SELECT   cboolean1,
          MAX(cfloat),
          (-(MAX(cfloat))),
          (-26.28 / MAX(cfloat)),
@@ -895,12 +883,12 @@ ORDER BY cboolean1;
 -- These tests verify COUNT on empty or null colulmns work correctly.
 create table test_count(i int) stored as orc;
 
-explain vectorization expression
+explain
 select count(*) from test_count;
 
 select count(*) from test_count;
 
-explain vectorization expression
+explain
 select count(i) from test_count;
 
 select count(i) from test_count;
@@ -923,32 +911,32 @@ insert into table alltypesnull select null, null, null, null, null, null, null, 
 
 create table alltypesnullorc stored as orc as select * from alltypesnull;
 
-explain vectorization expression
+explain
 select count(*) from alltypesnullorc;
 
 select count(*) from alltypesnullorc;
 
-explain vectorization expression
+explain
 select count(ctinyint) from alltypesnullorc;
 
 select count(ctinyint) from alltypesnullorc;
 
-explain vectorization expression
+explain
 select count(cint) from alltypesnullorc;
 
 select count(cint) from alltypesnullorc;
 
-explain vectorization expression
+explain
 select count(cfloat) from alltypesnullorc;
 
 select count(cfloat) from alltypesnullorc;
 
-explain vectorization expression
+explain
 select count(cstring1) from alltypesnullorc;
 
 select count(cstring1) from alltypesnullorc;
 
-explain vectorization expression
+explain
 select count(cboolean1) from alltypesnullorc;
 
 select count(cboolean1) from alltypesnullorc;

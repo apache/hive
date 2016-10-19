@@ -1,6 +1,5 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
-set hive.fetch.task.conversion=none;
 
 DROP TABLE over1k;
 DROP TABLE over1korc;
@@ -39,7 +38,7 @@ INSERT INTO TABLE over1korc SELECT * FROM over1k;
 
 SET hive.vectorized.execution.enabled=false;
 
-EXPLAIN VECTORIZATION EXPRESSION SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20;
+EXPLAIN SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20;
 
 SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20;
 
@@ -48,7 +47,7 @@ FROM (SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, s
 
 SET hive.vectorized.execution.enabled=true;
 
-EXPLAIN VECTORIZATION EXPRESSION select t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20;
+EXPLAIN select t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20;
 
 SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20;
 

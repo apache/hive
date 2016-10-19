@@ -30,9 +30,9 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.metadata.BuiltInMetadata;
-import org.apache.calcite.rel.metadata.Metadata;
+import org.apache.calcite.rel.metadata.MetadataDef;
+import org.apache.calcite.rel.metadata.MetadataHandler;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
-import org.apache.calcite.rel.metadata.RelMdUniqueKeys;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexInputRef;
@@ -43,13 +43,16 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
-import com.google.common.base.Function;
+public class HiveRelMdUniqueKeys implements MetadataHandler<BuiltInMetadata.UniqueKeys> {
 
-public class HiveRelMdUniqueKeys {
+  public static final RelMetadataProvider SOURCE =
+      ReflectiveRelMetadataProvider.reflectiveSource(
+          BuiltInMethod.UNIQUE_KEYS.method, new HiveRelMdUniqueKeys());
 
-  public static final RelMetadataProvider SOURCE = ReflectiveRelMetadataProvider
-      .reflectiveSource(BuiltInMethod.UNIQUE_KEYS.method,
-          new HiveRelMdUniqueKeys());
+  @Override
+  public MetadataDef<BuiltInMetadata.UniqueKeys> getDef() {
+    return BuiltInMetadata.UniqueKeys.DEF;
+  }
 
   /*
    * Infer Uniquenes if: - rowCount(col) = ndv(col) - TBD for numerics: max(col)
@@ -65,7 +68,60 @@ public class HiveRelMdUniqueKeys {
     HiveTableScan tScan = getTableScan(rel.getInput(), false);
 
     if (tScan == null) {
-      return mq.getUniqueKeys(rel, ignoreNulls);
+      // If HiveTableScan is not found, e.g., not sequence of Project and
+      // Filter operators, execute the original getUniqueKeys method
+
+      // LogicalProject maps a set of rows to a different set;
+      // Without knowledge of the mapping function(whether it
+      // preserves uniqueness), it is only safe to derive uniqueness
+      // info from the child of a project when the mapping is f(a) => a.
+      //
+      // Further more, the unique bitset coming from the child needs
+      // to be mapped to match the output of the project.
+      final Map<Integer, Integer> mapInToOutPos = new HashMap<>();
+      final List<RexNode> projExprs = rel.getProjects();
+      final Set<ImmutableBitSet> projUniqueKeySet = new HashSet<>();
+
+      // Build an input to output position map.
+      for (int i = 0; i < projExprs.size(); i++) {
+        RexNode projExpr = projExprs.get(i);
+        if (projExpr instanceof RexInputRef) {
+          mapInToOutPos.put(((RexInputRef) projExpr).getIndex(), i);
+        }
+      }
+
+      if (mapInToOutPos.isEmpty()) {
+        // if there's no RexInputRef in the projected expressions
+        // return empty set.
+        return projUniqueKeySet;
+      }
+
+      Set<ImmutableBitSet> childUniqueKeySet =
+          mq.getUniqueKeys(rel.getInput(), ignoreNulls);
+
+      if (childUniqueKeySet != null) {
+        // Now add to the projUniqueKeySet the child keys that are fully
+        // projected.
+        for (ImmutableBitSet colMask : childUniqueKeySet) {
+          ImmutableBitSet.Builder tmpMask = ImmutableBitSet.builder();
+          boolean completeKeyProjected = true;
+          for (int bit : colMask) {
+            if (mapInToOutPos.containsKey(bit)) {
+              tmpMask.set(mapInToOutPos.get(bit));
+            } else {
+              // Skip the child unique key if part of it is not
+              // projected.
+              completeKeyProjected = false;
+              break;
+            }
+          }
+          if (completeKeyProjected) {
+            projUniqueKeySet.add(tmpMask.build());
+          }
+        }
+      }
+
+      return projUniqueKeySet;
     }
 
     Map<Integer, Integer> posMap = new HashMap<Integer, Integer>();

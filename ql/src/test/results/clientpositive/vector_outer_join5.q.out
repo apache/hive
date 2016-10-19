@@ -66,21 +66,95 @@ POSTHOOK: query: ANALYZE TABLE small_table COMPUTE STATISTICS FOR COLUMNS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_table
 #### A masked pattern was here ####
-PREHOOK: query: explain vectorization detail formatted
+PREHOOK: query: explain
 select count(*) from (select s.*, st.*
 from sorted_mod_4 s
 left outer join small_table st
 on s.ctinyint = st.ctinyint
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization detail formatted
+POSTHOOK: query: explain
 select count(*) from (select s.*, st.*
 from sorted_mod_4 s
 left outer join small_table st
 on s.ctinyint = st.ctinyint
 ) t1
 POSTHOOK: type: QUERY
-{"PLAN VECTORIZATION":{"enabled":true,"enabledConditionsMet":["hive.vectorized.execution.enabled IS true"]},"STAGE DEPENDENCIES":{"Stage-5":{"ROOT STAGE":"TRUE"},"Stage-2":{"DEPENDENT STAGES":"Stage-5"},"Stage-0":{"DEPENDENT STAGES":"Stage-2"}},"STAGE PLANS":{"Stage-5":{"Map Reduce Local Work":{"Alias -> Map Local Tables:":{"$hdt$_1:st":{"Fetch Operator":{"limit:":"-1"}}},"Alias -> Map Local Operator Tree:":{"$hdt$_1:st":{"TableScan":{"alias:":"st","Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"Select Operator":{"expressions:":"ctinyint (type: tinyint)","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"HashTable Sink Operator":{"keys:":{"0":"_col0 (type: tinyint)","1":"_col0 (type: tinyint)"}}}}}}}}}},"Stage-2":{"Map Reduce":{"Map Operator Tree:":[{"TableScan":{"alias:":"s","Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","TableScan Vectorization:":{"native:":"true","projectedOutputColumns:":"[0, 1]"},"children":{"Select Operator":{"expressions:":"ctinyint (type: tinyint)","outputColumnNames:":["_col0"],"Select Vectorization:":{"className:":"VectorSelectOperator","native:":"true","projectedOutputColumns:":"[0]"},"Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join0 to 1"}],"keys:":{"0":"_col0 (type: tinyint)","1":"_col0 (type: tinyint)"},"Map Join Vectorization:":{"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Supports Key Types IS true","Not empty key IS true","When Fast Hash Table, then requires no Hybrid Hash Join IS true","Small table vectorizes IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE","children":{"Group By Operator":{"aggregations:":["count()"],"Group By Vectorization:":{"aggregators:":["VectorUDAFCountStar(*) -> bigint"],"className:":"VectorGroupByOperator","vectorOutput:":"true","native:":"false","projectedOutputColumns:":"[0]"},"mode:":"hash","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"Reduce Output Operator":{"sort order:":"","Reduce Sink Vectorization:":{"className:":"VectorReduceSinkOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.reducesink.new.enabled IS true","Not ACID UPDATE or DELETE IS true","No buckets IS true","No TopN IS true","No DISTINCT columns IS true","BinarySortableSerDe for keys IS true","LazyBinarySerDe for values IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false","Uniform Hash IS false"]},"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","value expressions:":"_col0 (type: bigint)"}}}}}}}}}}],"Execution mode:":"vectorized","Map Vectorization:":{"enabled:":"true","enabledConditionsMet:":["hive.vectorized.use.vectorized.input.format IS true"],"groupByVectorOutput:":"true","inputFileFormats:":["org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"],"allNative:":"false","usesVectorUDFAdaptor:":"false","vectorized:":"true","rowBatchContext:":{"dataColumnCount:":"2","includeColumns:":"[0]","dataColumns:":["ctinyint:tinyint","cmodint:int"],"partitionColumnCount:":"0"}},"Local Work:":{"Map Reduce Local Work":{}},"Reduce Vectorization:":{"enabled:":"false","enableConditionsMet:":["hive.vectorized.execution.reduce.enabled IS true"],"enableConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Reduce Operator Tree:":{"Group By Operator":{"aggregations:":["count(VALUE._col0)"],"mode:":"mergepartial","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"ListSink":{}}}}}}
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:st 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:st 
+          TableScan
+            alias: st
+            Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ctinyint (type: tinyint)
+              outputColumnNames: _col0
+              Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col0 (type: tinyint)
+                  1 _col0 (type: tinyint)
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s
+            Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ctinyint (type: tinyint)
+              outputColumnNames: _col0
+              Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 _col0 (type: tinyint)
+                  1 _col0 (type: tinyint)
+                Statistics: Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: select count(*) from (select s.*, st.*
 from sorted_mod_4 s
 left outer join small_table st
@@ -100,21 +174,101 @@ POSTHOOK: Input: default@small_table
 POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
 6876
-PREHOOK: query: explain vectorization detail formatted
+PREHOOK: query: explain
 select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and s.cmodint = 2
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization detail formatted
+POSTHOOK: query: explain
 select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and s.cmodint = 2
 ) t1
 POSTHOOK: type: QUERY
-{"PLAN VECTORIZATION":{"enabled":true,"enabledConditionsMet":["hive.vectorized.execution.enabled IS true"]},"STAGE DEPENDENCIES":{"Stage-5":{"ROOT STAGE":"TRUE"},"Stage-2":{"DEPENDENT STAGES":"Stage-5"},"Stage-0":{"DEPENDENT STAGES":"Stage-2"}},"STAGE PLANS":{"Stage-5":{"Map Reduce Local Work":{"Alias -> Map Local Tables:":{"$hdt$_1:sm":{"Fetch Operator":{"limit:":"-1"}}},"Alias -> Map Local Operator Tree:":{"$hdt$_1:sm":{"TableScan":{"alias:":"sm","Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"Select Operator":{"expressions:":"ctinyint (type: tinyint)","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"HashTable Sink Operator":{"filter predicates:":{"0":"{(_col1 = 2)}","1":""},"keys:":{"0":"_col0 (type: tinyint)","1":"_col0 (type: tinyint)"}}}}}}}}}},"Stage-2":{"Map Reduce":{"Map Operator Tree:":[{"TableScan":{"alias:":"s","Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","TableScan Vectorization:":{"native:":"true","projectedOutputColumns:":"[0, 1]"},"children":{"Select Operator":{"expressions:":"ctinyint (type: tinyint), cmodint (type: int)","outputColumnNames:":["_col0","_col1"],"Select Vectorization:":{"className:":"VectorSelectOperator","native:":"true","projectedOutputColumns:":"[0, 1]"},"Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join0 to 1"}],"filter predicates:":{"0":"{(_col1 = 2)}","1":""},"keys:":{"0":"_col0 (type: tinyint)","1":"_col0 (type: tinyint)"},"Map Join Vectorization:":{"className:":"VectorMapJoinOuterFilteredOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Supports Key Types IS true","Not empty key IS true","When Fast Hash Table, then requires no Hybrid Hash Join IS true","Small table vectorizes IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE","children":{"Group By Operator":{"aggregations:":["count()"],"Group By Vectorization:":{"aggregators:":["VectorUDAFCountStar(*) -> bigint"],"className:":"VectorGroupByOperator","vectorOutput:":"true","native:":"false","projectedOutputColumns:":"[0]"},"mode:":"hash","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"Reduce Output Operator":{"sort order:":"","Reduce Sink Vectorization:":{"className:":"VectorReduceSinkOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.reducesink.new.enabled IS true","Not ACID UPDATE or DELETE IS true","No buckets IS true","No TopN IS true","No DISTINCT columns IS true","BinarySortableSerDe for keys IS true","LazyBinarySerDe for values IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false","Uniform Hash IS false"]},"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","value expressions:":"_col0 (type: bigint)"}}}}}}}}}}],"Execution mode:":"vectorized","Map Vectorization:":{"enabled:":"true","enabledConditionsMet:":["hive.vectorized.use.vectorized.input.format IS true"],"groupByVectorOutput:":"true","inputFileFormats:":["org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"],"allNative:":"false","usesVectorUDFAdaptor:":"false","vectorized:":"true","rowBatchContext:":{"dataColumnCount:":"2","includeColumns:":"[0, 1]","dataColumns:":["ctinyint:tinyint","cmodint:int"],"partitionColumnCount:":"0"}},"Local Work:":{"Map Reduce Local Work":{}},"Reduce Vectorization:":{"enabled:":"false","enableConditionsMet:":["hive.vectorized.execution.reduce.enabled IS true"],"enableConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Reduce Operator Tree:":{"Group By Operator":{"aggregations:":["count(VALUE._col0)"],"mode:":"mergepartial","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"ListSink":{}}}}}}
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:sm 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:sm 
+          TableScan
+            alias: sm
+            Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ctinyint (type: tinyint)
+              outputColumnNames: _col0
+              Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                filter predicates:
+                  0 {(_col1 = 2)}
+                  1 
+                keys:
+                  0 _col0 (type: tinyint)
+                  1 _col0 (type: tinyint)
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s
+            Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ctinyint (type: tinyint), cmodint (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                filter predicates:
+                  0 {(_col1 = 2)}
+                  1 
+                keys:
+                  0 _col0 (type: tinyint)
+                  1 _col0 (type: tinyint)
+                Statistics: Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
@@ -134,21 +288,101 @@ POSTHOOK: Input: default@small_table
 POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
 6058
-PREHOOK: query: explain vectorization detail formatted
+PREHOOK: query: explain
 select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and pmod(s.ctinyint, 4) = s.cmodint
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization detail formatted
+POSTHOOK: query: explain
 select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and pmod(s.ctinyint, 4) = s.cmodint
 ) t1
 POSTHOOK: type: QUERY
-{"PLAN VECTORIZATION":{"enabled":true,"enabledConditionsMet":["hive.vectorized.execution.enabled IS true"]},"STAGE DEPENDENCIES":{"Stage-5":{"ROOT STAGE":"TRUE"},"Stage-2":{"DEPENDENT STAGES":"Stage-5"},"Stage-0":{"DEPENDENT STAGES":"Stage-2"}},"STAGE PLANS":{"Stage-5":{"Map Reduce Local Work":{"Alias -> Map Local Tables:":{"$hdt$_1:sm":{"Fetch Operator":{"limit:":"-1"}}},"Alias -> Map Local Operator Tree:":{"$hdt$_1:sm":{"TableScan":{"alias:":"sm","Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"Select Operator":{"expressions:":"ctinyint (type: tinyint)","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"HashTable Sink Operator":{"filter predicates:":{"0":"{((UDFToInteger(_col0) pmod 4) = _col1)}","1":""},"keys:":{"0":"_col0 (type: tinyint)","1":"_col0 (type: tinyint)"}}}}}}}}}},"Stage-2":{"Map Reduce":{"Map Operator Tree:":[{"TableScan":{"alias:":"s","Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","TableScan Vectorization:":{"native:":"true","projectedOutputColumns:":"[0, 1]"},"children":{"Select Operator":{"expressions:":"ctinyint (type: tinyint), cmodint (type: int)","outputColumnNames:":["_col0","_col1"],"Select Vectorization:":{"className:":"VectorSelectOperator","native:":"true","projectedOutputColumns:":"[0, 1]"},"Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join0 to 1"}],"filter predicates:":{"0":"{((UDFToInteger(_col0) pmod 4) = _col1)}","1":""},"keys:":{"0":"_col0 (type: tinyint)","1":"_col0 (type: tinyint)"},"Map Join Vectorization:":{"className:":"VectorMapJoinOuterFilteredOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Supports Key Types IS true","Not empty key IS true","When Fast Hash Table, then requires no Hybrid Hash Join IS true","Small table vectorizes IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE","children":{"Group By Operator":{"aggregations:":["count()"],"Group By Vectorization:":{"aggregators:":["VectorUDAFCountStar(*) -> bigint"],"className:":"VectorGroupByOperator","vectorOutput:":"true","native:":"false","projectedOutputColumns:":"[0]"},"mode:":"hash","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"Reduce Output Operator":{"sort order:":"","Reduce Sink Vectorization:":{"className:":"VectorReduceSinkOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.reducesink.new.enabled IS true","Not ACID UPDATE or DELETE IS true","No buckets IS true","No TopN IS true","No DISTINCT columns IS true","BinarySortableSerDe for keys IS true","LazyBinarySerDe for values IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false","Uniform Hash IS false"]},"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","value expressions:":"_col0 (type: bigint)"}}}}}}}}}}],"Execution mode:":"vectorized","Map Vectorization:":{"enabled:":"true","enabledConditionsMet:":["hive.vectorized.use.vectorized.input.format IS true"],"groupByVectorOutput:":"true","inputFileFormats:":["org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"],"allNative:":"false","usesVectorUDFAdaptor:":"false","vectorized:":"true","rowBatchContext:":{"dataColumnCount:":"2","includeColumns:":"[0, 1]","dataColumns:":["ctinyint:tinyint","cmodint:int"],"partitionColumnCount:":"0"}},"Local Work:":{"Map Reduce Local Work":{}},"Reduce Vectorization:":{"enabled:":"false","enableConditionsMet:":["hive.vectorized.execution.reduce.enabled IS true"],"enableConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Reduce Operator Tree:":{"Group By Operator":{"aggregations:":["count(VALUE._col0)"],"mode:":"mergepartial","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"ListSink":{}}}}}}
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:sm 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:sm 
+          TableScan
+            alias: sm
+            Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ctinyint (type: tinyint)
+              outputColumnNames: _col0
+              Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                filter predicates:
+                  0 {((UDFToInteger(_col0) pmod 4) = _col1)}
+                  1 
+                keys:
+                  0 _col0 (type: tinyint)
+                  1 _col0 (type: tinyint)
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s
+            Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ctinyint (type: tinyint), cmodint (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                filter predicates:
+                  0 {((UDFToInteger(_col0) pmod 4) = _col1)}
+                  1 
+                keys:
+                  0 _col0 (type: tinyint)
+                  1 _col0 (type: tinyint)
+                Statistics: Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
@@ -168,21 +402,101 @@ POSTHOOK: Input: default@small_table
 POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
 6248
-PREHOOK: query: explain vectorization detail formatted
+PREHOOK: query: explain
 select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and s.ctinyint < 100
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization detail formatted
+POSTHOOK: query: explain
 select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and s.ctinyint < 100
 ) t1
 POSTHOOK: type: QUERY
-{"PLAN VECTORIZATION":{"enabled":true,"enabledConditionsMet":["hive.vectorized.execution.enabled IS true"]},"STAGE DEPENDENCIES":{"Stage-5":{"ROOT STAGE":"TRUE"},"Stage-2":{"DEPENDENT STAGES":"Stage-5"},"Stage-0":{"DEPENDENT STAGES":"Stage-2"}},"STAGE PLANS":{"Stage-5":{"Map Reduce Local Work":{"Alias -> Map Local Tables:":{"$hdt$_1:sm":{"Fetch Operator":{"limit:":"-1"}}},"Alias -> Map Local Operator Tree:":{"$hdt$_1:sm":{"TableScan":{"alias:":"sm","Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"Select Operator":{"expressions:":"ctinyint (type: tinyint)","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"HashTable Sink Operator":{"filter predicates:":{"0":"{(_col0 < 100)}","1":""},"keys:":{"0":"_col0 (type: tinyint)","1":"_col0 (type: tinyint)"}}}}}}}}}},"Stage-2":{"Map Reduce":{"Map Operator Tree:":[{"TableScan":{"alias:":"s","Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","TableScan Vectorization:":{"native:":"true","projectedOutputColumns:":"[0, 1]"},"children":{"Select Operator":{"expressions:":"ctinyint (type: tinyint)","outputColumnNames:":["_col0"],"Select Vectorization:":{"className:":"VectorSelectOperator","native:":"true","projectedOutputColumns:":"[0]"},"Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join0 to 1"}],"filter predicates:":{"0":"{(_col0 < 100)}","1":""},"keys:":{"0":"_col0 (type: tinyint)","1":"_col0 (type: tinyint)"},"Map Join Vectorization:":{"className:":"VectorMapJoinOuterFilteredOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Supports Key Types IS true","Not empty key IS true","When Fast Hash Table, then requires no Hybrid Hash Join IS true","Small table vectorizes IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE","children":{"Group By Operator":{"aggregations:":["count()"],"Group By Vectorization:":{"aggregators:":["VectorUDAFCountStar(*) -> bigint"],"className:":"VectorGroupByOperator","vectorOutput:":"true","native:":"false","projectedOutputColumns:":"[0]"},"mode:":"hash","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"Reduce Output Operator":{"sort order:":"","Reduce Sink Vectorization:":{"className:":"VectorReduceSinkOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.reducesink.new.enabled IS true","Not ACID UPDATE or DELETE IS true","No buckets IS true","No TopN IS true","No DISTINCT columns IS true","BinarySortableSerDe for keys IS true","LazyBinarySerDe for values IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false","Uniform Hash IS false"]},"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","value expressions:":"_col0 (type: bigint)"}}}}}}}}}}],"Execution mode:":"vectorized","Map Vectorization:":{"enabled:":"true","enabledConditionsMet:":["hive.vectorized.use.vectorized.input.format IS true"],"groupByVectorOutput:":"true","inputFileFormats:":["org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"],"allNative:":"false","usesVectorUDFAdaptor:":"false","vectorized:":"true","rowBatchContext:":{"dataColumnCount:":"2","includeColumns:":"[0]","dataColumns:":["ctinyint:tinyint","cmodint:int"],"partitionColumnCount:":"0"}},"Local Work:":{"Map Reduce Local Work":{}},"Reduce Vectorization:":{"enabled:":"false","enableConditionsMet:":["hive.vectorized.execution.reduce.enabled IS true"],"enableConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Reduce Operator Tree:":{"Group By Operator":{"aggregations:":["count(VALUE._col0)"],"mode:":"mergepartial","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"ListSink":{}}}}}}
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:sm 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:sm 
+          TableScan
+            alias: sm
+            Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ctinyint (type: tinyint)
+              outputColumnNames: _col0
+              Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                filter predicates:
+                  0 {(_col0 < 100)}
+                  1 
+                keys:
+                  0 _col0 (type: tinyint)
+                  1 _col0 (type: tinyint)
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s
+            Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ctinyint (type: tinyint)
+              outputColumnNames: _col0
+              Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                filter predicates:
+                  0 {(_col0 < 100)}
+                  1 
+                keys:
+                  0 _col0 (type: tinyint)
+                  1 _col0 (type: tinyint)
+                Statistics: Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
@@ -202,7 +516,7 @@ POSTHOOK: Input: default@small_table
 POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
 6876
-PREHOOK: query: explain vectorization detail formatted
+PREHOOK: query: explain
 select count(*) from (select s.*, sm.*, s2.* 
 from sorted_mod_4 s
 left outer join small_table sm
@@ -211,7 +525,7 @@ left outer join sorted_mod_4 s2
   on s2.ctinyint = s.ctinyint
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization detail formatted
+POSTHOOK: query: explain
 select count(*) from (select s.*, sm.*, s2.* 
 from sorted_mod_4 s
 left outer join small_table sm
@@ -220,7 +534,104 @@ left outer join sorted_mod_4 s2
   on s2.ctinyint = s.ctinyint
 ) t1
 POSTHOOK: type: QUERY
-{"PLAN VECTORIZATION":{"enabled":true,"enabledConditionsMet":["hive.vectorized.execution.enabled IS true"]},"STAGE DEPENDENCIES":{"Stage-8":{"ROOT STAGE":"TRUE"},"Stage-3":{"DEPENDENT STAGES":"Stage-8"},"Stage-0":{"DEPENDENT STAGES":"Stage-3"}},"STAGE PLANS":{"Stage-8":{"Map Reduce Local Work":{"Alias -> Map Local Tables:":{"$hdt$_1:sm":{"Fetch Operator":{"limit:":"-1"}},"$hdt$_2:s2":{"Fetch Operator":{"limit:":"-1"}}},"Alias -> Map Local Operator Tree:":{"$hdt$_1:sm":{"TableScan":{"alias:":"sm","Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"Select Operator":{"expressions:":"cbigint (type: bigint)","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"HashTable Sink Operator":{"keys:":{"0":"UDFToLong(_col1) (type: bigint)","1":"(_col0 pmod 8) (type: bigint)"}}}}}}},"$hdt$_2:s2":{"TableScan":{"alias:":"s2","Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","children":{"Select Operator":{"expressions:":"ctinyint (type: tinyint)","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","children":{"HashTable Sink Operator":{"keys:":{"0":"_col0 (type: tinyint)","1":"_col0 (type: tinyint)"}}}}}}}}}},"Stage-3":{"Map Reduce":{"Map Operator Tree:":[{"TableScan":{"alias:":"s","Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","TableScan Vectorization:":{"native:":"true","projectedOutputColumns:":"[0, 1]"},"children":{"Select Operator":{"expressions:":"ctinyint (type: tinyint), cmodint (type: int)","outputColumnNames:":["_col0","_col1"],"Select Vectorization:":{"className:":"VectorSelectOperator","native:":"true","projectedOutputColumns:":"[0, 1]"},"Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join0 to 1"}],"keys:":{"0":"UDFToLong(_col1) (type: bigint)","1":"(_col0 pmod 8) (type: bigint)"},"Map Join Vectorization:":{"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Supports Key Types IS true","Not empty key IS true","When Fast Hash Table, then requires no Hybrid Hash Join IS true","Small table vectorizes IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"outputColumnNames:":["_col0"],"Statistics:":"Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join0 to 1"}],"keys:":{"0":"_col0 (type: tinyint)","1":"_col0 (type: tinyint)"},"Map Join Vectorization:":{"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Supports Key Types IS true","Not empty key IS true","When Fast Hash Table, then requires no Hybrid Hash Join IS true","Small table vectorizes IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 7329 Data size: 58641 Basic stats: COMPLETE Column stats: NONE","children":{"Group By Operator":{"aggregations:":["count()"],"Group By Vectorization:":{"aggregators:":["VectorUDAFCountStar(*) -> bigint"],"className:":"VectorGroupByOperator","vectorOutput:":"true","native:":"false","projectedOutputColumns:":"[0]"},"mode:":"hash","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"Reduce Output Operator":{"sort order:":"","Reduce Sink Vectorization:":{"className:":"VectorReduceSinkOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.reducesink.new.enabled IS true","Not ACID UPDATE or DELETE IS true","No buckets IS true","No TopN IS true","No DISTINCT columns IS true","BinarySortableSerDe for keys IS true","LazyBinarySerDe for values IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false","Uniform Hash IS false"]},"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","value expressions:":"_col0 (type: bigint)"}}}}}}}}}}}}],"Execution mode:":"vectorized","Map Vectorization:":{"enabled:":"true","enabledConditionsMet:":["hive.vectorized.use.vectorized.input.format IS true"],"groupByVectorOutput:":"true","inputFileFormats:":["org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"],"allNative:":"false","usesVectorUDFAdaptor:":"false","vectorized:":"true","rowBatchContext:":{"dataColumnCount:":"2","includeColumns:":"[0, 1]","dataColumns:":["ctinyint:tinyint","cmodint:int"],"partitionColumnCount:":"0"}},"Local Work:":{"Map Reduce Local Work":{}},"Reduce Vectorization:":{"enabled:":"false","enableConditionsMet:":["hive.vectorized.execution.reduce.enabled IS true"],"enableConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Reduce Operator Tree:":{"Group By Operator":{"aggregations:":["count(VALUE._col0)"],"mode:":"mergepartial","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"ListSink":{}}}}}}
+STAGE DEPENDENCIES:
+  Stage-8 is a root stage
+  Stage-3 depends on stages: Stage-8
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-8
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:sm 
+          Fetch Operator
+            limit: -1
+        $hdt$_2:s2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:sm 
+          TableScan
+            alias: sm
+            Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cbigint (type: bigint)
+              outputColumnNames: _col0
+              Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 UDFToLong(_col1) (type: bigint)
+                  1 (_col0 pmod 8) (type: bigint)
+        $hdt$_2:s2 
+          TableScan
+            alias: s2
+            Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ctinyint (type: tinyint)
+              outputColumnNames: _col0
+              Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col0 (type: tinyint)
+                  1 _col0 (type: tinyint)
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s
+            Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ctinyint (type: tinyint), cmodint (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 UDFToLong(_col1) (type: bigint)
+                  1 (_col0 pmod 8) (type: bigint)
+                outputColumnNames: _col0
+                Statistics: Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Left Outer Join0 to 1
+                  keys:
+                    0 _col0 (type: tinyint)
+                    1 _col0 (type: tinyint)
+                  Statistics: Num rows: 7329 Data size: 58641 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: select count(*) from (select s.*, sm.*, s2.* 
 from sorted_mod_4 s
 left outer join small_table sm
@@ -306,21 +717,95 @@ POSTHOOK: query: ANALYZE TABLE small_table2 COMPUTE STATISTICS FOR COLUMNS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
-PREHOOK: query: explain vectorization detail formatted
+PREHOOK: query: explain
 select count(*) from (select s.*, st.*
 from mod_8_mod_4 s
 left outer join small_table2 st
 on s.cmodtinyint = st.cmodtinyint
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization detail formatted
+POSTHOOK: query: explain
 select count(*) from (select s.*, st.*
 from mod_8_mod_4 s
 left outer join small_table2 st
 on s.cmodtinyint = st.cmodtinyint
 ) t1
 POSTHOOK: type: QUERY
-{"PLAN VECTORIZATION":{"enabled":true,"enabledConditionsMet":["hive.vectorized.execution.enabled IS true"]},"STAGE DEPENDENCIES":{"Stage-5":{"ROOT STAGE":"TRUE"},"Stage-2":{"DEPENDENT STAGES":"Stage-5"},"Stage-0":{"DEPENDENT STAGES":"Stage-2"}},"STAGE PLANS":{"Stage-5":{"Map Reduce Local Work":{"Alias -> Map Local Tables:":{"$hdt$_1:st":{"Fetch Operator":{"limit:":"-1"}}},"Alias -> Map Local Operator Tree:":{"$hdt$_1:st":{"TableScan":{"alias:":"st","Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"Select Operator":{"expressions:":"cmodtinyint (type: int)","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"HashTable Sink Operator":{"keys:":{"0":"_col0 (type: int)","1":"_col0 (type: int)"}}}}}}}}}},"Stage-2":{"Map Reduce":{"Map Operator Tree:":[{"TableScan":{"alias:":"s","Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","TableScan Vectorization:":{"native:":"true","projectedOutputColumns:":"[0, 1]"},"children":{"Select Operator":{"expressions:":"cmodtinyint (type: int)","outputColumnNames:":["_col0"],"Select Vectorization:":{"className:":"VectorSelectOperator","native:":"true","projectedOutputColumns:":"[0]"},"Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join0 to 1"}],"keys:":{"0":"_col0 (type: int)","1":"_col0 (type: int)"},"Map Join Vectorization:":{"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Supports Key Types IS true","Not empty key IS true","When Fast Hash Table, then requires no Hybrid Hash Join IS true","Small table vectorizes IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE","children":{"Group By Operator":{"aggregations:":["count()"],"Group By Vectorization:":{"aggregators:":["VectorUDAFCountStar(*) -> bigint"],"className:":"VectorGroupByOperator","vectorOutput:":"true","native:":"false","projectedOutputColumns:":"[0]"},"mode:":"hash","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"Reduce Output Operator":{"sort order:":"","Reduce Sink Vectorization:":{"className:":"VectorReduceSinkOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.reducesink.new.enabled IS true","Not ACID UPDATE or DELETE IS true","No buckets IS true","No TopN IS true","No DISTINCT columns IS true","BinarySortableSerDe for keys IS true","LazyBinarySerDe for values IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false","Uniform Hash IS false"]},"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","value expressions:":"_col0 (type: bigint)"}}}}}}}}}}],"Execution mode:":"vectorized","Map Vectorization:":{"enabled:":"true","enabledConditionsMet:":["hive.vectorized.use.vectorized.input.format IS true"],"groupByVectorOutput:":"true","inputFileFormats:":["org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"],"allNative:":"false","usesVectorUDFAdaptor:":"false","vectorized:":"true","rowBatchContext:":{"dataColumnCount:":"2","includeColumns:":"[0]","dataColumns:":["cmodtinyint:int","cmodint:int"],"partitionColumnCount:":"0"}},"Local Work:":{"Map Reduce Local Work":{}},"Reduce Vectorization:":{"enabled:":"false","enableConditionsMet:":["hive.vectorized.execution.reduce.enabled IS true"],"enableConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Reduce Operator Tree:":{"Group By Operator":{"aggregations:":["count(VALUE._col0)"],"mode:":"mergepartial","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"ListSink":{}}}}}}
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:st 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:st 
+          TableScan
+            alias: st
+            Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cmodtinyint (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s
+            Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cmodtinyint (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                Statistics: Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: select count(*) from (select s.*, st.*
 from mod_8_mod_4 s
 left outer join small_table2 st
@@ -340,21 +825,101 @@ POSTHOOK: Input: default@mod_8_mod_4
 POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
 39112
-PREHOOK: query: explain vectorization detail formatted
+PREHOOK: query: explain
 select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and s.cmodint = 2
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization detail formatted
+POSTHOOK: query: explain
 select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and s.cmodint = 2
 ) t1
 POSTHOOK: type: QUERY
-{"PLAN VECTORIZATION":{"enabled":true,"enabledConditionsMet":["hive.vectorized.execution.enabled IS true"]},"STAGE DEPENDENCIES":{"Stage-5":{"ROOT STAGE":"TRUE"},"Stage-2":{"DEPENDENT STAGES":"Stage-5"},"Stage-0":{"DEPENDENT STAGES":"Stage-2"}},"STAGE PLANS":{"Stage-5":{"Map Reduce Local Work":{"Alias -> Map Local Tables:":{"$hdt$_1:sm":{"Fetch Operator":{"limit:":"-1"}}},"Alias -> Map Local Operator Tree:":{"$hdt$_1:sm":{"TableScan":{"alias:":"sm","Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"Select Operator":{"expressions:":"cmodtinyint (type: int)","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"HashTable Sink Operator":{"filter predicates:":{"0":"{(_col1 = 2)}","1":""},"keys:":{"0":"_col0 (type: int)","1":"_col0 (type: int)"}}}}}}}}}},"Stage-2":{"Map Reduce":{"Map Operator Tree:":[{"TableScan":{"alias:":"s","Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","TableScan Vectorization:":{"native:":"true","projectedOutputColumns:":"[0, 1]"},"children":{"Select Operator":{"expressions:":"cmodtinyint (type: int), cmodint (type: int)","outputColumnNames:":["_col0","_col1"],"Select Vectorization:":{"className:":"VectorSelectOperator","native:":"true","projectedOutputColumns:":"[0, 1]"},"Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join0 to 1"}],"filter predicates:":{"0":"{(_col1 = 2)}","1":""},"keys:":{"0":"_col0 (type: int)","1":"_col0 (type: int)"},"Map Join Vectorization:":{"className:":"VectorMapJoinOuterFilteredOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Supports Key Types IS true","Not empty key IS true","When Fast Hash Table, then requires no Hybrid Hash Join IS true","Small table vectorizes IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE","children":{"Group By Operator":{"aggregations:":["count()"],"Group By Vectorization:":{"aggregators:":["VectorUDAFCountStar(*) -> bigint"],"className:":"VectorGroupByOperator","vectorOutput:":"true","native:":"false","projectedOutputColumns:":"[0]"},"mode:":"hash","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"Reduce Output Operator":{"sort order:":"","Reduce Sink Vectorization:":{"className:":"VectorReduceSinkOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.reducesink.new.enabled IS true","Not ACID UPDATE or DELETE IS true","No buckets IS true","No TopN IS true","No DISTINCT columns IS true","BinarySortableSerDe for keys IS true","LazyBinarySerDe for values IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false","Uniform Hash IS false"]},"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","value expressions:":"_col0 (type: bigint)"}}}}}}}}}}],"Execution mode:":"vectorized","Map Vectorization:":{"enabled:":"true","enabledConditionsMet:":["hive.vectorized.use.vectorized.input.format IS true"],"groupByVectorOutput:":"true","inputFileFormats:":["org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"],"allNative:":"false","usesVectorUDFAdaptor:":"false","vectorized:":"true","rowBatchContext:":{"dataColumnCount:":"2","includeColumns:":"[0, 1]","dataColumns:":["cmodtinyint:int","cmodint:int"],"partitionColumnCount:":"0"}},"Local Work:":{"Map Reduce Local Work":{}},"Reduce Vectorization:":{"enabled:":"false","enableConditionsMet:":["hive.vectorized.execution.reduce.enabled IS true"],"enableConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Reduce Operator Tree:":{"Group By Operator":{"aggregations:":["count(VALUE._col0)"],"mode:":"mergepartial","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"ListSink":{}}}}}}
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:sm 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:sm 
+          TableScan
+            alias: sm
+            Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cmodtinyint (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                filter predicates:
+                  0 {(_col1 = 2)}
+                  1 
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s
+            Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cmodtinyint (type: int), cmodint (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                filter predicates:
+                  0 {(_col1 = 2)}
+                  1 
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                Statistics: Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
@@ -374,21 +939,101 @@ POSTHOOK: Input: default@mod_8_mod_4
 POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
 11171
-PREHOOK: query: explain vectorization detail formatted
+PREHOOK: query: explain
 select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and pmod(s.cmodtinyint, 4) = s.cmodint
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization detail formatted
+POSTHOOK: query: explain
 select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and pmod(s.cmodtinyint, 4) = s.cmodint
 ) t1
 POSTHOOK: type: QUERY
-{"PLAN VECTORIZATION":{"enabled":true,"enabledConditionsMet":["hive.vectorized.execution.enabled IS true"]},"STAGE DEPENDENCIES":{"Stage-5":{"ROOT STAGE":"TRUE"},"Stage-2":{"DEPENDENT STAGES":"Stage-5"},"Stage-0":{"DEPENDENT STAGES":"Stage-2"}},"STAGE PLANS":{"Stage-5":{"Map Reduce Local Work":{"Alias -> Map Local Tables:":{"$hdt$_1:sm":{"Fetch Operator":{"limit:":"-1"}}},"Alias -> Map Local Operator Tree:":{"$hdt$_1:sm":{"TableScan":{"alias:":"sm","Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"Select Operator":{"expressions:":"cmodtinyint (type: int)","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"HashTable Sink Operator":{"filter predicates:":{"0":"{((_col0 pmod 4) = _col1)}","1":""},"keys:":{"0":"_col0 (type: int)","1":"_col0 (type: int)"}}}}}}}}}},"Stage-2":{"Map Reduce":{"Map Operator Tree:":[{"TableScan":{"alias:":"s","Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","TableScan Vectorization:":{"native:":"true","projectedOutputColumns:":"[0, 1]"},"children":{"Select Operator":{"expressions:":"cmodtinyint (type: int), cmodint (type: int)","outputColumnNames:":["_col0","_col1"],"Select Vectorization:":{"className:":"VectorSelectOperator","native:":"true","projectedOutputColumns:":"[0, 1]"},"Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join0 to 1"}],"filter predicates:":{"0":"{((_col0 pmod 4) = _col1)}","1":""},"keys:":{"0":"_col0 (type: int)","1":"_col0 (type: int)"},"Map Join Vectorization:":{"className:":"VectorMapJoinOuterFilteredOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Supports Key Types IS true","Not empty key IS true","When Fast Hash Table, then requires no Hybrid Hash Join IS true","Small table vectorizes IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE","children":{"Group By Operator":{"aggregations:":["count()"],"Group By Vectorization:":{"aggregators:":["VectorUDAFCountStar(*) -> bigint"],"className:":"VectorGroupByOperator","vectorOutput:":"true","native:":"false","projectedOutputColumns:":"[0]"},"mode:":"hash","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"Reduce Output Operator":{"sort order:":"","Reduce Sink Vectorization:":{"className:":"VectorReduceSinkOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.reducesink.new.enabled IS true","Not ACID UPDATE or DELETE IS true","No buckets IS true","No TopN IS true","No DISTINCT columns IS true","BinarySortableSerDe for keys IS true","LazyBinarySerDe for values IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false","Uniform Hash IS false"]},"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","value expressions:":"_col0 (type: bigint)"}}}}}}}}}}],"Execution mode:":"vectorized","Map Vectorization:":{"enabled:":"true","enabledConditionsMet:":["hive.vectorized.use.vectorized.input.format IS true"],"groupByVectorOutput:":"true","inputFileFormats:":["org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"],"allNative:":"false","usesVectorUDFAdaptor:":"false","vectorized:":"true","rowBatchContext:":{"dataColumnCount:":"2","includeColumns:":"[0, 1]","dataColumns:":["cmodtinyint:int","cmodint:int"],"partitionColumnCount:":"0"}},"Local Work:":{"Map Reduce Local Work":{}},"Reduce Vectorization:":{"enabled:":"false","enableConditionsMet:":["hive.vectorized.execution.reduce.enabled IS true"],"enableConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Reduce Operator Tree:":{"Group By Operator":{"aggregations:":["count(VALUE._col0)"],"mode:":"mergepartial","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"ListSink":{}}}}}}
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:sm 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:sm 
+          TableScan
+            alias: sm
+            Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cmodtinyint (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                filter predicates:
+                  0 {((_col0 pmod 4) = _col1)}
+                  1 
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s
+            Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cmodtinyint (type: int), cmodint (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                filter predicates:
+                  0 {((_col0 pmod 4) = _col1)}
+                  1 
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                Statistics: Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
@@ -408,21 +1053,101 @@ POSTHOOK: Input: default@mod_8_mod_4
 POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
 14371
-PREHOOK: query: explain vectorization detail formatted
+PREHOOK: query: explain
 select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and s.cmodtinyint < 3
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization detail formatted
+POSTHOOK: query: explain
 select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and s.cmodtinyint < 3
 ) t1
 POSTHOOK: type: QUERY
-{"PLAN VECTORIZATION":{"enabled":true,"enabledConditionsMet":["hive.vectorized.execution.enabled IS true"]},"STAGE DEPENDENCIES":{"Stage-5":{"ROOT STAGE":"TRUE"},"Stage-2":{"DEPENDENT STAGES":"Stage-5"},"Stage-0":{"DEPENDENT STAGES":"Stage-2"}},"STAGE PLANS":{"Stage-5":{"Map Reduce Local Work":{"Alias -> Map Local Tables:":{"$hdt$_1:sm":{"Fetch Operator":{"limit:":"-1"}}},"Alias -> Map Local Operator Tree:":{"$hdt$_1:sm":{"TableScan":{"alias:":"sm","Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"Select Operator":{"expressions:":"cmodtinyint (type: int)","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"HashTable Sink Operator":{"filter predicates:":{"0":"{(_col0 < 3)}","1":""},"keys:":{"0":"_col0 (type: int)","1":"_col0 (type: int)"}}}}}}}}}},"Stage-2":{"Map Reduce":{"Map Operator Tree:":[{"TableScan":{"alias:":"s","Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","TableScan Vectorization:":{"native:":"true","projectedOutputColumns:":"[0, 1]"},"children":{"Select Operator":{"expressions:":"cmodtinyint (type: int)","outputColumnNames:":["_col0"],"Select Vectorization:":{"className:":"VectorSelectOperator","native:":"true","projectedOutputColumns:":"[0]"},"Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join0 to 1"}],"filter predicates:":{"0":"{(_col0 < 3)}","1":""},"keys:":{"0":"_col0 (type: int)","1":"_col0 (type: int)"},"Map Join Vectorization:":{"className:":"VectorMapJoinOuterFilteredOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Supports Key Types IS true","Not empty key IS true","When Fast Hash Table, then requires no Hybrid Hash Join IS true","Small table vectorizes IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE","children":{"Group By Operator":{"aggregations:":["count()"],"Group By Vectorization:":{"aggregators:":["VectorUDAFCountStar(*) -> bigint"],"className:":"VectorGroupByOperator","vectorOutput:":"true","native:":"false","projectedOutputColumns:":"[0]"},"mode:":"hash","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"Reduce Output Operator":{"sort order:":"","Reduce Sink Vectorization:":{"className:":"VectorReduceSinkOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.reducesink.new.enabled IS true","Not ACID UPDATE or DELETE IS true","No buckets IS true","No TopN IS true","No DISTINCT columns IS true","BinarySortableSerDe for keys IS true","LazyBinarySerDe for values IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false","Uniform Hash IS false"]},"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","value expressions:":"_col0 (type: bigint)"}}}}}}}}}}],"Execution mode:":"vectorized","Map Vectorization:":{"enabled:":"true","enabledConditionsMet:":["hive.vectorized.use.vectorized.input.format IS true"],"groupByVectorOutput:":"true","inputFileFormats:":["org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"],"allNative:":"false","usesVectorUDFAdaptor:":"false","vectorized:":"true","rowBatchContext:":{"dataColumnCount:":"2","includeColumns:":"[0]","dataColumns:":["cmodtinyint:int","cmodint:int"],"partitionColumnCount:":"0"}},"Local Work:":{"Map Reduce Local Work":{}},"Reduce Vectorization:":{"enabled:":"false","enableConditionsMet:":["hive.vectorized.execution.reduce.enabled IS true"],"enableConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Reduce Operator Tree:":{"Group By Operator":{"aggregations:":["count(VALUE._col0)"],"mode:":"mergepartial","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"ListSink":{}}}}}}
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:sm 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:sm 
+          TableScan
+            alias: sm
+            Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cmodtinyint (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                filter predicates:
+                  0 {(_col0 < 3)}
+                  1 
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s
+            Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cmodtinyint (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                filter predicates:
+                  0 {(_col0 < 3)}
+                  1 
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                Statistics: Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
@@ -442,7 +1167,7 @@ POSTHOOK: Input: default@mod_8_mod_4
 POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
 17792
-PREHOOK: query: explain vectorization detail formatted
+PREHOOK: query: explain
 select count(*) from (select s.*, sm.*, s2.* 
 from mod_8_mod_4 s
 left outer join small_table2 sm
@@ -451,7 +1176,7 @@ left outer join mod_8_mod_4 s2
   on s2.cmodtinyint = s.cmodtinyint
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization detail formatted
+POSTHOOK: query: explain
 select count(*) from (select s.*, sm.*, s2.* 
 from mod_8_mod_4 s
 left outer join small_table2 sm
@@ -460,7 +1185,104 @@ left outer join mod_8_mod_4 s2
   on s2.cmodtinyint = s.cmodtinyint
 ) t1
 POSTHOOK: type: QUERY
-{"PLAN VECTORIZATION":{"enabled":true,"enabledConditionsMet":["hive.vectorized.execution.enabled IS true"]},"STAGE DEPENDENCIES":{"Stage-8":{"ROOT STAGE":"TRUE"},"Stage-3":{"DEPENDENT STAGES":"Stage-8"},"Stage-0":{"DEPENDENT STAGES":"Stage-3"}},"STAGE PLANS":{"Stage-8":{"Map Reduce Local Work":{"Alias -> Map Local Tables:":{"$hdt$_1:sm":{"Fetch Operator":{"limit:":"-1"}},"$hdt$_2:s2":{"Fetch Operator":{"limit:":"-1"}}},"Alias -> Map Local Operator Tree:":{"$hdt$_1:sm":{"TableScan":{"alias:":"sm","Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"Select Operator":{"expressions:":"cbigint (type: bigint)","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE","children":{"HashTable Sink Operator":{"keys:":{"0":"UDFToLong(_col1) (type: bigint)","1":"(_col0 pmod 8) (type: bigint)"}}}}}}},"$hdt$_2:s2":{"TableScan":{"alias:":"s2","Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","children":{"Select Operator":{"expressions:":"cmodtinyint (type: int)","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","children":{"HashTable Sink Operator":{"keys:":{"0":"_col0 (type: int)","1":"_col0 (type: int)"}}}}}}}}}},"Stage-3":{"Map Reduce":{"Map Operator Tree:":[{"TableScan":{"alias:":"s","Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","TableScan Vectorization:":{"native:":"true","projectedOutputColumns:":"[0, 1]"},"children":{"Select Operator":{"expressions:":"cmodtinyint (type: int), cmodint (type: int)","outputColumnNames:":["_col0","_col1"],"Select Vectorization:":{"className:":"VectorSelectOperator","native:":"true","projectedOutputColumns:":"[0, 1]"},"Statistics:":"Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join0 to 1"}],"keys:":{"0":"UDFToLong(_col1) (type: bigint)","1":"(_col0 pmod 8) (type: bigint)"},"Map Join Vectorization:":{"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Supports Key Types IS true","Not empty key IS true","When Fast Hash Table, then requires no Hybrid Hash Join IS true","Small table vectorizes IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"outputColumnNames:":["_col0"],"Statistics:":"Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join0 to 1"}],"keys:":{"0":"_col0 (type: int)","1":"_col0 (type: int)"},"Map Join Vectorization:":{"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Supports Key Types IS true","Not empty key IS true","When Fast Hash Table, then requires no Hybrid Hash Join IS true","Small table vectorizes IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 7329 Data size: 58641 Basic stats: COMPLETE Column stats: NONE","children":{"Group By Operator":{"aggregations:":["count()"],"Group By Vectorization:":{"aggregators:":["VectorUDAFCountStar(*) -> bigint"],"className:":"VectorGroupByOperator","vectorOutput:":"true","native:":"false","projectedOutputColumns:":"[0]"},"mode:":"hash","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"Reduce Output Operator":{"sort order:":"","Reduce Sink Vectorization:":{"className:":"VectorReduceSinkOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.reducesink.new.enabled IS true","Not ACID UPDATE or DELETE IS true","No buckets IS true","No TopN IS true","No DISTINCT columns IS true","BinarySortableSerDe for keys IS true","LazyBinarySerDe for values IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false","Uniform Hash IS false"]},"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","value expressions:":"_col0 (type: bigint)"}}}}}}}}}}}}],"Execution mode:":"vectorized","Map Vectorization:":{"enabled:":"true","enabledConditionsMet:":["hive.vectorized.use.vectorized.input.format IS true"],"groupByVectorOutput:":"true","inputFileFormats:":["org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"],"allNative:":"false","usesVectorUDFAdaptor:":"false","vectorized:":"true","rowBatchContext:":{"dataColumnCount:":"2","includeColumns:":"[0, 1]","dataColumns:":["cmodtinyint:int","cmodint:int"],"partitionColumnCount:":"0"}},"Local Work:":{"Map Reduce Local Work":{}},"Reduce Vectorization:":{"enabled:":"false","enableConditionsMet:":["hive.vectorized.execution.reduce.enabled IS true"],"enableConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Reduce Operator Tree:":{"Group By Operator":{"aggregations:":["count(VALUE._col0)"],"mode:":"mergepartial","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"}}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"ListSink":{}}}}}}
+STAGE DEPENDENCIES:
+  Stage-8 is a root stage
+  Stage-3 depends on stages: Stage-8
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-8
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:sm 
+          Fetch Operator
+            limit: -1
+        $hdt$_2:s2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:sm 
+          TableScan
+            alias: sm
+            Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cbigint (type: bigint)
+              outputColumnNames: _col0
+              Statistics: Num rows: 100 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 UDFToLong(_col1) (type: bigint)
+                  1 (_col0 pmod 8) (type: bigint)
+        $hdt$_2:s2 
+          TableScan
+            alias: s2
+            Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cmodtinyint (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s
+            Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: cmodtinyint (type: int), cmodint (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 6058 Data size: 48464 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 UDFToLong(_col1) (type: bigint)
+                  1 (_col0 pmod 8) (type: bigint)
+                outputColumnNames: _col0
+                Statistics: Num rows: 6663 Data size: 53310 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Left Outer Join0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  Statistics: Num rows: 7329 Data size: 58641 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count()
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: select count(*) from (select s.*, sm.*, s2.* 
 from mod_8_mod_4 s
 left outer join small_table2 sm

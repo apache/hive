@@ -41,13 +41,16 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import com.google.common.collect.ImmutableMap;
 
 public class HiveRelMdSelectivity extends RelMdSelectivity {
-  public static final RelMetadataProvider SOURCE = ReflectiveRelMetadataProvider.reflectiveSource(
-                                                     BuiltInMethod.SELECTIVITY.method,
-                                                     new HiveRelMdSelectivity());
 
-  protected HiveRelMdSelectivity() {
-    super();
-  }
+  public static final RelMetadataProvider SOURCE =
+      ReflectiveRelMetadataProvider.reflectiveSource(
+          BuiltInMethod.SELECTIVITY.method, new HiveRelMdSelectivity());
+
+  //~ Constructors -----------------------------------------------------------
+
+  private HiveRelMdSelectivity() {}
+
+  //~ Methods ----------------------------------------------------------------
 
   public Double getSelectivity(HiveTableScan t, RelMetadataQuery mq, RexNode predicate) {
     if (predicate != null) {
@@ -58,7 +61,7 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
     return 1.0;
   }
 
-  public Double getSelectivity(HiveJoin j, RelMetadataQuery mq, RexNode predicate) throws CalciteSemanticException {
+  public Double getSelectivity(HiveJoin j, RelMetadataQuery mq, RexNode predicate) {
     if (j.getJoinType().equals(JoinRelType.INNER)) {
       return computeInnerJoinSelectivity(j, mq, predicate);
     } else if (j.getJoinType().equals(JoinRelType.LEFT) ||
@@ -75,7 +78,7 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
     return 1.0;
   }
 
-  private Double computeInnerJoinSelectivity(HiveJoin j, RelMetadataQuery mq, RexNode predicate) throws CalciteSemanticException {
+  private Double computeInnerJoinSelectivity(HiveJoin j, RelMetadataQuery mq, RexNode predicate) {
     double ndvCrossProduct = 1;
     Pair<Boolean, RexNode> predInfo =
         getCombinedPredicateForJoin(j, predicate);
@@ -86,8 +89,13 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
     }
 
     RexNode combinedPredicate = predInfo.getValue();
-    JoinPredicateInfo jpi = JoinPredicateInfo.constructJoinPredicateInfo(j,
-        combinedPredicate);
+    JoinPredicateInfo jpi;
+    try {
+      jpi = JoinPredicateInfo.constructJoinPredicateInfo(j,
+          combinedPredicate);
+    } catch (CalciteSemanticException e) {
+      throw new RuntimeException(e);
+    }
     ImmutableMap.Builder<Integer, Double> colStatMapBuilder = ImmutableMap
         .builder();
     ImmutableMap<Integer, Double> colStatMap;

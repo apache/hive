@@ -129,7 +129,7 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/tez");
         setClusterType(MiniClusterType.tez);
-        setMetastoreType(MetastoreType.hbase);
+        setMetastoreType(MetastoreType.sql);
         setFsType(QTestUtil.FsType.hdfs);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);

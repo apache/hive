@@ -28,11 +28,11 @@ Stage-0
     Stage-1
       Reducer 3 llap
       File Output Operator [FS_12]
-        Select Operator [SEL_11] (rows=7286 width=620)
+        Select Operator [SEL_11] (rows=9759 width=620)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23"]
         <-Reducer 2 [SIMPLE_EDGE] llap
           SHUFFLE [RS_10]
-            Merge Join Operator [MERGEJOIN_17] (rows=7286 width=620)
+            Merge Join Operator [MERGEJOIN_17] (rows=9759 width=620)
               Conds:RS_6._col2=RS_7._col2(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23"]
             <-Map 1 [SIMPLE_EDGE] llap
               SHUFFLE [RS_6]
@@ -46,10 +46,10 @@ Stage-0
             <-Map 4 [SIMPLE_EDGE] llap
               SHUFFLE [RS_7]
                 PartitionCols:_col2
-                Select Operator [SEL_5] (rows=3424 width=251)
+                Select Operator [SEL_5] (rows=4586 width=251)
                   Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11"]
-                  Filter Operator [FIL_16] (rows=3424 width=251)
-                    predicate:(cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000)
+                  Filter Operator [FIL_16] (rows=4586 width=251)
+                    predicate:(cint BETWEEN 1000000 AND 3000000 and cbigint is not null)
                     TableScan [TS_3] (rows=12288 width=251)
                       default@alltypesorc,b,Tbl:COMPLETE,Col:COMPLETE,Output:["ctinyint","csmallint","cint","cbigint","cfloat","cdouble","cstring1","cstring2","ctimestamp1","ctimestamp2","cboolean1","cboolean2"]
 
@@ -113,7 +113,7 @@ Stage-0
           SHUFFLE [RS_11]
             Group By Operator [GBY_10] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Merge Join Operator [MERGEJOIN_19] (rows=7286 width=8)
+              Merge Join Operator [MERGEJOIN_19] (rows=9759 width=8)
                 Conds:RS_6._col0=RS_7._col0(Inner)
               <-Map 1 [SIMPLE_EDGE] llap
                 SHUFFLE [RS_6]
@@ -127,10 +127,10 @@ Stage-0
               <-Map 4 [SIMPLE_EDGE] llap
                 SHUFFLE [RS_7]
                   PartitionCols:_col0
-                  Select Operator [SEL_5] (rows=3424 width=8)
+                  Select Operator [SEL_5] (rows=4586 width=8)
                     Output:["_col0"]
-                    Filter Operator [FIL_18] (rows=3424 width=8)
-                      predicate:(cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000)
+                    Filter Operator [FIL_18] (rows=4586 width=8)
+                      predicate:(cint BETWEEN 1000000 AND 3000000 and cbigint is not null)
                       TableScan [TS_3] (rows=12288 width=8)
                         default@alltypesorc,b,Tbl:COMPLETE,Col:COMPLETE,Output:["cint","cbigint"]
 
@@ -193,7 +193,7 @@ Stage-0
                 PartitionCols:_col0
                 Group By Operator [GBY_10] (rows=2765 width=12)
                   Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
-                  Merge Join Operator [MERGEJOIN_21] (rows=7286 width=4)
+                  Merge Join Operator [MERGEJOIN_21] (rows=9759 width=4)
                     Conds:RS_6._col1=RS_7._col0(Inner),Output:["_col0"]
                   <-Map 1 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_6]
@@ -207,10 +207,10 @@ Stage-0
                   <-Map 5 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_7]
                       PartitionCols:_col0
-                      Select Operator [SEL_5] (rows=3424 width=8)
+                      Select Operator [SEL_5] (rows=4586 width=8)
                         Output:["_col0"]
-                        Filter Operator [FIL_20] (rows=3424 width=8)
-                          predicate:(cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000)
+                        Filter Operator [FIL_20] (rows=4586 width=8)
+                          predicate:(cint BETWEEN 1000000 AND 3000000 and cbigint is not null)
                           TableScan [TS_3] (rows=12288 width=8)
                             default@alltypesorc,b,Tbl:COMPLETE,Col:COMPLETE,Output:["cint","cbigint"]
 
@@ -281,7 +281,7 @@ Stage-0
                 Select Operator [SEL_5] (rows=6144 width=215)
                   Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11"]
                   Filter Operator [FIL_16] (rows=6144 width=215)
-                    predicate:(cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000)
+                    predicate:(cint BETWEEN 1000000 AND 3000000 and cbigint is not null)
                     TableScan [TS_3] (rows=12288 width=215)
                       default@alltypesorc,b,Tbl:COMPLETE,Col:NONE,Output:["ctinyint","csmallint","cint","cbigint","cfloat","cdouble","cstring1","cstring2","ctimestamp1","ctimestamp2","cboolean1","cboolean2"]
             <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
@@ -362,7 +362,7 @@ Stage-0
                   Select Operator [SEL_5] (rows=6144 width=215)
                     Output:["_col0"]
                     Filter Operator [FIL_18] (rows=6144 width=215)
-                      predicate:(cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000)
+                      predicate:(cint BETWEEN 1000000 AND 3000000 and cbigint is not null)
                       TableScan [TS_3] (rows=12288 width=215)
                         default@alltypesorc,b,Tbl:COMPLETE,Col:NONE,Output:["cint","cbigint"]
               <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
@@ -442,7 +442,7 @@ Stage-0
                       Select Operator [SEL_5] (rows=6144 width=215)
                         Output:["_col0"]
                         Filter Operator [FIL_20] (rows=6144 width=215)
-                          predicate:(cint is not null and cbigint is not null and cint BETWEEN 1000000 AND 3000000)
+                          predicate:(cint BETWEEN 1000000 AND 3000000 and cbigint is not null)
                           TableScan [TS_3] (rows=12288 width=215)
                             default@alltypesorc,b,Tbl:COMPLETE,Col:NONE,Output:["cint","cbigint"]
                   <-Map 1 [CUSTOM_SIMPLE_EDGE] llap

@@ -1,6 +1,6 @@
 set hive.mapred.mode=nonstrict;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=none;
+set hive.fetch.task.conversion=minimal;
 
 DROP TABLE IF EXISTS DECIMAL_3_txt;
 DROP TABLE IF EXISTS DECIMAL_3;

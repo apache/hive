@@ -4,7 +4,6 @@ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.vectorized.execution.enabled=true;
 set hive.explain.user=true;
 set hive.metastore.fastpath=false;
-set hive.fetch.task.conversion=none;
 
 drop table if exists char_part_tbl1 ;
 drop table if exists char_part_tbl2;
@@ -23,7 +22,7 @@ insert into table char_tbl2 partition(gpa='3') select name, age from studenttab 
 show partitions char_tbl1;
 show partitions char_tbl2;
 
-explain vectorization select c1.name, c1.age, c1.gpa, c2.name, c2.age, c2.gpa from char_tbl1 c1 join char_tbl2 c2 on (c1.gpa = c2.gpa);
+explain select c1.name, c1.age, c1.gpa, c2.name, c2.age, c2.gpa from char_tbl1 c1 join char_tbl2 c2 on (c1.gpa = c2.gpa);
 select c1.name, c1.age, c1.gpa, c2.name, c2.age, c2.gpa from char_tbl1 c1 join char_tbl2 c2 on (c1.gpa = c2.gpa);
 
 set hive.vectorized.execution.enabled=false;

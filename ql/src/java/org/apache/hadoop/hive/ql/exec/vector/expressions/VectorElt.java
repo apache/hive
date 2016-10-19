@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.util.Arrays;
-
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
@@ -128,11 +126,6 @@ public class VectorElt extends VectorExpression {
 
   public void setOutputColumn(int outputColumn) {
     this.outputColumn = outputColumn;
-  }
-
-  @Override
-  public String vectorExpressionParameters() {
-    return "columns " + Arrays.toString(inputColumns);
   }
 
   @Override

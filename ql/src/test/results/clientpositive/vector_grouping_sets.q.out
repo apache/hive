@@ -127,20 +127,16 @@ POSTHOOK: Lineage: store.s_street_type SIMPLE [(store_txt)store_txt.FieldSchema(
 POSTHOOK: Lineage: store.s_suite_number SIMPLE [(store_txt)store_txt.FieldSchema(name:s_suite_number, type:string, comment:null), ]
 POSTHOOK: Lineage: store.s_tax_precentage SIMPLE [(store_txt)store_txt.FieldSchema(name:s_tax_precentage, type:decimal(5,2), comment:null), ]
 POSTHOOK: Lineage: store.s_zip SIMPLE [(store_txt)store_txt.FieldSchema(name:s_zip, type:string, comment:null), ]
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain
 select s_store_id
  from store
  group by s_store_id with rollup
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain
 select s_store_id
  from store
  group by s_store_id with rollup
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -166,16 +162,6 @@ STAGE PLANS:
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                   Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
-      Map Vectorization:
-          enabled: true
-          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          notVectorizedReason: GROUPBY operator: Grouping sets not supported
-          vectorized: false
-      Reduce Vectorization:
-          enabled: false
-          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
-          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -216,20 +202,16 @@ AAAAAAAAEAAAAAAA
 AAAAAAAAHAAAAAAA
 AAAAAAAAIAAAAAAA
 AAAAAAAAKAAAAAAA
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain
 select s_store_id, GROUPING__ID
  from store
  group by s_store_id with rollup
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain
 select s_store_id, GROUPING__ID
  from store
  group by s_store_id with rollup
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -255,16 +237,6 @@ STAGE PLANS:
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                   Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
-      Map Vectorization:
-          enabled: true
-          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          notVectorizedReason: GROUPBY operator: Grouping sets not supported
-          vectorized: false
-      Reduce Vectorization:
-          enabled: false
-          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
-          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string), KEY._col1 (type: string)

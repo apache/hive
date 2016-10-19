@@ -52,8 +52,4 @@ public class CastStringGroupToChar extends StringUnaryUDFDirect implements Trunc
   public void setMaxLength(int maxLength) {
     this.maxLength = maxLength;
   }
-
-  public String vectorExpressionParameters() {
-    return "col " + inputColumn + ", maxLength " + maxLength;
-  }
 }

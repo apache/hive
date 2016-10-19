@@ -32,15 +32,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
 
 /**
  * MapredLocalWork.
  *
  */
-@Explain(displayName = "Map Reduce Local Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
-    vectorization = Vectorization.SUMMARY_PATH)
+@Explain(displayName = "Map Reduce Local Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class MapredLocalWork implements Serializable {
   private static final long serialVersionUID = 1L;
 

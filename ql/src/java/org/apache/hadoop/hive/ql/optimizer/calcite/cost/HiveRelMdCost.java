@@ -19,7 +19,10 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.cost;
 
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.metadata.BuiltInMetadata;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
+import org.apache.calcite.rel.metadata.MetadataDef;
+import org.apache.calcite.rel.metadata.MetadataHandler;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdPercentageOriginalRows;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
@@ -34,7 +37,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * HiveRelMdCost supplies the implementation of cost model.
  */
-public class HiveRelMdCost {
+public class HiveRelMdCost implements MetadataHandler<BuiltInMetadata.NonCumulativeCost> {
 
   private final HiveCostModel hiveCostModel;
 
@@ -48,6 +51,11 @@ public class HiveRelMdCost {
                    ReflectiveRelMetadataProvider.reflectiveSource(this,
                        BuiltInMethod.NON_CUMULATIVE_COST.method),
                    RelMdPercentageOriginalRows.SOURCE));
+  }
+
+  @Override
+  public MetadataDef<BuiltInMetadata.NonCumulativeCost> getDef() {
+    return BuiltInMetadata.NonCumulativeCost.DEF;
   }
 
   public RelOptCost getNonCumulativeCost(HiveAggregate aggregate, RelMetadataQuery mq) {

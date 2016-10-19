@@ -77,7 +77,7 @@ public class HiveDefaultRelMetadataProvider {
                     HiveRelMdDistribution.SOURCE,
                     HiveRelMdCollation.SOURCE,
                     HiveRelMdPredicates.SOURCE,
-                    new DefaultRelMetadataProvider()));
+                    DefaultRelMetadataProvider.INSTANCE));
   }
 
 }

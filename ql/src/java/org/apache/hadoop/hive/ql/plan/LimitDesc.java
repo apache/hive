@@ -17,10 +17,7 @@
  */
 
 package org.apache.hadoop.hive.ql.plan;
-import java.util.List;
-
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
 
 /**
@@ -76,19 +73,4 @@ public class LimitDesc extends AbstractOperatorDesc {
     this.leastRows = leastRows;
   }
 
-  public class LimitOperatorExplainVectorization extends OperatorExplainVectorization {
-
-    public LimitOperatorExplainVectorization(LimitDesc limitDesc, VectorDesc vectorDesc) {
-      // Native vectorization supported.
-      super(vectorDesc, true);
-    }
-  }
-
-  @Explain(vectorization = Vectorization.OPERATOR, displayName = "Limit Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-  public LimitOperatorExplainVectorization getLimitVectorization() {
-    if (vectorDesc == null) {
-      return null;
-    }
-    return new LimitOperatorExplainVectorization(this, vectorDesc);
-  }
 }

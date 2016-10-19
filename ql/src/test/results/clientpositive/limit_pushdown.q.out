@@ -695,7 +695,17 @@ STAGE PLANS:
     Fetch Operator
       limit: 0
       Processor Tree:
-        ListSink
+        TableScan
+          alias: src
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: key (type: string), value (type: string)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Limit
+              Number of rows: 0
+              Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+              ListSink
 
 PREHOOK: query: select key,value from src order by key limit 0
 PREHOOK: type: QUERY

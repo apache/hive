@@ -93,7 +93,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   protected transient ReusableGetAdaptor[] hashMapRowGetters;
 
   private UnwrapRowContainer[] unwrapContainer;
-  protected transient Configuration hconf;
+  private transient Configuration hconf;
   private transient boolean hybridMapJoinLeftover;  // whether there's spilled data to be processed
   protected transient MapJoinBytesTableContainer[] spilledMapJoinTables;  // used to hold restored
                                                                           // spilled small tables

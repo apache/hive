@@ -27,28 +27,24 @@ import org.apache.calcite.sql.type.ReturnTypes;
 
 import com.google.common.collect.Sets;
 
-public class HiveDateGranularity extends SqlFunction {
+public class HiveExtractDate extends SqlFunction {
 
-  public static final SqlFunction YEAR = new HiveDateGranularity("YEAR");
-  public static final SqlFunction QUARTER = new HiveDateGranularity("QUARTER");
-  public static final SqlFunction MONTH = new HiveDateGranularity("MONTH");
-  public static final SqlFunction WEEK = new HiveDateGranularity("WEEK");
-  public static final SqlFunction DAY = new HiveDateGranularity("DAY");
-  public static final SqlFunction HOUR = new HiveDateGranularity("HOUR");
-  public static final SqlFunction MINUTE = new HiveDateGranularity("MINUTE");
-  public static final SqlFunction SECOND = new HiveDateGranularity("SECOND");
+  public static final SqlFunction YEAR = new HiveExtractDate("YEAR");
+  public static final SqlFunction QUARTER = new HiveExtractDate("QUARTER");
+  public static final SqlFunction MONTH = new HiveExtractDate("MONTH");
+  public static final SqlFunction WEEK = new HiveExtractDate("WEEK");
+  public static final SqlFunction DAY = new HiveExtractDate("DAY");
+  public static final SqlFunction HOUR = new HiveExtractDate("HOUR");
+  public static final SqlFunction MINUTE = new HiveExtractDate("MINUTE");
+  public static final SqlFunction SECOND = new HiveExtractDate("SECOND");
 
   public static final Set<SqlFunction> ALL_FUNCTIONS =
           Sets.newHashSet(YEAR, QUARTER, MONTH, WEEK, DAY, HOUR, MINUTE, SECOND);
 
-  private HiveDateGranularity(String name) {
-    super(
-        name,
-        SqlKind.OTHER_FUNCTION,
-        ReturnTypes.TIME_NULLABLE,
-        null,
-        OperandTypes.ANY,
-        SqlFunctionCategory.TIMEDATE);
+  private HiveExtractDate(String name) {
+    super(name, SqlKind.EXTRACT, ReturnTypes.INTEGER_NULLABLE, null,
+            OperandTypes.INTERVALINTERVAL_INTERVALDATETIME,
+            SqlFunctionCategory.SYSTEM);
   }
 
 }

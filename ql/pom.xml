@@ -383,8 +383,13 @@
     </dependency>
     <dependency>
       <groupId>org.apache.calcite</groupId>
-      <artifactId>calcite-avatica</artifactId>
+      <artifactId>calcite-druid</artifactId>
       <version>${calcite.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.calcite.avatica</groupId>
+      <artifactId>avatica</artifactId>
+      <version>${avatica.version}</version>
       <exclusions>
         <!-- hsqldb interferes with the use of derby as the default db
           in hive's use of datanucleus.

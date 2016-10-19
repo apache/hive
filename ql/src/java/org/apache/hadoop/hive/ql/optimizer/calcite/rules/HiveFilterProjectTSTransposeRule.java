@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
@@ -32,17 +33,28 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 
 //TODO: Remove this once Calcite FilterProjectTransposeRule can take rule operand
 public class HiveFilterProjectTSTransposeRule extends RelOptRule {
 
+  public final static HiveFilterProjectTSTransposeRule INSTANCE =
+      new HiveFilterProjectTSTransposeRule(
+          Filter.class, HiveRelFactories.HIVE_FILTER_FACTORY, HiveProject.class,
+          HiveRelFactories.HIVE_PROJECT_FACTORY, TableScan.class);
+
+  public final static  HiveFilterProjectTSTransposeRule INSTANCE_DRUID =
+      new HiveFilterProjectTSTransposeRule(
+          Filter.class, HiveRelFactories.HIVE_FILTER_FACTORY, HiveProject.class,
+          HiveRelFactories.HIVE_PROJECT_FACTORY, DruidQuery.class);
+
   private final RelFactories.FilterFactory  filterFactory;
   private final RelFactories.ProjectFactory projectFactory;
 
-  public HiveFilterProjectTSTransposeRule(Class<? extends Filter> filterClass,
+  private HiveFilterProjectTSTransposeRule(Class<? extends Filter> filterClass,
       FilterFactory filterFactory, Class<? extends Project> projectClass,
-      ProjectFactory projectFactory, Class<? extends TableScan> tsClass) {
+      ProjectFactory projectFactory, Class<? extends RelNode> tsClass) {
     super(operand(filterClass, operand(projectClass, operand(tsClass, none()))));
     this.filterFactory = filterFactory;
     this.projectFactory = projectFactory;

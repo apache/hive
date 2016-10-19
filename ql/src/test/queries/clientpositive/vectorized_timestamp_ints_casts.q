@@ -1,9 +1,8 @@
 set hive.mapred.mode=nonstrict;
 SET hive.vectorized.execution.enabled = true;
 SET hive.int.timestamp.conversion.in.seconds=false;
-set hive.fetch.task.conversion=none;
 
-explain vectorization expression
+explain
 select
 -- to timestamp
   cast (ctinyint as timestamp)
@@ -41,7 +40,7 @@ where cbigint % 250 = 0;
 
 SET hive.int.timestamp.conversion.in.seconds=true;
 
-explain vectorization expression
+explain
 select
 -- to timestamp
   cast (ctinyint as timestamp)

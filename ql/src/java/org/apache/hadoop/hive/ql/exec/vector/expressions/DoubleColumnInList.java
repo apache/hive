@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.util.Arrays;
-
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -155,11 +153,6 @@ public class DoubleColumnInList extends VectorExpression implements IDoubleInExp
 
   public void setInListValues(double[] a) {
     this.inListValues = a;
-  }
-
-  @Override
-  public String vectorExpressionParameters() {
-    return "col " + colNum + ", values " + Arrays.toString(inListValues);
   }
 
   @Override

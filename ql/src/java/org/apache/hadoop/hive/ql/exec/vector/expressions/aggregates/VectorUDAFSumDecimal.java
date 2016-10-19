@@ -88,12 +88,6 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
     }
 
     private VectorExpression inputExpression;
-
-    @Override
-    public VectorExpression inputExpression() {
-      return inputExpression;
-    }
-
     transient private final HiveDecimalWritable scratchDecimal;
 
     public VectorUDAFSumDecimal(VectorExpression inputExpression) {

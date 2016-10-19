@@ -23,6 +23,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.calcite.adapter.druid.DruidQuery;
+import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
@@ -57,8 +59,9 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.druid.DruidQuery;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
@@ -346,6 +349,10 @@ public class ASTConverter {
       TableScan f = (TableScan) r;
       s = new Schema(f);
       ast = ASTBuilder.table(f);
+    } else if (r instanceof DruidQuery) {
+      DruidQuery f = (DruidQuery) r;
+      s = new Schema(f);
+      ast = ASTBuilder.table(f);
     } else if (r instanceof Join) {
       Join join = (Join) r;
       QueryBlockInfo left = convertSource(join.getLeft());
@@ -425,7 +432,8 @@ public class ASTConverter {
     @Override
     public void visit(RelNode node, int ordinal, RelNode parent) {
 
-      if (node instanceof TableScan) {
+      if (node instanceof TableScan ||
+          node instanceof DruidQuery) {
         ASTConverter.this.from = node;
       } else if (node instanceof Filter) {
         handle((Filter) node);
@@ -645,14 +653,30 @@ public class ASTConverter {
         astNodeLst.add(astBldr.node());
       }
 
-      for (RexNode operand : call.operands) {
-        astNodeLst.add(operand.accept(this));
+      if (op.kind == SqlKind.EXTRACT) {
+        // Extract on date: special handling since function in Hive does
+        // include <time_unit>. Observe that <time_unit> information
+        // is implicit in the function name, thus translation will
+        // proceed correctly if we just ignore the <time_unit>
+        astNodeLst.add(call.operands.get(1).accept(this));
+      } else if (op.kind == SqlKind.FLOOR &&
+              call.operands.size() == 2) {
+        // Floor on date: special handling since function in Hive does
+        // include <time_unit>. Observe that <time_unit> information
+        // is implicit in the function name, thus translation will
+        // proceed correctly if we just ignore the <time_unit>
+        astNodeLst.add(call.operands.get(0).accept(this));
+      } else {
+        for (RexNode operand : call.operands) {
+          astNodeLst.add(operand.accept(this));
+        }
       }
 
-      if (isFlat(call))
+      if (isFlat(call)) {
         return SqlFunctionConverter.buildAST(op, astNodeLst, 0);
-      else
+      } else {
         return SqlFunctionConverter.buildAST(op, astNodeLst);
+      }
     }
   }
 
@@ -675,14 +699,17 @@ public class ASTConverter {
     private static final long serialVersionUID = 1L;
 
     Schema(TableScan scan) {
-      HiveTableScan hts;
-      if (scan instanceof DruidQuery) {
-        hts = (HiveTableScan) ((DruidQuery)scan).getTableScan();
-      } else {
-        hts = (HiveTableScan) scan;
-      }
+      HiveTableScan hts = (HiveTableScan) scan;
       String tabName = hts.getTableAlias();
       for (RelDataTypeField field : scan.getRowType().getFieldList()) {
+        add(new ColumnInfo(tabName, field.getName()));
+      }
+    }
+
+    Schema(DruidQuery dq) {
+      HiveTableScan hts = (HiveTableScan) ((DruidQuery)dq).getTableScan();
+      String tabName = hts.getTableAlias();
+      for (RelDataTypeField field : dq.getRowType().getFieldList()) {
         add(new ColumnInfo(tabName, field.getName()));
       }
     }
