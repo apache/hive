@@ -1588,22 +1588,31 @@ public class Hive {
       List<Path> newFiles = null;
       PerfLogger perfLogger = SessionState.getPerfLogger();
       perfLogger.PerfLogBegin("MoveTask", "FileMoves");
-      if (mmWriteId != null) {
-        Utilities.LOG14535.info("not moving " + loadPath + " to " + newPartPath);
+      if (mmWriteId != null && loadPath.equals(newPartPath)) {
+        // MM insert query, move itself is a no-op.
+        Utilities.LOG14535.info("not moving " + loadPath + " to " + newPartPath + " (MM)");
         assert !isAcid;
         if (areEventsForDmlNeeded(tbl, oldPart)) {
           newFiles = listFilesCreatedByQuery(loadPath, mmWriteId);
         }
         Utilities.LOG14535.info("maybe deleting stuff from " + oldPartPath + " (new " + newPartPath + ") for replace");
-        if (replace && oldPartPath != null) { // TODO# is this correct? ignore until iow jira
-          deleteOldPathForReplace(newPartPath, oldPartPath,
-              getConf(), new ValidWriteIds.IdPathFilter(mmWriteId, false));
+        if (replace && oldPartPath != null) {
+          deleteOldPathForReplace(newPartPath, oldPartPath, getConf(),
+              new ValidWriteIds.IdPathFilter(mmWriteId, false), mmWriteId != null);
         }
       } else {
-        Utilities.LOG14535.info("moving " + loadPath + " to " + newPartPath);
+        // Either a non-MM query, or a load into MM table from an external source.
+        PathFilter filter = FileUtils.HIDDEN_FILES_PATH_FILTER;
+        Path destPath = newPartPath;
+        if (mmWriteId != null) {
+          // We will load into MM directory, and delete from the parent if needed.
+          destPath = new Path(destPath, ValidWriteIds.getMmFilePrefix(mmWriteId));
+          filter = replace ? new ValidWriteIds.IdPathFilter(mmWriteId, false) : filter;
+        }
+        Utilities.LOG14535.info("moving " + loadPath + " to " + destPath);
         if (replace || (oldPart == null && !isAcid)) {
-          replaceFiles(tbl.getPath(), loadPath, newPartPath, oldPartPath, getConf(),
-              isSrcLocal);
+          replaceFiles(tbl.getPath(), loadPath, destPath, oldPartPath, getConf(),
+              isSrcLocal, filter, mmWriteId != null);
         } else {
           if (areEventsForDmlNeeded(tbl, oldPart)) {
             newFiles = Collections.synchronizedList(new ArrayList<Path>());
@@ -2038,28 +2047,35 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
       newFiles = Collections.synchronizedList(new ArrayList<Path>());
     }
-    if (mmWriteId == null) {
-      Utilities.LOG14535.info("moving " + loadPath + " to " + tbl.getPath());
-      if (replace) {
-        Path tableDest = tbl.getPath();
-        replaceFiles(tableDest, loadPath, tableDest, tableDest, sessionConf, isSrcLocal);
-      } else {
-        FileSystem fs;
-        try {
-          fs = tbl.getDataLocation().getFileSystem(sessionConf);
-          copyFiles(sessionConf, loadPath, tbl.getPath(), fs, isSrcLocal, isAcid, newFiles);
-        } catch (IOException e) {
-          throw new HiveException("addFiles: filesystem error in check phase", e);
-        }
-      }
-    } else {
+    if (mmWriteId != null && loadPath.equals(tbl.getPath())) {
       Utilities.LOG14535.info("not moving " + loadPath + " to " + tbl.getPath());
       if (replace) {
         Path tableDest = tbl.getPath();
         deleteOldPathForReplace(tableDest, tableDest, sessionConf,
-            new ValidWriteIds.IdPathFilter(mmWriteId, false));
+            new ValidWriteIds.IdPathFilter(mmWriteId, false), mmWriteId != null);
       }
       newFiles = listFilesCreatedByQuery(loadPath, mmWriteId);
+    } else {
+      // Either a non-MM query, or a load into MM table from an external source.
+      Path tblPath = tbl.getPath(), destPath = tblPath;
+      PathFilter filter = FileUtils.HIDDEN_FILES_PATH_FILTER;
+      if (mmWriteId != null) {
+        // We will load into MM directory, and delete from the parent if needed.
+        destPath = new Path(destPath, ValidWriteIds.getMmFilePrefix(mmWriteId));
+        filter = replace ? new ValidWriteIds.IdPathFilter(mmWriteId, false) : filter;
+      }
+      Utilities.LOG14535.info("moving " + loadPath + " to " + tblPath);
+      if (replace) {
+        replaceFiles(tblPath, loadPath, destPath, tblPath,
+            sessionConf, isSrcLocal, filter, mmWriteId != null);
+      } else {
+        try {
+          FileSystem fs = tbl.getDataLocation().getFileSystem(sessionConf);
+          copyFiles(sessionConf, loadPath, destPath, fs, isSrcLocal, isAcid, newFiles);
+        } catch (IOException e) {
+          throw new HiveException("addFiles: filesystem error in check phase", e);
+        }
+      }
     }
     if (!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
       StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
@@ -3423,7 +3439,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    *          If the source directory is LOCAL
    */
   protected void replaceFiles(Path tablePath, Path srcf, Path destf, Path oldPath, HiveConf conf,
-          boolean isSrcLocal) throws HiveException {
+          boolean isSrcLocal, PathFilter deletePathFilter, boolean isMmTable) throws HiveException {
     try {
 
       FileSystem destFs = destf.getFileSystem(conf);
@@ -3442,10 +3458,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       if (oldPath != null) {
-        deleteOldPathForReplace(destf, oldPath, conf, FileUtils.HIDDEN_FILES_PATH_FILTER);
+        deleteOldPathForReplace(destf, oldPath, conf, deletePathFilter, isMmTable);
       }
 
-      // TODO# what are the paths that use this? MM tables will need to do this beforehand
       // first call FileUtils.mkdir to make sure that destf directory exists, if not, it creates
       // destf with inherited permissions
       boolean inheritPerms = HiveConf.getBoolVar(conf, HiveConf.ConfVars
@@ -3478,9 +3493,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-
   private void deleteOldPathForReplace(Path destPath, Path oldPath, HiveConf conf,
-      PathFilter pathFilter) throws HiveException {
+      PathFilter pathFilter, boolean isMmTable) throws HiveException {
+    Utilities.LOG14535.info("Deleting old paths for replace in " + destPath + " and old path " + oldPath);
     boolean isOldPathUnderDestf = false;
     try {
       FileSystem oldFs = oldPath.getFileSystem(conf);
@@ -3490,7 +3505,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
       // not the destf or its subdir?
       isOldPathUnderDestf = isSubDir(oldPath, destPath, oldFs, destFs, false);
-      if (isOldPathUnderDestf) {
+      if (isOldPathUnderDestf || isMmTable) {
         FileStatus[] statuses = oldFs.listStatus(oldPath, pathFilter);
         if (statuses == null || statuses.length == 0) return;
         String s = "Deleting files under " + oldPath + " for replace: ";
@@ -3504,7 +3519,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         }
       }
     } catch (IOException e) {
-      if (isOldPathUnderDestf) {
+      if (isOldPathUnderDestf || isMmTable) {
         // if oldPath is a subdir of destf but it could not be cleaned
         throw new HiveException("Directory " + oldPath.toString()
             + " could not be cleaned up.", e);

@@ -493,22 +493,6 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.mmWriteId = mmWriteId;
   }
 
-  public class FileSinkOperatorExplainVectorization extends OperatorExplainVectorization {
-
-    public FileSinkOperatorExplainVectorization(VectorDesc vectorDesc) {
-      // Native vectorization not supported.
-      super(vectorDesc, false);
-    }
-  }
-
-  @Explain(vectorization = Vectorization.OPERATOR, displayName = "File Sink Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-  public FileSinkOperatorExplainVectorization getFileSinkVectorization() {
-    if (vectorDesc == null) {
-      return null;
-    }
-    return new FileSinkOperatorExplainVectorization(vectorDesc);
-  }
-
   public void setIsMerge(boolean b) {
     this.isMerge = b;
   }

@@ -28,51 +28,302 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@intermediate@p=456
 POSTHOOK: Lineage: intermediate PARTITION(p=456).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: drop table merge2_mm
+PREHOOK: query: drop table load0_mm
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table merge2_mm
+POSTHOOK: query: drop table load0_mm
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table merge2_mm(key int) tblproperties('hivecommit'='true')
+PREHOOK: query: create table load0_mm (key string, value string) stored as textfile tblproperties('hivecommit'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@merge2_mm
-POSTHOOK: query: create table merge2_mm(key int) tblproperties('hivecommit'='true')
+PREHOOK: Output: default@load0_mm
+POSTHOOK: query: create table load0_mm (key string, value string) stored as textfile tblproperties('hivecommit'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@merge2_mm
-PREHOOK: query: insert overwrite table merge2_mm select key from intermediate
-PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Output: default@merge2_mm
-POSTHOOK: query: insert overwrite table merge2_mm select key from intermediate
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Output: default@merge2_mm
-POSTHOOK: Lineage: merge2_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: select * from merge2_mm
-PREHOOK: type: QUERY
-PREHOOK: Input: default@merge2_mm
+POSTHOOK: Output: default@load0_mm
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table load0_mm
+PREHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: query: select * from merge2_mm
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@merge2_mm
+PREHOOK: Output: default@load0_mm
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table load0_mm
+POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-98
-97
-0
-10
-PREHOOK: query: drop table merge2_mm
+POSTHOOK: Output: default@load0_mm
+PREHOOK: query: select count(1) from load0_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@load0_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from load0_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@load0_mm
+#### A masked pattern was here ####
+500
+PREHOOK: query: load data local inpath '../../data/files/kv2.txt' into table load0_mm
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@load0_mm
+POSTHOOK: query: load data local inpath '../../data/files/kv2.txt' into table load0_mm
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@load0_mm
+PREHOOK: query: select count(1) from load0_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@load0_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from load0_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@load0_mm
+#### A masked pattern was here ####
+1000
+PREHOOK: query: load data local inpath '../../data/files/kv2.txt' overwrite into table load0_mm
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@load0_mm
+POSTHOOK: query: load data local inpath '../../data/files/kv2.txt' overwrite into table load0_mm
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@load0_mm
+PREHOOK: query: select count(1) from load0_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@load0_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from load0_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@load0_mm
+#### A masked pattern was here ####
+500
+PREHOOK: query: drop table load0_mm
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@merge2_mm
-PREHOOK: Output: default@merge2_mm
-POSTHOOK: query: drop table merge2_mm
+PREHOOK: Input: default@load0_mm
+PREHOOK: Output: default@load0_mm
+POSTHOOK: query: drop table load0_mm
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@merge2_mm
-POSTHOOK: Output: default@merge2_mm
+POSTHOOK: Input: default@load0_mm
+POSTHOOK: Output: default@load0_mm
+PREHOOK: query: drop table intermediate2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table intermediate2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table intermediate2 (key string, value string) stored as textfile
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@intermediate2
+POSTHOOK: query: create table intermediate2 (key string, value string) stored as textfile
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@intermediate2
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table intermediate2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@intermediate2
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table intermediate2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@intermediate2
+PREHOOK: query: load data local inpath '../../data/files/kv2.txt' into table intermediate2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@intermediate2
+POSTHOOK: query: load data local inpath '../../data/files/kv2.txt' into table intermediate2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@intermediate2
+PREHOOK: query: load data local inpath '../../data/files/kv3.txt' into table intermediate2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@intermediate2
+POSTHOOK: query: load data local inpath '../../data/files/kv3.txt' into table intermediate2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@intermediate2
+PREHOOK: query: drop table load1_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table load1_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table load1_mm (key string, value string) stored as textfile tblproperties('hivecommit'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@load1_mm
+POSTHOOK: query: create table load1_mm (key string, value string) stored as textfile tblproperties('hivecommit'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@load1_mm
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@load1_mm
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@load1_mm
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@load1_mm
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@load1_mm
+PREHOOK: query: select count(1) from load1_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@load1_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from load1_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@load1_mm
+#### A masked pattern was here ####
+1000
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table intermediate2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@intermediate2
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table intermediate2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@intermediate2
+PREHOOK: query: load data local inpath '../../data/files/kv2.txt' into table intermediate2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@intermediate2
+POSTHOOK: query: load data local inpath '../../data/files/kv2.txt' into table intermediate2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@intermediate2
+PREHOOK: query: load data local inpath '../../data/files/kv3.txt' into table intermediate2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@intermediate2
+POSTHOOK: query: load data local inpath '../../data/files/kv3.txt' into table intermediate2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@intermediate2
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@load1_mm
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@load1_mm
+PREHOOK: query: select count(1) from load1_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@load1_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from load1_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@load1_mm
+#### A masked pattern was here ####
+1050
+PREHOOK: query: load data local inpath '../../data/files/kv2.txt' into table intermediate2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@intermediate2
+POSTHOOK: query: load data local inpath '../../data/files/kv2.txt' into table intermediate2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@intermediate2
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@load1_mm
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@load1_mm
+PREHOOK: query: select count(1) from load1_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@load1_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from load1_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@load1_mm
+#### A masked pattern was here ####
+500
+PREHOOK: query: drop table load1_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@load1_mm
+PREHOOK: Output: default@load1_mm
+POSTHOOK: query: drop table load1_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@load1_mm
+POSTHOOK: Output: default@load1_mm
+PREHOOK: query: drop table load2_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table load2_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table load2_mm (key string, value string)
+  partitioned by (k int, l int) stored as textfile tblproperties('hivecommit'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@load2_mm
+POSTHOOK: query: create table load2_mm (key string, value string)
+  partitioned by (k int, l int) stored as textfile tblproperties('hivecommit'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@load2_mm
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table intermediate2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@intermediate2
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table intermediate2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@intermediate2
+PREHOOK: query: load data local inpath '../../data/files/kv2.txt' into table intermediate2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@intermediate2
+POSTHOOK: query: load data local inpath '../../data/files/kv2.txt' into table intermediate2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@intermediate2
+PREHOOK: query: load data local inpath '../../data/files/kv3.txt' into table intermediate2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@intermediate2
+POSTHOOK: query: load data local inpath '../../data/files/kv3.txt' into table intermediate2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@intermediate2
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@load2_mm
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@load2_mm
+POSTHOOK: Output: default@load2_mm@k=5/l=5
+PREHOOK: query: select count(1) from load2_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@load2_mm
+PREHOOK: Input: default@load2_mm@k=5/l=5
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from load2_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@load2_mm
+POSTHOOK: Input: default@load2_mm@k=5/l=5
+#### A masked pattern was here ####
+1025
+PREHOOK: query: drop table load2_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@load2_mm
+PREHOOK: Output: default@load2_mm
+POSTHOOK: query: drop table load2_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@load2_mm
+POSTHOOK: Output: default@load2_mm
+PREHOOK: query: drop table intermediate2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@intermediate2
+PREHOOK: Output: default@intermediate2
+POSTHOOK: query: drop table intermediate2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@intermediate2
+POSTHOOK: Output: default@intermediate2
 PREHOOK: query: drop table intermediate
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate

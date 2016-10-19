@@ -68,9 +68,9 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
   public LoadTableDesc(final Path sourcePath,
                        final TableDesc table,
                        final Map<String, String> partitionSpec,
-                       final boolean replace) {
-    // TODO# we assume mm=false here
-    this(sourcePath, table, partitionSpec, replace, AcidUtils.Operation.NOT_ACID, null);
+                       final boolean replace,
+                       final Long mmWriteId) {
+    this(sourcePath, table, partitionSpec, replace, AcidUtils.Operation.NOT_ACID, mmWriteId);
   }
 
   public LoadTableDesc(final Path sourcePath,

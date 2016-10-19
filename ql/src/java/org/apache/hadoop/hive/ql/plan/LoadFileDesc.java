@@ -60,7 +60,7 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
       final boolean isDfsDir, final String columns, final String columnTypes) {
 
     super(sourcePath);
-    Utilities.LOG14535.info("creating LFD from " + sourcePath + " to " + targetDir, new Exception());
+    Utilities.LOG14535.info("creating LFD from " + sourcePath + " to " + targetDir);
     this.targetDir = targetDir;
     this.isDfsDir = isDfsDir;
     this.columns = columns;
