@@ -1,0 +1,932 @@
+PREHOOK: query: drop database if exists statsdb1
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists statsdb1
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database statsdb1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:statsdb1
+POSTHOOK: query: create database statsdb1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:statsdb1
+PREHOOK: query: drop database if exists statsdb2
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists statsdb2
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database statsdb2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:statsdb2
+POSTHOOK: query: create database statsdb2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:statsdb2
+PREHOOK: query: create table statsdb1.testtable1 (col1 int, col2 string, col3 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:statsdb1
+PREHOOK: Output: statsdb1@testtable1
+POSTHOOK: query: create table statsdb1.testtable1 (col1 int, col2 string, col3 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:statsdb1
+POSTHOOK: Output: statsdb1@testtable1
+PREHOOK: query: insert into statsdb1.testtable1 select key, value, 'val3' from src limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: statsdb1@testtable1
+POSTHOOK: query: insert into statsdb1.testtable1 select key, value, 'val3' from src limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: statsdb1@testtable1
+POSTHOOK: Lineage: testtable1.col1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testtable1.col2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: testtable1.col3 SIMPLE []
+PREHOOK: query: create table statsdb1.testpart1 (col1 int, col2 string, col3 string) partitioned by (part string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:statsdb1
+PREHOOK: Output: statsdb1@testpart1
+POSTHOOK: query: create table statsdb1.testpart1 (col1 int, col2 string, col3 string) partitioned by (part string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:statsdb1
+POSTHOOK: Output: statsdb1@testpart1
+PREHOOK: query: insert into statsdb1.testpart1 partition (part = 'part1') select key, value, 'val3' from src limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: query: insert into statsdb1.testpart1 partition (part = 'part1') select key, value, 'val3' from src limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: Lineage: testpart1 PARTITION(part=part1).col1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart1 PARTITION(part=part1).col2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart1 PARTITION(part=part1).col3 SIMPLE []
+PREHOOK: query: insert into statsdb1.testpart1 partition (part = 'part2') select key, value, 'val3' from src limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: statsdb1@testpart1@part=part2
+POSTHOOK: query: insert into statsdb1.testpart1 partition (part = 'part2') select key, value, 'val3' from src limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: statsdb1@testpart1@part=part2
+POSTHOOK: Lineage: testpart1 PARTITION(part=part2).col1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart1 PARTITION(part=part2).col2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart1 PARTITION(part=part2).col3 SIMPLE []
+PREHOOK: query: use statsdb1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:statsdb1
+POSTHOOK: query: use statsdb1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:statsdb1
+PREHOOK: query: analyze table testtable1 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: statsdb1@testtable1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table testtable1 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: statsdb1@testtable1
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted statsdb1.testtable1 col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	8                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testtable1 col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testtable1 col3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
+PREHOOK: query: alter table testtable1 replace columns (col1 int, col2 string, col4 string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: statsdb1@testtable1
+PREHOOK: Output: statsdb1@testtable1
+POSTHOOK: query: alter table testtable1 replace columns (col1 int, col2 string, col4 string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: statsdb1@testtable1
+POSTHOOK: Output: statsdb1@testtable1
+PREHOOK: query: describe formatted statsdb1.testtable1 col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	8                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testtable1 col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testtable1 col4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col4                	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: alter table testtable1 change col1 col1 string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: statsdb1@testtable1
+PREHOOK: Output: statsdb1@testtable1
+POSTHOOK: query: alter table testtable1 change col1 col1 string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: statsdb1@testtable1
+POSTHOOK: Output: statsdb1@testtable1
+PREHOOK: query: describe formatted statsdb1.testtable1 col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testtable1 col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testtable1 col4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col4                	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: statsdb1@testtable1
+PREHOOK: Output: statsdb1@testtable1
+POSTHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: statsdb1@testtable1
+POSTHOOK: Output: statsdb1@testtable1
+POSTHOOK: Output: statsdb2@testtable2
+PREHOOK: query: analyze table testpart1 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: statsdb1@testpart1
+PREHOOK: Input: statsdb1@testpart1@part=part1
+PREHOOK: Input: statsdb1@testpart1@part=part2
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table testpart1 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: statsdb1@testpart1
+POSTHOOK: Input: statsdb1@testpart1@part=part1
+POSTHOOK: Input: statsdb1@testpart1@part=part2
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	8                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	18                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	18                  	6.8                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
+PREHOOK: query: alter table statsdb1.testpart1 partition (part = 'part2') rename to partition (part = 'part3')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: statsdb1@testpart1
+PREHOOK: Output: statsdb1@testpart1@part=part2
+POSTHOOK: query: alter table statsdb1.testpart1 partition (part = 'part2') rename to partition (part = 'part3')
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: statsdb1@testpart1
+POSTHOOK: Input: statsdb1@testpart1@part=part2
+POSTHOOK: Output: statsdb1@testpart1@part=part2
+POSTHOOK: Output: statsdb1@testpart1@part=part3
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	8                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+col3                	string              	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: alter table statsdb1.testpart1 replace columns (col1 int, col2 string, col4 string) cascade
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: statsdb1@testpart1
+PREHOOK: Output: statsdb1@testpart1
+PREHOOK: Output: statsdb1@testpart1@part=part1
+PREHOOK: Output: statsdb1@testpart1@part=part3
+POSTHOOK: query: alter table statsdb1.testpart1 replace columns (col1 int, col2 string, col4 string) cascade
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: statsdb1@testpart1
+POSTHOOK: Output: statsdb1@testpart1
+POSTHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: Output: statsdb1@testpart1@part=part3
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	8                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+col4                	string              	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: alter table statsdb1.testpart1 change column col1 col1 string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: statsdb1@testpart1
+PREHOOK: Output: statsdb1@testpart1
+POSTHOOK: query: alter table statsdb1.testpart1 change column col1 col1 string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: statsdb1@testpart1
+POSTHOOK: Output: statsdb1@testpart1
+PREHOOK: query: alter table statsdb1.testpart1 partition (part) change column col1 col1 string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: statsdb1@testpart1
+PREHOOK: Output: statsdb1@testpart1@part=part1
+PREHOOK: Output: statsdb1@testpart1@part=part3
+POSTHOOK: query: alter table statsdb1.testpart1 partition (part) change column col1 col1 string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: statsdb1@testpart1
+POSTHOOK: Input: statsdb1@testpart1@part=part1
+POSTHOOK: Input: statsdb1@testpart1@part=part3
+POSTHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: Output: statsdb1@testpart1@part=part3
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+col1                	string              	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+col4                	string              	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: alter table statsdb1.testpart1 rename to statsdb2.testpart2
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: statsdb1@testpart1
+PREHOOK: Output: statsdb1@testpart1
+POSTHOOK: query: alter table statsdb1.testpart1 rename to statsdb2.testpart2
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: statsdb1@testpart1
+POSTHOOK: Output: statsdb1@testpart1
+POSTHOOK: Output: statsdb2@testpart2
+PREHOOK: query: use statsdb2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:statsdb2
+POSTHOOK: query: use statsdb2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:statsdb2
+PREHOOK: query: alter table statsdb2.testpart2 drop partition (part = 'part1')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: statsdb2@testpart2
+PREHOOK: Output: statsdb2@testpart2@part=part1
+POSTHOOK: query: alter table statsdb2.testpart2 drop partition (part = 'part1')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: statsdb2@testpart2
+POSTHOOK: Output: statsdb2@testpart2@part=part1
+PREHOOK: query: drop table statsdb2.testpart2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: statsdb2@testpart2
+PREHOOK: Output: statsdb2@testpart2
+POSTHOOK: query: drop table statsdb2.testpart2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: statsdb2@testpart2
+POSTHOOK: Output: statsdb2@testpart2
+PREHOOK: query: drop table statsdb2.testtable2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: statsdb2@testtable2
+PREHOOK: Output: statsdb2@testtable2
+POSTHOOK: query: drop table statsdb2.testtable2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: statsdb2@testtable2
+POSTHOOK: Output: statsdb2@testtable2
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: drop database statsdb1
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:statsdb1
+PREHOOK: Output: database:statsdb1
+POSTHOOK: query: drop database statsdb1
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:statsdb1
+POSTHOOK: Output: database:statsdb1
+PREHOOK: query: drop database statsdb2
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:statsdb2
+PREHOOK: Output: database:statsdb2
+POSTHOOK: query: drop database statsdb2
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:statsdb2
+POSTHOOK: Output: database:statsdb2
+PREHOOK: query: drop database if exists statsdb1
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists statsdb1
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database statsdb1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:statsdb1
+POSTHOOK: query: create database statsdb1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:statsdb1
+PREHOOK: query: drop database if exists statsdb2
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists statsdb2
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database statsdb2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:statsdb2
+POSTHOOK: query: create database statsdb2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:statsdb2
+PREHOOK: query: create table statsdb1.testtable1 (col1 int, col2 string, col3 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:statsdb1
+PREHOOK: Output: statsdb1@testtable1
+POSTHOOK: query: create table statsdb1.testtable1 (col1 int, col2 string, col3 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:statsdb1
+POSTHOOK: Output: statsdb1@testtable1
+PREHOOK: query: insert into statsdb1.testtable1 select key, value, 'val3' from src limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: statsdb1@testtable1
+POSTHOOK: query: insert into statsdb1.testtable1 select key, value, 'val3' from src limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: statsdb1@testtable1
+POSTHOOK: Lineage: testtable1.col1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testtable1.col2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: testtable1.col3 SIMPLE []
+PREHOOK: query: create table statsdb1.testpart1 (col1 int, col2 string, col3 string) partitioned by (part string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:statsdb1
+PREHOOK: Output: statsdb1@testpart1
+POSTHOOK: query: create table statsdb1.testpart1 (col1 int, col2 string, col3 string) partitioned by (part string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:statsdb1
+POSTHOOK: Output: statsdb1@testpart1
+PREHOOK: query: insert into statsdb1.testpart1 partition (part = 'part1') select key, value, 'val3' from src limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: query: insert into statsdb1.testpart1 partition (part = 'part1') select key, value, 'val3' from src limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: Lineage: testpart1 PARTITION(part=part1).col1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart1 PARTITION(part=part1).col2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart1 PARTITION(part=part1).col3 SIMPLE []
+PREHOOK: query: insert into statsdb1.testpart1 partition (part = 'part2') select key, value, 'val3' from src limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: statsdb1@testpart1@part=part2
+POSTHOOK: query: insert into statsdb1.testpart1 partition (part = 'part2') select key, value, 'val3' from src limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: statsdb1@testpart1@part=part2
+POSTHOOK: Lineage: testpart1 PARTITION(part=part2).col1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart1 PARTITION(part=part2).col2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: testpart1 PARTITION(part=part2).col3 SIMPLE []
+PREHOOK: query: use statsdb1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:statsdb1
+POSTHOOK: query: use statsdb1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:statsdb1
+PREHOOK: query: analyze table testtable1 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: statsdb1@testtable1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table testtable1 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: statsdb1@testtable1
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted statsdb1.testtable1 col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	8                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testtable1 col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testtable1 col3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
+PREHOOK: query: alter table testtable1 replace columns (col1 int, col2 string, col4 string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: statsdb1@testtable1
+PREHOOK: Output: statsdb1@testtable1
+POSTHOOK: query: alter table testtable1 replace columns (col1 int, col2 string, col4 string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: statsdb1@testtable1
+POSTHOOK: Output: statsdb1@testtable1
+PREHOOK: query: describe formatted statsdb1.testtable1 col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	8                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testtable1 col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testtable1 col4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col4                	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: alter table testtable1 change col1 col1 string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: statsdb1@testtable1
+PREHOOK: Output: statsdb1@testtable1
+POSTHOOK: query: alter table testtable1 change col1 col1 string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: statsdb1@testtable1
+POSTHOOK: Output: statsdb1@testtable1
+PREHOOK: query: describe formatted statsdb1.testtable1 col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testtable1 col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testtable1 col4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testtable1
+POSTHOOK: query: describe formatted statsdb1.testtable1 col4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testtable1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col4                	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: statsdb1@testtable1
+PREHOOK: Output: statsdb1@testtable1
+POSTHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: statsdb1@testtable1
+POSTHOOK: Output: statsdb1@testtable1
+POSTHOOK: Output: statsdb2@testtable2
+PREHOOK: query: analyze table testpart1 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: statsdb1@testpart1
+PREHOOK: Input: statsdb1@testpart1@part=part1
+PREHOOK: Input: statsdb1@testpart1@part=part2
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table testpart1 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: statsdb1@testpart1
+POSTHOOK: Input: statsdb1@testpart1@part=part1
+POSTHOOK: Input: statsdb1@testpart1@part=part2
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	8                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	18                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	18                  	6.8                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
+PREHOOK: query: alter table statsdb1.testpart1 partition (part = 'part2') rename to partition (part = 'part3')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: statsdb1@testpart1
+PREHOOK: Output: statsdb1@testpart1@part=part2
+POSTHOOK: query: alter table statsdb1.testpart1 partition (part = 'part2') rename to partition (part = 'part3')
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: statsdb1@testpart1
+POSTHOOK: Input: statsdb1@testpart1@part=part2
+POSTHOOK: Output: statsdb1@testpart1@part=part2
+POSTHOOK: Output: statsdb1@testpart1@part=part3
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	8                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part3') col3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+col3                	string              	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: alter table statsdb1.testpart1 replace columns (col1 int, col2 string, col4 string) cascade
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: statsdb1@testpart1
+PREHOOK: Output: statsdb1@testpart1
+PREHOOK: Output: statsdb1@testpart1@part=part1
+PREHOOK: Output: statsdb1@testpart1@part=part3
+POSTHOOK: query: alter table statsdb1.testpart1 replace columns (col1 int, col2 string, col4 string) cascade
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: statsdb1@testpart1
+POSTHOOK: Output: statsdb1@testpart1
+POSTHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: Output: statsdb1@testpart1@part=part3
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	8                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+col4                	string              	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: alter table statsdb1.testpart1 change column col1 col1 string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: statsdb1@testpart1
+PREHOOK: Output: statsdb1@testpart1
+POSTHOOK: query: alter table statsdb1.testpart1 change column col1 col1 string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: statsdb1@testpart1
+POSTHOOK: Output: statsdb1@testpart1
+PREHOOK: query: alter table statsdb1.testpart1 partition (part) change column col1 col1 string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: statsdb1@testpart1
+PREHOOK: Output: statsdb1@testpart1@part=part1
+PREHOOK: Output: statsdb1@testpart1@part=part3
+POSTHOOK: query: alter table statsdb1.testpart1 partition (part) change column col1 col1 string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: statsdb1@testpart1
+POSTHOOK: Input: statsdb1@testpart1@part=part1
+POSTHOOK: Input: statsdb1@testpart1@part=part3
+POSTHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: Output: statsdb1@testpart1@part=part3
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+col1                	string              	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+col4                	string              	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: alter table statsdb1.testpart1 rename to statsdb2.testpart2
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: statsdb1@testpart1
+PREHOOK: Output: statsdb1@testpart1
+POSTHOOK: query: alter table statsdb1.testpart1 rename to statsdb2.testpart2
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: statsdb1@testpart1
+POSTHOOK: Output: statsdb1@testpart1
+POSTHOOK: Output: statsdb2@testpart2
+PREHOOK: query: use statsdb2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:statsdb2
+POSTHOOK: query: use statsdb2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:statsdb2
+PREHOOK: query: alter table statsdb2.testpart2 drop partition (part = 'part1')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: statsdb2@testpart2
+PREHOOK: Output: statsdb2@testpart2@part=part1
+POSTHOOK: query: alter table statsdb2.testpart2 drop partition (part = 'part1')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: statsdb2@testpart2
+POSTHOOK: Output: statsdb2@testpart2@part=part1
+PREHOOK: query: drop table statsdb2.testpart2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: statsdb2@testpart2
+PREHOOK: Output: statsdb2@testpart2
+POSTHOOK: query: drop table statsdb2.testpart2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: statsdb2@testpart2
+POSTHOOK: Output: statsdb2@testpart2
+PREHOOK: query: drop table statsdb2.testtable2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: statsdb2@testtable2
+PREHOOK: Output: statsdb2@testtable2
+POSTHOOK: query: drop table statsdb2.testtable2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: statsdb2@testtable2
+POSTHOOK: Output: statsdb2@testtable2
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: drop database statsdb1
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:statsdb1
+PREHOOK: Output: database:statsdb1
+POSTHOOK: query: drop database statsdb1
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:statsdb1
+POSTHOOK: Output: database:statsdb1
+PREHOOK: query: drop database statsdb2
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:statsdb2
+PREHOOK: Output: database:statsdb2
+POSTHOOK: query: drop database statsdb2
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:statsdb2
+POSTHOOK: Output: database:statsdb2

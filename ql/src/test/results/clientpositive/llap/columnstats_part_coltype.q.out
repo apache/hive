@@ -1,0 +1,441 @@
+PREHOOK: query: -- Test type date, int, and string in partition column
+drop table if exists partcolstats
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- Test type date, int, and string in partition column
+drop table if exists partcolstats
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table partcolstats (key int, value string) partitioned by (ds date, hr int, part string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partcolstats
+POSTHOOK: query: create table partcolstats (key int, value string) partitioned by (ds date, hr int, part string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partcolstats
+PREHOOK: query: insert into partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') select key, value from src limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+POSTHOOK: query: insert into partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') select key, value from src limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+POSTHOOK: Lineage: partcolstats PARTITION(ds=2015-04-02,hr=2,part=partA).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partcolstats PARTITION(ds=2015-04-02,hr=2,part=partA).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') select key, value from src limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partB
+POSTHOOK: query: insert into partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') select key, value from src limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partB
+POSTHOOK: Lineage: partcolstats PARTITION(ds=2015-04-02,hr=2,part=partB).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partcolstats PARTITION(ds=2015-04-02,hr=2,part=partB).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') select key, value from src limit 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@partcolstats@ds=2015-04-02/hr=3/part=partA
+POSTHOOK: query: insert into partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') select key, value from src limit 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@partcolstats@ds=2015-04-02/hr=3/part=partA
+POSTHOOK: Lineage: partcolstats PARTITION(ds=2015-04-02,hr=3,part=partA).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partcolstats PARTITION(ds=2015-04-02,hr=3,part=partA).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') select key, value from src limit 40
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@partcolstats@ds=2015-04-03/hr=3/part=partA
+POSTHOOK: query: insert into partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') select key, value from src limit 40
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@partcolstats@ds=2015-04-03/hr=3/part=partA
+POSTHOOK: Lineage: partcolstats PARTITION(ds=2015-04-03,hr=3,part=partA).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partcolstats PARTITION(ds=2015-04-03,hr=3,part=partA).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') select key, value from src limit 60
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@partcolstats@ds=2015-04-03/hr=3/part=partB
+POSTHOOK: query: insert into partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') select key, value from src limit 60
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@partcolstats@ds=2015-04-03/hr=3/part=partB
+POSTHOOK: Lineage: partcolstats PARTITION(ds=2015-04-03,hr=3,part=partB).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partcolstats PARTITION(ds=2015-04-03,hr=3,part=partB).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partcolstats
+PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partcolstats
+POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	27                  	484                 	0                   	18                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	18                  	6.8                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr=2, part) compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partcolstats
+PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr=2, part) compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partcolstats
+POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	27                  	484                 	0                   	18                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	18                  	6.8                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr, part) compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partcolstats
+PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
+PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=3/part=partA
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr, part) compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partcolstats
+POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
+POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=3/part=partA
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	27                  	495                 	0                   	28                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	18                  	6.833333333333333   	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	from deserializer   	 	 	 	 	 	 	 	 
+PREHOOK: query: analyze table partcolstats partition (ds, hr, part) compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partcolstats
+PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
+PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=3/part=partA
+PREHOOK: Input: default@partcolstats@ds=2015-04-03/hr=3/part=partA
+PREHOOK: Input: default@partcolstats@ds=2015-04-03/hr=3/part=partB
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table partcolstats partition (ds, hr, part) compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partcolstats
+POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
+POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=3/part=partA
+POSTHOOK: Input: default@partcolstats@ds=2015-04-03/hr=3/part=partA
+POSTHOOK: Input: default@partcolstats@ds=2015-04-03/hr=3/part=partB
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	15                  	495                 	0                   	43                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	34                  	6.825               	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	15                  	495                 	0                   	51                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstats
+POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	53                  	6.883333333333334   	7                   	                    	                    	from deserializer   
+PREHOOK: query: drop table partcolstats
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@partcolstats
+PREHOOK: Output: default@partcolstats
+POSTHOOK: query: drop table partcolstats
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@partcolstats
+POSTHOOK: Output: default@partcolstats
+PREHOOK: query: -- Test type tinyint, smallint, and bigint in partition column
+drop table if exists partcolstatsnum
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- Test type tinyint, smallint, and bigint in partition column
+drop table if exists partcolstatsnum
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table partcolstatsnum (key int, value string) partitioned by (tint tinyint, sint smallint, bint bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partcolstatsnum
+POSTHOOK: query: create table partcolstatsnum (key int, value string) partitioned by (tint tinyint, sint smallint, bint bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partcolstatsnum
+PREHOOK: query: insert into partcolstatsnum partition (tint=100, sint=1000, bint=1000000) select key, value from src limit 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@partcolstatsnum@tint=100/sint=1000/bint=1000000
+POSTHOOK: query: insert into partcolstatsnum partition (tint=100, sint=1000, bint=1000000) select key, value from src limit 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@partcolstatsnum@tint=100/sint=1000/bint=1000000
+POSTHOOK: Lineage: partcolstatsnum PARTITION(tint=100,sint=1000,bint=1000000).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partcolstatsnum PARTITION(tint=100,sint=1000,bint=1000000).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: analyze table partcolstatsnum partition (tint=100, sint=1000, bint=1000000) compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partcolstatsnum
+PREHOOK: Input: default@partcolstatsnum@tint=100/sint=1000/bint=1000000
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table partcolstatsnum partition (tint=100, sint=1000, bint=1000000) compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partcolstatsnum
+POSTHOOK: Input: default@partcolstatsnum@tint=100/sint=1000/bint=1000000
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted partcolstatsnum partition (tint=100, sint=1000, bint=1000000) value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstatsnum
+POSTHOOK: query: describe formatted partcolstatsnum partition (tint=100, sint=1000, bint=1000000) value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstatsnum
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	18                  	6.833333333333333   	7                   	                    	                    	from deserializer   
+PREHOOK: query: drop table partcolstatsnum
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@partcolstatsnum
+PREHOOK: Output: default@partcolstatsnum
+POSTHOOK: query: drop table partcolstatsnum
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@partcolstatsnum
+POSTHOOK: Output: default@partcolstatsnum
+PREHOOK: query: -- Test type decimal in partition column
+drop table if exists partcolstatsdec
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- Test type decimal in partition column
+drop table if exists partcolstatsdec
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table partcolstatsdec (key int, value string) partitioned by (decpart decimal(8,4))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partcolstatsdec
+POSTHOOK: query: create table partcolstatsdec (key int, value string) partitioned by (decpart decimal(8,4))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partcolstatsdec
+PREHOOK: query: insert into partcolstatsdec partition (decpart='1000.0001') select key, value from src limit 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@partcolstatsdec@decpart=1000.0001
+POSTHOOK: query: insert into partcolstatsdec partition (decpart='1000.0001') select key, value from src limit 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@partcolstatsdec@decpart=1000.0001
+POSTHOOK: Lineage: partcolstatsdec PARTITION(decpart=1000.0001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partcolstatsdec PARTITION(decpart=1000.0001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: analyze table partcolstatsdec partition (decpart='1000.0001') compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partcolstatsdec
+PREHOOK: Input: default@partcolstatsdec@decpart=1000.0001
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table partcolstatsdec partition (decpart='1000.0001') compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partcolstatsdec
+POSTHOOK: Input: default@partcolstatsdec@decpart=1000.0001
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted partcolstatsdec partition (decpart='1000.0001') value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstatsdec
+POSTHOOK: query: describe formatted partcolstatsdec partition (decpart='1000.0001') value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstatsdec
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	18                  	6.833333333333333   	7                   	                    	                    	from deserializer   
+PREHOOK: query: drop table partcolstatsdec
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@partcolstatsdec
+PREHOOK: Output: default@partcolstatsdec
+POSTHOOK: query: drop table partcolstatsdec
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@partcolstatsdec
+POSTHOOK: Output: default@partcolstatsdec
+PREHOOK: query: -- Test type varchar and char in partition column
+drop table if exists partcolstatschar
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- Test type varchar and char in partition column
+drop table if exists partcolstatschar
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table partcolstatschar (key int, value string) partitioned by (varpart varchar(5), charpart char(3))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partcolstatschar
+POSTHOOK: query: create table partcolstatschar (key int, value string) partitioned by (varpart varchar(5), charpart char(3))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partcolstatschar
+PREHOOK: query: insert into partcolstatschar partition (varpart='part1', charpart='aaa') select key, value from src limit 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@partcolstatschar@varpart=part1/charpart=aaa
+POSTHOOK: query: insert into partcolstatschar partition (varpart='part1', charpart='aaa') select key, value from src limit 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@partcolstatschar@varpart=part1/charpart=aaa
+POSTHOOK: Lineage: partcolstatschar PARTITION(varpart=part1,charpart=aaa).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partcolstatschar PARTITION(varpart=part1,charpart=aaa).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: analyze table partcolstatschar partition (varpart='part1', charpart='aaa') compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partcolstatschar
+PREHOOK: Input: default@partcolstatschar@varpart=part1/charpart=aaa
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table partcolstatschar partition (varpart='part1', charpart='aaa') compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partcolstatschar
+POSTHOOK: Input: default@partcolstatschar@varpart=part1/charpart=aaa
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted partcolstatschar partition (varpart='part1', charpart='aaa') value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcolstatschar
+POSTHOOK: query: describe formatted partcolstatschar partition (varpart='part1', charpart='aaa') value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcolstatschar
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	18                  	6.833333333333333   	7                   	                    	                    	from deserializer   
+PREHOOK: query: drop table partcolstatschar
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@partcolstatschar
+PREHOOK: Output: default@partcolstatschar
+POSTHOOK: query: drop table partcolstatschar
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@partcolstatschar
+POSTHOOK: Output: default@partcolstatschar
