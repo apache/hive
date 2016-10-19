@@ -1,0 +1,1484 @@
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: -- CREATE with comment
+CREATE DATABASE test_db COMMENT 'Hive test database'
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
+POSTHOOK: query: -- CREATE with comment
+CREATE DATABASE test_db COMMENT 'Hive test database'
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+test_db
+PREHOOK: query: -- CREATE INE already exists
+CREATE DATABASE IF NOT EXISTS test_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
+POSTHOOK: query: -- CREATE INE already exists
+CREATE DATABASE IF NOT EXISTS test_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+test_db
+PREHOOK: query: -- SHOW DATABASES synonym
+SHOW SCHEMAS
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: -- SHOW DATABASES synonym
+SHOW SCHEMAS
+POSTHOOK: type: SHOWDATABASES
+default
+test_db
+PREHOOK: query: -- DROP
+DROP DATABASE test_db
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test_db
+PREHOOK: Output: database:test_db
+POSTHOOK: query: -- DROP
+DROP DATABASE test_db
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test_db
+POSTHOOK: Output: database:test_db
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: -- CREATE INE doesn't exist
+CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
+POSTHOOK: query: -- CREATE INE doesn't exist
+CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+test_db
+PREHOOK: query: -- DROP IE exists
+DROP DATABASE IF EXISTS test_db
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test_db
+PREHOOK: Output: database:test_db
+POSTHOOK: query: -- DROP IE exists
+DROP DATABASE IF EXISTS test_db
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test_db
+POSTHOOK: Output: database:test_db
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: -- DROP IE doesn't exist
+DROP DATABASE IF EXISTS test_db
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: -- DROP IE doesn't exist
+DROP DATABASE IF EXISTS test_db
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: -- SHOW
+CREATE DATABASE test_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
+POSTHOOK: query: -- SHOW
+CREATE DATABASE test_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+test_db
+PREHOOK: query: -- SHOW pattern
+SHOW DATABASES LIKE 'test*'
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: -- SHOW pattern
+SHOW DATABASES LIKE 'test*'
+POSTHOOK: type: SHOWDATABASES
+test_db
+PREHOOK: query: -- SHOW pattern
+SHOW DATABASES LIKE '*ef*'
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: -- SHOW pattern
+SHOW DATABASES LIKE '*ef*'
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: USE test_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test_db
+POSTHOOK: query: USE test_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test_db
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+test_db
+PREHOOK: query: -- CREATE table in non-default DB
+CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_db
+PREHOOK: Output: test_db@test_table
+POSTHOOK: query: -- CREATE table in non-default DB
+CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_db
+POSTHOOK: Output: test_db@test_table
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_db
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_db
+test_table
+PREHOOK: query: -- DESCRIBE table in non-default DB
+DESCRIBE test_table
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: test_db@test_table
+POSTHOOK: query: -- DESCRIBE table in non-default DB
+DESCRIBE test_table
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: test_db@test_table
+col1                	string              	                    
+PREHOOK: query: -- DESCRIBE EXTENDED in non-default DB
+DESCRIBE EXTENDED test_table
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: test_db@test_table
+POSTHOOK: query: -- DESCRIBE EXTENDED in non-default DB
+DESCRIBE EXTENDED test_table
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: test_db@test_table
+col1                	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: -- CREATE LIKE in non-default DB
+CREATE TABLE test_table_like LIKE test_table
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_db
+PREHOOK: Output: test_db@test_table_like
+POSTHOOK: query: -- CREATE LIKE in non-default DB
+CREATE TABLE test_table_like LIKE test_table
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_db
+POSTHOOK: Output: test_db@test_table_like
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_db
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_db
+test_table
+test_table_like
+PREHOOK: query: DESCRIBE EXTENDED test_table_like
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: test_db@test_table_like
+POSTHOOK: query: DESCRIBE EXTENDED test_table_like
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: test_db@test_table_like
+col1                	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: -- LOAD and SELECT
+LOAD DATA LOCAL INPATH '../../data/files/test.dat'
+OVERWRITE INTO TABLE test_table
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: test_db@test_table
+POSTHOOK: query: -- LOAD and SELECT
+LOAD DATA LOCAL INPATH '../../data/files/test.dat'
+OVERWRITE INTO TABLE test_table
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: test_db@test_table
+PREHOOK: query: SELECT * FROM test_table
+PREHOOK: type: QUERY
+PREHOOK: Input: test_db@test_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: test_db@test_table
+#### A masked pattern was here ####
+1
+2
+3
+4
+5
+6
+PREHOOK: query: -- DROP and CREATE w/o LOAD
+DROP TABLE test_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test_db@test_table
+PREHOOK: Output: test_db@test_table
+POSTHOOK: query: -- DROP and CREATE w/o LOAD
+DROP TABLE test_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test_db@test_table
+POSTHOOK: Output: test_db@test_table
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_db
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_db
+test_table_like
+PREHOOK: query: CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_db
+PREHOOK: Output: test_db@test_table
+POSTHOOK: query: CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_db
+POSTHOOK: Output: test_db@test_table
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_db
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_db
+test_table
+test_table_like
+PREHOOK: query: SELECT * FROM test_table
+PREHOOK: type: QUERY
+PREHOOK: Input: test_db@test_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: test_db@test_table
+#### A masked pattern was here ####
+PREHOOK: query: -- CREATE table that already exists in DEFAULT
+USE test_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test_db
+POSTHOOK: query: -- CREATE table that already exists in DEFAULT
+USE test_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test_db
+PREHOOK: query: CREATE TABLE src (col1 STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_db
+PREHOOK: Output: test_db@src
+POSTHOOK: query: CREATE TABLE src (col1 STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_db
+POSTHOOK: Output: test_db@src
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_db
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_db
+src
+test_table
+test_table_like
+PREHOOK: query: SELECT * FROM src LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: test_db@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM src LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: test_db@src
+#### A masked pattern was here ####
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: SELECT * FROM src LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM src LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+165	val_165
+238	val_238
+255	val_255
+27	val_27
+278	val_278
+311	val_311
+409	val_409
+484	val_484
+86	val_86
+98	val_98
+PREHOOK: query: -- DROP DATABASE
+USE test_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test_db
+POSTHOOK: query: -- DROP DATABASE
+USE test_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test_db
+PREHOOK: query: DROP TABLE src
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test_db@src
+PREHOOK: Output: test_db@src
+POSTHOOK: query: DROP TABLE src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test_db@src
+POSTHOOK: Output: test_db@src
+PREHOOK: query: DROP TABLE test_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test_db@test_table
+PREHOOK: Output: test_db@test_table
+POSTHOOK: query: DROP TABLE test_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test_db@test_table
+POSTHOOK: Output: test_db@test_table
+PREHOOK: query: DROP TABLE test_table_like
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test_db@test_table_like
+PREHOOK: Output: test_db@test_table_like
+POSTHOOK: query: DROP TABLE test_table_like
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test_db@test_table_like
+POSTHOOK: Output: test_db@test_table_like
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:test_db
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:test_db
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: DROP DATABASE test_db
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test_db
+PREHOOK: Output: database:test_db
+POSTHOOK: query: DROP DATABASE test_db
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test_db
+POSTHOOK: Output: database:test_db
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: -- DROP EMPTY DATABASE CASCADE
+CREATE DATABASE to_drop_db1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:to_drop_db1
+POSTHOOK: query: -- DROP EMPTY DATABASE CASCADE
+CREATE DATABASE to_drop_db1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:to_drop_db1
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+to_drop_db1
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: DROP DATABASE to_drop_db1 CASCADE
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:to_drop_db1
+PREHOOK: Output: database:to_drop_db1
+POSTHOOK: query: DROP DATABASE to_drop_db1 CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:to_drop_db1
+POSTHOOK: Output: database:to_drop_db1
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE
+CREATE DATABASE to_drop_db2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:to_drop_db2
+POSTHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE
+CREATE DATABASE to_drop_db2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:to_drop_db2
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+to_drop_db2
+PREHOOK: query: USE to_drop_db2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:to_drop_db2
+POSTHOOK: query: USE to_drop_db2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:to_drop_db2
+PREHOOK: query: CREATE TABLE temp_tbl (c STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:to_drop_db2
+PREHOOK: Output: to_drop_db2@temp_tbl
+POSTHOOK: query: CREATE TABLE temp_tbl (c STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:to_drop_db2
+POSTHOOK: Output: to_drop_db2@temp_tbl
+PREHOOK: query: CREATE TABLE temp_tbl2 LIKE temp_tbl
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:to_drop_db2
+PREHOOK: Output: to_drop_db2@temp_tbl2
+POSTHOOK: query: CREATE TABLE temp_tbl2 LIKE temp_tbl
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:to_drop_db2
+POSTHOOK: Output: to_drop_db2@temp_tbl2
+PREHOOK: query: INSERT OVERWRITE TABLE temp_tbl2 SELECT COUNT(*) FROM temp_tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: to_drop_db2@temp_tbl
+PREHOOK: Output: to_drop_db2@temp_tbl2
+POSTHOOK: query: INSERT OVERWRITE TABLE temp_tbl2 SELECT COUNT(*) FROM temp_tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: to_drop_db2@temp_tbl
+POSTHOOK: Output: to_drop_db2@temp_tbl2
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: DROP DATABASE to_drop_db2 CASCADE
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:to_drop_db2
+PREHOOK: Output: database:to_drop_db2
+PREHOOK: Output: to_drop_db2@temp_tbl
+PREHOOK: Output: to_drop_db2@temp_tbl2
+POSTHOOK: query: DROP DATABASE to_drop_db2 CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:to_drop_db2
+POSTHOOK: Output: database:to_drop_db2
+POSTHOOK: Output: to_drop_db2@temp_tbl
+POSTHOOK: Output: to_drop_db2@temp_tbl2
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE IF EXISTS
+CREATE DATABASE to_drop_db3
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:to_drop_db3
+POSTHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE IF EXISTS
+CREATE DATABASE to_drop_db3
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:to_drop_db3
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+to_drop_db3
+PREHOOK: query: USE to_drop_db3
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:to_drop_db3
+POSTHOOK: query: USE to_drop_db3
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:to_drop_db3
+PREHOOK: query: CREATE TABLE temp_tbl (c STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:to_drop_db3
+PREHOOK: Output: to_drop_db3@temp_tbl
+POSTHOOK: query: CREATE TABLE temp_tbl (c STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:to_drop_db3
+POSTHOOK: Output: to_drop_db3@temp_tbl
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: DROP DATABASE IF EXISTS to_drop_db3 CASCADE
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:to_drop_db3
+PREHOOK: Output: database:to_drop_db3
+PREHOOK: Output: to_drop_db3@temp_tbl
+POSTHOOK: query: DROP DATABASE IF EXISTS to_drop_db3 CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:to_drop_db3
+POSTHOOK: Output: database:to_drop_db3
+POSTHOOK: Output: to_drop_db3@temp_tbl
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: -- DROP NON-EXISTING DATABASE CASCADE IF EXISTS
+DROP DATABASE IF EXISTS non_exists_db3 CASCADE
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: -- DROP NON-EXISTING DATABASE CASCADE IF EXISTS
+DROP DATABASE IF EXISTS non_exists_db3 CASCADE
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: -- DROP NON-EXISTING DATABASE RESTRICT IF EXISTS
+DROP DATABASE IF EXISTS non_exists_db3 RESTRICT
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: -- DROP NON-EXISTING DATABASE RESTRICT IF EXISTS
+DROP DATABASE IF EXISTS non_exists_db3 RESTRICT
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: -- DROP EMPTY DATABASE RESTRICT
+CREATE DATABASE to_drop_db4
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:to_drop_db4
+POSTHOOK: query: -- DROP EMPTY DATABASE RESTRICT
+CREATE DATABASE to_drop_db4
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:to_drop_db4
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+to_drop_db4
+PREHOOK: query: DROP DATABASE to_drop_db4 RESTRICT
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:to_drop_db4
+PREHOOK: Output: database:to_drop_db4
+POSTHOOK: query: DROP DATABASE to_drop_db4 RESTRICT
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:to_drop_db4
+POSTHOOK: Output: database:to_drop_db4
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: --
+-- Canonical Name Tests
+--
+
+CREATE DATABASE db1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
+POSTHOOK: query: --
+-- Canonical Name Tests
+--
+
+CREATE DATABASE db1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
+PREHOOK: query: CREATE DATABASE db2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db2
+POSTHOOK: query: CREATE DATABASE db2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db2
+PREHOOK: query: -- CREATE foreign table
+CREATE TABLE db1.src(key STRING, value STRING)
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@src
+POSTHOOK: query: -- CREATE foreign table
+CREATE TABLE db1.src(key STRING, value STRING)
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@src
+PREHOOK: query: -- LOAD into foreign table
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
+OVERWRITE INTO TABLE db1.src
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: db1@src
+POSTHOOK: query: -- LOAD into foreign table
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
+OVERWRITE INTO TABLE db1.src
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: db1@src
+PREHOOK: query: -- SELECT from foreign table
+SELECT * FROM db1.src
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- SELECT from foreign table
+SELECT * FROM db1.src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@src
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
+100	val_100
+103	val_103
+103	val_103
+104	val_104
+104	val_104
+105	val_105
+11	val_11
+111	val_111
+113	val_113
+113	val_113
+114	val_114
+116	val_116
+118	val_118
+118	val_118
+119	val_119
+119	val_119
+119	val_119
+12	val_12
+12	val_12
+120	val_120
+120	val_120
+125	val_125
+125	val_125
+126	val_126
+128	val_128
+128	val_128
+128	val_128
+129	val_129
+129	val_129
+131	val_131
+133	val_133
+134	val_134
+134	val_134
+136	val_136
+137	val_137
+137	val_137
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+143	val_143
+145	val_145
+146	val_146
+146	val_146
+149	val_149
+149	val_149
+15	val_15
+15	val_15
+150	val_150
+152	val_152
+152	val_152
+153	val_153
+155	val_155
+156	val_156
+157	val_157
+158	val_158
+160	val_160
+162	val_162
+163	val_163
+164	val_164
+164	val_164
+165	val_165
+165	val_165
+166	val_166
+167	val_167
+167	val_167
+167	val_167
+168	val_168
+169	val_169
+169	val_169
+169	val_169
+169	val_169
+17	val_17
+170	val_170
+172	val_172
+172	val_172
+174	val_174
+174	val_174
+175	val_175
+175	val_175
+176	val_176
+176	val_176
+177	val_177
+178	val_178
+179	val_179
+179	val_179
+18	val_18
+18	val_18
+180	val_180
+181	val_181
+183	val_183
+186	val_186
+187	val_187
+187	val_187
+187	val_187
+189	val_189
+19	val_19
+190	val_190
+191	val_191
+191	val_191
+192	val_192
+193	val_193
+193	val_193
+193	val_193
+194	val_194
+195	val_195
+195	val_195
+196	val_196
+197	val_197
+197	val_197
+199	val_199
+199	val_199
+199	val_199
+2	val_2
+20	val_20
+200	val_200
+200	val_200
+201	val_201
+202	val_202
+203	val_203
+203	val_203
+205	val_205
+205	val_205
+207	val_207
+207	val_207
+208	val_208
+208	val_208
+208	val_208
+209	val_209
+209	val_209
+213	val_213
+213	val_213
+214	val_214
+216	val_216
+216	val_216
+217	val_217
+217	val_217
+218	val_218
+219	val_219
+219	val_219
+221	val_221
+221	val_221
+222	val_222
+223	val_223
+223	val_223
+224	val_224
+224	val_224
+226	val_226
+228	val_228
+229	val_229
+229	val_229
+230	val_230
+230	val_230
+230	val_230
+230	val_230
+230	val_230
+233	val_233
+233	val_233
+235	val_235
+237	val_237
+237	val_237
+238	val_238
+238	val_238
+239	val_239
+239	val_239
+24	val_24
+24	val_24
+241	val_241
+242	val_242
+242	val_242
+244	val_244
+247	val_247
+248	val_248
+249	val_249
+252	val_252
+255	val_255
+255	val_255
+256	val_256
+256	val_256
+257	val_257
+258	val_258
+26	val_26
+26	val_26
+260	val_260
+262	val_262
+263	val_263
+265	val_265
+265	val_265
+266	val_266
+27	val_27
+272	val_272
+272	val_272
+273	val_273
+273	val_273
+273	val_273
+274	val_274
+275	val_275
+277	val_277
+277	val_277
+277	val_277
+277	val_277
+278	val_278
+278	val_278
+28	val_28
+280	val_280
+280	val_280
+281	val_281
+281	val_281
+282	val_282
+282	val_282
+283	val_283
+284	val_284
+285	val_285
+286	val_286
+287	val_287
+288	val_288
+288	val_288
+289	val_289
+291	val_291
+292	val_292
+296	val_296
+298	val_298
+298	val_298
+298	val_298
+30	val_30
+302	val_302
+305	val_305
+306	val_306
+307	val_307
+307	val_307
+308	val_308
+309	val_309
+309	val_309
+310	val_310
+311	val_311
+311	val_311
+311	val_311
+315	val_315
+316	val_316
+316	val_316
+316	val_316
+317	val_317
+317	val_317
+318	val_318
+318	val_318
+318	val_318
+321	val_321
+321	val_321
+322	val_322
+322	val_322
+323	val_323
+325	val_325
+325	val_325
+327	val_327
+327	val_327
+327	val_327
+33	val_33
+331	val_331
+331	val_331
+332	val_332
+333	val_333
+333	val_333
+335	val_335
+336	val_336
+338	val_338
+339	val_339
+34	val_34
+341	val_341
+342	val_342
+342	val_342
+344	val_344
+344	val_344
+345	val_345
+348	val_348
+348	val_348
+348	val_348
+348	val_348
+348	val_348
+35	val_35
+35	val_35
+35	val_35
+351	val_351
+353	val_353
+353	val_353
+356	val_356
+360	val_360
+362	val_362
+364	val_364
+365	val_365
+366	val_366
+367	val_367
+367	val_367
+368	val_368
+369	val_369
+369	val_369
+369	val_369
+37	val_37
+37	val_37
+373	val_373
+374	val_374
+375	val_375
+377	val_377
+378	val_378
+379	val_379
+382	val_382
+382	val_382
+384	val_384
+384	val_384
+384	val_384
+386	val_386
+389	val_389
+392	val_392
+393	val_393
+394	val_394
+395	val_395
+395	val_395
+396	val_396
+396	val_396
+396	val_396
+397	val_397
+397	val_397
+399	val_399
+399	val_399
+4	val_4
+400	val_400
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+402	val_402
+403	val_403
+403	val_403
+403	val_403
+404	val_404
+404	val_404
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+407	val_407
+409	val_409
+409	val_409
+409	val_409
+41	val_41
+411	val_411
+413	val_413
+413	val_413
+414	val_414
+414	val_414
+417	val_417
+417	val_417
+417	val_417
+418	val_418
+419	val_419
+42	val_42
+42	val_42
+421	val_421
+424	val_424
+424	val_424
+427	val_427
+429	val_429
+429	val_429
+43	val_43
+430	val_430
+430	val_430
+430	val_430
+431	val_431
+431	val_431
+431	val_431
+432	val_432
+435	val_435
+436	val_436
+437	val_437
+438	val_438
+438	val_438
+438	val_438
+439	val_439
+439	val_439
+44	val_44
+443	val_443
+444	val_444
+446	val_446
+448	val_448
+449	val_449
+452	val_452
+453	val_453
+454	val_454
+454	val_454
+454	val_454
+455	val_455
+457	val_457
+458	val_458
+458	val_458
+459	val_459
+459	val_459
+460	val_460
+462	val_462
+462	val_462
+463	val_463
+463	val_463
+466	val_466
+466	val_466
+466	val_466
+467	val_467
+468	val_468
+468	val_468
+468	val_468
+468	val_468
+469	val_469
+469	val_469
+469	val_469
+469	val_469
+469	val_469
+47	val_47
+470	val_470
+472	val_472
+475	val_475
+477	val_477
+478	val_478
+478	val_478
+479	val_479
+480	val_480
+480	val_480
+480	val_480
+481	val_481
+482	val_482
+483	val_483
+484	val_484
+485	val_485
+487	val_487
+489	val_489
+489	val_489
+489	val_489
+489	val_489
+490	val_490
+491	val_491
+492	val_492
+492	val_492
+493	val_493
+494	val_494
+495	val_495
+496	val_496
+497	val_497
+498	val_498
+498	val_498
+498	val_498
+5	val_5
+5	val_5
+5	val_5
+51	val_51
+51	val_51
+53	val_53
+54	val_54
+57	val_57
+58	val_58
+58	val_58
+64	val_64
+65	val_65
+66	val_66
+67	val_67
+67	val_67
+69	val_69
+70	val_70
+70	val_70
+70	val_70
+72	val_72
+72	val_72
+74	val_74
+76	val_76
+76	val_76
+77	val_77
+78	val_78
+8	val_8
+80	val_80
+82	val_82
+83	val_83
+83	val_83
+84	val_84
+84	val_84
+85	val_85
+86	val_86
+87	val_87
+9	val_9
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98
+PREHOOK: query: -- CREATE Partitioned foreign table
+CREATE TABLE db1.srcpart(key STRING, value STRING)
+PARTITIONED BY (ds STRING, hr STRING)
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@srcpart
+POSTHOOK: query: -- CREATE Partitioned foreign table
+CREATE TABLE db1.srcpart(key STRING, value STRING)
+PARTITIONED BY (ds STRING, hr STRING)
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@srcpart
+PREHOOK: query: -- LOAD data into Partitioned foreign table
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
+OVERWRITE INTO TABLE db1.srcpart
+PARTITION (ds='2008-04-08', hr='11')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: db1@srcpart
+POSTHOOK: query: -- LOAD data into Partitioned foreign table
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
+OVERWRITE INTO TABLE db1.srcpart
+PARTITION (ds='2008-04-08', hr='11')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: db1@srcpart
+POSTHOOK: Output: db1@srcpart@ds=2008-04-08/hr=11
+PREHOOK: query: -- SELECT from Partitioned foreign table
+SELECT key, value FROM db1.srcpart
+WHERE key < 100 AND ds='2008-04-08' AND hr='11'
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@srcpart
+PREHOOK: Input: db1@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: -- SELECT from Partitioned foreign table
+SELECT key, value FROM db1.srcpart
+WHERE key < 100 AND ds='2008-04-08' AND hr='11'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@srcpart
+POSTHOOK: Input: db1@srcpart@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+11	val_11
+12	val_12
+12	val_12
+15	val_15
+15	val_15
+17	val_17
+18	val_18
+18	val_18
+19	val_19
+2	val_2
+20	val_20
+24	val_24
+24	val_24
+26	val_26
+26	val_26
+27	val_27
+28	val_28
+30	val_30
+33	val_33
+34	val_34
+35	val_35
+35	val_35
+35	val_35
+37	val_37
+37	val_37
+4	val_4
+41	val_41
+42	val_42
+42	val_42
+43	val_43
+44	val_44
+47	val_47
+5	val_5
+5	val_5
+5	val_5
+51	val_51
+51	val_51
+53	val_53
+54	val_54
+57	val_57
+58	val_58
+58	val_58
+64	val_64
+65	val_65
+66	val_66
+67	val_67
+67	val_67
+69	val_69
+70	val_70
+70	val_70
+70	val_70
+72	val_72
+72	val_72
+74	val_74
+76	val_76
+76	val_76
+77	val_77
+78	val_78
+8	val_8
+80	val_80
+82	val_82
+83	val_83
+83	val_83
+84	val_84
+84	val_84
+85	val_85
+86	val_86
+87	val_87
+9	val_9
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98
+PREHOOK: query: -- SELECT JOINed product of two foreign tables
+USE db2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db2
+POSTHOOK: query: -- SELECT JOINed product of two foreign tables
+USE db2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db2
+PREHOOK: query: SELECT a.* FROM db1.src a JOIN default.src1 b
+ON (a.key = b.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a.* FROM db1.src a JOIN default.src1 b
+ON (a.key = b.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+128	val_128
+128	val_128
+128	val_128
+146	val_146
+146	val_146
+150	val_150
+213	val_213
+213	val_213
+224	val_224
+224	val_224
+238	val_238
+238	val_238
+255	val_255
+255	val_255
+273	val_273
+273	val_273
+273	val_273
+278	val_278
+278	val_278
+311	val_311
+311	val_311
+311	val_311
+369	val_369
+369	val_369
+369	val_369
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+66	val_66
+98	val_98
+98	val_98
+PREHOOK: query: -- CREATE TABLE AS SELECT from foreign table
+CREATE TABLE conflict_name AS
+SELECT value FROM default.src WHERE key = 66
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:db2
+PREHOOK: Output: db2@conflict_name
+POSTHOOK: query: -- CREATE TABLE AS SELECT from foreign table
+CREATE TABLE conflict_name AS
+SELECT value FROM default.src WHERE key = 66
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:db2
+POSTHOOK: Output: db2@conflict_name
+POSTHOOK: Lineage: conflict_name.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- CREATE foreign table
+CREATE TABLE db1.conflict_name AS
+SELECT value FROM db1.src WHERE key = 8
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: db1@src
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@conflict_name
+POSTHOOK: query: -- CREATE foreign table
+CREATE TABLE db1.conflict_name AS
+SELECT value FROM db1.src WHERE key = 8
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: db1@src
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@conflict_name
+POSTHOOK: Lineage: conflict_name.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: -- query tables with the same names in different DBs
+SELECT * FROM (
+  SELECT value FROM db1.conflict_name
+UNION ALL
+  SELECT value FROM conflict_name
+) subq ORDER BY value
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@conflict_name
+PREHOOK: Input: db2@conflict_name
+#### A masked pattern was here ####
+POSTHOOK: query: -- query tables with the same names in different DBs
+SELECT * FROM (
+  SELECT value FROM db1.conflict_name
+UNION ALL
+  SELECT value FROM conflict_name
+) subq ORDER BY value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@conflict_name
+POSTHOOK: Input: db2@conflict_name
+#### A masked pattern was here ####
+val_66
+val_8
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: SELECT * FROM (
+  SELECT value FROM db1.conflict_name
+UNION ALL
+  SELECT value FROM db2.conflict_name
+) subq
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@conflict_name
+PREHOOK: Input: db2@conflict_name
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM (
+  SELECT value FROM db1.conflict_name
+UNION ALL
+  SELECT value FROM db2.conflict_name
+) subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@conflict_name
+POSTHOOK: Input: db2@conflict_name
+#### A masked pattern was here ####
+val_66
+val_8
+PREHOOK: query: -- TABLESAMPLES
+CREATE TABLE bucketized_src (key INT, value STRING)
+CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bucketized_src
+POSTHOOK: query: -- TABLESAMPLES
+CREATE TABLE bucketized_src (key INT, value STRING)
+CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bucketized_src
+PREHOOK: query: INSERT OVERWRITE TABLE bucketized_src
+SELECT key, value FROM src WHERE key=66
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@bucketized_src
+POSTHOOK: query: INSERT OVERWRITE TABLE bucketized_src
+SELECT key, value FROM src WHERE key=66
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@bucketized_src
+POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT key FROM bucketized_src TABLESAMPLE(BUCKET 1 out of 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucketized_src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key FROM bucketized_src TABLESAMPLE(BUCKET 1 out of 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucketized_src
+#### A masked pattern was here ####
+66
+PREHOOK: query: -- CREATE TABLE LIKE
+CREATE TABLE db2.src1 LIKE default.src
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db2
+PREHOOK: Output: db2@src1
+POSTHOOK: query: -- CREATE TABLE LIKE
+CREATE TABLE db2.src1 LIKE default.src
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db2
+POSTHOOK: Output: db2@src1
+PREHOOK: query: USE db2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db2
+POSTHOOK: query: USE db2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db2
+PREHOOK: query: DESC EXTENDED src1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db2@src1
+POSTHOOK: query: DESC EXTENDED src1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db2@src1
+key                 	string              	default             
+value               	string              	default             
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: -- character escaping
+SELECT key FROM `default`.src ORDER BY key LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- character escaping
+SELECT key FROM `default`.src ORDER BY key LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0
+PREHOOK: query: SELECT key FROM `default`.`src` ORDER BY key LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key FROM `default`.`src` ORDER BY key LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0
+PREHOOK: query: SELECT key FROM default.`src` ORDER BY key LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key FROM default.`src` ORDER BY key LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default

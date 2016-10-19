@@ -1,0 +1,328 @@
+PREHOOK: query: create table ppr_test (key string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ppr_test
+POSTHOOK: query: create table ppr_test (key string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ppr_test
+PREHOOK: query: alter table ppr_test add partition (ds = '1234')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ppr_test
+POSTHOOK: query: alter table ppr_test add partition (ds = '1234')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ppr_test
+POSTHOOK: Output: default@ppr_test@ds=1234
+PREHOOK: query: alter table ppr_test add partition (ds = '1224')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ppr_test
+POSTHOOK: query: alter table ppr_test add partition (ds = '1224')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ppr_test
+POSTHOOK: Output: default@ppr_test@ds=1224
+PREHOOK: query: alter table ppr_test add partition (ds = '1214')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ppr_test
+POSTHOOK: query: alter table ppr_test add partition (ds = '1214')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ppr_test
+POSTHOOK: Output: default@ppr_test@ds=1214
+PREHOOK: query: alter table ppr_test add partition (ds = '12+4')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ppr_test
+POSTHOOK: query: alter table ppr_test add partition (ds = '12+4')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ppr_test
+POSTHOOK: Output: default@ppr_test@ds=12+4
+PREHOOK: query: alter table ppr_test add partition (ds = '12.4')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ppr_test
+POSTHOOK: query: alter table ppr_test add partition (ds = '12.4')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ppr_test
+POSTHOOK: Output: default@ppr_test@ds=12.4
+PREHOOK: query: alter table ppr_test add partition (ds = '12:4')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ppr_test
+POSTHOOK: query: alter table ppr_test add partition (ds = '12:4')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ppr_test
+POSTHOOK: Output: default@ppr_test@ds=12%3A4
+PREHOOK: query: alter table ppr_test add partition (ds = '12%4')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ppr_test
+POSTHOOK: query: alter table ppr_test add partition (ds = '12%4')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ppr_test
+POSTHOOK: Output: default@ppr_test@ds=12%254
+PREHOOK: query: alter table ppr_test add partition (ds = '12*4')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ppr_test
+POSTHOOK: query: alter table ppr_test add partition (ds = '12*4')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ppr_test
+POSTHOOK: Output: default@ppr_test@ds=12%2A4
+PREHOOK: query: insert overwrite table ppr_test partition(ds = '1234') select * from (select '1234' from src tablesample (1 rows) union all select 'abcd' from src tablesample (1 rows)) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ppr_test@ds=1234
+POSTHOOK: query: insert overwrite table ppr_test partition(ds = '1234') select * from (select '1234' from src tablesample (1 rows) union all select 'abcd' from src tablesample (1 rows)) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ppr_test@ds=1234
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+PREHOOK: query: insert overwrite table ppr_test partition(ds = '1224') select * from (select '1224' from src tablesample (1 rows) union all select 'abcd' from src tablesample (1 rows)) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ppr_test@ds=1224
+POSTHOOK: query: insert overwrite table ppr_test partition(ds = '1224') select * from (select '1224' from src tablesample (1 rows) union all select 'abcd' from src tablesample (1 rows)) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ppr_test@ds=1224
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+PREHOOK: query: insert overwrite table ppr_test partition(ds = '1214') select * from (select '1214' from src tablesample (1 rows) union all select 'abcd' from src tablesample (1 rows)) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ppr_test@ds=1214
+POSTHOOK: query: insert overwrite table ppr_test partition(ds = '1214') select * from (select '1214' from src tablesample (1 rows) union all select 'abcd' from src tablesample (1 rows)) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ppr_test@ds=1214
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+PREHOOK: query: insert overwrite table ppr_test partition(ds = '12+4') select * from (select '12+4' from src tablesample (1 rows) union all select 'abcd' from src tablesample (1 rows)) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ppr_test@ds=12+4
+POSTHOOK: query: insert overwrite table ppr_test partition(ds = '12+4') select * from (select '12+4' from src tablesample (1 rows) union all select 'abcd' from src tablesample (1 rows)) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ppr_test@ds=12+4
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+PREHOOK: query: insert overwrite table ppr_test partition(ds = '12.4') select * from (select '12.4' from src tablesample (1 rows) union all select 'abcd' from src tablesample (1 rows)) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ppr_test@ds=12.4
+POSTHOOK: query: insert overwrite table ppr_test partition(ds = '12.4') select * from (select '12.4' from src tablesample (1 rows) union all select 'abcd' from src tablesample (1 rows)) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ppr_test@ds=12.4
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+PREHOOK: query: insert overwrite table ppr_test partition(ds = '12:4') select * from (select '12:4' from src tablesample (1 rows) union all select 'abcd' from src tablesample (1 rows)) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ppr_test@ds=12%3A4
+POSTHOOK: query: insert overwrite table ppr_test partition(ds = '12:4') select * from (select '12:4' from src tablesample (1 rows) union all select 'abcd' from src tablesample (1 rows)) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ppr_test@ds=12%3A4
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+PREHOOK: query: insert overwrite table ppr_test partition(ds = '12%4') select * from (select '12%4' from src tablesample (1 rows) union all select 'abcd' from src tablesample (1 rows)) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ppr_test@ds=12%254
+POSTHOOK: query: insert overwrite table ppr_test partition(ds = '12%4') select * from (select '12%4' from src tablesample (1 rows) union all select 'abcd' from src tablesample (1 rows)) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ppr_test@ds=12%254
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+PREHOOK: query: insert overwrite table ppr_test partition(ds = '12*4') select * from (select '12*4' from src tablesample (1 rows) union all select 'abcd' from src tablesample (1 rows)) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ppr_test@ds=12%2A4
+POSTHOOK: query: insert overwrite table ppr_test partition(ds = '12*4') select * from (select '12*4' from src tablesample (1 rows) union all select 'abcd' from src tablesample (1 rows)) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ppr_test@ds=12%2A4
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+PREHOOK: query: select * from ppr_test where ds = '1234' order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
+PREHOOK: Input: default@ppr_test@ds=1234
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppr_test where ds = '1234' order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Input: default@ppr_test@ds=1234
+#### A masked pattern was here ####
+1234	1234
+abcd	1234
+PREHOOK: query: select * from ppr_test where ds = '1224' order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
+PREHOOK: Input: default@ppr_test@ds=1224
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppr_test where ds = '1224' order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Input: default@ppr_test@ds=1224
+#### A masked pattern was here ####
+1224	1224
+abcd	1224
+PREHOOK: query: select * from ppr_test where ds = '1214' order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
+PREHOOK: Input: default@ppr_test@ds=1214
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppr_test where ds = '1214' order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Input: default@ppr_test@ds=1214
+#### A masked pattern was here ####
+1214	1214
+abcd	1214
+PREHOOK: query: select * from ppr_test where ds = '12.4' order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
+PREHOOK: Input: default@ppr_test@ds=12.4
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppr_test where ds = '12.4' order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Input: default@ppr_test@ds=12.4
+#### A masked pattern was here ####
+12.4	12.4
+abcd	12.4
+PREHOOK: query: select * from ppr_test where ds = '12+4' order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
+PREHOOK: Input: default@ppr_test@ds=12+4
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppr_test where ds = '12+4' order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Input: default@ppr_test@ds=12+4
+#### A masked pattern was here ####
+12+4	12+4
+abcd	12+4
+PREHOOK: query: select * from ppr_test where ds = '12:4' order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
+PREHOOK: Input: default@ppr_test@ds=12%3A4
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppr_test where ds = '12:4' order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Input: default@ppr_test@ds=12%3A4
+#### A masked pattern was here ####
+12:4	12:4
+abcd	12:4
+PREHOOK: query: select * from ppr_test where ds = '12%4' order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
+PREHOOK: Input: default@ppr_test@ds=12%254
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppr_test where ds = '12%4' order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Input: default@ppr_test@ds=12%254
+#### A masked pattern was here ####
+12%4	12%4
+abcd	12%4
+PREHOOK: query: select * from ppr_test where ds = '12*4' order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
+PREHOOK: Input: default@ppr_test@ds=12%2A4
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppr_test where ds = '12*4' order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Input: default@ppr_test@ds=12%2A4
+#### A masked pattern was here ####
+12*4	12*4
+abcd	12*4
+PREHOOK: query: select * from ppr_test where ds = '12.*4' order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppr_test where ds = '12.*4' order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
+#### A masked pattern was here ####
+PREHOOK: query: select * from ppr_test where ds = '1234' and key = '1234'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
+PREHOOK: Input: default@ppr_test@ds=1234
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppr_test where ds = '1234' and key = '1234'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Input: default@ppr_test@ds=1234
+#### A masked pattern was here ####
+1234	1234
+PREHOOK: query: select * from ppr_test where ds = '1224' and key = '1224'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
+PREHOOK: Input: default@ppr_test@ds=1224
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppr_test where ds = '1224' and key = '1224'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Input: default@ppr_test@ds=1224
+#### A masked pattern was here ####
+1224	1224
+PREHOOK: query: select * from ppr_test where ds = '1214' and key = '1214'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
+PREHOOK: Input: default@ppr_test@ds=1214
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppr_test where ds = '1214' and key = '1214'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Input: default@ppr_test@ds=1214
+#### A masked pattern was here ####
+1214	1214
+PREHOOK: query: select * from ppr_test where ds = '12.4' and key = '12.4'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
+PREHOOK: Input: default@ppr_test@ds=12.4
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppr_test where ds = '12.4' and key = '12.4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Input: default@ppr_test@ds=12.4
+#### A masked pattern was here ####
+12.4	12.4
+PREHOOK: query: select * from ppr_test where ds = '12+4' and key = '12+4'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
+PREHOOK: Input: default@ppr_test@ds=12+4
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppr_test where ds = '12+4' and key = '12+4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Input: default@ppr_test@ds=12+4
+#### A masked pattern was here ####
+12+4	12+4
+PREHOOK: query: select * from ppr_test where ds = '12:4' and key = '12:4'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
+PREHOOK: Input: default@ppr_test@ds=12%3A4
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppr_test where ds = '12:4' and key = '12:4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Input: default@ppr_test@ds=12%3A4
+#### A masked pattern was here ####
+12:4	12:4
+PREHOOK: query: select * from ppr_test where ds = '12%4' and key = '12%4'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
+PREHOOK: Input: default@ppr_test@ds=12%254
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppr_test where ds = '12%4' and key = '12%4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Input: default@ppr_test@ds=12%254
+#### A masked pattern was here ####
+12%4	12%4
+PREHOOK: query: select * from ppr_test where ds = '12*4' and key = '12*4'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test
+PREHOOK: Input: default@ppr_test@ds=12%2A4
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppr_test where ds = '12*4' and key = '12*4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Input: default@ppr_test@ds=12%2A4
+#### A masked pattern was here ####
+12*4	12*4
