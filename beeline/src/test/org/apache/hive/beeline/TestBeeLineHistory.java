@@ -33,7 +33,7 @@ import org.junit.Test;
  */
 public class TestBeeLineHistory {
 
-  private static final String fileName = "history";
+  private static final String fileName = System.getProperty("test.tmp.dir") + "/history";
 
   @BeforeClass
   public static void beforeTests() throws Exception {
