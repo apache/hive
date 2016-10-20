@@ -261,7 +261,6 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    // TODO# movetask is created here; handle MM tables
     Long mmWriteId = null;
     Table tbl = ts.tableHandle;
     if (MetaStoreUtils.isMmTable(tbl.getParameters())) {

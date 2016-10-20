@@ -18,38 +18,48 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.Serializable;
-
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.util.StringUtils;
 
-/**
- * DependencyCollectionTask.
- *
- * Exists for the sole purpose of reducing the number of dependency edges in the task graph.
- **/
-public class DependencyCollectionTask extends Task<DependencyCollectionWork>
-    implements Serializable {
+public class ImportCommitTask extends Task<ImportCommitWork> {
 
   private static final long serialVersionUID = 1L;
 
-  public DependencyCollectionTask() {
+  public ImportCommitTask() {
     super();
   }
 
   @Override
   public int execute(DriverContext driverContext) {
-    return 0;
+    Utilities.LOG14535.info("Executing ImportCommit for " + work.getMmWriteId());
+
+    try {
+      if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
+        return 0;
+      }
+      Hive db = getHive();
+      Table tbl = db.getTable(work.getDbName(), work.getTblName());
+      db.commitMmTableWrite(tbl, work.getMmWriteId());
+      return 0;
+    } catch (Exception e) {
+      console.printError("Failed with exception " + e.getMessage(), "\n"
+          + StringUtils.stringifyException(e));
+      setException(e);
+      return 1;
+    }
   }
 
   @Override
   public StageType getType() {
-    return StageType.DEPENDENCY_COLLECTION;
+    return StageType.MOVE; // The commit for import is normally done as part of MoveTask.
   }
 
   @Override
   public String getName() {
-    return "DEPENDENCY_COLLECTION";
+    return "IMPORT_COMMIT";
   }
 }

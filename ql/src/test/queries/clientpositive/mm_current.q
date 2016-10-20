@@ -11,53 +11,42 @@ create table intermediate(key int) partitioned by (p int) stored as orc;
 insert into table intermediate partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2;
 insert into table intermediate partition(p='456') select distinct key from src where key is not null order by key asc limit 2;
 
+drop table intermediate_nonpart;
+drop table intermmediate_part;
+drop table intermmediate_nonpart;
 
 
-drop table load0_mm;
-create table load0_mm (key string, value string) stored as textfile tblproperties('hivecommit'='true');
-load data local inpath '../../data/files/kv1.txt' into table load0_mm;
-select count(1) from load0_mm;
-load data local inpath '../../data/files/kv2.txt' into table load0_mm;
-select count(1) from load0_mm;
-load data local inpath '../../data/files/kv2.txt' overwrite into table load0_mm;
-select count(1) from load0_mm;
-drop table load0_mm;
+create table intermediate_nonpart(key int, p int);
+insert into intermediate_nonpart select * from intermediate;
+create table intermmediate_nonpart(key int, p int) tblproperties('hivecommit'='true');
+insert into intermmediate_nonpart select * from intermediate;
+create table intermmediate(key int) partitioned by (p int) tblproperties('hivecommit'='true');
+insert into table intermmediate partition(p) select key, p from intermediate;
 
+set hive.exim.test.mode=true;
 
-drop table intermediate2;
-create table intermediate2 (key string, value string) stored as textfile
-location 'file:${system:test.tmp.dir}/intermediate2';
-load data local inpath '../../data/files/kv1.txt' into table intermediate2;
-load data local inpath '../../data/files/kv2.txt' into table intermediate2;
-load data local inpath '../../data/files/kv3.txt' into table intermediate2;
+export table intermediate_nonpart to 'ql/test/data/exports/intermediate_nonpart';
+export table intermmediate_nonpart to 'ql/test/data/exports/intermmediate_nonpart';
+export table intermediate to 'ql/test/data/exports/intermediate_part';
+export table intermmediate to 'ql/test/data/exports/intermmediate_part';
 
-drop table load1_mm;
-create table load1_mm (key string, value string) stored as textfile tblproperties('hivecommit'='true');
-load data inpath 'file:${system:test.tmp.dir}/intermediate2/kv2.txt' into table load1_mm;
-load data inpath 'file:${system:test.tmp.dir}/intermediate2/kv1.txt' into table load1_mm;
-select count(1) from load1_mm;
-load data local inpath '../../data/files/kv1.txt' into table intermediate2;
-load data local inpath '../../data/files/kv2.txt' into table intermediate2;
-load data local inpath '../../data/files/kv3.txt' into table intermediate2;
-load data inpath 'file:${system:test.tmp.dir}/intermediate2/kv*.txt' overwrite into table load1_mm;
-select count(1) from load1_mm;
-load data local inpath '../../data/files/kv2.txt' into table intermediate2;
-load data inpath 'file:${system:test.tmp.dir}/intermediate2/kv2.txt' overwrite into table load1_mm;
-select count(1) from load1_mm;
-drop table load1_mm;
+drop table intermediate_nonpart;
+drop table intermmediate_part;
+drop table intermmediate_nonpart;
 
-drop table load2_mm;
-create table load2_mm (key string, value string)
-  partitioned by (k int, l int) stored as textfile tblproperties('hivecommit'='true');
-load data local inpath '../../data/files/kv1.txt' into table intermediate2;
-load data local inpath '../../data/files/kv2.txt' into table intermediate2;
-load data local inpath '../../data/files/kv3.txt' into table intermediate2;
-load data inpath 'file:${system:test.tmp.dir}/intermediate2/kv*.txt' into table load2_mm partition(k=5, l=5);
-select count(1) from load2_mm;
-drop table load2_mm;
-drop table intermediate2;
+-- MM export into existing non-MM table, non-part and part
 
+drop table import6_mm;
+create table import6_mm(key int, p int);
+import table import6_mm from 'ql/test/data/exports/intermmediate_nonpart';
+select * from import6_mm order by key, p;
+drop table import6_mm;
 
+drop table import7_mm;
+create table import7_mm(key int) partitioned by (p int);
+import table import7_mm from 'ql/test/data/exports/intermmediate_part';
+select * from import7_mm order by key, p;
+drop table import7_mm;
 
 
 drop table intermediate;

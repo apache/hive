@@ -47,6 +47,7 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
   // TODO: the below seems like they should just be combined into partitionDesc
   private org.apache.hadoop.hive.ql.plan.TableDesc table;
   private Map<String, String> partitionSpec; // NOTE: this partitionSpec has to be ordered map
+  private boolean commitMmWriteId = true;
 
   private LoadTableDesc(final Path sourcePath,
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
@@ -88,9 +89,8 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
    */
   public LoadTableDesc(final Path sourcePath,
                        final org.apache.hadoop.hive.ql.plan.TableDesc table,
-                       final Map<String, String> partitionSpec) {
-    // TODO# we assume mm=false here
-    this(sourcePath, table, partitionSpec, true, AcidUtils.Operation.NOT_ACID, null);
+                       final Map<String, String> partitionSpec, Long mmWriteId) {
+    this(sourcePath, table, partitionSpec, true, AcidUtils.Operation.NOT_ACID, mmWriteId);
   }
 
   public LoadTableDesc(final Path sourcePath,
@@ -188,5 +188,13 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
 
   public Long getMmWriteId() {
     return mmWriteId;
+  }
+
+  public void setIntermediateInMmWrite(boolean b) {
+    this.commitMmWriteId = !b;
+  }
+
+  public boolean isCommitMmWrite() {
+    return commitMmWriteId;
   }
 }

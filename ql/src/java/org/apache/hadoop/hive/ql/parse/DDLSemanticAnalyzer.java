@@ -1060,10 +1060,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         // so the operation is atomic.
         Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
         truncateTblDesc.setOutputDir(queryTmpdir);
-        LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
-            partSpec == null ? new HashMap<String, String>() : partSpec);
-        ltd.setLbCtx(lbCtx);
         // TODO# movetask is created here; handle MM tables
+        LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
+            partSpec == null ? new HashMap<String, String>() : partSpec, null);
+        ltd.setLbCtx(lbCtx);
         Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
             conf);
         truncateTask.addDependentTask(moveTsk);
@@ -1677,10 +1677,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       TableDesc tblDesc = Utilities.getTableDesc(tblObj);
       Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
       mergeDesc.setOutputDir(queryTmpdir);
-      LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
-          partSpec == null ? new HashMap<String, String>() : partSpec);
-      ltd.setLbCtx(lbCtx);
       // No need to handle MM tables - unsupported path.
+      LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
+          partSpec == null ? new HashMap<String, String>() : partSpec, null);
+      ltd.setLbCtx(lbCtx);
       Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false), conf);
       mergeTask.addDependentTask(moveTsk);
 

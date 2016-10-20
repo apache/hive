@@ -317,7 +317,7 @@ public abstract class TaskCompiler {
     if (pCtx.getQueryProperties().isCTAS()) {
       CreateTableDesc ctd = pCtx.getCreateTable();
       dataSinkForCtas = ctd.getAndUnsetWriter();
-      mmWriteIdForCtas = ctd.getInitialWriteId();
+      mmWriteIdForCtas = ctd.getInitialMmWriteId();
       loc = ctd.getLocation();
     } else {
       loc = pCtx.getCreateViewDesc().getLocation();

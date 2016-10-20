@@ -6692,7 +6692,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // TODO# this should really get current ACID txn; assuming ACID works correctly the txn
           //       should have been opened to create the ACID table. For now use the first ID.
           mmWriteId = 0l;
-          tblDesc.setInitialWriteId(mmWriteId);
+          tblDesc.setInitialMmWriteId(mmWriteId);
         }
       } else if (viewDesc != null) {
         field_schemas = new ArrayList<FieldSchema>();

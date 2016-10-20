@@ -137,7 +137,20 @@ public class ValidWriteIds {
     }
   }
 
-
+  public static class AnyIdDirFilter implements PathFilter {
+    @Override
+    public boolean accept(Path path) {
+      String name = path.getName();
+      if (!name.startsWith(MM_PREFIX + "_")) return false;
+      String idStr = name.substring(MM_PREFIX.length() + 1);
+      try {
+        Long.parseLong(idStr);
+      } catch (NumberFormatException ex) {
+        return false;
+      }
+      return true;
+    }
+  }
   public static Long extractWriteId(Path file) {
     String fileName = file.getName();
     String[] parts = fileName.split("_", 3);

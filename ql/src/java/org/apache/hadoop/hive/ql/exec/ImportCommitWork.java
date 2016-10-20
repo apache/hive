@@ -15,41 +15,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
-import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-/**
- * DependencyCollectionTask.
- *
- * Exists for the sole purpose of reducing the number of dependency edges in the task graph.
- **/
-public class DependencyCollectionTask extends Task<DependencyCollectionWork>
-    implements Serializable {
-
+@Explain(displayName = "Import Commit", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class ImportCommitWork implements Serializable {
   private static final long serialVersionUID = 1L;
+  private String dbName, tblName;
+  private long mmWriteId;
 
-  public DependencyCollectionTask() {
-    super();
+  public ImportCommitWork(String dbName, String tblName, long mmWriteId) {
+    this.mmWriteId = mmWriteId;
+    this.dbName = dbName;
+    this.tblName = tblName;
   }
 
-  @Override
-  public int execute(DriverContext driverContext) {
-    return 0;
+  public long getMmWriteId() {
+    return mmWriteId;
   }
 
-  @Override
-  public StageType getType() {
-    return StageType.DEPENDENCY_COLLECTION;
+  public String getDbName() {
+    return dbName;
   }
 
-  @Override
-  public String getName() {
-    return "DEPENDENCY_COLLECTION";
+  public String getTblName() {
+    return tblName;
   }
 }

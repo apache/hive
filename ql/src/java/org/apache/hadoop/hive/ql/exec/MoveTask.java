@@ -326,6 +326,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         if (tbd.getPartitionSpec().size() == 0) {
           dc = new DataContainer(table.getTTable());
           Utilities.LOG14535.info("loadTable called from " + tbd.getSourcePath() + " into " + tbd.getTable().getTableName());
+          if (tbd.isMmTable() && !tbd.isCommitMmWrite()) {
+            throw new HiveException(
+                "Only single-partition LoadTableDesc can skip commiting write ID");
+          }
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getReplace(),
               work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isAcid, hasFollowingStatsTask(),
               tbd.getMmWriteId());
@@ -386,12 +390,13 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     db.validatePartitionNameCharacters(partVals);
     Utilities.LOG14535.info("loadPartition called from " + tbd.getSourcePath()
         + " into " + tbd.getTable().getTableName());
+    boolean isCommitMmWrite = tbd.isCommitMmWrite();
     db.loadSinglePartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
         tbd.getPartitionSpec(), tbd.getReplace(),
         tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
         (work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
          work.getLoadTableWork().getWriteType() != AcidUtils.Operation.INSERT_ONLY),
-        hasFollowingStatsTask(), tbd.getMmWriteId());
+        hasFollowingStatsTask(), tbd.getMmWriteId(), isCommitMmWrite);
     Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
 
     if (ti.bucketCols != null || ti.sortCols != null) {
@@ -428,6 +433,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     // iterate over it and call loadPartition() here.
     // The reason we don't do inside HIVE-1361 is the latter is large and we
     // want to isolate any potential issue it may introduce.
+    if (tbd.isMmTable() && !tbd.isCommitMmWrite()) {
+      throw new HiveException("Only single-partition LoadTableDesc can skip commiting write ID");
+    }
     Map<Map<String, String>, Partition> dp =
       db.loadDynamicPartitions(
         tbd.getSourcePath(),

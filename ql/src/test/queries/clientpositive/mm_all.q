@@ -270,38 +270,93 @@ drop table load2_mm;
 drop table intermediate2;
 
 
--- IMPORT
+drop table intermediate_nonpart;
+drop table intermmediate_part;
+drop table intermmediate_nonpart;
+create table intermediate_nonpart(key int, p int);
+insert into intermediate_nonpart select * from intermediate;
+create table intermmediate_nonpart(key int, p int) tblproperties('hivecommit'='true');
+insert into intermmediate_nonpart select * from intermediate;
+create table intermmediate(key int) partitioned by (p int) tblproperties('hivecommit'='true');
+insert into table intermmediate partition(p) select key, p from intermediate;
+
+set hive.exim.test.mode=true;
+
+export table intermediate_nonpart to 'ql/test/data/exports/intermediate_nonpart';
+export table intermmediate_nonpart to 'ql/test/data/exports/intermmediate_nonpart';
+export table intermediate to 'ql/test/data/exports/intermediate_part';
+export table intermmediate to 'ql/test/data/exports/intermmediate_part';
+
+drop table intermediate_nonpart;
+drop table intermmediate_part;
+drop table intermmediate_nonpart;
+
+-- non-MM export to MM table, with and without partitions
+
+drop table import0_mm;
+create table import0_mm(key int, p int) tblproperties('hivecommit'='true');
+import table import0_mm from 'ql/test/data/exports/intermediate_nonpart';
+select * from import0_mm order by key, p;
+drop table import0_mm;
 
 
 
--- TODO# future
---
---create table exim_department ( dep_id int) stored as textfile;
---dfs -rmr target/tmp/ql/test/data/exports/exim_department;
---export table exim_department to 'ql/test/data/exports/exim_department';
---drop table exim_department;
---create database importer;
---use importer;
---create table exim_department ( dep_id int) stored as textfile;
---import from 'ql/test/data/exports/exim_department';
---
---
---create table exim_department ( dep_id int) stored as textfile;
---load data local inpath "../../data/files/test.dat" into table exim_department;
---dfs ${system:test.dfs.mkdir} target/tmp/ql/test/data/exports/exim_department/test;
---dfs -rmr target/tmp/ql/test/data/exports/exim_department;
---export table exim_department to 'ql/test/data/exports/exim_department';
---drop table exim_department;
---
---create database importer;
---use importer;
---
---set hive.security.authorization.enabled=true;
---import from 'ql/test/data/exports/exim_department';
+drop table import1_mm;
+create table import1_mm(key int) partitioned by (p int)
+  stored as orc tblproperties('hivecommit'='true');
+import table import1_mm from 'ql/test/data/exports/intermediate_part';
+select * from import1_mm order by key, p;
+drop table import1_mm;
+
+
+-- MM export into new MM table, non-part and part
+
+drop table import2_mm;
+import table import2_mm from 'ql/test/data/exports/intermmediate_nonpart';
+desc import2_mm;
+select * from import2_mm order by key, p;
+drop table import2_mm;
+
+drop table import3_mm;
+import table import3_mm from 'ql/test/data/exports/intermmediate_part';
+desc import3_mm;
+select * from import3_mm order by key, p;
+drop table import3_mm;
+
+-- MM export into existing MM table, non-part and partial part
+
+drop table import4_mm;
+create table import4_mm(key int, p int) tblproperties('hivecommit'='true');
+import table import4_mm from 'ql/test/data/exports/intermmediate_nonpart';
+select * from import4_mm order by key, p;
+drop table import4_mm;
+
+drop table import5_mm;
+create table import5_mm(key int) partitioned by (p int) tblproperties('hivecommit'='true');
+import table import5_mm partition(p=455) from 'ql/test/data/exports/intermmediate_part';
+select * from import5_mm order by key, p;
+drop table import5_mm;
+
+-- MM export into existing non-MM table, non-part and part
+
+drop table import6_mm;
+create table import6_mm(key int, p int);
+import table import6_mm from 'ql/test/data/exports/intermmediate_nonpart';
+select * from import6_mm order by key, p;
+drop table import6_mm;
+
+drop table import7_mm;
+create table import7_mm(key int) partitioned by (p int);
+import table import7_mm from 'ql/test/data/exports/intermmediate_part';
+select * from import7_mm order by key, p;
+drop table import7_mm;
 
 
 
--- TODO multi-insert, truncate
+set hive.exim.test.mode=false;
+
+
+-- TODO# multi-insert, truncate
 
 
 

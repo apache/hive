@@ -1209,6 +1209,8 @@ public class HiveConf extends Configuration {
     HIVETESTMODE("hive.test.mode", false,
         "Whether Hive is running in test mode. If yes, it turns on sampling and prefixes the output tablename.",
         false),
+    HIVEEXIMTESTMODE("hive.exim.test.mode", false,
+        "The subset of test mode that only enables custom path handling for ExIm.", false),
     HIVETESTMODEPREFIX("hive.test.mode.prefix", "test_",
         "In test mode, specfies prefixes for the output table", false),
     HIVETESTMODESAMPLEFREQ("hive.test.mode.samplefreq", 32,

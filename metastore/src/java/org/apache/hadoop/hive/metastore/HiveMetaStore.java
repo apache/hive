@@ -6570,6 +6570,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private MTableWrite getActiveTableWrite(RawStore ms, String dbName,
         String tblName, long writeId) throws MetaException {
       MTableWrite tw = ms.getTableWrite(dbName, tblName, writeId);
+      if (tw == null) {
+        return null;
+      }
       assert tw.getState().length() == 1;
       char state = tw.getState().charAt(0);
       if (state != MM_WRITE_OPEN) {

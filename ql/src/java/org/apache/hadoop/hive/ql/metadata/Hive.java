@@ -1502,14 +1502,15 @@ public class Hive {
   public void loadSinglePartition(Path loadPath, String tableName,
       Map<String, String> partSpec, boolean replace, boolean inheritTableSpecs,
       boolean isSkewedStoreAsSubdir,  boolean isSrcLocal, boolean isAcid,
-      boolean hasFollowingStatsTask, Long mmWriteId) throws HiveException {
+      boolean hasFollowingStatsTask, Long mmWriteId, boolean isCommitMmWrite)
+          throws HiveException {
     Table tbl = getTable(tableName);
     boolean isMmTableWrite = (mmWriteId != null);
     Preconditions.checkState(isMmTableWrite == MetaStoreUtils.isMmTable(tbl.getParameters()));
     loadPartition(loadPath, tbl, partSpec, replace, inheritTableSpecs,
         isSkewedStoreAsSubdir, isSrcLocal, isAcid, hasFollowingStatsTask, mmWriteId);
-    if (isMmTableWrite) {
-      // The assumption behind committing here is that this partition is the only one outputted
+    if (isMmTableWrite && isCommitMmWrite) {
+      // The assumption behind committing here is that this partition is the only one outputted.
       commitMmTableWrite(tbl, mmWriteId);
     }
   }

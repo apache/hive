@@ -33,6 +33,7 @@ public class CopyWork implements Serializable {
   private Path fromPath;
   private Path toPath;
   private boolean errorOnSrcEmpty;
+  private boolean isMm = false;
 
   public CopyWork() {
   }
@@ -63,6 +64,14 @@ public class CopyWork implements Serializable {
 
   public boolean isErrorOnSrcEmpty() {
     return errorOnSrcEmpty;
+  }
+
+  public void setIsSourceMm(boolean isMm) {
+    this.isMm = isMm;
+  }
+
+  public boolean isSourceMm() {
+    return isMm ;
   }
 
 }
