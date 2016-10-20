@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -69,7 +70,13 @@ public class TestSSL {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
+    MiniHS2.cleanupLocalDir();
     Class.forName(MiniHS2.getJdbcDriverName());
+  }
+
+  @AfterClass
+  public static void afterClass() throws Exception {
+    MiniHS2.cleanupLocalDir();
   }
 
   @Before
@@ -79,7 +86,7 @@ public class TestSSL {
       dataFileDir = System.getProperty("test.data.files");
     }
     dataFileDir = dataFileDir.replace('\\', '/').replace("c:", "");
-    miniHS2 = new MiniHS2(conf);
+    miniHS2 = new MiniHS2.Builder().withConf(conf).cleanupLocalDirOnStartup(false).build();
     confOverlay = new HashMap<String, String>();
   }
 

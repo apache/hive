@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -73,6 +74,7 @@ public class TestJdbcWithMiniHS2 {
   @BeforeClass
   public static void beforeTest() throws Exception {
     Class.forName(MiniHS2.getJdbcDriverName());
+    MiniHS2.cleanupLocalDir();
     HiveConf conf = new HiveConf();
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     miniHS2 = new MiniHS2(conf);
@@ -103,6 +105,14 @@ public class TestJdbcWithMiniHS2 {
     if (miniHS2.isStarted()) {
       miniHS2.stop();
     }
+    cleanupMiniHS2();
+  }
+
+  private static void cleanupMiniHS2() throws IOException {
+    if (miniHS2 != null) {
+      miniHS2.cleanup();
+    }
+    MiniHS2.cleanupLocalDir();
   }
 
   @Test
