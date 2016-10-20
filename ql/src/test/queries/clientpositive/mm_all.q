@@ -21,6 +21,10 @@ insert into table part_mm partition(key_mm='455') select key from intermediate;
 insert into table part_mm partition(key_mm='456') select key from intermediate;
 insert into table part_mm partition(key_mm='455') select key from intermediate;
 select * from part_mm order by key, key_mm;
+truncate table part_mm partition(key_mm='455');
+select * from part_mm order by key, key_mm;
+truncate table part_mm;
+select * from part_mm order by key, key_mm;
 drop table part_mm;
 
 drop table simple_mm;
@@ -30,6 +34,8 @@ insert overwrite table simple_mm select key from intermediate;
 select * from simple_mm order by key;
 insert into table simple_mm select key from intermediate;
 select * from simple_mm order by key;
+truncate table simple_mm;
+select * from simple_mm;
 drop table simple_mm;
 
 
@@ -201,9 +207,9 @@ drop table iow0_mm;
 create table iow0_mm(key int) tblproperties('hivecommit'='true');
 insert overwrite table iow0_mm select key from intermediate;
 insert into table iow0_mm select key + 1 from intermediate;
-select * from iow0_mm;
+select * from iow0_mm order by key;
 insert overwrite table iow0_mm select key + 2 from intermediate;
-select * from iow0_mm;
+select * from iow0_mm order by key;
 drop table iow0_mm;
 
 
@@ -213,13 +219,13 @@ insert overwrite table iow1_mm partition (key2)
 select key as k1, key from intermediate union all select key as k1, key from intermediate;
 insert into table iow1_mm partition (key2)
 select key + 1 as k1, key from intermediate union all select key as k1, key from intermediate;
-select * from iow1_mm;
+select * from iow1_mm order by key, key2;
 insert overwrite table iow1_mm partition (key2)
 select key + 3 as k1, key from intermediate union all select key + 4 as k1, key from intermediate;
-select * from iow1_mm;
+select * from iow1_mm order by key, key2;
 insert overwrite table iow1_mm partition (key2)
 select key + 3 as k1, key + 3 from intermediate union all select key + 2 as k1, key + 2 from intermediate;
-select * from iow1_mm;
+select * from iow1_mm order by key, key2;
 drop table iow1_mm;
 
 
@@ -351,12 +357,10 @@ import table import7_mm from 'ql/test/data/exports/intermmediate_part';
 select * from import7_mm order by key, p;
 drop table import7_mm;
 
-
-
 set hive.exim.test.mode=false;
 
 
--- TODO# multi-insert, truncate
+-- TODO# multi-insert
 
 
 

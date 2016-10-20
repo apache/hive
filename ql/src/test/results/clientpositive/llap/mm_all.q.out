@@ -180,6 +180,50 @@ POSTHOOK: Input: default@part_mm@key_mm=456
 103	455
 103	455
 103	456
+PREHOOK: query: truncate table part_mm partition(key_mm='455')
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@part_mm@key_mm=455
+POSTHOOK: query: truncate table part_mm partition(key_mm='455')
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@part_mm@key_mm=455
+PREHOOK: query: select * from part_mm order by key, key_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_mm
+PREHOOK: Input: default@part_mm@key_mm=455
+PREHOOK: Input: default@part_mm@key_mm=456
+#### A masked pattern was here ####
+POSTHOOK: query: select * from part_mm order by key, key_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_mm
+POSTHOOK: Input: default@part_mm@key_mm=455
+POSTHOOK: Input: default@part_mm@key_mm=456
+#### A masked pattern was here ####
+0	456
+10	456
+97	456
+98	456
+100	456
+103	456
+PREHOOK: query: truncate table part_mm
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@part_mm@key_mm=455
+PREHOOK: Output: default@part_mm@key_mm=456
+POSTHOOK: query: truncate table part_mm
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@part_mm@key_mm=455
+POSTHOOK: Output: default@part_mm@key_mm=456
+PREHOOK: query: select * from part_mm order by key, key_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_mm
+PREHOOK: Input: default@part_mm@key_mm=455
+PREHOOK: Input: default@part_mm@key_mm=456
+#### A masked pattern was here ####
+POSTHOOK: query: select * from part_mm order by key, key_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_mm
+POSTHOOK: Input: default@part_mm@key_mm=455
+POSTHOOK: Input: default@part_mm@key_mm=456
+#### A masked pattern was here ####
 PREHOOK: query: drop table part_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_mm
@@ -279,6 +323,20 @@ POSTHOOK: Input: default@simple_mm
 100
 103
 103
+PREHOOK: query: truncate table simple_mm
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@simple_mm
+POSTHOOK: query: truncate table simple_mm
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@simple_mm
+PREHOOK: query: select * from simple_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@simple_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from simple_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@simple_mm
+#### A masked pattern was here ####
 PREHOOK: query: drop table simple_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@simple_mm
@@ -1299,26 +1357,26 @@ POSTHOOK: Input: default@intermediate@p=456
 POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@iow0_mm
 POSTHOOK: Lineage: iow0_mm.key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: select * from iow0_mm
+PREHOOK: query: select * from iow0_mm order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@iow0_mm
 #### A masked pattern was here ####
-POSTHOOK: query: select * from iow0_mm
+POSTHOOK: query: select * from iow0_mm order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@iow0_mm
 #### A masked pattern was here ####
-98
-97
-100
-103
 0
-10
-99
-98
-101
-104
 1
+10
 11
+97
+98
+98
+99
+100
+101
+103
+104
 PREHOOK: query: insert overwrite table iow0_mm select key + 2 from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
@@ -1334,20 +1392,20 @@ POSTHOOK: Input: default@intermediate@p=456
 POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@iow0_mm
 POSTHOOK: Lineage: iow0_mm.key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: select * from iow0_mm
+PREHOOK: query: select * from iow0_mm order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@iow0_mm
 #### A masked pattern was here ####
-POSTHOOK: query: select * from iow0_mm
+POSTHOOK: query: select * from iow0_mm order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@iow0_mm
 #### A masked pattern was here ####
-100
-99
-102
-105
 2
 12
+99
+100
+102
+105
 PREHOOK: query: drop table iow0_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@iow0_mm
@@ -1422,7 +1480,7 @@ POSTHOOK: Lineage: iow1_mm PARTITION(key2=103).key EXPRESSION [(intermediate)int
 POSTHOOK: Lineage: iow1_mm PARTITION(key2=10).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: iow1_mm PARTITION(key2=97).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: iow1_mm PARTITION(key2=98).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: select * from iow1_mm
+PREHOOK: query: select * from iow1_mm order by key, key2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@iow1_mm
 PREHOOK: Input: default@iow1_mm@key2=0
@@ -1432,7 +1490,7 @@ PREHOOK: Input: default@iow1_mm@key2=103
 PREHOOK: Input: default@iow1_mm@key2=97
 PREHOOK: Input: default@iow1_mm@key2=98
 #### A masked pattern was here ####
-POSTHOOK: query: select * from iow1_mm
+POSTHOOK: query: select * from iow1_mm order by key, key2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@iow1_mm
 POSTHOOK: Input: default@iow1_mm@key2=0
@@ -1444,28 +1502,28 @@ POSTHOOK: Input: default@iow1_mm@key2=98
 #### A masked pattern was here ####
 0	0
 0	0
-1	0
 0	0
+1	0
+10	10
 10	10
 10	10
 11	10
-10	10
-100	100
-100	100
-101	100
-100	100
-103	103
-103	103
-104	103
-103	103
+97	97
 97	97
 97	97
 98	97
-97	97
+98	98
 98	98
 98	98
 99	98
-98	98
+100	100
+100	100
+100	100
+101	100
+103	103
+103	103
+103	103
+104	103
 PREHOOK: query: insert overwrite table iow1_mm partition (key2)
 select key + 3 as k1, key from intermediate union all select key + 4 as k1, key from intermediate
 PREHOOK: type: QUERY
@@ -1493,7 +1551,7 @@ POSTHOOK: Lineage: iow1_mm PARTITION(key2=103).key EXPRESSION [(intermediate)int
 POSTHOOK: Lineage: iow1_mm PARTITION(key2=10).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: iow1_mm PARTITION(key2=97).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: iow1_mm PARTITION(key2=98).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: select * from iow1_mm
+PREHOOK: query: select * from iow1_mm order by key, key2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@iow1_mm
 PREHOOK: Input: default@iow1_mm@key2=0
@@ -1503,7 +1561,7 @@ PREHOOK: Input: default@iow1_mm@key2=103
 PREHOOK: Input: default@iow1_mm@key2=97
 PREHOOK: Input: default@iow1_mm@key2=98
 #### A masked pattern was here ####
-POSTHOOK: query: select * from iow1_mm
+POSTHOOK: query: select * from iow1_mm order by key, key2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@iow1_mm
 POSTHOOK: Input: default@iow1_mm@key2=0
@@ -1517,14 +1575,14 @@ POSTHOOK: Input: default@iow1_mm@key2=98
 4	0
 13	10
 14	10
-103	100
-104	100
-106	103
-107	103
 100	97
 101	97
 101	98
 102	98
+103	100
+104	100
+106	103
+107	103
 PREHOOK: query: insert overwrite table iow1_mm partition (key2)
 select key + 3 as k1, key + 3 from intermediate union all select key + 2 as k1, key + 2 from intermediate
 PREHOOK: type: QUERY
@@ -1562,7 +1620,7 @@ POSTHOOK: Lineage: iow1_mm PARTITION(key2=13).key EXPRESSION [(intermediate)inte
 POSTHOOK: Lineage: iow1_mm PARTITION(key2=2).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: iow1_mm PARTITION(key2=3).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: iow1_mm PARTITION(key2=99).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: select * from iow1_mm
+PREHOOK: query: select * from iow1_mm order by key, key2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@iow1_mm
 PREHOOK: Input: default@iow1_mm@key2=0
@@ -1581,7 +1639,7 @@ PREHOOK: Input: default@iow1_mm@key2=97
 PREHOOK: Input: default@iow1_mm@key2=98
 PREHOOK: Input: default@iow1_mm@key2=99
 #### A masked pattern was here ####
-POSTHOOK: query: select * from iow1_mm
+POSTHOOK: query: select * from iow1_mm order by key, key2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@iow1_mm
 POSTHOOK: Input: default@iow1_mm@key2=0
@@ -1600,26 +1658,26 @@ POSTHOOK: Input: default@iow1_mm@key2=97
 POSTHOOK: Input: default@iow1_mm@key2=98
 POSTHOOK: Input: default@iow1_mm@key2=99
 #### A masked pattern was here ####
+2	2
 3	0
+3	3
 4	0
+12	12
 13	10
+13	13
 14	10
+99	99
+100	97
 100	100
 100	100
+101	97
+101	98
 101	101
+102	98
 102	102
 103	103
 105	105
 106	106
-12	12
-13	13
-2	2
-3	3
-100	97
-101	97
-101	98
-102	98
-99	99
 PREHOOK: query: drop table iow1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@iow1_mm
@@ -2458,7 +2516,7 @@ POSTHOOK: query: drop table import7_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@import7_mm
 POSTHOOK: Output: default@import7_mm
-PREHOOK: query: -- TODO# multi-insert, truncate
+PREHOOK: query: -- TODO# multi-insert
 
 
 
@@ -2466,7 +2524,7 @@ drop table intermediate
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate
 PREHOOK: Output: default@intermediate
-POSTHOOK: query: -- TODO# multi-insert, truncate
+POSTHOOK: query: -- TODO# multi-insert
 
 
 

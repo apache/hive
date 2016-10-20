@@ -147,6 +147,7 @@ public final class TaskFactory {
     throw new RuntimeException("No task for work class " + workClass.getName());
   }
 
+  @SafeVarargs
   public static <T extends Serializable> Task<T> get(T work, HiveConf conf,
       Task<? extends Serializable>... tasklist) {
     Task<T> ret = get((Class<T>) work.getClass(), conf);
