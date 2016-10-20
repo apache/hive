@@ -12765,6 +12765,10 @@ class LockComponent {
    * @var bool
    */
   public $isAcid = false;
+  /**
+   * @var bool
+   */
+  public $isDynamicPartitionWrite = false;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -12797,6 +12801,10 @@ class LockComponent {
           'var' => 'isAcid',
           'type' => TType::BOOL,
           ),
+        8 => array(
+          'var' => 'isDynamicPartitionWrite',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -12820,6 +12828,9 @@ class LockComponent {
       }
       if (isset($vals['isAcid'])) {
         $this->isAcid = $vals['isAcid'];
+      }
+      if (isset($vals['isDynamicPartitionWrite'])) {
+        $this->isDynamicPartitionWrite = $vals['isDynamicPartitionWrite'];
       }
     }
   }
@@ -12892,6 +12903,13 @@ class LockComponent {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 8:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isDynamicPartitionWrite);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -12938,6 +12956,11 @@ class LockComponent {
     if ($this->isAcid !== null) {
       $xfer += $output->writeFieldBegin('isAcid', TType::BOOL, 7);
       $xfer += $output->writeBool($this->isAcid);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->isDynamicPartitionWrite !== null) {
+      $xfer += $output->writeFieldBegin('isDynamicPartitionWrite', TType::BOOL, 8);
+      $xfer += $output->writeBool($this->isDynamicPartitionWrite);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

@@ -686,6 +686,19 @@ POSTHOOK: Input: default@acid
 POSTHOOK: Input: default@acid@ds=2008-04-08
 #### A masked pattern was here ####
 1000
+PREHOOK: query: select count(key) from acid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid
+PREHOOK: Input: default@acid@ds=2008-04-08
+PREHOOK: Input: default@acid@ds=2008-04-09
+#### A masked pattern was here ####
+POSTHOOK: query: select count(key) from acid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid
+POSTHOOK: Input: default@acid@ds=2008-04-08
+POSTHOOK: Input: default@acid@ds=2008-04-09
+#### A masked pattern was here ####
+2000
 PREHOOK: query: explain select count(*) from acid where ds='2008-04-08'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select count(*) from acid where ds='2008-04-08'

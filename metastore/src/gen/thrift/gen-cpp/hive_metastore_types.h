@@ -5211,11 +5211,12 @@ inline std::ostream& operator<<(std::ostream& out, const CommitTxnRequest& obj)
 }
 
 typedef struct _LockComponent__isset {
-  _LockComponent__isset() : tablename(false), partitionname(false), operationType(true), isAcid(true) {}
+  _LockComponent__isset() : tablename(false), partitionname(false), operationType(true), isAcid(true), isDynamicPartitionWrite(true) {}
   bool tablename :1;
   bool partitionname :1;
   bool operationType :1;
   bool isAcid :1;
+  bool isDynamicPartitionWrite :1;
 } _LockComponent__isset;
 
 class LockComponent {
@@ -5223,7 +5224,7 @@ class LockComponent {
 
   LockComponent(const LockComponent&);
   LockComponent& operator=(const LockComponent&);
-  LockComponent() : type((LockType::type)0), level((LockLevel::type)0), dbname(), tablename(), partitionname(), operationType((DataOperationType::type)5), isAcid(false) {
+  LockComponent() : type((LockType::type)0), level((LockLevel::type)0), dbname(), tablename(), partitionname(), operationType((DataOperationType::type)5), isAcid(false), isDynamicPartitionWrite(false) {
     operationType = (DataOperationType::type)5;
 
   }
@@ -5236,6 +5237,7 @@ class LockComponent {
   std::string partitionname;
   DataOperationType::type operationType;
   bool isAcid;
+  bool isDynamicPartitionWrite;
 
   _LockComponent__isset __isset;
 
@@ -5252,6 +5254,8 @@ class LockComponent {
   void __set_operationType(const DataOperationType::type val);
 
   void __set_isAcid(const bool val);
+
+  void __set_isDynamicPartitionWrite(const bool val);
 
   bool operator == (const LockComponent & rhs) const
   {
@@ -5276,6 +5280,10 @@ class LockComponent {
     if (__isset.isAcid != rhs.__isset.isAcid)
       return false;
     else if (__isset.isAcid && !(isAcid == rhs.isAcid))
+      return false;
+    if (__isset.isDynamicPartitionWrite != rhs.__isset.isDynamicPartitionWrite)
+      return false;
+    else if (__isset.isDynamicPartitionWrite && !(isDynamicPartitionWrite == rhs.isDynamicPartitionWrite))
       return false;
     return true;
   }

@@ -165,6 +165,7 @@ public class QTestUtil {
   private final Set<String> qJavaVersionSpecificOutput;
   private static final String SORT_SUFFIX = ".sorted";
   private final HashSet<String> srcTables;
+  private final Set<String> srcUDFs;
   private final MiniClusterType clusterType;
   private final FsType fsType;
   private ParseDriver pd;
@@ -212,6 +213,30 @@ public class QTestUtil {
     }
     return srcTables;
   }
+
+  /**
+   * Returns the default UDF names which should not be removed when resetting the test database
+   * @return The list of the UDF names not to remove
+   */
+  private Set<String> getSrcUDFs() {
+    HashSet<String> srcUDFs = new HashSet<String>();
+    // FIXME: moved default value to here...for now
+    // i think this features is never really used from the command line
+    String defaultTestSrcUDFs = "qtest_get_java_boolean";
+    for (String srcUDF : System.getProperty("test.src.udfs", defaultTestSrcUDFs).trim().split(","))
+    {
+      srcUDF = srcUDF.trim();
+      if (!srcUDF.isEmpty()) {
+        srcUDFs.add(srcUDF);
+      }
+    }
+    if (srcUDFs.isEmpty()) {
+      throw new RuntimeException("Source UDFs cannot be empty");
+    }
+    return srcUDFs;
+  }
+
+
 
   public HiveConf getConf() {
     return conf;
@@ -509,7 +534,7 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
-      String confDir, String hadoopVer, String initScript, String cleanupScript,
+      String confDir, String hadzoopVer, String initScript, String cleanupScript,
       boolean useHBaseMetastore, boolean withLlapIo, FsType fsType)
     throws Exception {
     LOG.info("Setting up QTestUtil with outDir={}, logDir={}, clusterType={}, confDir={}," +
@@ -527,6 +552,7 @@ public class QTestUtil {
     this.logDir = logDir;
     this.useHBaseMetastore = useHBaseMetastore;
     this.srcTables=getSrcTables();
+    this.srcUDFs = getSrcUDFs();
 
     // HIVE-14443 move this fall-back logic to CliConfigs
     if (confDir != null && !confDir.isEmpty()) {
@@ -892,6 +918,19 @@ public class QTestUtil {
     }
   }
 
+  public void clearUDFsCreatedDuringTests() throws Exception {
+    if (System.getenv(QTEST_LEAVE_FILES) != null) {
+      return;
+    }
+    // Delete functions created by the tests
+    // It is enough to remove functions from the default database, other databases are dropped
+    for (String udfName : db.getFunctions(DEFAULT_DATABASE_NAME, ".*")) {
+      if (!srcUDFs.contains(udfName)) {
+        db.dropFunction(DEFAULT_DATABASE_NAME, udfName);
+      }
+    }
+  }
+
   /**
    * Clear out any side effects of running tests
    */
@@ -933,7 +972,7 @@ public class QTestUtil {
         }
       }
       if (!DEFAULT_DATABASE_NAME.equals(dbName)) {
-        // Drop cascade, may need to drop functions
+        // Drop cascade, functions dropped by cascade
         db.dropDatabase(dbName, true, true, true);
       }
     }
@@ -980,6 +1019,7 @@ public class QTestUtil {
     db = Hive.get(conf);  // propagate new conf to meta store
 
     clearTablesCreatedDuringTests();
+    clearUDFsCreatedDuringTests();
     clearKeysCreatedInTests();
   }
 
@@ -1001,6 +1041,7 @@ public class QTestUtil {
     }
 
     clearTablesCreatedDuringTests();
+    clearUDFsCreatedDuringTests();
     clearKeysCreatedInTests();
 
     File cleanupFile = new File(cleanupScript);

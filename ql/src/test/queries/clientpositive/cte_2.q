@@ -53,4 +53,9 @@ select * from v1
 
 drop view v1;
 
+drop view if exists view_3;
+create view view_3 as select cstring2, AVG(cint) from alltypesorc group by cstring2 limit 10;
+
+drop view if exists view_4;
+create view view_4 as select s.cstring1, v.ctimestamp1 from alltypesorc s join alltypesorc v on (s.cstring2= v.cstring1);
 

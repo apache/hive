@@ -18,6 +18,7 @@
 
 package org.apache.hive.jdbc;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -34,6 +35,8 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.XsrfHttpRequestInterceptor;
 import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -48,6 +51,15 @@ public class TestXSRFFilter {
 
   private Connection hs2Conn = null;
 
+  @BeforeClass
+  public static void beforeClass() throws IOException {
+    MiniHS2.cleanupLocalDir();
+  }
+
+  @AfterClass
+  public static void afterClass() throws IOException {
+    MiniHS2.cleanupLocalDir();
+  }
 
   // This is not modeled as a @Before, because it needs to be parameterized per-test.
   // If there is a better way to do this, we should do it.
@@ -55,7 +67,7 @@ public class TestXSRFFilter {
     Class.forName(MiniHS2.getJdbcDriverName());
     HiveConf conf = new HiveConf();
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    miniHS2 = new MiniHS2(conf);
+    miniHS2 = new MiniHS2.Builder().withConf(conf).cleanupLocalDirOnStartup(false).build();
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     kvDataFilePath = new Path(dataFileDir, "kv1.txt");
     Map<String,String> confOverlay = new HashMap<String, String>();

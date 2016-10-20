@@ -189,3 +189,51 @@ set hive.optimize.index.filter=false;
 select count(*) from orc_ppd where f=74.72;
 set hive.optimize.index.filter=true;
 select count(*) from orc_ppd where f=74.72;
+
+
+create temporary table tmp_orcppd
+                    stored as orc
+                    as select ctinyint, csmallint, cint , cbigint, cfloat, cdouble,
+                              cstring1, cstring2, ctimestamp1, ctimestamp2
+                    from alltypesorc limit 20;
+insert into table tmp_orcppd
+                    values(null, null, null, null, null,
+                           null, null, null, null, null);
+
+drop table if exists tbl_orcppd_1_1;
+
+create table tbl_orcppd_1_1 as
+    select count(*) from tmp_orcppd
+            where ctimestamp1> current_timestamp() and
+            ctimestamp2 > current_timestamp() and
+            cstring1 like 'a*' and
+            cstring2 like 'a*';
+
+drop table if exists tmp_orcppd;
+
+create temporary table tmp_orcppd
+                    stored as orc
+                    as select ctimestamp1, ctimestamp2
+                    from alltypesorc limit 10;
+insert into table tmp_orcppd
+                    values(null,  null);
+
+drop table if exists tbl_orcppd_2_1;
+create table tbl_orcppd_2_1 as
+        select count(*) from tmp_orcppd
+                    where ctimestamp1 in (cast('2065-08-13 19:03:52' as timestamp), cast('2071-01-16 20:21:17' as timestamp), current_timestamp());
+set hive.optimize.index.filter=true;
+
+drop table if exists tmp_orcppd;
+create temporary table tmp_orcppd
+                    stored as orc
+                    as select ts, da
+                    from orc_ppd_staging ;
+insert into table tmp_orcppd
+                    values(null, null);
+
+drop table if exists tbl_orcppd_3_1;
+create table tbl_orcppd_3_1 as
+   select count(*) from tmp_orcppd
+            group by ts, da
+            having ts in (select ctimestamp1 from alltypesorc limit 10);

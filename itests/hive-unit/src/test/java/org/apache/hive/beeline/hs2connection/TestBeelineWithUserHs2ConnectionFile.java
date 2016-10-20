@@ -21,10 +21,9 @@ import java.io.File;
 import java.net.URI;
 
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hive.beeline.hs2connection.HS2ConnectionFileParser;
 import org.junit.Test;
 
-public class TestBeelineWithUserHs2ConnectionFile extends TestBeelineWithHS2ConnectionFile {
+public class TestBeelineWithUserHs2ConnectionFile extends BeelineWithHS2ConnectionFileTestBase {
 
   @Test
   public void testBeelineConnectionHttp() throws Exception {

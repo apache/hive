@@ -45,6 +45,7 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
   private static final org.apache.thrift.protocol.TField PARTITIONNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionname", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField OPERATION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("operationType", org.apache.thrift.protocol.TType.I32, (short)6);
   private static final org.apache.thrift.protocol.TField IS_ACID_FIELD_DESC = new org.apache.thrift.protocol.TField("isAcid", org.apache.thrift.protocol.TType.BOOL, (short)7);
+  private static final org.apache.thrift.protocol.TField IS_DYNAMIC_PARTITION_WRITE_FIELD_DESC = new org.apache.thrift.protocol.TField("isDynamicPartitionWrite", org.apache.thrift.protocol.TType.BOOL, (short)8);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -59,6 +60,7 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
   private String partitionname; // optional
   private DataOperationType operationType; // optional
   private boolean isAcid; // optional
+  private boolean isDynamicPartitionWrite; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -80,7 +82,8 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
      * @see DataOperationType
      */
     OPERATION_TYPE((short)6, "operationType"),
-    IS_ACID((short)7, "isAcid");
+    IS_ACID((short)7, "isAcid"),
+    IS_DYNAMIC_PARTITION_WRITE((short)8, "isDynamicPartitionWrite");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -109,6 +112,8 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
           return OPERATION_TYPE;
         case 7: // IS_ACID
           return IS_ACID;
+        case 8: // IS_DYNAMIC_PARTITION_WRITE
+          return IS_DYNAMIC_PARTITION_WRITE;
         default:
           return null;
       }
@@ -150,8 +155,9 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
 
   // isset id assignments
   private static final int __ISACID_ISSET_ID = 0;
+  private static final int __ISDYNAMICPARTITIONWRITE_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.TABLENAME,_Fields.PARTITIONNAME,_Fields.OPERATION_TYPE,_Fields.IS_ACID};
+  private static final _Fields optionals[] = {_Fields.TABLENAME,_Fields.PARTITIONNAME,_Fields.OPERATION_TYPE,_Fields.IS_ACID,_Fields.IS_DYNAMIC_PARTITION_WRITE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -169,6 +175,8 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, DataOperationType.class)));
     tmpMap.put(_Fields.IS_ACID, new org.apache.thrift.meta_data.FieldMetaData("isAcid", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.IS_DYNAMIC_PARTITION_WRITE, new org.apache.thrift.meta_data.FieldMetaData("isDynamicPartitionWrite", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LockComponent.class, metaDataMap);
   }
@@ -177,6 +185,8 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
     this.operationType = org.apache.hadoop.hive.metastore.api.DataOperationType.UNSET;
 
     this.isAcid = false;
+
+    this.isDynamicPartitionWrite = false;
 
   }
 
@@ -215,6 +225,7 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
       this.operationType = other.operationType;
     }
     this.isAcid = other.isAcid;
+    this.isDynamicPartitionWrite = other.isDynamicPartitionWrite;
   }
 
   public LockComponent deepCopy() {
@@ -231,6 +242,8 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
     this.operationType = org.apache.hadoop.hive.metastore.api.DataOperationType.UNSET;
 
     this.isAcid = false;
+
+    this.isDynamicPartitionWrite = false;
 
   }
 
@@ -418,6 +431,28 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISACID_ISSET_ID, value);
   }
 
+  public boolean isIsDynamicPartitionWrite() {
+    return this.isDynamicPartitionWrite;
+  }
+
+  public void setIsDynamicPartitionWrite(boolean isDynamicPartitionWrite) {
+    this.isDynamicPartitionWrite = isDynamicPartitionWrite;
+    setIsDynamicPartitionWriteIsSet(true);
+  }
+
+  public void unsetIsDynamicPartitionWrite() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ISDYNAMICPARTITIONWRITE_ISSET_ID);
+  }
+
+  /** Returns true if field isDynamicPartitionWrite is set (has been assigned a value) and false otherwise */
+  public boolean isSetIsDynamicPartitionWrite() {
+    return EncodingUtils.testBit(__isset_bitfield, __ISDYNAMICPARTITIONWRITE_ISSET_ID);
+  }
+
+  public void setIsDynamicPartitionWriteIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISDYNAMICPARTITIONWRITE_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TYPE:
@@ -476,6 +511,14 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
       }
       break;
 
+    case IS_DYNAMIC_PARTITION_WRITE:
+      if (value == null) {
+        unsetIsDynamicPartitionWrite();
+      } else {
+        setIsDynamicPartitionWrite((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -502,6 +545,9 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
     case IS_ACID:
       return isIsAcid();
 
+    case IS_DYNAMIC_PARTITION_WRITE:
+      return isIsDynamicPartitionWrite();
+
     }
     throw new IllegalStateException();
   }
@@ -527,6 +573,8 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
       return isSetOperationType();
     case IS_ACID:
       return isSetIsAcid();
+    case IS_DYNAMIC_PARTITION_WRITE:
+      return isSetIsDynamicPartitionWrite();
     }
     throw new IllegalStateException();
   }
@@ -607,6 +655,15 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
         return false;
     }
 
+    boolean this_present_isDynamicPartitionWrite = true && this.isSetIsDynamicPartitionWrite();
+    boolean that_present_isDynamicPartitionWrite = true && that.isSetIsDynamicPartitionWrite();
+    if (this_present_isDynamicPartitionWrite || that_present_isDynamicPartitionWrite) {
+      if (!(this_present_isDynamicPartitionWrite && that_present_isDynamicPartitionWrite))
+        return false;
+      if (this.isDynamicPartitionWrite != that.isDynamicPartitionWrite)
+        return false;
+    }
+
     return true;
   }
 
@@ -648,6 +705,11 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
     list.add(present_isAcid);
     if (present_isAcid)
       list.add(isAcid);
+
+    boolean present_isDynamicPartitionWrite = true && (isSetIsDynamicPartitionWrite());
+    list.add(present_isDynamicPartitionWrite);
+    if (present_isDynamicPartitionWrite)
+      list.add(isDynamicPartitionWrite);
 
     return list.hashCode();
   }
@@ -730,6 +792,16 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetIsDynamicPartitionWrite()).compareTo(other.isSetIsDynamicPartitionWrite());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetIsDynamicPartitionWrite()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isDynamicPartitionWrite, other.isDynamicPartitionWrite);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -807,6 +879,12 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
       if (!first) sb.append(", ");
       sb.append("isAcid:");
       sb.append(this.isAcid);
+      first = false;
+    }
+    if (isSetIsDynamicPartitionWrite()) {
+      if (!first) sb.append(", ");
+      sb.append("isDynamicPartitionWrite:");
+      sb.append(this.isDynamicPartitionWrite);
       first = false;
     }
     sb.append(")");
@@ -922,6 +1000,14 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 8: // IS_DYNAMIC_PARTITION_WRITE
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.isDynamicPartitionWrite = iprot.readBool();
+              struct.setIsDynamicPartitionWriteIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -976,6 +1062,11 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
         oprot.writeBool(struct.isAcid);
         oprot.writeFieldEnd();
       }
+      if (struct.isSetIsDynamicPartitionWrite()) {
+        oprot.writeFieldBegin(IS_DYNAMIC_PARTITION_WRITE_FIELD_DESC);
+        oprot.writeBool(struct.isDynamicPartitionWrite);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1009,7 +1100,10 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
       if (struct.isSetIsAcid()) {
         optionals.set(3);
       }
-      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetIsDynamicPartitionWrite()) {
+        optionals.set(4);
+      }
+      oprot.writeBitSet(optionals, 5);
       if (struct.isSetTablename()) {
         oprot.writeString(struct.tablename);
       }
@@ -1022,6 +1116,9 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
       if (struct.isSetIsAcid()) {
         oprot.writeBool(struct.isAcid);
       }
+      if (struct.isSetIsDynamicPartitionWrite()) {
+        oprot.writeBool(struct.isDynamicPartitionWrite);
+      }
     }
 
     @Override
@@ -1033,7 +1130,7 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
       struct.setLevelIsSet(true);
       struct.dbname = iprot.readString();
       struct.setDbnameIsSet(true);
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
         struct.tablename = iprot.readString();
         struct.setTablenameIsSet(true);
@@ -1049,6 +1146,10 @@ public class LockComponent implements org.apache.thrift.TBase<LockComponent, Loc
       if (incoming.get(3)) {
         struct.isAcid = iprot.readBool();
         struct.setIsAcidIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.isDynamicPartitionWrite = iprot.readBool();
+        struct.setIsDynamicPartitionWriteIsSet(true);
       }
     }
   }

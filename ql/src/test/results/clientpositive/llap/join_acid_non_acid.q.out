@@ -56,3 +56,19 @@ POSTHOOK: Input: default@orc_table
 POSTHOOK: Input: default@orc_update_table
 #### A masked pattern was here ####
 1	x	1	a	I
+PREHOOK: query: select t1.k1, t1.f1 from orc_table t1
+                     union all
+select t2.k1, t2.f1 from orc_update_table t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table
+PREHOOK: Input: default@orc_update_table
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.k1, t1.f1 from orc_table t1
+                     union all
+select t2.k1, t2.f1 from orc_update_table t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table
+POSTHOOK: Input: default@orc_update_table
+#### A masked pattern was here ####
+1	x
+1	a

@@ -295,3 +295,50 @@ POSTHOOK: Input: default@expod2
 2	a222	b2
 2	a222	b22
 2	a222	b222
+PREHOOK: query: create temporary table tmp_lateral_view(
+                      arst array<struct<age:int,name:string>>
+                    ) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_lateral_view
+POSTHOOK: query: create temporary table tmp_lateral_view(
+                      arst array<struct<age:int,name:string>>
+                    ) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_lateral_view
+PREHOOK: query: insert into table tmp_lateral_view
+                    select array(named_struct('age',cint,'name',cstring1))
+                    from alltypesorc limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@tmp_lateral_view
+POSTHOOK: query: insert into table tmp_lateral_view
+                    select array(named_struct('age',cint,'name',cstring1))
+                    from alltypesorc limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@tmp_lateral_view
+POSTHOOK: Lineage: tmp_lateral_view.arst EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: select arst.name, arst.age
+                    from tmp_lateral_view
+                    lateral view inline(arst) arst
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_lateral_view
+#### A masked pattern was here ####
+POSTHOOK: query: select arst.name, arst.age
+                    from tmp_lateral_view
+                    lateral view inline(arst) arst
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_lateral_view
+#### A masked pattern was here ####
+cvLH6Eat2yFsyy7p	528534767
+cvLH6Eat2yFsyy7p	528534767
+cvLH6Eat2yFsyy7p	528534767
+cvLH6Eat2yFsyy7p	528534767
+cvLH6Eat2yFsyy7p	528534767
+cvLH6Eat2yFsyy7p	528534767
+cvLH6Eat2yFsyy7p	528534767
+cvLH6Eat2yFsyy7p	528534767
+cvLH6Eat2yFsyy7p	528534767
+cvLH6Eat2yFsyy7p	528534767

@@ -672,7 +672,8 @@ struct LockComponent {
     4: optional string tablename,
     5: optional string partitionname,
     6: optional DataOperationType operationType = DataOperationType.UNSET,
-    7: optional bool isAcid = false
+    7: optional bool isAcid = false,
+    8: optional bool isDynamicPartitionWrite = false
 }
 
 struct LockRequest {

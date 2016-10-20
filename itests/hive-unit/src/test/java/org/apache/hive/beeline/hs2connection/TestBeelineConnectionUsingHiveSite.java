@@ -20,11 +20,9 @@ package org.apache.hive.beeline.hs2connection;
 import java.io.File;
 
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hive.beeline.hs2connection.HS2ConnectionFileParser;
-import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.Test;
 
-public class TestBeelineConnectionUsingHiveSite extends TestBeelineWithHS2ConnectionFile {
+public class TestBeelineConnectionUsingHiveSite extends BeelineWithHS2ConnectionFileTestBase {
   @Test
   public void testBeelineConnectionHttp() throws Exception {
     setupHs2();
@@ -81,11 +79,6 @@ public class TestBeelineConnectionUsingHiveSite extends TestBeelineWithHS2Connec
     createTable();
     System.setProperty(JAVA_TRUST_STORE_PROP, dataFileDir + File.separator + TRUST_STORE_NAME);
     System.setProperty(JAVA_TRUST_STORE_PASS_PROP, KEY_STORE_TRUST_STORE_PASSWORD);
-  }
-
-  @Override
-  protected MiniHS2 getNewMiniHS2() throws Exception {
-    return new MiniHS2(hiveConf, MiniHS2.MiniClusterType.DFS_ONLY, true);
   }
 
   private void setupHs2() throws Exception {

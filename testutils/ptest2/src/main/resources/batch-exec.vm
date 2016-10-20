@@ -54,8 +54,6 @@ then
 fi
 echo "$$" > batch.pid
 find ./ -name 'TEST-*.xml' -delete
-find ./ -name 'hive.log' -delete
-find ./ -name junit_metastore_db | xargs -r rm -rf
 date +"%Y-%m-%d %T.%3N"
 echo "Pre test cleanup done"
 ret=0
