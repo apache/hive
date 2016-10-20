@@ -19,11 +19,14 @@
 package org.apache.hive.jdbc.miniHS2;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -46,10 +49,13 @@ import org.apache.hive.service.cli.thrift.ThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIServiceClient;
 import org.apache.hive.service.cli.thrift.ThriftHttpCLIService;
 import org.apache.hive.service.server.HiveServer2;
-
-import com.google.common.io.Files;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MiniHS2 extends AbstractHiveService {
+
+  private static final Logger LOG = LoggerFactory.getLogger(MiniHS2.class);
+
   public static final String HS2_BINARY_MODE = "binary";
   public static final String HS2_HTTP_MODE = "http";
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
@@ -58,7 +64,7 @@ public class MiniHS2 extends AbstractHiveService {
   private static final String tmpDir = System.getProperty("test.tmp.dir");
   private HiveServer2 hiveServer2 = null;
   private final File baseDir;
-  private final Path baseDfsDir;
+  private final Path baseFsDir;
   private MiniMrShim mr;
   private MiniDFSShim dfs;
   private MiniLlapCluster llapCluster = null;
@@ -66,18 +72,19 @@ public class MiniHS2 extends AbstractHiveService {
   private boolean useMiniKdc = false;
   private final String serverPrincipal;
   private final boolean isMetastoreRemote;
-  private MiniClusterType miniClusterType = MiniClusterType.DFS_ONLY;
+  private final boolean cleanupLocalDirOnStartup;
+  private MiniClusterType miniClusterType = MiniClusterType.LOCALFS_ONLY;
 
   public enum MiniClusterType {
     MR,
     TEZ,
     LLAP,
-    DFS_ONLY;
+    LOCALFS_ONLY;
   }
 
   public static class Builder {
     private HiveConf hiveConf = new HiveConf();
-    private MiniClusterType miniClusterType = MiniClusterType.DFS_ONLY;
+    private MiniClusterType miniClusterType = MiniClusterType.LOCALFS_ONLY;
     private boolean useMiniKdc = false;
     private String serverPrincipal;
     private String serverKeytab;
@@ -86,6 +93,7 @@ public class MiniHS2 extends AbstractHiveService {
     private boolean usePortsFromConf = false;
     private String authType = "KERBEROS";
     private boolean isHA = false;
+    private boolean cleanupLocalDirOnStartup = true;
 
     public Builder() {
     }
@@ -131,6 +139,11 @@ public class MiniHS2 extends AbstractHiveService {
       return this;
     }
 
+    public Builder cleanupLocalDirOnStartup(boolean val) {
+      this.cleanupLocalDirOnStartup = val;
+      return this;
+    }
+
     public MiniHS2 build() throws Exception {
       if (miniClusterType == MiniClusterType.MR && useMiniKdc) {
         throw new IOException("Can't create secure miniMr ... yet");
@@ -141,7 +154,7 @@ public class MiniHS2 extends AbstractHiveService {
         hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_BINARY_MODE);
       }
       return new MiniHS2(hiveConf, miniClusterType, useMiniKdc, serverPrincipal, serverKeytab,
-          isMetastoreRemote, usePortsFromConf, authType, isHA);
+          isMetastoreRemote, usePortsFromConf, authType, isHA, cleanupLocalDirOnStartup);
     }
   }
 
@@ -179,7 +192,7 @@ public class MiniHS2 extends AbstractHiveService {
 
   private MiniHS2(HiveConf hiveConf, MiniClusterType miniClusterType, boolean useMiniKdc,
       String serverPrincipal, String serverKeytab, boolean isMetastoreRemote,
-      boolean usePortsFromConf, String authType, boolean isHA) throws Exception {
+      boolean usePortsFromConf, String authType, boolean isHA, boolean cleanupLocalDirOnStartup) throws Exception {
     // Always use localhost for hostname as some tests like SSL CN validation ones
     // are tied to localhost being present in the certificate name
     super(
@@ -196,11 +209,12 @@ public class MiniHS2 extends AbstractHiveService {
     this.useMiniKdc = useMiniKdc;
     this.serverPrincipal = serverPrincipal;
     this.isMetastoreRemote = isMetastoreRemote;
-    baseDir = new File(tmpDir + "/local_base");
+    this.cleanupLocalDirOnStartup = cleanupLocalDirOnStartup;
+    baseDir = getBaseDir();
     localFS = FileSystem.getLocal(hiveConf);
     FileSystem fs;
 
-    if (miniClusterType != MiniClusterType.DFS_ONLY) {
+    if (miniClusterType != MiniClusterType.LOCALFS_ONLY) {
       // Initialize dfs
       dfs = ShimLoader.getHadoopShims().getMiniDfs(hiveConf, 4, true, null, isHA);
       fs = dfs.getFileSystem();
@@ -227,11 +241,18 @@ public class MiniHS2 extends AbstractHiveService {
       }
       // store the config in system properties
       mr.setupConfiguration(getHiveConf());
-      baseDfsDir = new Path(new Path(fs.getUri()), "/base");
+      baseFsDir = new Path(new Path(fs.getUri()), "/base");
     } else {
-      // This is DFS only mode, just initialize the dfs root directory.
+      // This is FS only mode, just initialize the dfs root directory.
       fs = FileSystem.getLocal(hiveConf);
-      baseDfsDir = new Path("file://" + baseDir.toURI().getPath());
+      baseFsDir = new Path("file://" + baseDir.toURI().getPath());
+
+      if (cleanupLocalDirOnStartup) {
+        // Cleanup baseFsDir since it can be shared across tests.
+        LOG.info("Attempting to cleanup baseFsDir: {} while setting up MiniHS2", baseDir);
+        Preconditions.checkState(baseFsDir.depth() >= 3); // Avoid "/tmp", directories closer to "/"
+        fs.delete(baseFsDir, true);
+      }
     }
     if (useMiniKdc) {
       hiveConf.setVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL, serverPrincipal);
@@ -242,8 +263,8 @@ public class MiniHS2 extends AbstractHiveService {
         "jdbc:derby:;databaseName=" + baseDir.getAbsolutePath() + File.separator
             + "test_metastore;create=true";
 
-    fs.mkdirs(baseDfsDir);
-    Path wareHouseDir = new Path(baseDfsDir, "warehouse");
+    fs.mkdirs(baseFsDir);
+    Path wareHouseDir = new Path(baseFsDir, "warehouse");
     // Create warehouse with 777, so that user impersonation has no issues.
     FileSystem.mkdirs(fs, wareHouseDir, FULL_PERM);
 
@@ -259,7 +280,7 @@ public class MiniHS2 extends AbstractHiveService {
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_PORT, getBinaryPort());
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT, getHttpPort());
 
-    Path scratchDir = new Path(baseDfsDir, "scratch");
+    Path scratchDir = new Path(baseFsDir, "scratch");
     // Create root scratchdir with write all, so that user impersonation has no issues.
     Utilities.createDirsWithPermission(hiveConf, scratchDir, WRITE_ALL_PERM, true);
     System.setProperty(HiveConf.ConfVars.SCRATCHDIR.varname, scratchDir.toString());
@@ -271,7 +292,7 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   public MiniHS2(HiveConf hiveConf) throws Exception {
-    this(hiveConf, MiniClusterType.DFS_ONLY);
+    this(hiveConf, MiniClusterType.LOCALFS_ONLY);
   }
 
   public MiniHS2(HiveConf hiveConf, MiniClusterType clusterType) throws Exception {
@@ -281,7 +302,7 @@ public class MiniHS2 extends AbstractHiveService {
   public MiniHS2(HiveConf hiveConf, MiniClusterType clusterType,
       boolean usePortsFromConf) throws Exception {
     this(hiveConf, clusterType, false, null, null, false, usePortsFromConf,
-      "KERBEROS", false);
+      "KERBEROS", false, true);
   }
 
   public void start(Map<String, String> confOverlay) throws Exception {
@@ -515,5 +536,19 @@ public class MiniHS2 extends AbstractHiveService {
 
   public Service.STATE getState() {
     return hiveServer2.getServiceState();
+  }
+
+  static File getBaseDir() {
+    File baseDir = new File(tmpDir + "/local_base");
+    return baseDir;
+  }
+
+  public static void cleanupLocalDir() throws IOException {
+    File baseDir = getBaseDir();
+    try {
+      org.apache.hadoop.hive.common.FileUtils.deleteDirectory(baseDir);
+    } catch (FileNotFoundException e) {
+      // Ignore. Safe if it does not exist.
+    }
   }
 }

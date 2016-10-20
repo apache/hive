@@ -41,7 +41,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestServiceDiscoveryWithMiniHS2 {
-  private static MiniHS2 miniHS2 = null;
+  private MiniHS2 miniHS2 = null;
   private static HiveConf hiveConf;
   private static TestingServer zkServer;
   private static String zkRootNamespace = "hs2test";
@@ -52,6 +52,7 @@ public class TestServiceDiscoveryWithMiniHS2 {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
+    MiniHS2.cleanupLocalDir();
     zkServer = new TestingServer();
     Class.forName(MiniHS2.getJdbcDriverName());
     hiveConf = new HiveConf();
@@ -68,11 +69,12 @@ public class TestServiceDiscoveryWithMiniHS2 {
       zkServer.close();
       zkServer = null;
     }
+    MiniHS2.cleanupLocalDir();
   }
 
   @Before
   public void setUp() throws Exception {
-    miniHS2 = new MiniHS2(hiveConf);
+    miniHS2 = new MiniHS2.Builder().withConf(hiveConf).cleanupLocalDirOnStartup(false).build();
   }
 
   @After

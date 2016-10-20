@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -88,6 +89,7 @@ public class TestJdbcWithMiniHS2 {
 
   @BeforeClass
   public static void setupBeforeClass() throws Exception {
+    MiniHS2.cleanupLocalDir();
     HiveConf conf = new HiveConf();
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     kvDataFilePath = new Path(dataFileDir, "kv1.txt");
@@ -184,7 +186,7 @@ public class TestJdbcWithMiniHS2 {
   private static void startMiniHS2(HiveConf conf) throws Exception {
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false);
-    miniHS2 = new MiniHS2(conf);
+    miniHS2 = new MiniHS2.Builder().withConf(conf).cleanupLocalDirOnStartup(false).build();
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
   }
@@ -195,10 +197,11 @@ public class TestJdbcWithMiniHS2 {
     }
   }
 
-  private static void cleanupMiniHS2() {
+  private static void cleanupMiniHS2() throws IOException {
     if (miniHS2 != null) {
       miniHS2.cleanup();
     }
+    MiniHS2.cleanupLocalDir();
   }
 
   private static void openDefaultConnections() throws Exception {

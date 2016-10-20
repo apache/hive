@@ -509,7 +509,7 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
-      String confDir, String hadoopVer, String initScript, String cleanupScript,
+      String confDir, String hadzoopVer, String initScript, String cleanupScript,
       boolean useHBaseMetastore, boolean withLlapIo, FsType fsType)
     throws Exception {
     LOG.info("Setting up QTestUtil with outDir={}, logDir={}, clusterType={}, confDir={}," +

@@ -35,9 +35,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.beeline.BeeLine;
-import org.apache.hive.beeline.hs2connection.HS2ConnectionFileParser;
-import org.apache.hive.beeline.hs2connection.HiveSiteHS2ConnectionFileParser;
-import org.apache.hive.beeline.hs2connection.UserHS2ConnectionFileParser;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.cli.CLIServiceClient;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -45,6 +42,7 @@ import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -144,7 +142,13 @@ public abstract class TestBeelineWithHS2ConnectionFile {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
+    MiniHS2.cleanupLocalDir();
     Class.forName(MiniHS2.getJdbcDriverName());
+  }
+
+  @AfterClass
+  public static void afterClass() throws IOException {
+    MiniHS2.cleanupLocalDir();
   }
 
   @Before
@@ -162,7 +166,7 @@ public abstract class TestBeelineWithHS2ConnectionFile {
   }
 
   protected MiniHS2 getNewMiniHS2() throws Exception {
-    return new MiniHS2(hiveConf);
+    return new MiniHS2.Builder().withConf(hiveConf).cleanupLocalDirOnStartup(false).build();
   }
 
   @After
