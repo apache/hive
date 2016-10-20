@@ -115,3 +115,45 @@ alter table partitioned_delete_2 partition(part=2) compact 'major';
 select insert_num,part,a,b,c,d from partitioned_delete_2;
 
 DROP TABLE partitioned_delete_2;
+
+--following tests is moved from system tests
+drop table if exists missing_ddl_2;
+create table missing_ddl_2(name string, age int);
+insert overwrite table missing_ddl_2 select value, key from srcbucket;
+alter table missing_ddl_2 add columns (gps double);
+
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.optimize.sort.dynamic.partition=true;
+
+DROP TABLE IF EXISTS all100kjson_textfile_orc;
+CREATE TABLE all100kjson_textfile_orc (
+                             si smallint,
+                             i int,
+                             b bigint,
+                             f float,
+                             d double,
+                             s string,
+                             bo boolean,
+                             ts timestamp)
+                             PARTITIONED BY (t tinyint)
+                             ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+                             WITH SERDEPROPERTIES ('timestamp.formats'='yyyy-MM-dd\'T\'HH:mm:ss')
+                             STORED AS TEXTFILE;
+
+INSERT INTO TABLE all100kjson_textfile_orc PARTITION (t) SELECT csmallint, cint, cbigint, cfloat, cdouble, cstring1, cboolean1, ctimestamp1, ctinyint FROM alltypesorc WHERE ctinyint > 0;
+
+ALTER TABLE all100kjson_textfile_orc
+                            SET FILEFORMAT
+                            INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+                            OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+                            SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde';
+
+INSERT INTO TABLE all100kjson_textfile_orc PARTITION (t) SELECT csmallint, cint, cbigint, cfloat, cdouble, cstring1, cboolean1, ctimestamp1, ctinyint FROM alltypesorc WHERE ctinyint < 1 and ctinyint > -50 ;
+
+-- HIVE-11977: Hive should handle an external avro table with zero length files present
+DROP TABLE IF EXISTS emptyavro;
+CREATE TABLE emptyavro (i int)
+               PARTITIONED BY (s string)
+               STORED AS AVRO;
+load data local inpath '../../data/files/empty1.txt' into table emptyavro PARTITION (s='something');
+SELECT COUNT(*) from emptyavro;

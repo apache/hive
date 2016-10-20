@@ -36,3 +36,12 @@ select sub1.aid, sub1.avalue, sub2.bvalue
 from sub1,sub2
 where sub1.aid=sub2.bid;
 
+create temporary table tmp_lateral_view(
+                      arst array<struct<age:int,name:string>>
+                    ) stored as orc;
+insert into table tmp_lateral_view
+                    select array(named_struct('age',cint,'name',cstring1))
+                    from alltypesorc limit 10;
+select arst.name, arst.age
+                    from tmp_lateral_view
+                    lateral view inline(arst) arst;
