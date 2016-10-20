@@ -77,6 +77,7 @@
     <test.hive.hadoop.classpath>${maven.test.classpath}</test.hive.hadoop.classpath>
     <test.log4j.scheme>file://</test.log4j.scheme>
     <test.tmp.dir>${project.build.directory}/tmp</test.tmp.dir>
+    <test.conf.dir>${project.build.directory}/testconf</test.conf.dir>
     <test.tmp.dir.uri>file://${test.tmp.dir}</test.tmp.dir.uri>
     <!-- Determines the log level of the console logger, hive.log is independent of this-->
     <test.console.log.level>INFO</test.console.log.level>
@@ -921,12 +922,13 @@
             <configuration>
               <target>
                 <delete dir="${test.tmp.dir}" />
+                <delete dir="${test.conf.dir}" />
                 <delete dir="${test.warehouse.dir}" />
                 <mkdir dir="${test.tmp.dir}" />
                 <mkdir dir="${test.warehouse.dir}" />
-                <mkdir dir="${test.tmp.dir}/conf" />
+                <mkdir dir="${test.conf.dir}" />
                 <!-- copies hive-site.xml so it can be modified -->
-                <copy todir="${test.tmp.dir}/conf/">
+                <copy todir="${test.conf.dir}">
                   <fileset dir="${basedir}/${hive.path.to.root}/data/conf/"/>
                 </copy>
               </target>
@@ -1003,13 +1005,13 @@
           <failIfNoTests>false</failIfNoTests>
           <argLine>-Xmx2048m -XX:MaxPermSize=512m</argLine>
           <additionalClasspathElements>
-            <additionalClasspathElement>${test.tmp.dir}/conf</additionalClasspathElement>
+            <additionalClasspathElement>${test.conf.dir}</additionalClasspathElement>
             <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
           </additionalClasspathElements>
           <environmentVariables>
             <TZ>US/Pacific</TZ>
             <LANG>en_US.UTF-8</LANG>
-            <HADOOP_CLASSPATH>${test.tmp.dir}/conf:${basedir}/${hive.path.to.root}/conf</HADOOP_CLASSPATH>
+            <HADOOP_CLASSPATH>${test.conf.dir}:${basedir}/${hive.path.to.root}/conf</HADOOP_CLASSPATH>
             <HIVE_HADOOP_TEST_CLASSPATH>${test.hive.hadoop.classpath}</HIVE_HADOOP_TEST_CLASSPATH>
             <SPARK_SUBMIT_CLASSPATH>${spark.home}/lib/spark-assembly-${spark.version}-hadoop2.4.0.jar:${test.hive.hadoop.classpath}</SPARK_SUBMIT_CLASSPATH>
             <SPARK_OSX_TEST_OPTS>-Dorg.xerial.snappy.tempdir=/tmp -Dorg.xerial.snappy.lib.name=libsnappyjava.jnilib</SPARK_OSX_TEST_OPTS>
@@ -1030,7 +1032,7 @@
             <!-- required for hive-exec jar path and tests which reference a jar -->
             <maven.local.repository>${maven.repo.local}</maven.local.repository>
             <mapred.job.tracker>local</mapred.job.tracker>
-            <log4j.configurationFile>${test.log4j.scheme}${test.tmp.dir}/conf/hive-log4j2.properties</log4j.configurationFile>
+            <log4j.configurationFile>${test.log4j.scheme}${test.conf.dir}/hive-log4j2.properties</log4j.configurationFile>
             <hive.test.console.log.level>${test.console.log.level}</hive.test.console.log.level>
             <log4j.debug>true</log4j.debug>
             <!-- don't diry up /tmp -->
@@ -1049,7 +1051,7 @@
             <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
             <test.src.tables>src,src1,srcbucket,srcbucket2,src_json,src_thrift,src_sequencefile,srcpart,alltypesorc,src_hbase,cbo_t1,cbo_t2,cbo_t3,src_cbo,part,lineitem</test.src.tables>
-            <java.security.krb5.conf>${test.tmp.dir}/conf/krb5.conf</java.security.krb5.conf>
+            <java.security.krb5.conf>${test.conf.dir}/krb5.conf</java.security.krb5.conf>
             <!-- Required by spark to work around SPARK-14958 -->
             <antlr.version>${antlr.version}</antlr.version>
             <qfile>${qfile}</qfile>
