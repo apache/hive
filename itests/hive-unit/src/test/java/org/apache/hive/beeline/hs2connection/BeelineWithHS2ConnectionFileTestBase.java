@@ -47,7 +47,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
-public abstract class TestBeelineWithHS2ConnectionFile {
+public abstract class BeelineWithHS2ConnectionFileTestBase {
   protected MiniHS2 miniHS2;
   protected HiveConf hiveConf = new HiveConf();
   protected final String tableName = "testBeelineTable";

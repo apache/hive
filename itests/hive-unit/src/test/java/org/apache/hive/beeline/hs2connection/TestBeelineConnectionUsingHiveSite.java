@@ -22,7 +22,7 @@ import java.io.File;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.junit.Test;
 
-public class TestBeelineConnectionUsingHiveSite extends TestBeelineWithHS2ConnectionFile {
+public class TestBeelineConnectionUsingHiveSite extends BeelineWithHS2ConnectionFileTestBase {
   @Test
   public void testBeelineConnectionHttp() throws Exception {
     setupHs2();
