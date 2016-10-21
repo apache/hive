@@ -904,6 +904,18 @@ public class HiveConf extends Configuration {
     METASTORE_INIT_METADATA_COUNT_ENABLED("hive.metastore.initial.metadata.count.enabled", true,
       "Enable a metadata count at metastore startup for metrics."),
 
+    // Metastore SSL settings
+    HIVE_METASTORE_USE_SSL("hive.metastore.use.SSL", false,
+        "Set this to true for using SSL encryption in HMS server."),
+    HIVE_METASTORE_SSL_KEYSTORE_PATH("hive.metastore.keystore.path", "",
+        "Metastore SSL certificate keystore location."),
+    HIVE_METASTORE_SSL_KEYSTORE_PASSWORD("hive.metastore.keystore.password", "",
+        "Metastore SSL certificate keystore password."),
+    HIVE_METASTORE_SSL_TRUSTSTORE_PATH("hive.metastore.truststore.path", "",
+        "Metastore SSL certificate keystore location."),
+    HIVE_METASTORE_SSL_TRUSTSTORE_PASSWORD("hive.metastore.truststore.password", "",
+        "Metastore SSL certificate keystore password."),
+
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
     METADATA_EXPORT_LOCATION("hive.metadata.export.location", "",
