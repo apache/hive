@@ -170,9 +170,9 @@ Stage-0
                                           <-Map 8 [SIMPLE_EDGE]
                                             SHUFFLE [RS_13]
                                               PartitionCols:_col0
-                                              Select Operator [SEL_5] (rows=36524 width=1119)
+                                              Select Operator [SEL_5] (rows=8116 width=1119)
                                                 Output:["_col0","_col2","_col3","_col4"]
-                                                Filter Operator [FIL_49] (rows=36524 width=1119)
+                                                Filter Operator [FIL_49] (rows=8116 width=1119)
                                                   predicate:(d_month_seq BETWEEN 1193 AND 1204 and d_date_sk is not null)
                                                   TableScan [TS_3] (rows=73049 width=1119)
                                                     default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_month_seq","d_year","d_moy","d_qoy"]

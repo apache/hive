@@ -144,9 +144,9 @@ Stage-0
                                                           <-Map 34 [SIMPLE_EDGE]
                                                             SHUFFLE [RS_74]
                                                               PartitionCols:_col0
-                                                              Select Operator [SEL_69] (rows=57750 width=1436)
+                                                              Select Operator [SEL_69] (rows=2851 width=1436)
                                                                 Output:["_col0","_col3"]
-                                                                Filter Operator [FIL_597] (rows=57750 width=1436)
+                                                                Filter Operator [FIL_597] (rows=2851 width=1436)
                                                                   predicate:((i_color) IN ('maroon', 'burnished', 'dim', 'steel', 'navajo', 'chocolate') and i_current_price BETWEEN 35 AND 45 and i_current_price BETWEEN 36 AND 50 and i_item_sk is not null)
                                                                   TableScan [TS_67] (rows=462000 width=1436)
                                                                     default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_item_sk","i_current_price","i_color","i_product_name"]
@@ -487,9 +487,9 @@ Stage-0
                                                           <-Map 73 [SIMPLE_EDGE]
                                                             SHUFFLE [RS_204]
                                                               PartitionCols:_col0
-                                                              Select Operator [SEL_199] (rows=57750 width=1436)
+                                                              Select Operator [SEL_199] (rows=2851 width=1436)
                                                                 Output:["_col0","_col3"]
-                                                                Filter Operator [FIL_616] (rows=57750 width=1436)
+                                                                Filter Operator [FIL_616] (rows=2851 width=1436)
                                                                   predicate:((i_color) IN ('maroon', 'burnished', 'dim', 'steel', 'navajo', 'chocolate') and i_current_price BETWEEN 35 AND 45 and i_current_price BETWEEN 36 AND 50 and i_item_sk is not null)
                                                                   TableScan [TS_197] (rows=462000 width=1436)
                                                                     default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_item_sk","i_current_price","i_color","i_product_name"]

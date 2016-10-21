@@ -106,9 +106,9 @@ Stage-0
                                               <-Map 24 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_61]
                                                   PartitionCols:_col0
-                                                  Select Operator [SEL_47] (rows=36524 width=1119)
+                                                  Select Operator [SEL_47] (rows=8116 width=1119)
                                                     Output:["_col0"]
-                                                    Filter Operator [FIL_194] (rows=36524 width=1119)
+                                                    Filter Operator [FIL_194] (rows=8116 width=1119)
                                                       predicate:(d_date BETWEEN 1998-08-04 AND 1998-09-04 and d_date_sk is not null)
                                                       TableScan [TS_45] (rows=73049 width=1119)
                                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
@@ -198,9 +198,9 @@ Stage-0
                                               <-Map 36 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_102]
                                                   PartitionCols:_col0
-                                                  Select Operator [SEL_88] (rows=36524 width=1119)
+                                                  Select Operator [SEL_88] (rows=8116 width=1119)
                                                     Output:["_col0"]
-                                                    Filter Operator [FIL_200] (rows=36524 width=1119)
+                                                    Filter Operator [FIL_200] (rows=8116 width=1119)
                                                       predicate:(d_date BETWEEN 1998-08-04 AND 1998-09-04 and d_date_sk is not null)
                                                       TableScan [TS_86] (rows=73049 width=1119)
                                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
@@ -290,9 +290,9 @@ Stage-0
                                               <-Map 12 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_22]
                                                   PartitionCols:_col0
-                                                  Select Operator [SEL_8] (rows=36524 width=1119)
+                                                  Select Operator [SEL_8] (rows=8116 width=1119)
                                                     Output:["_col0"]
-                                                    Filter Operator [FIL_188] (rows=36524 width=1119)
+                                                    Filter Operator [FIL_188] (rows=8116 width=1119)
                                                       predicate:(d_date BETWEEN 1998-08-04 AND 1998-09-04 and d_date_sk is not null)
                                                       TableScan [TS_6] (rows=73049 width=1119)
                                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
