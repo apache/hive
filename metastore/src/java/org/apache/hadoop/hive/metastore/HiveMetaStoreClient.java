@@ -48,6 +48,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
@@ -146,6 +147,7 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
@@ -375,6 +377,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private void open() throws MetaException {
     isConnected = false;
     TTransportException tte = null;
+    boolean useSSL = conf.getBoolVar(ConfVars.HIVE_METASTORE_USE_SSL);
     boolean useSasl = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL);
     boolean useFramedTransport = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_FRAMED_TRANSPORT);
     boolean useCompactProtocol = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_COMPACT_PROTOCOL);
@@ -384,8 +387,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
       for (URI store : metastoreUris) {
         LOG.info("Trying to connect to metastore with URI " + store);
+
         try {
-          transport = new TSocket(store.getHost(), store.getPort(), clientSocketTimeout);
           if (useSasl) {
             // Wrap thrift connection with SASL for secure connection.
             try {
@@ -400,6 +403,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
               String tokenSig = conf.get("hive.metastore.token.signature");
               // tokenSig could be null
               tokenStrForm = Utils.getTokenStrForm(tokenSig);
+              transport = new TSocket(store.getHost(), store.getPort(), clientSocketTimeout);
+
               if(tokenStrForm != null) {
                 // authenticate using delegation tokens via the "DIGEST" mechanism
                 transport = authBridge.createClientTransport(null, store.getHost(),
@@ -416,9 +421,35 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
               LOG.error("Couldn't create client transport", ioe);
               throw new MetaException(ioe.toString());
             }
-          } else if (useFramedTransport) {
-            transport = new TFramedTransport(transport);
+          } else {
+            if (useSSL) {
+              try {
+                String trustStorePath = conf.getVar(ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PATH).trim();
+                if (trustStorePath.isEmpty()) {
+                  throw new IllegalArgumentException(ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PATH.varname
+                      + " Not configured for SSL connection");
+                }
+                String trustStorePassword = ShimLoader.getHadoopShims().getPassword(conf,
+                    HiveConf.ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PASSWORD.varname);
+
+                // Create an SSL socket and connect
+                transport = HiveAuthUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout, trustStorePath, trustStorePassword );
+                LOG.info("Opened an SSL connection to metastore, current connections: " + connCount.incrementAndGet());
+              } catch(IOException e) {
+                throw new IllegalArgumentException(e);
+              } catch(TTransportException e) {
+                tte = e;
+                throw new MetaException(e.toString());
+              }
+            } else {
+              transport = new TSocket(store.getHost(), store.getPort(), clientSocketTimeout);
+            }
+
+            if (useFramedTransport) {
+              transport = new TFramedTransport(transport);
+            }
           }
+
           final TProtocol protocol;
           if (useCompactProtocol) {
             protocol = new TCompactProtocol(transport);
@@ -427,8 +458,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
           }
           client = new ThriftHiveMetastore.Client(protocol);
           try {
-            transport.open();
-            LOG.info("Opened a connection to metastore, current connections: " + connCount.incrementAndGet());
+            if (!transport.isOpen()) {
+              transport.open();
+              LOG.info("Opened a connection to metastore, current connections: " + connCount.incrementAndGet());
+            }
             isConnected = true;
           } catch (TTransportException e) {
             tte = e;

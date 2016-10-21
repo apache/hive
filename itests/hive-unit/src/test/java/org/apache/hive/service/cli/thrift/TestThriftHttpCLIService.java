@@ -21,9 +21,9 @@ package org.apache.hive.service.cli.thrift;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.HttpBasicAuthInterceptor;
-import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HiveAuthFactory.AuthTypes;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -152,7 +152,7 @@ public class TestThriftHttpCLIService extends ThriftCLIServiceTest {
   }
 
   private TTransport getRawBinaryTransport() throws Exception {
-    return HiveAuthFactory.getSocketTransport(host, port, 0);
+    return HiveAuthUtils.getSocketTransport(host, port, 0);
   }
 
   private static TTransport getHttpTransport() throws Exception {

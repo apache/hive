@@ -30,8 +30,8 @@ import org.apache.thrift.transport.TTransportException;
  *
  */
 public class TServerSocketKeepAlive extends TServerSocket {
-  public TServerSocketKeepAlive(int port) throws TTransportException {
-    super(port, 0);
+  public TServerSocketKeepAlive(TServerSocket serverSocket) throws TTransportException {
+    super(serverSocket.getServerSocket());
   }
 
   @Override

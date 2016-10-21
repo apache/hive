@@ -52,10 +52,10 @@ public class MiniHS2 extends AbstractHiveService {
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
   private static final FsPermission FULL_PERM = new FsPermission((short)00777);
   private static final FsPermission WRITE_ALL_PERM = new FsPermission((short)00733);
+  private static final String tmpDir = System.getProperty("test.tmp.dir");
   private HiveServer2 hiveServer2 = null;
   private final File baseDir;
   private final Path baseDfsDir;
-  private static final AtomicLong hs2Counter = new AtomicLong();
   private MiniMrShim mr;
   private MiniDFSShim dfs;
   private FileSystem localFS;
@@ -169,7 +169,7 @@ public class MiniHS2 extends AbstractHiveService {
     this.serverPrincipal = serverPrincipal;
     this.serverKeytab = serverKeytab;
     this.isMetastoreRemote = isMetastoreRemote;
-    baseDir = Files.createTempDir();
+    baseDir = new File(tmpDir + "/local_base");
     localFS = FileSystem.getLocal(hiveConf);
     FileSystem fs;
     if (useMiniMR) {
@@ -189,9 +189,9 @@ public class MiniHS2 extends AbstractHiveService {
       hiveConf.setVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB, serverKeytab);
       hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, authType);
     }
-    String metaStoreURL =  "jdbc:derby:" + baseDir.getAbsolutePath() + File.separator + "test_metastore-" +
-        hs2Counter.incrementAndGet() + ";create=true";
-
+    String metaStoreURL =
+        "jdbc:derby:;databaseName=" + baseDir.getAbsolutePath() + File.separator
+            + "test_metastore;create=true";
     fs.mkdirs(baseDfsDir);
     Path wareHouseDir = new Path(baseDfsDir, "warehouse");
     // Create warehouse with 777, so that user impersonation has no issues.
@@ -264,6 +264,9 @@ public class MiniHS2 extends AbstractHiveService {
     } catch (IOException e) {
       // Ignore errors cleaning up miniMR
     }
+  }
+
+  public void cleanup() {
     FileUtils.deleteQuietly(baseDir);
   }
 

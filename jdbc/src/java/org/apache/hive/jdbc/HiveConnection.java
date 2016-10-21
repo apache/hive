@@ -18,6 +18,23 @@
 
 package org.apache.hive.jdbc;
 
+import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
+import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import org.apache.hive.service.auth.HiveAuthFactory;
+import org.apache.hive.service.auth.KerberosSaslHelper;
+import org.apache.hive.service.auth.PlainSaslHelper;
+import org.apache.hive.service.auth.SaslQOP;
+import org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService;
+import org.apache.http.HttpRequestInterceptor;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.transport.THttpClient;
+import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
+
+import javax.security.sasl.Sasl;
+import javax.security.sasl.SaslException;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
@@ -51,19 +68,9 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
-import javax.security.sasl.Sasl;
-import javax.security.sasl.SaslException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
-import org.apache.hive.service.auth.HiveAuthFactory;
-import org.apache.hive.service.auth.KerberosSaslHelper;
-import org.apache.hive.service.auth.PlainSaslHelper;
-import org.apache.hive.service.auth.SaslQOP;
-import org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.TCLIService;
 import org.apache.hive.service.cli.thrift.TCancelDelegationTokenReq;
 import org.apache.hive.service.cli.thrift.TCancelDelegationTokenResp;
@@ -76,15 +83,9 @@ import org.apache.hive.service.cli.thrift.TProtocolVersion;
 import org.apache.hive.service.cli.thrift.TRenewDelegationTokenReq;
 import org.apache.hive.service.cli.thrift.TRenewDelegationTokenResp;
 import org.apache.hive.service.cli.thrift.TSessionHandle;
-import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.transport.THttpClient;
-import org.apache.thrift.transport.TTransport;
-import org.apache.thrift.transport.TTransportException;
 
 /**
  * HiveConnection.
@@ -365,14 +366,14 @@ public class HiveConnection implements java.sql.Connection {
         JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
 
       if (sslTrustStore == null || sslTrustStore.isEmpty()) {
-        transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout);
+        transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout);
       } else {
-        transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout,
+        transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout,
             sslTrustStore, sslTrustStorePassword);
       }
     } else {
       // get non-SSL socket transport
-      transport = HiveAuthFactory.getSocketTransport(host, port, loginTimeout);
+      transport = HiveAuthUtils.getSocketTransport(host, port, loginTimeout);
     }
     return transport;
   }

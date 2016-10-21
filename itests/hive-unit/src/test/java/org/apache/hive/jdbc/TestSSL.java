@@ -18,6 +18,7 @@
 
 package org.apache.hive.jdbc;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -46,9 +47,10 @@ import org.slf4j.LoggerFactory;
 
 public class TestSSL {
   private static final Logger LOG = LoggerFactory.getLogger(TestSSL.class);
-  private static final String KEY_STORE_NAME = "keystore.jks";
+  private static final String LOCALHOST_KEY_STORE_NAME = "keystore.jks";
+  private static final String EXAMPLEDOTCOM_KEY_STORE_NAME = "keystore_exampledotcom.jks";
   private static final String TRUST_STORE_NAME = "truststore.jks";
-  private static final String KEY_STORE_PASSWORD = "HiveJdbc";
+  private static final String KEY_STORE_TRUST_STORE_PASSWORD = "HiveJdbc";
   private static final String JAVA_TRUST_STORE_PROP = "javax.net.ssl.trustStore";
   private static final String JAVA_TRUST_STORE_PASS_PROP = "javax.net.ssl.trustStorePassword";
   private static final String HS2_BINARY_MODE = "binary";
@@ -63,7 +65,7 @@ public class TestSSL {
   private String dataFileDir = conf.get("test.data.files");
   private Map<String, String> confOverlay;
   private final String SSL_CONN_PARAMS = ";ssl=true;sslTrustStore=" + URLEncoder.encode(dataFileDir + File.separator +
-      TRUST_STORE_NAME) + ";trustStorePassword=" + KEY_STORE_PASSWORD;
+      TRUST_STORE_NAME) + ";trustStorePassword=" + KEY_STORE_TRUST_STORE_PASSWORD;
 
   @BeforeClass
   public static void beforeTest() throws Exception {
@@ -124,7 +126,7 @@ public class TestSSL {
     // make SSL connection
     hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL() + ";ssl=true;sslTrustStore=" +
         dataFileDir + File.separator + TRUST_STORE_NAME + ";trustStorePassword=" +
-        KEY_STORE_PASSWORD, System.getProperty("user.name"), "bar");
+        KEY_STORE_TRUST_STORE_PASSWORD, System.getProperty("user.name"), "bar");
     hs2Conn.close();
     Assert.assertEquals("Expected exit code of 1", 1,
       execCommand("openssl s_client -connect " + miniHS2.getHost() + ":" + miniHS2.getBinaryPort()
@@ -141,7 +143,7 @@ public class TestSSL {
     try {
       hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL() +
           ";ssl=true;sslTrustStore=" + dataFileDir + File.separator +
-          TRUST_STORE_NAME + ";trustStorePassword=" + KEY_STORE_PASSWORD +
+          TRUST_STORE_NAME + ";trustStorePassword=" + KEY_STORE_TRUST_STORE_PASSWORD +
           "?hive.server2.transport.mode=" + HS2_HTTP_MODE +
           ";hive.server2.thrift.http.path=" + HS2_HTTP_ENDPOINT,
           System.getProperty("user.name"), "bar");
@@ -181,7 +183,7 @@ public class TestSSL {
     }
 
     System.setProperty(JAVA_TRUST_STORE_PROP, dataFileDir + File.separator + TRUST_STORE_NAME );
-    System.setProperty(JAVA_TRUST_STORE_PASS_PROP, KEY_STORE_PASSWORD);
+    System.setProperty(JAVA_TRUST_STORE_PASS_PROP, KEY_STORE_TRUST_STORE_PASSWORD);
     try {
       hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL() + ";ssl=true",
           System.getProperty("user.name"), "bar");
@@ -291,7 +293,7 @@ public class TestSSL {
     miniHS2.start(confOverlay);
 
     System.setProperty(JAVA_TRUST_STORE_PROP, dataFileDir + File.separator + TRUST_STORE_NAME );
-    System.setProperty(JAVA_TRUST_STORE_PASS_PROP, KEY_STORE_PASSWORD);
+    System.setProperty(JAVA_TRUST_STORE_PASS_PROP, KEY_STORE_TRUST_STORE_PASSWORD);
     // make SSL connection
     hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL() + ";ssl=true",
         System.getProperty("user.name"), "bar");
@@ -375,6 +377,62 @@ public class TestSSL {
     hs2Conn.close();
   }
 
+  /**
+   * Test HMS server with SSL
+   * @throws Exception
+   */
+  @Test
+  public void testMetastoreWithSSL() throws Exception {
+    setMetastoreSslConf(conf);
+    setSslConfOverlay(confOverlay);
+    // Test in http mode
+    setHttpConfOverlay(confOverlay);
+    // Frankeinstein backport for CDH-47480. Removed cleanupLocalDirOnStartup(false)
+    miniHS2 = new MiniHS2.Builder().withRemoteMetastore().withConf(conf).build();
+    miniHS2.start(confOverlay);
+
+    String tableName = "sslTab";
+    Path dataFilePath = new Path(dataFileDir, "kv1.txt");
+
+    // make SSL connection
+    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL("default", SSL_CONN_PARAMS),
+        System.getProperty("user.name"), "bar");
+
+    // Set up test data
+    setupTestTableWithData(tableName, dataFilePath, hs2Conn);
+    Statement stmt = hs2Conn.createStatement();
+    ResultSet res = stmt.executeQuery("SELECT * FROM " + tableName);
+    int rowCount = 0;
+    while (res.next()) {
+      ++rowCount;
+      assertEquals("val_" + res.getInt(1), res.getString(2));
+    }
+    // read result over SSL
+    assertEquals(500, rowCount);
+
+    hs2Conn.close();
+  }
+
+  /**
+   * Verify the HS2 can't connect to HMS if the certificate doesn't match
+   * @throws Exception
+   */
+  @Test
+  public void testMetastoreConnectionWrongCertCN() throws Exception {
+    setMetastoreSslConf(conf);
+    conf.setVar(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PATH,
+        dataFileDir + File.separator +  EXAMPLEDOTCOM_KEY_STORE_NAME);
+    // Frankeinstein backport for CDH-47480. Removed cleanupLocalDirOnStartup(false)
+    miniHS2 = new MiniHS2.Builder().withRemoteMetastore().withConf(conf).build();
+    try {
+      miniHS2.start(confOverlay);
+    } catch (java.net.ConnectException e) {
+      assertTrue(e.toString().contains("Connection refused"));
+    }
+
+    miniHS2.stop();
+  }
+
   private void setupTestTableWithData(String tableName, Path dataFilePath,
       Connection hs2Conn) throws Exception {
     Statement stmt = hs2Conn.createStatement();
@@ -393,9 +451,21 @@ public class TestSSL {
   private void setSslConfOverlay(Map<String, String> confOverlay) {
     confOverlay.put(ConfVars.HIVE_SERVER2_USE_SSL.varname, "true");
     confOverlay.put(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PATH.varname,
-        dataFileDir + File.separator +  KEY_STORE_NAME);
+        dataFileDir + File.separator +  LOCALHOST_KEY_STORE_NAME);
     confOverlay.put(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname,
-        KEY_STORE_PASSWORD);
+        KEY_STORE_TRUST_STORE_PASSWORD);
+  }
+
+  private void setMetastoreSslConf(HiveConf conf) {
+    conf.setBoolVar(ConfVars.HIVE_METASTORE_USE_SSL, true);
+    conf.setVar(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PATH,
+        dataFileDir + File.separator +  LOCALHOST_KEY_STORE_NAME);
+    conf.setVar(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PASSWORD,
+        KEY_STORE_TRUST_STORE_PASSWORD);
+    conf.setVar(ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PATH,
+        dataFileDir + File.separator +  TRUST_STORE_NAME);
+    conf.setVar(ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PASSWORD,
+        KEY_STORE_TRUST_STORE_PASSWORD);
   }
 
   private void clearSslConfOverlay(Map<String, String> confOverlay) {
