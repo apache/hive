@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
  * List of all error messages.
@@ -449,6 +450,7 @@ public enum ErrorMsg {
   IMPORT_SEMANTIC_ERROR(10324, "Import Semantic Analyzer Error"),
   INVALID_FK_SYNTAX(10325, "Invalid Foreign Key syntax"),
   INVALID_PK_SYNTAX(10326, "Invalid Primary Key syntax"),
+  UNSUPPORTED_SET_OPERATOR(10329, "Unsupported set operator"),
   ACID_NOT_ENOUGH_HISTORY(10327, "Not enough history available for ({0},{1}).  " +
     "Oldest available base: {2}", true),
   INVALID_COLUMN_NAME(10328, "Invalid column name"),

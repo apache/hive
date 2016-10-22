@@ -45,7 +45,9 @@ import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
@@ -199,10 +201,18 @@ public class HiveRelFactories {
   private static class HiveSetOpFactoryImpl implements SetOpFactory {
     @Override
     public RelNode createSetOp(SqlKind kind, List<RelNode> inputs, boolean all) {
-      if (kind != SqlKind.UNION) {
-        throw new IllegalStateException("Expected to get Set operator of type Union. Found : " + kind);
+      if (kind == SqlKind.UNION) {
+        return new HiveUnion(inputs.get(0).getCluster(), inputs.get(0).getTraitSet(), inputs);
+      } else if (kind == SqlKind.INTERSECT) {
+        return new HiveIntersect(inputs.get(0).getCluster(), inputs.get(0).getTraitSet(), inputs,
+            all);
+      } else if (kind == SqlKind.EXCEPT) {
+        return new HiveExcept(inputs.get(0).getCluster(), inputs.get(0).getTraitSet(), inputs,
+            all);
+      } else {
+        throw new IllegalStateException("Expected to get set operator of type Union, Intersect or Except(Minus). Found : "
+            + kind);
       }
-      return new HiveUnion(inputs.get(0).getCluster(), inputs.get(0).getTraitSet(), inputs);
     }
   }
 
