@@ -484,8 +484,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
 
     assert (ast.getToken() != null);
-    switch (ast.getToken().getType()) {
-    case HiveParser.TOK_QUERY: {
+    if (ast.getToken().getType() == HiveParser.TOK_QUERY) {
       QB qb = new QB(id, alias, true);
       qb.setInsideView(insideView);
       Phase1Ctx ctx_1 = initPhase1Ctx();
@@ -494,24 +493,41 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       qbexpr.setOpcode(QBExpr.Opcode.NULLOP);
       qbexpr.setQB(qb);
     }
-      break;
-    case HiveParser.TOK_UNIONALL: {
-      qbexpr.setOpcode(QBExpr.Opcode.UNION);
+    // setop
+    else {
+      switch (ast.getToken().getType()) {
+      case HiveParser.TOK_UNIONALL:
+        qbexpr.setOpcode(QBExpr.Opcode.UNION);
+        break;
+      case HiveParser.TOK_INTERSECTALL:
+        qbexpr.setOpcode(QBExpr.Opcode.INTERSECTALL);
+        break;
+      case HiveParser.TOK_INTERSECTDISTINCT:
+        qbexpr.setOpcode(QBExpr.Opcode.INTERSECT);
+        break;
+      case HiveParser.TOK_EXCEPTALL:
+        qbexpr.setOpcode(QBExpr.Opcode.EXCEPTALL);
+        break;
+      case HiveParser.TOK_EXCEPTDISTINCT:
+        qbexpr.setOpcode(QBExpr.Opcode.EXCEPT);
+        break;
+      default:
+        throw new SemanticException(ErrorMsg.UNSUPPORTED_SET_OPERATOR.getMsg("Type "
+            + ast.getToken().getType()));
+      }
       // query 1
       assert (ast.getChild(0) != null);
       QBExpr qbexpr1 = new QBExpr(alias + SUBQUERY_TAG_1);
-      doPhase1QBExpr((ASTNode) ast.getChild(0), qbexpr1, id + SUBQUERY_TAG_1,
-          alias + SUBQUERY_TAG_1, insideView);
+      doPhase1QBExpr((ASTNode) ast.getChild(0), qbexpr1, id + SUBQUERY_TAG_1, alias
+          + SUBQUERY_TAG_1, insideView);
       qbexpr.setQBExpr1(qbexpr1);
 
       // query 2
       assert (ast.getChild(1) != null);
       QBExpr qbexpr2 = new QBExpr(alias + SUBQUERY_TAG_2);
-      doPhase1QBExpr((ASTNode) ast.getChild(1), qbexpr2, id + SUBQUERY_TAG_2,
-          alias + SUBQUERY_TAG_2, insideView);
+      doPhase1QBExpr((ASTNode) ast.getChild(1), qbexpr2, id + SUBQUERY_TAG_2, alias
+          + SUBQUERY_TAG_2, insideView);
       qbexpr.setQBExpr2(qbexpr2);
-    }
-      break;
     }
   }
 

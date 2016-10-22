@@ -88,6 +88,10 @@ TOK_DISTRIBUTEBY;
 TOK_SORTBY;
 TOK_UNIONALL;
 TOK_UNIONDISTINCT;
+TOK_INTERSECTALL;
+TOK_INTERSECTDISTINCT;
+TOK_EXCEPTALL;
+TOK_EXCEPTDISTINCT;
 TOK_JOIN;
 TOK_LEFTOUTERJOIN;
 TOK_RIGHTOUTERJOIN;
@@ -449,6 +453,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_DISTRIBUTE", "DISTRIBUTE");
     xlateMap.put("KW_SORT", "SORT");
     xlateMap.put("KW_UNION", "UNION");
+    xlateMap.put("KW_INTERSECT", "INTERSECT");
+    xlateMap.put("KW_EXCEPT", "EXCEPT");
     xlateMap.put("KW_LOAD", "LOAD");
     xlateMap.put("KW_DATA", "DATA");
     xlateMap.put("KW_INPATH", "INPATH");
@@ -2302,6 +2308,12 @@ setOperator
 @after { popMsg(state); }
     : KW_UNION KW_ALL -> ^(TOK_UNIONALL)
     | KW_UNION KW_DISTINCT? -> ^(TOK_UNIONDISTINCT)
+    | KW_INTERSECT KW_ALL -> ^(TOK_INTERSECTALL)
+    | KW_INTERSECT KW_DISTINCT -> ^(TOK_INTERSECTDISTINCT)
+    | KW_EXCEPT KW_ALL -> ^(TOK_EXCEPTALL)
+    | KW_EXCEPT KW_DISTINCT -> ^(TOK_EXCEPTDISTINCT)
+    | KW_MINUS KW_ALL -> ^(TOK_EXCEPTALL)
+    | KW_MINUS KW_DISTINCT -> ^(TOK_EXCEPTDISTINCT)
     ;
 
 queryStatementExpression
@@ -2457,7 +2469,7 @@ setOpSelectStatement[CommonTree t]
           )
        )
    -> {$setOpSelectStatement.tree != null && u.tree.getType()!=HiveParser.TOK_UNIONDISTINCT}?
-      ^(TOK_UNIONALL {$setOpSelectStatement.tree} $b)
+      ^($u {$setOpSelectStatement.tree} $b)
    -> {$setOpSelectStatement.tree == null && u.tree.getType()==HiveParser.TOK_UNIONDISTINCT}?
       ^(TOK_QUERY
           ^(TOK_FROM
@@ -2471,9 +2483,13 @@ setOpSelectStatement[CommonTree t]
             ^(TOK_SELECTDI ^(TOK_SELEXPR TOK_ALLCOLREF))
          )
        )
-   -> ^(TOK_UNIONALL {$t} $b)
+   -> ^($u {$t} $b)
    )+
-   -> {$setOpSelectStatement.tree.getChild(0).getType()==HiveParser.TOK_UNIONALL}?
+   -> {$setOpSelectStatement.tree.getChild(0).getType()==HiveParser.TOK_UNIONALL
+   ||$setOpSelectStatement.tree.getChild(0).getType()==HiveParser.TOK_INTERSECTDISTINCT
+   ||$setOpSelectStatement.tree.getChild(0).getType()==HiveParser.TOK_INTERSECTALL
+   ||$setOpSelectStatement.tree.getChild(0).getType()==HiveParser.TOK_EXCEPTDISTINCT
+   ||$setOpSelectStatement.tree.getChild(0).getType()==HiveParser.TOK_EXCEPTALL}?
       ^(TOK_QUERY
           ^(TOK_FROM
             ^(TOK_SUBQUERY

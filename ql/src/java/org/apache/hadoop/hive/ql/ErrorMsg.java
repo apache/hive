@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
  * List of all error messages.
@@ -450,6 +451,7 @@ public enum ErrorMsg {
   ACID_NOT_ENOUGH_HISTORY(10327, "Not enough history available for ({0},{1}).  " +
     "Oldest available base: {2}", true),
   INVALID_COLUMN_NAME(10328, "Invalid column name"),
+  UNSUPPORTED_SET_OPERATOR(10329, "Unsupported set operator"),
   REPLACE_VIEW_WITH_MATERIALIZED(10400, "Attempt to replace view {0} with materialized view", true),
   REPLACE_MATERIALIZED_WITH_VIEW(10401, "Attempt to replace materialized view {0} with view", true),
   UPDATE_DELETE_VIEW(10402, "You cannot update or delete records in a view"),

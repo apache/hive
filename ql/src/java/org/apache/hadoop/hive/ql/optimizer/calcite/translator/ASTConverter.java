@@ -342,8 +342,8 @@ public class ASTConverter {
   }
 
   private QueryBlockInfo convertSource(RelNode r) throws CalciteSemanticException {
-    Schema s;
-    ASTNode ast;
+    Schema s = null;
+    ASTNode ast = null;
 
     if (r instanceof TableScan) {
       TableScan f = (TableScan) r;
@@ -379,19 +379,15 @@ public class ASTConverter {
         s = left.schema;
       }
     } else if (r instanceof Union) {
-      RelNode leftInput = ((Union) r).getInput(0);
-      RelNode rightInput = ((Union) r).getInput(1);
-
-      ASTConverter leftConv = new ASTConverter(leftInput, this.derivedTableCount);
-      ASTConverter rightConv = new ASTConverter(rightInput, this.derivedTableCount);
-      ASTNode leftAST = leftConv.convert();
-      ASTNode rightAST = rightConv.convert();
-
-      ASTNode unionAST = getUnionAllAST(leftAST, rightAST);
-
-      String sqAlias = nextAlias();
-      ast = ASTBuilder.subQuery(unionAST, sqAlias);
-      s = new Schema((Union) r, sqAlias);
+      Union u = ((Union) r);
+      ASTNode left = new ASTConverter(((Union) r).getInput(0), this.derivedTableCount).convert();
+      for (int ind = 1; ind < u.getInputs().size(); ind++) {
+        left = getUnionAllAST(left, new ASTConverter(((Union) r).getInput(ind),
+            this.derivedTableCount).convert());
+        String sqAlias = nextAlias();
+        ast = ASTBuilder.subQuery(left, sqAlias);
+        s = new Schema((Union) r, sqAlias);
+      }
     } else {
       ASTConverter src = new ASTConverter(r, this.derivedTableCount);
       ASTNode srcAST = src.convert();
