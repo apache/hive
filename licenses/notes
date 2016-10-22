@@ -72,6 +72,7 @@ opencsv*
 parquet-hadoop-bundle
 pentaho-aggdesigner-algorithm
 plexus-utils
+regexp
 server-metrics
 slider-core
 snappy*
@@ -82,6 +83,8 @@ validation-api
 velocity
 zookeeper
 
-
+No license could be found for the following so I am optimistically assuming they are
+public domain:
+jettison
 
 
