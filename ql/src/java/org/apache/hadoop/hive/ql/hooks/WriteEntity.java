@@ -168,10 +168,14 @@ public class WriteEntity extends Entity implements Serializable {
 
     if (o instanceof WriteEntity) {
       WriteEntity ore = (WriteEntity) o;
-      return (toString().equalsIgnoreCase(ore.toString()));
+      return (getName().equalsIgnoreCase(ore.getName())) && this.writeType == ore.writeType;
     } else {
       return false;
     }
+  }
+
+  public String toStringDetail() {
+    return "WriteEntity(" + toString() + ") Type=" + getType() + " WriteType=" + getWriteType();
   }
 
   public boolean isTempURI() {

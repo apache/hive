@@ -6673,7 +6673,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 new DummyPartition(dest_tab, dest_tab.getDbName()
                     + "@" + dest_tab.getTableName() + "@" + ppath,
                     partSpec);
-            output = new WriteEntity(p, WriteEntity.WriteType.INSERT, false);
+            output = new WriteEntity(p, getWriteType(), false);
             outputs.add(output);
           } catch (HiveException e) {
             throw new SemanticException(e.getMessage(), e);
@@ -6746,9 +6746,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ltd.setLbCtx(lbCtx);
 
       loadTableWork.add(ltd);
-      if (!outputs.add(new WriteEntity(dest_part, (ltd.getReplace() ?
-          WriteEntity.WriteType.INSERT_OVERWRITE :
-          WriteEntity.WriteType.INSERT)))) {
+
+      if (!outputs.add(new WriteEntity(dest_part,
+        determineWriteType(ltd, dest_tab.isNonNative())))) {
         throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
             .getMsg(dest_tab.getTableName() + "@" + dest_part.getName()));
       }
@@ -13034,8 +13034,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // and don't have a rational way to guess, so assume the most
     // conservative case.
     if (isNonNativeTable) return WriteEntity.WriteType.INSERT_OVERWRITE;
-    else return (ltd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE :
-        WriteEntity.WriteType.INSERT);
+    else return (ltd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE : getWriteType());
+  }
+  private WriteEntity.WriteType getWriteType() {
+    return updating() ? WriteEntity.WriteType.UPDATE :
+      (deleting() ? WriteEntity.WriteType.DELETE : WriteEntity.WriteType.INSERT);
   }
 
   private boolean isAcidOutputFormat(Class<? extends OutputFormat> of) {
