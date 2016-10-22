@@ -43,6 +43,8 @@
         <exclude>org.apache.hive.hcatalog:*</exclude>
         <exclude>org.slf4j:*</exclude>
         <exclude>log4j:*</exclude>
+        <exclude>junit:*</exclude>
+        <exclude>co.cask.tephra:*</exclude>
         <exclude>commons-configuration:commons-configuration</exclude>
         <exclude>org.apache.hive:hive-jdbc:*:standalone</exclude>
       </excludes>
@@ -116,6 +118,17 @@
         <include>RELEASE_NOTES.txt</include>
       </includes>
       <outputDirectory>/</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/licenses</directory>
+      <includes>
+        <include>/*</include>
+      </includes>
+      <excludes>
+        <exclude>/notes</exclude>
+      </excludes>
+      <outputDirectory>licenses</outputDirectory>
     </fileSet>
 
     <fileSet>
