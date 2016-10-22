@@ -370,6 +370,7 @@ DIV : 'DIV';
 AMPERSAND : '&';
 TILDE : '~';
 BITWISEOR : '|';
+CONCATENATE : '||';
 BITWISEXOR : '^';
 QUESTION : '?';
 DOLLAR : '$';
