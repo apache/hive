@@ -145,9 +145,9 @@ functionName
 @init { gParent.pushMsg("function name", state); }
 @after { gParent.popMsg(state); }
     : // Keyword IF is also a function name
-    (KW_IF | KW_ARRAY | KW_MAP | KW_STRUCT | KW_UNIONTYPE) => (KW_IF | KW_ARRAY | KW_MAP | KW_STRUCT | KW_UNIONTYPE)
+    KW_IF | KW_ARRAY | KW_MAP
     | 
-    (functionIdentifier) => functionIdentifier
+    functionIdentifier
     |
     {!useSQL11ReservedKeywordsForIdentifier()}? sql11ReservedKeywordsUsedAsCastFunctionName -> Identifier[$sql11ReservedKeywordsUsedAsCastFunctionName.start]
     ;
@@ -247,6 +247,7 @@ constant
     | DecimalLiteral
     | charSetStringLiteral
     | booleanValue
+    | KW_NULL -> TOK_NULL
     ;
 
 stringLiteralSequence
@@ -312,16 +313,20 @@ expression
 
 atomExpression
     :
-    (KW_NULL) => KW_NULL -> TOK_NULL
-    | (constant) => constant
+    (function) => function
+    | specialFunctionExpression
+    | tableOrColumn
+    | LPAREN! expression RPAREN!
+    ;
+
+specialFunctionExpression
+    :
+    constant
     | castExpression
     | extractExpression
     | floorExpression
     | caseExpression
     | whenExpression
-    | (functionName LPAREN) => function
-    | tableOrColumn
-    | LPAREN! expression RPAREN!
     ;
 
 
@@ -385,6 +390,20 @@ precedencePlusExpression
     precedenceStarExpression (precedencePlusOperator^ precedenceStarExpression)*
     ;
 
+precedenceConcatenateOperator
+    :
+    CONCATENATE
+    ;
+
+precedenceConcatenateExpression
+    :
+    (precedencePlusExpression -> precedencePlusExpression)
+        (
+        precedenceConcatenateOperator plus=precedencePlusExpression
+        -> ^(TOK_FUNCTION {adaptor.create(Identifier, "concat")} {$precedenceConcatenateExpression.tree} $plus)
+        )*
+    -> {$precedenceConcatenateExpression.tree}
+    ;
 
 precedenceAmpersandOperator
     :
@@ -393,7 +412,7 @@ precedenceAmpersandOperator
 
 precedenceAmpersandExpression
     :
-    precedencePlusExpression (precedenceAmpersandOperator^ precedencePlusExpression)*
+    precedenceConcatenateExpression (precedenceAmpersandOperator^ precedenceConcatenateExpression)*
     ;
 
 
