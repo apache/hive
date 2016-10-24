@@ -43,8 +43,7 @@ public class CoreAccumuloCliDriver extends CliAdapter {
   @Override
   @AfterClass
   public void shutdown() throws Exception {
-    // FIXME: possibly missing
-    // setup.tearDown();
+    setup.tearDown();
   }
   @Override
   @Before
