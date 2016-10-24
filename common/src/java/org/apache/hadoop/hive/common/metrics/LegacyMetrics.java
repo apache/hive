@@ -225,6 +225,12 @@ public class LegacyMetrics implements Metrics {
     //Not implemented.
   }
 
+  @Override
+  public void addRatio(String name, MetricsVariable<Integer> numerator,
+                       MetricsVariable<Integer> denominator) {
+    //Not implemented
+  }
+
   public void set(String name, Object value) {
     metrics.put(name,value);
   }
