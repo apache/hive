@@ -1036,9 +1036,12 @@ public class Commands {
     return true;
   }
 
+  /*
+   * Check if the input line is a multi-line command which needs to read further
+   */
   public String handleMultiLineCmd(String line) throws IOException {
+    //When using -e, console reader is not initialized and command is always a single line
     while (isMultiLine(line) && beeLine.getOpts().isAllowMultiLineCommand()) {
-
       StringBuilder prompt = new StringBuilder(beeLine.getPrompt());
       if (!beeLine.getOpts().isSilent()) {
         for (int i = 0; i < prompt.length() - 1; i++) {
@@ -1048,6 +1051,11 @@ public class Commands {
         }
       }
       String extra;
+      //avoid NPE below if for some reason -e argument has multi-line command
+      if (beeLine.getConsoleReader() == null) {
+        throw new RuntimeException("Console reader not initialized. This could happen when there "
+            + "is a multi-line command using -e option and which requires further reading from console");
+      }
       if (beeLine.getOpts().isSilent() && beeLine.getOpts().getScriptFile() != null) {
         extra = beeLine.getConsoleReader().readLine(null, jline.console.ConsoleReader.NULL_MASK);
       } else {
@@ -1070,15 +1078,12 @@ public class Commands {
   //assumes line would never be null when this method is called
   private boolean isMultiLine(String line) {
     line = line.trim();
-    if (line.endsWith(";")) {
-      return false;
-    }
-    if (beeLine.isComment(line)) {
+    if (line.endsWith(";") || beeLine.isComment(line)) {
       return false;
     }
     // handles the case like line = show tables; --test comment
     List<String> cmds = getCmdList(line, false);
-    if(!cmds.isEmpty() && cmds.get(cmds.size()-1).trim().startsWith("--")) {
+    if (!cmds.isEmpty() && cmds.get(cmds.size() - 1).trim().startsWith("--")) {
       return false;
     }
     return true;
@@ -1426,10 +1431,6 @@ public class Commands {
       value = Utils.parsePropertyFromUrl(url, JdbcConnectionParams.AUTH_PASSWD);
       if (value != null) {
         props.setProperty(JdbcConnectionParams.AUTH_PASSWD, value);
-      } else {
-        //if the password is not provided, beeline assumes a empty string as
-        //password
-        props.setProperty(JdbcConnectionParams.AUTH_PASSWD, "");
       }
     }
 
@@ -1534,7 +1535,7 @@ public class Commands {
       props.setProperty(JdbcConnectionParams.AUTH_USER, username);
       if (password == null) {
         password = beeLine.getConsoleReader().readLine("Enter password for " + urlForPrompt + ": ",
-            new Character('*'));
+          new Character('*'));
       }
       props.setProperty(JdbcConnectionParams.AUTH_PASSWD, password);
     }
