@@ -15,36 +15,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.hadoop.hive.cli;
-
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
-import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
-import org.apache.hadoop.hive.hbase.HBaseTestSetup;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+package org.apache.hadoop.hive.cli.control;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class $className {
+import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
+import org.apache.hadoop.hive.hbase.HBaseTestSetup;
+import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 
-  private static final String HIVE_ROOT = HBaseQTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
+public class CoreHBaseCliDriver extends CliAdapter {
+
   private HBaseQTestUtil qt;
   private static HBaseTestSetup setup = new HBaseTestSetup();
+
+  public CoreHBaseCliDriver(AbstractCliConfig testCliConfig) {
+    super(testCliConfig);
+  }
+
+  @Override
+  @BeforeClass
+  public void beforeClass() {
+  }
 
   @Before
   public void setUp() {
 
-    MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
-    String initScript = "$initScript";
-    String cleanupScript = "$cleanupScript";
+    MiniClusterType miniMR = cliConfig.getClusterType();
+    String initScript = cliConfig.getInitScript();
+    String cleanupScript = cliConfig.getCleanupScript();
 
     try {
-      qt = new HBaseQTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR,
-      setup, initScript, cleanupScript);
+      qt = new HBaseQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR, setup,
+        initScript, cleanupScript);
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -53,6 +60,7 @@ public class $className {
     }
   }
 
+  @Override
   @After
   public void tearDown() {
     try {
@@ -65,24 +73,15 @@ public class $className {
     }
   }
 
+  @Override
   @AfterClass
-  public static void closeHBaseConnections() throws Exception {
+  public void shutdown() throws Exception {
+    // closeHBaseConnections
     setup.tearDown();
   }
 
-#foreach ($qf in $qfiles)
-  #set ($fname = $qf.getName())
-  #set ($eidx = $fname.indexOf('.'))
-  #set ($tname = $fname.substring(0, $eidx))
-  #set ($fpath = $qfilesMap.get($fname))
-  @Test
-  public void testCliDriver_$tname() throws Exception {
-    runTest("$tname", "$fname", (HIVE_ROOT + "$fpath"));
-  }
-
-#end
-
-  private void runTest(String tname, String fname, String fpath) throws Exception {
+  @Override
+  public void runTest(String tname, String fname, String fpath) throws Exception {
     long startTime = System.currentTimeMillis();
     try {
       System.err.println("Begin query: " + fname);
@@ -97,8 +96,8 @@ public class $className {
       qt.cliInit(fname);
       qt.clearTestSideEffects();
       int ecode = qt.executeClient(fname);
-      if (ecode == 0) {
-        qt.failed(fname, null);
+      if (ecode != 0) {
+        qt.failed(ecode, fname, null);
       }
 
       ecode = qt.checkCliDriverResults(fname);

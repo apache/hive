@@ -15,35 +15,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.cli;
+package org.apache.hadoop.hive.cli.control;
+
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.BeforeClass;
+public class CoreCompareCliDriver extends CliAdapter{
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-public class $className {
-
-  private static final String HIVE_ROOT = QTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
   private static QTestUtil qt;
+  public CoreCompareCliDriver(AbstractCliConfig testCliConfig) {
+    super(testCliConfig);
+  }
 
-  static {
-    MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
-    String initScript = "$initScript";
-    String cleanupScript = "$cleanupScript";
 
+  @Override
+  @BeforeClass
+  public void beforeClass() {
+
+    MiniClusterType miniMR = cliConfig.getClusterType();
+    String hiveConfDir = cliConfig.getHiveConfDir();
+    String initScript = cliConfig.getInitScript();
+    String cleanupScript = cliConfig.getCleanupScript();
     try {
-      String hadoopVer = "$hadoopVersion";
-      qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR, hadoopVer,
-       initScript, cleanupScript);
+      String hadoopVer = cliConfig.getHadoopVersion();
+      qt = new QTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
+      hiveConfDir, hadoopVer, initScript, cleanupScript);
+
       // do a one time initialization
       qt.cleanUp();
       qt.createSources();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -52,17 +64,20 @@ public class $className {
     }
   }
 
+  @Override
   @Before
   public void setUp() {
     try {
       qt.clearTestSideEffects();
-    } catch (Throwable e) {
+    } catch (Exception e) {
+      System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
       fail("Unexpected exception in setup");
     }
   }
 
+  @Override
   @After
   public void tearDown() {
     try {
@@ -75,8 +90,9 @@ public class $className {
     }
   }
 
+  @Override
   @AfterClass
-  public static void shutdown() throws Exception {
+  public void shutdown() throws Exception {
     try {
       qt.shutdown();
     } catch (Exception e) {
@@ -87,47 +103,47 @@ public class $className {
     }
   }
 
-  /**
-   * Dummy last test. This is only meant to shutdown qt
-   */
-  public void testNegativeCliDriver_shutdown() {
-    System.err.println ("Cleaning up " + "$className");
-  }
+  private Map<String, List<String>> versionFiles = new HashMap<>();
 
   static String debugHint = "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
      + "or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.";
 
-#foreach ($qf in $qfiles)
-  #set ($fname = $qf.getName())
-  #set ($eidx = $fname.indexOf('.'))
-  #set ($tname = $fname.substring(0, $eidx))
-  #set ($fpath = $qfilesMap.get($fname))
-  @Test
-  public void testNegativeCliDriver_$tname() throws Exception {
-    runTest("$tname", "$fname", (HIVE_ROOT + "$fpath"));
-  }
+  @Override
+  public void runTest(String tname, String fname, String fpath) throws Exception {
+    final String queryDirectory = cliConfig.getQueryDirectory();
 
-#end
-
-  private void runTest(String tname, String fname, String fpath) throws Exception {
     long startTime = System.currentTimeMillis();
     try {
       System.err.println("Begin query: " + fname);
+      // TODO: versions could also be picked at build time.
+      List<String> versionFiles = QTestUtil.getVersionFiles(queryDirectory, tname);
+      if (versionFiles.size() < 2) {
+        fail("Cannot run " + tname + " with only " + versionFiles.size() + " versions");
+      }
 
       qt.addFile(fpath);
+      for (String versionFile : versionFiles) {
+        qt.addFile(new File(queryDirectory, versionFile), true);
+      }
 
       if (qt.shouldBeSkipped(fname)) {
-        System.err.println("Test " + fname + " skipped");
         return;
       }
 
-      qt.cliInit(fname, false);
-      int ecode = qt.executeClient(fname);
-      if (ecode == 0) {
-        qt.failed(fname, debugHint);
+      int ecode = 0;
+      List<String> outputs = new ArrayList<>(versionFiles.size());
+      for (String versionFile : versionFiles) {
+        // 1 for "_" after tname; 3 for ".qv" at the end. Version is in between.
+        String versionStr = versionFile.substring(tname.length() + 1, versionFile.length() - 3);
+        outputs.add(qt.cliInit(tname + "." + versionStr, false));
+        // TODO: will this work?
+        ecode = qt.executeClient(versionFile, fname);
+        if (ecode != 0) {
+          qt.failed(ecode, fname, debugHint);
+        }
       }
 
-      ecode = qt.checkCliDriverResults(fname);
+      ecode = qt.checkCompareCliDriverResults(fname, outputs);
       if (ecode != 0) {
         qt.failedDiff(ecode, fname, debugHint);
       }
@@ -138,6 +154,5 @@ public class $className {
 
     long elapsedTime = System.currentTimeMillis() - startTime;
     System.err.println("Done query: " + fname + " elapsedTime=" + elapsedTime/1000 + "s");
-    assertTrue("Test passed", true);
   }
 }

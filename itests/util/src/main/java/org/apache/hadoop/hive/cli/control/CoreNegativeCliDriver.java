@@ -15,61 +15,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.cli;
+package org.apache.hadoop.hive.cli.control;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+public class CoreNegativeCliDriver extends CliAdapter{
 
-public class $className {
+  private QTestUtil qt;
+  public CoreNegativeCliDriver(AbstractCliConfig testCliConfig) {
+    super(testCliConfig);
+  }
 
-  private static final String HIVE_ROOT = QTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
-  private static QTestUtil qt;
 
-  static {
+  @Override
+  public void beforeClass(){
+    MiniClusterType miniMR = cliConfig.getClusterType();
+    String hiveConfDir = cliConfig.getHiveConfDir();
+    String initScript = cliConfig.getInitScript();
+    String cleanupScript = cliConfig.getCleanupScript();
 
-    MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
-    String hiveConfDir = "$hiveConfDir";
-    String initScript = "$initScript";
-    String cleanupScript = "$cleanupScript";
     try {
-      String hadoopVer = "$hadoopVersion";
-      if (!hiveConfDir.isEmpty()) {
-        hiveConfDir = HIVE_ROOT + hiveConfDir;
-      }
-      qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR,
-      hiveConfDir, hadoopVer, initScript, cleanupScript);
-
+      String hadoopVer = cliConfig.getHadoopVersion();
+      qt = new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR,
+       hiveConfDir, hadoopVer, initScript, cleanupScript);
       // do a one time initialization
       qt.cleanUp();
       qt.createSources();
-
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      fail("Unexpected exception in static initialization: "+e.getMessage());
+      fail("Unexpected exception in static initialization");
     }
   }
 
+  @Override
   @Before
   public void setUp() {
     try {
       qt.clearTestSideEffects();
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
+    } catch (Throwable e) {
       e.printStackTrace();
       System.err.flush();
       fail("Unexpected exception in setup");
     }
   }
 
+  @Override
   @After
   public void tearDown() {
     try {
@@ -82,8 +81,9 @@ public class $className {
     }
   }
 
+  @Override
   @AfterClass
-  public static void shutdown() throws Exception {
+  public void shutdown() throws Exception {
     try {
       qt.shutdown();
     } catch (Exception e) {
@@ -94,22 +94,19 @@ public class $className {
     }
   }
 
+  /**
+   * Dummy last test. This is only meant to shutdown qt
+   */
+  public void testNegativeCliDriver_shutdown() {
+    System.err.println ("Cleaning up " + "$className");
+  }
+
   static String debugHint = "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
      + "or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.";
 
-#foreach ($qf in $qfiles)
-  #set ($fname = $qf.getName())
-  #set ($eidx = $fname.indexOf('.'))
-  #set ($tname = $fname.substring(0, $eidx))
-  #set ($fpath = $qfilesMap.get($fname))
-  @Test
-  public void testCliDriver_$tname() throws Exception {
-    runTest("$tname", "$fname", (HIVE_ROOT + "$fpath"));
-  }
 
-#end
-
-  private void runTest(String tname, String fname, String fpath) throws Exception {
+  @Override
+  public void runTest(String tname, String fname, String fpath) throws Exception {
     long startTime = System.currentTimeMillis();
     try {
       System.err.println("Begin query: " + fname);
@@ -117,14 +114,16 @@ public class $className {
       qt.addFile(fpath);
 
       if (qt.shouldBeSkipped(fname)) {
+        System.err.println("Test " + fname + " skipped");
         return;
       }
 
       qt.cliInit(fname, false);
       int ecode = qt.executeClient(fname);
-      if (ecode != 0) {
-        qt.failed(ecode, fname, debugHint);
+      if (ecode == 0) {
+        qt.failed(fname, debugHint);
       }
+
       ecode = qt.checkCliDriverResults(fname);
       if (ecode != 0) {
         qt.failedDiff(ecode, fname, debugHint);

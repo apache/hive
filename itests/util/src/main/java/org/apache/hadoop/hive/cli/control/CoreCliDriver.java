@@ -15,44 +15,65 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse;
-
-import java.io.*;
-import java.util.*;
-
-import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
-import org.apache.hadoop.hive.ql.exec.Task;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Test;
+package org.apache.hadoop.hive.cli.control;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class $className {
+import org.apache.hadoop.hive.cli.control.AbstractCliConfig.MetastoreType;
+import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 
-  private static final String HIVE_ROOT = QTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
+public class CoreCliDriver extends CliAdapter {
+
   private static QTestUtil qt;
- 
-  static {
+  
+  public CoreCliDriver(AbstractCliConfig testCliConfig) {
+    super(testCliConfig);
+  }
 
-    MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
-    String initScript = "$initScript";
-    String cleanupScript = "$cleanupScript";
-
+  @Override
+  @BeforeClass
+  public void beforeClass() {
+    MiniClusterType miniMR =cliConfig.getClusterType();
+    String hiveConfDir = cliConfig.getHiveConfDir();
+    String initScript = cliConfig.getInitScript();
+    String cleanupScript = cliConfig.getCleanupScript();
     try {
-      String hadoopVer = "$hadoopVersion";
-      qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR, hadoopVer,
-       initScript, cleanupScript);
+      String hadoopVer = cliConfig.getHadoopVersion();
+      qt = new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR,
+      hiveConfDir, hadoopVer, initScript, cleanupScript);
+
+      // do a one time initialization
+      qt.cleanUp();
+      qt.createSources();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      fail("Unexpected exception in static initialization");
+      throw new RuntimeException("Unexpected exception in static initialization",e);
     }
   }
 
+  @Override
+  @Before
+  public void setUp() {
+    try {
+      qt.clearTestSideEffects();
+    } catch (Exception e) {
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.err.flush();
+      fail("Unexpected exception in setup");
+    }
+  }
+
+  @Override
   @After
   public void tearDown() {
     try {
@@ -65,8 +86,9 @@ public class $className {
     }
   }
 
+  @Override
   @AfterClass
-  public static void shutdown() throws Exception {
+  public void shutdown() throws Exception {
     try {
       qt.shutdown();
     } catch (Exception e) {
@@ -80,38 +102,24 @@ public class $className {
   static String debugHint = "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
      + "or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.";
 
-#foreach ($qf in $qfiles)
-  #set ($fname = $qf.getName())
-  #set ($eidx = $fname.indexOf('.'))
-  #set ($tname = $fname.substring(0, $eidx))
-  #set ($fpath = $qfilesMap.get($fname))
-  @Test
-  public void testParseNegative_$tname() throws Exception {
-    runTest("$tname", "$fname", (HIVE_ROOT + "$fpath"));
-  }
-
-#end
-
-  private void runTest(String tname, String fname, String fpath) throws Exception {
+  @Override
+  public void runTest(String tname, String fname, String fpath) throws Exception {
     long startTime = System.currentTimeMillis();
     try {
       System.err.println("Begin query: " + fname);
 
       qt.addFile(fpath);
 
-      qt.init(fname);
-      ASTNode tree = qt.parseQuery(fname);
-      List<Task<? extends Serializable>> tasks = qt.analyzeAST(tree);
-      fail("Unexpected success for query: " + fname + debugHint);
-    }
-    catch (ParseException pe) {
-      int ecode = qt.checkNegativeResults(fname, pe);
+      if (qt.shouldBeSkipped(fname)) {
+        return;
+      }
+
+      qt.cliInit(fname, false);
+      int ecode = qt.executeClient(fname);
       if (ecode != 0) {
         qt.failed(ecode, fname, debugHint);
       }
-    }
-    catch (SemanticException se) {
-      int ecode = qt.checkNegativeResults(fname, se);
+      ecode = qt.checkCliDriverResults(fname);
       if (ecode != 0) {
         qt.failedDiff(ecode, fname, debugHint);
       }

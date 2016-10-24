@@ -40,15 +40,24 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.lang.RuntimeException;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -68,6 +77,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
 import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.cli.control.AbstractCliConfig;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.io.DigestPrintStream;
 import org.apache.hadoop.hive.common.io.SortAndDigestPrintStream;
@@ -137,7 +147,7 @@ public class QTestUtil {
   private final Set<String> qSortNHashQuerySet;
   private final Set<String> qJavaVersionSpecificOutput;
   private static final String SORT_SUFFIX = ".sorted";
-  public static final HashSet<String> srcTables = new HashSet<String>();
+  private final HashSet<String> srcTables;
   private static MiniClusterType clusterType = MiniClusterType.none;
   private ParseDriver pd;
   protected Hive db;
@@ -162,16 +172,21 @@ public class QTestUtil {
     public void addTestToSuite(TestSuite suite, Object setup, String tName);
   }
 
-  static {
-    for (String srcTable : System.getProperty("test.src.tables", "").trim().split(",")) {
+  HashSet<String> getSrcTables() {
+    HashSet<String> srcTables = new HashSet<String>();
+    // FIXME: moved default value to here...for now
+    // i think this features is never really used from the command line
+    String defaultTestSrcTables = "src,src1,srcbucket,srcbucket2,src_json,src_thrift,src_sequencefile,srcpart,alltypesorc,src_hbase,cbo_t1,cbo_t2,cbo_t3,src_cbo,part,lineitem";
+    for (String srcTable : System.getProperty("test.src.tables", defaultTestSrcTables).trim().split(",")) {
       srcTable = srcTable.trim();
       if (!srcTable.isEmpty()) {
         srcTables.add(srcTable);
       }
     }
     if (srcTables.isEmpty()) {
-      throw new AssertionError("Source tables cannot be empty");
+      throw new RuntimeException("Source tables cannot be empty");
     }
+    return srcTables;
   }
 
   public HiveConf getConf() {
@@ -334,7 +349,7 @@ public class QTestUtil {
 
   private String getKeyProviderURI() {
     // Use the target directory if it is not specified
-    String HIVE_ROOT = QTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
+    String HIVE_ROOT = AbstractCliConfig.HIVE_ROOT;
     String keyDir = HIVE_ROOT + "ql/target/";
 
     // put the jks file in the current test path only for test purpose
@@ -346,6 +361,9 @@ public class QTestUtil {
     throws Exception {
     this.outDir = outDir;
     this.logDir = logDir;
+    this.srcTables=getSrcTables();
+
+    // HIVE-14443 move this fall-back logic to CliConfigs
     if (confDir != null && !confDir.isEmpty()) {
       HiveConf.setHiveSiteLocation(new URL("file://"+ new File(confDir).toURI().getPath() + "/hive-site.xml"));
       System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());
@@ -913,7 +931,7 @@ public class QTestUtil {
     cliDriver = new CliDriver();
 
     if (tname.equals("init_file.q")) {
-      ss.initFiles.add("../../data/scripts/test_init_file.sql");
+      ss.initFiles.add(AbstractCliConfig.HIVE_ROOT + "/data/scripts/test_init_file.sql");
     }
     cliDriver.processInitFiles(ss);
 
@@ -2049,6 +2067,161 @@ public class QTestUtil {
       e.printStackTrace();
       System.err.flush();
       Assert.fail("Unexpected exception " + org.apache.hadoop.util.StringUtils.stringifyException(e));
+    }
+  }
+
+  public static void setupMetaStoreTableColumnStatsFor30TBTPCDSWorkload(HiveConf conf) {
+    Connection conn = null;
+    ArrayList<Statement> statements = new ArrayList<Statement>(); // list of Statements, PreparedStatements
+
+    try {
+      Properties props = new Properties(); // connection properties
+      props.put("user", conf.get("javax.jdo.option.ConnectionUserName"));
+      props.put("password", conf.get("javax.jdo.option.ConnectionPassword"));
+      conn = DriverManager.getConnection(conf.get("javax.jdo.option.ConnectionURL"), props);
+      ResultSet rs = null;
+      Statement s = conn.createStatement();
+
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Connected to metastore database ");
+      }
+
+      String mdbPath =   AbstractCliConfig.HIVE_ROOT + "/data/files/tpcds-perf/metastore_export/";
+
+      // Setup the table column stats
+      BufferedReader br = new BufferedReader(new FileReader(new File(AbstractCliConfig.HIVE_ROOT + "/metastore/scripts/upgrade/derby/022-HIVE-11107.derby.sql")));
+      String command;
+
+      s.execute("DROP TABLE APP.TABLE_PARAMS");
+      s.execute("DROP TABLE APP.TAB_COL_STATS");
+      // Create the column stats table
+      while ((command = br.readLine()) != null) {
+        if (!command.endsWith(";")) {
+          continue;
+        }
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Going to run command : " + command);
+        }
+        try {
+          PreparedStatement psCommand = conn.prepareStatement(command.substring(0, command.length()-1));
+          statements.add(psCommand);
+          psCommand.execute();
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("successfully completed " + command);
+          }
+        } catch (SQLException e) {
+          LOG.info("Got SQL Exception " + e.getMessage());
+        }
+      }
+      br.close();
+
+      File tabColStatsCsv = new File(mdbPath+"csv/TAB_COL_STATS.txt");
+      File tabParamsCsv = new File(mdbPath+"csv/TABLE_PARAMS.txt");
+
+      // Set up the foreign key constraints properly in the TAB_COL_STATS data
+      String tmpBaseDir =  System.getProperty("test.tmp.dir");
+      File tmpFileLoc1 = new File(tmpBaseDir+"/TAB_COL_STATS.txt");
+      File tmpFileLoc2 = new File(tmpBaseDir+"/TABLE_PARAMS.txt");
+      FileUtils.copyFile(tabColStatsCsv, tmpFileLoc1);
+      FileUtils.copyFile(tabParamsCsv, tmpFileLoc2);
+
+      class MyComp implements Comparator<String> {
+        @Override
+        public int compare(String str1, String str2) {
+          if (str2.length() != str1.length()) {
+            return str2.length() - str1.length();
+          }
+          return str1.compareTo(str2);
+        }
+      }
+
+      SortedMap<String, Integer> tableNameToID = new TreeMap<String, Integer>(new MyComp());
+
+     rs = s.executeQuery("SELECT * FROM APP.TBLS");
+      while(rs.next()) {
+        String tblName = rs.getString("TBL_NAME");
+        Integer tblId = rs.getInt("TBL_ID");
+        tableNameToID.put(tblName, tblId);
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Resultset : " +  tblName + " | " + tblId);
+        }
+      }
+      for (Entry<String, Integer> entry : tableNameToID.entrySet()) {
+        String toReplace1 = ",_" + entry.getKey() + "_" ;
+        String replacementString1 = ","+entry.getValue();
+        String toReplace2 = "_" + entry.getKey() + "_@" ;
+        String replacementString2 = ""+entry.getValue()+"@";
+        try {
+          String content1 = FileUtils.readFileToString(tmpFileLoc1, "UTF-8");
+          content1 = content1.replaceAll(toReplace1, replacementString1);
+          FileUtils.writeStringToFile(tmpFileLoc1, content1, "UTF-8");
+          String content2 = FileUtils.readFileToString(tmpFileLoc2, "UTF-8");
+          content2 = content2.replaceAll(toReplace2, replacementString2);
+          FileUtils.writeStringToFile(tmpFileLoc2, content2, "UTF-8");
+        } catch (IOException e) {
+          LOG.info("Generating file failed", e);
+        }
+      }
+
+      // Load the column stats and table params with 30 TB scale
+      String importStatement1 =  "CALL SYSCS_UTIL.SYSCS_IMPORT_TABLE_LOBS_FROM_EXTFILE(null, '" + "TAB_COL_STATS" +
+        "', '" + tmpFileLoc1.getAbsolutePath() +
+        "', ',', null, 'UTF-8', 1)";
+      String importStatement2 =  "CALL SYSCS_UTIL.SYSCS_IMPORT_TABLE_LOBS_FROM_EXTFILE(null, '" + "TABLE_PARAMS" +
+        "', '" + tmpFileLoc2.getAbsolutePath() +
+        "', '@', null, 'UTF-8', 1)";
+      try {
+        PreparedStatement psImport1 = conn.prepareStatement(importStatement1);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Going to execute : " + importStatement1);
+        }
+        statements.add(psImport1);
+        psImport1.execute();
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("successfully completed " + importStatement1);
+        }
+        PreparedStatement psImport2 = conn.prepareStatement(importStatement2);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Going to execute : " + importStatement2);
+        }
+        statements.add(psImport2);
+        psImport2.execute();
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("successfully completed " + importStatement2);
+        }
+      } catch (SQLException e) {
+        LOG.info("Got SQL Exception  " +  e.getMessage());
+      }
+    } catch (FileNotFoundException e1) {
+        LOG.info("Got File not found Exception " + e1.getMessage());
+	} catch (IOException e1) {
+        LOG.info("Got IOException " + e1.getMessage());
+	} catch (SQLException e1) {
+        LOG.info("Got SQLException " + e1.getMessage());
+	} finally {
+      // Statements and PreparedStatements
+      int i = 0;
+      while (!statements.isEmpty()) {
+        // PreparedStatement extend Statement
+        Statement st = (Statement)statements.remove(i);
+        try {
+          if (st != null) {
+            st.close();
+            st = null;
+          }
+        } catch (SQLException sqle) {
+        }
+      }
+
+      //Connection
+      try {
+        if (conn != null) {
+          conn.close();
+          conn = null;
+        }
+      } catch (SQLException sqle) {
+      }
     }
   }
 }
