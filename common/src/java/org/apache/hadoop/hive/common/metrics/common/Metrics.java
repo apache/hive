@@ -93,4 +93,14 @@ public interface Metrics {
    * @param variable variable to track.
    */
   public void addGauge(String name, final MetricsVariable variable);
+
+  /**
+   * Add a ratio metric to track the correlation between two variables
+   * @param name name of the ratio gauge
+   * @param numerator numerator of the ratio
+   * @param denominator denominator of the ratio
+   */
+  public void addRatio(String name, MetricsVariable<Integer> numerator,
+                           MetricsVariable<Integer> denominator);
+
 }

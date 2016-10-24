@@ -36,6 +36,7 @@ import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.joshelser.dropwizard.metrics.hadoop.HadoopMetrics2Reporter;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -292,13 +293,27 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
         return variable.getValue();
       }
     };
+    addGaugeInternal(name, gauge);
+  }
+
+  @Override
+  public void addRatio(String name, MetricsVariable<Integer> numerator,
+                           MetricsVariable<Integer> denominator) {
+    Preconditions.checkArgument(numerator != null, "Numerator must not be null");
+    Preconditions.checkArgument(denominator != null, "Denominator must not be null");
+
+    MetricVariableRatioGauge gauge = new MetricVariableRatioGauge(numerator, denominator);
+    addGaugeInternal(name, gauge);
+  }
+
+  private void addGaugeInternal(String name, Gauge gauge) {
     try {
       gaugesLock.lock();
       gauges.put(name, gauge);
       // Metrics throws an Exception if we don't do this when the key already exists
       if (metricRegistry.getGauges().containsKey(name)) {
         LOGGER.warn("A Gauge with name [" + name + "] already exists. "
-          + " The old gauge will be overwritten, but this is not recommended");
+            + " The old gauge will be overwritten, but this is not recommended");
         metricRegistry.remove(name);
       }
       metricRegistry.register(name, gauge);
