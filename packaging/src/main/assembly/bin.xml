@@ -41,8 +41,18 @@
       <excludes>
         <exclude>org.apache.hadoop:*</exclude>
         <exclude>org.apache.hive.hcatalog:*</exclude>
-		    <exclude>org.slf4j:*</exclude>
+        <exclude>org.slf4j:*</exclude>
+        <exclude>org.apache.hive:hive-exec:*:core</exclude>
       </excludes>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>auxlib/</outputDirectory>
+      <unpack>false</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useStrictFiltering>true</useStrictFiltering>
+      <includes>
+        <include>org.apache.hive:hive-exec:*:core</include>
+      </includes>
     </dependencySet>
     <dependencySet>
       <outputDirectory>hcatalog/share/hcatalog</outputDirectory>
