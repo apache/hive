@@ -19,12 +19,12 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -34,72 +34,49 @@ import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  * This class implements the processor context for Column Pruner.
  */
 public class ColumnPrunerProcCtx implements NodeProcessorCtx {
-
   private final ParseContext pctx;
 
-  private final Map<Operator<? extends OperatorDesc>, List<String>> prunedColLists;
-
   /**
-   * This map stores the pruned nested column path for each operator
+   * A mapping from operators to nested column paths being used in them.
+   * Note: paths are of format "s.a.b" which represents field "b" of
+   *   struct "b" is being used, while "b" itself is a field of struct "s".
    */
-  private final Map<Operator<? extends OperatorDesc>, List<String>> prunedNestedColLists;
-
-  private final Map<CommonJoinOperator, Map<Byte, List<String>>> joinPrunedColLists;
-
-  private final Map<UnionOperator, List<Integer>> unionPrunedColLists;
+  private final Map<Operator<? extends OperatorDesc>, List<FieldNode>> prunedColLists;
+  private final Map<CommonJoinOperator, Map<Byte, List<FieldNode>>> joinPrunedColLists;
 
   public ColumnPrunerProcCtx(ParseContext pctx) {
     this.pctx = pctx;
-    prunedColLists = new HashMap<Operator<? extends OperatorDesc>, List<String>>();
-    prunedNestedColLists = new HashMap<Operator<? extends OperatorDesc>, List<String>>();
-    joinPrunedColLists = new HashMap<CommonJoinOperator, Map<Byte, List<String>>>();
-    unionPrunedColLists = new HashMap<>();
+    prunedColLists = new HashMap<>();
+    joinPrunedColLists = new HashMap<>();
   }
 
   public ParseContext getParseContext() {
     return pctx;
   }
 
-  public Map<CommonJoinOperator, Map<Byte, List<String>>> getJoinPrunedColLists() {
+  public Map<CommonJoinOperator, Map<Byte, List<FieldNode>>> getJoinPrunedColLists() {
     return joinPrunedColLists;
   }
 
-  public Map<UnionOperator, List<Integer>> getUnionPrunedColLists() {
-    return unionPrunedColLists;
-  }
-
-  /**
-   * @return the prunedColLists
-   */
-  public List<String> getPrunedColList(Operator<? extends OperatorDesc> op) {
+  public List<FieldNode> getPrunedColList(Operator<? extends OperatorDesc> op) {
     return prunedColLists.get(op);
   }
 
-  public Map<Operator<? extends OperatorDesc>, List<String>> getPrunedColLists() {
+  public Map<Operator<? extends OperatorDesc>, List<FieldNode>> getPrunedColLists() {
     return prunedColLists;
-  }
-
-  public Map<Operator<? extends OperatorDesc>, List<String>> getPrunedNestedColLists() {
-    return prunedNestedColLists;
   }
 
   /**
@@ -113,32 +90,22 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
    * @return List<String> of the internal column names.
    * @throws SemanticException
    */
-  public List<String> genColLists(Operator<? extends OperatorDesc> curOp)
+  public List<FieldNode> genColLists(Operator<? extends OperatorDesc> curOp)
       throws SemanticException {
     if (curOp.getChildOperators() == null) {
       return null;
     }
-    List<String> colList = null;
+    List<FieldNode> colList = null;
     for (Operator<? extends OperatorDesc> child : curOp.getChildOperators()) {
-      List<String> prunList = null;
+      List<FieldNode> prunList = null;
       if (child instanceof CommonJoinOperator) {
         int tag = child.getParentOperators().indexOf(curOp);
         prunList = joinPrunedColLists.get(child).get((byte) tag);
-      } else if (child instanceof UnionOperator) {
-        List<Integer> positions = unionPrunedColLists.get(child);
-        if (positions != null) {
-          prunList = new ArrayList<>();
-          RowSchema oldRS = curOp.getSchema();
-          for (Integer pos : positions) {
-            ColumnInfo colInfo = oldRS.getSignature().get(pos);
-            prunList.add(colInfo.getInternalName());
-          }
-        }
       } else if (child instanceof FileSinkOperator) {
         prunList = new ArrayList<>();
         RowSchema oldRS = curOp.getSchema();
         for (ColumnInfo colInfo : oldRS.getSignature()) {
-          prunList.add(colInfo.getInternalName());
+          prunList.add(new FieldNode(colInfo.getInternalName()));
         }
       } else {
         prunList = prunedColLists.get(child);
@@ -147,33 +114,12 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
         continue;
       }
       if (colList == null) {
-        colList = new ArrayList<String>(prunList);
+        colList = new ArrayList<>(prunList);
       } else {
-        colList = Utilities.mergeUniqElems(colList, prunList);
+        colList = mergeFieldNodes(colList, prunList);
       }
     }
     return colList;
-  }
-
-  /**
-   * Get the path to the root column for the nested column attribute
-   *
-   * @param curOp current operator
-   * @return the nested column paths for current operator and its child operator
-   */
-  public List<String> genNestedColPaths(Operator<? extends OperatorDesc> curOp) {
-    if (curOp.getChildOperators() == null) {
-      return null;
-    }
-    Set<String> groupPathsList = new HashSet<>();
-
-    for (Operator<? extends OperatorDesc> child : curOp.getChildOperators()) {
-      if (prunedNestedColLists.containsKey(child)) {
-        groupPathsList.addAll(prunedNestedColLists.get(child));
-      }
-    }
-
-    return new ArrayList<>(groupPathsList);
   }
 
   /**
@@ -189,7 +135,7 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
    * @return List<String> of the internal column names.
    * @throws SemanticException
    */
-  public List<String> genColLists(Operator<? extends OperatorDesc> curOp,
+  public List<FieldNode> genColLists(Operator<? extends OperatorDesc> curOp,
           Operator<? extends OperatorDesc> child)
       throws SemanticException {
     if (curOp.getChildOperators() == null) {
@@ -198,17 +144,6 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
     if (child instanceof CommonJoinOperator) {
       int tag = child.getParentOperators().indexOf(curOp);
       return joinPrunedColLists.get(child).get((byte) tag);
-    } else if (child instanceof UnionOperator) {
-      List<Integer> positions = unionPrunedColLists.get(child);
-      List<String> prunList = new ArrayList<>();
-      if (positions != null && positions.size() > 0) {
-        RowSchema oldRS = curOp.getSchema();
-        for (Integer pos : positions) {
-          ColumnInfo colInfo = oldRS.getSignature().get(pos);
-          prunList.add(colInfo.getInternalName());
-        }
-      }
-      return prunList;
     } else {
       return prunedColLists.get(child);
     }
@@ -223,18 +158,17 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
    *          The select operator.
    * @return List<String> of the internal column names.
    */
-  public List<String> getColsFromSelectExpr(SelectOperator op) {
-    List<String> cols = new ArrayList<String>();
+  public List<FieldNode> getColsFromSelectExpr(SelectOperator op) {
+    List<FieldNode> cols = new ArrayList<>();
     SelectDesc conf = op.getConf();
     if(conf.isSelStarNoCompute()) {
       for (ColumnInfo colInfo : op.getSchema().getSignature()) {
-        cols.add(colInfo.getInternalName());
+        cols.add(new FieldNode(colInfo.getInternalName()));
       }
-    }
-    else {
+    } else {
       List<ExprNodeDesc> exprList = conf.getColList();
         for (ExprNodeDesc expr : exprList) {
-          cols = Utilities.mergeUniqElems(cols, expr.getCols());
+          cols = mergeFieldNodes(cols, expr);
         }
     }
     return cols;
@@ -250,9 +184,9 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
    *          select operator.
    * @return List<String> of the internal column names.
    */
-  public List<String> getSelectColsFromChildren(SelectOperator op,
-      List<String> colList) {
-    List<String> cols = new ArrayList<String>();
+  public List<FieldNode> getSelectColsFromChildren(SelectOperator op,
+      List<FieldNode> colList) {
+    List<FieldNode> cols = new ArrayList<>();
     SelectDesc conf = op.getConf();
 
     if (colList != null  && conf.isSelStarNoCompute()) {
@@ -268,66 +202,48 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
     // input columns are used.
     List<String> outputColumnNames = conf.getOutputColumnNames();
     for (int i = 0; i < outputColumnNames.size(); i++) {
-      if (colList == null || colList.contains(outputColumnNames.get(i))) {
-        ExprNodeDesc expr = selectExprs.get(i);
-        cols = Utilities.mergeUniqElems(cols, expr.getCols());
+      if (colList == null) {
+        cols = mergeFieldNodes(cols, selectExprs.get(i));
+      } else if (lookupColumn(colList, outputColumnNames.get(i)) != null) {
+        // In SemanticAnalyzer we inject SEL op before aggregation. The columns
+        // in this SEL are derived from the table schema, and do not reflect the
+        // actual columns being selected in the current query.
+        // In this case, we skip the merge and just use the path from the child ops.
+        FieldNode childFn = lookupColumn(colList, outputColumnNames.get(i));
+        ExprNodeDesc desc = selectExprs.get(i);
+        if (desc instanceof ExprNodeColumnDesc && ((ExprNodeColumnDesc) desc).getIsGenerated()) {
+          FieldNode fn = new FieldNode(((ExprNodeColumnDesc) desc).getColumn());
+          fn.setNodes(childFn.getNodes());
+          cols = mergeFieldNodes(cols, fn);
+        } else {
+          cols = mergeFieldNodes(cols, selectExprs.get(i));
+        }
       }
     }
 
     return cols;
   }
 
-  /**
-   * Creates the list of internal group paths for select * expressions.
-   *
-   * @param op        The select operator.
-   * @param paths The list of nested column paths returned by the children of the
-   *                  select operator.
-   * @return List<String> of the nested column path from leaf to the root.
-   */
-  public List<String> getSelectNestedColPathsFromChildren(
-    SelectOperator op,
-    List<String> paths) {
-    List<String> groups = new ArrayList<>();
-    SelectDesc conf = op.getConf();
-
-    if (paths != null && conf.isSelStarNoCompute()) {
-      groups.addAll(paths);
-      return groups;
-    }
-
-    List<ExprNodeDesc> selectDescs = conf.getColList();
-
-    List<String> outputColumnNames = conf.getOutputColumnNames();
-    for (int i = 0; i < outputColumnNames.size(); i++) {
-      if (paths == null || paths.contains(outputColumnNames.get(i))) {
-        ExprNodeDesc desc = selectDescs.get(i);
-        List<String> gp = getNestedColPathByDesc(desc);
-        groups.addAll(gp);
-      }
-    }
-
-    return groups;
-  }
-
   // Entry method
-  private List<String> getNestedColPathByDesc(ExprNodeDesc desc) {
-    List<String> res = new ArrayList<>();
-    getNestedColsFromExprNodeDesc(desc, "", res);
-    return res;
+  static List<FieldNode> getNestedColPathByDesc(ExprNodeDesc desc) {
+    List<FieldNode> res = new ArrayList<>();
+    getNestedColsFromExprNodeDesc(desc, null, res);
+    return mergeFieldNodes(new ArrayList<FieldNode>(), res);
   }
 
-  private void getNestedColsFromExprNodeDesc(
+  private static void getNestedColsFromExprNodeDesc(
     ExprNodeDesc desc,
-    String pathToRoot,
-    List<String> paths) {
+    FieldNode pathToRoot,
+    List<FieldNode> paths) {
     if (desc instanceof ExprNodeColumnDesc) {
       String f = ((ExprNodeColumnDesc) desc).getColumn();
-      String p = pathToRoot.isEmpty() ? f : f + "." + pathToRoot;
+      FieldNode p = new FieldNode(f);
+      p.addFieldNodes(pathToRoot);
       paths.add(p);
     } else if (desc instanceof ExprNodeFieldDesc) {
       String f = ((ExprNodeFieldDesc) desc).getFieldName();
-      String p = pathToRoot.isEmpty() ? f : f + "." + pathToRoot;
+      FieldNode p = new FieldNode(f);
+      p.addFieldNodes(pathToRoot);
       getNestedColsFromExprNodeDesc(((ExprNodeFieldDesc) desc).getDesc(), p, paths);
     } else {
       List<ExprNodeDesc> children = desc.getChildren();
@@ -343,11 +259,11 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
   /**
    * Create the list of internal columns for select tag of LV
    */
-  public List<String> getSelectColsFromLVJoin(RowSchema rs,
-      List<String> colList) throws SemanticException {
-    List<String> columns = new ArrayList<String>();
-    for (String col : colList) {
-      if (rs.getColumnInfo(col) != null) {
+  public List<FieldNode> getSelectColsFromLVJoin(RowSchema rs,
+      List<FieldNode> colList) throws SemanticException {
+    List<FieldNode> columns = new ArrayList<>();
+    for (FieldNode col : colList) {
+      if (rs.getColumnInfo(col.getFieldName()) != null) {
         columns.add(col);
       }
     }
@@ -369,13 +285,11 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
     if (curOp.getChildOperators() == null || !(curOp instanceof FilterOperator)) {
       return;
     }
-    List<String> parentPrunList = prunedColLists.get(curOp);
+    List<FieldNode> parentPrunList = prunedColLists.get(curOp);
     if(parentPrunList == null || parentPrunList.size() == 0) {
       return;
     }
-    FilterOperator filOp = (FilterOperator)curOp;
-    List<String> prunList = null;
-    List<Integer>[] childToParentIndex = null;
+    List<FieldNode> prunList = null;
 
     for (Operator<? extends OperatorDesc> child : curOp.getChildOperators()) {
       if (child instanceof UnionOperator) {
@@ -389,7 +303,7 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
         Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
         ArrayList<ColumnInfo> outputRS = new ArrayList<ColumnInfo>();
         for (ColumnInfo colInfo : child.getSchema().getSignature()) {
-          if (!prunList.contains(colInfo.getInternalName())) {
+          if (lookupColumn(prunList, colInfo.getInternalName()) == null) {
             continue;
           }
           ExprNodeDesc colDesc = new ExprNodeColumnDesc(colInfo.getType(),
@@ -408,10 +322,93 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
             select, new RowSchema(outputRS), curOp);
         OperatorFactory.makeChild(sel, child);
         sel.setColumnExprMap(colExprMap);
-
       }
-
     }
   }
 
+  static ArrayList<String> toColumnNames(List<FieldNode> columns) {
+    ArrayList<String> names = new ArrayList<>();
+    for (FieldNode fn : columns) {
+      names.add(fn.getFieldName());
+    }
+    return names;
+  }
+
+  static List<FieldNode> fromColumnNames(List<String> columnNames) {
+    List<FieldNode> fieldNodes = new ArrayList<>();
+    for (String cn : columnNames) {
+      fieldNodes.add(new FieldNode(cn));
+    }
+    return fieldNodes;
+  }
+
+  static FieldNode lookupColumn(Collection<FieldNode> columns, String colName) {
+    for (FieldNode fn : columns) {
+      if (fn.getFieldName() != null && fn.getFieldName().equals(colName)) {
+        return fn;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Merge the field node 'fn' into list 'nodes', and return the result list.
+   */
+  static List<FieldNode> mergeFieldNodes(List<FieldNode> nodes, FieldNode fn) {
+    List<FieldNode> result = new ArrayList<>(nodes);
+    for (int i = 0; i < nodes.size(); ++i) {
+      FieldNode mfn = mergeFieldNode(nodes.get(i), fn);
+      if (mfn != null) {
+        result.set(i, mfn);
+        return result;
+      }
+    }
+    result.add(fn);
+    return result;
+  }
+
+  static List<FieldNode> mergeFieldNodes(List<FieldNode> left, ExprNodeDesc desc) {
+    return mergeFieldNodes(left, getNestedColPathByDesc(desc));
+  }
+
+  static List<FieldNode> mergeFieldNodes(List<FieldNode> left, List<FieldNode> right) {
+    List<FieldNode> result = new ArrayList<>(left);
+    for (FieldNode fn : right) {
+      result = mergeFieldNodes(result, fn);
+    }
+    return result;
+  }
+
+  /**
+   * Merge the field nodes 'left' and 'right' and return the merged node.
+   * Return null if the two nodes cannot be merged.
+   *
+   * There are basically 3 cases here:
+   * 1. 'left' and 'right' have the same depth, e.g., 'left' is s[b[c]] and
+   *   'right' is s[b[d]]. In this case, the merged node is s[b[c,d]]
+   * 2. 'left' has larger depth than 'right', e.g., 'left' is s[b] while
+   *   'right' is s[b[d]]. In this case, the merged node is s[b]
+   * 3. 'left' has smaller depth than 'right', e.g., 'left' is s[b[c]] while
+   *   'right' is s[b]. This is the opposite case of 2), and similarly,
+   *   the merged node is s[b].
+   *
+   * A example where the two inputs cannot be merged is, 'left' is s[b] while
+   *   'right' is p[c].
+   */
+  static FieldNode mergeFieldNode(FieldNode left, FieldNode right) {
+    Preconditions.checkArgument(left.getFieldName() != null && right.getFieldName() != null);
+    if (!left.getFieldName().equals(right.getFieldName())) {
+      return null;
+    }
+    if (left.getNodes().isEmpty()) {
+      return left;
+    } else if (right.getNodes().isEmpty()) {
+      return right;
+    } else {
+      // Both are not empty. Merge two lists.
+      FieldNode result = new FieldNode(left.getFieldName());
+      result.setNodes(mergeFieldNodes(left.getNodes(), right.getNodes()));
+      return result;
+    }
+  }
 }

@@ -140,8 +140,6 @@ public final class ColumnProjectionUtils {
       newConfStr = newConfStr + StringUtils.COMMA_STR + old;
     }
     setReadNestedColumnPathConf(conf, newConfStr);
-    // Set READ_ALL_COLUMNS to false
-    conf.setBoolean(READ_ALL_COLUMNS, false);
   }
 
 
