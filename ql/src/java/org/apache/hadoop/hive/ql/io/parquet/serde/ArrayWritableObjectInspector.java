@@ -21,7 +21,6 @@ import java.util.List;
 import org.apache.hadoop.hive.ql.io.parquet.serde.primitive.ParquetPrimitiveInspectorFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -49,25 +48,45 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
   private final List<StructField> fields;
   private final HashMap<String, StructFieldImpl> fieldsByName;
 
-  public ArrayWritableObjectInspector(final StructTypeInfo rowTypeInfo) {
+  // Whether this OI is for the row-level schema (as opposed to nested struct fields).
+  private final boolean isRoot;
 
-    typeInfo = rowTypeInfo;
-    fieldNames = rowTypeInfo.getAllStructFieldNames();
-    fieldInfos = rowTypeInfo.getAllStructFieldTypeInfos();
-    fields = new ArrayList<StructField>(fieldNames.size());
-    fieldsByName = new HashMap<String, StructFieldImpl>();
+  public ArrayWritableObjectInspector(final StructTypeInfo rowTypeInfo) {
+    this(true, rowTypeInfo, null);
+  }
+
+  public ArrayWritableObjectInspector(StructTypeInfo completeTypeInfo, StructTypeInfo prunedTypeInfo) {
+    this(true, completeTypeInfo, prunedTypeInfo);
+  }
+
+  public ArrayWritableObjectInspector(boolean isRoot,
+      StructTypeInfo completeTypeInfo, StructTypeInfo prunedTypeInfo) {
+    this.isRoot = isRoot;
+    typeInfo = completeTypeInfo;
+    fieldNames = completeTypeInfo.getAllStructFieldNames();
+    fieldInfos = completeTypeInfo.getAllStructFieldTypeInfos();
+    fields = new ArrayList<>(fieldNames.size());
+    fieldsByName = new HashMap<>();
 
     for (int i = 0; i < fieldNames.size(); ++i) {
       final String name = fieldNames.get(i);
-      final TypeInfo fieldInfo = fieldInfos.get(i);
+      TypeInfo fieldInfo = fieldInfos.get(i);
 
-      final StructFieldImpl field = new StructFieldImpl(name, getObjectInspector(fieldInfo), i);
+      StructFieldImpl field;
+      if (prunedTypeInfo != null && prunedTypeInfo.getAllStructFieldNames().indexOf(name) >= 0) {
+        int adjustedIndex = prunedTypeInfo.getAllStructFieldNames().indexOf(name);
+        TypeInfo prunedFieldInfo = prunedTypeInfo.getAllStructFieldTypeInfos().get(adjustedIndex);
+        field = new StructFieldImpl(name, getObjectInspector(fieldInfo, prunedFieldInfo), i, adjustedIndex);
+      } else {
+        field = new StructFieldImpl(name, getObjectInspector(fieldInfo, null), i, i);
+      }
       fields.add(field);
       fieldsByName.put(name.toLowerCase(), field);
     }
   }
 
-  private ObjectInspector getObjectInspector(final TypeInfo typeInfo) {
+  private ObjectInspector getObjectInspector(
+      TypeInfo typeInfo, TypeInfo prunedTypeInfo) {
     if (typeInfo.equals(TypeInfoFactory.doubleTypeInfo)) {
       return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
     } else if (typeInfo.equals(TypeInfoFactory.booleanTypeInfo)) {
@@ -83,18 +102,20 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     }  else if (typeInfo instanceof DecimalTypeInfo) {
       return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((DecimalTypeInfo) typeInfo);
     } else if (typeInfo.getCategory().equals(Category.STRUCT)) {
-      return new ArrayWritableObjectInspector((StructTypeInfo) typeInfo);
+      return new ArrayWritableObjectInspector(false, (StructTypeInfo) typeInfo, (StructTypeInfo) prunedTypeInfo);
     } else if (typeInfo.getCategory().equals(Category.LIST)) {
       final TypeInfo subTypeInfo = ((ListTypeInfo) typeInfo).getListElementTypeInfo();
-      return new ParquetHiveArrayInspector(getObjectInspector(subTypeInfo));
+      return new ParquetHiveArrayInspector(getObjectInspector(subTypeInfo, null));
     } else if (typeInfo.getCategory().equals(Category.MAP)) {
       final TypeInfo keyTypeInfo = ((MapTypeInfo) typeInfo).getMapKeyTypeInfo();
       final TypeInfo valueTypeInfo = ((MapTypeInfo) typeInfo).getMapValueTypeInfo();
       if (keyTypeInfo.equals(TypeInfoFactory.stringTypeInfo) || keyTypeInfo.equals(TypeInfoFactory.byteTypeInfo)
               || keyTypeInfo.equals(TypeInfoFactory.shortTypeInfo)) {
-        return new DeepParquetHiveMapInspector(getObjectInspector(keyTypeInfo), getObjectInspector(valueTypeInfo));
+        return new DeepParquetHiveMapInspector(getObjectInspector(keyTypeInfo, null),
+            getObjectInspector(valueTypeInfo, null));
       } else {
-        return new StandardParquetHiveMapInspector(getObjectInspector(keyTypeInfo), getObjectInspector(valueTypeInfo));
+        return new StandardParquetHiveMapInspector(getObjectInspector(keyTypeInfo, null),
+            getObjectInspector(valueTypeInfo, null));
       }
     } else if (typeInfo.equals(TypeInfoFactory.byteTypeInfo)) {
       return ParquetPrimitiveInspectorFactory.parquetByteInspector;
@@ -139,8 +160,9 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     if (data instanceof ArrayWritable) {
       final ArrayWritable arr = (ArrayWritable) data;
       final StructFieldImpl structField = (StructFieldImpl) fieldRef;
-      if (structField.getIndex() < arr.get().length) {
-        return arr.get()[structField.getIndex()];
+      int index = isRoot ? structField.getIndex() : structField.adjustedIndex;
+      if (index < arr.get().length) {
+        return arr.get()[index];
       } else {
         return null;
       }
@@ -170,7 +192,7 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     if (data instanceof ArrayWritable) {
       final ArrayWritable arr = (ArrayWritable) data;
       final Object[] arrWritable = arr.get();
-      return new ArrayList<Object>(Arrays.asList(arrWritable));
+      return new ArrayList<>(Arrays.asList(arrWritable));
     }
 
     //since setStructFieldData and create return a list, getStructFieldData should be able to
@@ -221,16 +243,26 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     return hash;
   }
 
-  class StructFieldImpl implements StructField {
+  private class StructFieldImpl implements StructField {
 
     private final String name;
     private final ObjectInspector inspector;
     private final int index;
 
-    public StructFieldImpl(final String name, final ObjectInspector inspector, final int index) {
+    // This is the adjusted index after nested column pruning.
+    // For instance, given the struct type: s:<struct<a:int, b:boolean>>
+    // If only 's.b' is used, the pruned type is: s:<struct<b:boolean>>.
+    // Here, the index of field 'b' is changed from 1 to 0.
+    // When we look up the data from Parquet, index needs to be adjusted accordingly.
+    // Note: currently this is only used in the read path.
+    final int adjustedIndex;
+
+    public StructFieldImpl(final String name, final ObjectInspector inspector,
+        final int index, int adjustedIndex) {
       this.name = name;
       this.inspector = inspector;
       this.index = index;
+      this.adjustedIndex = adjustedIndex;
     }
 
     @Override
