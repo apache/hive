@@ -122,18 +122,17 @@ public class ValidWriteIds {
 
 
   public static class IdPathFilter implements PathFilter {
-    private final String mmDirName, tmpPrefix;
+    private final String mmDirName;
     private final boolean isMatch;
     public IdPathFilter(long writeId, boolean isMatch) {
       this.mmDirName = ValidWriteIds.getMmFilePrefix(writeId);
-      this.tmpPrefix = "_tmp." + mmDirName;
       this.isMatch = isMatch;
     }
 
     @Override
     public boolean accept(Path path) {
       String name = path.getName();
-      return isMatch == (name.equals(mmDirName) || name.equals(tmpPrefix));
+      return isMatch == name.equals(mmDirName);
     }
   }
 

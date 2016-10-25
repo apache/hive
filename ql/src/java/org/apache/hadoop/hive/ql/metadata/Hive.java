@@ -1589,6 +1589,7 @@ public class Hive {
       List<Path> newFiles = null;
       PerfLogger perfLogger = SessionState.getPerfLogger();
       perfLogger.PerfLogBegin("MoveTask", "FileMoves");
+      // TODO: this assumes both paths are qualified; which they are, currently.
       if (mmWriteId != null && loadPath.equals(newPartPath)) {
         // MM insert query, move itself is a no-op.
         Utilities.LOG14535.info("not moving " + loadPath + " to " + newPartPath + " (MM)");
@@ -1705,7 +1706,7 @@ public class Hive {
     FileSystem srcFs;
     try {
       srcFs = loadPath.getFileSystem(conf);
-      srcs = srcFs.globStatus(loadPath);
+      srcs = srcFs.listStatus(loadPath);
     } catch (IOException e) {
       LOG.error("Error listing files", e);
       throw new HiveException(e);
@@ -1847,29 +1848,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
     Set<Path> validPartitions = new HashSet<Path>();
     try {
       FileSystem fs = loadPath.getFileSystem(conf);
-      FileStatus[] leafStatus = null;
       if (mmWriteId == null) {
-        leafStatus = HiveStatsUtils.getFileStatusRecurse(loadPath, numDP, fs);
+        FileStatus[] leafStatus = HiveStatsUtils.getFileStatusRecurse(loadPath, numDP, fs);
+        // Check for empty partitions
+        for (FileStatus s : leafStatus) {
+          if (!s.isDirectory()) {
+            throw new HiveException("partition " + s.getPath() + " is not a directory!");
+          }
+          Path dpPath = s.getPath();
+          Utilities.LOG14535.info("Found DP " + dpPath);
+          validPartitions.add(dpPath);
+        }
       } else {
         // The non-MM path only finds new partitions, as it is looking at the temp path.
         // To produce the same effect, we will find all the partitions affected by this write ID.
-        leafStatus = Utilities.getMmDirectoryCandidates(
-            fs, loadPath, numDP, numLB, null, mmWriteId);
-      }
-      // Check for empty partitions
-      for (FileStatus s : leafStatus) {
-        if (mmWriteId == null && !s.isDirectory()) {
-          throw new HiveException("partition " + s.getPath() + " is not a directory!");
-        }
-        Path dpPath = s.getPath();
-        if (mmWriteId != null) {
-          dpPath = dpPath.getParent(); // Skip the MM directory that we have found.
+        Path[] leafStatus = Utilities.getMmDirectoryCandidates(
+            fs, loadPath, numDP, numLB, null, mmWriteId, conf);
+        for (Path p : leafStatus) {
+          Path dpPath = p.getParent(); // Skip the MM directory that we have found.
           for (int i = 0; i < numLB; ++i) {
             dpPath = dpPath.getParent(); // Now skip the LB directories, if any...
           }
+          Utilities.LOG14535.info("Found DP " + dpPath);
+          validPartitions.add(dpPath);
         }
-        Utilities.LOG14535.info("Found DP " + dpPath);
-        validPartitions.add(dpPath);
       }
     } catch (IOException e) {
       throw new HiveException(e);
@@ -2047,6 +2049,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
       newFiles = Collections.synchronizedList(new ArrayList<Path>());
     }
+    // TODO: this assumes both paths are qualified; which they are, currently.
     if (mmWriteId != null && loadPath.equals(tbl.getPath())) {
       Utilities.LOG14535.info("not moving " + loadPath + " to " + tbl.getPath());
       if (replace) {

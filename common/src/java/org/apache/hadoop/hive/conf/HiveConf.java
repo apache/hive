@@ -3141,6 +3141,10 @@ public class HiveConf extends Configuration {
         "MM write ID will not be removed up for that long after it has been aborted;\n" +
         "this is to work around potential races e.g. with FS visibility, when deleting files."),
 
+
+    HIVE_MM_AVOID_GLOBSTATUS_ON_S3("hive.mm.avoid.s3.globstatus", true,
+        "Whether to use listFiles (optimized on S3) instead of globStatus when on S3."),
+
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
         "hive.security.authenticator.manager,hive.security.authorization.manager," +
         "hive.security.metastore.authorization.manager,hive.security.metastore.authenticator.manager," +
