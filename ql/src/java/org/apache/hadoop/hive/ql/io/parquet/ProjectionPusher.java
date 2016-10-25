@@ -99,6 +99,9 @@ public class ProjectionPusher {
     boolean allColumnsNeeded = false;
     boolean noFilters = false;
     Set<Integer> neededColumnIDs = new HashSet<Integer>();
+    // To support nested column pruning, we need to track the path from the top to the nested
+    // fields
+    Set<String> neededNestedColumnPaths = new HashSet<String>();
     List<ExprNodeGenericFuncDesc> filterExprs = new ArrayList<ExprNodeGenericFuncDesc>();
     RowSchema rowSchema = null;
 
@@ -112,6 +115,7 @@ public class ProjectionPusher {
           allColumnsNeeded = true;
         } else {
           neededColumnIDs.addAll(ts.getNeededColumnIDs());
+          neededNestedColumnPaths.addAll(ts.getNeededNestedColumnPaths());
         }
 
         rowSchema = ts.getSchema();
@@ -143,6 +147,8 @@ public class ProjectionPusher {
     if (!allColumnsNeeded) {
       if (!neededColumnIDs.isEmpty()) {
         ColumnProjectionUtils.appendReadColumns(jobConf, new ArrayList<Integer>(neededColumnIDs));
+        ColumnProjectionUtils.appendNestedColumnPaths(jobConf,
+          new ArrayList<String>(neededNestedColumnPaths));
       }
     } else {
       ColumnProjectionUtils.setReadAllColumns(jobConf);

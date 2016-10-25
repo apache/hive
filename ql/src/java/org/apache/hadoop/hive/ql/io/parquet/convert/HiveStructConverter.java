@@ -85,7 +85,7 @@ public class HiveStructConverter extends HiveGroupConverter {
     List<Type> selectedFields = selectedGroupType.getFields();
     for (int i = 0; i < selectedFieldCount; i++) {
       Type subtype = selectedFields.get(i);
-      if (containingGroupType.getFields().contains(subtype)) {
+      if (isSubType(containingGroupType, subtype)) {
         int fieldIndex = containingGroupType.getFieldIndex(subtype.getName());
         TypeInfo _hiveTypeInfo = getFieldTypeIgnoreCase(hiveTypeInfo, subtype.getName(), fieldIndex);
         converters[i] = getFieldConverter(subtype, fieldIndex, _hiveTypeInfo);
@@ -93,6 +93,33 @@ public class HiveStructConverter extends HiveGroupConverter {
         throw new IllegalStateException("Group type [" + containingGroupType +
             "] does not contain requested field: " + subtype);
       }
+    }
+  }
+
+  // This method is used to check whether the subType is a sub type of the groupType.
+  // For nested attribute, we need to check its existence by the root path in a recursive way.
+  private boolean isSubType(
+    final GroupType groupType,
+    final Type subtype) {
+    if (subtype.isPrimitive() || subtype.isRepetition(Type.Repetition.REPEATED)) {
+      return groupType.getFields().contains(subtype);
+    } else {
+      for (Type g : groupType.getFields()) {
+        if (!g.isPrimitive() && g.getName().equals(subtype.getName())) {
+          // check all elements are contained in g
+          boolean containsAll = false;
+          for (Type subSubType : subtype.asGroupType().getFields()) {
+            containsAll = isSubType(g.asGroupType(), subSubType);
+            if (!containsAll) {
+              break;
+            }
+          }
+          if (containsAll) {
+            return containsAll;
+          }
+        }
+      }
+      return false;
     }
   }
 
