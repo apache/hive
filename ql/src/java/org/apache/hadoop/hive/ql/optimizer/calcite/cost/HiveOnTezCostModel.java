@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelDistribution;
+import org.apache.calcite.rel.RelDistributions;
 import org.apache.calcite.rel.RelDistribution.Type;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
@@ -290,9 +291,12 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
     @Override
     public ImmutableList<RelCollation> getCollation(HiveJoin join) {
-      if (join.getStreamingSide() != MapJoinStreamingRelation.LEFT_RELATION
-              || join.getStreamingSide() != MapJoinStreamingRelation.RIGHT_RELATION) {
-        return null;
+      final MapJoinStreamingRelation streamingSide = join.getStreamingSide();
+      if (streamingSide != MapJoinStreamingRelation.LEFT_RELATION
+              && streamingSide != MapJoinStreamingRelation.RIGHT_RELATION) {
+        // Error; default value
+        LOG.warn("Streaming side for map join not chosen");
+        return ImmutableList.of();
       }
       return HiveAlgorithmsUtil.getJoinCollation(join.getJoinPredicateInfo(),
               join.getStreamingSide());
@@ -300,9 +304,12 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
     @Override
     public RelDistribution getDistribution(HiveJoin join) {
-      if (join.getStreamingSide() != MapJoinStreamingRelation.LEFT_RELATION
-              || join.getStreamingSide() != MapJoinStreamingRelation.RIGHT_RELATION) {
-        return null;
+      final MapJoinStreamingRelation streamingSide = join.getStreamingSide();
+      if (streamingSide != MapJoinStreamingRelation.LEFT_RELATION
+              && streamingSide != MapJoinStreamingRelation.RIGHT_RELATION) {
+        // Error; default value
+        LOG.warn("Streaming side for map join not chosen");
+        return RelDistributions.SINGLETON;
       }
       return HiveAlgorithmsUtil.getJoinDistribution(join.getJoinPredicateInfo(),
               join.getStreamingSide());
@@ -456,9 +463,12 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
     @Override
     public ImmutableList<RelCollation> getCollation(HiveJoin join) {
-      if (join.getStreamingSide() != MapJoinStreamingRelation.LEFT_RELATION
-              || join.getStreamingSide() != MapJoinStreamingRelation.RIGHT_RELATION) {
-        return null;
+      final MapJoinStreamingRelation streamingSide = join.getStreamingSide();
+      if (streamingSide != MapJoinStreamingRelation.LEFT_RELATION
+              && streamingSide != MapJoinStreamingRelation.RIGHT_RELATION) {
+        // Error; default value
+        LOG.warn("Streaming side for map join not chosen");
+        return ImmutableList.of();
       }
       return HiveAlgorithmsUtil.getJoinCollation(join.getJoinPredicateInfo(),
               join.getStreamingSide());

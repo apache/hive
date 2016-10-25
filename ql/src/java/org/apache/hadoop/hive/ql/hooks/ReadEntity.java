@@ -148,7 +148,7 @@ public class ReadEntity extends Entity implements Serializable {
 
     if (o instanceof ReadEntity) {
       ReadEntity ore = (ReadEntity) o;
-      return (toString().equalsIgnoreCase(ore.toString()));
+      return (getName().equalsIgnoreCase(ore.getName()));
     } else {
       return false;
     }

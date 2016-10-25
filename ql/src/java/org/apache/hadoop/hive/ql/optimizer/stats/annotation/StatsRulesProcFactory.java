@@ -71,6 +71,7 @@ import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
@@ -89,6 +90,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -354,6 +356,9 @@ public class StatsRulesProcFactory {
         } else if (udf instanceof GenericUDFIn) {
           // for IN clause
           newNumRows = evaluateInExpr(stats, pred, aspCtx, neededCols, fop);
+        } else if (udf instanceof GenericUDFBetween) {
+          // for BETWEEN clause
+          newNumRows = evaluateBetweenExpr(stats, pred, aspCtx, neededCols, fop);
         } else if (udf instanceof GenericUDFOPNot) {
           newNumRows = evaluateNotExpr(stats, pred, aspCtx, neededCols, fop);
         } else if (udf instanceof GenericUDFOPNotNull) {
@@ -478,6 +483,32 @@ public class StatsRulesProcFactory {
       }
       float inFactor = HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_IN_CLAUSE_FACTOR);
       return Math.round( (double)numRows * factor * inFactor);
+    }
+
+    private long evaluateBetweenExpr(Statistics stats, ExprNodeDesc pred, AnnotateStatsProcCtx aspCtx,
+            List<String> neededCols, FilterOperator fop) throws SemanticException, CloneNotSupportedException {
+      final ExprNodeGenericFuncDesc fd = (ExprNodeGenericFuncDesc) pred;
+      final boolean invert = Boolean.TRUE.equals(
+          ((ExprNodeConstantDesc) fd.getChildren().get(0)).getValue()); // boolean invert (not)
+      final ExprNodeDesc comparisonExpression = fd.getChildren().get(1); // expression
+      final ExprNodeDesc leftExpression = fd.getChildren().get(2); // left expression
+      final ExprNodeDesc rightExpression = fd.getChildren().get(3); // right expression
+
+      // We transform the BETWEEN clause to AND clause (with NOT on top in invert is true).
+      // This is more straightforward, as the evaluateExpression method will deal with
+      // generating the final row count relying on the basic comparator evaluation methods
+      final ExprNodeDesc leftComparator = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+          new GenericUDFOPEqualOrGreaterThan(), Lists.newArrayList(comparisonExpression, leftExpression));
+      final ExprNodeDesc rightComparator = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+          new GenericUDFOPEqualOrLessThan(), Lists.newArrayList(comparisonExpression, rightExpression));
+      ExprNodeDesc newExpression = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+          new GenericUDFOPAnd(), Lists.newArrayList(leftComparator, rightComparator));
+      if (invert) {
+        newExpression = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+          new GenericUDFOPNot(), Lists.newArrayList(newExpression));
+      }
+
+      return evaluateExpression(stats, newExpression, aspCtx, neededCols, fop, 0);
     }
 
     private long evaluateNotExpr(Statistics stats, ExprNodeDesc pred,
@@ -866,7 +897,8 @@ public class StatsRulesProcFactory {
         } else if (udf instanceof GenericUDFOPNull) {
           return evaluateColEqualsNullExpr(stats, genFunc);
         } else if (udf instanceof GenericUDFOPAnd || udf instanceof GenericUDFOPOr
-            || udf instanceof GenericUDFIn || udf instanceof GenericUDFOPNot) {
+            || udf instanceof GenericUDFIn || udf instanceof GenericUDFBetween
+            || udf instanceof GenericUDFOPNot) {
           return evaluateExpression(stats, genFunc, aspCtx, neededCols, fop, evaluatedRowCount);
         }
       }

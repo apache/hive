@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin.MapJoinStreamingRelation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 import com.google.common.collect.ImmutableList;
 

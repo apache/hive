@@ -191,6 +191,12 @@ set hive.optimize.index.filter=true;
 select count(*) from orc_ppd where f=74.72;
 
 
+RESET;
+set hive.compute.query.using.stats=false;
+set hive.mapred.mode=nonstrict;
+SET hive.fetch.task.conversion=none;
+SET hive.optimize.index.filter=true;
+SET hive.cbo.enable=false;
 create temporary table tmp_orcppd
                     stored as orc
                     as select ctinyint, csmallint, cint , cbigint, cfloat, cdouble,

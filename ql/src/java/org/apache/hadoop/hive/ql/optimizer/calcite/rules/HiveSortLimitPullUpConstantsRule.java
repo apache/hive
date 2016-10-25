@@ -66,12 +66,9 @@ public class HiveSortLimitPullUpConstantsRule extends RelOptRule {
           new HiveSortLimitPullUpConstantsRule(HiveSortLimit.class,
                   HiveRelFactories.HIVE_BUILDER);
 
-  private HiveSortLimitPullUpConstantsRule(
-      Class<? extends Sort> sortClass,
+  private HiveSortLimitPullUpConstantsRule(Class<? extends Sort> sortClass,
       RelBuilderFactory relBuilderFactory) {
-    super(operand(RelNode.class,
-            operand(sortClass, any())),
-            relBuilderFactory, null);
+    super(operand(RelNode.class, unordered(operand(sortClass, any()))), relBuilderFactory, null);
   }
 
   @Override

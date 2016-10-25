@@ -30,7 +30,7 @@ import org.junit.Test;
 
 /**
  * Parser tests for SQL11 Reserved KeyWords. Please find more information in
- * HIVE-6617. Total number : 81
+ * HIVE-6617. Total number : 82
  * ALL,ALTER,ARRAY,AS,AUTHORIZATION,BETWEEN,BIGINT,BINARY
  * ,BOOLEAN,BOTH,BY,CONSTRAINT
  * ,CREATE,CUBE,CURRENT_DATE,CURRENT_TIMESTAMP,CURSOR,
@@ -38,7 +38,7 @@ import org.junit.Test;
  * ,DOUBLE,DROP,EXISTS,EXTERNAL,FALSE,FETCH,FLOAT,FOR
  * ,FOREIGN,FULL,GRANT,GROUP,GROUPING
  * ,IMPORT,IN,INNER,INSERT,INT,INTERSECT,INTO,IS
- * ,LATERAL,LEFT,LIKE,LOCAL,NONE,NULL
+ * ,LATERAL,LEFT,LIKE,LOCAL,MINUS,NONE,NULL
  * ,OF,ORDER,OUT,OUTER,PARTITION,PERCENT,PRECISION
  * ,PRIMARY,PROCEDURE,RANGE,READS,
  * REFERENCES,REGEXP,REVOKE,RIGHT,RLIKE,ROLLUP,ROW
@@ -670,16 +670,29 @@ public class TestSQL11ReservedKeyWordsNegative {
 	}
 
 	@Test
-	public void testSQL11ReservedKeyWords_NONE() {
+	public void testSQL11ReservedKeyWords_MINUS() {
 		try {
-			parse("CREATE TABLE NONE (col STRING)");
+			parse("CREATE TABLE MINUS (col STRING)");
 			Assert.assertFalse("Expected ParseException", true);
 		} catch (ParseException ex) {
 			Assert.assertEquals(
 					"Failure didn't match.",
-					"line 1:13 cannot recognize input near 'NONE' '(' 'col' in table name",
+					"line 1:13 cannot recognize input near 'MINUS' '(' 'col' in table name",
 					ex.getMessage());
 		}
+	}
+
+	@Test
+	public void testSQL11ReservedKeyWords_NONE() {
+	  try {
+	    parse("CREATE TABLE NONE (col STRING)");
+	    Assert.assertFalse("Expected ParseException", true);
+	  } catch (ParseException ex) {
+	    Assert.assertEquals(
+	        "Failure didn't match.",
+	        "line 1:13 cannot recognize input near 'NONE' '(' 'col' in table name",
+	        ex.getMessage());
+	  }
 	}
 
 	@Test

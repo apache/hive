@@ -1,0 +1,34 @@
+#### A masked pattern was here ####
+PREHOOK: query: -- check export on partition
+create table auth_import_ptn(i int) partitioned by (j int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@auth_import_ptn
+POSTHOOK: query: -- check export on partition
+create table auth_import_ptn(i int) partitioned by (j int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@auth_import_ptn
+PREHOOK: query: alter table auth_import_ptn add partition (j=42)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@auth_import_ptn
+POSTHOOK: query: alter table auth_import_ptn add partition (j=42)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@auth_import_ptn
+POSTHOOK: Output: default@auth_import_ptn@j=42
+#### A masked pattern was here ####
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@auth_import_ptn@j=42
+#### A masked pattern was here ####
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@auth_import_ptn@j=42
+#### A masked pattern was here ####
+PREHOOK: query: alter table auth_import_ptn drop partition (j=42)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@auth_import_ptn
+PREHOOK: Output: default@auth_import_ptn@j=42
+POSTHOOK: query: alter table auth_import_ptn drop partition (j=42)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@auth_import_ptn
+POSTHOOK: Output: default@auth_import_ptn@j=42
+#### A masked pattern was here ####

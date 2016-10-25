@@ -67,6 +67,7 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.metadata.CachingRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
@@ -140,8 +141,10 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveVolcanoPlanner;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
@@ -153,6 +156,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateJoinTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregatePullUpConstantsRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExceptRewriteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExpandDistinctAggregatesRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterAggregateTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterJoinRule;
@@ -161,6 +165,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterProjectTransp
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSetOpTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSortTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInsertExchange4JoinRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveIntersectMergeRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveIntersectRewriteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinAddNotNullRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinCommuteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinProjectTransposeRule;
@@ -171,6 +177,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePointLookupOptimize
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePreFilteringRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectFilterPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectMergeRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectOverIntersectRemoveRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectSortTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceExpressionsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceExpressionsWithStatsRule;
@@ -196,6 +203,7 @@ import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionSpec;
+import org.apache.hadoop.hive.ql.parse.QBExpr.Opcode;
 import org.apache.hadoop.hive.ql.parse.QBSubQuery.SubQueryType;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.RangeBoundarySpec;
@@ -1185,6 +1193,25 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final int maxCNFNodeCount = conf.getIntVar(HiveConf.ConfVars.HIVE_CBO_CNF_NODES_LIMIT);
       final int minNumORClauses = conf.getIntVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZERMIN);
 
+      //0. SetOp rewrite
+      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+      basePlan = hepPlan(basePlan, true, mdProvider, null, HepMatchOrder.BOTTOM_UP,
+          HiveProjectOverIntersectRemoveRule.INSTANCE, HiveIntersectMergeRule.INSTANCE);
+      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
+          "Calcite: HiveProjectOverIntersectRemoveRule and HiveIntersectMerge rules");
+
+      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+      basePlan = hepPlan(basePlan, false, mdProvider, null, HepMatchOrder.BOTTOM_UP,
+          HiveIntersectRewriteRule.INSTANCE);
+      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
+          "Calcite: HiveIntersectRewrite rule");
+
+      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+      basePlan = hepPlan(basePlan, false, mdProvider, null, HepMatchOrder.BOTTOM_UP,
+          HiveExceptRewriteRule.INSTANCE);
+      perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
+          "Calcite: HiveExceptRewrite rule");
+
       //1. Distinct aggregate rewrite
       // Run this optimization early, since it is expanding the operator pipeline.
       if (!conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("mr") &&
@@ -1375,18 +1402,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     @SuppressWarnings("nls")
-    private RelNode genUnionLogicalPlan(String unionalias, String leftalias, RelNode leftRel,
+    private RelNode genSetOpLogicalPlan(Opcode opcode, String alias, String leftalias, RelNode leftRel,
         String rightalias, RelNode rightRel) throws SemanticException {
-      HiveUnion unionRel = null;
-
       // 1. Get Row Resolvers, Column map for original left and right input of
-      // Union Rel
+      // SetOp Rel
       RowResolver leftRR = this.relToHiveRR.get(leftRel);
       RowResolver rightRR = this.relToHiveRR.get(rightRel);
       HashMap<String, ColumnInfo> leftmap = leftRR.getFieldMap(leftalias);
       HashMap<String, ColumnInfo> rightmap = rightRR.getFieldMap(rightalias);
 
-      // 2. Validate that Union is feasible according to Hive (by using type
+      // 2. Validate that SetOp is feasible according to Hive (by using type
       // info from RR)
       if (leftmap.size() != rightmap.size()) {
         throw new SemanticException("Schema of both sides of union should match.");
@@ -1395,8 +1420,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       ASTNode tabref = getQB().getAliases().isEmpty() ? null : getQB().getParseInfo()
           .getSrcForAlias(getQB().getAliases().get(0));
 
-      // 3. construct Union Output RR using original left & right Input
-      RowResolver unionoutRR = new RowResolver();
+      // 3. construct SetOp Output RR using original left & right Input
+      RowResolver setOpOutRR = new RowResolver();
 
       Iterator<Map.Entry<String, ColumnInfo>> lIter = leftmap.entrySet().iterator();
       Iterator<Map.Entry<String, ColumnInfo>> rIter = rightmap.entrySet().iterator();
@@ -1412,18 +1437,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
             rInfo.getType());
         if (commonTypeInfo == null) {
           throw new SemanticException(generateErrorMessage(tabref,
-              "Schema of both sides of union should match: Column " + field
+              "Schema of both sides of setop should match: Column " + field
                   + " is of type " + lInfo.getType().getTypeName()
                   + " on first table and type " + rInfo.getType().getTypeName()
                   + " on second table"));
         }
-        ColumnInfo unionColInfo = new ColumnInfo(lInfo);
-        unionColInfo.setType(commonTypeInfo);
-        unionoutRR.put(unionalias, field, unionColInfo);
+        ColumnInfo setOpColInfo = new ColumnInfo(lInfo);
+        setOpColInfo.setType(commonTypeInfo);
+        setOpOutRR.put(alias, field, setOpColInfo);
       }
 
       // 4. Determine which columns requires cast on left/right input (Calcite
-      // requires exact types on both sides of union)
+      // requires exact types on both sides of SetOp)
       boolean leftNeedsTypeCast = false;
       boolean rightNeedsTypeCast = false;
       List<RexNode> leftProjs = new ArrayList<RexNode>();
@@ -1438,7 +1463,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         leftFieldDT = leftRowDT.get(i).getType();
         rightFieldDT = rightRowDT.get(i).getType();
         if (!leftFieldDT.equals(rightFieldDT)) {
-          unionFieldDT = TypeConverter.convert(unionoutRR.getColumnInfos().get(i).getType(),
+          unionFieldDT = TypeConverter.convert(setOpOutRR.getColumnInfos().get(i).getType(),
               cluster.getTypeFactory());
           if (!unionFieldDT.equals(leftFieldDT)) {
             leftNeedsTypeCast = true;
@@ -1461,28 +1486,49 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 5. Introduce Project Rel above original left/right inputs if cast is
       // needed for type parity
-      RelNode unionLeftInput = leftRel;
-      RelNode unionRightInput = rightRel;
+      RelNode setOpLeftInput = leftRel;
+      RelNode setOpRightInput = rightRel;
       if (leftNeedsTypeCast) {
-        unionLeftInput = HiveProject.create(leftRel, leftProjs, leftRel.getRowType()
+        setOpLeftInput = HiveProject.create(leftRel, leftProjs, leftRel.getRowType()
             .getFieldNames());
       }
       if (rightNeedsTypeCast) {
-        unionRightInput = HiveProject.create(rightRel, rightProjs, rightRel.getRowType()
+        setOpRightInput = HiveProject.create(rightRel, rightProjs, rightRel.getRowType()
             .getFieldNames());
       }
 
-      // 6. Construct Union Rel
+      // 6. Construct SetOp Rel
       Builder<RelNode> bldr = new ImmutableList.Builder<RelNode>();
-      bldr.add(unionLeftInput);
-      bldr.add(unionRightInput);
-      unionRel = new HiveUnion(cluster, TraitsUtil.getDefaultTraitSet(cluster), bldr.build());
-
-      relToHiveRR.put(unionRel, unionoutRR);
-      relToHiveColNameCalcitePosMap.put(unionRel,
-          this.buildHiveToCalciteColumnMap(unionoutRR, unionRel));
-
-      return unionRel;
+      bldr.add(setOpLeftInput);
+      bldr.add(setOpRightInput);
+      SetOp setOpRel = null;
+      switch (opcode) {
+      case UNION:
+        setOpRel = new HiveUnion(cluster, TraitsUtil.getDefaultTraitSet(cluster), bldr.build());
+        break;
+      case INTERSECT:
+        setOpRel = new HiveIntersect(cluster, TraitsUtil.getDefaultTraitSet(cluster), bldr.build(),
+            false);
+        break;
+      case INTERSECTALL:
+        setOpRel = new HiveIntersect(cluster, TraitsUtil.getDefaultTraitSet(cluster), bldr.build(),
+            true);
+        break;
+      case EXCEPT:
+        setOpRel = new HiveExcept(cluster, TraitsUtil.getDefaultTraitSet(cluster), bldr.build(),
+            false);
+        break;
+      case EXCEPTALL:
+        setOpRel = new HiveExcept(cluster, TraitsUtil.getDefaultTraitSet(cluster), bldr.build(),
+            true);
+        break;
+      default:
+        throw new SemanticException(ErrorMsg.UNSUPPORTED_SET_OPERATOR.getMsg(opcode.toString()));
+      }
+      relToHiveRR.put(setOpRel, setOpOutRR);
+      relToHiveColNameCalcitePosMap.put(setOpRel,
+          this.buildHiveToCalciteColumnMap(setOpOutRR, setOpRel));
+      return setOpRel;
     }
 
     private RelNode genJoinRelNode(RelNode leftRel, RelNode rightRel, JoinType hiveJoinType,
@@ -2077,9 +2123,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
      */
     private class AggInfo {
       private final List<ExprNodeDesc> m_aggParams;
-      private final TypeInfo           m_returnType;
-      private final String             m_udfName;
-      private final boolean            m_distinct;
+      private final TypeInfo m_returnType;
+      private final String m_udfName;
+      private final boolean m_distinct;
 
       private AggInfo(List<ExprNodeDesc> aggParams, TypeInfo returnType, String udfName,
           boolean isDistinct) {
@@ -3349,17 +3395,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode genLogicalPlan(QBExpr qbexpr) throws SemanticException {
-      if (qbexpr.getOpcode() == QBExpr.Opcode.NULLOP) {
+      switch (qbexpr.getOpcode()) {
+      case NULLOP:
         return genLogicalPlan(qbexpr.getQB(), false);
-      }
-      if (qbexpr.getOpcode() == QBExpr.Opcode.UNION) {
+      case UNION:
+      case INTERSECT:
+      case INTERSECTALL:
+      case EXCEPT:
+      case EXCEPTALL:
         RelNode qbexpr1Ops = genLogicalPlan(qbexpr.getQBExpr1());
         RelNode qbexpr2Ops = genLogicalPlan(qbexpr.getQBExpr2());
-
-        return genUnionLogicalPlan(qbexpr.getAlias(), qbexpr.getQBExpr1().getAlias(), qbexpr1Ops,
-            qbexpr.getQBExpr2().getAlias(), qbexpr2Ops);
+        return genSetOpLogicalPlan(qbexpr.getOpcode(), qbexpr.getAlias(), qbexpr.getQBExpr1()
+            .getAlias(), qbexpr1Ops, qbexpr.getQBExpr2().getAlias(), qbexpr2Ops);
+      default:
+        return null;
       }
-      return null;
     }
 
     private RelNode genLogicalPlan(QB qb, boolean outerMostQB) throws SemanticException {

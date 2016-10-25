@@ -180,7 +180,12 @@
                 <excludes>
                   <exclude>org.apache.commons:commons-compress</exclude>
                   <exclude>commons-configuration:commons-configuration</exclude>
-                  <exclude>org.apache.hadoop:*</exclude>
+                  <exclude>org.apache.hadoop:hadoop-yarn*</exclude>
+                  <exclude>org.apache.hadoop:hadoop-mapreduce*</exclude>
+                  <exclude>org.apache.hadoop:hadoop-hdfs</exclude>
+                  <exclude>org.apache.hadoop:hadoop-client</exclude>
+                  <exclude>org.apache.hadoop:hadoop-annotations</exclude>
+                  <exclude>org.apache.hadoop:hadoop-auth</exclude>
                   <exclude>org.apache.hive:hive-ant</exclude>
                   <exclude>org.apache.ant:*</exclude>
                   <exclude>junit:*</exclude>

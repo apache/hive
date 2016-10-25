@@ -34,6 +34,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
@@ -95,7 +97,66 @@ public class SessionManager extends CompositeService {
     createBackgroundOperationPool();
     addService(operationManager);
     initSessionImplClassName();
+    Metrics metrics = MetricsFactory.getInstance();
+    if(metrics != null){
+      registerOpenSesssionMetrics(metrics);
+      registerActiveSesssionMetrics(metrics);
+    }
     super.init(hiveConf);
+  }
+
+  private void registerOpenSesssionMetrics(Metrics metrics) {
+    MetricsVariable<Integer> openSessionCnt = new MetricsVariable<Integer>() {
+      @Override
+      public Integer getValue() {
+        return getSessions().size();
+      }
+    };
+    MetricsVariable<Integer> openSessionTime = new MetricsVariable<Integer>() {
+      @Override
+      public Integer getValue() {
+        long sum = 0;
+        long currentTime = System.currentTimeMillis();
+        for (HiveSession s : getSessions()) {
+          sum += currentTime - s.getCreationTime();
+        }
+        // in case of an overflow return -1
+        return (int) sum != sum ? -1 : (int) sum;
+      }
+    };
+    metrics.addGauge(MetricsConstant.HS2_OPEN_SESSIONS, openSessionCnt);
+    metrics.addRatio(MetricsConstant.HS2_AVG_OPEN_SESSION_TIME, openSessionTime, openSessionCnt);
+  }
+
+  private void registerActiveSesssionMetrics(Metrics metrics) {
+    MetricsVariable<Integer> activeSessionCnt = new MetricsVariable<Integer>() {
+      @Override
+      public Integer getValue() {
+        Iterable<HiveSession> filtered = Iterables.filter(getSessions(), new Predicate<HiveSession>() {
+          @Override
+          public boolean apply(HiveSession hiveSession) {
+            return hiveSession.getNoOperationTime() == 0L;
+          }
+        });
+        return Iterables.size(filtered);
+      }
+    };
+    MetricsVariable<Integer> activeSessionTime = new MetricsVariable<Integer>() {
+      @Override
+      public Integer getValue() {
+        long sum = 0;
+        long currentTime = System.currentTimeMillis();
+        for (HiveSession s : getSessions()) {
+          if (s.getNoOperationTime() == 0L) {
+            sum += currentTime - s.getLastAccessTime();
+          }
+        }
+        // in case of an overflow return -1
+        return (int) sum != sum ? -1 : (int) sum;
+      }
+    };
+    metrics.addGauge(MetricsConstant.HS2_ACTIVE_SESSIONS, activeSessionCnt);
+    metrics.addRatio(MetricsConstant.HS2_AVG_ACTIVE_SESSION_TIME, activeSessionTime, activeSessionCnt);
   }
 
   private void initSessionImplClassName() {
@@ -208,6 +269,11 @@ public class SessionManager extends CompositeService {
                 closeSession(handle);
               } catch (HiveSQLException e) {
                 LOG.warn("Exception is thrown closing session " + handle, e);
+              } finally {
+                Metrics metrics = MetricsFactory.getInstance();
+                if (metrics != null) {
+                  metrics.incrementCounter(MetricsConstant.HS2_ABANDONED_SESSIONS);
+                }
               }
             } else {
               session.closeExpiredOperations();

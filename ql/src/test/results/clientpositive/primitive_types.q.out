@@ -1,0 +1,37 @@
+PREHOOK: query: create table t (
+	dp double precision,
+	d double,
+	f float,
+	i int,
+	ii integer,
+	si smallint,
+	bi bigint
+	)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (
+	dp double precision,
+	d double,
+	f float,
+	i int,
+	ii integer,
+	si smallint,
+	bi bigint
+	)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: describe t
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: describe t
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t
+dp                  	double              	                    
+d                   	double              	                    
+f                   	float               	                    
+i                   	int                 	                    
+ii                  	int                 	                    
+si                  	smallint            	                    
+bi                  	bigint              	                    
