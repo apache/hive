@@ -35,7 +35,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
@@ -50,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -149,7 +147,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
@@ -213,10 +210,10 @@ import com.google.common.base.Preconditions;
  * Utilities.
  *
  */
-@SuppressWarnings("nls")
+@SuppressWarnings({ "nls", "deprecation" })
 public final class Utilities {
 
-  // TODO: remove when merging
+  // TODO# remove when merging; convert some statements to local loggers, remove others
   public static final Logger LOG14535 = LoggerFactory.getLogger("Log14535");
 
   /**
@@ -651,8 +648,8 @@ public final class Utilities {
     }
 
     @Override
-    protected void initialize(Class type, Object oldInstance, Object newInstance, Encoder out) {
-      Iterator ite = ((Collection) oldInstance).iterator();
+    protected void initialize(Class<?> type, Object oldInstance, Object newInstance, Encoder out) {
+      Iterator<?> ite = ((Collection<?>) oldInstance).iterator();
       while (ite.hasNext()) {
         out.writeStatement(new Statement(oldInstance, "add", new Object[] {ite.next()}));
       }
@@ -3798,10 +3795,6 @@ public final class Utilities {
 
   private static final String MANIFEST_EXTENSION = ".manifest";
 
-  private static Path getManifestDir(Path specPath, String unionSuffix) {
-    return (unionSuffix == null) ? specPath : new Path(specPath, unionSuffix);
-  }
-
   private static void tryDelete(FileSystem fs, Path path) {
     try {
       fs.delete(path, true);
@@ -3837,26 +3830,20 @@ public final class Utilities {
         tryDelete(fs, status.getPath());
       }
     }
-    files = HiveStatsUtils.getFileStatusRecurse(manifestDir, 1, fs, filter);
-    if (files != null) {
-      for (FileStatus status : files) {
-        Utilities.LOG14535.info("Deleting " + status.getPath() + " on failure");
-        tryDelete(fs, status.getPath());
-      }
-    }
+    Utilities.LOG14535.info("Deleting " + manifestDir + " on failure");
+    fs.delete(manifestDir, true);
   }
 
 
   public static void writeMmCommitManifest(List<Path> commitPaths, Path specPath, FileSystem fs,
       String taskId, Long mmWriteId, String unionSuffix) throws HiveException {
     if (commitPaths.isEmpty()) return;
-    Path manifestPath = getManifestDir(specPath, unionSuffix);
-    manifestPath = new Path(manifestPath, "_tmp." + ValidWriteIds.getMmFilePrefix(
-        mmWriteId) + "_" + taskId + MANIFEST_EXTENSION);
+    // We assume one FSOP per task (per specPath), so we create it in specPath.
+    Path manifestPath = getManifestDir(specPath, mmWriteId, unionSuffix);
+    manifestPath = new Path(manifestPath, taskId + MANIFEST_EXTENSION);
     Utilities.LOG14535.info("Writing manifest to " + manifestPath + " with " + commitPaths);
     try {
       // Don't overwrite the manifest... should fail if we have collisions.
-      // We assume one FSOP per task (per specPath), so we create it in specPath.
       try (FSDataOutputStream out = fs.create(manifestPath, false)) {
         if (out == null) {
           throw new HiveException("Failed to create manifest at " + manifestPath);
@@ -3869,6 +3856,11 @@ public final class Utilities {
     } catch (IOException e) {
       throw new HiveException(e);
     }
+  }
+
+  private static Path getManifestDir(Path specPath, long mmWriteId, String unionSuffix) {
+    Path manifestPath = new Path(specPath, "_tmp." + ValidWriteIds.getMmFilePrefix(mmWriteId));
+    return (unionSuffix == null) ? manifestPath : new Path(manifestPath, unionSuffix);
   }
 
   public static final class MissingBucketsContext {
@@ -3886,17 +3878,16 @@ public final class Utilities {
       boolean success, int dpLevels, int lbLevels, MissingBucketsContext mbc, long mmWriteId,
       Reporter reporter) throws IOException, HiveException {
     FileSystem fs = specPath.getFileSystem(hconf);
-    // Manifests would be at the root level, but the results at target level.
-    Path manifestDir = getManifestDir(specPath, unionSuffix);
-
-    ValidWriteIds.IdPathFilter filter = new ValidWriteIds.IdPathFilter(mmWriteId, true);
+    Path manifestDir = getManifestDir(specPath, mmWriteId, unionSuffix);
     if (!success) {
+      ValidWriteIds.IdPathFilter filter = new ValidWriteIds.IdPathFilter(mmWriteId, true);
       tryDeleteAllMmFiles(fs, specPath, manifestDir, dpLevels, lbLevels,
           unionSuffix, filter, mmWriteId);
       return;
     }
-    FileStatus[] files = HiveStatsUtils.getFileStatusRecurse(manifestDir, 1, fs, filter);
+
     Utilities.LOG14535.info("Looking for manifests in: " + manifestDir + " (" + mmWriteId + ")");
+    FileStatus[] files = fs.listStatus(manifestDir);
     List<Path> manifests = new ArrayList<>();
     if (files != null) {
       for (FileStatus status : files) {
@@ -3909,6 +3900,7 @@ public final class Utilities {
     }
 
     Utilities.LOG14535.info("Looking for files in: " + specPath);
+    ValidWriteIds.IdPathFilter filter = new ValidWriteIds.IdPathFilter(mmWriteId, true);
     files = getMmDirectoryCandidates(
         fs, specPath, dpLevels, lbLevels, filter, mmWriteId);
     ArrayList<FileStatus> mmDirectories = new ArrayList<>();
@@ -3940,25 +3932,24 @@ public final class Utilities {
       }
     }
 
+    Utilities.LOG14535.info("Deleting manifest directory " + manifestDir);
+    tryDelete(fs, manifestDir);
+    if (unionSuffix != null) {
+      // Also delete the parent directory if we are the last union FSOP to execute.
+      manifestDir = manifestDir.getParent();
+      FileStatus[] remainingFiles = fs.listStatus(manifestDir);
+      if (remainingFiles == null || remainingFiles.length == 0) {
+        Utilities.LOG14535.info("Deleting manifest directory " + manifestDir);
+        tryDelete(fs, manifestDir);
+      }
+    }
+
     for (FileStatus status : mmDirectories) {
       cleanMmDirectory(status.getPath(), fs, unionSuffix, committed);
     }
 
     if (!committed.isEmpty()) {
       throw new HiveException("The following files were committed but not found: " + committed);
-    }
-    for (Path mfp : manifests) {
-      Utilities.LOG14535.info("Deleting manifest " + mfp);
-      tryDelete(fs, mfp);
-    }
-    // Delete the manifest directory if we only created it for manifests; otherwise the
-    // dynamic partition loader will find it and try to load it as a partition... what a mess.
-    if (manifestDir != specPath) {
-      FileStatus[] remainingFiles = fs.listStatus(manifestDir);
-      if (remainingFiles == null || remainingFiles.length == 0) {
-        Utilities.LOG14535.info("Deleting directory " + manifestDir);
-        tryDelete(fs, manifestDir);
-      }
     }
 
     if (mmDirectories.isEmpty()) return;
@@ -3984,7 +3975,7 @@ public final class Utilities {
         if (committed.remove(childPath.toString())) continue; // A good file.
         deleteUncommitedFile(childPath, fs);
       } else if (!child.isDirectory()) {
-        if (childPath.getName().endsWith(MANIFEST_EXTENSION)) continue;
+        // TODO# needed? if (childPath.getName().endsWith(MANIFEST_EXTENSION)) continue;
         if (committed.contains(childPath.toString())) {
           throw new HiveException("Union FSOP has commited "
               + childPath + " outside of union directory" + unionSuffix);

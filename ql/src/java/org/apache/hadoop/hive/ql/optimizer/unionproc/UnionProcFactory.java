@@ -218,7 +218,6 @@ public final class UnionProcFactory {
         // each parent
         List<FileSinkDesc> fileDescLists = new ArrayList<FileSinkDesc>();
 
-        // TODO# special case #N - unions
         for (Operator<? extends OperatorDesc> parent : parents) {
           FileSinkDesc fileSinkDesc = (FileSinkDesc) fileSinkOp.getConf().clone();
           fileSinkDesc.setDirName(new Path(parentDirName, parent.getIdentifier()));

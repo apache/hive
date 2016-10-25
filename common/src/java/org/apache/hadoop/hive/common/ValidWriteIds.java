@@ -133,7 +133,7 @@ public class ValidWriteIds {
     @Override
     public boolean accept(Path path) {
       String name = path.getName();
-      return isMatch == (name.equals(mmDirName) || name.startsWith(tmpPrefix));
+      return isMatch == (name.equals(mmDirName) || name.equals(tmpPrefix));
     }
   }
 

@@ -288,7 +288,7 @@ public class MmCleanerThread extends Thread implements MetaStoreThread {
         LOG.warn(path + " does not exist; assuming that the cleanup is not needed.");
         return;
       }
-      // TODO# do we need to account for any subdirectories here? decide after special-case jiras
+      // TODO# this doesn't account for list bucketing. Do nothing now, ACID will solve all problems.
       files = fs.listStatus(path);
     } catch (Exception ex) {
       LOG.error("Failed to get files for " + path + "; cannot ensure cleanup for any writes");

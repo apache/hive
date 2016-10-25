@@ -65,7 +65,7 @@ public class GenTezProcContext implements NodeProcessorCtx{
 
   public final ParseContext parseContext;
   public final HiveConf conf;
-  public final List<Task<MoveWork>> moveTask; // TODO#
+  public final List<Task<MoveWork>> moveTask;
 
   // rootTasks is the entry point for all generated tasks
   public final List<Task<? extends Serializable>> rootTasks;
