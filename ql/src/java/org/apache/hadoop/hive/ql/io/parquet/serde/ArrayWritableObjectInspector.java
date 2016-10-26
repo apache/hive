@@ -48,29 +48,29 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
   private final List<StructField> fields;
   private final HashMap<String, StructFieldImpl> fieldsByName;
 
-  // Whether this OI is for the row-level schema (as opposed to nested struct fields).
+  // Whether this OI is for the column-level schema (as opposed to nested column fields).
   private final boolean isRoot;
 
   public ArrayWritableObjectInspector(final StructTypeInfo rowTypeInfo) {
     this(true, rowTypeInfo, null);
   }
 
-  public ArrayWritableObjectInspector(StructTypeInfo completeTypeInfo, StructTypeInfo prunedTypeInfo) {
-    this(true, completeTypeInfo, prunedTypeInfo);
+  public ArrayWritableObjectInspector(StructTypeInfo originalTypeInfo, StructTypeInfo prunedTypeInfo) {
+    this(true, originalTypeInfo, prunedTypeInfo);
   }
 
   public ArrayWritableObjectInspector(boolean isRoot,
-      StructTypeInfo completeTypeInfo, StructTypeInfo prunedTypeInfo) {
+      StructTypeInfo originalTypeInfo, StructTypeInfo prunedTypeInfo) {
     this.isRoot = isRoot;
-    typeInfo = completeTypeInfo;
-    fieldNames = completeTypeInfo.getAllStructFieldNames();
-    fieldInfos = completeTypeInfo.getAllStructFieldTypeInfos();
+    typeInfo = originalTypeInfo;
+    fieldNames = originalTypeInfo.getAllStructFieldNames();
+    fieldInfos = originalTypeInfo.getAllStructFieldTypeInfos();
     fields = new ArrayList<>(fieldNames.size());
     fieldsByName = new HashMap<>();
 
     for (int i = 0; i < fieldNames.size(); ++i) {
       final String name = fieldNames.get(i);
-      TypeInfo fieldInfo = fieldInfos.get(i);
+      final TypeInfo fieldInfo = fieldInfos.get(i);
 
       StructFieldImpl field;
       if (prunedTypeInfo != null && prunedTypeInfo.getAllStructFieldNames().indexOf(name) >= 0) {

@@ -180,17 +180,17 @@ public class ParquetHiveSerDe extends AbstractSerDe {
    * Given a complete struct type info and pruned paths containing selected fields
    * from the type info, return a pruned struct type info only with the selected fields.
    *
-   * For instance, if 'completeTypeInfo' is: s:struct<a:struct<b:int, c:boolean>, d:string>
+   * For instance, if 'originalTypeInfo' is: s:struct<a:struct<b:int, c:boolean>, d:string>
    *   and 'prunedPaths' is "s.a.b,s.d", then the result will be:
    *   s:struct<a:struct<b:int>, d:string>
    *
-   * @param completeTypeInfo the complete struct type info
+   * @param originalTypeInfo the complete struct type info
    * @param prunedPaths a string representing the pruned paths, separated by ','
    * @return the pruned struct type info
    */
   private StructTypeInfo pruneFromPaths(
-      StructTypeInfo completeTypeInfo, String prunedPaths) {
-    PrunedTypeInfo prunedTypeInfo = new PrunedTypeInfo(completeTypeInfo);
+      StructTypeInfo originalTypeInfo, String prunedPaths) {
+    PrunedStructTypeInfo prunedTypeInfo = new PrunedStructTypeInfo(originalTypeInfo);
 
     String[] prunedPathList = prunedPaths.split(",");
     for (String path : prunedPathList) {
@@ -200,9 +200,9 @@ public class ParquetHiveSerDe extends AbstractSerDe {
     return prunedTypeInfo.prune();
   }
 
-  private void pruneFromSinglePath(PrunedTypeInfo prunedInfo, String path) {
+  private void pruneFromSinglePath(PrunedStructTypeInfo prunedInfo, String path) {
     Preconditions.checkArgument(prunedInfo != null,
-        "PrunedTypeInfo for path " + path + " should not be null");
+      "PrunedStructTypeInfo for path " + path + " should not be null");
 
     int index = path.indexOf('.');
     if (index < 0) {
@@ -216,12 +216,12 @@ public class ParquetHiveSerDe extends AbstractSerDe {
     }
   }
 
-  private static class PrunedTypeInfo {
+  private static class PrunedStructTypeInfo {
     final StructTypeInfo typeInfo;
-    final Map<String, PrunedTypeInfo> children;
+    final Map<String, PrunedStructTypeInfo> children;
     final boolean[] selected;
 
-    PrunedTypeInfo(StructTypeInfo typeInfo) {
+    PrunedStructTypeInfo(StructTypeInfo typeInfo) {
       this.typeInfo = typeInfo;
       this.children = new HashMap<>();
       this.selected = new boolean[typeInfo.getAllStructFieldTypeInfos().size()];
@@ -229,7 +229,7 @@ public class ParquetHiveSerDe extends AbstractSerDe {
         TypeInfo ti = typeInfo.getAllStructFieldTypeInfos().get(i);
         if (ti.getCategory() == Category.STRUCT) {
           this.children.put(typeInfo.getAllStructFieldNames().get(i),
-              new PrunedTypeInfo((StructTypeInfo) ti));
+              new PrunedStructTypeInfo((StructTypeInfo) ti));
         }
       }
     }
