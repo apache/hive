@@ -1894,4 +1894,10 @@ public class MetaStoreUtils {
     String value = params.get(hive_metastoreConstants.TABLE_IS_MM);
     return value != null && value.equalsIgnoreCase("true");
   }
+
+  public static boolean isMmTable(Properties params) {
+    // TODO: perhaps it should be a 3rd value for 'transactional'?
+    String value = params.getProperty(hive_metastoreConstants.TABLE_IS_MM);
+    return value != null && value.equalsIgnoreCase("true");
+  }
 }

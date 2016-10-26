@@ -3961,6 +3961,7 @@ public final class Utilities {
     }
 
     Utilities.LOG14535.info("Looking for manifests in: " + manifestDir + " (" + mmWriteId + ")");
+    // TODO# may be wrong if there are no splits (empty insert/CTAS)
     FileStatus[] manifestFiles = fs.listStatus(manifestDir);
     List<Path> manifests = new ArrayList<>();
     if (manifestFiles != null) {
