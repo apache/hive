@@ -123,38 +123,42 @@ public class ClassNameCompleter extends StringsCompleter {
 
     for (Iterator i = urls.iterator(); i.hasNext(); ) {
       URL url = (URL) i.next();
-      File file = new File(url.getFile());
+      try {
+        File file = new File(url.getFile());
 
-      if (file.isDirectory()) {
-        Set files = getClassFiles(file.getAbsolutePath(), new HashSet(), file, new int[]{200});
-        classes.addAll(files);
+        if (file.isDirectory()) {
+          Set files = getClassFiles(file.getAbsolutePath(), new HashSet(), file, new int[] { 200 });
+          classes.addAll(files);
 
-        continue;
-      }
-
-      if ((file == null) || !file.isFile()) {
-        continue;
-      }
-
-      JarFile jf = new JarFile(file);
-
-      for (Enumeration e = jf.entries(); e.hasMoreElements(); ) {
-        JarEntry entry = (JarEntry) e.nextElement();
-
-        if (entry == null) {
           continue;
         }
 
-        String name = entry.getName();
-
-        if (isClazzFile(name)) {
-          /* only use class file*/
-          classes.add(name);
-        } else if (isJarFile(name)) {
-          classes.addAll(getClassNamesFromJar(name));
-        } else {
+        if (!isJarFile(file)) {
           continue;
         }
+
+        JarFile jf = new JarFile(file);
+
+        for (Enumeration e = jf.entries(); e.hasMoreElements();) {
+          JarEntry entry = (JarEntry) e.nextElement();
+
+          if (entry == null) {
+            continue;
+          }
+
+          String name = entry.getName();
+
+          if (isClazzFile(name)) {
+            /* only use class file */
+            classes.add(name);
+          } else if (isJarFile(name)) {
+            classes.addAll(getClassNamesFromJar(name));
+          } else {
+            continue;
+          }
+        }
+      } catch (IOException e) {
+        throw new IOException(String.format("Error reading classpath entry: %s", url), e);
       }
     }
 
@@ -234,6 +238,10 @@ public class ClassNameCompleter extends StringsCompleter {
     }
 
     return classNames;
+  }
+
+  private static boolean isJarFile(File file) {
+    return (file != null && file.isFile() && isJarFile(file.getName()));
   }
 
   private static boolean isJarFile(String fileName) {
