@@ -121,7 +121,7 @@ fi
 begin_upgrade_test="false"
 while read script
 do
-	if [ $begin_upgrade_test = "true" ] || echo upgrade-$name | grep "upgrade-$VERSION_BASE"; then
+	if [ $begin_upgrade_test = "true" ] || echo upgrade-$script | grep "upgrade-$VERSION_BASE"; then
 		begin_upgrade_test="true"
 		if ! execute_test $HMS_UPGRADE_DIR/$DB_SERVER/upgrade-$script.$DB_SERVER.sql; then
 			echo "Error: Cannot execute SQL file: $HMS_UPGRADE_DIR/$DB_SERVER/upgrade-$script.$DB_SERVER.sql"
