@@ -27,6 +27,8 @@ public class Constants {
   public static final String DRUID_HIVE_STORAGE_HANDLER_ID =
           "org.apache.hadoop.hive.druid.DruidStorageHandler";
   public static final String DRUID_DATA_SOURCE = "druid.datasource";
+  public static final String DRUID_SEGMENT_GRANULARITY = "druid.segmentGranularity";
+  public static final String DRUID_AGGREGATORS = "druid.aggregator";
   public static final String DRUID_QUERY_JSON = "druid.query.json";
   public static final String DRUID_QUERY_TYPE = "druid.query.type";
   public static final String DRUID_QUERY_FETCH = "druid.query.fetch";

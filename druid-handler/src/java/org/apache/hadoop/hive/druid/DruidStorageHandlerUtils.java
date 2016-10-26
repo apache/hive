@@ -22,6 +22,19 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.concurrent.ExecutionException;
 
+import com.google.common.collect.ImmutableList;
+import com.google.inject.Binder;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.Module;
+import io.druid.guice.GuiceInjectors;
+import io.druid.guice.JsonConfigProvider;
+import io.druid.guice.annotations.Self;
+import io.druid.initialization.Initialization;
+import io.druid.segment.IndexIO;
+import io.druid.segment.IndexMerger;
+import io.druid.segment.IndexMergerV9;
+import io.druid.server.DruidNode;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 
