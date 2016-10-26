@@ -114,13 +114,14 @@ public class ParquetHiveSerDe extends AbstractSerDe {
     // Create row related objects
     StructTypeInfo completeTypeInfo =
         (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
-    String prunedColumnPaths = conf.get(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR);
-    if (prunedColumnPaths != null) {
-      StructTypeInfo prunedTypeInfo = pruneFromPaths(completeTypeInfo, prunedColumnPaths);
-      this.objInspector = new ArrayWritableObjectInspector(completeTypeInfo, prunedTypeInfo);
-    } else {
-      this.objInspector = new ArrayWritableObjectInspector(completeTypeInfo);
+    StructTypeInfo prunedTypeInfo = null;
+    if (conf != null) {
+      String prunedColumnPaths = conf.get(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR);
+      if (prunedColumnPaths != null) {
+        prunedTypeInfo = pruneFromPaths(completeTypeInfo, prunedColumnPaths);
+      }
     }
+    this.objInspector = new ArrayWritableObjectInspector(completeTypeInfo, prunedTypeInfo);
 
     // Stats part
     serializedSize = 0;
