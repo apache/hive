@@ -144,8 +144,8 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
   }
 
   @Explain(displayName = "micromanaged table")
-  public boolean isMmTable() {
-    return mmWriteId != null;
+  public Boolean isMmTable() {
+    return mmWriteId != null? true : null;
   }
 
   public void setReplace(boolean replace) {
