@@ -62,7 +62,7 @@ public class DruidSelectQueryRecordReader
     if (results.hasNext()) {
       current = results.next();
       values = current.getValue().getEvents().iterator();
-      return true;
+      return nextKeyValue();
     }
     return false;
   }
