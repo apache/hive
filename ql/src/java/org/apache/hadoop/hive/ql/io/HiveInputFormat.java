@@ -364,19 +364,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       pushFilters(conf, tableScan);
     }
 
-    if (writeIds == null) {
-      FileInputFormat.setInputPaths(conf, dirs.toArray(new Path[dirs.size()]));
-    } else {
-      List<Path> finalPaths = new ArrayList<>(dirs.size());
-      for (Path dir : dirs) {
-        processForWriteIds(dir, conf, writeIds, finalPaths);
-      }
-      if (finalPaths.isEmpty()) {
-        LOG.warn("No valid inputs found in " + dirs);
-        return;
-      }
-      FileInputFormat.setInputPaths(conf, finalPaths.toArray(new Path[finalPaths.size()]));
+    Path[] finalDirs = processPathsForMmRead(dirs, conf, writeIds);
+    if (finalDirs == null) {
+      return; // No valid inputs.
     }
+    FileInputFormat.setInputPaths(conf, finalDirs);
     conf.setInputFormat(inputFormat.getClass());
 
     int headerCount = 0;
@@ -396,7 +388,24 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
   }
 
-  private void processForWriteIds(Path dir, JobConf conf,
+  public static Path[] processPathsForMmRead(List<Path> dirs, JobConf conf,
+      ValidWriteIds writeIds) throws IOException {
+    if (writeIds == null) {
+      return dirs.toArray(new Path[dirs.size()]);
+    } else {
+      List<Path> finalPaths = new ArrayList<>(dirs.size());
+      for (Path dir : dirs) {
+        processForWriteIds(dir, conf, writeIds, finalPaths);
+      }
+      if (finalPaths.isEmpty()) {
+        LOG.warn("No valid inputs found in " + dirs);
+        return null;
+      }
+      return finalPaths.toArray(new Path[finalPaths.size()]);
+    }
+  }
+
+  private static void processForWriteIds(Path dir, JobConf conf,
       ValidWriteIds writeIds, List<Path> finalPaths) throws IOException {
     FileSystem fs = dir.getFileSystem(conf);
     Utilities.LOG14535.warn("Checking " + dir + " (root) for inputs");
@@ -413,7 +422,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
   }
 
-  private void handleNonMmDirChild(FileStatus file, ValidWriteIds writeIds,
+  private static void handleNonMmDirChild(FileStatus file, ValidWriteIds writeIds,
       LinkedList<Path> subdirs, List<Path> finalPaths) {
     Path path = file.getPath();
     Utilities.LOG14535.warn("Checking " + path + " for inputs");
@@ -561,7 +570,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return result.toArray(new HiveInputSplit[result.size()]);
   }
 
-  private static ValidWriteIds extractWriteIds(Map<String, ValidWriteIds> writeIdMap,
+  public static ValidWriteIds extractWriteIds(Map<String, ValidWriteIds> writeIdMap,
       JobConf newjob, String tableName) {
     if (StringUtils.isBlank(tableName)) return null;
     ValidWriteIds writeIds = writeIdMap.get(tableName);

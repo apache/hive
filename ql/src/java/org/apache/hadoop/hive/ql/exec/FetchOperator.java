@@ -36,7 +36,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveContextAwareRecordReader;
@@ -76,6 +78,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 
 /**
  * FetchTask implementation.
@@ -125,6 +128,7 @@ public class FetchOperator implements Serializable {
 
   private transient StructObjectInspector outputOI;
   private transient Object[] row;
+  private transient Map<String, ValidWriteIds> writeIdMap;
 
   public FetchOperator(FetchWork work, JobConf job) throws HiveException {
     this(work, job, null, null);
@@ -369,6 +373,9 @@ public class FetchOperator implements Serializable {
       Class<? extends InputFormat> formatter = currDesc.getInputFileFormatClass();
       Utilities.copyTableJobPropertiesToConf(currDesc.getTableDesc(), job);
       InputFormat inputFormat = getInputFormatFromCache(formatter, job);
+      String inputs = processCurrPathForMmWriteIds(inputFormat);
+      if (inputs == null) return null;
+      job.set("mapred.input.dir", inputs);
 
       InputSplit[] splits = inputFormat.getSplits(job, 1);
       FetchInputFormatSplit[] inputSplits = new FetchInputFormatSplit[splits.length];
@@ -383,6 +390,30 @@ public class FetchOperator implements Serializable {
       }
     }
     return null;
+  }
+
+  private String processCurrPathForMmWriteIds(InputFormat inputFormat) throws IOException {
+    if (inputFormat instanceof HiveInputFormat) {
+      return StringUtils.escapeString(currPath.toString()); // No need to process here.
+    }
+    if (writeIdMap == null) {
+      writeIdMap = new HashMap<String, ValidWriteIds>();
+    }
+    // No need to check for MM table - if it is, the IDs should be in the job config.
+    ValidWriteIds ids = HiveInputFormat.extractWriteIds(writeIdMap, job, currDesc.getTableName());
+    if (ids != null) {
+      Utilities.LOG14535.info("Observing " + currDesc.getTableName() + ": " + ids);
+    }
+
+    Path[] dirs = HiveInputFormat.processPathsForMmRead(Lists.newArrayList(currPath), job, ids);
+    if (dirs == null || dirs.length == 0) {
+      return null; // No valid inputs. This condition is logged inside the call.
+    }
+    StringBuffer str = new StringBuffer(StringUtils.escapeString(dirs[0].toString()));
+    for(int i = 1; i < dirs.length;i++) {
+      str.append(",").append(StringUtils.escapeString(dirs[i].toString()));
+    }
+    return str.toString();
   }
 
   private FetchInputFormatSplit[] splitSampling(SplitSample splitSample,
