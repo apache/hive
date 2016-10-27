@@ -192,7 +192,7 @@ public class SamplePruner extends Transform {
 
     // check if input pruning is possible
     // TODO: this relies a lot on having one file per bucket. No support for MM tables for now.
-    boolean isMmTable = MetaStoreUtils.isMmTable(part.getTable().getParameters());
+    boolean isMmTable = MetaStoreUtils.isInsertOnlyTable(part.getTable().getParameters());
     if (sampleDescr.getInputPruning() && !isMmTable) {
       LOG.trace("numerator = " + num);
       LOG.trace("denominator = " + den);

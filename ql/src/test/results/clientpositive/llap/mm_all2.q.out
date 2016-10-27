@@ -49,13 +49,13 @@ POSTHOOK: query: drop table bucket0_mm
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table bucket0_mm(key int, id int)
 clustered by (key) into 2 buckets
-tblproperties('hivecommit'='true')
+tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket0_mm
 POSTHOOK: query: create table bucket0_mm(key int, id int)
 clustered by (key) into 2 buckets
-tblproperties('hivecommit'='true')
+tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket0_mm
@@ -189,13 +189,13 @@ POSTHOOK: query: drop table bucket1_mm
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table bucket1_mm(key int, id int) partitioned by (key2 int)
 clustered by (key) sorted by (key) into 2 buckets
-tblproperties('hivecommit'='true')
+tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket1_mm
 POSTHOOK: query: create table bucket1_mm(key int, id int) partitioned by (key2 int)
 clustered by (key) sorted by (key) into 2 buckets
-tblproperties('hivecommit'='true')
+tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket1_mm
@@ -379,13 +379,13 @@ POSTHOOK: query: drop table bucket2_mm
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table bucket2_mm(key int, id int)
 clustered by (key) into 10 buckets
-tblproperties('hivecommit'='true')
+tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket2_mm
 POSTHOOK: query: create table bucket2_mm(key int, id int)
 clustered by (key) into 10 buckets
-tblproperties('hivecommit'='true')
+tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket2_mm

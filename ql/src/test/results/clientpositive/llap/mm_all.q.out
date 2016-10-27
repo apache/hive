@@ -43,11 +43,11 @@ PREHOOK: query: drop table part_mm
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table part_mm
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table part_mm(key int) partitioned by (key_mm int) stored as orc tblproperties ('hivecommit'='true')
+PREHOOK: query: create table part_mm(key int) partitioned by (key_mm int) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_mm
-POSTHOOK: query: create table part_mm(key int) partitioned by (key_mm int) stored as orc tblproperties ('hivecommit'='true')
+POSTHOOK: query: create table part_mm(key int) partitioned by (key_mm int) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_mm
@@ -236,11 +236,11 @@ PREHOOK: query: drop table simple_mm
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table simple_mm
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table simple_mm(key int) stored as orc tblproperties ('hivecommit'='true')
+PREHOOK: query: create table simple_mm(key int) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@simple_mm
-POSTHOOK: query: create table simple_mm(key int) stored as orc tblproperties ('hivecommit'='true')
+POSTHOOK: query: create table simple_mm(key int) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@simple_mm
@@ -352,12 +352,12 @@ POSTHOOK: query: -- simple DP (no bucketing)
 drop table dp_mm
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table dp_mm (key int) partitioned by (key1 string, key2 int) stored as orc
-  tblproperties ('hivecommit'='true')
+  tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dp_mm
 POSTHOOK: query: create table dp_mm (key int) partitioned by (key1 string, key2 int) stored as orc
-  tblproperties ('hivecommit'='true')
+  tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dp_mm
@@ -422,13 +422,13 @@ POSTHOOK: Input: default@dp_mm
 POSTHOOK: Output: default@dp_mm
 PREHOOK: query: -- union
 
-create table union_mm(id int)  tblproperties ('hivecommit'='true')
+create table union_mm(id int)  tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@union_mm
 POSTHOOK: query: -- union
 
-create table union_mm(id int)  tblproperties ('hivecommit'='true')
+create table union_mm(id int)  tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_mm
@@ -648,11 +648,11 @@ POSTHOOK: query: drop table union_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@union_mm
 POSTHOOK: Output: default@union_mm
-PREHOOK: query: create table partunion_mm(id int) partitioned by (key int) tblproperties ('hivecommit'='true')
+PREHOOK: query: create table partunion_mm(id int) partitioned by (key int) tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@partunion_mm
-POSTHOOK: query: create table partunion_mm(id int) partitioned by (key int) tblproperties ('hivecommit'='true')
+POSTHOOK: query: create table partunion_mm(id int) partitioned by (key int) tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partunion_mm
@@ -750,12 +750,12 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partunion_mm
 POSTHOOK: Output: default@partunion_mm
 PREHOOK: query: create table skew_mm(k1 int, k2 int, k4 int) skewed by (k1, k4) on ((0,0),(1,1),(2,2),(3,3))
- stored as directories tblproperties ('hivecommit'='true')
+ stored as directories tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@skew_mm
 POSTHOOK: query: create table skew_mm(k1 int, k2 int, k4 int) skewed by (k1, k4) on ((0,0),(1,1),(2,2),(3,3))
- stored as directories tblproperties ('hivecommit'='true')
+ stored as directories tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@skew_mm
@@ -801,12 +801,12 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@skew_mm
 POSTHOOK: Output: default@skew_mm
 PREHOOK: query: create table skew_dp_union_mm(k1 int, k2 int, k4 int) partitioned by (k3 int) 
-skewed by (k1, k4) on ((0,0),(1,1),(2,2),(3,3)) stored as directories tblproperties ('hivecommit'='true')
+skewed by (k1, k4) on ((0,0),(1,1),(2,2),(3,3)) stored as directories tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@skew_dp_union_mm
 POSTHOOK: query: create table skew_dp_union_mm(k1 int, k2 int, k4 int) partitioned by (k3 int) 
-skewed by (k1, k4) on ((0,0),(1,1),(2,2),(3,3)) stored as directories tblproperties ('hivecommit'='true')
+skewed by (k1, k4) on ((0,0),(1,1),(2,2),(3,3)) stored as directories tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@skew_dp_union_mm
@@ -929,11 +929,11 @@ POSTHOOK: query: drop table skew_dp_union_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@skew_dp_union_mm
 POSTHOOK: Output: default@skew_dp_union_mm
-PREHOOK: query: create table merge0_mm (id int) stored as orc tblproperties('hivecommit'='true')
+PREHOOK: query: create table merge0_mm (id int) stored as orc tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@merge0_mm
-POSTHOOK: query: create table merge0_mm (id int) stored as orc tblproperties('hivecommit'='true')
+POSTHOOK: query: create table merge0_mm (id int) stored as orc tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@merge0_mm
@@ -1009,11 +1009,11 @@ POSTHOOK: query: drop table merge0_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@merge0_mm
 POSTHOOK: Output: default@merge0_mm
-PREHOOK: query: create table merge2_mm (id int) tblproperties('hivecommit'='true')
+PREHOOK: query: create table merge2_mm (id int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@merge2_mm
-POSTHOOK: query: create table merge2_mm (id int) tblproperties('hivecommit'='true')
+POSTHOOK: query: create table merge2_mm (id int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@merge2_mm
@@ -1089,11 +1089,11 @@ POSTHOOK: query: drop table merge2_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@merge2_mm
 POSTHOOK: Output: default@merge2_mm
-PREHOOK: query: create table merge1_mm (id int) partitioned by (key int) stored as orc tblproperties('hivecommit'='true')
+PREHOOK: query: create table merge1_mm (id int) partitioned by (key int) stored as orc tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@merge1_mm
-POSTHOOK: query: create table merge1_mm (id int) partitioned by (key int) stored as orc tblproperties('hivecommit'='true')
+POSTHOOK: query: create table merge1_mm (id int) partitioned by (key int) stored as orc tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@merge1_mm
@@ -1223,7 +1223,7 @@ POSTHOOK: query: -- TODO: need to include merge+union+DP, but it's broken for no
 
 drop table ctas0_mm
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table ctas0_mm tblproperties ('hivecommit'='true') as select * from intermediate
+PREHOOK: query: create table ctas0_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as select * from intermediate
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
@@ -1231,7 +1231,7 @@ PREHOOK: Input: default@intermediate@p=456
 PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ctas0_mm
-POSTHOOK: query: create table ctas0_mm tblproperties ('hivecommit'='true') as select * from intermediate
+POSTHOOK: query: create table ctas0_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as select * from intermediate
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
@@ -1267,7 +1267,7 @@ PREHOOK: query: drop table ctas1_mm
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table ctas1_mm
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table ctas1_mm tblproperties ('hivecommit'='true') as
+PREHOOK: query: create table ctas1_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as
   select * from intermediate union all select * from intermediate
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@intermediate
@@ -1276,7 +1276,7 @@ PREHOOK: Input: default@intermediate@p=456
 PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ctas1_mm
-POSTHOOK: query: create table ctas1_mm tblproperties ('hivecommit'='true') as
+POSTHOOK: query: create table ctas1_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as
   select * from intermediate union all select * from intermediate
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@intermediate
@@ -1319,11 +1319,11 @@ PREHOOK: query: drop table iow0_mm
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table iow0_mm
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table iow0_mm(key int) tblproperties('hivecommit'='true')
+PREHOOK: query: create table iow0_mm(key int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@iow0_mm
-POSTHOOK: query: create table iow0_mm(key int) tblproperties('hivecommit'='true')
+POSTHOOK: query: create table iow0_mm(key int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@iow0_mm
@@ -1418,11 +1418,11 @@ PREHOOK: query: drop table iow1_mm
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table iow1_mm
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table iow1_mm(key int) partitioned by (key2 int)  tblproperties('hivecommit'='true')
+PREHOOK: query: create table iow1_mm(key int) partitioned by (key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@iow1_mm
-POSTHOOK: query: create table iow1_mm(key int) partitioned by (key2 int)  tblproperties('hivecommit'='true')
+POSTHOOK: query: create table iow1_mm(key int) partitioned by (key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@iow1_mm
@@ -1690,11 +1690,11 @@ PREHOOK: query: drop table load0_mm
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table load0_mm
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table load0_mm (key string, value string) stored as textfile tblproperties('hivecommit'='true')
+PREHOOK: query: create table load0_mm (key string, value string) stored as textfile tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@load0_mm
-POSTHOOK: query: create table load0_mm (key string, value string) stored as textfile tblproperties('hivecommit'='true')
+POSTHOOK: query: create table load0_mm (key string, value string) stored as textfile tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@load0_mm
@@ -1801,11 +1801,11 @@ PREHOOK: query: drop table load1_mm
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table load1_mm
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table load1_mm (key string, value string) stored as textfile tblproperties('hivecommit'='true')
+PREHOOK: query: create table load1_mm (key string, value string) stored as textfile tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@load1_mm
-POSTHOOK: query: create table load1_mm (key string, value string) stored as textfile tblproperties('hivecommit'='true')
+POSTHOOK: query: create table load1_mm (key string, value string) stored as textfile tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@load1_mm
@@ -1913,12 +1913,12 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table load2_mm
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table load2_mm (key string, value string)
-  partitioned by (k int, l int) stored as textfile tblproperties('hivecommit'='true')
+  partitioned by (k int, l int) stored as textfile tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@load2_mm
 POSTHOOK: query: create table load2_mm (key string, value string)
-  partitioned by (k int, l int) stored as textfile tblproperties('hivecommit'='true')
+  partitioned by (k int, l int) stored as textfile tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@load2_mm
@@ -2018,11 +2018,11 @@ POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@intermediate_nonpart
 POSTHOOK: Lineage: intermediate_nonpart.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: intermediate_nonpart.p SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
-PREHOOK: query: create table intermmediate_nonpart(key int, p int) tblproperties('hivecommit'='true')
+PREHOOK: query: create table intermmediate_nonpart(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@intermmediate_nonpart
-POSTHOOK: query: create table intermmediate_nonpart(key int, p int) tblproperties('hivecommit'='true')
+POSTHOOK: query: create table intermmediate_nonpart(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@intermmediate_nonpart
@@ -2042,11 +2042,11 @@ POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@intermmediate_nonpart
 POSTHOOK: Lineage: intermmediate_nonpart.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: intermmediate_nonpart.p SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
-PREHOOK: query: create table intermmediate(key int) partitioned by (p int) tblproperties('hivecommit'='true')
+PREHOOK: query: create table intermmediate(key int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@intermmediate
-POSTHOOK: query: create table intermmediate(key int) partitioned by (p int) tblproperties('hivecommit'='true')
+POSTHOOK: query: create table intermmediate(key int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@intermmediate
@@ -2137,11 +2137,11 @@ POSTHOOK: query: -- non-MM export to MM table, with and without partitions
 
 drop table import0_mm
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table import0_mm(key int, p int) tblproperties('hivecommit'='true')
+PREHOOK: query: create table import0_mm(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@import0_mm
-POSTHOOK: query: create table import0_mm(key int, p int) tblproperties('hivecommit'='true')
+POSTHOOK: query: create table import0_mm(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import0_mm
@@ -2180,12 +2180,12 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table import1_mm
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table import1_mm(key int) partitioned by (p int)
-  stored as orc tblproperties('hivecommit'='true')
+  stored as orc tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@import1_mm
 POSTHOOK: query: create table import1_mm(key int) partitioned by (p int)
-  stored as orc tblproperties('hivecommit'='true')
+  stored as orc tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import1_mm
@@ -2340,11 +2340,11 @@ POSTHOOK: query: -- MM export into existing MM table, non-part and partial part
 
 drop table import4_mm
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table import4_mm(key int, p int) tblproperties('hivecommit'='true')
+PREHOOK: query: create table import4_mm(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@import4_mm
-POSTHOOK: query: create table import4_mm(key int, p int) tblproperties('hivecommit'='true')
+POSTHOOK: query: create table import4_mm(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import4_mm
@@ -2382,11 +2382,11 @@ PREHOOK: query: drop table import5_mm
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table import5_mm
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table import5_mm(key int) partitioned by (p int) tblproperties('hivecommit'='true')
+PREHOOK: query: create table import5_mm(key int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@import5_mm
-POSTHOOK: query: create table import5_mm(key int) partitioned by (p int) tblproperties('hivecommit'='true')
+POSTHOOK: query: create table import5_mm(key int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import5_mm
@@ -2524,19 +2524,19 @@ PREHOOK: query: drop table multi0_2_mm
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table multi0_2_mm
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table multi0_1_mm (key int, key2 int)  tblproperties('hivecommit'='true')
+PREHOOK: query: create table multi0_1_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@multi0_1_mm
-POSTHOOK: query: create table multi0_1_mm (key int, key2 int)  tblproperties('hivecommit'='true')
+POSTHOOK: query: create table multi0_1_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multi0_1_mm
-PREHOOK: query: create table multi0_2_mm (key int, key2 int)  tblproperties('hivecommit'='true')
+PREHOOK: query: create table multi0_2_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@multi0_2_mm
-POSTHOOK: query: create table multi0_2_mm (key int, key2 int)  tblproperties('hivecommit'='true')
+POSTHOOK: query: create table multi0_2_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multi0_2_mm
@@ -2670,11 +2670,11 @@ PREHOOK: query: drop table multi1_mm
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table multi1_mm
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table multi1_mm (key int, key2 int) partitioned by (p int) tblproperties('hivecommit'='true')
+PREHOOK: query: create table multi1_mm (key int, key2 int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@multi1_mm
-POSTHOOK: query: create table multi1_mm (key int, key2 int) partitioned by (p int) tblproperties('hivecommit'='true')
+POSTHOOK: query: create table multi1_mm (key int, key2 int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multi1_mm

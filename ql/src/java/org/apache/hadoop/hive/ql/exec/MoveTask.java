@@ -316,7 +316,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
         checkFileFormats(db, tbd, table);
 
-        boolean isAcid = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID;
+        boolean isAcid = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
+            work.getLoadTableWork().getWriteType() != AcidUtils.Operation.INSERT_ONLY;
         if (tbd.isMmTable() && isAcid) {
            throw new HiveException("ACID and MM are not supported");
         }
@@ -442,7 +443,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         tbd.getReplace(),
         dpCtx.getNumDPCols(),
         (tbd.getLbCtx() == null) ? 0 : tbd.getLbCtx().calculateListBucketingLevel(),
-        work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
+        work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
+            work.getLoadTableWork().getWriteType() != AcidUtils.Operation.INSERT_ONLY,
         SessionState.get().getTxnMgr().getCurrentTxnId(), hasFollowingStatsTask(),
         work.getLoadTableWork().getWriteType(),
         tbd.getMmWriteId());

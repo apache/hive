@@ -964,7 +964,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(ErrorMsg.TRUNCATE_COLUMN_INDEXED_TABLE.getMsg());
         }
         // It would be possible to support this, but this is such a pointless command.
-        if (MetaStoreUtils.isMmTable(table.getParameters())) {
+        if (MetaStoreUtils.isInsertOnlyTable(table.getParameters())) {
           throw new SemanticException("Truncating MM table columns not presently supported");
         }
 
@@ -1590,7 +1590,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     try {
       tblObj = getTable(tableName);
       // TODO: we should probably block all ACID tables here.
-      if (MetaStoreUtils.isMmTable(tblObj.getParameters())) {
+      if (MetaStoreUtils.isInsertOnlyTable(tblObj.getParameters())) {
         throw new SemanticException("Merge is not supported for MM tables");
       }
 

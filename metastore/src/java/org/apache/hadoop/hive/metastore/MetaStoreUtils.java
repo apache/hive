@@ -1885,19 +1885,19 @@ public class MetaStoreUtils {
     csNew.setStatsObj(list);
   }
 
-  public static boolean isMmTable(Table table) {
-    return isMmTable(table.getParameters());
+  // TODO The following two utility methods can be moved to AcidUtils once no class in metastore is relying on them,
+  // right now ObjectStore.getAllMmTablesForCleanup is calling these method
+  /**
+   * Checks if a table is an ACID table that only supports INSERT, but not UPDATE/DELETE
+   * @param params table properties
+   * @return true if table is an INSERT_ONLY table, false otherwise
+   */
+  public static boolean isInsertOnlyTable(Map<String, String> params) {
+    String transactionalProp = params.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    return transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp);
   }
-
-  public static boolean isMmTable(Map<String, String> params) {
-    // TODO: perhaps it should be a 3rd value for 'transactional'?
-    String value = params.get(hive_metastoreConstants.TABLE_IS_MM);
-    return value != null && value.equalsIgnoreCase("true");
-  }
-
-  public static boolean isMmTable(Properties params) {
-    // TODO: perhaps it should be a 3rd value for 'transactional'?
-    String value = params.getProperty(hive_metastoreConstants.TABLE_IS_MM);
-    return value != null && value.equalsIgnoreCase("true");
+  public static boolean isInsertOnlyTable(Properties params) {
+    String transactionalProp = params.getProperty(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    return transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp);
   }
 }

@@ -6575,7 +6575,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean isNonNativeTable = dest_tab.isNonNative();
-      isMmTable = MetaStoreUtils.isMmTable(dest_tab.getParameters());
+      isMmTable = MetaStoreUtils.isInsertOnlyTable(dest_tab.getParameters());
       if (isNonNativeTable || isMmTable) {
         queryTmpdir = dest_path;
       } else {
@@ -6647,7 +6647,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       dest_path = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
           .getAuthority(), partPath.toUri().getPath());
 
-      isMmTable = MetaStoreUtils.isMmTable(dest_tab.getParameters());
+      isMmTable = MetaStoreUtils.isInsertOnlyTable(dest_tab.getParameters());
       queryTmpdir = isMmTable ? dest_path : ctx.getTempDirForPath(dest_path);
       Utilities.LOG14535.info("create filesink w/DEST_PARTITION specifying " + queryTmpdir + " from " + dest_path);
       table_desc = Utilities.getTableDesc(dest_tab);
@@ -6702,7 +6702,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         field_schemas = new ArrayList<FieldSchema>();
         destTableIsTemporary = tblDesc.isTemporary();
         destTableIsMaterialization = tblDesc.isMaterialization();
-        if (MetaStoreUtils.isMmTable(tblDesc.getTblProps())) {
+        if (MetaStoreUtils.isInsertOnlyTable(tblDesc.getTblProps())) {
           isMmTable = isMmCtas = true;
           // TODO# this should really get current ACID txn; assuming ACID works correctly the txn
           //       should have been opened to create the ACID table. For now use the first ID.
@@ -6961,7 +6961,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     fileSinkDesc.setHiveServerQuery(SessionState.get().isHiveServerQuery());
     // If this is an insert, update, or delete on an ACID table then mark that so the
     // FileSinkOperator knows how to properly write to it.
-    if (destTableIsAcid && !AcidUtils.isInsertOnlyTable(dest_part.getTable())) {
+    if (destTableIsAcid && dest_part != null && dest_part.getTable() != null &&
+        !MetaStoreUtils.isInsertOnlyTable(dest_part.getTable().getParameters())) {
       AcidUtils.Operation wt = updating() ? AcidUtils.Operation.UPDATE :
           (deleting() ? AcidUtils.Operation.DELETE : AcidUtils.Operation.INSERT);
       fileSinkDesc.setWriteType(wt);
@@ -7159,7 +7160,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void checkAcidConstraints(QB qb, TableDesc tableDesc,
                                     Table table, AcidUtils.Operation acidOp) throws SemanticException {
     String tableName = tableDesc.getTableName();
-    if (!qb.getParseInfo().isInsertIntoTable(tableName)) {
+    if (!qb.getParseInfo().isInsertIntoTable(tableName) && !Operation.INSERT_ONLY.equals(acidOp)) {
       LOG.debug("Couldn't find table " + tableName + " in insertIntoTable");
       throw new SemanticException(ErrorMsg.NO_INSERT_OVERWRITE_WITH_ACID.getMsg());
     }
@@ -13139,7 +13140,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private AcidUtils.Operation getAcidType(Table table, Class<? extends OutputFormat> of) {
     if (SessionState.get() == null || !SessionState.get().getTxnMgr().supportsAcid()) {
       return AcidUtils.Operation.NOT_ACID;
-    } else if (AcidUtils.isInsertOnlyTable(table)) {
+    } else if (MetaStoreUtils.isInsertOnlyTable(table.getParameters())) {
       return AcidUtils.Operation.INSERT_ONLY;
     } else if (isAcidOutputFormat(of)) {
       return getAcidType();

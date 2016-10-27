@@ -1603,7 +1603,7 @@ public class Driver implements CommandProcessor {
       default: return null;
     }
     return (t != null && !t.isTemporary()
-        && MetaStoreUtils.isMmTable(t.getParameters())) ? t : null;
+        && MetaStoreUtils.isInsertOnlyTable(t.getParameters())) ? t : null;
   }
 
   private CommandProcessorResponse rollback(CommandProcessorResponse cpr) {

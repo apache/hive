@@ -1506,7 +1506,7 @@ public class Hive {
           throws HiveException {
     Table tbl = getTable(tableName);
     boolean isMmTableWrite = (mmWriteId != null);
-    Preconditions.checkState(isMmTableWrite == MetaStoreUtils.isMmTable(tbl.getParameters()));
+    Preconditions.checkState(isMmTableWrite == MetaStoreUtils.isInsertOnlyTable(tbl.getParameters()));
     loadPartition(loadPath, tbl, partSpec, replace, inheritTableSpecs,
         isSkewedStoreAsSubdir, isSrcLocal, isAcid, hasFollowingStatsTask, mmWriteId);
     if (isMmTableWrite && isCommitMmWrite) {

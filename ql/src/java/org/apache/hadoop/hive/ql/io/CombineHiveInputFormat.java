@@ -107,7 +107,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
             getInputFormatFromCache(inputFormatClass, conf);
         boolean isAvoidSplitCombine = inputFormat instanceof AvoidSplitCombination &&
             ((AvoidSplitCombination) inputFormat).shouldSkipCombine(paths[i + start], conf);
-        boolean isMmTable = MetaStoreUtils.isMmTable(part.getTableDesc().getProperties());
+        boolean isMmTable = MetaStoreUtils.isInsertOnlyTable(part.getTableDesc().getProperties());
         if (isAvoidSplitCombine || isMmTable) {
           if (LOG.isDebugEnabled()) {
             LOG.debug("The path [" + paths[i + start] +

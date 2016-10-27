@@ -163,7 +163,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       // Create table associated with the import
       // Executed if relevant, and used to contain all the other details about the table if not.
       CreateTableDesc tblDesc = getBaseCreateTableDescFromTable(dbname, rv.getTable());
-      boolean isSourceMm = MetaStoreUtils.isMmTable(tblDesc.getTblProps());
+      boolean isSourceMm = MetaStoreUtils.isInsertOnlyTable(tblDesc.getTblProps());
 
       if (isExternalSet) {
         if (isSourceMm) {
@@ -233,7 +233,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       Long mmWriteId = null;
-      if (table != null && MetaStoreUtils.isMmTable(table.getParameters())) {
+      if (table != null && MetaStoreUtils.isInsertOnlyTable(table.getParameters())) {
         mmWriteId = db.getNextTableWriteId(table.getDbName(), table.getTableName());
       } else if (table == null && isSourceMm) {
         // We could import everything as is - directories and IDs, but that won't work with ACID

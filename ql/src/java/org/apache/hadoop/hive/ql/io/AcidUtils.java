@@ -1109,17 +1109,6 @@ public class AcidUtils {
   }
 
   /**
-   * Checks if a table is an ACID table that only supports INSERT, but not UPDATE/DELETE
-   * @param table table
-   * @return true if table is an INSERT_ONLY table, false otherwise
-   */
-  public static boolean isInsertOnlyTable(Table table) {
-    String transactionalProp = table.getProperty(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-    return transactionalProp != null &&
-        AcidUtils.AcidOperationalProperties.INSERT_ONLY_STRING.equals(transactionalProp);
-  }
-
-  /**
    * Sets the acidOperationalProperties in the configuration object argument.
    * @param conf Mutable configuration object
    * @param properties An acidOperationalProperties object to initialize from.

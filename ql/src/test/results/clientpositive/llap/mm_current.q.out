@@ -36,19 +36,19 @@ PREHOOK: query: drop table multi0_2_mm
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table multi0_2_mm
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table multi0_1_mm (key int, key2 int)  tblproperties('hivecommit'='false')
+PREHOOK: query: create table multi0_1_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@multi0_1_mm
-POSTHOOK: query: create table multi0_1_mm (key int, key2 int)  tblproperties('hivecommit'='false')
+POSTHOOK: query: create table multi0_1_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multi0_1_mm
-PREHOOK: query: create table multi0_2_mm (key int, key2 int)  tblproperties('hivecommit'='false')
+PREHOOK: query: create table multi0_2_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@multi0_2_mm
-POSTHOOK: query: create table multi0_2_mm (key int, key2 int)  tblproperties('hivecommit'='false')
+POSTHOOK: query: create table multi0_2_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multi0_2_mm
@@ -168,11 +168,11 @@ PREHOOK: query: drop table multi1_mm
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table multi1_mm
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table multi1_mm (key int, key2 int) partitioned by (p int) tblproperties('hivecommit'='false')
+PREHOOK: query: create table multi1_mm (key int, key2 int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@multi1_mm
-POSTHOOK: query: create table multi1_mm (key int, key2 int) partitioned by (p int) tblproperties('hivecommit'='false')
+POSTHOOK: query: create table multi1_mm (key int, key2 int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multi1_mm

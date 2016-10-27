@@ -1,8 +1,8 @@
-PREHOOK: query: create table concat_mm (id int) stored as orc tblproperties('hivecommit'='true')
+PREHOOK: query: create table concat_mm (id int) stored as orc tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@concat_mm
-POSTHOOK: query: create table concat_mm (id int) stored as orc tblproperties('hivecommit'='true')
+POSTHOOK: query: create table concat_mm (id int) stored as orc tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@concat_mm

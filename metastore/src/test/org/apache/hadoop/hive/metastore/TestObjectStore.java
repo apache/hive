@@ -216,7 +216,8 @@ public class TestObjectStore {
     StorageDescriptor sd = createFakeSd("mock:/foo");
     HashMap<String,String> params = new HashMap<String,String>();
     params.put("EXTERNAL", "false");
-    params.put(hive_metastoreConstants.TABLE_IS_MM, "true");
+    params.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
+    params.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES, "insert_only");
     Table tbl = new Table(TABLE1, DB1, "owner", 1, 2, 3, sd,
         null, params, null, null, "MANAGED_TABLE");
     objectStore.createTable(tbl);

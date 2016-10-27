@@ -5,6 +5,8 @@ set hive.fetch.task.conversion=none;
 set tez.grouping.min-size=1;
 set tez.grouping.max-size=2;
 set hive.tez.auto.reducer.parallelism=false;
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 drop table intermediate;
 create table intermediate(key int) partitioned by (p int) stored as orc;
@@ -14,8 +16,8 @@ insert into table intermediate partition(p='456') select distinct key from src w
 
 drop table multi0_1_mm;
 drop table multi0_2_mm;
-create table multi0_1_mm (key int, key2 int)  tblproperties('hivecommit'='true');
-create table multi0_2_mm (key int, key2 int)  tblproperties('hivecommit'='true');
+create table multi0_1_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only");
+create table multi0_2_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only");
 
 from intermediate
 insert overwrite table multi0_1_mm select key, p
@@ -43,7 +45,7 @@ drop table multi0_2_mm;
 
 
 drop table multi1_mm;
-create table multi1_mm (key int, key2 int) partitioned by (p int) tblproperties('hivecommit'='true');
+create table multi1_mm (key int, key2 int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only");
 from intermediate
 insert into table multi1_mm partition(p=1) select p, key
 insert into table multi1_mm partition(p=2) select key, p;

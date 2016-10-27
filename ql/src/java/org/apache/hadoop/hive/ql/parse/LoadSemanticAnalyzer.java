@@ -263,7 +263,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Long mmWriteId = null;
     Table tbl = ts.tableHandle;
-    if (MetaStoreUtils.isMmTable(tbl.getParameters())) {
+    if (MetaStoreUtils.isInsertOnlyTable(tbl.getParameters())) {
       try {
         mmWriteId = db.getNextTableWriteId(tbl.getDbName(), tbl.getTableName());
       } catch (HiveException e) {
