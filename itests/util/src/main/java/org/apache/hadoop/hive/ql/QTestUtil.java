@@ -409,9 +409,9 @@ public class QTestUtil {
       if (clusterType == MiniClusterType.tez) {
         mr = shims.getMiniTezCluster(conf, 4, uriString, 1);
       } else if (clusterType == MiniClusterType.miniSparkOnYarn) {
-        mr = shims.getMiniSparkCluster(conf, 4, uriString, 1);
+        mr = shims.getMiniSparkCluster(conf, 2, uriString, 1);
       } else {
-        mr = shims.getMiniMrCluster(conf, 4, uriString, 1);
+        mr = shims.getMiniMrCluster(conf, 2, uriString, 1);
       }
     }
 
