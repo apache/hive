@@ -89,6 +89,8 @@ public class StandardStructObjectInspector extends
 
   protected List<MyField> fields;
 
+  protected transient List<String> originalColumnNames;
+
   protected StandardStructObjectInspector() {
     super();
   }
@@ -114,10 +116,12 @@ public class StandardStructObjectInspector extends
       List<String> structFieldComments) {
 
     fields = new ArrayList<MyField>(structFieldNames.size());
+    originalColumnNames = new ArrayList<String>(structFieldNames.size());
     for (int i = 0; i < structFieldNames.size(); i++) {
       fields.add(new MyField(i, structFieldNames.get(i),
           structFieldObjectInspectors.get(i),
           structFieldComments == null ? null : structFieldComments.get(i)));
+      originalColumnNames.add(structFieldNames.get(i));
     }
   }
 
@@ -127,9 +131,11 @@ public class StandardStructObjectInspector extends
 
   protected void init(List<StructField> fields) {
     this.fields = new ArrayList<MyField>(fields.size());
+    this.originalColumnNames = new ArrayList<String>(fields.size());
     for (int i = 0; i < fields.size(); i++) {
       this.fields.add(new MyField(i, fields.get(i).getFieldName(), fields
           .get(i).getFieldObjectInspector()));
+      this.originalColumnNames.add(fields.get(i).getFieldName());
     }
   }
 
@@ -207,6 +213,10 @@ public class StandardStructObjectInspector extends
     }
     List<Object> list = (List<Object>) data;
     return list;
+  }
+
+  public List<String> getOriginalColumnNames() {
+    return originalColumnNames;
   }
 
   // /////////////////////////////

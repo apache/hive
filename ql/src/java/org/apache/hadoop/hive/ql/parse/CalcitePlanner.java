@@ -212,6 +212,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -1742,23 +1743,29 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         }
 
-        // 3.4 Build row type from field <type, name>
-        RelDataType rowType = TypeConverter.getType(cluster, rr, null);
-
-        // 4. Build RelOptAbstractTable
-        String fullyQualifiedTabName = tabMetaData.getDbName();
-        if (fullyQualifiedTabName != null && !fullyQualifiedTabName.isEmpty()) {
-          fullyQualifiedTabName = fullyQualifiedTabName + "." + tabMetaData.getTableName();
-        }
-        else {
-          fullyQualifiedTabName = tabMetaData.getTableName();
-        }
-        RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
-                rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-                partitionCache, noColsMissingStats);
-
-        // 5. Build operator
+        // 4. Build operator
         if (tableType == TableType.DRUID) {
+          // Create case sensitive columns list
+          List<String> originalColumnNames =
+                  ((StandardStructObjectInspector)rowObjectInspector).getOriginalColumnNames();
+          List<ColumnInfo> cIList = new ArrayList<ColumnInfo>(originalColumnNames.size());
+          for (int i = 0; i < rr.getColumnInfos().size(); i++) {
+            cIList.add(new ColumnInfo(originalColumnNames.get(i), rr.getColumnInfos().get(i).getType(),
+                    tableAlias, false));
+          }
+          // Build row type from field <type, name>
+          RelDataType rowType = TypeConverter.getType(cluster, cIList);
+          // Build RelOptAbstractTable
+          String fullyQualifiedTabName = tabMetaData.getDbName();
+          if (fullyQualifiedTabName != null && !fullyQualifiedTabName.isEmpty()) {
+            fullyQualifiedTabName = fullyQualifiedTabName + "." + tabMetaData.getTableName();
+          }
+          else {
+            fullyQualifiedTabName = tabMetaData.getTableName();
+          }
+          RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
+                  rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
+                  partitionCache, noColsMissingStats);
           // Build Druid query
           String address = HiveConf.getVar(conf,
                   HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
@@ -1791,6 +1798,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
           tableRel = DruidQuery.create(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
               optTable, druidTable, ImmutableList.<RelNode>of(scan));
         } else {
+          // Build row type from field <type, name>
+          RelDataType rowType = TypeConverter.getType(cluster, rr, null);
+          // Build RelOptAbstractTable
+          String fullyQualifiedTabName = tabMetaData.getDbName();
+          if (fullyQualifiedTabName != null && !fullyQualifiedTabName.isEmpty()) {
+            fullyQualifiedTabName = fullyQualifiedTabName + "." + tabMetaData.getTableName();
+          }
+          else {
+            fullyQualifiedTabName = tabMetaData.getTableName();
+          }
+          RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
+                  rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
+                  partitionCache, noColsMissingStats);
           // Build Hive Table Scan Rel
           tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
               null == tableAlias ? tabMetaData.getTableName() : tableAlias,

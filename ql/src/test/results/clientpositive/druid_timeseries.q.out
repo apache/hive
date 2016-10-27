@@ -82,7 +82,7 @@ STAGE PLANS:
           alias: druid_table_1
           properties:
             druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"all","aggregations":[{"type":"longMax","name":"$f0","fieldName":"added"},{"type":"doubleSum","name":"$f1","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
-            druid.query.type TIMESERIES
+            druid.query.type timeseries
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: $f0 (type: bigint), $f1 (type: float)
@@ -114,7 +114,7 @@ STAGE PLANS:
           alias: druid_table_1
           properties:
             druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"NONE","aggregations":[{"type":"longMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
-            druid.query.type TIMESERIES
+            druid.query.type timeseries
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: __time (type: timestamp), $f1 (type: bigint), $f2 (type: float)
@@ -146,7 +146,7 @@ STAGE PLANS:
           alias: druid_table_1
           properties:
             druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"YEAR","aggregations":[{"type":"longMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
-            druid.query.type TIMESERIES
+            druid.query.type timeseries
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: __time (type: timestamp), $f1 (type: bigint), $f2 (type: float)
@@ -178,7 +178,7 @@ STAGE PLANS:
           alias: druid_table_1
           properties:
             druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"QUARTER","aggregations":[{"type":"longMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
-            druid.query.type TIMESERIES
+            druid.query.type timeseries
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: __time (type: timestamp), $f1 (type: bigint), $f2 (type: float)
@@ -210,7 +210,7 @@ STAGE PLANS:
           alias: druid_table_1
           properties:
             druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"MONTH","aggregations":[{"type":"longMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
-            druid.query.type TIMESERIES
+            druid.query.type timeseries
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: __time (type: timestamp), $f1 (type: bigint), $f2 (type: float)
@@ -242,7 +242,7 @@ STAGE PLANS:
           alias: druid_table_1
           properties:
             druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"WEEK","aggregations":[{"type":"longMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
-            druid.query.type TIMESERIES
+            druid.query.type timeseries
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: __time (type: timestamp), $f1 (type: bigint), $f2 (type: float)
@@ -274,7 +274,7 @@ STAGE PLANS:
           alias: druid_table_1
           properties:
             druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"DAY","aggregations":[{"type":"longMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
-            druid.query.type TIMESERIES
+            druid.query.type timeseries
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: __time (type: timestamp), $f1 (type: bigint), $f2 (type: float)
@@ -306,7 +306,7 @@ STAGE PLANS:
           alias: druid_table_1
           properties:
             druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"HOUR","aggregations":[{"type":"longMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
-            druid.query.type TIMESERIES
+            druid.query.type timeseries
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: __time (type: timestamp), $f1 (type: bigint), $f2 (type: float)
@@ -338,7 +338,7 @@ STAGE PLANS:
           alias: druid_table_1
           properties:
             druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"MINUTE","aggregations":[{"type":"longMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
-            druid.query.type TIMESERIES
+            druid.query.type timeseries
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: __time (type: timestamp), $f1 (type: bigint), $f2 (type: float)
@@ -370,7 +370,7 @@ STAGE PLANS:
           alias: druid_table_1
           properties:
             druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"SECOND","aggregations":[{"type":"longMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
-            druid.query.type TIMESERIES
+            druid.query.type timeseries
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: __time (type: timestamp), $f1 (type: bigint), $f2 (type: float)
@@ -404,7 +404,7 @@ STAGE PLANS:
           alias: druid_table_1
           properties:
             druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"HOUR","filter":{"type":"selector","dimension":"robot","value":"1"},"aggregations":[{"type":"longMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
-            druid.query.type TIMESERIES
+            druid.query.type timeseries
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: __time (type: timestamp), $f1 (type: bigint), $f2 (type: float)
@@ -443,7 +443,7 @@ STAGE PLANS:
             filterExpr: floor_hour(__time) BETWEEN 2010-01-01 00:00:00.0 AND 2014-01-01 00:00:00.0 (type: boolean)
             properties:
               druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":["robot","namespace","anonymous","unpatrolled","page","language","newpage","user"],"metrics":["count","added","delta","variation","deleted"],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-              druid.query.type SELECT
+              druid.query.type select
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: floor_hour(__time) BETWEEN 2010-01-01 00:00:00.0 AND 2014-01-01 00:00:00.0 (type: boolean)
@@ -522,7 +522,7 @@ STAGE PLANS:
             filterExpr: floor_hour(__time) BETWEEN 2010-01-01 00:00:00.0 AND 2014-01-01 00:00:00.0 (type: boolean)
             properties:
               druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":["robot","namespace","anonymous","unpatrolled","page","language","newpage","user"],"metrics":["count","added","delta","variation","deleted"],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-              druid.query.type SELECT
+              druid.query.type select
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: floor_hour(__time) BETWEEN 2010-01-01 00:00:00.0 AND 2014-01-01 00:00:00.0 (type: boolean)

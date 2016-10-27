@@ -62,7 +62,7 @@ public class DruidTopNQueryRecordReader
     if (results.hasNext()) {
       current = results.next();
       values = current.getValue().getValue().iterator();
-      return true;
+      return nextKeyValue();
     }
     return false;
   }
