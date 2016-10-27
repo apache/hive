@@ -254,7 +254,7 @@ public class HiveDruidQueryBasedInputFormat extends InputFormat<NullWritable, Dr
       }
 
       intervals.add(new Interval(timeList.get(0).getValue().getMinTime().getMillis(),
-              timeList.get(0).getValue().getMaxTime().getMillis()));
+              timeList.get(0).getValue().getMaxTime().getMillis(), ISOChronology.getInstanceUTC()));
     } else {
       intervals.addAll(query.getIntervals());
     }
@@ -289,13 +289,13 @@ public class HiveDruidQueryBasedInputFormat extends InputFormat<NullWritable, Dr
         final long expectedRange = rangeSize - currTime;
         if (interval.getEndMillis() - startTime >= expectedRange) {
           endTime = startTime + expectedRange;
-          currentIntervals.add(new Interval(startTime, endTime));
+          currentIntervals.add(new Interval(startTime, endTime, ISOChronology.getInstanceUTC()));
           startTime = endTime;
           currTime = 0;
           break;
         }
         endTime = interval.getEndMillis();
-        currentIntervals.add(new Interval(startTime, endTime));
+        currentIntervals.add(new Interval(startTime, endTime, ISOChronology.getInstanceUTC()));
         currTime += (endTime - startTime);
         startTime = intervals.get(++posIntervals).getStartMillis();
       }
