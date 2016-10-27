@@ -654,12 +654,10 @@ public class QTestUtil {
         conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
             + "/tez-site.xml"));
       }
-      int numTrackers;
+      int numTrackers = 2;
       if (EnumSet.of(MiniClusterType.llap, MiniClusterType.llap_local).contains(clusterType)) {
         llapCluster = LlapItUtils.startAndGetMiniLlapCluster(conf, setup.zooKeeperCluster, confDir);
-        numTrackers = 2;
       } else {
-        numTrackers = 4;
       }
       if (EnumSet.of(MiniClusterType.llap_local, MiniClusterType.tez_local).contains(clusterType)) {
         mr = shims.getLocalMiniTezCluster(conf, clusterType == MiniClusterType.llap_local);
@@ -667,9 +665,9 @@ public class QTestUtil {
         mr = shims.getMiniTezCluster(conf, numTrackers, uriString);
       }
     } else if (clusterType == MiniClusterType.miniSparkOnYarn) {
-      mr = shims.getMiniSparkCluster(conf, 4, uriString, 1);
+      mr = shims.getMiniSparkCluster(conf, 2, uriString, 1);
     } else if (clusterType == MiniClusterType.mr) {
-      mr = shims.getMiniMrCluster(conf, 4, uriString, 1);
+      mr = shims.getMiniMrCluster(conf, 2, uriString, 1);
     }
   }
 
