@@ -334,14 +334,6 @@ public class ParseContext {
   }
 
   /**
-   * @param loadTableWork
-   *          the loadTableWork to set
-   */
-  public void setLoadTableWork(List<LoadTableDesc> loadTableWork) {
-    this.loadTableWork = loadTableWork;
-  }
-
-  /**
    * @return the loadFileWork
    */
   public List<LoadFileDesc> getLoadFileWork() {

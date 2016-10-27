@@ -23,6 +23,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -60,6 +61,7 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.model.MTableWrite;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
@@ -92,6 +94,15 @@ public interface RawStore extends Configurable {
    */
   @CanNotRetry
   public abstract boolean commitTransaction();
+
+  /**
+   * Commits transaction and detects if the failure to do so is a deadlock or not.
+   * Must be called on the top level with regard to openTransaction calls; attempting to
+   * call this after several nested openTransaction calls will throw.
+   * @return true or false - same as commitTransaction; null in case of deadlock.
+   */
+  @CanNotRetry
+  public abstract Boolean commitTransactionExpectDeadlock();
 
   /**
    * Rolls back the current transaction if it is active
@@ -684,4 +695,35 @@ public interface RawStore extends Configurable {
   void addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException;
 
   void addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException;
+
+  void updateTableWrite(MTableWrite tw);
+
+  MTableWrite getTableWrite(String dbName, String tblName, long writeId) throws MetaException;
+
+  void createTableWrite(Table tbl, long writeId, char state, long heartbeat);
+
+  List<Long> getTableWriteIds(String dbName, String tblName, long watermarkId, long nextWriteId, char state) throws MetaException;
+
+
+  public static final class FullTableName {
+    public final String dbName, tblName;
+
+    public FullTableName(String dbName, String tblName) {
+      this.dbName = dbName;
+      this.tblName = tblName;
+    }
+
+    @Override
+    public String toString() {
+      return dbName + "." + tblName;
+    }
+  }
+
+  List<FullTableName> getAllMmTablesForCleanup() throws MetaException;
+
+  public List<MTableWrite> getTableWrites(String dbName, String tblName, long from, long to) throws MetaException;
+
+  Collection<String> getAllPartitionLocations(String dbName, String tblName);
+
+  void deleteTableWrites(String dbName, String tblName, long from, long to) throws MetaException;
 }

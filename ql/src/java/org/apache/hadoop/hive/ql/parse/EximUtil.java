@@ -74,7 +74,8 @@ public class EximUtil {
    */
   static URI getValidatedURI(HiveConf conf, String dcPath) throws SemanticException {
     try {
-      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
+      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE)
+          || conf.getBoolVar(HiveConf.ConfVars.HIVEEXIMTESTMODE);
       URI uri = new Path(dcPath).toUri();
       String scheme = uri.getScheme();
       String authority = uri.getAuthority();
@@ -136,7 +137,8 @@ public class EximUtil {
   }
 
   public static String relativeToAbsolutePath(HiveConf conf, String location) throws SemanticException {
-    boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
+    boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE)
+        || conf.getBoolVar(HiveConf.ConfVars.HIVEEXIMTESTMODE);
     if (testMode) {
       URI uri = new Path(location).toUri();
       String scheme = uri.getScheme();

@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -41,18 +42,21 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
   // Need to remember whether this is an acid compliant operation, and if so whether it is an
   // insert, update, or delete.
   private AcidUtils.Operation writeType;
+  private Long mmWriteId;
 
   // TODO: the below seems like they should just be combined into partitionDesc
   private org.apache.hadoop.hive.ql.plan.TableDesc table;
   private Map<String, String> partitionSpec; // NOTE: this partitionSpec has to be ordered map
+  private boolean commitMmWriteId = true;
 
-  public LoadTableDesc(final Path sourcePath,
+  private LoadTableDesc(final Path sourcePath,
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final Map<String, String> partitionSpec,
       final boolean replace,
-      final AcidUtils.Operation writeType) {
+      final AcidUtils.Operation writeType, Long mmWriteId) {
     super(sourcePath);
-    init(table, partitionSpec, replace, writeType);
+    Utilities.LOG14535.info("creating part LTD from " + sourcePath + " to " + table.getTableName()/*, new Exception()*/);
+    init(table, partitionSpec, replace, writeType, mmWriteId);
   }
 
   /**
@@ -65,15 +69,16 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
   public LoadTableDesc(final Path sourcePath,
                        final TableDesc table,
                        final Map<String, String> partitionSpec,
-                       final boolean replace) {
-    this(sourcePath, table, partitionSpec, replace, AcidUtils.Operation.NOT_ACID);
+                       final boolean replace,
+                       final Long mmWriteId) {
+    this(sourcePath, table, partitionSpec, replace, AcidUtils.Operation.NOT_ACID, mmWriteId);
   }
 
   public LoadTableDesc(final Path sourcePath,
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final Map<String, String> partitionSpec,
-      final AcidUtils.Operation writeType) {
-    this(sourcePath, table, partitionSpec, true, writeType);
+      final AcidUtils.Operation writeType, Long mmWriteId) {
+    this(sourcePath, table, partitionSpec, true, writeType, mmWriteId);
   }
 
   /**
@@ -84,20 +89,22 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
    */
   public LoadTableDesc(final Path sourcePath,
                        final org.apache.hadoop.hive.ql.plan.TableDesc table,
-                       final Map<String, String> partitionSpec) {
-    this(sourcePath, table, partitionSpec, true, AcidUtils.Operation.NOT_ACID);
+                       final Map<String, String> partitionSpec, Long mmWriteId) {
+    this(sourcePath, table, partitionSpec, true, AcidUtils.Operation.NOT_ACID, mmWriteId);
   }
 
   public LoadTableDesc(final Path sourcePath,
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final DynamicPartitionCtx dpCtx,
-      final AcidUtils.Operation writeType) {
+      final AcidUtils.Operation writeType,
+      boolean isReplace, Long mmWriteId) {
     super(sourcePath);
+    Utilities.LOG14535.info("creating LTD from " + sourcePath + " to " + table.getTableName()/*, new Exception()*/);
     this.dpCtx = dpCtx;
     if (dpCtx != null && dpCtx.getPartSpec() != null && partitionSpec == null) {
-      init(table, dpCtx.getPartSpec(), true, writeType);
+      init(table, dpCtx.getPartSpec(), isReplace, writeType, mmWriteId);
     } else {
-      init(table, new LinkedHashMap<String, String>(), true, writeType);
+      init(table, new LinkedHashMap<String, String>(), isReplace, writeType, mmWriteId);
     }
   }
 
@@ -105,11 +112,12 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final Map<String, String> partitionSpec,
       final boolean replace,
-      AcidUtils.Operation writeType) {
+      AcidUtils.Operation writeType, Long mmWriteId) {
     this.table = table;
     this.partitionSpec = partitionSpec;
     this.replace = replace;
     this.writeType = writeType;
+    this.mmWriteId = mmWriteId;
   }
 
   @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -133,6 +141,15 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
   @Explain(displayName = "replace")
   public boolean getReplace() {
     return replace;
+  }
+
+  @Explain(displayName = "micromanaged table")
+  public Boolean isMmTableExplain() {
+    return mmWriteId != null? true : null;
+  }
+
+  public boolean isMmTable() {
+    return mmWriteId != null;
   }
 
   public void setReplace(boolean replace) {
@@ -171,5 +188,17 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
 
   public AcidUtils.Operation getWriteType() {
     return writeType;
+  }
+
+  public Long getMmWriteId() {
+    return mmWriteId;
+  }
+
+  public void setIntermediateInMmWrite(boolean b) {
+    this.commitMmWriteId = !b;
+  }
+
+  public boolean isCommitMmWrite() {
+    return commitMmWriteId;
   }
 }

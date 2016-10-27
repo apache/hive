@@ -19,15 +19,19 @@ package org.apache.hadoop.hive.common;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 /**
  * HiveStatsUtils.
@@ -50,15 +54,26 @@ public class HiveStatsUtils {
    * @return array of FileStatus
    * @throws IOException
    */
-  public static FileStatus[] getFileStatusRecurse(Path path, int level, FileSystem fs)
+  public static FileStatus[] getFileStatusRecurse(Path path, int level,  FileSystem fs)
       throws IOException {
+    return getFileStatusRecurse(path, level, fs, FileUtils.HIDDEN_FILES_PATH_FILTER, false);
+  }
+
+  public static FileStatus[] getFileStatusRecurse(
+      Path path, int level, FileSystem fs, PathFilter filter) throws IOException {
+    return getFileStatusRecurse(path, level, fs, filter, false);
+  }
+
+  public static FileStatus[] getFileStatusRecurse(
+      Path path, int level, FileSystem fs, PathFilter filter, boolean allLevelsBelow)
+          throws IOException {
 
     // if level is <0, the return all files/directories under the specified path
-    if ( level < 0) {
+    if (level < 0) {
       List<FileStatus> result = new ArrayList<FileStatus>();
       try {
         FileStatus fileStatus = fs.getFileStatus(path);
-        FileUtils.listStatusRecursively(fs, fileStatus, result);
+        FileUtils.listStatusRecursively(fs, fileStatus, filter, result);
       } catch (IOException e) {
         // globStatus() API returns empty FileStatus[] when the specified path
         // does not exist. But getFileStatus() throw IOException. To mimic the
@@ -75,7 +90,31 @@ public class HiveStatsUtils {
       sb.append(Path.SEPARATOR).append("*");
     }
     Path pathPattern = new Path(path, sb.toString());
-    return fs.globStatus(pathPattern, FileUtils.HIDDEN_FILES_PATH_FILTER);
+    if (!allLevelsBelow) {
+      return fs.globStatus(pathPattern, filter);
+    }
+    LinkedList<FileStatus> queue = new LinkedList<>();
+    List<FileStatus> results = new ArrayList<FileStatus>();
+    for (FileStatus status : fs.globStatus(pathPattern)) {
+      if (filter.accept(status.getPath())) {
+        results.add(status);
+      }
+      if (status.isDirectory()) {
+        queue.add(status);
+      }
+    }
+    while (!queue.isEmpty()) {
+      FileStatus status = queue.poll();
+      for (FileStatus child : fs.listStatus(status.getPath())) {
+        if (filter.accept(child.getPath())) {
+          results.add(child);
+        }
+        if (child.isDirectory()) {
+          queue.add(child);
+        }
+      }
+    }
+    return results.toArray(new FileStatus[results.size()]);
   }
 
   public static int getNumBitVectorsForNDVEstimation(Configuration conf) throws Exception {

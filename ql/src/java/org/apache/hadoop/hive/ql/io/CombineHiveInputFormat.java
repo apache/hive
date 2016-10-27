@@ -41,6 +41,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -104,8 +105,10 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         Class<? extends InputFormat> inputFormatClass = part.getInputFileFormatClass();
         InputFormat<WritableComparable, Writable> inputFormat =
             getInputFormatFromCache(inputFormatClass, conf);
-        if (inputFormat instanceof AvoidSplitCombination &&
-            ((AvoidSplitCombination) inputFormat).shouldSkipCombine(paths[i + start], conf)) {
+        boolean isAvoidSplitCombine = inputFormat instanceof AvoidSplitCombination &&
+            ((AvoidSplitCombination) inputFormat).shouldSkipCombine(paths[i + start], conf);
+        boolean isMmTable = MetaStoreUtils.isMmTable(part.getTableDesc().getProperties());
+        if (isAvoidSplitCombine || isMmTable) {
           if (LOG.isDebugEnabled()) {
             LOG.debug("The path [" + paths[i + start] +
                 "] is being parked for HiveInputFormat.getSplits");

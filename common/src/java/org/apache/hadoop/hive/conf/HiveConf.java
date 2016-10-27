@@ -297,7 +297,10 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_HBASE_AGGR_STATS_MEMORY_TTL,
       HiveConf.ConfVars.METASTORE_HBASE_AGGR_STATS_INVALIDATOR_FREQUENCY,
       HiveConf.ConfVars.METASTORE_HBASE_AGGR_STATS_HBASE_TTL,
-      HiveConf.ConfVars.METASTORE_HBASE_FILE_METADATA_THREADS
+      HiveConf.ConfVars.METASTORE_HBASE_FILE_METADATA_THREADS,
+      HiveConf.ConfVars.HIVE_METASTORE_MM_THREAD_SCAN_INTERVAL,
+      HiveConf.ConfVars.HIVE_METASTORE_MM_HEARTBEAT_TIMEOUT,
+      HiveConf.ConfVars.HIVE_METASTORE_MM_ABSOLUTE_TIMEOUT
       };
 
   /**
@@ -1206,6 +1209,8 @@ public class HiveConf extends Configuration {
     HIVETESTMODE("hive.test.mode", false,
         "Whether Hive is running in test mode. If yes, it turns on sampling and prefixes the output tablename.",
         false),
+    HIVEEXIMTESTMODE("hive.exim.test.mode", false,
+        "The subset of test mode that only enables custom path handling for ExIm.", false),
     HIVETESTMODEPREFIX("hive.test.mode.prefix", "test_",
         "In test mode, specfies prefixes for the output table", false),
     HIVETESTMODESAMPLEFREQ("hive.test.mode.samplefreq", 32,
@@ -1784,10 +1789,12 @@ public class HiveConf extends Configuration {
 
     HIVE_TXN_OPERATIONAL_PROPERTIES("hive.txn.operational.properties", 0,
         "Sets the operational properties that control the appropriate behavior for various\n"
-        + "versions of the Hive ACID subsystem. Setting it to zero will turn on the legacy mode\n"
-        + "for ACID, while setting it to one will enable a split-update feature found in the newer\n"
-        + "version of Hive ACID subsystem. Mostly it is intended to be used as an internal property\n"
-        + "for future versions of ACID. (See HIVE-14035 for details.)"),
+        + "versions of the Hive ACID subsystem. Mostly it is intended to be used as an internal property\n"
+        + "for future versions of ACID. (See HIVE-14035 for details.)\n"
+        + "0: Turn on the legacy mode for ACID\n"
+        + "1: Enable split-update feature found in the newer version of Hive ACID subsystem\n"
+        + "2: Hash-based merge, which combines delta files using GRACE hash join based approach (not implemented)\n"
+        + "3: Make the table 'quarter-acid' as it only supports insert. But it doesn't require ORC or bucketing."),
 
     HIVE_MAX_OPEN_TXNS("hive.max.open.txns", 100000, "Maximum number of open transactions. If \n" +
         "current open transactions reach this limit, future open transaction requests will be \n" +
@@ -3117,6 +3124,26 @@ public class HiveConf extends Configuration {
         "Log tracing id that can be used by upstream clients for tracking respective logs. " +
         "Truncated to " + LOG_PREFIX_LENGTH + " characters. Defaults to use auto-generated session id."),
 
+    HIVE_METASTORE_MM_THREAD_SCAN_INTERVAL("hive.metastore.mm.thread.scan.interval", "900s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "MM table housekeeping thread interval in this metastore instance. 0 to disable."),
+
+    HIVE_METASTORE_MM_HEARTBEAT_TIMEOUT("hive.metastore.mm.heartbeat.timeout", "1800s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "MM write ID times out after this long if a heartbeat is not send. Currently disabled."),
+
+    HIVE_METASTORE_MM_ABSOLUTE_TIMEOUT("hive.metastore.mm.absolute.timeout", "7d",
+        new TimeValidator(TimeUnit.SECONDS),
+        "MM write ID cannot be outstanding for more than this long."),
+
+    HIVE_METASTORE_MM_ABORTED_GRACE_PERIOD("hive.metastore.mm.aborted.grace.period", "1d",
+        new TimeValidator(TimeUnit.SECONDS),
+        "MM write ID will not be removed up for that long after it has been aborted;\n" +
+        "this is to work around potential races e.g. with FS visibility, when deleting files."),
+
+
+    HIVE_MM_AVOID_GLOBSTATUS_ON_S3("hive.mm.avoid.s3.globstatus", true,
+        "Whether to use listFiles (optimized on S3) instead of globStatus when on S3."),
 
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
         "hive.security.authenticator.manager,hive.security.authorization.manager," +

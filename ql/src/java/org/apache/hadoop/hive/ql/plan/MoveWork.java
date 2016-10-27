@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -59,7 +60,7 @@ public class MoveWork implements Serializable {
   public MoveWork() {
   }
 
-  public MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) {
+  private MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) {
     this.inputs = inputs;
     this.outputs = outputs;
   }
@@ -68,6 +69,8 @@ public class MoveWork implements Serializable {
       final LoadTableDesc loadTableWork, final LoadFileDesc loadFileWork,
       boolean checkFileFormat, boolean srcLocal) {
     this(inputs, outputs);
+    Utilities.LOG14535.info("Creating MoveWork " + System.identityHashCode(this)
+        + " with " + loadTableWork + "; " + loadFileWork);
     this.loadTableWork = loadTableWork;
     this.loadFileWork = loadFileWork;
     this.checkFileFormat = checkFileFormat;
@@ -77,10 +80,7 @@ public class MoveWork implements Serializable {
   public MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       final LoadTableDesc loadTableWork, final LoadFileDesc loadFileWork,
       boolean checkFileFormat) {
-    this(inputs, outputs);
-    this.loadTableWork = loadTableWork;
-    this.loadFileWork = loadFileWork;
-    this.checkFileFormat = checkFileFormat;
+    this(inputs, outputs, loadTableWork, loadFileWork, checkFileFormat, false);
   }
 
   @Explain(displayName = "tables", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

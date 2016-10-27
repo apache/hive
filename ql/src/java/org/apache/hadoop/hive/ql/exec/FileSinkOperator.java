@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -33,15 +32,21 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.Utilities.MissingBucketsContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -79,6 +84,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
@@ -89,6 +95,7 @@ import com.google.common.collect.Lists;
 /**
  * File Sink operator implementation.
  **/
+@SuppressWarnings("deprecation")
 public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     Serializable {
 
@@ -105,7 +112,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient Path parent;
   protected transient HiveOutputFormat<?, ?> hiveOutputFormat;
   protected transient Path specPath;
-  protected transient String childSpecPathDynLinkedPartitions;
+  protected transient String unionPath;
+  protected transient boolean isUnionDp;
   protected transient int dpStartCol; // start column # for DP columns
   protected transient List<String> dpVals; // array of values corresponding to DP columns
   protected transient List<Object> dpWritables;
@@ -143,8 +151,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   public class FSPaths implements Cloneable {
-    Path tmpPath;
-    Path taskOutputTempPath;
+    private Path tmpPath;
+    private Path taskOutputTempPath;
     Path[] outPaths;
     Path[] finalPaths;
     RecordWriter[] outWriters;
@@ -152,10 +160,21 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     Stat stat;
     int acidLastBucket = -1;
     int acidFileOffset = -1;
+    private boolean isMmTable;
 
-    public FSPaths(Path specPath) {
-      tmpPath = Utilities.toTempPath(specPath);
-      taskOutputTempPath = Utilities.toTaskTempPath(specPath);
+    public FSPaths(Path specPath, boolean isMmTable) {
+      this.isMmTable = isMmTable;
+      if (!isMmTable) {
+        tmpPath = Utilities.toTempPath(specPath);
+        taskOutputTempPath = Utilities.toTaskTempPath(specPath);
+      } else {
+        tmpPath = specPath;
+        taskOutputTempPath = null; // Should not be used.
+      } 
+      Utilities.LOG14535.info("new FSPaths for " + numFiles + " files, dynParts = " + bDynParts
+          + ": tmpPath " + tmpPath + ", task path " + taskOutputTempPath
+          + " (spec path " + specPath + ")"/*, new Exception()*/);
+
       outPaths = new Path[numFiles];
       finalPaths = new Path[numFiles];
       outWriters = new RecordWriter[numFiles];
@@ -176,7 +195,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     /**
      * Update the final paths according to tmpPath.
      */
-    public Path getFinalPath(String taskId, Path tmpPath, String extension) {
+    private Path getFinalPath(String taskId, Path tmpPath, String extension) {
       if (extension != null) {
         return new Path(tmpPath, taskId + extension);
       } else {
@@ -206,39 +225,43 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
     }
 
-    private void commit(FileSystem fs) throws HiveException {
+    private void commit(FileSystem fs, List<Path> commitPaths) throws HiveException {
       for (int idx = 0; idx < outPaths.length; ++idx) {
         try {
-          if ((bDynParts || isSkewedStoredAsSubDirectories)
-              && !fs.exists(finalPaths[idx].getParent())) {
-            fs.mkdirs(finalPaths[idx].getParent());
-          }
-          boolean needToRename = true;
-          if (conf.getWriteType() == AcidUtils.Operation.UPDATE ||
-              conf.getWriteType() == AcidUtils.Operation.DELETE) {
-            // If we're updating or deleting there may be no file to close.  This can happen
-            // because the where clause strained out all of the records for a given bucket.  So
-            // before attempting the rename below, check if our file exists.  If it doesn't,
-            // then skip the rename.  If it does try it.  We could just blindly try the rename
-            // and avoid the extra stat, but that would mask other errors.
-            try {
-              if (outPaths[idx] != null) {
-                FileStatus stat = fs.getFileStatus(outPaths[idx]);
-              }
-            } catch (FileNotFoundException fnfe) {
-              needToRename = false;
-            }
-          }
-          if (needToRename && outPaths[idx] != null && !fs.rename(outPaths[idx], finalPaths[idx])) {
-            throw new HiveException("Unable to rename output from: " +
-                outPaths[idx] + " to: " + finalPaths[idx]);
-          }
-          updateProgress();
+          commitOneOutPath(idx, fs, commitPaths);
         } catch (IOException e) {
           throw new HiveException("Unable to rename output from: " +
               outPaths[idx] + " to: " + finalPaths[idx], e);
         }
       }
+    }
+
+    private void commitOneOutPath(int idx, FileSystem fs, List<Path> commitPaths)
+        throws IOException, HiveException {
+      if ((bDynParts || isSkewedStoredAsSubDirectories)
+          && !fs.exists(finalPaths[idx].getParent())) {
+        Utilities.LOG14535.info("commit making path for dyn/skew: " + finalPaths[idx].getParent());
+        fs.mkdirs(finalPaths[idx].getParent());
+      }
+      // If we're updating or deleting there may be no file to close.  This can happen
+      // because the where clause strained out all of the records for a given bucket.  So
+      // before attempting the rename below, check if our file exists.  If it doesn't,
+      // then skip the rename.  If it does try it.  We could just blindly try the rename
+      // and avoid the extra stat, but that would mask other errors.
+      boolean needToRename = (conf.getWriteType() != AcidUtils.Operation.UPDATE &&
+          conf.getWriteType() != AcidUtils.Operation.DELETE) || fs.exists(outPaths[idx]);
+      if (needToRename && outPaths[idx] != null) {
+        Utilities.LOG14535.info("committing " + outPaths[idx] + " to " + finalPaths[idx] + " (" + isMmTable + ")");
+        if (isMmTable) {
+          assert outPaths[idx].equals(finalPaths[idx]);
+          commitPaths.add(outPaths[idx]);
+        } else if (!fs.rename(outPaths[idx], finalPaths[idx])) {
+          throw new HiveException("Unable to rename output from: "
+              + outPaths[idx] + " to: " + finalPaths[idx]);
+        }
+      }
+
+      updateProgress();
     }
 
     public void abortWriters(FileSystem fs, boolean abort, boolean delete) throws HiveException {
@@ -259,6 +282,65 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
     public Stat getStat() {
       return stat;
+    }
+
+    public void configureDynPartPath(String dirName, String childSpecPathDynLinkedPartitions) {
+      dirName = (childSpecPathDynLinkedPartitions == null) ? dirName :
+        dirName + Path.SEPARATOR + childSpecPathDynLinkedPartitions;
+      tmpPath = new Path(tmpPath, dirName);
+      if (taskOutputTempPath != null) {
+        taskOutputTempPath = new Path(taskOutputTempPath, dirName);
+      }
+    }
+
+    public void initializeBucketPaths(int filesIdx, String taskId, boolean isNativeTable,
+        boolean isSkewedStoredAsSubDirectories) {
+      if (isNativeTable) {
+        String extension = Utilities.getFileExtension(jc, isCompressed, hiveOutputFormat);
+        if (!isMmTable) {
+          if (!bDynParts && !isSkewedStoredAsSubDirectories) {
+            finalPaths[filesIdx] = getFinalPath(taskId, parent, extension);
+          } else {
+            finalPaths[filesIdx] = getFinalPath(taskId, tmpPath, extension);
+          }
+          outPaths[filesIdx] = getTaskOutPath(taskId);
+        } else {
+          String subdirPath = ValidWriteIds.getMmFilePrefix(conf.getMmWriteId());
+          if (unionPath != null) {
+            // Create the union directory inside the MM directory.
+            subdirPath += Path.SEPARATOR + unionPath;
+          }
+          subdirPath += Path.SEPARATOR + taskId;
+          if (conf.isMerge()) {
+            // Make sure we don't collide with the source files.
+            // MM tables don't support concat so we don't expect the merge of merged files.
+            subdirPath += ".merged";
+          }
+          if (!bDynParts && !isSkewedStoredAsSubDirectories) {
+            finalPaths[filesIdx] = getFinalPath(subdirPath, specPath, extension);
+          } else {
+            // Note: tmpPath here has the correct partition key
+            finalPaths[filesIdx] = getFinalPath(subdirPath, tmpPath, extension);
+          }
+          outPaths[filesIdx] = finalPaths[filesIdx];
+        }
+        if (isInfoEnabled) {
+          LOG.info("Final Path: FS " + finalPaths[filesIdx]);
+          if (isInfoEnabled && !isMmTable) {
+            LOG.info("Writing to temp file: FS " + outPaths[filesIdx]);
+          }
+        }
+      } else {
+        finalPaths[filesIdx] = outPaths[filesIdx] = specPath;
+      }
+    }
+
+    public Path getTmpPath() {
+      return tmpPath;
+    }
+
+    public Path getTaskOutputTempPath() {
+      return taskOutputTempPath;
     }
   } // class FSPaths
 
@@ -310,14 +392,25 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     // and Parent/DynamicPartition/Child_1 respectively.
     // The movetask that follows subQ1 and subQ2 tasks still moves the directory
     // 'Parent'
-    if ((!conf.isLinkedFileSink()) || (dpCtx == null)) {
+    boolean isLinked = conf.isLinkedFileSink();
+    if (!isLinked) {
+      // Simple case - no union.
       specPath = conf.getDirName();
-      childSpecPathDynLinkedPartitions = null;
-      return;
+      unionPath = null;
+    } else {
+      isUnionDp = (dpCtx != null);
+      if (conf.isMmTable() || isUnionDp) {
+        // MM tables need custom handling for union suffix; DP tables use parent too.
+        specPath = conf.getParentDir();
+        unionPath = conf.getDirName().getName();
+      } else {
+        // For now, keep the old logic for non-MM non-DP union case. Should probably be unified.
+        specPath = conf.getDirName();
+        unionPath = null;
+      }
     }
-
-    specPath = conf.getParentDir();
-    childSpecPathDynLinkedPartitions = conf.getDirName().getName();
+    Utilities.LOG14535.info("Setting up FSOP " + System.identityHashCode(this) + " ("
+        + conf.isLinkedFileSink() + ") with " + taskId + " and " + specPath + " + " + unionPath);
   }
 
   /** Kryo ctor. */
@@ -397,7 +490,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
 
       if (!bDynParts) {
-        fsp = new FSPaths(specPath);
+        fsp = new FSPaths(specPath, conf.isMmTable());
 
         // Create all the files - this is required because empty files need to be created for
         // empty buckets
@@ -411,6 +504,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
                                             .getVar(hconf, HIVE_TEMPORARY_TABLE_STORAGE));
       if (isTemporary && fsp != null
           && tmpStorage != StoragePolicyValue.DEFAULT) {
+        assert !conf.isMmTable(); // Not supported for temp tables.
         final Path outputPath = fsp.taskOutputTempPath;
         StoragePolicyShim shim = ShimLoader.getHadoopShims()
             .getStoragePolicyShim(fs);
@@ -557,7 +651,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       assert filesIdx == numFiles;
 
       // in recent hadoop versions, use deleteOnExit to clean tmp files.
-      if (isNativeTable && fs != null && fsp != null) {
+      if (isNativeTable && fs != null && fsp != null && !conf.isMmTable()) {
         autoDelete = fs.deleteOnExit(fsp.outPaths[0]);
       }
     } catch (Exception e) {
@@ -571,34 +665,16 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected void createBucketForFileIdx(FSPaths fsp, int filesIdx)
       throws HiveException {
     try {
-      if (isNativeTable) {
-        fsp.finalPaths[filesIdx] = fsp.getFinalPath(taskId, fsp.tmpPath, null);
-        if (isInfoEnabled) {
-          LOG.info("Final Path: FS " + fsp.finalPaths[filesIdx]);
-        }
-        fsp.outPaths[filesIdx] = fsp.getTaskOutPath(taskId);
-        if (isInfoEnabled) {
-          LOG.info("Writing to temp file: FS " + fsp.outPaths[filesIdx]);
-        }
-      } else {
-        fsp.finalPaths[filesIdx] = fsp.outPaths[filesIdx] = specPath;
-      }
-      // The reason to keep these instead of using
-      // OutputFormat.getRecordWriter() is that
-      // getRecordWriter does not give us enough control over the file name that
-      // we create.
-      String extension = Utilities.getFileExtension(jc, isCompressed, hiveOutputFormat);
-      if (!bDynParts && !this.isSkewedStoredAsSubDirectories) {
-        fsp.finalPaths[filesIdx] = fsp.getFinalPath(taskId, parent, extension);
-      } else {
-        fsp.finalPaths[filesIdx] = fsp.getFinalPath(taskId, fsp.tmpPath, extension);
-      }
+      fsp.initializeBucketPaths(filesIdx, taskId, isNativeTable, isSkewedStoredAsSubDirectories);
+      Utilities.LOG14535.info("createBucketForFileIdx " + filesIdx + ": final path " + fsp.finalPaths[filesIdx]
+          + "; out path " + fsp.outPaths[filesIdx] +" (spec path " + specPath + ", tmp path "
+          + fsp.getTmpPath() + ", task " + taskId + ")"/*, new Exception()*/);
 
       if (isInfoEnabled) {
         LOG.info("New Final Path: FS " + fsp.finalPaths[filesIdx]);
       }
 
-      if (isNativeTable) {
+      if (isNativeTable && !conf.isMmTable()) {
         // in recent hadoop versions, use deleteOnExit to clean tmp files.
         autoDelete = fs.deleteOnExit(fsp.outPaths[filesIdx]);
       }
@@ -606,7 +682,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       Utilities.copyTableJobPropertiesToConf(conf.getTableInfo(), jc);
       // only create bucket files only if no dynamic partitions,
       // buckets of dynamic partitions will be created for each newly created partition
-      if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID) {
+      if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID ||
+          conf.getWriteType() == AcidUtils.Operation.INSERT_ONLY) {
         fsp.outWriters[filesIdx] = HiveFileFormatUtils.getHiveRecordWriter(jc, conf.getTableInfo(),
             outputClass, conf, fsp.outPaths[filesIdx], reporter);
         // If the record writer provides stats, get it from there instead of the serde
@@ -749,7 +826,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // for a given operator branch prediction should work quite nicely on it.
       // RecordUpdateer expects to get the actual row, not a serialized version of it.  Thus we
       // pass the row rather than recordValue.
-      if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID) {
+      if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID ||
+          conf.getWriteType() == AcidUtils.Operation.INSERT_ONLY) {
         rowOutWriters[writerOffset].write(recordValue);
       } else if (conf.getWriteType() == AcidUtils.Operation.INSERT) {
         fpaths.updaters[writerOffset].insert(conf.getTransactionId(), row);
@@ -793,7 +871,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected boolean areAllTrue(boolean[] statsFromRW) {
     // If we are doing an acid operation they will always all be true as RecordUpdaters always
     // collect stats
-    if (conf.getWriteType() != AcidUtils.Operation.NOT_ACID) {
+    if (conf.getWriteType() != AcidUtils.Operation.NOT_ACID &&
+        conf.getWriteType() != AcidUtils.Operation.INSERT_ONLY) {
       return true;
     }
     for(boolean b : statsFromRW) {
@@ -829,6 +908,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected FSPaths lookupListBucketingPaths(String lbDirName) throws HiveException {
     FSPaths fsp2 = valToPaths.get(lbDirName);
     if (fsp2 == null) {
+      Utilities.LOG14535.info("lookupListBucketingPaths for " + lbDirName);
       fsp2 = createNewPaths(lbDirName);
     }
     return fsp2;
@@ -842,18 +922,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
    * @throws HiveException
    */
   private FSPaths createNewPaths(String dirName) throws HiveException {
-    FSPaths fsp2 = new FSPaths(specPath);
-    if (childSpecPathDynLinkedPartitions != null) {
-      fsp2.tmpPath = new Path(fsp2.tmpPath,
-          dirName + Path.SEPARATOR + childSpecPathDynLinkedPartitions);
-      fsp2.taskOutputTempPath =
-        new Path(fsp2.taskOutputTempPath,
-            dirName + Path.SEPARATOR + childSpecPathDynLinkedPartitions);
-    } else {
-      fsp2.tmpPath = new Path(fsp2.tmpPath, dirName);
-      fsp2.taskOutputTempPath =
-        new Path(fsp2.taskOutputTempPath, dirName);
-    }
+    FSPaths fsp2 = new FSPaths(specPath, conf.isMmTable());
+    fsp2.configureDynPartPath(dirName, !conf.isMmTable() && isUnionDp ? unionPath : null);
+    Utilities.LOG14535.info("creating new paths for " + dirName + ", childSpec " + unionPath
+        + ": tmpPath " + fsp2.getTmpPath() + ", task path " + fsp2.getTaskOutputTempPath()/*, new Exception()*/);
     if(!conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED)) {
       createBucketFiles(fsp2);
       valToPaths.put(dirName, fsp2);
@@ -943,7 +1015,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           // stats from the record writer and store in the previous fsp that is cached
           if (conf.isGatherStats() && isCollectRWStats) {
             SerDeStats stats = null;
-            if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID) {
+            if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID ||
+                conf.getWriteType() == AcidUtils.Operation.INSERT_ONLY) {
               RecordWriter outWriter = prevFsp.outWriters[0];
               if (outWriter != null) {
                 stats = ((StatsProvidingRecordWriter) outWriter).getStats();
@@ -1036,6 +1109,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
             throw new HiveException(e);
           }
       }
+      List<Path> commitPaths = new ArrayList<>();
       for (FSPaths fsp : valToPaths.values()) {
         fsp.closeWriters(abort);
         // before closing the operator check if statistics gathering is requested
@@ -1046,7 +1120,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         // record writer already gathers the statistics, it can simply return the
         // accumulated statistics which will be aggregated in case of spray writers
         if (conf.isGatherStats() && isCollectRWStats) {
-          if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID) {
+          if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID ||
+              conf.getWriteType() == AcidUtils.Operation.INSERT_ONLY) {
             for (int idx = 0; idx < fsp.outWriters.length; idx++) {
               RecordWriter outWriter = fsp.outWriters[idx];
               if (outWriter != null) {
@@ -1071,8 +1146,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
 
         if (isNativeTable) {
-          fsp.commit(fs);
+          fsp.commit(fs, commitPaths);
         }
+      }
+      if (conf.getMmWriteId() != null) {
+        Utilities.writeMmCommitManifest(
+            commitPaths, specPath, fs, taskId, conf.getMmWriteId(), unionPath);
       }
       // Only publish stats if this operator's flag was set to gather stats
       if (conf.isGatherStats()) {
@@ -1083,12 +1162,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // Hadoop always call close() even if an Exception was thrown in map() or
       // reduce().
       for (FSPaths fsp : valToPaths.values()) {
-        fsp.abortWriters(fs, abort, !autoDelete && isNativeTable);
+        fsp.abortWriters(fs, abort, !autoDelete && isNativeTable && !conf.isMmTable());
       }
     }
     fsp = prevFsp = null;
     super.closeOp(abort);
   }
+
 
   /**
    * @return the name of the operator
@@ -1108,12 +1188,27 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     try {
       if ((conf != null) && isNativeTable) {
         Path specPath = conf.getDirName();
+        String unionSuffix = null;
         DynamicPartitionCtx dpCtx = conf.getDynPartCtx();
-        if (conf.isLinkedFileSink() && (dpCtx != null)) {
+        ListBucketingCtx lbCtx = conf.getLbCtx();
+        if (conf.isLinkedFileSink() && (dpCtx != null || conf.isMmTable())) {
           specPath = conf.getParentDir();
+          unionSuffix = conf.getDirName().getName();
         }
-        Utilities.mvFileToFinalPath(specPath, hconf, success, LOG, dpCtx, conf,
-          reporter);
+        Utilities.LOG14535.info("jobCloseOp using specPath " + specPath);
+        if (!conf.isMmTable()) {
+          Utilities.mvFileToFinalPath(specPath, hconf, success, LOG, dpCtx, conf, reporter);
+        } else {
+          int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols(),
+              lbLevels = lbCtx == null ? 0 : lbCtx.calculateListBucketingLevel();
+          // TODO: why is it stored in both?
+          int numBuckets = (conf.getTable() != null) ? conf.getTable().getNumBuckets()
+              : (dpCtx != null ? dpCtx.getNumBuckets() : 0);
+          MissingBucketsContext mbc = new MissingBucketsContext(
+              conf.getTableInfo(), numBuckets, conf.getCompressed());
+          Utilities.handleMmTableFinalPath(specPath, unionSuffix, hconf, success,
+              dpLevels, lbLevels, mbc, conf.getMmWriteId(), reporter);
+        }
       }
     } catch (IOException e) {
       throw new HiveException(e);
@@ -1195,7 +1290,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     for (Map.Entry<String, FSPaths> entry : valToPaths.entrySet()) {
       String fspKey = entry.getKey();     // DP/LB
       FSPaths fspValue = entry.getValue();
-
       // for bucketed tables, hive.optimize.sort.dynamic.partition optimization
       // adds the taskId to the fspKey.
       if (conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED)) {

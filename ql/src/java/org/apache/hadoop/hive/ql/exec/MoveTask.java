@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.model.MMasterKey;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
@@ -241,8 +242,23 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     return false;
   }
 
+  private final static class TaskInformation {
+    public List<BucketCol> bucketCols = null;
+    public List<SortCol> sortCols = null;
+    public int numBuckets = -1;
+    public Task task;
+    public String path;
+    public TaskInformation(Task task, String path) {
+      this.task = task;
+      this.path = path;
+    }
+  }
+
   @Override
   public int execute(DriverContext driverContext) {
+    Utilities.LOG14535.info("Executing MoveWork " + System.identityHashCode(work)
+        + " with " + work.getLoadFileWork() + "; " + work.getLoadTableWork() + "; "
+        + work.getLoadMultiFilesWork());
 
     try {
       if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
@@ -256,6 +272,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       if (lfd != null) {
         Path targetPath = lfd.getTargetDir();
         Path sourcePath = lfd.getSourcePath();
+        Utilities.LOG14535.info("MoveTask moving LFD " + sourcePath + " to " + targetPath);
         moveFile(sourcePath, targetPath, lfd.getIsDfsDir());
       }
 
@@ -272,6 +289,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           if (!fs.exists(destPath.getParent())) {
             fs.mkdirs(destPath.getParent());
           }
+          Utilities.LOG14535.info("MoveTask moving LMFD " + srcPath + " to " + destPath);
           moveFile(srcPath, destPath, isDfsDir);
           i++;
         }
@@ -292,75 +310,29 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           mesg.append(')');
         }
         String mesg_detail = " from " + tbd.getSourcePath();
+        Utilities.LOG14535.info("" + mesg.toString() + " " + mesg_detail);
         console.printInfo(mesg.toString(), mesg_detail);
         Table table = db.getTable(tbd.getTable().getTableName());
 
-        if (work.getCheckFileFormat()) {
-          // Get all files from the src directory
-          FileStatus[] dirs;
-          ArrayList<FileStatus> files;
-          FileSystem srcFs; // source filesystem
-          try {
-            srcFs = tbd.getSourcePath().getFileSystem(conf);
-            dirs = srcFs.globStatus(tbd.getSourcePath());
-            files = new ArrayList<FileStatus>();
-            for (int i = 0; (dirs != null && i < dirs.length); i++) {
-              files.addAll(Arrays.asList(srcFs.listStatus(dirs[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER)));
-              // We only check one file, so exit the loop when we have at least
-              // one.
-              if (files.size() > 0) {
-                break;
-              }
-            }
-          } catch (IOException e) {
-            throw new HiveException(
-                "addFiles: filesystem error in check phase", e);
-          }
+        checkFileFormats(db, tbd, table);
 
-          // handle file format check for table level
-          if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVECHECKFILEFORMAT)) {
-            boolean flag = true;
-            // work.checkFileFormat is set to true only for Load Task, so assumption here is
-            // dynamic partition context is null
-            if (tbd.getDPCtx() == null) {
-              if (tbd.getPartitionSpec() == null || tbd.getPartitionSpec().isEmpty()) {
-                // Check if the file format of the file matches that of the table.
-                flag = HiveFileFormatUtils.checkInputFormat(
-                    srcFs, conf, tbd.getTable().getInputFileFormatClass(), files);
-              } else {
-                // Check if the file format of the file matches that of the partition
-                Partition oldPart = db.getPartition(table, tbd.getPartitionSpec(), false);
-                if (oldPart == null) {
-                  // this means we have just created a table and are specifying partition in the
-                  // load statement (without pre-creating the partition), in which case lets use
-                  // table input format class. inheritTableSpecs defaults to true so when a new
-                  // partition is created later it will automatically inherit input format
-                  // from table object
-                  flag = HiveFileFormatUtils.checkInputFormat(
-                      srcFs, conf, tbd.getTable().getInputFileFormatClass(), files);
-                } else {
-                  flag = HiveFileFormatUtils.checkInputFormat(
-                      srcFs, conf, oldPart.getInputFormatClass(), files);
-                }
-              }
-              if (!flag) {
-                throw new HiveException(
-                    "Wrong file format. Please check the file's format.");
-              }
-            } else {
-              LOG.warn("Skipping file format check as dpCtx is not null");
-            }
-          }
+        boolean isAcid = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID;
+        if (tbd.isMmTable() && isAcid) {
+           throw new HiveException("ACID and MM are not supported");
         }
 
         // Create a data container
         DataContainer dc = null;
         if (tbd.getPartitionSpec().size() == 0) {
           dc = new DataContainer(table.getTTable());
+          Utilities.LOG14535.info("loadTable called from " + tbd.getSourcePath() + " into " + tbd.getTable().getTableName());
+          if (tbd.isMmTable() && !tbd.isCommitMmWrite()) {
+            throw new HiveException(
+                "Only single-partition LoadTableDesc can skip commiting write ID");
+          }
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getReplace(),
-              work.isSrcLocal(), isSkewedStoredAsDirs(tbd),
-              work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
-              hasFollowingStatsTask());
+              work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isAcid, hasFollowingStatsTask(),
+              tbd.getMmWriteId());
           if (work.getOutputs() != null) {
             DDLTask.addIfAbsentByName(new WriteEntity(table,
               getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());
@@ -369,154 +341,15 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           LOG.info("Partition is: " + tbd.getPartitionSpec().toString());
 
           // Check if the bucketing and/or sorting columns were inferred
-          List<BucketCol> bucketCols = null;
-          List<SortCol> sortCols = null;
-          int numBuckets = -1;
-          Task task = this;
-          String path = tbd.getSourcePath().toUri().toString();
-          // Find the first ancestor of this MoveTask which is some form of map reduce task
-          // (Either standard, local, or a merge)
-          while (task.getParentTasks() != null && task.getParentTasks().size() == 1) {
-            task = (Task)task.getParentTasks().get(0);
-            // If it was a merge task or a local map reduce task, nothing can be inferred
-            if (task instanceof MergeFileTask || task instanceof MapredLocalTask) {
-              break;
-            }
-
-            // If it's a standard map reduce task, check what, if anything, it inferred about
-            // the directory this move task is moving
-            if (task instanceof MapRedTask) {
-              MapredWork work = (MapredWork)task.getWork();
-              MapWork mapWork = work.getMapWork();
-              bucketCols = mapWork.getBucketedColsByDirectory().get(path);
-              sortCols = mapWork.getSortedColsByDirectory().get(path);
-              if (work.getReduceWork() != null) {
-                numBuckets = work.getReduceWork().getNumReduceTasks();
-              }
-
-              if (bucketCols != null || sortCols != null) {
-                // This must be a final map reduce task (the task containing the file sink
-                // operator that writes the final output)
-                assert work.isFinalMapRed();
-              }
-              break;
-            }
-
-            // If it's a move task, get the path the files were moved from, this is what any
-            // preceding map reduce task inferred information about, and moving does not invalidate
-            // those assumptions
-            // This can happen when a conditional merge is added before the final MoveTask, but the
-            // condition for merging is not met, see GenMRFileSink1.
-            if (task instanceof MoveTask) {
-              if (((MoveTask)task).getWork().getLoadFileWork() != null) {
-                path = ((MoveTask)task).getWork().getLoadFileWork().getSourcePath().toUri().toString();
-              }
-            }
-          }
+          TaskInformation ti = new TaskInformation(this, tbd.getSourcePath().toUri().toString());
+          inferTaskInformation(ti);
           // deal with dynamic partitions
           DynamicPartitionCtx dpCtx = tbd.getDPCtx();
           if (dpCtx != null && dpCtx.getNumDPCols() > 0) { // dynamic partitions
-
-            List<LinkedHashMap<String, String>> dps = Utilities.getFullDPSpecs(conf, dpCtx);
-
-            // publish DP columns to its subscribers
-            if (dps != null && dps.size() > 0) {
-              pushFeed(FeedType.DYNAMIC_PARTITIONS, dps);
-            }
-            console.printInfo(System.getProperty("line.separator"));
-            long startTime = System.currentTimeMillis();
-            // load the list of DP partitions and return the list of partition specs
-            // TODO: In a follow-up to HIVE-1361, we should refactor loadDynamicPartitions
-            // to use Utilities.getFullDPSpecs() to get the list of full partSpecs.
-            // After that check the number of DPs created to not exceed the limit and
-            // iterate over it and call loadPartition() here.
-            // The reason we don't do inside HIVE-1361 is the latter is large and we
-            // want to isolate any potential issue it may introduce.
-            Map<Map<String, String>, Partition> dp =
-              db.loadDynamicPartitions(
-                tbd.getSourcePath(),
-                tbd.getTable().getTableName(),
-                tbd.getPartitionSpec(),
-                tbd.getReplace(),
-                dpCtx.getNumDPCols(),
-                isSkewedStoredAsDirs(tbd),
-                work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
-                SessionState.get().getTxnMgr().getCurrentTxnId(), hasFollowingStatsTask(),
-                work.getLoadTableWork().getWriteType());
-
-            String loadTime = "\t Time taken to load dynamic partitions: "  +
-                (System.currentTimeMillis() - startTime)/1000.0 + " seconds";
-            console.printInfo(loadTime);
-            LOG.info(loadTime);
-
-            if (dp.size() == 0 && conf.getBoolVar(HiveConf.ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION)) {
-              throw new HiveException("This query creates no partitions." +
-                  " To turn off this error, set hive.error.on.empty.partition=false.");
-            }
-
-            startTime = System.currentTimeMillis();
-            // for each partition spec, get the partition
-            // and put it to WriteEntity for post-exec hook
-            for(Map.Entry<Map<String, String>, Partition> entry : dp.entrySet()) {
-              Partition partn = entry.getValue();
-
-              if (bucketCols != null || sortCols != null) {
-                updatePartitionBucketSortColumns(
-                    db, table, partn, bucketCols, numBuckets, sortCols);
-              }
-
-              WriteEntity enty = new WriteEntity(partn,
-                getWriteType(tbd, work.getLoadTableWork().getWriteType()));
-              if (work.getOutputs() != null) {
-                DDLTask.addIfAbsentByName(enty, work.getOutputs());
-              }
-              // Need to update the queryPlan's output as well so that post-exec hook get executed.
-              // This is only needed for dynamic partitioning since for SP the the WriteEntity is
-              // constructed at compile time and the queryPlan already contains that.
-              // For DP, WriteEntity creation is deferred at this stage so we need to update
-              // queryPlan here.
-              if (queryPlan.getOutputs() == null) {
-                queryPlan.setOutputs(new LinkedHashSet<WriteEntity>());
-              }
-              queryPlan.getOutputs().add(enty);
-
-              // update columnar lineage for each partition
-              dc = new DataContainer(table.getTTable(), partn.getTPartition());
-
-              // Don't set lineage on delete as we don't have all the columns
-              if (SessionState.get() != null &&
-                  work.getLoadTableWork().getWriteType() != AcidUtils.Operation.DELETE &&
-                  work.getLoadTableWork().getWriteType() != AcidUtils.Operation.UPDATE) {
-                SessionState.get().getLineageState().setLineage(tbd.getSourcePath(), dc,
-                    table.getCols());
-              }
-              LOG.info("\tLoading partition " + entry.getKey());
-            }
-            console.printInfo("\t Time taken for adding to write entity : " +
-                (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
-            dc = null; // reset data container to prevent it being added again.
+            dc = handleDynParts(db, table, tbd, ti, dpCtx);
           } else { // static partitions
-            List<String> partVals = MetaStoreUtils.getPvals(table.getPartCols(),
-                tbd.getPartitionSpec());
-            db.validatePartitionNameCharacters(partVals);
-            db.loadPartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
-                tbd.getPartitionSpec(), tbd.getReplace(),
-                tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
-                work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID, hasFollowingStatsTask());
-            Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
-
-            if (bucketCols != null || sortCols != null) {
-              updatePartitionBucketSortColumns(db, table, partn, bucketCols,
-                  numBuckets, sortCols);
-            }
-
-            dc = new DataContainer(table.getTTable(), partn.getTPartition());
-            // add this partition to post-execution hook
-            if (work.getOutputs() != null) {
-              DDLTask.addIfAbsentByName(new WriteEntity(partn,
-                getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());
-            }
-         }
+            dc = handleStaticParts(db, table, tbd, ti);
+          }
         }
         if (SessionState.get() != null && dc != null) {
           // If we are doing an update or a delete the number of columns in the table will not
@@ -549,6 +382,230 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       return (1);
     }
   }
+
+  private DataContainer handleStaticParts(Hive db, Table table, LoadTableDesc tbd,
+      TaskInformation ti) throws HiveException, IOException, InvalidOperationException {
+    List<String> partVals = MetaStoreUtils.getPvals(table.getPartCols(),  tbd.getPartitionSpec());
+    db.validatePartitionNameCharacters(partVals);
+    Utilities.LOG14535.info("loadPartition called from " + tbd.getSourcePath()
+        + " into " + tbd.getTable().getTableName());
+    boolean isCommitMmWrite = tbd.isCommitMmWrite();
+    db.loadSinglePartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
+        tbd.getPartitionSpec(), tbd.getReplace(),
+        tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
+        (work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
+         work.getLoadTableWork().getWriteType() != AcidUtils.Operation.INSERT_ONLY),
+        hasFollowingStatsTask(), tbd.getMmWriteId(), isCommitMmWrite);
+    Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
+
+    if (ti.bucketCols != null || ti.sortCols != null) {
+      updatePartitionBucketSortColumns(db, table, partn, ti.bucketCols,
+          ti.numBuckets, ti.sortCols);
+    }
+
+    DataContainer dc = new DataContainer(table.getTTable(), partn.getTPartition());
+    // add this partition to post-execution hook
+    if (work.getOutputs() != null) {
+      DDLTask.addIfAbsentByName(new WriteEntity(partn,
+        getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());
+    }
+    return dc;
+  }
+
+  private DataContainer handleDynParts(Hive db, Table table, LoadTableDesc tbd,
+      TaskInformation ti, DynamicPartitionCtx dpCtx) throws HiveException,
+      IOException, InvalidOperationException {
+    DataContainer dc;
+    List<LinkedHashMap<String, String>> dps = Utilities.getFullDPSpecs(conf, dpCtx);
+
+    // publish DP columns to its subscribers
+    if (dps != null && dps.size() > 0) {
+      pushFeed(FeedType.DYNAMIC_PARTITIONS, dps);
+    }
+    console.printInfo(System.getProperty("line.separator"));
+    long startTime = System.currentTimeMillis();
+    // load the list of DP partitions and return the list of partition specs
+    // TODO: In a follow-up to HIVE-1361, we should refactor loadDynamicPartitions
+    // to use Utilities.getFullDPSpecs() to get the list of full partSpecs.
+    // After that check the number of DPs created to not exceed the limit and
+    // iterate over it and call loadPartition() here.
+    // The reason we don't do inside HIVE-1361 is the latter is large and we
+    // want to isolate any potential issue it may introduce.
+    if (tbd.isMmTable() && !tbd.isCommitMmWrite()) {
+      throw new HiveException("Only single-partition LoadTableDesc can skip commiting write ID");
+    }
+    Map<Map<String, String>, Partition> dp =
+      db.loadDynamicPartitions(
+        tbd.getSourcePath(),
+        tbd.getTable().getTableName(),
+        tbd.getPartitionSpec(),
+        tbd.getReplace(),
+        dpCtx.getNumDPCols(),
+        (tbd.getLbCtx() == null) ? 0 : tbd.getLbCtx().calculateListBucketingLevel(),
+        work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
+        SessionState.get().getTxnMgr().getCurrentTxnId(), hasFollowingStatsTask(),
+        work.getLoadTableWork().getWriteType(),
+        tbd.getMmWriteId());
+
+    String loadTime = "\t Time taken to load dynamic partitions: "  +
+        (System.currentTimeMillis() - startTime)/1000.0 + " seconds";
+    console.printInfo(loadTime);
+    LOG.info(loadTime);
+
+    if (dp.size() == 0 && conf.getBoolVar(HiveConf.ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION)) {
+      throw new HiveException("This query creates no partitions." +
+          " To turn off this error, set hive.error.on.empty.partition=false.");
+    }
+
+    startTime = System.currentTimeMillis();
+    // for each partition spec, get the partition
+    // and put it to WriteEntity for post-exec hook
+    for(Map.Entry<Map<String, String>, Partition> entry : dp.entrySet()) {
+      Partition partn = entry.getValue();
+
+      if (ti.bucketCols != null || ti.sortCols != null) {
+        updatePartitionBucketSortColumns(
+            db, table, partn, ti.bucketCols, ti.numBuckets, ti.sortCols);
+      }
+
+      WriteEntity enty = new WriteEntity(partn,
+        getWriteType(tbd, work.getLoadTableWork().getWriteType()));
+      if (work.getOutputs() != null) {
+        DDLTask.addIfAbsentByName(enty, work.getOutputs());
+      }
+      // Need to update the queryPlan's output as well so that post-exec hook get executed.
+      // This is only needed for dynamic partitioning since for SP the the WriteEntity is
+      // constructed at compile time and the queryPlan already contains that.
+      // For DP, WriteEntity creation is deferred at this stage so we need to update
+      // queryPlan here.
+      if (queryPlan.getOutputs() == null) {
+        queryPlan.setOutputs(new LinkedHashSet<WriteEntity>());
+      }
+      queryPlan.getOutputs().add(enty);
+
+      // update columnar lineage for each partition
+      dc = new DataContainer(table.getTTable(), partn.getTPartition());
+
+      // Don't set lineage on delete as we don't have all the columns
+      if (SessionState.get() != null &&
+          work.getLoadTableWork().getWriteType() != AcidUtils.Operation.DELETE &&
+          work.getLoadTableWork().getWriteType() != AcidUtils.Operation.UPDATE) {
+        SessionState.get().getLineageState().setLineage(tbd.getSourcePath(), dc,
+            table.getCols());
+      }
+      LOG.info("\tLoading partition " + entry.getKey());
+    }
+    console.printInfo("\t Time taken for adding to write entity : " +
+        (System.currentTimeMillis() - startTime)/1000.0 + " seconds");
+    dc = null; // reset data container to prevent it being added again.
+    return dc;
+  }
+
+  private void inferTaskInformation(TaskInformation ti) {
+    // Find the first ancestor of this MoveTask which is some form of map reduce task
+    // (Either standard, local, or a merge)
+    while (ti.task.getParentTasks() != null && ti.task.getParentTasks().size() == 1) {
+      ti.task = (Task)ti.task.getParentTasks().get(0);
+      // If it was a merge task or a local map reduce task, nothing can be inferred
+      if (ti.task instanceof MergeFileTask || ti.task instanceof MapredLocalTask) {
+        break;
+      }
+
+      // If it's a standard map reduce task, check what, if anything, it inferred about
+      // the directory this move task is moving
+      if (ti.task instanceof MapRedTask) {
+        MapredWork work = (MapredWork)ti.task.getWork();
+        MapWork mapWork = work.getMapWork();
+        ti.bucketCols = mapWork.getBucketedColsByDirectory().get(ti.path);
+        ti.sortCols = mapWork.getSortedColsByDirectory().get(ti.path);
+        if (work.getReduceWork() != null) {
+          ti.numBuckets = work.getReduceWork().getNumReduceTasks();
+        }
+
+        if (ti.bucketCols != null || ti.sortCols != null) {
+          // This must be a final map reduce task (the task containing the file sink
+          // operator that writes the final output)
+          assert work.isFinalMapRed();
+        }
+        break;
+      }
+
+      // If it's a move task, get the path the files were moved from, this is what any
+      // preceding map reduce task inferred information about, and moving does not invalidate
+      // those assumptions
+      // This can happen when a conditional merge is added before the final MoveTask, but the
+      // condition for merging is not met, see GenMRFileSink1.
+      if (ti.task instanceof MoveTask) {
+        MoveTask mt = (MoveTask)ti.task;
+        if (mt.getWork().getLoadFileWork() != null) {
+          ti.path = mt.getWork().getLoadFileWork().getSourcePath().toUri().toString();
+        }
+      }
+    }
+  }
+
+  private void checkFileFormats(Hive db, LoadTableDesc tbd, Table table)
+      throws HiveException {
+    if (work.getCheckFileFormat()) {
+      // Get all files from the src directory
+      FileStatus[] dirs;
+      ArrayList<FileStatus> files;
+      FileSystem srcFs; // source filesystem
+      try {
+        srcFs = tbd.getSourcePath().getFileSystem(conf);
+        dirs = srcFs.globStatus(tbd.getSourcePath());
+        files = new ArrayList<FileStatus>();
+        for (int i = 0; (dirs != null && i < dirs.length); i++) {
+          files.addAll(Arrays.asList(srcFs.listStatus(dirs[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER)));
+          // We only check one file, so exit the loop when we have at least
+          // one.
+          if (files.size() > 0) {
+            break;
+          }
+        }
+      } catch (IOException e) {
+        throw new HiveException(
+            "addFiles: filesystem error in check phase", e);
+      }
+
+      // handle file format check for table level
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVECHECKFILEFORMAT)) {
+        boolean flag = true;
+        // work.checkFileFormat is set to true only for Load Task, so assumption here is
+        // dynamic partition context is null
+        if (tbd.getDPCtx() == null) {
+          if (tbd.getPartitionSpec() == null || tbd.getPartitionSpec().isEmpty()) {
+            // Check if the file format of the file matches that of the table.
+            flag = HiveFileFormatUtils.checkInputFormat(
+                srcFs, conf, tbd.getTable().getInputFileFormatClass(), files);
+          } else {
+            // Check if the file format of the file matches that of the partition
+            Partition oldPart = db.getPartition(table, tbd.getPartitionSpec(), false);
+            if (oldPart == null) {
+              // this means we have just created a table and are specifying partition in the
+              // load statement (without pre-creating the partition), in which case lets use
+              // table input format class. inheritTableSpecs defaults to true so when a new
+              // partition is created later it will automatically inherit input format
+              // from table object
+              flag = HiveFileFormatUtils.checkInputFormat(
+                  srcFs, conf, tbd.getTable().getInputFileFormatClass(), files);
+            } else {
+              flag = HiveFileFormatUtils.checkInputFormat(
+                  srcFs, conf, oldPart.getInputFormatClass(), files);
+            }
+          }
+          if (!flag) {
+            throw new HiveException(
+                "Wrong file format. Please check the file's format.");
+          }
+        } else {
+          LOG.warn("Skipping file format check as dpCtx is not null");
+        }
+      }
+    }
+  }
+
+
   /**
    * so to make sure we crate WriteEntity with the right WriteType.  This is (at this point) only
    * for consistency since LockManager (which is the only thing that pays attention to WriteType)
@@ -567,6 +624,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         return WriteEntity.WriteType.INSERT;
     }
   }
+
   private boolean isSkewedStoredAsDirs(LoadTableDesc tbd) {
     return (tbd.getLbCtx() == null) ? false : tbd.getLbCtx()
         .isSkewedStoredAsDir();

@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -274,8 +275,9 @@ public class AcidUtils {
     return result;
   }
 
+  // INSERT_ONLY is a special operation which we only support INSERT operations, no UPDATE/DELETE
   public enum Operation {
-    NOT_ACID, INSERT, UPDATE, DELETE;
+    NOT_ACID, INSERT, UPDATE, DELETE, INSERT_ONLY
   }
 
   /**
@@ -343,8 +345,11 @@ public class AcidUtils {
     public static final String SPLIT_UPDATE_STRING = "split_update";
     public static final int HASH_BASED_MERGE_BIT = 0x02;
     public static final String HASH_BASED_MERGE_STRING = "hash_merge";
+    public static final int INSERT_ONLY_BIT = 0x03;
+    public static final String INSERT_ONLY_STRING = "insert_only";
     public static final String DEFAULT_VALUE_STRING = TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
     public static final String LEGACY_VALUE_STRING = TransactionalValidationListener.LEGACY_TRANSACTIONAL_PROPERTY;
+    public static final String INSERTONLY_VALUE_STRING = TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY;
 
     private AcidOperationalProperties() {
     }
@@ -373,6 +378,17 @@ public class AcidUtils {
     }
 
     /**
+     * Returns an acidOperationalProperties object for tables that uses ACID framework but only
+     * supports INSERT operation and does not require ORC or bucketing
+     * @return the acidOperationalProperties object
+     */
+    public static AcidOperationalProperties getInsertOnly() {
+      AcidOperationalProperties obj = new AcidOperationalProperties();
+      obj.setInsertOnly(true);
+      return obj;
+    }
+
+    /**
      * Returns an acidOperationalProperties object that is represented by an encoded string.
      * @param propertiesStr an encoded string representing the acidOperationalProperties.
      * @return the acidOperationalProperties object.
@@ -386,6 +402,9 @@ public class AcidUtils {
       }
       if (propertiesStr.equalsIgnoreCase(LEGACY_VALUE_STRING)) {
         return AcidOperationalProperties.getLegacy();
+      }
+      if (propertiesStr.equalsIgnoreCase(INSERTONLY_VALUE_STRING)) {
+        return AcidOperationalProperties.getInsertOnly();
       }
       AcidOperationalProperties obj = new AcidOperationalProperties();
       String[] options = propertiesStr.split("\\|");
@@ -447,12 +466,22 @@ public class AcidUtils {
       return this;
     }
 
+    public AcidOperationalProperties setInsertOnly(boolean isInsertOnly) {
+      description = (isInsertOnly
+              ? (description | INSERT_ONLY_BIT) : (description & ~INSERT_ONLY_BIT));
+      return this;
+    }
+
     public boolean isSplitUpdate() {
       return (description & SPLIT_UPDATE_BIT) > 0;
     }
 
     public boolean isHashBasedMerge() {
       return (description & HASH_BASED_MERGE_BIT) > 0;
+    }
+
+    public boolean isInsertOnly() {
+      return (description & INSERT_ONLY_BIT) > 0;
     }
 
     public int toInt() {
@@ -467,6 +496,9 @@ public class AcidUtils {
       }
       if (isHashBasedMerge()) {
         str.append("|" + HASH_BASED_MERGE_STRING);
+      }
+      if (isInsertOnly()) {
+        str.append("|" + INSERT_ONLY_STRING);
       }
       return str.toString();
     }
@@ -1074,6 +1106,17 @@ public class AcidUtils {
     }
 
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
+  }
+
+  /**
+   * Checks if a table is an ACID table that only supports INSERT, but not UPDATE/DELETE
+   * @param table table
+   * @return true if table is an INSERT_ONLY table, false otherwise
+   */
+  public static boolean isInsertOnlyTable(Table table) {
+    String transactionalProp = table.getProperty(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    return transactionalProp != null &&
+        AcidUtils.AcidOperationalProperties.INSERT_ONLY_STRING.equals(transactionalProp);
   }
 
   /**

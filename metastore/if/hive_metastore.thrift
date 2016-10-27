@@ -305,7 +305,9 @@ struct Table {
   11: string viewExpandedText,         // expanded view text, null for non-view
   12: string tableType,                 // table type enum, e.g. EXTERNAL_TABLE
   13: optional PrincipalPrivilegeSet privileges,
-  14: optional bool temporary=false
+  14: optional bool temporary=false,
+  15: optional i64 mmNextWriteId,
+  16: optional i64 mmWatermarkWriteId
 }
 
 struct Partition {
@@ -893,6 +895,44 @@ struct CacheFileMetadataRequest {
   4: optional bool isAllParts
 }
 
+
+struct GetNextWriteIdRequest {
+  1: required string dbName,
+  2: required string tblName
+}
+struct GetNextWriteIdResult {
+  1: required i64 writeId
+}
+
+struct FinalizeWriteIdRequest {
+  1: required string dbName,
+  2: required string tblName,
+  3: required i64 writeId,
+  4: required bool commit
+}
+struct FinalizeWriteIdResult {
+}
+
+struct HeartbeatWriteIdRequest {
+  1: required string dbName,
+  2: required string tblName,
+  3: required i64 writeId
+}
+struct HeartbeatWriteIdResult {
+}
+
+struct GetValidWriteIdsRequest {
+  1: required string dbName,
+  2: required string tblName
+}
+struct GetValidWriteIdsResult {
+  1: required i64 lowWatermarkId,
+  2: required i64 highWatermarkId,
+  3: optional bool areIdsValid,
+  4: optional list<i64> ids
+}
+
+
 struct GetAllFunctionsResponse {
   1: optional list<Function> functions
 }
@@ -1442,6 +1482,10 @@ service ThriftHiveMetastore extends fb303.FacebookService
   ClearFileMetadataResult clear_file_metadata(1:ClearFileMetadataRequest req)
   CacheFileMetadataResult cache_file_metadata(1:CacheFileMetadataRequest req)
 
+  GetNextWriteIdResult get_next_write_id(1:GetNextWriteIdRequest req)
+  FinalizeWriteIdResult finalize_write_id(1:FinalizeWriteIdRequest req)
+  HeartbeatWriteIdResult heartbeat_write_id(1:HeartbeatWriteIdRequest req)
+  GetValidWriteIdsResult get_valid_write_ids(1:GetValidWriteIdsRequest req)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,
@@ -1480,5 +1524,7 @@ const string META_TABLE_STORAGE   = "storage_handler",
 const string TABLE_IS_TRANSACTIONAL = "transactional",
 const string TABLE_NO_AUTO_COMPACT = "no_auto_compaction",
 const string TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties",
+const string TABLE_IS_MM = "hivecommit",
+
 
 

@@ -422,20 +422,6 @@ public final class PlanUtils {
   }
 
   /**
-   * Generate the table descriptor of MetadataTypedColumnsetSerDe with the
-   * separatorCode. MetaDataTypedColumnsetSerDe is used because LazySimpleSerDe
-   * does not support a table with a single column "col" with type
-   * "array<string>".
-   */
-  public static TableDesc getDefaultTableDesc(String separatorCode) {
-    return new TableDesc(
-        TextInputFormat.class, IgnoreKeyTextOutputFormat.class, Utilities
-        .makeProperties(
-            org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT,separatorCode,
-            serdeConstants.SERIALIZATION_LIB,MetadataTypedColumnsetSerDe.class.getName()));
-  }
-
-  /**
    * Generate the table descriptor for reduce key.
    */
   public static TableDesc getReduceKeyTableDesc(List<FieldSchema> fieldSchemas,

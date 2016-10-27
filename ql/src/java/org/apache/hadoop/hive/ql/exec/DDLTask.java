@@ -4077,7 +4077,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             tbl.getDataLocation());
 
     // create the table
-    if (crtTbl.getReplaceMode()){
+    if (crtTbl.getReplaceMode()) {
       // replace-mode creates are really alters using CreateTableDesc.
       try {
         db.alterTable(tbl.getDbName()+"."+tbl.getTableName(),tbl,null);
@@ -4091,17 +4091,35 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       } else {
         db.createTable(tbl, crtTbl.getIfNotExists());
       }
-      if ( crtTbl.isCTAS()) {
+      Long mmWriteId = crtTbl.getInitialMmWriteId();
+      if (crtTbl.isCTAS() || mmWriteId != null) {
         Table createdTable = db.getTable(tbl.getDbName(), tbl.getTableName());
-        DataContainer dc = new DataContainer(createdTable.getTTable());
-        SessionState.get().getLineageState().setLineage(
-                createdTable.getPath(), dc, createdTable.getCols()
-        );
+        if (mmWriteId != null) {
+          // TODO# this would be retrieved via ACID before the query runs; for now we rely on it
+          //       being zero at start; we can't create a write ID before we create the table here.
+          long initialWriteId = db.getNextTableWriteId(tbl.getDbName(), tbl.getTableName());
+          if (initialWriteId != mmWriteId) {
+            throw new HiveException("Initial write ID mismatch - expected " + mmWriteId
+                + " but got " + initialWriteId);
+          }
+          // CTAS create the table on a directory that already exists; import creates the table
+          // first  (in parallel with copies?), then commits after all the loads.
+          if (crtTbl.isCTAS()) {
+            db.commitMmTableWrite(tbl, initialWriteId);
+          }
+        }
+        if (crtTbl.isCTAS()) {
+          DataContainer dc = new DataContainer(createdTable.getTTable());
+          SessionState.get().getLineageState().setLineage(
+                  createdTable.getPath(), dc, createdTable.getCols()
+          );
+        }
       }
     }
     addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
     return 0;
   }
+
 
   /**
    * Create a new table like an existing table.

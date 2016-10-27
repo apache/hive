@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.RawStore.CanNotRetry;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -73,6 +74,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.PlanResult;
 import org.apache.hadoop.hive.metastore.hbase.HBaseFilterPlanUtil.ScanPlan;
+import org.apache.hadoop.hive.metastore.model.MTableWrite;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -131,10 +133,24 @@ public class HBaseStore implements RawStore {
   @Override
   public boolean commitTransaction() {
     if (--txnNestLevel == 0) {
-      LOG.debug("Committing HBase transaction");
-      getHBase().commit();
+      commitInternal();
     }
     return true;
+  }
+
+  @Override
+  @CanNotRetry
+  public Boolean commitTransactionExpectDeadlock() {
+    if (--txnNestLevel != 0) {
+      throw new AssertionError("Cannot be called on a nested transaction");
+    }
+    commitInternal();
+    return true;
+  }
+
+  private void commitInternal() {
+    LOG.debug("Committing HBase transaction");
+    getHBase().commit();
   }
 
   @Override
@@ -2727,5 +2743,58 @@ public class HBaseStore implements RawStore {
   public void addForeignKeys(List<SQLForeignKey> fks)
     throws InvalidObjectException, MetaException {
     // TODO: WTF?
+  }
+
+  @Override
+  public void createTableWrite(Table tbl, long writeId, char state, long heartbeat) {
+    // TODO: Auto-generated method stub
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void updateTableWrite(MTableWrite tw) {
+    // TODO: Auto-generated method stub
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public MTableWrite getTableWrite(String dbName, String tblName, long writeId) {
+    // TODO: Auto-generated method stub
+    throw new UnsupportedOperationException();
+  }
+ 
+
+  @Override
+  public List<Long> getTableWriteIds(
+      String dbName, String tblName, long watermarkId, long nextWriteId, char state) {
+    // TODO: Auto-generated method stub
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<FullTableName> getAllMmTablesForCleanup() throws MetaException {
+    // TODO: Auto-generated method stub
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<MTableWrite> getTableWrites(String dbName, String tblName,
+      long from, long to) throws MetaException {
+    // TODO: Auto-generated method stub
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Collection<String> getAllPartitionLocations(String dbName,
+      String tblName) {
+    // TODO: Auto-generated method stub
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void deleteTableWrites(String dbName, String tblName, long from,
+      long to) throws MetaException {
+    // TODO: Auto-generated method stub
+    throw new UnsupportedOperationException();
   }
 }

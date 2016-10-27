@@ -28,6 +28,7 @@ public class FileMergeDesc extends AbstractOperatorDesc {
   private int listBucketingDepth;
   private boolean hasDynamicPartitions;
   private boolean isListBucketingAlterTableConcatenate;
+  private Long mmWriteId;
 
   public FileMergeDesc(DynamicPartitionCtx dynPartCtx, Path outputDir) {
     this.dpCtx = dynPartCtx;
@@ -72,5 +73,13 @@ public class FileMergeDesc extends AbstractOperatorDesc {
 
   public void setListBucketingAlterTableConcatenate(boolean isListBucketingAlterTableConcatenate) {
     this.isListBucketingAlterTableConcatenate = isListBucketingAlterTableConcatenate;
+  }
+
+  public Long getMmWriteId() {
+    return mmWriteId;
+  }
+
+  public void setMmWriteId(Long mmWriteId) {
+    this.mmWriteId = mmWriteId;
   }
 }

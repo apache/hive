@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +59,7 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.model.MTableWrite;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
@@ -868,5 +870,53 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public void addForeignKeys(List<SQLForeignKey> fks)
     throws InvalidObjectException, MetaException {
     // TODO Auto-generated method stub
+  }
+
+  @Override
+  public void createTableWrite(Table tbl, long writeId, char state, long heartbeat) {
+  }
+
+  @Override
+  public void updateTableWrite(MTableWrite tw) {
+
+  }
+
+  @Override
+  public MTableWrite getTableWrite(String dbName, String tblName, long writeId) {
+    return null;
+  }
+
+  @Override
+  @CanNotRetry
+  public Boolean commitTransactionExpectDeadlock() {
+    return null;
+  }
+
+  @Override
+  public List<Long> getTableWriteIds(
+      String dbName, String tblName, long watermarkId, long nextWriteId, char state) {
+    return null;
+  }
+
+  @Override
+  public List<FullTableName> getAllMmTablesForCleanup() throws MetaException {
+    return null;
+  }
+
+  @Override
+  public List<MTableWrite> getTableWrites(String dbName, String tblName,
+      long from, long to) throws MetaException {
+    return null;
+  }
+
+  @Override
+  public Collection<String> getAllPartitionLocations(String dbName,
+      String tblName) {
+    return null;
+  }
+
+  @Override
+  public void deleteTableWrites(String dbName, String tblName, long from,
+      long to) throws MetaException {
   }
 }

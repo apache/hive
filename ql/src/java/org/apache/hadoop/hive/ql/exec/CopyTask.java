@@ -18,14 +18,20 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
@@ -37,7 +43,6 @@ import org.apache.hadoop.util.StringUtils;
  * CopyTask implementation.
  **/
 public class CopyTask extends Task<CopyWork> implements Serializable {
-
   private static final long serialVersionUID = 1L;
 
   private static transient final Logger LOG = LoggerFactory.getLogger(CopyTask.class);
@@ -60,7 +65,7 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
       FileSystem srcFs = fromPath.getFileSystem(conf);
       dstFs = toPath.getFileSystem(conf);
 
-      FileStatus[] srcs = LoadSemanticAnalyzer.matchFilesOrDir(srcFs, fromPath);
+      FileStatus[] srcs = matchFilesOrDir(srcFs, fromPath, work.isSourceMm());
       if (srcs == null || srcs.length == 0) {
         if (work.isErrorOnSrcEmpty()) {
           console.printError("No files matching path: " + fromPath.toString());
@@ -94,6 +99,45 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
       console.printError("Failed with exception " + e.getMessage(), "\n"
           + StringUtils.stringifyException(e));
       return (1);
+    }
+  }
+
+  // Note: initially copied from LoadSemanticAnalyzer.
+  private static FileStatus[] matchFilesOrDir(
+      FileSystem fs, Path path, boolean isSourceMm) throws IOException {
+    if (!isSourceMm) return matchFilesOneDir(fs, path, null);
+    // TODO: this doesn't handle list bucketing properly. Does the original exim do that?
+    FileStatus[] mmDirs = fs.listStatus(path, new ValidWriteIds.AnyIdDirFilter());
+    if (mmDirs == null || mmDirs.length == 0) return null;
+    List<FileStatus> allFiles = new ArrayList<FileStatus>();
+    for (FileStatus mmDir : mmDirs) {
+      Utilities.LOG14535.info("Found source MM directory " + mmDir.getPath());
+      matchFilesOneDir(fs, mmDir.getPath(), allFiles);
+    }
+    return allFiles.toArray(new FileStatus[allFiles.size()]);
+  }
+
+  private static FileStatus[] matchFilesOneDir(
+      FileSystem fs, Path path, List<FileStatus> result) throws IOException {
+    FileStatus[] srcs = fs.globStatus(path, new EximPathFilter());
+    if (srcs != null && srcs.length == 1) {
+      if (srcs[0].isDirectory()) {
+        srcs = fs.listStatus(srcs[0].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
+      }
+    }
+    if (result != null && srcs != null) {
+      for (int i = 0; i < srcs.length; ++i) {
+        result.add(srcs[i]);
+      }
+    }
+    return srcs;
+  }
+
+  private static final class EximPathFilter implements PathFilter {
+    @Override
+    public boolean accept(Path p) {
+      String name = p.getName();
+      return name.equals("_metadata") ? true : !name.startsWith("_") && !name.startsWith(".");
     }
   }
 

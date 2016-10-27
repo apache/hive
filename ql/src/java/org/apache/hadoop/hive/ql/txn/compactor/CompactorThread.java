@@ -65,7 +65,6 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
   @Override
   public void setThreadId(int threadId) {
     this.threadId = threadId;
-
   }
 
   @Override

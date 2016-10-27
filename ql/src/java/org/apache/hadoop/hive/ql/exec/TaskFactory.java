@@ -100,6 +100,8 @@ public final class TaskFactory {
         MergeFileTask.class));
     taskvec.add(new TaskTuple<DependencyCollectionWork>(DependencyCollectionWork.class,
         DependencyCollectionTask.class));
+    taskvec.add(new TaskTuple<ImportCommitWork>(ImportCommitWork.class,
+        ImportCommitTask.class));
     taskvec.add(new TaskTuple<PartialScanWork>(PartialScanWork.class,
         PartialScanTask.class));
     taskvec.add(new TaskTuple<IndexMetadataChangeWork>(IndexMetadataChangeWork.class,
@@ -145,6 +147,7 @@ public final class TaskFactory {
     throw new RuntimeException("No task for work class " + workClass.getName());
   }
 
+  @SafeVarargs
   public static <T extends Serializable> Task<T> get(T work, HiveConf conf,
       Task<? extends Serializable>... tasklist) {
     Task<T> ret = get((Class<T>) work.getClass(), conf);
