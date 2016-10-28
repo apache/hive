@@ -347,7 +347,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         + mmWriteId + " (src " + isSourceMm + ") for " + (table == null ? "a new table" : table.getTableName()));
 
     CopyWork cv = new CopyWork(dataPath, destPath, false);
-    cv.setIsSourceMm(isSourceMm);
+    cv.setSkipSourceMmDirs(isSourceMm);
     LoadTableDesc loadTableWork = new LoadTableDesc(destPath,
         Utilities.getTableDesc(table), new TreeMap<String, String>(), replace, mmWriteId);
     MoveWork mv = new MoveWork(getInputs(), getOutputs(), loadTableWork, null, false);
@@ -411,7 +411,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           + srcLocation + "; target: " + tgtLocation + "; copy dest " + destPath + "; mm "
           + mmWriteId + " (src " + isSourceMm + ") for " + partSpecToString(partSpec.getPartSpec()));
       CopyWork cw = new CopyWork(new Path(srcLocation), destPath, false);
-      cw.setIsSourceMm(isSourceMm);
+      cw.setSkipSourceMmDirs(isSourceMm);
       DDLWork dw = new DDLWork(getInputs(), getOutputs(), addPartitionDesc);
       LoadTableDesc loadTableWork = new LoadTableDesc(moveTaskSrc, Utilities.getTableDesc(table),
           partSpec.getPartSpec(), true, mmWriteId);

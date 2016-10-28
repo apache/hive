@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -85,20 +87,22 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     private final int start;
     private final int length;
     private final JobConf conf;
+    private final boolean isMerge;
 
-    public CheckNonCombinablePathCallable(Path[] paths, int start, int length, JobConf conf) {
+    public CheckNonCombinablePathCallable(
+        Path[] paths, int start, int length, JobConf conf, boolean isMerge) {
       this.paths = paths;
       this.start = start;
       this.length = length;
       this.conf = conf;
+      this.isMerge = isMerge;
     }
 
     @Override
     public Set<Integer> call() throws Exception {
       Set<Integer> nonCombinablePathIndices = new HashSet<Integer>();
       for (int i = 0; i < length; i++) {
-        PartitionDesc part =
-            HiveFileFormatUtils.getPartitionDescFromPathRecursively(
+        PartitionDesc part = HiveFileFormatUtils.getPartitionDescFromPathRecursively(
                 pathToPartitionInfo, paths[i + start],
                 IOPrepareCache.get().allocatePartitionDescMap());
         // Use HiveInputFormat if any of the paths is not splittable
@@ -107,12 +111,16 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
             getInputFormatFromCache(inputFormatClass, conf);
         boolean isAvoidSplitCombine = inputFormat instanceof AvoidSplitCombination &&
             ((AvoidSplitCombination) inputFormat).shouldSkipCombine(paths[i + start], conf);
-        boolean isMmTable = MetaStoreUtils.isInsertOnlyTable(part.getTableDesc().getProperties());
-        if (isAvoidSplitCombine || isMmTable) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("The path [" + paths[i + start] +
+
+        // Combined splits are not supported for MM tables right now.
+        // However, the merge for MM always combines one directory and should ignore that it's MM.
+        boolean isMmTableNonMerge = !isMerge
+            && MetaStoreUtils.isInsertOnlyTable(part.getTableDesc().getProperties());
+        if (isAvoidSplitCombine || isMmTableNonMerge) {
+          //if (LOG.isDebugEnabled()) {
+            Utilities.LOG14535.info("The path [" + paths[i + start] +
                 "] is being parked for HiveInputFormat.getSplits");
-          }
+          //}
           nonCombinablePathIndices.add(i + start);
         }
       }
@@ -467,11 +475,12 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     ExecutorService executor = Executors.newFixedThreadPool(numThreads);
     List<Future<Set<Integer>>> futureList = new ArrayList<Future<Set<Integer>>>(numThreads);
     try {
+      boolean isMerge = mrwork.isMergeFromResolver();
       for (int i = 0; i < numThreads; i++) {
         int start = i * numPathPerThread;
         int length = i != numThreads - 1 ? numPathPerThread : paths.length - start;
-        futureList.add(executor.submit(
-            new CheckNonCombinablePathCallable(paths, start, length, job)));
+        futureList.add(executor.submit(new CheckNonCombinablePathCallable(
+            paths, start, length, job, isMerge)));
       }
       Set<Integer> nonCombinablePathIndices = new HashSet<Integer>();
       for (Future<Set<Integer>> future : futureList) {

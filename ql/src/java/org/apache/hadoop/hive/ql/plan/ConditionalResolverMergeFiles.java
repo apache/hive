@@ -330,6 +330,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     mWork.setMinSplitSize(targetSize);
     mWork.setMinSplitSizePerNode(targetSize);
     mWork.setMinSplitSizePerRack(targetSize);
+    mWork.setIsMergeFromResolver(true);
   }
 
   private static class AverageSize {

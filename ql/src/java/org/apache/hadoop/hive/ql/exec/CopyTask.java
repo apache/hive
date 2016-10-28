@@ -53,19 +53,24 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
 
   @Override
   public int execute(DriverContext driverContext) {
-    FileSystem dstFs = null;
-    Path toPath = null;
-    try {
-      Path fromPath = work.getFromPath();
-      toPath = work.getToPath();
+    Path[] from = work.getFromPaths(), to = work.getToPaths();
+    for (int i = 0; i < from.length; ++i) {
+      int result = copyOnePath(from[i], to[i]);
+      if (result != 0) return result;
+    }
+    return 0;
+  }
 
+  protected int copyOnePath(Path fromPath, Path toPath) {
+    FileSystem dstFs = null;
+    try {
       console.printInfo("Copying data from " + fromPath.toString(), " to "
           + toPath.toString());
 
       FileSystem srcFs = fromPath.getFileSystem(conf);
       dstFs = toPath.getFileSystem(conf);
 
-      FileStatus[] srcs = matchFilesOrDir(srcFs, fromPath, work.isSourceMm());
+      FileStatus[] srcs = matchFilesOrDir(srcFs, fromPath, work.doSkipSourceMmDirs());
       if (srcs == null || srcs.length == 0) {
         if (work.isErrorOnSrcEmpty()) {
           console.printError("No files matching path: " + fromPath.toString());

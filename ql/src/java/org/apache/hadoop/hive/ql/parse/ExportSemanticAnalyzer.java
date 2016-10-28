@@ -18,6 +18,16 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+
+import org.apache.hadoop.hive.common.ValidWriteIds;
+
+import java.util.List;
+
+import org.apache.hadoop.hive.ql.exec.Utilities;
+
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
@@ -171,29 +181,69 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
               .getMsg("Exception while writing out the local file"), e);
     }
 
-    if (!(replicationSpec.isMetadataOnly() || (ts == null))) {
+    if (replicationSpec.isMetadataOnly() || (ts == null)) return;
+
+    try {
       Path parentPath = new Path(toURI);
+      boolean isMmTable = MetaStoreUtils.isInsertOnlyTable(ts.tableHandle.getParameters());
+      Utilities.LOG14535.info("Exporting table " + ts.tableName + " / "
+          + ts.tableHandle.getTableName() + ": " + isMmTable);
+
+      int lbLevels = isMmTable && ts.tableHandle.isStoredAsSubDirectories()
+          ? ts.tableHandle.getSkewedColNames().size() : 0;
+      ValidWriteIds ids = isMmTable ? db.getValidWriteIdsForTable(
+          ts.tableHandle.getDbName(), ts.tableHandle.getTableName()) : null;
       if (ts.tableHandle.isPartitioned()) {
         for (Partition partition : partitions) {
           Path fromPath = partition.getDataLocation();
           Path toPartPath = new Path(parentPath, partition.getName());
-          Task<? extends Serializable> rTask = TaskFactory.get(
-              new CopyWork(fromPath, toPartPath, false),
-              conf);
-          rootTasks.add(rTask);
+          CopyWork cw = createCopyWork(isMmTable, lbLevels, ids, fromPath, toPartPath);
+          rootTasks.add(TaskFactory.get(cw, conf));
           inputs.add(new ReadEntity(partition));
         }
       } else {
         Path fromPath = ts.tableHandle.getDataLocation();
         Path toDataPath = new Path(parentPath, "data");
-        Task<? extends Serializable> rTask = TaskFactory.get(new CopyWork(
-            fromPath, toDataPath, false), conf);
-        rootTasks.add(rTask);
+        CopyWork cw = createCopyWork(isMmTable, lbLevels, ids, fromPath, toDataPath);
+        rootTasks.add(TaskFactory.get(cw, conf));
         inputs.add(new ReadEntity(ts.tableHandle));
       }
       outputs.add(toWriteEntity(parentPath));
+    } catch (HiveException | IOException ex) {
+      throw new SemanticException(ex);
     }
-
   }
 
+  private CopyWork createCopyWork(boolean isMmTable, int lbLevels, ValidWriteIds ids,
+      Path fromPath, Path toDataPath) throws IOException {
+    List<Path> validPaths = null;
+    if (isMmTable) {
+      fromPath = fromPath.getFileSystem(conf).makeQualified(fromPath);
+      validPaths = Utilities.getValidMmDirectoriesFromTableOrPart(fromPath, conf, ids, lbLevels);
+    }
+    if (validPaths == null) {
+      return new CopyWork(fromPath, toDataPath, false); // Not MM, or no need to skip anything.
+    } else {
+      return createCopyWorkForValidPaths(fromPath, toDataPath, validPaths);
+    }
+  }
+
+  private CopyWork createCopyWorkForValidPaths(
+      Path fromPath, Path toPartPath, List<Path> validPaths) {
+    Path[] from = new Path[validPaths.size()], to = new Path[validPaths.size()];
+    int i = 0;
+    String fromPathStr = fromPath.toString();
+    if (!fromPathStr.endsWith(Path.SEPARATOR)) {
+      fromPathStr += "/";
+    }
+    for (Path validPath : validPaths) {
+      from[i] = validPath;
+      // TODO: assumes the results are already qualified.
+      to[i] = new Path(toPartPath, validPath.toString().substring(fromPathStr.length()));
+      Utilities.LOG14535.info("Will copy " + from[i] + " to " + to[i]
+          + " based on dest " + toPartPath + ", from " + fromPathStr + ", subpath " + validPath);
+      ++i;
+    }
+    return new CopyWork(from, to);
+  }
 }

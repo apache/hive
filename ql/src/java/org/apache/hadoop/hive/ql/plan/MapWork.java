@@ -148,6 +148,8 @@ public class MapWork extends BaseWork {
   /** Whether LLAP IO will be used for inputs. */
   private String llapIoDesc;
 
+  private boolean isMergeFromResolver;
+
   public MapWork() {}
 
   public MapWork(String name) {
@@ -717,5 +719,13 @@ public class MapWork extends BaseWork {
 
   public VectorizedRowBatch getVectorizedRowBatch() {
     return vectorizedRowBatch;
+  }
+
+  public void setIsMergeFromResolver(boolean b) {
+    this.isMergeFromResolver = b;
+  }
+
+  public boolean isMergeFromResolver() {
+    return this.isMergeFromResolver;
   }
 }

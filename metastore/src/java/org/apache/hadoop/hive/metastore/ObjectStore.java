@@ -636,7 +636,6 @@ public class ObjectStore implements RawStore, Configurable {
 
     transactionStatus = TXN_STATUS.COMMITED;
     try {
-      LOG.error("TODO# grrrrr");
       currentTransaction.commit();
     } catch (Exception ex) {
       Throwable candidate = ex;

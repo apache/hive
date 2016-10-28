@@ -4077,4 +4077,34 @@ public final class Utilities {
     }
   }
 
+  /**
+   * @return the complete list of valid MM directories under a table/partition path; null
+   * if the entire directory is valid (has no uncommitted/temporary files).
+   */
+  public static List<Path> getValidMmDirectoriesFromTableOrPart(Path path, Configuration conf,
+      ValidWriteIds ids, int lbLevels) throws IOException {
+    Utilities.LOG14535.info("Looking for valid MM paths under " + path);
+    // NULL means this directory is entirely valid.
+    List<Path> result = null;
+    FileSystem fs = path.getFileSystem(conf);
+    FileStatus[] children = (lbLevels == 0) ? fs.listStatus(path)
+        : fs.globStatus(new Path(path, StringUtils.repeat("*" + Path.SEPARATOR, lbLevels) + "*"));
+    for (int i = 0; i < children.length; ++i) {
+      FileStatus file = children[i];
+      Path childPath = file.getPath();
+      Long writeId = ValidWriteIds.extractWriteId(childPath);
+      if (!file.isDirectory() || writeId == null || !ids.isValid(writeId)) {
+        Utilities.LOG14535.info("Skipping path " + childPath);
+        if (result == null) {
+          result = new ArrayList<>(children.length - 1);
+          for (int j = 0; j < i; ++j) {
+            result.add(children[j].getPath());
+          }
+        }
+      } else if (result != null) {
+        result.add(childPath);
+      }
+    }
+    return result;
+  }
 }
