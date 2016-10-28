@@ -627,9 +627,9 @@ public class HiveConf extends Configuration {
     HIVE_METASTORE_SSL_KEYSTORE_PASSWORD("hive.metastore.keystore.password", "",
         "Metastore SSL certificate keystore password."),
     HIVE_METASTORE_SSL_TRUSTSTORE_PATH("hive.metastore.truststore.path", "",
-        "Metastore SSL certificate keystore location."),
+        "Metastore SSL certificate truststore location."),
     HIVE_METASTORE_SSL_TRUSTSTORE_PASSWORD("hive.metastore.truststore.password", "",
-        "Metastore SSL certificate keystore password."),
+        "Metastore SSL certificate truststore password."),
 
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
