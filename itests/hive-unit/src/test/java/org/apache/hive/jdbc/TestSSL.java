@@ -433,6 +433,60 @@ public class TestSSL {
         + LOCALHOST_KEY_STORE_NAME);
   }
 
+  /**
+   * Test HMS server with SSL
+   * @throws Exception
+   */
+  @Test
+  public void testMetastoreWithSSL() throws Exception {
+    setMetastoreSslConf(conf);
+    setSslConfOverlay(confOverlay);
+    // Test in http mode
+    setHttpConfOverlay(confOverlay);
+    miniHS2 = new MiniHS2.Builder().withRemoteMetastore().withConf(conf).cleanupLocalDirOnStartup(false).build();
+    miniHS2.start(confOverlay);
+
+    String tableName = "sslTab";
+    Path dataFilePath = new Path(dataFileDir, "kv1.txt");
+
+    // make SSL connection
+    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL("default", SSL_CONN_PARAMS),
+        System.getProperty("user.name"), "bar");
+
+    // Set up test data
+    setupTestTableWithData(tableName, dataFilePath, hs2Conn);
+    Statement stmt = hs2Conn.createStatement();
+    ResultSet res = stmt.executeQuery("SELECT * FROM " + tableName);
+    int rowCount = 0;
+    while (res.next()) {
+      ++rowCount;
+      assertEquals("val_" + res.getInt(1), res.getString(2));
+    }
+    // read result over SSL
+    assertEquals(500, rowCount);
+
+    hs2Conn.close();
+  }
+
+  /**
+   * Verify the HS2 can't connect to HMS if the certificate doesn't match
+   * @throws Exception
+   */
+  @Test
+  public void testMetastoreConnectionWrongCertCN() throws Exception {
+    setMetastoreSslConf(conf);
+    conf.setVar(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PATH,
+        dataFileDir + File.separator +  EXAMPLEDOTCOM_KEY_STORE_NAME);
+    miniHS2 = new MiniHS2.Builder().withRemoteMetastore().withConf(conf).cleanupLocalDirOnStartup(false).build();
+    try {
+      miniHS2.start(confOverlay);
+    } catch (java.net.ConnectException e) {
+      assertTrue(e.toString().contains("Connection refused"));
+    }
+
+    miniHS2.stop();
+  }
+
   private void setupTestTableWithData(String tableName, Path dataFilePath,
       Connection hs2Conn) throws Exception {
     Statement stmt = hs2Conn.createStatement();
@@ -453,6 +507,18 @@ public class TestSSL {
     confOverlay.put(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PATH.varname,
         dataFileDir + File.separator +  LOCALHOST_KEY_STORE_NAME);
     confOverlay.put(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname,
+        KEY_STORE_TRUST_STORE_PASSWORD);
+  }
+
+  private void setMetastoreSslConf(HiveConf conf) {
+    conf.setBoolVar(ConfVars.HIVE_METASTORE_USE_SSL, true);
+    conf.setVar(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PATH,
+        dataFileDir + File.separator +  LOCALHOST_KEY_STORE_NAME);
+    conf.setVar(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PASSWORD,
+        KEY_STORE_TRUST_STORE_PASSWORD);
+    conf.setVar(ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PATH,
+        dataFileDir + File.separator +  TRUST_STORE_NAME);
+    conf.setVar(ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PASSWORD,
         KEY_STORE_TRUST_STORE_PASSWORD);
   }
 

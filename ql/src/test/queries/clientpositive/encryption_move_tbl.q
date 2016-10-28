@@ -6,26 +6,57 @@ set hive.cli.errors.ignore=true;
 
 DROP TABLE IF EXISTS encrypted_table PURGE;
 DROP DATABASE IF EXISTS encrypted_db;
-CREATE TABLE encrypted_table (key INT, value STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/default/encrypted_table';
-CRYPTO CREATE_KEY --keyName key_128 --bitLength 128;
-CRYPTO CREATE_ZONE --keyName key_128 --path ${hiveconf:hive.metastore.warehouse.dir}/default/encrypted_table;
 
-CREATE DATABASE encrypted_db LOCATION '${hiveconf:hive.metastore.warehouse.dir}/encrypted_db';
+-- create table default.encrypted_table in its default warehouse location ${hiveconf:hive.metastore.warehouse.dir}/encrypted_table
+CREATE TABLE encrypted_table (key INT, value STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/encrypted_table';
+CRYPTO CREATE_KEY --keyName key_128 --bitLength 128;
+CRYPTO CREATE_ZONE --keyName key_128 --path ${hiveconf:hive.metastore.warehouse.dir}/encrypted_table;
+
+-- create database encrypted_db in its default warehouse location {hiveconf:hive.metastore.warehouse.dir}/encrypted_db.db
+CREATE DATABASE encrypted_db LOCATION '${hiveconf:hive.metastore.warehouse.dir}/encrypted_db.db';
 CRYPTO CREATE_KEY --keyName key_128_2 --bitLength 128;
-CRYPTO CREATE_ZONE --keyName key_128_2 --path ${hiveconf:hive.metastore.warehouse.dir}/encrypted_db;
+CRYPTO CREATE_ZONE --keyName key_128_2 --path ${hiveconf:hive.metastore.warehouse.dir}/encrypted_db.db;
 
 INSERT OVERWRITE TABLE encrypted_table SELECT * FROM src;
 SHOW TABLES;
--- should fail
+-- should fail, since they are in different encryption zones
 ALTER TABLE default.encrypted_table RENAME TO encrypted_db.encrypted_table_2;
 SHOW TABLES;
+
 -- should succeed in Hadoop 2.7 but fail in 2.6  (HDFS-7530)
 ALTER TABLE default.encrypted_table RENAME TO default.plain_table;
 SHOW TABLES;
 
+-- create table encrypted_table_outloc under default database but in a specified location other than the default db location in the warehouse
+-- rename should succeed since it does not need to move data (HIVE-14909), otherwise, it would fail.
+CREATE TABLE encrypted_table_outloc (key INT, value STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/../specified_table_location';
+CRYPTO CREATE_KEY --keyName key_128_3 --bitLength 128;
+CRYPTO CREATE_ZONE --keyName key_128_3 --path ${hiveconf:hive.metastore.warehouse.dir}/../specified_table_location;
+ALTER TABLE encrypted_table_outloc RENAME TO renamed_encrypted_table_outloc;
+SHOW TABLES;
 
-DROP TABLE encrypted_table PURGE;
+-- create database encrypted_db_outloc in a specified location other than its default in warehouse
+CREATE DATABASE encrypted_db_outloc LOCATION '${hiveconf:hive.metastore.warehouse.dir}/../specified_db_location';
+CRYPTO CREATE_KEY --keyName key_128_4 --bitLength 128;
+CRYPTO CREATE_ZONE --keyName key_128_4 --path ${hiveconf:hive.metastore.warehouse.dir}/../specified_db_location;
+
+USE encrypted_db_outloc;
+CREATE TABLE encrypted_table (key INT, value STRING);
+INSERT OVERWRITE TABLE encrypted_table SELECT * FROM default.src;
+ALTER TABLE encrypted_table RENAME TO renamed_encrypted_table;
+-- should succeed since data moves within specified_db_location
+SHOW TABLES;
+-- should fail, since they are in different encryption zones
+ALTER TABLE encrypted_db_outloc.renamed_encrypted_table RENAME TO default.plain_table_2;
+SHOW TABLES;
+
+DROP TABLE default.encrypted_table PURGE;
 DROP TABLE default.plain_table PURGE;
+DROP TABLE default.renamed_encrypted_table_outloc PURGE;
 DROP DATABASE encrypted_db;
+DROP TABLE encrypted_db_outloc.renamed_encrypted_table PURGE;
+DROP DATABASE encrypted_db_outloc;
 CRYPTO DELETE_KEY --keyName key_128;
 CRYPTO DELETE_KEY --keyName key_128_2;
+CRYPTO DELETE_KEY --keyName key_128_3;
+CRYPTO DELETE_KEY --keyName key_128_4;

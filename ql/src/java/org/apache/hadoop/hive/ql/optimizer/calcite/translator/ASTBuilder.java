@@ -82,7 +82,7 @@ class ASTBuilder {
                       dq.getQueryString()) + "\""));
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
               .add(HiveParser.StringLiteral, "\"" + Constants.DRUID_QUERY_TYPE + "\"")
-              .add(HiveParser.StringLiteral, "\"" + dq.getQueryType() + "\""));
+              .add(HiveParser.StringLiteral, "\"" + dq.getQueryType().getQueryName() + "\""));
     }
     if (hts.isInsideView()) {
       // We need to carry the insideView information from calcite into the ast.

@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
@@ -43,7 +44,6 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hive.jdbc.HttpBasicAuthInterceptor;
-import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HiveAuthFactory.AuthTypes;
 import org.apache.hive.service.rpc.thrift.TCLIService;
 import org.apache.hive.service.rpc.thrift.TExecuteStatementReq;
@@ -210,7 +210,7 @@ public class TestThriftHttpCLIServiceFeatures  {
   }
 
   private TTransport getRawBinaryTransport() throws Exception {
-    return HiveAuthFactory.getSocketTransport(ThriftCLIServiceTest.host, ThriftCLIServiceTest.port, 0);
+    return HiveAuthUtils.getSocketTransport(ThriftCLIServiceTest.host, ThriftCLIServiceTest.port, 0);
   }
 
   private static TTransport getHttpTransport() throws Exception {

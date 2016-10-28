@@ -223,7 +223,8 @@ public class MiniHS2 extends AbstractHiveService {
       // Initialize the execution engine based on cluster type
       switch (miniClusterType) {
       case TEZ:
-        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 4, uriString);
+        // TODO: This should be making use of confDir to load configs setup for Tez, etc.
+        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 2, uriString);
         break;
       case LLAP:
         if (usePortsFromConf) {
@@ -231,10 +232,10 @@ public class MiniHS2 extends AbstractHiveService {
         }
         llapCluster = LlapItUtils.startAndGetMiniLlapCluster(hiveConf, null, null);
 
-        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 4, uriString);
+        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 2, uriString);
         break;
       case MR:
-        mr = ShimLoader.getHadoopShims().getMiniMrCluster(hiveConf, 4, uriString, 1);
+        mr = ShimLoader.getHadoopShims().getMiniMrCluster(hiveConf, 2, uriString, 1);
         break;
       default:
         throw new IllegalArgumentException("Unsupported cluster type " + mr);

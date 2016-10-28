@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import java.util.Arrays;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.FileNotFoundException;
@@ -32,7 +29,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
 
@@ -597,7 +593,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
   }
 
-  
+
   protected static PartitionDesc getPartitionDescFromPath(
       Map<Path, PartitionDesc> pathToPartitionInfo, Path dir)
       throws IOException {
@@ -716,7 +712,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         TableScanOperator ts = (TableScanOperator) op;
         // push down projections.
         ColumnProjectionUtils.appendReadColumns(
-            jobConf, ts.getNeededColumnIDs(), ts.getNeededColumns());
+            jobConf, ts.getNeededColumnIDs(), ts.getNeededColumns(), ts.getNeededNestedColumnPaths());
         // push down filters
         pushFilters(jobConf, ts);
 

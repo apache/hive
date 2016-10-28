@@ -51,6 +51,7 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.joda.time.Interval;
+import org.joda.time.chrono.ISOChronology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -210,7 +211,7 @@ public class HiveDruidQueryBasedInputFormat extends InputFormat<NullWritable, Dr
 
     final long numRows = metadataList.get(0).getNumRows();
 
-    query = query.withPagingSpec(PagingSpec.newSpec(selectThreshold));
+    query = query.withPagingSpec(PagingSpec.newSpec(Integer.MAX_VALUE));
     if (numRows <= selectThreshold) {
       // We are not going to split it
       return new HiveDruidSplit[] { new HiveDruidSplit(address,
@@ -221,8 +222,8 @@ public class HiveDruidQueryBasedInputFormat extends InputFormat<NullWritable, Dr
     // a Time Boundary query. Then, we use the information to split the query
     // following the Select threshold configuration property
     final List<Interval> intervals = new ArrayList<>();
-    if (query.getIntervals().size() == 1 &&
-            query.getIntervals().get(0).equals(DruidTable.DEFAULT_INTERVAL)) {
+    if (query.getIntervals().size() == 1 && query.getIntervals().get(0).withChronology(
+            ISOChronology.getInstanceUTC()).equals(DruidTable.DEFAULT_INTERVAL)) {
       // Default max and min, we should execute a time boundary query to get a
       // more precise range
       TimeBoundaryQueryBuilder timeBuilder = new Druids.TimeBoundaryQueryBuilder();
@@ -253,7 +254,7 @@ public class HiveDruidQueryBasedInputFormat extends InputFormat<NullWritable, Dr
       }
 
       intervals.add(new Interval(timeList.get(0).getValue().getMinTime().getMillis(),
-              timeList.get(0).getValue().getMaxTime().getMillis()));
+              timeList.get(0).getValue().getMaxTime().getMillis(), ISOChronology.getInstanceUTC()));
     } else {
       intervals.addAll(query.getIntervals());
     }
@@ -288,13 +289,13 @@ public class HiveDruidQueryBasedInputFormat extends InputFormat<NullWritable, Dr
         final long expectedRange = rangeSize - currTime;
         if (interval.getEndMillis() - startTime >= expectedRange) {
           endTime = startTime + expectedRange;
-          currentIntervals.add(new Interval(startTime, endTime));
+          currentIntervals.add(new Interval(startTime, endTime, ISOChronology.getInstanceUTC()));
           startTime = endTime;
           currTime = 0;
           break;
         }
         endTime = interval.getEndMillis();
-        currentIntervals.add(new Interval(startTime, endTime));
+        currentIntervals.add(new Interval(startTime, endTime, ISOChronology.getInstanceUTC()));
         currTime += (endTime - startTime);
         startTime = intervals.get(++posIntervals).getStartMillis();
       }

@@ -37,9 +37,18 @@ public final class ColumnProjectionUtils {
   public static final Logger LOG = LoggerFactory.getLogger(ColumnProjectionUtils.class);
 
   public static final String READ_COLUMN_IDS_CONF_STR = "hive.io.file.readcolumn.ids";
+  /**
+   * the nested column path is the string from the root to the leaf
+   * e.g.
+   * c:struct<a:string,b:string>
+   * the column a's path is c.a and b's path is c.b
+   */
+  public static final String READ_NESTED_COLUMN_PATH_CONF_STR =
+    "hive.io.file.readNestedColumn.paths";
   public static final String READ_ALL_COLUMNS = "hive.io.file.read.all.columns";
   public static final String READ_COLUMN_NAMES_CONF_STR = "hive.io.file.readcolumn.names";
   private static final String READ_COLUMN_IDS_CONF_STR_DEFAULT = "";
+  private static final String READ_NESTED_COLUMN_PATH_CONF_STR_DEFAULT = "";
   private static final boolean READ_ALL_COLUMNS_DEFAULT = true;
   private static final Joiner CSV_JOINER = Joiner.on(",").skipNulls();
 
@@ -113,6 +122,30 @@ public final class ColumnProjectionUtils {
   }
 
   /**
+   * Appends read nested column's paths. Once a read nested column path
+   * is included in the list, a underlying record reader of a columnar file format
+   * (e.g. Parquet and ORC) can know what columns are needed.
+   */
+  public static void appendNestedColumnPaths(
+    Configuration conf,
+    List<String> paths) {
+    if (paths == null || paths.isEmpty()) {
+      return;
+    }
+    String pathsStr = StringUtils.join(StringUtils.COMMA_STR,
+      paths.toArray(new String[paths.size()]));
+    String old = conf.get(READ_NESTED_COLUMN_PATH_CONF_STR, null);
+    String newConfStr = pathsStr;
+    if (old != null && !old.isEmpty()) {
+      newConfStr = newConfStr + StringUtils.COMMA_STR + old;
+    }
+    setReadNestedColumnPathConf(conf, newConfStr);
+    // Set READ_ALL_COLUMNS to false
+    conf.setBoolean(READ_ALL_COLUMNS, false);
+  }
+
+
+  /**
    * This method appends read column information to configuration to use for PPD. It is
    * currently called with information from TSOP. Names come from TSOP input RowSchema, and
    * IDs are the indexes inside the schema (which PPD assumes correspond to indexes inside the
@@ -122,13 +155,14 @@ public final class ColumnProjectionUtils {
    * @param names Column names.
    */
   public static void appendReadColumns(
-      Configuration conf, List<Integer> ids, List<String> names) {
+      Configuration conf, List<Integer> ids, List<String> names, List<String> groupPaths) {
     if (ids.size() != names.size()) {
       LOG.warn("Read column counts do not match: "
           + ids.size() + " ids, " + names.size() + " names");
     }
     appendReadColumns(conf, ids);
     appendReadColumnNames(conf, names);
+    appendNestedColumnPaths(conf, groupPaths);
   }
 
   public static void appendReadColumns(
@@ -160,6 +194,20 @@ public final class ColumnProjectionUtils {
     return result;
   }
 
+  public static List<String> getNestedColumnPaths(Configuration conf) {
+    String skips =
+      conf.get(READ_NESTED_COLUMN_PATH_CONF_STR, READ_NESTED_COLUMN_PATH_CONF_STR_DEFAULT);
+    String[] list = StringUtils.split(skips);
+    List<String> result = new ArrayList<>(list.length);
+    for (String element : list) {
+      // it may contain duplicates, remove duplicates
+      if (!result.contains(element)) {
+        result.add(element);
+      }
+    }
+    return result;
+  }
+
   public static String[] getReadColumnNames(Configuration conf) {
     String colNames = conf.get(READ_COLUMN_NAMES_CONF_STR, READ_COLUMN_IDS_CONF_STR_DEFAULT);
     if (colNames != null && !colNames.isEmpty()) {
@@ -173,6 +221,16 @@ public final class ColumnProjectionUtils {
       conf.set(READ_COLUMN_IDS_CONF_STR, READ_COLUMN_IDS_CONF_STR_DEFAULT);
     } else {
       conf.set(READ_COLUMN_IDS_CONF_STR, id);
+    }
+  }
+
+  private static void setReadNestedColumnPathConf(
+    Configuration conf,
+    String nestedColumnPaths) {
+    if (nestedColumnPaths.trim().isEmpty()) {
+      conf.set(READ_NESTED_COLUMN_PATH_CONF_STR, READ_NESTED_COLUMN_PATH_CONF_STR_DEFAULT);
+    } else {
+      conf.set(READ_NESTED_COLUMN_PATH_CONF_STR, nestedColumnPaths);
     }
   }
 

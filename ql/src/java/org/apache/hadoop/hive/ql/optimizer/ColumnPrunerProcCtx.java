@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
@@ -37,9 +39,15 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  * This class implements the processor context for Column Pruner.
@@ -50,6 +58,11 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
 
   private final Map<Operator<? extends OperatorDesc>, List<String>> prunedColLists;
 
+  /**
+   * This map stores the pruned nested column path for each operator
+   */
+  private final Map<Operator<? extends OperatorDesc>, List<String>> prunedNestedColLists;
+
   private final Map<CommonJoinOperator, Map<Byte, List<String>>> joinPrunedColLists;
 
   private final Map<UnionOperator, List<Integer>> unionPrunedColLists;
@@ -57,6 +70,7 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
   public ColumnPrunerProcCtx(ParseContext pctx) {
     this.pctx = pctx;
     prunedColLists = new HashMap<Operator<? extends OperatorDesc>, List<String>>();
+    prunedNestedColLists = new HashMap<Operator<? extends OperatorDesc>, List<String>>();
     joinPrunedColLists = new HashMap<CommonJoinOperator, Map<Byte, List<String>>>();
     unionPrunedColLists = new HashMap<>();
   }
@@ -82,6 +96,10 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
 
   public Map<Operator<? extends OperatorDesc>, List<String>> getPrunedColLists() {
     return prunedColLists;
+  }
+
+  public Map<Operator<? extends OperatorDesc>, List<String>> getPrunedNestedColLists() {
+    return prunedNestedColLists;
   }
 
   /**
@@ -135,6 +153,27 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
       }
     }
     return colList;
+  }
+
+  /**
+   * Get the path to the root column for the nested column attribute
+   *
+   * @param curOp current operator
+   * @return the nested column paths for current operator and its child operator
+   */
+  public List<String> genNestedColPaths(Operator<? extends OperatorDesc> curOp) {
+    if (curOp.getChildOperators() == null) {
+      return null;
+    }
+    Set<String> groupPathsList = new HashSet<>();
+
+    for (Operator<? extends OperatorDesc> child : curOp.getChildOperators()) {
+      if (prunedNestedColLists.containsKey(child)) {
+        groupPathsList.addAll(prunedNestedColLists.get(child));
+      }
+    }
+
+    return new ArrayList<>(groupPathsList);
   }
 
   /**
@@ -236,6 +275,69 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
     }
 
     return cols;
+  }
+
+  /**
+   * Creates the list of internal group paths for select * expressions.
+   *
+   * @param op        The select operator.
+   * @param paths The list of nested column paths returned by the children of the
+   *                  select operator.
+   * @return List<String> of the nested column path from leaf to the root.
+   */
+  public List<String> getSelectNestedColPathsFromChildren(
+    SelectOperator op,
+    List<String> paths) {
+    List<String> groups = new ArrayList<>();
+    SelectDesc conf = op.getConf();
+
+    if (paths != null && conf.isSelStarNoCompute()) {
+      groups.addAll(paths);
+      return groups;
+    }
+
+    List<ExprNodeDesc> selectDescs = conf.getColList();
+
+    List<String> outputColumnNames = conf.getOutputColumnNames();
+    for (int i = 0; i < outputColumnNames.size(); i++) {
+      if (paths == null || paths.contains(outputColumnNames.get(i))) {
+        ExprNodeDesc desc = selectDescs.get(i);
+        List<String> gp = getNestedColPathByDesc(desc);
+        groups.addAll(gp);
+      }
+    }
+
+    return groups;
+  }
+
+  // Entry method
+  private List<String> getNestedColPathByDesc(ExprNodeDesc desc) {
+    List<String> res = new ArrayList<>();
+    getNestedColsFromExprNodeDesc(desc, "", res);
+    return res;
+  }
+
+  private void getNestedColsFromExprNodeDesc(
+    ExprNodeDesc desc,
+    String pathToRoot,
+    List<String> paths) {
+    if (desc instanceof ExprNodeColumnDesc) {
+      String f = ((ExprNodeColumnDesc) desc).getColumn();
+      String p = pathToRoot.isEmpty() ? f : f + "." + pathToRoot;
+      paths.add(p);
+    } else if (desc instanceof ExprNodeFieldDesc) {
+      String f = ((ExprNodeFieldDesc) desc).getFieldName();
+      String p = pathToRoot.isEmpty() ? f : f + "." + pathToRoot;
+      getNestedColsFromExprNodeDesc(((ExprNodeFieldDesc) desc).getDesc(), p, paths);
+    } else {
+      List<ExprNodeDesc> children = desc.getChildren();
+      if (children == null || children.isEmpty()) {
+        return;
+      }
+      for (ExprNodeDesc c : children) {
+        getNestedColsFromExprNodeDesc(c, pathToRoot, paths);
+      }
+    }
   }
 
   /**

@@ -70,7 +70,6 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.ql.plan.UnionDesc;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFInputDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
@@ -323,9 +322,9 @@ public final class ColumnPrunerProcFactory {
       } else {
         prunedCols = referencedColumns;
       }
-      
-      List<ColumnInfo> newRS = prunedColumnsList(prunedCols, op.getSchema(), funcDef);      
-      
+
+      List<ColumnInfo> newRS = prunedColumnsList(prunedCols, op.getSchema(), funcDef);
+
       op.getSchema().setSignature(new ArrayList<ColumnInfo>(newRS));
 
       ShapeDetails outputShape = funcDef.getStartOfChain().getInput().getOutputShape();
@@ -333,7 +332,7 @@ public final class ColumnPrunerProcFactory {
       return null;
     }
 
-    private List<ColumnInfo> buildPrunedRS(List<String> prunedCols, RowSchema oldRS) 
+    private List<ColumnInfo> buildPrunedRS(List<String> prunedCols, RowSchema oldRS)
         throws SemanticException {
       ArrayList<ColumnInfo> sig = new ArrayList<ColumnInfo>();
       HashSet<String> prunedColsSet = new HashSet<String>(prunedCols);
@@ -355,7 +354,7 @@ public final class ColumnPrunerProcFactory {
       }
       return columns;
     }
-    
+
     private RowResolver buildPrunedRR(List<String> prunedCols, RowSchema oldRS)
         throws SemanticException {
       RowResolver resolver = new RowResolver();
@@ -403,12 +402,12 @@ public final class ColumnPrunerProcFactory {
       } else {
         pDef.getOutputShape().setRr(buildPrunedRR(prunedCols, oldRS));
       }
-      
+
       PTFInputDef input = pDef.getInput();
       if (input instanceof PartitionedTableFunctionDef) {
         return prunedColumnsList(prunedCols, oldRS, (PartitionedTableFunctionDef)input);
       }
-      
+
       ArrayList<String> inputColumns = prunedInputList(prunedCols, input);
       input.getOutputShape().setRr(buildPrunedRR(inputColumns, oldRS));
       input.getOutputShape().setColumnNames(inputColumns);
@@ -486,11 +485,14 @@ public final class ColumnPrunerProcFactory {
       }
 
       cols = cols == null ? new ArrayList<String>() : cols;
+      List nestedCols = cppCtx.genNestedColPaths((Operator<? extends OperatorDesc>) nd);
 
-      cppCtx.getPrunedColLists().put((Operator<? extends OperatorDesc>) nd,
-          cols);
+      cppCtx.getPrunedColLists().put((Operator<? extends OperatorDesc>) nd, cols);
+      cppCtx.getPrunedNestedColLists().put((Operator<? extends OperatorDesc>) nd, nestedCols);
       RowSchema inputRS = scanOp.getSchema();
       setupNeededColumns(scanOp, inputRS, cols);
+
+      scanOp.setNeededNestedColumnPaths(nestedCols);
 
       return null;
     }
@@ -712,12 +714,12 @@ public final class ColumnPrunerProcFactory {
       ((SelectDesc)select.getConf()).setColList(colList);
       ((SelectDesc)select.getConf()).setOutputColumnNames(outputColNames);
       pruneOperator(ctx, select, outputColNames);
-      
+
       Operator<?> udtfPath = op.getChildOperators().get(LateralViewJoinOperator.UDTF_TAG);
       List<String> lvFCols = new ArrayList<String>(cppCtx.getPrunedColLists().get(udtfPath));
       lvFCols = Utilities.mergeUniqElems(lvFCols, outputColNames);
       pruneOperator(ctx, op, lvFCols);
-      
+
       return null;
     }
   }
@@ -772,7 +774,7 @@ public final class ColumnPrunerProcFactory {
       // and return the ones which have a marked column
       cppCtx.getPrunedColLists().put(op,
           cppCtx.getSelectColsFromChildren(op, cols));
-
+      cppCtx.getPrunedNestedColLists().put(op, cppCtx.getSelectNestedColPathsFromChildren(op, cols));
       if (cols == null || conf.isSelStarNoCompute()) {
         return null;
       }

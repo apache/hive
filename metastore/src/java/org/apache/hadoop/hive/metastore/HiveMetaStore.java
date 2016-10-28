@@ -36,7 +36,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
@@ -111,7 +113,6 @@ import org.apache.thrift.server.TServerEventHandler;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
 import org.slf4j.Logger;
@@ -120,6 +121,9 @@ import org.slf4j.LoggerFactory;
 import javax.jdo.JDOException;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -6884,8 +6888,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean tcpKeepAlive = conf.getBoolVar(HiveConf.ConfVars.METASTORE_TCP_KEEP_ALIVE);
       boolean useFramedTransport = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_FRAMED_TRANSPORT);
       boolean useCompactProtocol = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_COMPACT_PROTOCOL);
+      boolean useSSL = conf.getBoolVar(ConfVars.HIVE_METASTORE_USE_SSL);
       useSasl = conf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL);
-
 
       TProcessor processor;
       TTransportFactory transFactory;
@@ -6901,6 +6905,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       HMSHandler baseHandler = new HiveMetaStore.HMSHandler("new db based metaserver", conf,
           false);
       IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
+      TServerSocket serverSocket  = null;
+
       if (useSasl) {
         // we are in secure mode.
         if (useFramedTransport) {
@@ -6918,6 +6924,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                 MetaStoreUtils.getMetaStoreSaslProperties(conf));
         processor = saslServer.wrapProcessor(
           new ThriftHiveMetastore.Processor<IHMSHandler>(handler));
+        serverSocket = HiveAuthUtils.getServerSocket(null, port);
+
         LOG.info("Starting DB backed MetaStore Server in Secure Mode");
       } else {
         // we are in unsecure mode.
@@ -6935,12 +6943,32 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           processor = new TSetIpAddressProcessor<IHMSHandler>(handler);
           LOG.info("Starting DB backed MetaStore Server");
         }
-      }
- 
-       TServerTransport serverTransport = tcpKeepAlive ?
-        new TServerSocketKeepAlive(port) : new TServerSocket(port);
 
-      TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverTransport)
+        // enable SSL support for HMS
+        List<String> sslVersionBlacklist = new ArrayList<String>();
+        for (String sslVersion : conf.getVar(ConfVars.HIVE_SSL_PROTOCOL_BLACKLIST).split(",")) {
+          sslVersionBlacklist.add(sslVersion);
+        }
+        if (!useSSL) {
+          serverSocket = HiveAuthUtils.getServerSocket(null, port);
+        } else {
+          String keyStorePath = conf.getVar(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PATH).trim();
+          if (keyStorePath.isEmpty()) {
+            throw new IllegalArgumentException(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PASSWORD.varname
+                + " Not configured for SSL connection");
+          }
+          String keyStorePassword = ShimLoader.getHadoopShims().getPassword(conf,
+              HiveConf.ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PASSWORD.varname);
+          serverSocket = HiveAuthUtils.getServerSSLSocket(null, port, keyStorePath,
+              keyStorePassword, sslVersionBlacklist);
+        }
+      }
+
+      if (tcpKeepAlive) {
+        serverSocket = new TServerSocketKeepAlive(serverSocket);
+      }
+
+      TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverSocket)
           .processor(processor)
           .transportFactory(transFactory)
           .protocolFactory(protocolFactory)

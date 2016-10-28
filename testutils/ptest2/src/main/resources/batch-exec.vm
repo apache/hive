@@ -35,7 +35,7 @@ then
   export PATH=$JAVA_HOME/bin/:$PATH
 fi
 export ANT_OPTS="-Xmx1g -XX:MaxPermSize=256m -Djava.io.tmpdir=$logDir/tmp ${antEnvOpts}"
-export M2_OPTS="-Xmx1g -XX:MaxPermSize=256m -Djava.io.tmpdir=$logDir/tmp ${mavenEnvOpts}"
+export MAVEN_OPTS="-Xmx256m -Djava.io.tmpdir=$logDir/tmp ${mavenEnvOpts}"
 export HADOOP_ROOT_LOGGER=INFO,console
 export HADOOP_OPTS="-Dhive.log.dir=$logDir -Dhive.query.id=hadoop -Djava.io.tmpdir=$logDir/tmp"
 cd $localDir/$instanceName/${repositoryName}-source || exit 1

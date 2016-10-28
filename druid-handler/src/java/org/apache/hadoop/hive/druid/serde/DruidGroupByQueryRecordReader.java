@@ -127,8 +127,13 @@ public class DruidGroupByQueryRecordReader
     for (int i=0; i < query.getDimensions().size(); i++) {
       DimensionSpec ds = query.getDimensions().get(i);
       List<String> dims = current.getDimension(ds.getDimension());
-      int pos = dims.size() - indexes[i] - 1;
-      value.getValue().put(ds.getOutputName(), dims.get(pos));
+      if (dims.size() == 0) {
+        // NULL value for dimension
+        value.getValue().put(ds.getOutputName(), null);
+      } else {
+        int pos = dims.size() - indexes[i] - 1;
+        value.getValue().put(ds.getOutputName(), dims.get(pos));
+      }
     }
     int counter = 0;
     // 3) The aggregation columns
@@ -161,8 +166,13 @@ public class DruidGroupByQueryRecordReader
       for (int i=0; i < query.getDimensions().size(); i++) {
         DimensionSpec ds = query.getDimensions().get(i);
         List<String> dims = current.getDimension(ds.getDimension());
-        int pos = dims.size() - indexes[i] - 1;
-        value.getValue().put(ds.getOutputName(), dims.get(pos));
+        if (dims.size() == 0) {
+          // NULL value for dimension
+          value.getValue().put(ds.getOutputName(), null);
+        } else {
+          int pos = dims.size() - indexes[i] - 1;
+          value.getValue().put(ds.getOutputName(), dims.get(pos));
+        }
       }
       int counter = 0;
       // 3) The aggregation columns

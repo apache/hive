@@ -80,7 +80,7 @@ STAGE PLANS:
           alias: druid_table_1
           properties:
             druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":["robot"],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-            druid.query.type SELECT
+            druid.query.type select
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Select Operator
@@ -109,7 +109,7 @@ STAGE PLANS:
           alias: druid_table_1
           properties:
             druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":[],"metrics":["delta"],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-            druid.query.type SELECT
+            druid.query.type select
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Select Operator
@@ -140,7 +140,7 @@ STAGE PLANS:
           alias: druid_table_1
           properties:
             druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"selector","dimension":"language","value":"en"},"dimensions":["robot"],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-            druid.query.type SELECT
+            druid.query.type select
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Select Operator
@@ -171,7 +171,7 @@ STAGE PLANS:
           alias: druid_table_1
           properties:
             druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":["robot"],"limitSpec":{"type":"default"},"filter":{"type":"selector","dimension":"language","value":"en"},"aggregations":[{"type":"longSum","name":"dummy_agg","fieldName":"dummy_agg"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
-            druid.query.type GROUP_BY
+            druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Select Operator
@@ -219,7 +219,7 @@ STAGE PLANS:
             filterExpr: language is not null (type: boolean)
             properties:
               druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":["robot","namespace","anonymous","unpatrolled","page","language","newpage","user"],"metrics":["count","added","delta","variation","deleted"],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-              druid.query.type SELECT
+              druid.query.type select
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -244,7 +244,7 @@ STAGE PLANS:
             filterExpr: language is not null (type: boolean)
             properties:
               druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":["robot","namespace","anonymous","unpatrolled","page","language","newpage","user"],"metrics":["count","added","delta","variation","deleted"],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-              druid.query.type SELECT
+              druid.query.type select
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -280,7 +280,7 @@ STAGE PLANS:
               columns.types timestamp:string:string:string:string:string:string:string:string:float:float:float:float:float
               druid.datasource wikipedia
               druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":["robot","namespace","anonymous","unpatrolled","page","language","newpage","user"],"metrics":["count","added","delta","variation","deleted"],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-              druid.query.type SELECT
+              druid.query.type select
 #### A masked pattern was here ####
               name default.druid_table_1
               numFiles 0
@@ -305,7 +305,7 @@ STAGE PLANS:
                 columns.types timestamp:string:string:string:string:string:string:string:string:float:float:float:float:float
                 druid.datasource wikipedia
                 druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":["robot","namespace","anonymous","unpatrolled","page","language","newpage","user"],"metrics":["count","added","delta","variation","deleted"],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-                druid.query.type SELECT
+                druid.query.type select
 #### A masked pattern was here ####
                 name default.druid_table_1
                 numFiles 0
@@ -404,7 +404,7 @@ STAGE PLANS:
             alias: druid_table_1
             properties:
               druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"selector","dimension":"language","value":"en"},"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-              druid.query.type SELECT
+              druid.query.type select
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             GatherStats: false
             Select Operator
@@ -419,7 +419,7 @@ STAGE PLANS:
             alias: druid_table_1
             properties:
               druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"selector","dimension":"language","value":"en"},"dimensions":["robot"],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-              druid.query.type SELECT
+              druid.query.type select
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Reduce Output Operator
@@ -446,7 +446,7 @@ STAGE PLANS:
               columns.types timestamp:string:string:string:string:string:string:string:string:float:float:float:float:float
               druid.datasource wikipedia
               druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"selector","dimension":"language","value":"en"},"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-              druid.query.type SELECT
+              druid.query.type select
 #### A masked pattern was here ####
               name default.druid_table_1
               numFiles 0
@@ -471,7 +471,7 @@ STAGE PLANS:
                 columns.types timestamp:string:string:string:string:string:string:string:string:float:float:float:float:float
                 druid.datasource wikipedia
                 druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"selector","dimension":"language","value":"en"},"dimensions":["robot"],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-                druid.query.type SELECT
+                druid.query.type select
 #### A masked pattern was here ####
                 name default.druid_table_1
                 numFiles 0

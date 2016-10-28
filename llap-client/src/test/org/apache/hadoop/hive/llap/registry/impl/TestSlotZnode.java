@@ -89,7 +89,7 @@ public class TestSlotZnode {
   public void testDeletesNodeWhenClosed() throws Exception {
     CuratorFramework curator = newCurator();
     SlotZnode node = createZnode(curator);
-    assertTrue(node.start(5, TimeUnit.SECONDS));
+    assertTrue(node.start(30, TimeUnit.SECONDS));
     String path = null;
     try {
       path = node.getActualPath();
@@ -105,32 +105,32 @@ public class TestSlotZnode {
     CuratorFramework curator = newCurator();
     CuratorFramework observer = newCurator();
     SlotZnode node = createZnode(curator);
-    assertTrue(node.start(5, TimeUnit.SECONDS));
+    assertTrue(node.start(30, TimeUnit.SECONDS));
     String originalPath = node.getActualPath();
     assertNodeExists(observer, originalPath);
     Trigger deletedTrigger = Trigger.deleted();
     observer.checkExists().usingWatcher(deletedTrigger).forPath(node.getActualPath());
     killSession(curator);
     // Make sure the node got deleted.
-    assertTrue(deletedTrigger.firedWithin(5, TimeUnit.SECONDS));
+    assertTrue(deletedTrigger.firedWithin(30, TimeUnit.SECONDS));
     // Check for it to be recreated.
     Trigger createdTrigger = Trigger.created();
     Stat stat = observer.checkExists().usingWatcher(createdTrigger).forPath(originalPath);
-    assertTrue(stat != null || createdTrigger.firedWithin(5, TimeUnit.SECONDS));
+    assertTrue(stat != null || createdTrigger.firedWithin(30, TimeUnit.SECONDS));
   }
 
   @Test
   public void testRecreatesNodeWhenItGetsDeleted() throws Exception {
     CuratorFramework curator = newCurator();
     SlotZnode node = createZnode(curator);
-    assertTrue(node.start(5, TimeUnit.SECONDS));
+    assertTrue(node.start(30, TimeUnit.SECONDS));
     String originalNode = node.getActualPath();
     assertNodeExists(curator, originalNode);
     // Delete the original node...
     curator.delete().forPath(originalNode);
     Trigger createdWatchTrigger = Trigger.created();
     Stat stat = curator.checkExists().usingWatcher(createdWatchTrigger).forPath(originalNode);
-    assertTrue(stat != null || createdWatchTrigger.firedWithin(5, TimeUnit.SECONDS));
+    assertTrue(stat != null || createdWatchTrigger.firedWithin(30, TimeUnit.SECONDS));
   }
 
   @Test
@@ -138,14 +138,14 @@ public class TestSlotZnode {
     CuratorFramework curator = newCurator();
     SlotZnode node1 = createZnode(curator),
         node2 = createZnode(curator), node3 = createZnode(curator);
-    assertTrue(node1.start(5, TimeUnit.SECONDS));
+    assertTrue(node1.start(30, TimeUnit.SECONDS));
     String path1 = node1.getActualPath();
-    assertTrue(node2.start(5, TimeUnit.SECONDS));
+    assertTrue(node2.start(30, TimeUnit.SECONDS));
     String path2 = node2.getActualPath();
     assertFalse(path1.equals(path2));
     node1.close();
     // Path must be reused.
-    assertTrue(node3.start(5, TimeUnit.SECONDS));
+    assertTrue(node3.start(30, TimeUnit.SECONDS));
     assertTrue(path1.equals(node3.getActualPath()));
   }
 
@@ -178,11 +178,16 @@ public class TestSlotZnode {
       if (isFallback) {
         curator.create().creatingParentsIfNeeded().forPath(PATH + "/worker-" + i);
       }
+      final int ix = i;
       startTasks[i] = new FutureTask<SlotZnode>(new Callable<SlotZnode>() {
         SlotZnode node = createZnode(curator);
         public SlotZnode call() throws Exception {
           syncThreadStart(cdlIn, cdlOut);
-          return node.start(5, TimeUnit.SECONDS) ? node : null;
+          int id = System.identityHashCode(node);
+          LOG.info("Starting the node " + id + " from task #" + ix);
+          boolean result = node.start(30, TimeUnit.SECONDS);
+          LOG.info((result ? "Started" : "Failed to start") + " the node from task #" + ix);
+          return result ? node : null;
         }
       });
     }
@@ -195,7 +200,7 @@ public class TestSlotZnode {
     int totalFallbackCount = 0;
     for (int i = 0; i < startTasks.length; ++i) {
       SlotZnode node = startTasks[i].get();
-      assertNotNull(node);
+      assertNotNull("failed to start the node from task #" + i, node);
       totalFallbackCount += node.getFallbackCount();
       int slot = node.getCurrentSlot();
       assertTrue(slot < found.length);

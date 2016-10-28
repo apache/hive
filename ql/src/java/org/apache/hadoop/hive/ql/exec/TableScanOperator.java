@@ -220,7 +220,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       ObjectInspectorUtils.partialCopyToStandardObject(rdSize, row,
           rdSizeColumn, 1, (StructObjectInspector) inputObjInspectors[0],
           ObjectInspectorCopyOption.WRITABLE);
-      currentStat.addToStat(StatsSetupConst.RAW_DATA_SIZE, (((LongWritable)rdSize.get(0)).get()));
+      currentStat.addToStat(StatsSetupConst.RAW_DATA_SIZE, (((LongWritable) rdSize.get(0)).get()));
     }
 
   }
@@ -295,6 +295,14 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   public void setNeededColumns(List<String> columnNames) {
     conf.setNeededColumns(columnNames);
+  }
+
+  public List<String> getNeededNestedColumnPaths() {
+    return conf.getNeededNestedColumnPaths();
+  }
+
+  public void setNeededNestedColumnPaths(List<String> nestedColumnPaths) {
+    conf.setNeededNestedColumnPaths(nestedColumnPaths);
   }
 
   public List<String> getNeededColumns() {

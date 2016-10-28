@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.ql.parse.TableSample;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.serde.serdeConstants;
 
-
 /**
  * Table Scan Descriptor Currently, data is only read from a base source as part
  * of map-reduce framework. So, nothing is stored in the descriptor. But, more
@@ -81,6 +80,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
   // SELECT count(*) FROM t).
   private List<Integer> neededColumnIDs;
   private List<String> neededColumns;
+  private List<String> neededNestedColumnPaths;
 
   // all column names referenced including virtual columns. used in ColumnAccessAnalyzer
   private transient List<String> referencedColumns;
@@ -200,6 +200,14 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public List<Integer> getNeededColumnIDs() {
     return neededColumnIDs;
+  }
+
+  public List<String> getNeededNestedColumnPaths() {
+    return neededNestedColumnPaths;
+  }
+
+  public void setNeededNestedColumnPaths(List<String> neededNestedColumnPaths) {
+    this.neededNestedColumnPaths = neededNestedColumnPaths;
   }
 
   public void setNeededColumns(List<String> neededColumns) {

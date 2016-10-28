@@ -19,6 +19,7 @@
 package org.apache.hive.jdbc;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.KerberosSaslHelper;
@@ -487,14 +488,14 @@ public class HiveConnection implements java.sql.Connection {
         JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
 
       if (sslTrustStore == null || sslTrustStore.isEmpty()) {
-        transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout);
+        transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout);
       } else {
-        transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout,
+        transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout,
             sslTrustStore, sslTrustStorePassword);
       }
     } else {
       // get non-SSL socket transport
-      transport = HiveAuthFactory.getSocketTransport(host, port, loginTimeout);
+      transport = HiveAuthUtils.getSocketTransport(host, port, loginTimeout);
     }
     return transport;
   }

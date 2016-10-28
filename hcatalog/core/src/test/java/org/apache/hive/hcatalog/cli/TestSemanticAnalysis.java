@@ -248,11 +248,16 @@ public class TestSemanticAnalysis extends HCatBaseTest {
     hcatDriver.run("drop table newname");
     hcatDriver.run("create table oldname (a int)");
     Table tbl = client.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "oldname");
-    assertTrue(tbl.getSd().getLocation().contains("oldname"));
+    assertTrue("The old table location is: " + tbl.getSd().getLocation(), tbl.getSd().getLocation().contains("oldname"));
 
     hcatDriver.run("alter table oldname rename to newNAME");
     tbl = client.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "newname");
-    assertTrue(tbl.getSd().getLocation().contains("newname"));
+    // since the oldname table is not under its database (See HIVE-15059), the renamed oldname table will keep
+    // its location after HIVE-14909. I changed to check the existence of the newname table and its name instead
+    // of verifying its location
+    // assertTrue(tbl.getSd().getLocation().contains("newname"));
+    assertTrue(tbl != null);
+    assertTrue(tbl.getTableName().equalsIgnoreCase("newname"));
 
     hcatDriver.run("drop table newname");
   }
