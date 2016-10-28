@@ -2169,6 +2169,16 @@ public class HiveConf extends Configuration {
     HIVE_BLOBSTORE_USE_BLOBSTORE_AS_SCRATCHDIR("hive.blobstore.use.blobstore.as.scratchdir", false,
             "Enable the use of scratch directories directly on blob storage systems (it may cause performance penalties)."),
 
+    HIVE_BLOBSTORE_OPTIMIZATIONS_ENABLED("hive.blobstore.optimizations.enabled", true,
+            "This parameter enables a number of optimizations when running on blobstores:\n" +
+            "(1) When true, if renaming directories within a blobstore, rename files one at a time rather than at a\n"+
+            "directory level. This will improve the performance of directory renames when running on blobstores.\n" +
+            "When false rely on the connector implementation of directory renames. Since renames may require copying\n" +
+            "the entire file, each rename can take a long amount of time. Renaming at a directory level may not be\n" +
+            "ideal if the blobstore connector cannot efficiently rename a directory (e.g. HADOOP-13600). By default,\n" +
+            "renames are done using a thread pool which allows each individual file to be renamed in parallel. The\n" +
+            "size of the threadpool is controlled by the hive.mv.files.thread parameter."),
+
     HIVE_QUERY_TIMEOUT_SECONDS("hive.query.timeout.seconds", "0s",
         "Timeout for Running Query in seconds. A nonpositive value means infinite. " +
         "If the query timeout is also set by thrift API call, the smaller one will be taken.");

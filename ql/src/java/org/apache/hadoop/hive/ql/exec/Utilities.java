@@ -38,7 +38,6 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.MessageDigest;
@@ -54,7 +53,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,6 +67,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -79,6 +79,7 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.antlr.runtime.CommonToken;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
@@ -95,6 +96,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveInterruptCallback;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
@@ -161,6 +163,7 @@ import org.apache.hadoop.hive.ql.plan.api.Graph;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
+import org.apache.hadoop.hive.ql.util.ParallelDirectoryRenamer;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -1628,10 +1631,17 @@ public final class Utilities {
    *          the target directory
    * @throws IOException
    */
-  public static void renameOrMoveFiles(FileSystem fs, Path src, Path dst) throws IOException,
+  public static void renameOrMoveFiles(Configuration conf, FileSystem fs, Path src, Path dst) throws IOException,
       HiveException {
     if (!fs.exists(dst)) {
-      if (!fs.rename(src, dst)) {
+      final boolean shouldRenameDirectoryInParallel = BlobStorageUtils.shouldRenameDirectoryInParallel(conf, fs, fs);
+      if (shouldRenameDirectoryInParallel && conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0) {
+        final ExecutorService pool = Executors.newFixedThreadPool(
+                conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
+                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Move-Thread-%d").build());
+        ParallelDirectoryRenamer.renameDirectoryInParallel(conf, fs, fs, src, dst, true, SessionState.get(), pool);
+        pool.shutdown();
+      } else if (!fs.rename(src, dst)) {
         throw new HiveException("Unable to move: " + src + " to: " + dst);
       }
     } else {
@@ -1643,7 +1653,7 @@ public final class Utilities {
         String fileName = srcFilePath.getName();
         Path dstFilePath = new Path(dst, fileName);
         if (file.isDir()) {
-          renameOrMoveFiles(fs, srcFilePath, dstFilePath);
+          renameOrMoveFiles(conf, fs, srcFilePath, dstFilePath);
         }
         else {
           if (fs.exists(dstFilePath)) {
@@ -1871,7 +1881,7 @@ public final class Utilities {
 
         // move to the file destination
         log.info("Moving tmp dir: " + tmpPath + " to: " + specPath);
-        Utilities.renameOrMoveFiles(fs, tmpPath, specPath);
+        Utilities.renameOrMoveFiles(hconf, fs, tmpPath, specPath);
       }
     } else {
       fs.delete(tmpPath, true);

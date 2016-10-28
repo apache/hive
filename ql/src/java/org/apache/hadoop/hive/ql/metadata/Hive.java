@@ -49,12 +49,14 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
@@ -79,7 +81,6 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.EventRequestType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.FireEventRequestData;
@@ -120,6 +121,7 @@ import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.session.CreateTableAutomaticGrant;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.util.ParallelDirectoryRenamer;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -131,7 +133,6 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 
 import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * This class has functions that implement meta data/DDL operations using calls
@@ -2728,6 +2729,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
     HadoopShims shims = ShimLoader.getHadoopShims();
     HadoopShims.HdfsFileStatus destStatus = null;
+    final boolean shouldRenameDirectoryInParallel = BlobStorageUtils.shouldRenameDirectoryInParallel(conf, srcFs, destFs);
 
     // If source path is a subdirectory of the destination path:
     //   ex: INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300;
@@ -2779,6 +2781,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               conf);
         } else {
           if (destIsSubDir) {
+
             FileStatus[] srcs = destFs.listStatus(srcf, FileUtils.HIDDEN_FILES_PATH_FILTER);
 
             List<Future<Void>> futures = new LinkedList<>();
@@ -2831,13 +2834,23 @@ private void constructOneLBLocationMap(FileStatus fSta,
             }
             return true;
           } else {
-            if (destFs.rename(srcf, destf)) {
-              if (inheritPerms) {
-                ShimLoader.getHadoopShims().setFullFileStatus(conf, destStatus, null, destFs, destf, true);
-              }
+            if (shouldRenameDirectoryInParallel && conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0) {
+              final ExecutorService pool = Executors.newFixedThreadPool(
+                      conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
+                      new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Move-Thread-%d").build());
+              ParallelDirectoryRenamer.renameDirectoryInParallel(conf, srcFs, destFs, srcf, destf, inheritPerms,
+                      SessionState.get(), pool);
+              pool.shutdown();
               return true;
+            } else {
+              if (destFs.rename(srcf, destf)) {
+                if (inheritPerms) {
+                  ShimLoader.getHadoopShims().setFullFileStatus(conf, destStatus, null, destFs, destf, true);
+                }
+                return true;
+              }
+              return false;
             }
-            return false;
           }
         }
       }

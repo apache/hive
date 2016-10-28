@@ -1,0 +1,35 @@
+PREHOOK: query: DROP TABLE parallel_directory_rename
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE parallel_directory_rename
+POSTHOOK: type: DROPTABLE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/parallel_directory_rename
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parallel_directory_rename
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/parallel_directory_rename
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parallel_directory_rename
+PREHOOK: query: INSERT INTO parallel_directory_rename VALUES (1), (10), (100), (1000)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@parallel_directory_rename
+POSTHOOK: query: INSERT INTO parallel_directory_rename VALUES (1), (10), (100), (1000)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@parallel_directory_rename
+POSTHOOK: Lineage: parallel_directory_rename.value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: SELECT * FROM parallel_directory_rename
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parallel_directory_rename
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parallel_directory_rename
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parallel_directory_rename
+#### A masked pattern was here ####
+1
+10
+100
+1000

@@ -219,7 +219,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
           for (Path incompatFile : incompatFileSet) {
             Path destDir = finalPath.getParent();
             try {
-              Utilities.renameOrMoveFiles(fs, incompatFile, destDir);
+              Utilities.renameOrMoveFiles(jc, fs, incompatFile, destDir);
               LOG.info("Moved incompatible file " + incompatFile + " to " +
                   destDir);
             } catch (HiveException e) {

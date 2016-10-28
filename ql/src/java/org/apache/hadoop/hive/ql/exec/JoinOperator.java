@@ -195,7 +195,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
       FileStatus[] taskOutputDirs = fs.listStatus(specPath);
       if (taskOutputDirs != null) {
         for (FileStatus dir : taskOutputDirs) {
-          Utilities.renameOrMoveFiles(fs, dir.getPath(), specPath);
+          Utilities.renameOrMoveFiles(hconf, fs, dir.getPath(), specPath);
           fs.delete(dir.getPath(), true);
         }
       }
@@ -229,7 +229,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
         Utilities.removeTempOrDuplicateFiles(fs, intermediatePath);
         // Step3: move to the file destination
         log.info("Moving tmp dir: " + intermediatePath + " to: " + specPath);
-        Utilities.renameOrMoveFiles(fs, intermediatePath, specPath);
+        Utilities.renameOrMoveFiles(hconf, fs, intermediatePath, specPath);
       }
     } else {
       fs.delete(tmpPath, true);

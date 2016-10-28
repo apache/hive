@@ -24,18 +24,20 @@ import org.apache.hadoop.hive.conf.HiveConf;
 
 import java.util.Collection;
 
+
 /**
  * Utilities for different blob (object) storage systems
  */
 public class BlobStorageUtils {
+
     private static final boolean DISABLE_BLOBSTORAGE_AS_SCRATCHDIR = false;
 
     public static boolean isBlobStoragePath(final Configuration conf, final Path path) {
-        return (path == null) ? false : isBlobStorageScheme(conf, path.toUri().getScheme());
+        return path != null && isBlobStorageScheme(conf, path.toUri().getScheme());
     }
 
     public static boolean isBlobStorageFileSystem(final Configuration conf, final FileSystem fs) {
-        return (fs == null) ? false : isBlobStorageScheme(conf, fs.getScheme());
+        return fs != null && isBlobStorageScheme(conf, fs.getUri().getScheme());
     }
 
     public static boolean isBlobStorageScheme(final Configuration conf, final String scheme) {
@@ -50,5 +52,26 @@ public class BlobStorageUtils {
                 HiveConf.ConfVars.HIVE_BLOBSTORE_USE_BLOBSTORE_AS_SCRATCHDIR.varname,
                 DISABLE_BLOBSTORAGE_AS_SCRATCHDIR
         );
+    }
+
+    /**
+     * Returns true if {@link HiveConf.ConfVars#HIVE_BLOBSTORE_OPTIMIZATIONS_ENABLED} is true, false otherwise.
+     */
+    public static boolean areOptimizationsEnabled(final Configuration conf) {
+        return conf.getBoolean(
+                HiveConf.ConfVars.HIVE_BLOBSTORE_OPTIMIZATIONS_ENABLED.varname,
+                HiveConf.ConfVars.HIVE_BLOBSTORE_OPTIMIZATIONS_ENABLED.defaultBoolVal
+        );
+    }
+
+    /**
+     * Returns true if a directory should be renamed in parallel, false otherwise.
+     */
+    public static boolean shouldRenameDirectoryInParallel(final Configuration conf, final FileSystem srcFs,
+                                                          final FileSystem destFs) {
+        return areOptimizationsEnabled(conf) && srcFs.getClass().equals(
+                destFs.getClass()) && BlobStorageUtils.isBlobStorageFileSystem(
+                srcFs.getConf(), srcFs) && BlobStorageUtils.isBlobStorageFileSystem(
+                destFs.getConf(), destFs);
     }
 }
