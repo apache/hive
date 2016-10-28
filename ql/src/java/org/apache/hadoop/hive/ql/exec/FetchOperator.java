@@ -374,6 +374,7 @@ public class FetchOperator implements Serializable {
       Utilities.copyTableJobPropertiesToConf(currDesc.getTableDesc(), job);
       InputFormat inputFormat = getInputFormatFromCache(formatter, job);
       String inputs = processCurrPathForMmWriteIds(inputFormat);
+      Utilities.LOG14535.info("Setting fetch inputs to " + inputs);
       if (inputs == null) return null;
       job.set("mapred.input.dir", inputs);
 

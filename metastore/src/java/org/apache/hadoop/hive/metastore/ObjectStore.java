@@ -1161,6 +1161,12 @@ public class ObjectStore implements RawStore, Configurable {
           pm.deletePersistentAll(partGrants);
         }
 
+        // TODO# temporary; will be removed with ACID. Otherwise, need to do direct delete w/o get.
+        List<MTableWrite> mtw = getTableWrites(dbName, tableName, -1, -1);
+        if (mtw != null && mtw.size() > 0) {
+          pm.deletePersistentAll(mtw);
+        }
+
         List<MPartitionColumnPrivilege> partColGrants = listTableAllPartitionColumnGrants(dbName,
             tableName);
         if (partColGrants != null && partColGrants.size() > 0) {
@@ -8866,17 +8872,25 @@ public class ObjectStore implements RawStore, Configurable {
   public List<MTableWrite> getTableWrites(
       String dbName, String tblName, long from, long to) throws MetaException {
     boolean success = false;
+    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    tblName = HiveStringUtils.normalizeIdentifier(tblName);
     Query query = null;
     openTransaction();
     try {
-      query = pm.newQuery(MTableWrite.class,
-          "table.tableName == t1 && table.database.name == t2 && writeId > t3 && writeId < t4");
-      query.declareParameters(
-          "java.lang.String t1, java.lang.String t2, java.lang.Long t3, java.lang.Long t4");
+      String queryStr = "table.tableName == t1 && table.database.name == t2 && writeId > t3",
+          argStr = "java.lang.String t1, java.lang.String t2, java.lang.Long t3";
+      if (to >= 0) {
+        queryStr += " && writeId < t4";
+        argStr += ", java.lang.Long t4";
+      }
+      query = pm.newQuery(MTableWrite.class, queryStr);
+      query.declareParameters(argStr);
       query.setOrdering("writeId asc");
       @SuppressWarnings("unchecked")
-      List<MTableWrite> writes =
-        (List<MTableWrite>) query.executeWithArray(tblName, dbName, from, to);
+      List<MTableWrite> writes = (List<MTableWrite>)(to >= 0
+         ? query.executeWithArray(tblName, dbName, from, to)
+         : query.executeWithArray(tblName, dbName, from));
+      pm.retrieveAll(writes);
       success = true;
       return (writes == null || writes.isEmpty()) ? null : new ArrayList<>(writes);
     } finally {
