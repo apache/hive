@@ -278,6 +278,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
       // Multi-file load is for dynamic partitions when some partitions do not
       // need to merge and they can simply be moved to the target directory.
+      // This is also used for MM table conversion.
       LoadMultiFilesDesc lmfd = work.getLoadMultiFilesWork();
       if (lmfd != null) {
         boolean isDfsDir = lmfd.getIsDfsDir();

@@ -128,7 +128,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
     this.alias = alias;
     this.virtualCols = vcs;
     this.tableMetadata = tblMetadata;
-    isAcidTable = AcidUtils.isAcidTable(this.tableMetadata);
+    isAcidTable = AcidUtils.isFullAcidTable(this.tableMetadata);
     if (isAcidTable) {
       acidOperationalProperties = AcidUtils.getAcidOperationalProperties(this.tableMetadata);
     }

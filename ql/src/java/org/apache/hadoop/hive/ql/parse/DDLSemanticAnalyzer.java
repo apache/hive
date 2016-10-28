@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -72,7 +73,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.PKInfo;
 import org.apache.hadoop.hive.ql.parse.authorization.AuthorizationParseUtils;
 import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactory;
 import org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactoryImpl;
@@ -184,6 +184,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private final Set<String> reservedPartitionValues;
   private final HiveAuthorizationTaskFactory hiveAuthorizationTaskFactory;
+  private WriteEntity alterTableOutput;
 
   static {
     TokenToTypeName.put(HiveParser.TOK_BOOLEAN, serdeConstants.BOOLEAN_TYPE_NAME);
@@ -674,6 +675,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeShowRoles(ASTNode ast) throws SemanticException {
+    @SuppressWarnings("unchecked")
     Task<DDLWork> roleDDLTask = (Task<DDLWork>) hiveAuthorizationTaskFactory
         .createShowRolesTask(ast, ctx.getResFile(), getInputs(), getOutputs());
 
@@ -1413,10 +1415,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     alterTblDesc.setEnvironmentContext(environmentContext);
     alterTblDesc.setOldName(tableName);
 
-    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc);
+    boolean isPotentialMmSwitch = mapProp.containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)
+        || mapProp.containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc, isPotentialMmSwitch);
 
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
   }
 
   private void analyzeAlterTableSerdeProps(ASTNode ast, String tableName,
@@ -1476,16 +1479,21 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void addInputsOutputsAlterTable(String tableName, Map<String, String> partSpec,
       AlterTableTypes op) throws SemanticException {
-    addInputsOutputsAlterTable(tableName, partSpec, null, op);
+    addInputsOutputsAlterTable(tableName, partSpec, null, op, false);
+  }
+
+  private void addInputsOutputsAlterTable(String tableName, Map<String, String> partSpec,
+      AlterTableDesc desc, boolean doForceExclusive) throws SemanticException {
+     addInputsOutputsAlterTable(tableName, partSpec, desc, desc.getOp(), doForceExclusive);
   }
 
   private void addInputsOutputsAlterTable(String tableName, Map<String, String> partSpec,
      AlterTableDesc desc) throws SemanticException {
-    addInputsOutputsAlterTable(tableName, partSpec, desc, desc.getOp());
+    addInputsOutputsAlterTable(tableName, partSpec, desc, desc.getOp(), false);
   }
 
   private void addInputsOutputsAlterTable(String tableName, Map<String, String> partSpec,
-      AlterTableDesc desc, AlterTableTypes op) throws SemanticException {
+      AlterTableDesc desc, AlterTableTypes op, boolean doForceExclusive) throws SemanticException {
     boolean isCascade = desc != null && desc.getIsCascade();
     boolean alterPartitions = partSpec != null && !partSpec.isEmpty();
     //cascade only occurs at table level then cascade to partition level
@@ -1496,11 +1504,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Table tab = getTable(tableName, true);
     // Determine the lock type to acquire
-    WriteEntity.WriteType writeType = WriteEntity.determineAlterTableWriteType(op);
+    WriteEntity.WriteType writeType = doForceExclusive
+        ? WriteType.DDL_EXCLUSIVE : WriteEntity.determineAlterTableWriteType(op);
 
     if (!alterPartitions) {
       inputs.add(new ReadEntity(tab));
-      outputs.add(new WriteEntity(tab, writeType));
+      alterTableOutput = new WriteEntity(tab, writeType);
+      outputs.add(alterTableOutput);
       //do not need the lock for partitions since they are covered by the table lock
       if (isCascade) {
         for (Partition part : getPartitions(tab, partSpec, false)) {

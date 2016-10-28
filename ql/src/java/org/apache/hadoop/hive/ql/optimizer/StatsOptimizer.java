@@ -319,7 +319,7 @@ public class StatsOptimizer extends Transform {
         }
 
         Table tbl = tsOp.getConf().getTableMetadata();
-        if (AcidUtils.isAcidTable(tbl)) {
+        if (AcidUtils.isFullAcidTable(tbl)) {
           Logger.info("Table " + tbl.getTableName() + " is ACID table. Skip StatsOptimizer.");
           return null;
         }

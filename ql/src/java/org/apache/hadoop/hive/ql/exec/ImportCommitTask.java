@@ -39,6 +39,7 @@ public class ImportCommitTask extends Task<ImportCommitWork> {
 
     try {
       if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
+        Utilities.LOG14535.info("Exiting due to explain");
         return 0;
       }
       Hive db = getHive();

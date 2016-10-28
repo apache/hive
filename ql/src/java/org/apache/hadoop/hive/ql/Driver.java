@@ -1580,8 +1580,13 @@ public class Driver implements CommandProcessor {
   private static void acquireWriteIds(QueryPlan plan, HiveConf conf) throws HiveException {
     // Output IDs are put directly into FileSinkDesc; here, we only need to take care of inputs.
     for (ReadEntity input : plan.getInputs()) {
-      Table t = extractMmTable(input);
+      Table t = extractTable(input);
       if (t == null) continue;
+      Utilities.LOG14535.info("Checking " + t.getTableName() + " for being a MM table: " + t.getParameters());
+      if (!MetaStoreUtils.isInsertOnlyTable(t.getParameters())) {
+        ValidWriteIds.clearConf(conf, t.getDbName(), t.getTableName());
+        continue;
+      }
       ValidWriteIds ids = Hive.get().getValidWriteIdsForTable(t.getDbName(), t.getTableName());
       ids.addToConf(conf, t.getDbName(), t.getTableName());
       if (plan.getFetchTask() != null) {
@@ -1590,7 +1595,7 @@ public class Driver implements CommandProcessor {
     }
   }
 
-  private static Table extractMmTable(ReadEntity input) {
+  private static Table extractTable(ReadEntity input) {
     Table t = null;
     switch (input.getType()) {
       case TABLE:
@@ -1602,8 +1607,7 @@ public class Driver implements CommandProcessor {
         break;
       default: return null;
     }
-    return (t != null && !t.isTemporary()
-        && MetaStoreUtils.isInsertOnlyTable(t.getParameters())) ? t : null;
+    return (t != null && !t.isTemporary()) ? t : null;
   }
 
   private CommandProcessorResponse rollback(CommandProcessorResponse cpr) {

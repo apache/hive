@@ -58,6 +58,7 @@ import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -91,6 +92,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -163,8 +165,10 @@ import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.GrantDesc;
 import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
+import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
 import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
+import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.OrcFileMergeDesc;
@@ -238,6 +242,7 @@ import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.ST;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 /**
  * DDLTask implementation.
@@ -1788,7 +1793,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int compact(Hive db, AlterTableSimpleDesc desc) throws HiveException {
 
     Table tbl = db.getTable(desc.getTableName());
-    if (!AcidUtils.isAcidTable(tbl)) {
+    if (!AcidUtils.isFullAcidTable(tbl)) {
       throw new HiveException(ErrorMsg.NONACID_COMPACTION_NOT_SUPPORTED, tbl.getDbName(),
           tbl.getTableName());
     }
@@ -3349,14 +3354,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // Don't change the table object returned by the metastore, as we'll mess with it's caches.
     Table oldTbl = tbl;
     tbl = oldTbl.copy();
+    // Handle child tasks here. We could add them directly whereever we need,
+    // but let's make it a little bit more explicit.
     if (allPartitions != null) {
       // Alter all partitions
       for (Partition part : allPartitions) {
-        alterTableOrSinglePartition(alterTbl, tbl, part);
+        addChildTasks(alterTableOrSinglePartition(alterTbl, tbl, part));
       }
     } else {
       // Just alter the table
-      alterTableOrSinglePartition(alterTbl, tbl, null);
+      addChildTasks(alterTableOrSinglePartition(alterTbl, tbl, null));
     }
 
     if (allPartitions == null) {
@@ -3368,6 +3375,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
 
+    // TODO# WRONG!! HERE
     try {
       if (allPartitions == null) {
         db.alterTable(alterTbl.getOldName(), tbl, alterTbl.getIsCascade(), alterTbl.getEnvironmentContext());
@@ -3429,6 +3437,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return addIfAbsentByName(newWriteEntity, work.getOutputs());
   }
 
+  private void addChildTasks(List<Task<?>> extraTasks) {
+    if (extraTasks == null) return;
+    for (Task<?> newTask : extraTasks) {
+      addDependentTask(newTask);
+    }
+  }
+
   private boolean isSchemaEvolutionEnabled(Table tbl) {
     boolean isAcid = AcidUtils.isTablePropertyTransactional(tbl.getMetadata());
     if (isAcid || HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION)) {
@@ -3437,8 +3452,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return false;
   }
 
-  private int alterTableOrSinglePartition(AlterTableDesc alterTbl, Table tbl, Partition part)
-      throws HiveException {
+  private List<Task<?>> alterTableOrSinglePartition(
+      AlterTableDesc alterTbl, Table tbl, Partition part) throws HiveException {
 
     if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAME) {
       tbl.setDbName(Utilities.getDatabaseName(alterTbl.getNewName()));
@@ -3576,20 +3591,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       sd.setCols(alterTbl.getNewCols());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDPROPS) {
-      if (part != null) {
-        part.getTPartition().getParameters().putAll(alterTbl.getProps());
-      } else {
-        tbl.getTTable().getParameters().putAll(alterTbl.getProps());
-      }
+      return alterTableAddProps(alterTbl, tbl, part);
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.DROPPROPS) {
-      Iterator<String> keyItr = alterTbl.getProps().keySet().iterator();
-      while (keyItr.hasNext()) {
-        if (part != null) {
-          part.getTPartition().getParameters().remove(keyItr.next());
-        } else {
-          tbl.getTTable().getParameters().remove(keyItr.next());
-        }
-      }
+      return alterTableDropProps(alterTbl, tbl, part);
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDEPROPS) {
       StorageDescriptor sd = (part == null ? tbl.getTTable().getSd() : part.getTPartition().getSd());
       sd.getSerdeInfo().getParameters().putAll(alterTbl.getProps());
@@ -3724,12 +3728,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } else if (alterTbl.getOp() == AlterTableTypes.ALTERBUCKETNUM) {
       if (part != null) {
         if (part.getBucketCount() == alterTbl.getNumberBuckets()) {
-          return 0;
+          return null;
         }
         part.setBucketCount(alterTbl.getNumberBuckets());
       } else {
         if (tbl.getNumBuckets() == alterTbl.getNumberBuckets()) {
-          return 0;
+          return null;
         }
         tbl.setNumBuckets(alterTbl.getNumberBuckets());
       }
@@ -3737,7 +3741,183 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException(ErrorMsg.UNSUPPORTED_ALTER_TBL_OP, alterTbl.getOp().toString());
     }
 
-    return 0;
+    return null;
+  }
+
+  private List<Task<?>> alterTableDropProps(
+      AlterTableDesc alterTbl, Table tbl, Partition part) throws HiveException {
+    List<Task<?>> result = null;
+    if (part == null) {
+      Set<String> removedSet = alterTbl.getProps().keySet();
+      boolean isFromMmTable = MetaStoreUtils.isInsertOnlyTable(tbl.getParameters()),
+          isRemoved = removedSet.contains(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES)
+              || removedSet.contains(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+      if (isFromMmTable && isRemoved) {
+        result = generateRemoveMmTasks(tbl);
+      }
+    }
+    Iterator<String> keyItr = alterTbl.getProps().keySet().iterator();
+    while (keyItr.hasNext()) {
+      if (part != null) {
+        part.getTPartition().getParameters().remove(keyItr.next());
+      } else {
+        tbl.getTTable().getParameters().remove(keyItr.next());
+      }
+    }
+    return result;
+  }
+
+  private List<Task<?>> generateRemoveMmTasks(Table tbl) throws HiveException {
+    // To avoid confusion from nested MM directories when table is converted back and forth,
+    // we will do the following - we will rename mm_ dirs to remove the prefix; we will also
+    // delete any directories that are not committed. Note that this relies on locks.
+    // Note also that we only do the renames AFTER the metastore operation commits.
+    // Deleting uncommitted things is safe, but moving stuff before we convert is data loss.
+    List<Path> allMmDirs = new ArrayList<>();
+    if (tbl.isStoredAsSubDirectories()) {
+      // TODO: support this?
+      throw new HiveException("Converting list bucketed tables stored as subdirectories "
+          + " to and from MM is not supported");
+    }
+    Hive db = getHive();
+    ValidWriteIds ids = db.getValidWriteIdsForTable(tbl.getDbName(), tbl.getTableName());
+    if (tbl.getPartitionKeys().size() > 0) {
+      PartitionIterable parts = new PartitionIterable(db, tbl, null,
+          HiveConf.getIntVar(conf, ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+      Iterator<Partition> partIter = parts.iterator();
+      while (partIter.hasNext()) {
+        Partition part = partIter.next();
+        checkMmLb(part);
+        handleRemoveMm(part.getDataLocation(), ids, allMmDirs);
+      }
+    } else {
+      checkMmLb(tbl);
+      handleRemoveMm(tbl.getDataLocation(), ids, allMmDirs);
+    }
+    List<Path> targetPaths = new ArrayList<>(allMmDirs.size());
+    int prefixLen = ValidWriteIds.MM_PREFIX.length();
+    for (int i = 0; i < allMmDirs.size(); ++i) {
+      Path src = allMmDirs.get(i);
+      Path tgt = new Path(src.getParent(), src.getName().substring(prefixLen + 1));
+      Utilities.LOG14535.info("Will move " + src + " to " + tgt);
+      targetPaths.add(tgt);
+    }
+    // Don't set inputs and outputs - the locks have already been taken so it's pointless.
+    MoveWork mw = new MoveWork(null, null, null, null, false);
+    mw.setMultiFilesDesc(new LoadMultiFilesDesc(allMmDirs, targetPaths, true, null, null));
+    return Lists.<Task<?>>newArrayList(TaskFactory.get(mw, conf));
+  }
+
+  private void checkMmLb(Table tbl) throws HiveException {
+    if (!tbl.isStoredAsSubDirectories()) return;
+    // TODO: support this?
+    throw new HiveException("Converting list bucketed tables stored as subdirectories "
+        + " to and from MM is not supported");
+  }
+
+  private void checkMmLb(Partition part) throws HiveException {
+    if (!part.isStoredAsSubDirectories()) return;
+    // TODO: support this?
+    throw new HiveException("Converting list bucketed tables stored as subdirectories "
+        + " to and from MM is not supported. Please create a table in the desired format.");
+  }
+
+  private void handleRemoveMm(
+      Path path, ValidWriteIds ids, List<Path> result) throws HiveException {
+    // Note: doesn't take LB into account; that is not presently supported here (throws above).
+    try {
+      FileSystem fs = path.getFileSystem(conf);
+      for (FileStatus file : fs.listStatus(path)) {
+        Path childPath = file.getPath();
+        if (!file.isDirectory()) {
+          ensureDelete(fs, childPath, "a non-directory file");
+          continue;
+        }
+        Long writeId = ValidWriteIds.extractWriteId(childPath);
+        if (writeId == null) {
+          ensureDelete(fs, childPath, "an unknown directory");
+        } else if (!ids.isValid(writeId)) {
+          // Assume no concurrent active writes - we rely on locks here. We could check and fail.
+          ensureDelete(fs, childPath, "an uncommitted directory");
+        } else {
+          result.add(childPath);
+        }
+      }
+    } catch (IOException ex) {
+      throw new HiveException(ex);
+    }
+  }
+
+  private static void ensureDelete(FileSystem fs, Path path, String what) throws IOException {
+    Utilities.LOG14535.info("Deleting " + what + " " + path);
+    try {
+      if (!fs.delete(path, true)) throw new IOException("delete returned false");
+    } catch (Exception ex) {
+      String error = "Couldn't delete " + path + "; cannot remove MM setting from the table";
+      LOG.error(error, ex);
+      throw (ex instanceof IOException) ? (IOException)ex : new IOException(ex);
+    }
+  }
+
+  private List<Task<?>> generateAddMmTasks(Table tbl) throws HiveException {
+    // We will move all the files in the table/partition directories into the first MM
+    // directory, then commit the first write ID.
+    List<Path> srcs = new ArrayList<>(), tgts = new ArrayList<>();
+    Hive db = getHive();
+    long mmWriteId = db.getNextTableWriteId(tbl.getDbName(), tbl.getTableName());
+    String mmDir = ValidWriteIds.getMmFilePrefix(mmWriteId);
+    if (tbl.getPartitionKeys().size() > 0) {
+      PartitionIterable parts = new PartitionIterable(db, tbl, null,
+          HiveConf.getIntVar(conf, ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+      Iterator<Partition> partIter = parts.iterator();
+      while (partIter.hasNext()) {
+        Partition part = partIter.next();
+        checkMmLb(part);
+        Path src = part.getDataLocation(), tgt = new Path(src, mmDir);
+        srcs.add(src);
+        tgts.add(tgt);
+        Utilities.LOG14535.info("Will move " + src + " to " + tgt);
+      }
+    } else {
+      checkMmLb(tbl);
+      Path src = tbl.getDataLocation(), tgt = new Path(src, mmDir);
+      srcs.add(src);
+      tgts.add(tgt);
+      Utilities.LOG14535.info("Will move " + src + " to " + tgt);
+    }
+    // Don't set inputs and outputs - the locks have already been taken so it's pointless.
+    MoveWork mw = new MoveWork(null, null, null, null, false);
+    mw.setMultiFilesDesc(new LoadMultiFilesDesc(srcs, tgts, true, null, null));
+    ImportCommitWork icw = new ImportCommitWork(tbl.getDbName(), tbl.getTableName(), mmWriteId);
+    // TODO# this is hacky and will be gone with ACID. The problem is getting the write ID above
+    //       modifies the table, but the table object above is preserved and modified without
+    //       getting this change, so saving it will overwrite write ID. Ideally, when we save
+    //       only specific fields, and not overwrite write ID every time we alter table.
+    //       There's probably some way in DN to achieve that, but for now let's just update the
+    //       original object here. This is safe due to DDL lock and the fact that converting
+    //       the table to MM here from non-MM should mean no concurrent write ID updates.
+    tbl.setMmNextWriteId(mmWriteId + 1);
+    Task<?> mv = TaskFactory.get(mw, conf), ic = TaskFactory.get(icw, conf);
+    mv.addDependentTask(ic);
+    return Lists.<Task<?>>newArrayList(mv);
+  }
+
+  private List<Task<?>> alterTableAddProps(AlterTableDesc alterTbl, Table tbl,
+      Partition part) throws HiveException {
+    List<Task<?>> result = null;
+    if (part != null) {
+      part.getTPartition().getParameters().putAll(alterTbl.getProps());
+    } else {
+      boolean isFromMmTable = MetaStoreUtils.isInsertOnlyTable(tbl.getParameters()),
+          isToMmTable = MetaStoreUtils.isInsertOnlyTable(alterTbl.getProps());
+      if (!isFromMmTable && isToMmTable) {
+        result = generateAddMmTasks(tbl);
+      } else if (isFromMmTable && !isToMmTable) {
+        result = generateRemoveMmTasks(tbl);
+      }
+      tbl.getTTable().getParameters().putAll(alterTbl.getProps());
+    }
+    return result;
   }
 
    private int dropConstraint(Hive db, AlterTableDesc alterTbl)

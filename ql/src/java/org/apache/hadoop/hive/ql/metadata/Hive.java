@@ -2508,7 +2508,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param tbl
    *          object for which partition is needed
    * @return list of partition objects
-   * @throws HiveException
    */
   public List<Partition> getPartitions(Table tbl) throws HiveException {
     if (tbl.isPartitioned()) {
@@ -3143,13 +3142,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
         HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
     HdfsUtils.HadoopFileStatus destStatus = null;
 
-    // If source path is a subdirectory of the destination path:
+    // If source path is a subdirectory of the destination path (or the other way around):
     //   ex: INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300;
     //   where the staging directory is a subdirectory of the destination directory
     // (1) Do not delete the dest dir before doing the move operation.
     // (2) It is assumed that subdir and dir are in same encryption zone.
     // (3) Move individual files from scr dir to dest dir.
-    boolean destIsSubDir = isSubDir(srcf, destf, srcFs, destFs, isSrcLocal);
+    boolean srcIsSubDirOfDest = isSubDir(srcf, destf, srcFs, destFs, isSrcLocal),
+        destIsSubDirOfSrc = isSubDir(destf, srcf, destFs, srcFs, false);
     try {
       if (inheritPerms || replace) {
         try{
@@ -3159,7 +3159,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           //if replace is false, rename (mv) actually move the src under dest dir
           //if destf is an existing file, rename is actually a replace, and do not need
           // to delete the file first
-          if (replace && !destIsSubDir) {
+          if (replace && !srcIsSubDirOfDest) {
             destFs.delete(destf, true);
             LOG.debug("The path " + destf.toString() + " is deleted");
           }
@@ -3192,13 +3192,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
               replace, // overwrite destination
               conf);
         } else {
-          if (destIsSubDir) {
+          if (srcIsSubDirOfDest || destIsSubDirOfSrc) {
             FileStatus[] srcs = destFs.listStatus(srcf, FileUtils.HIDDEN_FILES_PATH_FILTER);
 
             List<Future<Void>> futures = new LinkedList<>();
             final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ?
                 Executors.newFixedThreadPool(conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
                 new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Move-Thread-%d").build()) : null;
+            if (destIsSubDirOfSrc && !destFs.exists(destf)) {
+              Utilities.LOG14535.info("Creating " + destf);
+              destFs.mkdirs(destf);
+            }
             /* Move files one by one because source is a subdirectory of destination */
             for (final FileStatus srcStatus : srcs) {
 

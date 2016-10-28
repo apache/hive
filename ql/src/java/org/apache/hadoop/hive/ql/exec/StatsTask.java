@@ -172,7 +172,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         // work.getLoadTableDesc().getReplace() is true means insert overwrite command 
         // work.getLoadFileDesc().getDestinationCreateTable().isEmpty() means CTAS etc.
         // acidTable will not have accurate stats unless it is set through analyze command.
-        if (work.getTableSpecs() == null && AcidUtils.isAcidTable(table)) {
+        if (work.getTableSpecs() == null && AcidUtils.isFullAcidTable(table)) {
           StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
         } else if (work.getTableSpecs() != null
             || (work.getLoadTableDesc() != null && work.getLoadTableDesc().getReplace())
@@ -222,7 +222,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           //
           org.apache.hadoop.hive.metastore.api.Partition tPart = partn.getTPartition();
           Map<String, String> parameters = tPart.getParameters();
-          if (work.getTableSpecs() == null && AcidUtils.isAcidTable(table)) {
+          if (work.getTableSpecs() == null && AcidUtils.isFullAcidTable(table)) {
             StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
           } else if (work.getTableSpecs() != null
               || (work.getLoadTableDesc() != null && work.getLoadTableDesc().getReplace())

@@ -6457,6 +6457,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             writeId = tbl.isSetMmNextWriteId() ? tbl.getMmNextWriteId() : 0;
             tbl.setMmNextWriteId(writeId + 1);
             ms.alterTable(dbName, tblName, tbl);
+
             ok = true;
           } finally {
             if (!ok) {
@@ -6608,7 +6609,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               Iterator<Long> iter = ids.iterator();
               long oldWatermarkId = watermarkId;
               while (iter.hasNext()) {
-                if (iter.next() != watermarkId + 1) break;
+                Long nextWriteId = iter.next();
+                if (nextWriteId != watermarkId + 1) break;
                 ++watermarkId;
               }
               long removed = watermarkId - oldWatermarkId;

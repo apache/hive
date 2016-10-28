@@ -230,7 +230,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
           // This is a file or something we don't hold locks for.
           continue;
       }
-      if(t != null && AcidUtils.isAcidTable(t)) {
+      if(t != null && AcidUtils.isFullAcidTable(t)) {
         compBuilder.setIsAcid(true);
       }
       LockComponent comp = compBuilder.build();
@@ -261,7 +261,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
 
         case INSERT:
           t = getTable(output);
-          if(AcidUtils.isAcidTable(t)) {
+          if(AcidUtils.isFullAcidTable(t)) {
             compBuilder.setShared();
             compBuilder.setIsAcid(true);
           }
@@ -318,7 +318,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
           // This is a file or something we don't hold locks for.
           continue;
       }
-      if(t != null && AcidUtils.isAcidTable(t)) {
+      if(t != null && AcidUtils.isFullAcidTable(t)) {
         compBuilder.setIsAcid(true);
       }
       LockComponent comp = compBuilder.build();

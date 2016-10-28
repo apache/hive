@@ -212,7 +212,8 @@ public class WriteEntity extends Entity implements Serializable {
 
       case ADDPARTITION:
       case ADDSERDEPROPS:
-      case ADDPROPS: return WriteType.DDL_SHARED;
+      case ADDPROPS:
+        return WriteType.DDL_SHARED;
 
       case COMPACT:
       case TOUCH: return WriteType.DDL_NO_LOCK;

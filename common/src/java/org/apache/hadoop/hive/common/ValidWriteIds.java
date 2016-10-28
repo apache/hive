@@ -23,6 +23,7 @@ import java.util.HashSet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,6 +91,14 @@ public class ValidWriteIds {
       LOG.debug("Setting " + createConfKey(dbName, tblName) + " => " + source);
     }
     conf.set(createConfKey(dbName, tblName), source);
+  }
+
+  public static void clearConf(HiveConf conf, String dbName, String tblName) {
+    if (LOG.isDebugEnabled()) {
+      // TODO# remove
+      LOG.debug("Unsetting " + createConfKey(dbName, tblName));
+    }
+    conf.unset(createConfKey(dbName, tblName));
   }
 
   public String toString() {
