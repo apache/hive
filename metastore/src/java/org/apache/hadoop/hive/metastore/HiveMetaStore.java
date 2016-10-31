@@ -4642,6 +4642,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       for (ColumnStatisticsObj statsObj:statsObjs) {
         colName = statsObj.getColName().toLowerCase();
         statsObj.setColName(colName);
+        statsObj.setColType(statsObj.getColType().toLowerCase());
       }
 
      colStats.setStatsDesc(statsDesc);
@@ -4684,6 +4685,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       for (ColumnStatisticsObj statsObj:statsObjs) {
         colName = statsObj.getColName().toLowerCase();
         statsObj.setColName(colName);
+        statsObj.setColType(statsObj.getColType().toLowerCase());
       }
 
       colStats.setStatsDesc(statsDesc);
