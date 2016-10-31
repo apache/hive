@@ -581,8 +581,8 @@ public class HiveAlterHandler implements AlterHandler {
         for (ColumnStatisticsObj statsObj : statsObjs) {
           boolean found =false;
           for (FieldSchema newCol : newCols) {
-            if (statsObj.getColName().equals(newCol.getName())
-                && statsObj.getColType().equals(newCol.getType())) {
+            if (statsObj.getColName().equalsIgnoreCase(newCol.getName())
+                && statsObj.getColType().equalsIgnoreCase(newCol.getType())) {
               found = true;
               break;
             }
@@ -679,7 +679,7 @@ public class HiveAlterHandler implements AlterHandler {
                 boolean found = false;
                 for (FieldSchema newCol : newCols) {
                   if (statsObj.getColName().equalsIgnoreCase(newCol.getName())
-                      && statsObj.getColType().equals(newCol.getType())) {
+                      && statsObj.getColType().equalsIgnoreCase(newCol.getType())) {
                     found = true;
                     break;
                   }
