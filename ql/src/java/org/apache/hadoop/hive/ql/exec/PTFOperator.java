@@ -409,6 +409,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
     void close() {
       if ( inputPart != null ) {
         inputPart.close();
+        inputPart = null;
       }
       tabFn.close();
       if ( next != null ) {
