@@ -6961,8 +6961,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     fileSinkDesc.setHiveServerQuery(SessionState.get().isHiveServerQuery());
     // If this is an insert, update, or delete on an ACID table then mark that so the
     // FileSinkOperator knows how to properly write to it.
-    if (destTableIsAcid && dest_part != null && dest_part.getTable() != null &&
-        !MetaStoreUtils.isInsertOnlyTable(dest_part.getTable().getParameters())) {
+    boolean isDestInsertOnly = (dest_part != null && dest_part.getTable() != null &&
+        MetaStoreUtils.isInsertOnlyTable(dest_part.getTable().getParameters()))
+        || (table_desc != null && MetaStoreUtils.isInsertOnlyTable(table_desc.getProperties()));
+
+    if (destTableIsAcid && !isDestInsertOnly) {
       AcidUtils.Operation wt = updating() ? AcidUtils.Operation.UPDATE :
           (deleting() ? AcidUtils.Operation.DELETE : AcidUtils.Operation.INSERT);
       fileSinkDesc.setWriteType(wt);

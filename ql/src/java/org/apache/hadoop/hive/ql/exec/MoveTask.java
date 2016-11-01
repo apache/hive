@@ -256,6 +256,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
   @Override
   public int execute(DriverContext driverContext) {
+    if (work.isNoop()) return 0; // TODO# temporary flag for HIVE-14990
     Utilities.LOG14535.info("Executing MoveWork " + System.identityHashCode(work)
         + " with " + work.getLoadFileWork() + "; " + work.getLoadTableWork() + "; "
         + work.getLoadMultiFilesWork());

@@ -1364,6 +1364,11 @@ public final class GenMapRedUtils {
       Utilities.LOG14535.info("creating dummy movetask for merge (with lfd)");
       dummyMv = new MoveWork(null, null, null,
          new LoadFileDesc(inputDirName, finalName, true, null, null), false);
+    } else {
+      // TODO# create the noop MoveWork to avoid q file changes for now. else should be removed.
+      dummyMv = new MoveWork(null, null, null,
+          new LoadFileDesc(inputDirName, finalName, true, null, null), false);
+      dummyMv.setNoop(true);
     }
     ConditionalTask cndTsk = GenMapRedUtils.createCondTask(conf, currTask, dummyMv, work,
         fsInputDesc.getMergeInputDirName().toString());

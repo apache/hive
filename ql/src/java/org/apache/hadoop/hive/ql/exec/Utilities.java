@@ -3819,11 +3819,19 @@ public final class Utilities {
     if (skipLevels == 0) {
       return statusToPath(fs.listStatus(path, filter));
     }
-    if (fs.getScheme().equalsIgnoreCase("s3a")
-        && HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_AVOID_GLOBSTATUS_ON_S3)) {
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_AVOID_GLOBSTATUS_ON_S3) && isS3(fs)) {
       return getMmDirectoryCandidatesRecursive(fs, path, skipLevels, filter);
     }
     return getMmDirectoryCandidatesGlobStatus(fs, path, skipLevels, filter, mmWriteId);
+  }
+
+  private static boolean isS3(FileSystem fs) {
+    try {
+      return fs.getScheme().equalsIgnoreCase("s3a");
+    } catch (UnsupportedOperationException ex) {
+      // Some FS-es do not implement getScheme, e.g. ProxyLocalFileSystem.
+      return false;
+    }
   }
 
   private static Path[] statusToPath(FileStatus[] statuses) {

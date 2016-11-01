@@ -56,6 +56,7 @@ public class MoveWork implements Serializable {
    * List of inserted partitions
    */
   protected List<Partition> movedParts;
+  private boolean isNoop;
 
   public MoveWork() {
   }
@@ -142,4 +143,12 @@ public class MoveWork implements Serializable {
     this.srcLocal = srcLocal;
   }
 
+  // TODO# temporary test flag
+  public void setNoop(boolean b) {
+    this.isNoop = true;
+  }
+
+  public boolean isNoop() {
+    return this.isNoop;
+  }
 }

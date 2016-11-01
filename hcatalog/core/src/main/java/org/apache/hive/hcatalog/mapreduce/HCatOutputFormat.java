@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -111,6 +112,10 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
 
       if (sd.getSortCols() != null && !sd.getSortCols().isEmpty()) {
         throw new HCatException(ErrorType.ERROR_NOT_SUPPORTED, "Store into a partition with sorted column definition from Pig/Mapreduce is not supported");
+      }
+
+      if (MetaStoreUtils.isInsertOnlyTable(table.getParameters())) {
+        throw new HCatException(ErrorType.ERROR_NOT_SUPPORTED, "Store into an insert-only ACID table from Pig/Mapreduce is not supported");
       }
 
       // Set up a common id hash for this job, so that when we create any temporary directory

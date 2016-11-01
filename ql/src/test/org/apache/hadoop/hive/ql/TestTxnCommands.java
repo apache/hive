@@ -43,6 +43,8 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -552,7 +554,9 @@ public class TestTxnCommands {
     return sb.toString();
   }
 
+  private static final Logger LOG = LoggerFactory.getLogger(TestTxnCommands.class);
   private List<String> runStatementOnDriver(String stmt) throws Exception {
+    LOG.info("Running " + stmt);
     CommandProcessorResponse cpr = d.run(stmt);
     if(cpr.getResponseCode() != 0) {
       throw new RuntimeException(stmt + " failed: " + cpr);

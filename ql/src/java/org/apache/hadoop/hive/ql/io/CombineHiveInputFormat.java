@@ -475,7 +475,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     ExecutorService executor = Executors.newFixedThreadPool(numThreads);
     List<Future<Set<Integer>>> futureList = new ArrayList<Future<Set<Integer>>>(numThreads);
     try {
-      boolean isMerge = mrwork.isMergeFromResolver();
+      boolean isMerge = mrwork != null && mrwork.isMergeFromResolver();
       for (int i = 0; i < numThreads; i++) {
         int start = i * numPathPerThread;
         int length = i != numThreads - 1 ? numPathPerThread : paths.length - start;
