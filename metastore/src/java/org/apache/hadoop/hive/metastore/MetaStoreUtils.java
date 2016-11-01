@@ -1647,7 +1647,7 @@ public class MetaStoreUtils {
     }
     for (int i = 0; i < parameterTypes.length; i++) {
       Class<?> clazz = parameterTypes[i];
-      if (!(clazz.isInstance(initargs[i]))) {
+      if (initargs[i] != null && !(clazz.isInstance(initargs[i]))) {
         throw new IllegalArgumentException("Object : " + initargs[i]
             + " is not an instance of " + clazz);
       }
