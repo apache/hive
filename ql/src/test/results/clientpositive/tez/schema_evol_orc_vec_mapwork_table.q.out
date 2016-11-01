@@ -3474,16 +3474,16 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_bigint
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: DECIMAL, (FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: FLOAT, (DOUBLE, DECIMAL)
 --
-CREATE TABLE table_change_lower_to_higher_numeric_group_decimal(insert_num int, c1 decimal(38,18), c2 decimal(38,18), b STRING)
+CREATE TABLE table_change_lower_to_higher_numeric_group_decimal(insert_num int, c1 float, c2 float, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: DECIMAL, (FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: FLOAT, (DOUBLE, DECIMAL)
 --
-CREATE TABLE table_change_lower_to_higher_numeric_group_decimal(insert_num int, c1 decimal(38,18), c2 decimal(38,18), b STRING)
+CREATE TABLE table_change_lower_to_higher_numeric_group_decimal(insert_num int, c1 float, c2 float, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
@@ -3517,17 +3517,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
 #### A masked pattern was here ####
 insert_num	c1	c2	b
-1	-29.076400000000000000	-29.076400000000000000	original
-2	753.702800000000000000	753.702800000000000000	original
-3	-5000.000000000000000000	-5000.000000000000000000	original
-4	52927714.000000000000000000	52927714.000000000000000000	original
+1	-29.0764	-29.0764	original
+2	753.7028	753.7028	original
+3	-5000.0	-5000.0	original
+4	5.2927712E7	5.2927712E7	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_decimal replace columns (insert_num int, c1 float, c2 double, b STRING)
+alter table table_change_lower_to_higher_numeric_group_decimal replace columns (insert_num int, c1 double, c2 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
 POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_decimal replace columns (insert_num int, c1 float, c2 double, b STRING)
+alter table table_change_lower_to_higher_numeric_group_decimal replace columns (insert_num int, c1 double, c2 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
@@ -3574,13 +3574,13 @@ Stage-0
     Stage-1
       Reducer 2 vectorized
       File Output Operator [FS_8]
-        Select Operator [SEL_7] (rows=4 width=320)
+        Select Operator [SEL_7] (rows=4 width=104)
           Output:["_col0","_col1","_col2","_col3"]
         <-Map 1 [SIMPLE_EDGE] vectorized
           SHUFFLE [RS_6]
-            Select Operator [SEL_5] (rows=4 width=320)
+            Select Operator [SEL_5] (rows=4 width=104)
               Output:["_col0","_col1","_col2","_col3"]
-              TableScan [TS_0] (rows=4 width=320)
+              TableScan [TS_0] (rows=4 width=104)
                 default@table_change_lower_to_higher_numeric_group_decimal,table_change_lower_to_higher_numeric_group_decimal,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","b"]
 
 PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
@@ -3592,16 +3592,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
 #### A masked pattern was here ####
 insert_num	c1	c2	b
-1	-29.0764	-29.0764	original
-10	1.7	17.8888	new
-2	753.7028	753.7028	original
-3	-5000.0	-5000.0	original
-4	5.2927712E7	5.2927714E7	original
-5	7.74	22.3	new
-6	56.1431	90.9	new
-7	2.56	25.6	new
-8	555.5	55.55	new
-9	10.0	0.1	new
+1	-29.0764	-29.076400000000000000	original
+10	1.7	17.888800000000000000	new
+2	753.7028	753.702800000000000000	original
+3	-5000.0	-5000.000000000000000000	original
+4	5.2927712E7	52927712.000000000000000000	original
+5	7.74	22.300000000000000000	new
+6	56.1431	90.900000000000000000	new
+7	2.56	25.600000000000000000	new
+8	555.5	55.550000000000000000	new
+9	10.0	0.100000000000000000	new
 PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_decimal
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
@@ -3611,16 +3611,16 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: FLOAT, (DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: DOUBLE, (DECIMAL)
 --
-CREATE TABLE table_change_lower_to_higher_numeric_group_float(insert_num int, c1 float, b STRING)
+CREATE TABLE table_change_lower_to_higher_numeric_group_float(insert_num int, c1 double, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: FLOAT, (DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: DOUBLE, (DECIMAL)
 --
-CREATE TABLE table_change_lower_to_higher_numeric_group_float(insert_num int, c1 float, b STRING)
+CREATE TABLE table_change_lower_to_higher_numeric_group_float(insert_num int, c1 double, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
@@ -3656,14 +3656,14 @@ insert_num	c1	b
 1	-29.0764	original
 2	753.7028	original
 3	-5000.0	original
-4	5.2927712E7	original
+4	5.2927714E7	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 DOUBLE, b STRING)
+alter table table_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
 POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 DOUBLE, b STRING)
+alter table table_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
@@ -3709,13 +3709,13 @@ Stage-0
     Stage-1
       Reducer 2 vectorized
       File Output Operator [FS_8]
-        Select Operator [SEL_7] (rows=4 width=100)
+        Select Operator [SEL_7] (rows=4 width=104)
           Output:["_col0","_col1","_col2"]
         <-Map 1 [SIMPLE_EDGE] vectorized
           SHUFFLE [RS_6]
-            Select Operator [SEL_5] (rows=4 width=100)
+            Select Operator [SEL_5] (rows=4 width=104)
               Output:["_col0","_col1","_col2"]
-              TableScan [TS_0] (rows=4 width=100)
+              TableScan [TS_0] (rows=4 width=104)
                 default@table_change_lower_to_higher_numeric_group_float,table_change_lower_to_higher_numeric_group_float,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","b"]
 
 PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
@@ -3727,16 +3727,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####
 insert_num	c1	b
-1	-29.0764	original
-10	17.0	new
-2	753.7028	original
-3	-5000.0	original
-4	5.2927712E7	original
-5	774.0	new
-6	561431.0	new
-7	256.0	new
-8	5555.0	new
-9	100.0	new
+1	-29.076400000000000000	original
+10	17.000000000000000000	new
+2	753.702800000000000000	original
+3	-5000.000000000000000000	original
+4	52927714.000000000000000000	original
+5	774.000000000000000000	new
+6	561431.000000000000000000	new
+7	256.000000000000000000	new
+8	5555.000000000000000000	new
+9	100.000000000000000000	new
 PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_float
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float

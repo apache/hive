@@ -762,9 +762,9 @@ drop table part_change_lower_to_higher_numeric_group_bigint;
 
 
 --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: DECIMAL, (FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: FLOAT, (DOUBLE, DECIMAL)
 --
-CREATE TABLE part_change_lower_to_higher_numeric_group_decimal(insert_num int, c1 decimal(38,18), c2 decimal(38,18), b STRING) PARTITIONED BY(part INT);
+CREATE TABLE part_change_lower_to_higher_numeric_group_decimal(insert_num int, c1 float, c2 float, b STRING) PARTITIONED BY(part INT);
 
 insert into table part_change_lower_to_higher_numeric_group_decimal partition(part=1)
     values (1, -29.0764, -29.0764, 'original'),
@@ -775,7 +775,7 @@ insert into table part_change_lower_to_higher_numeric_group_decimal partition(pa
 select insert_num,part,c1,b from part_change_lower_to_higher_numeric_group_decimal order by insert_num;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_lower_to_higher_numeric_group_decimal replace columns (insert_num int, c1 float, c2 double, b STRING) ;
+alter table part_change_lower_to_higher_numeric_group_decimal replace columns (insert_num int, c1 double, c2 decimal(38,18), b STRING) ;
 
 insert into table part_change_lower_to_higher_numeric_group_decimal partition(part)
     values (5, '7.74', '22.3', 'new', 2),
@@ -794,9 +794,9 @@ drop table part_change_lower_to_higher_numeric_group_decimal;
 
 
 --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: FLOAT, (DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: DOUBLE, (DECIMAL)
 --
-CREATE TABLE part_change_lower_to_higher_numeric_group_float(insert_num int, c1 float, b STRING) PARTITIONED BY(part INT);
+CREATE TABLE part_change_lower_to_higher_numeric_group_float(insert_num int, c1 double, b STRING) PARTITIONED BY(part INT);
 
 insert into table part_change_lower_to_higher_numeric_group_float partition(part=1)
     values (1, -29.0764, 'original'),
@@ -807,7 +807,7 @@ insert into table part_change_lower_to_higher_numeric_group_float partition(part
 select insert_num,part,c1,b from part_change_lower_to_higher_numeric_group_float order by insert_num;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 DOUBLE, b STRING) ;
+alter table part_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 decimal(38,18), b STRING) ;
 
 insert into table part_change_lower_to_higher_numeric_group_float partition(part)
     values (5, '774', 'new', 2),
