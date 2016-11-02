@@ -86,9 +86,6 @@ import com.google.common.collect.Maps;
  */
 public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
 
-  private static final String TIMESTAMP_GRANULARITY_COL_NAME = "__time_granularity";
-
-
   @Override
   public ParseContext transform(ParseContext pCtx) throws SemanticException {
     // create a walker which walks the tree in a DFS manner while maintaining the
@@ -276,9 +273,9 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
               TypeInfoFactory.timestampTypeInfo,
               new GenericUDFBridge(udfName, false, udfClass.getName()),
               Lists.newArrayList(expr)));
-      colNames.add(TIMESTAMP_GRANULARITY_COL_NAME);
+      colNames.add(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME);
       // Add granularity as a virtual column to the row schema
-      ColumnInfo ci = new ColumnInfo(TIMESTAMP_GRANULARITY_COL_NAME, TypeInfoFactory.timestampTypeInfo,
+      ColumnInfo ci = new ColumnInfo(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME, TypeInfoFactory.timestampTypeInfo,
               selRS.getSignature().get(0).getTabAlias(), true, false);
       selRS.getSignature().add(ci);
 

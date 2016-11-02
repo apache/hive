@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.io.DruidQueryBasedInputFormat;
 import org.joda.time.Interval;
 import org.joda.time.chrono.ISOChronology;
 import org.junit.Test;
@@ -33,9 +34,9 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
   @SuppressWarnings("unchecked")
   @Test
   public void testCreateSplitsIntervals() throws Exception {
-    HiveDruidQueryBasedInputFormat input = new HiveDruidQueryBasedInputFormat();
+    DruidQueryBasedInputFormat input = new DruidQueryBasedInputFormat();
 
-    Method method1 = HiveDruidQueryBasedInputFormat.class.getDeclaredMethod("createSplitsIntervals",
+    Method method1 = DruidQueryBasedInputFormat.class.getDeclaredMethod("createSplitsIntervals",
             List.class, int.class);
     method1.setAccessible(true);
 

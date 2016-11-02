@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.druid;
 
-import com.google.common.base.Throwables;
-import io.druid.segment.loading.SegmentLoadingException;
-import io.druid.timeline.DataSegment;
+import java.io.IOException;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -29,7 +29,9 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.io.DruidOutputFormat;
 import org.apache.hadoop.hive.ql.io.DruidOutputFormatUtils;
+import org.apache.hadoop.hive.ql.io.DruidQueryBasedInputFormat;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
@@ -37,8 +39,10 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.List;
+import com.google.common.base.Throwables;
+
+import io.druid.segment.loading.SegmentLoadingException;
+import io.druid.timeline.DataSegment;
 
 /**
  * DruidStorageHandler provides a HiveStorageHandler implementation for Druid.
@@ -50,12 +54,12 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
 
   @Override
   public Class<? extends InputFormat> getInputFormatClass() {
-    return HiveDruidQueryBasedInputFormat.class;
+    return DruidQueryBasedInputFormat.class;
   }
 
   @Override
   public Class<? extends OutputFormat> getOutputFormatClass() {
-    return HiveDruidOutputFormat.class;
+    return DruidOutputFormat.class;
   }
 
   @Override

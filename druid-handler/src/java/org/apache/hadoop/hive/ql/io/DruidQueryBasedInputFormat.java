@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.druid;
+package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +33,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
 import org.apache.hadoop.hive.druid.serde.DruidGroupByQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidSelectQueryRecordReader;
@@ -82,10 +83,10 @@ import io.druid.query.timeboundary.TimeBoundaryResultValue;
  * Given a query and the Druid broker address, it will send it, and retrieve
  * and parse the results.
  */
-public class HiveDruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidWritable>
+public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidWritable>
         implements org.apache.hadoop.mapred.InputFormat<NullWritable, DruidWritable> {
 
-  protected static final Logger LOG = LoggerFactory.getLogger(HiveDruidQueryBasedInputFormat.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(DruidQueryBasedInputFormat.class);
 
   @Override
   public org.apache.hadoop.mapred.InputSplit[] getSplits(JobConf job, int numSplits)

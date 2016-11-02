@@ -80,11 +80,11 @@ public class DruidRecordWriterTest
     );
 
 
-
     Configuration config = new Configuration();
     LocalFileSystem localFileSystem = FileSystem.getLocal(config);
 
     druidRecordWriter = new DruidOutputFormat.DruidRecordWriter(dataSchema, tuningConfig, 20, new Path("/tmp/slim/test"), localFileSystem);
+
     druidRecordWriter.write(null);
     DruidWritable druidWritable = new DruidWritable(ImmutableMap.<String, Object>of(
         DruidTable.DEFAULT_TIMESTAMP_COLUMN,

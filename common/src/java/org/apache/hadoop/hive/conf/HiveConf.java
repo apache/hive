@@ -1937,8 +1937,12 @@ public class HiveConf extends Configuration {
 
     // For Druid storage handler
     HIVE_DRUID_INDEXING_GRANULARITY("hive.druid.indexer.segments.granularity", "day",
-        new PatternSet("year", "quarter", "month", "week", "day", "hour", "minute", "second"),
+        new PatternSet("year", "month", "week", "day", "hour", "minute", "second"),
         "Granularity for the segments created by the Druid storage handler"),
+    HIVE_DRUID_MAX_PARTITION_SIZE("hive.druid.indexer.partition.size.max", 5000000,
+        "Maximum number of records per segment partition"),
+    HIVE_DRUID_MAX_ROW_IN_MEMORY("hive.druid.indexer.memory.rownum.max", 75000,
+        "Maximum number of records in memory while storing data in Druid"),
     HIVE_DRUID_BROKER_DEFAULT_ADDRESS("hive.druid.broker.address.default", "localhost:8082",
         "Address of the Druid broker. If we are querying Druid from Hive, this address needs to be\n" +
         "declared"),
