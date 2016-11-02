@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.io.DruidQueryBasedInputFormat;
+import org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat;
 import org.joda.time.Interval;
 import org.joda.time.chrono.ISOChronology;
 import org.junit.Test;

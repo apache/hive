@@ -362,14 +362,14 @@ public class DruidSerDe extends AbstractSerDe {
     for (int i = 0; i < columns.length; i++) {
       if (values.get(i) == null) {
         // null, we just add it
-        value.put(fields.get(i).getFieldName(), null);
+        value.put(columns[i], null);
         continue;
       }
       final Object res;
       switch (types[i].getPrimitiveCategory()) {
         case TIMESTAMP:
           res = ((TimestampObjectInspector) fields.get(i).getFieldObjectInspector()).getPrimitiveJavaObject(
-                  values.get(i));
+                  values.get(i)).getTime();
           break;
         case LONG:
           res = ((LongObjectInspector) fields.get(i).getFieldObjectInspector()).get(values.get(i));
@@ -384,8 +384,11 @@ public class DruidSerDe extends AbstractSerDe {
         default:
           throw new SerDeException("Unknown type: " + types[i].getPrimitiveCategory());
       }
-      value.put(fields.get(i).getFieldName(), res);
+      value.put(columns[i], res);
     }
+    value.put(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
+            ((TimestampObjectInspector) fields.get(columns.length).getFieldObjectInspector())
+            .getPrimitiveJavaObject(values.get(columns.length)).getTime());
     return new DruidWritable(value);
   }
 

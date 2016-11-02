@@ -48,8 +48,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -65,7 +63,6 @@ import org.apache.hadoop.hive.ql.udf.UDFDateFloorDay;
 import org.apache.hadoop.hive.ql.udf.UDFDateFloorHour;
 import org.apache.hadoop.hive.ql.udf.UDFDateFloorMinute;
 import org.apache.hadoop.hive.ql.udf.UDFDateFloorMonth;
-import org.apache.hadoop.hive.ql.udf.UDFDateFloorQuarter;
 import org.apache.hadoop.hive.ql.udf.UDFDateFloorSecond;
 import org.apache.hadoop.hive.ql.udf.UDFDateFloorWeek;
 import org.apache.hadoop.hive.ql.udf.UDFDateFloorYear;
@@ -126,14 +123,8 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       // introduce RS and EX before FS
       FileSinkOperator fsOp = (FileSinkOperator) nd;
 
-      Table destTable = fsOp.getConf().getTable();
-      if (destTable == null) {
-        // Bail out, destination table is null; nothing to do
-        return null;
-      }
-
-      final HiveStorageHandler sh = destTable.getStorageHandler();
-      if (sh == null || !sh.toString().equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID)) {
+      final String sh = fsOp.getConf().getTableInfo().getOutputFileFormatClassName();
+      if (sh == null || !sh.equals(Constants.DRUID_HIVE_OUTPUT_FORMAT)) {
         // Bail out, nothing to do
         return null;
       }
@@ -162,8 +153,7 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       List<Integer> sortNullOrder = new ArrayList<Integer>(1);
       sortNullOrder.add(0); // nulls first
       ReduceSinkOperator rsOp = getReduceSinkOp(keyPositions, sortOrder,
-          sortNullOrder, allRSCols, destTable.getNumBuckets(), granularitySelOp,
-          fsOp.getConf().getWriteType());
+          sortNullOrder, allRSCols, granularitySelOp, fsOp.getConf().getWriteType());
 
       // Create backtrack SelectOp
       List<ExprNodeDesc> descs = new ArrayList<ExprNodeDesc>(allRSCols.size());
@@ -193,7 +183,7 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       fsOp.getConf().setDpSortState(FileSinkDesc.DPSortState.PARTITION_SORTED);
       fsOp.getConf().setPartitionCols(rsOp.getConf().getPartitionCols());
       ColumnInfo ci = new ColumnInfo(granularitySelOp.getSchema().getSignature().get(
-              granularitySelOp.getSchema().getSignature().size() - 1)); // granularity virtual column
+              granularitySelOp.getSchema().getSignature().size() - 1)); // granularity column
       fsOp.getSchema().getSignature().add(ci);
 
       LOG.info("Inserted " + granularitySelOp.getOperatorId() + ", " + rsOp.getOperatorId() + " and "
@@ -233,50 +223,46 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       String udfName;
       Class<? extends UDF> udfClass;
       switch (parseCtx.getConf().getVar(HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY)) {
-        case "year":
+        case "YEAR":
           udfName = "floor_year";
           udfClass = UDFDateFloorYear.class;
           break;
-        case "quarter":
-          udfName = "floor_quarter";
-          udfClass = UDFDateFloorQuarter.class;
-          break;
-        case "month":
+        case "MONTH":
           udfName = "floor_month";
           udfClass = UDFDateFloorMonth.class;
           break;
-        case "week":
+        case "WEEK":
           udfName = "floor_week";
           udfClass = UDFDateFloorWeek.class;
           break;
-        case "day":
+        case "DAY":
           udfName = "floor_day";
           udfClass = UDFDateFloorDay.class;
           break;
-        case "hour":
+        case "HOUR":
           udfName = "floor_hour";
           udfClass = UDFDateFloorHour.class;
           break;
-        case "minute":
+        case "MINUTE":
           udfName = "floor_minute";
           udfClass = UDFDateFloorMinute.class;
           break;
-        case "second":
+        case "SECOND":
           udfName = "floor_second";
           udfClass = UDFDateFloorSecond.class;
           break;
         default:
           throw new SemanticException("Granularity for Druid segment not recognized");
       }
-      ExprNodeDesc expr = new ExprNodeColumnDesc();
+      ExprNodeDesc expr = new ExprNodeColumnDesc(parentCols.get(timestampPos));
       descs.add(new ExprNodeGenericFuncDesc(
               TypeInfoFactory.timestampTypeInfo,
               new GenericUDFBridge(udfName, false, udfClass.getName()),
               Lists.newArrayList(expr)));
       colNames.add(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME);
-      // Add granularity as a virtual column to the row schema
+      // Add granularity to the row schema
       ColumnInfo ci = new ColumnInfo(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME, TypeInfoFactory.timestampTypeInfo,
-              selRS.getSignature().get(0).getTabAlias(), true, false);
+              selRS.getSignature().get(0).getTabAlias(), false, false);
       selRS.getSignature().add(ci);
 
       // Create SelectDesc
@@ -290,8 +276,8 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
     }
 
     private ReduceSinkOperator getReduceSinkOp(List<Integer> keyPositions, List<Integer> sortOrder,
-        List<Integer> sortNullOrder, ArrayList<ExprNodeDesc> allCols, int numBuckets,
-        Operator<? extends OperatorDesc> parent, AcidUtils.Operation writeType) throws SemanticException {
+        List<Integer> sortNullOrder, ArrayList<ExprNodeDesc> allCols, Operator<? extends OperatorDesc> parent,
+        AcidUtils.Operation writeType) throws SemanticException {
 
       ArrayList<ExprNodeDesc> keyCols = Lists.newArrayList();
       // we will clone here as RS will update bucket column key with its
@@ -349,8 +335,6 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       ReduceSinkDesc rsConf = new ReduceSinkDesc(keyCols, keyCols.size(), valCols,
           keyColNames, distinctColumnIndices, valColNames, -1, partCols, -1, keyTable,
           valueTable, writeType);
-      rsConf.setBucketCols(new ArrayList<ExprNodeDesc>());
-      rsConf.setNumBuckets(numBuckets);
 
       ArrayList<ColumnInfo> signature = new ArrayList<>();
       for (int index = 0; index < parent.getSchema().getSignature().size(); index++) {

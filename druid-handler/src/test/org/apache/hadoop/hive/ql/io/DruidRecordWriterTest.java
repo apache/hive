@@ -15,13 +15,19 @@ import io.druid.query.aggregation.LongSumAggregatorFactory;
 import io.druid.segment.indexing.DataSchema;
 import io.druid.segment.indexing.RealtimeTuningConfig;
 import io.druid.segment.indexing.granularity.UniformGranularitySpec;
+import io.druid.timeline.DataSegment;
 import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.druid.io.DruidOutputFormat;
 import org.apache.hadoop.hive.druid.serde.DruidWritable;
+import org.apache.hadoop.mapred.JobConf;
 import org.joda.time.DateTime;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -81,14 +87,17 @@ public class DruidRecordWriterTest
 
 
     Configuration config = new Configuration();
+    JobConf jobConf = new JobConf(config);
     LocalFileSystem localFileSystem = FileSystem.getLocal(config);
 
-    druidRecordWriter = new DruidOutputFormat.DruidRecordWriter(dataSchema, tuningConfig, 20, new Path("/tmp/slim/test"), localFileSystem);
 
+    druidRecordWriter = new DruidOutputFormat.DruidRecordWriter(dataSchema, tuningConfig, 20, new Path("/tmp/slim/test"), localFileSystem, jobConf);
     druidRecordWriter.write(null);
     DruidWritable druidWritable = new DruidWritable(ImmutableMap.<String, Object>of(
         DruidTable.DEFAULT_TIMESTAMP_COLUMN,
-        String.valueOf(new DateTime().getMillis()),
+        new DateTime().getMillis(),
+        Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
+        Granularity.MINUTE.truncate(new DateTime()).getMillis(),
         "dim",
         "test",
         "met",
@@ -97,6 +106,13 @@ public class DruidRecordWriterTest
     druidRecordWriter.write(druidWritable);
     druidRecordWriter.close(false);
 
+  }
+
+  @Test
+  public void testSerDesr() throws IOException {
+    String segment = "{\"dataSource\":\"datasource2015\",\"interval\":\"2015-06-01T00:00:00.000-04:00/2015-06-02T00:00:00.000-04:00\",\"version\":\"2016-11-04T19:24:01.732-04:00\",\"loadSpec\":{\"type\":\"hdfs\",\"path\":\"hdfs://cn105-10.l42scl.hortonworks.com:8020/apps/hive/warehouse/druid.db/.hive-staging_hive_2016-11-04_19-23-50_168_1550339856804207572-1/_task_tmp.-ext-10002/_tmp.000000_0/datasource2015/20150601T000000.000-0400_20150602T000000.000-0400/2016-11-04T19_24_01.732-04_00/0/index.zip\"},\"dimensions\":\"dimension1\",\"metrics\":\"bigint\",\"shardSpec\":{\"type\":\"LinearShardSpec\",\"partitionNum\":0},\"binaryVersion\":9,\"size\":1765,\"identifier\":\"datasource2015_2015-06-01T00:00:00.000-04:00_2015-06-02T00:00:00.000-04:00_2016-11-04T19:24:01.732-04:00\"}";
+    DataSegment dataSegment = DruidStorageHandlerUtils.JSON_MAPPER.reader(DataSegment.class).readValue(segment);
+    Assert.assertTrue(dataSegment != null);
   }
 
 }

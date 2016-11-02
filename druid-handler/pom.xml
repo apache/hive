@@ -38,6 +38,7 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>io.netty</groupId>
@@ -62,6 +63,7 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
+      <scope>provided</scope>
       <version>${hadoop.version}</version>
       <optional>true</optional>
       <exclusions>
@@ -81,6 +83,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
+      <scope>provided</scope>
       <artifactId>hadoop-mapreduce-client-core</artifactId>
       <version>${hadoop.version}</version>
       <optional>true</optional>
@@ -132,6 +135,20 @@
       <groupId>io.druid</groupId>
       <artifactId>java-util</artifactId>
       <version>${druid.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.calcite</groupId>
@@ -160,6 +177,11 @@
     <dependency>
       <groupId>io.druid.extensions</groupId>
       <artifactId>druid-hdfs-storage</artifactId>
+      <version>${druid.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.druid.extensions</groupId>
+      <artifactId>mysql-metadata-storage</artifactId>
       <version>${druid.version}</version>
     </dependency>
 
@@ -226,15 +248,17 @@
                   <shadedPattern>org.apache.hive.druid.com.fasterxml.jackson</shadedPattern>
                 </relocation>
               </relocations>
-
               <artifactSet>
                 <includes>
                   <include>io.druid:*</include>
+                  <include>io.druid.extensions:*</include>
                   <include>com.metamx:*</include>
                   <include>io.netty:*</include>
                   <include>com.fasterxml.jackson.core:*</include>
                   <include>com.fasterxml.jackson.datatype:*</include>
                   <include>com.fasterxml.jackson.dataformat:*</include>
+                  <include>it.unimi.dsi:*</include>
+                  <include>org.jdbi:*</include>
                 </includes>
               </artifactSet>
               <filters>
