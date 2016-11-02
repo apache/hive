@@ -10,7 +10,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Longs;
-import com.metamx.common.Granularity;
+import io.druid.java.util.common.Granularity;
 import io.druid.data.input.Committer;
 import io.druid.data.input.InputRow;
 import io.druid.data.input.MapBasedInputRow;
@@ -110,7 +110,7 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
       this.maxPartitionSize = maxPartitionSize == null ? DEFAULT_MAX_PARTITION_SIZE : maxPartitionSize;
 
       appenderator.startJob(); // maybe we need to move this out of the constructor
-      this.segmentDescriptorDir = Preconditions.checkNotNull(segmentDescriptorDir.getParent());
+      this.segmentDescriptorDir = Preconditions.checkNotNull(segmentDescriptorDir);
       this.fileSystem = Preconditions.checkNotNull(fileSystem);
       committerSupplier = Suppliers.ofInstance(Committers.nil());
     }
@@ -126,7 +126,8 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
      */
     private SegmentIdentifier getSegmentIdentifierAndMaybePush(long timestamp)
     {
-      final Granularity segmentGranularity = dataSchema.getGranularitySpec().getSegmentGranularity();
+      final Granularity segmentGranularity;
+      segmentGranularity = dataSchema.getGranularitySpec().getSegmentGranularity();
       final long truncatedTime = segmentGranularity.truncate(new DateTime(timestamp)).getMillis();
 
       final Interval interval = new Interval(
@@ -183,33 +184,34 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
           final Path segmentOutputPath = makeOutputPath(pushedSegment);
           DruidOutputFormatUtils.writeSegmentDescriptor(fileSystem, pushedSegment, segmentOutputPath);
           log.info(
-              "Pushed the segment [%s] and persisted the descriptor located at [%s]",
+              String.format("Pushed the segment [%s] and persisted the descriptor located at [%s]",
               pushedSegment,
-              segmentOutputPath
+              segmentOutputPath)
           );
         }
 
         final HashSet<String> toPushSegmentsHashSet = new HashSet(FluentIterable.from(segmentsToPush)
-                                                                  .transform(new Function<SegmentIdentifier, String>()
-                                                                  {
-                                                                    @Nullable
-                                                                    @Override
-                                                                    public String apply(
-                                                                        @Nullable SegmentIdentifier input
-                                                                    )
-                                                                    {
-                                                                      return input.getIdentifierAsString();
-                                                                    }
-                                                                  })
-                                                                  .toList());
+                                                                                .transform(new Function<SegmentIdentifier, String>()
+                                                                                {
+                                                                                  @Nullable
+                                                                                  @Override
+                                                                                  public String apply(
+                                                                                      @Nullable SegmentIdentifier input
+                                                                                  )
+                                                                                  {
+                                                                                    return input.getIdentifierAsString();
+                                                                                  }
+                                                                                })
+                                                                                .toList());
 
         if (!pushedSegmentIdentifierHashSet.equals(toPushSegmentsHashSet)) {
-          throw new IllegalStateException(String.format("was asked to publish [%s] but was able to publish only [%s]",
-                                                        Joiner.on(", ").join(toPushSegmentsHashSet),
-                                                        Joiner.on(", ").join(pushedSegmentIdentifierHashSet)
+          throw new IllegalStateException(String.format(
+              "was asked to publish [%s] but was able to publish only [%s]",
+              Joiner.on(", ").join(toPushSegmentsHashSet),
+              Joiner.on(", ").join(pushedSegmentIdentifierHashSet)
           ));
         }
-        log.info("Published [%,d] segments.", segmentsToPush.size());
+        log.info(String.format("Published [%,d] segments.", segmentsToPush.size()));
       }
       catch (InterruptedException e) {
         log.error(String.format("got interrupted, failed to push  [%,d] segments.", segmentsToPush.size()), e);
@@ -295,12 +297,16 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
       Progressable progress
   ) throws IOException
   {
-    final String segmentGranularity = tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY);
+    String tableSegmentGranularity = tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY);
+    final String segmentGranularity = tableSegmentGranularity == null
+                                      ? hiveConf.getVar(HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY)
+                                      : tableSegmentGranularity;
     final String dataSource = tableProperties.getProperty(Constants.DRUID_DATA_SOURCE);
     final InputRowParser inputRowParser = new MapInputRowParser(new TimeAndDimsParseSpec(
         new TimestampSpec(DruidTable.DEFAULT_TIMESTAMP_COLUMN, "auto", null),
         new DimensionsSpec(null, null, null)
     ));
+
     final AggregatorFactory[] aggregatorFactories = DruidStorageHandlerUtils.JSON_MAPPER.readValue(
         tableProperties.getProperty(Constants.DRUID_AGGREGATORS),
         AggregatorFactory[].class
@@ -322,23 +328,8 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
     );
 
     // this can be initialized from the hive conf
-    RealtimeTuningConfig realtimeTuningConfig = new RealtimeTuningConfig(
-        DEFAULT_MAX_ROW_IN_MEMORY,
-        null,
-        null,
-        new File("/tmp"),
-        new CustomVersioningPolicy(null),
-        null,
-        null,
-        null,
-        null,
-        null,
-        0,
-        0,
-        null,
-        null
-    );
-
+    String basePersistDirectory = hiveConf.getVar(HiveConf.ConfVars.HIVE_DRUID_BASE_PERSIST_DIRECTORY);
+    final RealtimeTuningConfig realtimeTuningConfig = RealtimeTuningConfig.makeDefaultTuningConfig(new File(basePersistDirectory)).withVersioningPolicy(new CustomVersioningPolicy(null));
     Integer maxPartitionSize = hiveConf.getInt(DRUID_MAX_PARTITION_SIZE, DEFAULT_MAX_PARTITION_SIZE);
     return new DruidRecordWriter(
         dataSchema,

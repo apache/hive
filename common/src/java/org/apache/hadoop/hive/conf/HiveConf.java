@@ -1936,6 +1936,9 @@ public class HiveConf extends Configuration {
       new TimeValidator(TimeUnit.MILLISECONDS), "Frequency of WriteSet reaper runs"),
 
     // For Druid storage handler
+    HIVE_DRUID_INDEXING_GRANULARITY("hive.druid.indexer.segments.granularity", "day",
+        new PatternSet("year", "quarter", "month", "week", "day", "hour", "minute", "second"),
+        "Granularity for the segments created by the Druid storage handler"),
     HIVE_DRUID_BROKER_DEFAULT_ADDRESS("hive.druid.broker.address.default", "localhost:8082",
         "Address of the Druid broker. If we are querying Druid from Hive, this address needs to be\n" +
         "declared"),
@@ -1949,7 +1952,7 @@ public class HiveConf extends Configuration {
         "the HTTP client."),
     HIVE_DRUID_HTTP_READ_TIMEOUT("hive.druid.http.read.timeout", "PT1M", "Read timeout period for the HTTP\n" +
         "client in ISO8601 format (for example P2W, P3M, PT1H30M, PT0.750S), default is period of 1 minute."),
-
+    HIVE_DRUID_BASE_PERSIST_DIRECTORY("hive.druid.basePersisitDirectory", "/tmp", "local base persist directory used while indexing  data"),
     // For HBase storage handler
     HIVE_HBASE_WAL_ENABLED("hive.hbase.wal.enabled", true,
         "Whether writes to HBase should be forced to the write-ahead log. \n" +

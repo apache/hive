@@ -122,6 +122,8 @@ public class Optimizer {
       transformations.add(new SortedDynPartitionOptimizer());
     }
 
+    transformations.add(new SortedDynPartitionTimeGranularityOptimizer());
+
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
       transformations.add(new PartitionPruner());
       transformations.add(new PartitionConditionRemover());

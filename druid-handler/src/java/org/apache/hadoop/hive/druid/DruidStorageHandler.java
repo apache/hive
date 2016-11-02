@@ -71,11 +71,8 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   @Override
   public void preCreateTable(Table table) throws MetaException {
     // Do safety checks
-    if (!MetaStoreUtils.isExternalTable(table)) {
-      throw new MetaException("Table in Druid needs to be declared as EXTERNAL");
-    }
-    if (!StringUtils.isEmpty(table.getSd().getLocation())) {
-      throw new MetaException("LOCATION may not be specified for Druid");
+    if (MetaStoreUtils.isExternalTable(table) && !StringUtils.isEmpty(table.getSd().getLocation())) {
+      throw new MetaException("LOCATION may not be specified for Druid existing sources");
     }
     if (table.getPartitionKeysSize() != 0) {
       throw new MetaException("PARTITIONED BY may not be specified for Druid");

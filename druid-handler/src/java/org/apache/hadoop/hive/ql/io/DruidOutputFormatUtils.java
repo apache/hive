@@ -30,6 +30,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class DruidOutputFormatUtils
@@ -60,6 +61,8 @@ public class DruidOutputFormatUtils
           }
         }, new HdfsStorageDruidModule())
     );
+    //@TODO // FIXME: 11/2/16 this need to be injected as part of the config. One way of doing this is to extract all the hive.druid and inject it to the properties class
+    injector.getInstance(Properties.class).put("druid.storage.type", "hdfs");
     JSON_MAPPER = injector.getInstance(Key.get(ObjectMapper.class, Json.class));
     SMILE_MAPPER = injector.getInstance(Key.get(ObjectMapper.class, Smile.class));
     INDEX_IO = injector.getInstance(IndexIO.class);
