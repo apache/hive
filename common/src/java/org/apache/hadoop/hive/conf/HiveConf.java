@@ -2184,6 +2184,11 @@ public class HiveConf extends Configuration {
         "SSL Versions to disable for all Hive Servers"),
 
      // HiveServer2 specific configs
+    HIVE_SERVER2_CLEAR_DANGLING_SCRATCH_DIR("hive.server2.clear.dangling.scratchdir", false,
+        "Clear dangling scratch dir periodically in HS2"),
+    HIVE_SERVER2_CLEAR_DANGLING_SCRATCH_DIR_INTERVAL("hive.server2.clear.dangling.scratchdir.interval",
+        "1800s", new TimeValidator(TimeUnit.SECONDS),
+        "Interval to clear dangling scratch dir periodically in HS2"),
     HIVE_SERVER2_SLEEP_INTERVAL_BETWEEN_START_ATTEMPTS("hive.server2.sleep.interval.between.start.attempts",
         "60s", new TimeValidator(TimeUnit.MILLISECONDS, 0l, true, Long.MAX_VALUE, true),
         "Amount of time to sleep between HiveServer2 start attempts. Primarily meant for tests"),
