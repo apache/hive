@@ -305,6 +305,9 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
       String bigBucketFileName = getExecContext().getCurrentBigBucketFile();
       String fileName = getExecContext().getLocalWork().getBucketFileName(bigBucketFileName);
       // get the tmp URI path; it will be a hdfs path if not local mode
+      // TODO# this doesn't work... the path for writer and reader mismatch
+      //      Dump the side-table for tag ... -local-10004/HashTable-Stage-1/MapJoin-a-00-(ds%3D2008-04-08)mm_2.hashtable
+      //      Load back 1 hashtable file      -local-10004/HashTable-Stage-1/MapJoin-a-00-srcsortbucket3outof4.txt.hashtable
       String dumpFilePrefix = conf.getDumpFilePrefix();
       Path path = Utilities.generatePath(tmpURI, dumpFilePrefix, tag, fileName);
       console.printInfo(Utilities.now() + "\tDump the side-table for tag: " + tag +

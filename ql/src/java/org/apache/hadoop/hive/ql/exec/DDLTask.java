@@ -3749,8 +3749,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (part == null) {
       Set<String> removedSet = alterTbl.getProps().keySet();
       boolean isFromMmTable = MetaStoreUtils.isInsertOnlyTable(tbl.getParameters()),
-          isRemoved = removedSet.contains(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES)
-              || removedSet.contains(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+          isRemoved = MetaStoreUtils.isRemovedInsertOnlyTable(removedSet);
       if (isFromMmTable && isRemoved) {
         result = generateRemoveMmTasks(tbl);
       }
@@ -3907,12 +3906,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (part != null) {
       part.getTPartition().getParameters().putAll(alterTbl.getProps());
     } else {
-      boolean isFromMmTable = MetaStoreUtils.isInsertOnlyTable(tbl.getParameters()),
-          isToMmTable = MetaStoreUtils.isInsertOnlyTable(alterTbl.getProps());
-      if (!isFromMmTable && isToMmTable) {
-        result = generateAddMmTasks(tbl);
-      } else if (isFromMmTable && !isToMmTable) {
-        result = generateRemoveMmTasks(tbl);
+      boolean isFromMmTable = MetaStoreUtils.isInsertOnlyTable(tbl.getParameters());
+      Boolean isToMmTable = MetaStoreUtils.isToInsertOnlyTable(alterTbl.getProps());
+      if (isToMmTable != null) {
+        if (!isFromMmTable && isToMmTable) {
+          result = generateAddMmTasks(tbl);
+        } else if (isFromMmTable && !isToMmTable) {
+          result = generateRemoveMmTasks(tbl);
+        }
       }
       tbl.getTTable().getParameters().putAll(alterTbl.getProps());
     }

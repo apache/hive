@@ -256,13 +256,16 @@ public class MetaStoreUtils {
   public static void populateQuickStats(FileStatus[] fileStatus, Map<String, String> params) {
     int numFiles = 0;
     long tableSize = 0L;
+    String s = "LOG14535 Populating quick stats for: ";
     for (FileStatus status : fileStatus) {
+      s += status.getPath() + ", ";
       // don't take directories into account for quick stats
       if (!status.isDir()) {
         tableSize += status.getLen();
         numFiles += 1;
       }
     }
+    LOG.info(s, new Exception());
     params.put(StatsSetupConst.NUM_FILES, Integer.toString(numFiles));
     params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
   }
@@ -1894,11 +1897,52 @@ public class MetaStoreUtils {
    */
   // TODO# also check that transactional is true
   public static boolean isInsertOnlyTable(Map<String, String> params) {
+    return isInsertOnlyTable(params, false);
+  }
+
+  public static boolean isInsertOnlyTable(Map<String, String> params, boolean isCtas) {
     String transactionalProp = params.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-    return transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp);
+    // TODO# for the test, all non-ACID tables are MM
+    return (transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp));
   }
-  public static boolean isInsertOnlyTable(Properties params) {
-    String transactionalProp = params.getProperty(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-    return transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp);
+
+   public static boolean isInsertOnlyTable(Properties params) {
+    // TODO#  redirect for now - fix before merge
+    HashMap<String, String> testMap = new HashMap<String, String>();
+    for (String n  : params.stringPropertyNames()) {
+      testMap.put(n, params.getProperty(n));
+    }
+    return isInsertOnlyTable(testMap);
   }
+
+   /** The method for altering table props; may set the table to MM, non-MM, or not affect MM. */
+  public static Boolean isToInsertOnlyTable(Map<String, String> props) {
+    // TODO# Setting these separately is a very hairy issue in certain combinations, since we
+    //       cannot decide what type of table this becomes without taking both into account, and
+    //       in many cases the conversion might be illegal.
+    //       The only thing we allow is tx = true w/o tx-props, for backward compat.
+    String transactional = props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    String transactionalProp = props.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    if (transactional == null && transactionalProp == null) return null; // Not affected.
+    boolean isSetToTxn = "true".equalsIgnoreCase(transactional);
+    if (transactionalProp == null) {
+      if (isSetToTxn) return false; // Assume the full ACID table.
+      throw new RuntimeException("Cannot change '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL
+          + "' without '" + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "'");
+    }
+    if (!"insert_only".equalsIgnoreCase(transactionalProp)) return false; // Not MM.
+    if (!isSetToTxn) {
+      throw new RuntimeException("Cannot set '"
+          + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "' to 'insert_only' without "
+          + "setting '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL + "' to 'true'");
+    }
+    return true;
+  }
+
+  public static boolean isRemovedInsertOnlyTable(Set<String> removedSet) {
+    boolean hasTxn = removedSet.contains(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL),
+        hasProps = removedSet.contains(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    return hasTxn || hasProps;
+  }
+
 }

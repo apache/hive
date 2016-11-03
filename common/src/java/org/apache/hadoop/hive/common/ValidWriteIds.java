@@ -132,16 +132,27 @@ public class ValidWriteIds {
 
   public static class IdPathFilter implements PathFilter {
     private final String mmDirName;
-    private final boolean isMatch;
+    private final boolean isMatch, isIgnoreTemp;
     public IdPathFilter(long writeId, boolean isMatch) {
+      this(writeId, isMatch, false);
+    }
+    public IdPathFilter(long writeId, boolean isMatch, boolean isIgnoreTemp) {
       this.mmDirName = ValidWriteIds.getMmFilePrefix(writeId);
       this.isMatch = isMatch;
+      this.isIgnoreTemp = isIgnoreTemp;
     }
 
     @Override
     public boolean accept(Path path) {
       String name = path.getName();
-      return isMatch == name.equals(mmDirName);
+      if (name.equals(mmDirName)) {
+        return isMatch;
+      }
+      if (isIgnoreTemp && name.length() > 0) {
+        char c = name.charAt(0);
+        if (c == '.' || c == '_') return false; // Regardless of isMatch, ignore this.
+      }
+      return !isMatch;
     }
   }
 

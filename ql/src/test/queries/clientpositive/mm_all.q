@@ -418,6 +418,23 @@ drop table multi1_mm;
 
 
 
+set datanucleus.cache.collections=false;
+set hive.stats.autogather=true;
+
+drop table stats_mm;
+create table stats_mm(key int)  tblproperties("transactional"="true", "transactional_properties"="insert_only");
+insert overwrite table stats_mm  select key from intermediate;
+desc formatted stats_mm;
+
+insert into table stats_mm  select key from intermediate;
+desc formatted stats_mm;
+drop table stats_mm;
+
+
+drop table intermediate;
+
+
+
 
 
 

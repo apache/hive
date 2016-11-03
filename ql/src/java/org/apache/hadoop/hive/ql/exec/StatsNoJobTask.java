@@ -239,6 +239,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
         Map<String, String> parameters = tTable.getParameters();
         try {
           Path dir = new Path(tTable.getSd().getLocation());
+          Utilities.LOG14535.info("Aggregating stats for " + dir);
           long numRows = 0;
           long rawDataSize = 0;
           long fileSize = 0;
@@ -248,6 +249,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
 
           boolean statsAvailable = false;
           for(FileStatus file: fileList) {
+            Utilities.LOG14535.info("Computing stats for " + file);
             if (!file.isDir()) {
               InputFormat<?, ?> inputFormat = ReflectionUtil.newInstance(
                   table.getInputFormatClass(), jc);
@@ -284,11 +286,11 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
             db.alterTable(tableFullName, new Table(tTable), environmentContext);
 
             String msg = "Table " + tableFullName + " stats: [" + toString(parameters) + ']';
-            LOG.debug(msg);
+            Utilities.LOG14535.debug(msg);
             console.printInfo(msg);
           } else {
             String msg = "Table " + tableFullName + " does not provide stats.";
-            LOG.debug(msg);
+            Utilities.LOG14535.debug(msg);
           }
         } catch (Exception e) {
           console.printInfo("[Warning] could not update stats for " + tableFullName + ".",

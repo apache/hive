@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -389,11 +390,12 @@ public class Warehouse {
       throw new MetaException("Partition name is invalid. " + name);
     }
     LinkedHashMap<String, String> partSpec = new LinkedHashMap<String, String>();
-    makeSpecFromName(partSpec, new Path(name));
+    makeSpecFromName(partSpec, new Path(name), null);
     return partSpec;
   }
 
-  public static void makeSpecFromName(Map<String, String> partSpec, Path currPath) {
+  public static boolean makeSpecFromName(Map<String, String> partSpec, Path currPath,
+      Set<String> requiredKeys) {
     List<String[]> kvs = new ArrayList<String[]>();
     do {
       String component = currPath.getName();
@@ -411,8 +413,15 @@ public class Warehouse {
 
     // reverse the list since we checked the part from leaf dir to table's base dir
     for (int i = kvs.size(); i > 0; i--) {
-      partSpec.put(kvs.get(i - 1)[0], kvs.get(i - 1)[1]);
+      String key = kvs.get(i - 1)[0];
+      if (requiredKeys != null) {
+        requiredKeys.remove(key);
+      }
+      partSpec.put(key, kvs.get(i - 1)[1]);
     }
+    if (requiredKeys == null || requiredKeys.isEmpty()) return true;
+    LOG.warn("Cannot create partition spec from " + currPath + "; missing keys " + requiredKeys);
+    return false;
   }
 
   public static Map<String, String> makeEscSpecFromName(String name) throws MetaException {

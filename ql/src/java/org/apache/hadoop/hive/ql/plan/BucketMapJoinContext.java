@@ -39,6 +39,7 @@ public class BucketMapJoinContext implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  // TODO# this is completely broken, esp. w/load into bucketed tables (should perhaps be forbidden for MM tables)
   // table alias (small) --> input file name (big) --> target file names (small)
   private Map<String, Map<String, List<String>>> aliasBucketFileNameMapping;
   private String mapJoinBigTableAlias;

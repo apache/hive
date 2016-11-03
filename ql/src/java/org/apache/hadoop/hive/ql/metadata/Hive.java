@@ -1600,7 +1600,7 @@ public class Hive {
         Utilities.LOG14535.info("maybe deleting stuff from " + oldPartPath + " (new " + newPartPath + ") for replace");
         if (replace && oldPartPath != null) {
           deleteOldPathForReplace(newPartPath, oldPartPath, getConf(),
-              new ValidWriteIds.IdPathFilter(mmWriteId, false), mmWriteId != null);
+              new ValidWriteIds.IdPathFilter(mmWriteId, false, true), mmWriteId != null);
         }
       } else {
         // Either a non-MM query, or a load into MM table from an external source.
@@ -1609,7 +1609,7 @@ public class Hive {
         if (mmWriteId != null) {
           // We will load into MM directory, and delete from the parent if needed.
           destPath = new Path(destPath, ValidWriteIds.getMmFilePrefix(mmWriteId));
-          filter = replace ? new ValidWriteIds.IdPathFilter(mmWriteId, false) : filter;
+          filter = replace ? new ValidWriteIds.IdPathFilter(mmWriteId, false, true) : filter;
         }
         Utilities.LOG14535.info("moving " + loadPath + " to " + destPath);
         if (replace || (oldPart == null && !isAcid)) {
@@ -1621,7 +1621,7 @@ public class Hive {
           }
 
           FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
-          Hive.copyFiles(conf, loadPath, newPartPath, fs, isSrcLocal, isAcid, newFiles);
+          Hive.copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcid, newFiles);
         }
       }
       perfLogger.PerfLogEnd("MoveTask", "FileMoves");
@@ -1642,6 +1642,7 @@ public class Hive {
         org.apache.hadoop.hive.metastore.api.Partition newCreatedTpart = newTPart.getTPartition();
         SkewedInfo skewedInfo = newCreatedTpart.getSd().getSkewedInfo();
         /* Construct list bucketing location mappings from sub-directory name. */
+        // TODO# HERE probably broken
         Map<List<String>, String> skewedColValueLocationMaps = constructListBucketingLocationMap(
             newPartPath, skewedInfo);
         /* Add list bucketing location mappings. */
@@ -1942,7 +1943,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
       for(final Path partPath : validPartitions) {
         // generate a full partition specification
         final LinkedHashMap<String, String> fullPartSpec = Maps.newLinkedHashMap(partSpec);
-        Warehouse.makeSpecFromName(fullPartSpec, partPath);
+        if (!Warehouse.makeSpecFromName(
+            fullPartSpec, partPath, new HashSet<String>(partSpec.keySet()))) {
+          Utilities.LOG14535.warn("Ignoring invalid DP directory " + partPath);
+          continue;
+        }
         futures.add(pool.submit(new Callable<Void>() {
           @Override
           public Void call() throws Exception {
@@ -2055,7 +2060,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (replace) {
         Path tableDest = tbl.getPath();
         deleteOldPathForReplace(tableDest, tableDest, sessionConf,
-            new ValidWriteIds.IdPathFilter(mmWriteId, false), mmWriteId != null);
+            new ValidWriteIds.IdPathFilter(mmWriteId, false, true), mmWriteId != null);
       }
       newFiles = listFilesCreatedByQuery(loadPath, mmWriteId);
     } else {
@@ -2065,7 +2070,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (mmWriteId != null) {
         // We will load into MM directory, and delete from the parent if needed.
         destPath = new Path(destPath, ValidWriteIds.getMmFilePrefix(mmWriteId));
-        filter = replace ? new ValidWriteIds.IdPathFilter(mmWriteId, false) : filter;
+        filter = replace ? new ValidWriteIds.IdPathFilter(mmWriteId, false, true) : filter;
       }
       Utilities.LOG14535.info("moving " + loadPath + " to " + tblPath);
       if (replace) {

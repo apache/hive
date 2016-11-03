@@ -28,6 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.slf4j.Logger;
@@ -105,7 +106,7 @@ public class FSStatsPublisher implements StatsPublisher {
         statsFile = new Path(statsDir, StatsSetupConst.STATS_FILE_PREFIX
             + conf.getInt("mapred.task.partition", 0));
       }
-      LOG.debug("About to create stats file for this task : " + statsFile);
+      Utilities.LOG14535.info("About to create stats file for this task : " + statsFile);
       Output output = new Output(statsFile.getFileSystem(conf).create(statsFile,true));
       LOG.debug("Created file : " + statsFile);
       LOG.debug("Writing stats in it : " + statsMap);
@@ -118,7 +119,7 @@ public class FSStatsPublisher implements StatsPublisher {
       output.close();
       return true;
     } catch (IOException e) {
-      LOG.error("Failed to persist stats on filesystem",e);
+      Utilities.LOG14535.error("Failed to persist stats on filesystem",e);
       return false;
     }
   }

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -261,6 +262,10 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
         totalSz += len;
         PartitionDesc pDesc = (dpCtx != null) ? generateDPFullPartSpec(dpCtx, status, tblDesc, i)
             : partDesc;
+        if (pDesc == null) {
+          Utilities.LOG14535.warn("merger ignoring invalid DP path " + status[i].getPath());
+          continue;
+        }
         Utilities.LOG14535.info("merge resolver will merge " + status[i].getPath());
         work.resolveDynamicPartitionStoredAsSubDirsMerge(conf, status[i].getPath(), tblDesc,
             aliases, pDesc);
@@ -320,7 +325,11 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       TableDesc tblDesc, int i) {
     Map<String, String> fullPartSpec = new LinkedHashMap<String, String>(
         dpCtx.getPartSpec());
-    Warehouse.makeSpecFromName(fullPartSpec, status[i].getPath());
+    // Require all the directories to be present with some values.
+    if (!Warehouse.makeSpecFromName(fullPartSpec, status[i].getPath(),
+        new HashSet<>(dpCtx.getPartSpec().keySet()))) {
+      return null;
+    }
     PartitionDesc pDesc = new PartitionDesc(tblDesc, (LinkedHashMap) fullPartSpec);
     return pDesc;
   }

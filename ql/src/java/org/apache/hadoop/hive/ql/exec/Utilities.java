@@ -2476,7 +2476,11 @@ public final class Utilities {
 
         // generate a full partition specification
         LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<String, String>(partSpec);
-        Warehouse.makeSpecFromName(fullPartSpec, partPath);
+        if (!Warehouse.makeSpecFromName(fullPartSpec, partPath, new HashSet<String>(partSpec.keySet()))) {
+          Utilities.LOG14535.warn("Ignoring invalid DP directory " + partPath);
+          continue;
+        }
+        Utilities.LOG14535.info("Adding partition spec from " + partPath + ": " + fullPartSpec);
         fullPartSpecs.add(fullPartSpec);
       }
       return fullPartSpecs;

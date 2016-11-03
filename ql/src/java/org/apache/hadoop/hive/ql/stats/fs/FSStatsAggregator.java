@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ public class FSStatsAggregator implements StatsAggregator {
     List<String> statsDirs = scc.getStatsTmpDirs();
     assert statsDirs.size() == 1 : "Found multiple stats dirs: " + statsDirs;
     Path statsDir = new Path(statsDirs.get(0));
-    LOG.debug("About to read stats from : " + statsDir);
+    Utilities.LOG14535.info("About to read stats from : " + statsDir);
     statsMap  = new HashMap<String, Map<String,String>>();
 
     try {
@@ -69,13 +70,13 @@ public class FSStatsAggregator implements StatsAggregator {
         } finally {
           SerializationUtilities.releaseKryo(kryo);
         }
-        LOG.info("Read stats : " +statsMap);
+        Utilities.LOG14535.info("Read stats : " +statsMap);
         statsList.add(statsMap);
         in.close();
       }
       return true;
     } catch (IOException e) {
-      LOG.error("Failed to read stats from filesystem ", e);
+      Utilities.LOG14535.error("Failed to read stats from filesystem ", e);
       return false;
     }
   }

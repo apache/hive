@@ -405,6 +405,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       ValidWriteIds writeIds, List<Path> finalPaths) throws IOException {
     FileSystem fs = dir.getFileSystem(conf);
     Utilities.LOG14535.warn("Checking " + dir + " (root) for inputs");
+    // Ignore nullscan-optimized paths.
+    if (fs instanceof NullScanFileSystem) {
+      finalPaths.add(dir);
+      return;
+    }
     FileStatus[] files = fs.listStatus(dir); // TODO: batch?
     LinkedList<Path> subdirs = new LinkedList<>();
     for (FileStatus file : files) {
