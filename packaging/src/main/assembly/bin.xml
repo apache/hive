@@ -121,14 +121,14 @@
     </fileSet>
 
     <fileSet>
-      <directory>${project.parent.basedir}/licenses</directory>
+      <directory>${project.parent.basedir}/binary-package-licenses</directory>
       <includes>
         <include>/*</include>
       </includes>
       <excludes>
-        <exclude>/notes</exclude>
+        <exclude>/README</exclude>
       </excludes>
-      <outputDirectory>licenses</outputDirectory>
+      <outputDirectory>binary-package-licenses</outputDirectory>
     </fileSet>
 
     <fileSet>

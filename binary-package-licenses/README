@@ -1,15 +1,14 @@
-This contains notes tracking the licenses included in binary files.  This is not
+This file contains notes tracking the licenses included in binary files.  This is not
 intended to be shipped with the product but is for the use of other poor souls who
 will have to figure out whether the Hive binary distribution includes all of the
 necessary licenses or not.
 
-Which jars most licenses apply to is clear based on the name.  Those that are not
-are noted here:
+In naming the licenses I have used the maven group id.  When there was only one jar and it was different than the
+group id, I put that in the name as well.  When there were multiple jars from the same group (e.g. org.ruby has
+both joni and jcoding, com.sun.jersey has a number of jars) or the jar name was the same as the group id, I named
+the license just for the group id.
 
-jruby-LICENSE covers joni and jcodings jars
 slf4j-LICENSE covers jul-to-slf4j jar
-glassfish-LICENSE covers jaxb*, jersey*, wadl-resourcedoc-doclet, javax.el-api,
-  activation, jsp*, mail, and servlet-api
 
 All of the following jars have Apache licenses and thus do not have separate license
 files:
