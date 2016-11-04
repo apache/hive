@@ -154,13 +154,12 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
       LOG.error("Exception while rollback", e);
       Throwables.propagate(e);
     }
-
   }
 
   @Override
   public void commitCreateTable(Table table) throws MetaException
   {
-    final Path segmentDescriptorDir = new Path(table.getSd().getLocation(), SEGMENTS_DESCRIPTOR_DIR_NAME);
+    final Path segmentDescriptorDir = new Path(table.getSd().getLocation());
     try {
       publishSegments(DruidStorageHandlerUtils.getPublishedSegments(segmentDescriptorDir, getConf()));
     }

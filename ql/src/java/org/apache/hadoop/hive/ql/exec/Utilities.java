@@ -3058,8 +3058,8 @@ public final class Utilities {
 
     // The input file does not exist, replace it by a empty file
     PartitionDesc partDesc = work.getPathToPartitionInfo().get(path);
-    if (partDesc.getTableDesc().isNonNative()) {
-      // if this isn't a hive table we can't create an empty file for it.
+    if (!partDesc.getTableDesc().needsNativeStorage()) {
+      // if it does not need native storage, we can't create an empty file for it.
       return path;
     }
 
@@ -3094,8 +3094,8 @@ public final class Utilities {
           throws Exception {
 
     TableDesc tableDesc = work.getAliasToPartnInfo().get(alias).getTableDesc();
-    if (tableDesc.isNonNative()) {
-      // if this isn't a hive table we can't create an empty file for it.
+    if (!tableDesc.needsNativeStorage()) {
+      // if it does not need native storage, we can't create an empty file for it.
       return null;
     }
 

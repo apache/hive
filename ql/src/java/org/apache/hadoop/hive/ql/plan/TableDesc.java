@@ -25,24 +25,33 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
-
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TableDesc.
  *
  */
 public class TableDesc implements Serializable, Cloneable {
+
+  private static final Logger LOG = LoggerFactory.getLogger(TableDesc.class);
+
   private static final long serialVersionUID = 1L;
   private Class<? extends InputFormat> inputFileFormatClass;
   private Class<? extends OutputFormat> outputFileFormatClass;
@@ -163,6 +172,28 @@ public class TableDesc implements Serializable, Cloneable {
 
   public boolean isNonNative() {
     return (properties.getProperty(hive_metastoreConstants.META_TABLE_STORAGE) != null);
+  }
+
+  public boolean needsNativeStorage() {
+    // TODO: We add this exception for the moment. We should allow storage handlers to
+    // specify their desired behavior.
+    String handlerClass = properties.getProperty(
+            org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
+    if (handlerClass == null) {
+      // Native
+      return true;
+    }
+    try {
+      HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(
+              SessionState.getSessionConf(), handlerClass);
+      if (storageHandler.toString().equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID)) {
+        return true;
+      }
+    } catch (HiveException e) {
+      LOG.warn("Could not resolve storage handler");
+    }
+    // Safe bail out
+    return false;
   }
 
   @Override
