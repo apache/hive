@@ -32,7 +32,11 @@ public class SchemaEvolution {
   // indexed by reader column id
   private final TypeDescription[] readerFileTypes;
   // indexed by reader column id
-  private final boolean[] included;
+  private final boolean[] readerIncluded;
+  // the offset to the first column id ignoring any ACID columns
+  private final int readerColumnOffset;
+  // indexed by file column id
+  private final boolean[] fileIncluded;
   private final TypeDescription fileSchema;
   private final TypeDescription readerSchema;
   private boolean hasConversion;
@@ -46,20 +50,36 @@ public class SchemaEvolution {
   public SchemaEvolution(TypeDescription fileSchema,
                          TypeDescription readerSchema,
                          boolean[] includeCols) {
-    this.included = includeCols == null ? null : Arrays.copyOf(includeCols, includeCols.length);
+    this.readerIncluded = includeCols == null ? null : Arrays.copyOf(includeCols, includeCols.length);
     this.hasConversion = false;
     this.fileSchema = fileSchema;
+    boolean isAcid = checkAcidSchema(fileSchema);
+    this.readerColumnOffset = isAcid ? acidEventFieldNames.size() : 0;
     if (readerSchema != null) {
-      if (checkAcidSchema(fileSchema)) {
+      if (isAcid) {
         this.readerSchema = createEventSchema(readerSchema);
       } else {
         this.readerSchema = readerSchema;
       }
+      if (readerIncluded != null &&
+          readerIncluded.length + readerColumnOffset != this.readerSchema.getMaximumId() + 1) {
+        throw new IllegalArgumentException("Include vector the wrong length: " +
+            this.readerSchema.toJson() + " with include length " +
+            readerIncluded.length);
+      }
       this.readerFileTypes = new TypeDescription[this.readerSchema.getMaximumId() + 1];
+      this.fileIncluded = new boolean[fileSchema.getMaximumId() + 1];
       buildConversionFileTypesArray(fileSchema, this.readerSchema);
     } else {
       this.readerSchema = fileSchema;
       this.readerFileTypes = new TypeDescription[this.readerSchema.getMaximumId() + 1];
+      this.fileIncluded = readerIncluded;
+      if (readerIncluded != null &&
+          readerIncluded.length + readerColumnOffset != this.readerSchema.getMaximumId() + 1) {
+        throw new IllegalArgumentException("Include vector the wrong length: " +
+            this.readerSchema.toJson() + " with include length " +
+            readerIncluded.length);
+      }
       buildSameSchemaFileTypesArray();
     }
     this.ppdSafeConversion = populatePpdSafeConversion();
@@ -67,6 +87,15 @@ public class SchemaEvolution {
 
   public TypeDescription getReaderSchema() {
     return readerSchema;
+  }
+
+  /**
+   * Returns the non-ACID (aka base) reader type description.
+   *
+   * @return the reader type ignoring the ACID rowid columns, if any
+   */
+  public TypeDescription getReaderBaseSchema() {
+    return readerSchema.findSubtype(readerColumnOffset);
   }
 
   /**
@@ -79,6 +108,22 @@ public class SchemaEvolution {
 
   public TypeDescription getFileType(TypeDescription readerType) {
     return getFileType(readerType.getId());
+  }
+
+  /**
+   * Get whether each column is included from the reader's point of view.
+   * @return a boolean array indexed by reader column id
+   */
+  public boolean[] getReaderIncluded() {
+    return readerIncluded;
+  }
+
+  /**
+   * Get whether each column is included from the file's point of view.
+   * @return a boolean array indexed by file column id
+   */
+  public boolean[] getFileIncluded() {
+    return fileIncluded;
   }
 
   /**
@@ -189,10 +234,22 @@ public class SchemaEvolution {
     return false;
   }
 
+  /**
+   * Should we read the given reader column?
+   * @param readerId the id of column in the extended reader schema
+   * @return true if the column should be read
+   */
+  public boolean includeReaderColumn(int readerId) {
+    return readerIncluded == null ||
+        readerId <= readerColumnOffset ||
+        readerIncluded[readerId - readerColumnOffset];
+  }
+
   void buildConversionFileTypesArray(TypeDescription fileType,
                                      TypeDescription readerType) {
     // if the column isn't included, don't map it
-    if (included != null && !included[readerType.getId()]) {
+    int readerId = readerType.getId();
+    if (!includeReaderColumn(readerId)) {
       return;
     }
     boolean isOk = true;
@@ -266,17 +323,17 @@ public class SchemaEvolution {
       hasConversion = true;
     }
     if (isOk) {
-      int id = readerType.getId();
-      if (readerFileTypes[id] != null) {
+      if (readerFileTypes[readerId] != null) {
         throw new RuntimeException("reader to file type entry already assigned");
       }
-      readerFileTypes[id] = fileType;
+      readerFileTypes[readerId] = fileType;
+      fileIncluded[fileType.getId()] = true;
     } else {
       throw new IllegalArgumentException(
           String.format(
               "ORC does not support type conversion from file type %s (%d) to reader type %s (%d)",
               fileType.toString(), fileType.getId(),
-              readerType.toString(), readerType.getId()));
+              readerType.toString(), readerId));
     }
   }
 
@@ -289,10 +346,10 @@ public class SchemaEvolution {
   }
 
   void buildSameSchemaFileTypesArrayRecurse(TypeDescription readerType) {
-    if (included != null && !included[readerType.getId()]) {
+    int id = readerType.getId();
+    if (!includeReaderColumn(id)) {
       return;
     }
-    int id = readerType.getId();
     if (readerFileTypes[id] != null) {
       throw new RuntimeException("reader to file type entry already assigned");
     }

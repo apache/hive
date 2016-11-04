@@ -2082,8 +2082,7 @@ public class TreeReaderFactory {
                                             boolean skipCorrupt
                                             ) throws IOException {
     TypeDescription fileType = evolution.getFileType(readerType);
-    if (fileType == null ||
-        (included != null && !included[readerType.getId()])) {
+    if (fileType == null || !evolution.includeReaderColumn(readerType.getId())){
       return new NullTreeReader(0);
     }
     TypeDescription.Category readerTypeCategory = readerType.getCategory();

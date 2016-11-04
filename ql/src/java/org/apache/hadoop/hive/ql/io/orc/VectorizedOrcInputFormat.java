@@ -43,6 +43,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.orc.OrcProto;
+import org.apache.orc.OrcUtils;
 import org.apache.orc.TypeDescription;
 
 /**
@@ -74,7 +75,6 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       /**
        * Do we have schema on read in the configuration variables?
        */
-      List<OrcProto.Type> types = file.getTypes();
       int dataColumns = rbCtx.getDataColumnCount();
       TypeDescription schema =
           OrcInputFormat.getDesiredRowTypeDescr(conf, false, dataColumns);
@@ -91,6 +91,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
           }
         }
       }
+      List<OrcProto.Type> types = OrcUtils.getOrcTypes(schema);
       Reader.Options options = new Reader.Options().schema(schema);
 
       this.offset = fileSplit.getStart();
