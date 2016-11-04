@@ -79,11 +79,19 @@ llap.model.LlapDaemonCacheMetrics = new function() {
    this.fill_rate = trendlist(50);
    this.push = function(jmx) {
       var bean = jmxbean(jmx, this.name);
-      this.cache_max = bean["CacheCapacityTotal"]/(1024*1024);
-      this.cache_used = bean["CacheCapacityUsed"]/(1024*1024);
-      this.cache_reqs = bean["CacheReadRequests"];
-      this.fill_rate.add((this.cache_used*100.0)/this.cache_max);
-      this.hit_rate.add(bean["CacheHitRatio"]*100.0);
+      if (bean) {
+        this.cache_max = bean["CacheCapacityTotal"]/(1024*1024);
+        this.cache_used = bean["CacheCapacityUsed"]/(1024*1024);
+        this.cache_reqs = bean["CacheReadRequests"];
+        this.fill_rate.add((this.cache_used*100.0)/this.cache_max);
+        this.hit_rate.add(bean["CacheHitRatio"]*100.0);
+      } else {
+        this.cache_max = -1;
+        this.cache_used = -1;
+        this.cache_reqs = -1;
+        this.fill_rate.add(0);
+        this.hit_rate.add(-1);
+      }
    }
    return this;
 }
@@ -106,10 +114,10 @@ llap.model.LlapDaemonExecutorMetrics = new function() {
    this.push = function(jmx) {
       var bean = jmxbean(jmx, this.name);
       this.queue_rate.add(bean["ExecutorNumQueuedRequests"] || 0);
-      this.lost_time = bean["PreemptionTimeLost"];
-	  this.num_tasks = bean["ExecutorTotalRequestsHandled"];
-	  this.interrupted_tasks = bean["ExecutorTotalInterrupted"];
-	  this.failed_tasks = bean["ExecutorTotalExecutionFailure"];
+      this.lost_time = bean["PreemptionTimeLost"] || 0;
+      this.num_tasks = bean["ExecutorTotalRequestsHandled"];
+      this.interrupted_tasks = bean["ExecutorTotalInterrupted"] || 0;
+      this.failed_tasks = bean["ExecutorTotalExecutionFailure"] || 0;
    }
    return this;
 }
