@@ -466,4 +466,15 @@ public class TestSchemaEvolution {
     assertFalse(schemaEvolution.isPPDSafeConversion(0));
     assertFalse(schemaEvolution.isPPDSafeConversion(1));
   }
+
+  @Test
+  public void ensureFileIncluded() throws IOException {
+    TypeDescription file = TypeDescription.fromString("struct<x:int,y:int>");
+    SchemaEvolution evolution = new SchemaEvolution(file, null);
+    boolean[] include = evolution.getFileIncluded();
+    assertEquals(3, include.length);
+    for(int i=0; i < include.length; ++i) {
+      assertTrue("element " + i, include[i]);
+    }
+  }
 }

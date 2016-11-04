@@ -393,18 +393,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
   static Reader.Options createEventOptions(Reader.Options options) {
     Reader.Options result = options.clone();
     result.range(options.getOffset(), Long.MAX_VALUE);
-    // slide the columns down by 6 for the include array
-    if (options.getInclude() != null) {
-      boolean[] orig = options.getInclude();
-      // we always need the base row
-      orig[0] = true;
-      boolean[] include = new boolean[orig.length + OrcRecordUpdater.FIELDS];
-      Arrays.fill(include, 0, OrcRecordUpdater.FIELDS, true);
-      for(int i= 0; i < orig.length; ++i) {
-        include[i + OrcRecordUpdater.FIELDS] = orig[i];
-      }
-      result.include(include);
-    }
+    result.include(options.getInclude());
 
     // slide the column names down by 6 for the name array
     if (options.getColumnNames() != null) {
