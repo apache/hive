@@ -490,11 +490,12 @@ public class HiveSessionImpl implements HiveSession {
       Map<String, String> confOverlay, boolean runAsync, long queryTimeout) throws HiveSQLException {
     acquire(true, true);
 
-    OperationManager operationManager = getOperationManager();
-    ExecuteStatementOperation operation = operationManager.newExecuteStatementOperation(
-        getSession(), statement, confOverlay, runAsync, queryTimeout);
-    OperationHandle opHandle = operation.getHandle();
+    ExecuteStatementOperation operation = null;
+    OperationHandle opHandle = null;
     try {
+      operation = getOperationManager().newExecuteStatementOperation(getSession(), statement,
+          confOverlay, runAsync, queryTimeout);
+      opHandle = operation.getHandle();
       operation.run();
       addOpHandle(opHandle);
       return opHandle;
@@ -502,10 +503,12 @@ public class HiveSessionImpl implements HiveSession {
       // Refering to SQLOperation.java, there is no chance that a HiveSQLException throws and the
       // async background operation submits to thread pool successfully at the same time. So, Cleanup
       // opHandle directly when got HiveSQLException
-      operationManager.closeOperation(opHandle);
+      if (opHandle != null) {
+        getOperationManager().closeOperation(opHandle);
+      }
       throw e;
     } finally {
-      if (operation.getBackgroundHandle() == null) {
+      if (operation == null || operation.getBackgroundHandle() == null) {
         release(true, true); // Not async, or wasn't submitted for some reason (failure, etc.)
       } else {
         releaseBeforeOpLock(true); // Release, but keep the lock (if present).
