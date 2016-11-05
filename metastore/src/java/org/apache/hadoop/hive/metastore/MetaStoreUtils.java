@@ -265,7 +265,7 @@ public class MetaStoreUtils {
         numFiles += 1;
       }
     }
-    LOG.info(s, new Exception());
+    LOG.info(s/*, new Exception()*/);
     params.put(StatsSetupConst.NUM_FILES, Integer.toString(numFiles));
     params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
   }

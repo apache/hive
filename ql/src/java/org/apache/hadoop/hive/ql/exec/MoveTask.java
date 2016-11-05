@@ -273,8 +273,12 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       if (lfd != null) {
         Path targetPath = lfd.getTargetDir();
         Path sourcePath = lfd.getSourcePath();
-        Utilities.LOG14535.info("MoveTask moving LFD " + sourcePath + " to " + targetPath);
-        moveFile(sourcePath, targetPath, lfd.getIsDfsDir());
+        if (targetPath.equals(sourcePath)) {
+          Utilities.LOG14535.info("MoveTask not moving LFD " + sourcePath);
+        } else {
+          Utilities.LOG14535.info("MoveTask moving LFD " + sourcePath + " to " + targetPath);
+          moveFile(sourcePath, targetPath, lfd.getIsDfsDir());
+        }
       }
 
       // Multi-file load is for dynamic partitions when some partitions do not

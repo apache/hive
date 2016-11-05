@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1642,7 +1643,6 @@ public class Hive {
         org.apache.hadoop.hive.metastore.api.Partition newCreatedTpart = newTPart.getTPartition();
         SkewedInfo skewedInfo = newCreatedTpart.getSd().getSkewedInfo();
         /* Construct list bucketing location mappings from sub-directory name. */
-        // TODO# HERE probably broken
         Map<List<String>, String> skewedColValueLocationMaps = constructListBucketingLocationMap(
             newPartPath, skewedInfo);
         /* Add list bucketing location mappings. */
@@ -1768,8 +1768,11 @@ public class Hive {
 private void walkDirTree(FileStatus fSta, FileSystem fSys,
     Map<List<String>, String> skewedColValueLocationMaps, Path newPartPath, SkewedInfo skewedInfo)
     throws IOException {
+  // TODO# HERE broken
+
   /* Base Case. It's leaf. */
   if (!fSta.isDir()) {
+    Utilities.LOG14535.info("Processing LB leaf " + fSta.getPath());
     /* construct one location map if not exists. */
     constructOneLBLocationMap(fSta, skewedColValueLocationMaps, newPartPath, skewedInfo);
     return;
@@ -1778,6 +1781,7 @@ private void walkDirTree(FileStatus fSta, FileSystem fSys,
   /* dfs. */
   FileStatus[] children = fSys.listStatus(fSta.getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
   if (children != null) {
+    Utilities.LOG14535.info("Processing LB dir " + fSta.getPath());
     for (FileStatus child : children) {
       walkDirTree(child, fSys, skewedColValueLocationMaps, newPartPath, skewedInfo);
     }
@@ -1798,22 +1802,37 @@ private void constructOneLBLocationMap(FileStatus fSta,
   List<String> skewedValue = new ArrayList<String>();
   String lbDirName = FileUtils.unescapePathName(lbdPath.toString());
   String partDirName = FileUtils.unescapePathName(newPartPath.toString());
-  String lbDirSuffix = lbDirName.replace(partDirName, "");
+  String lbDirSuffix = lbDirName.replace(partDirName, ""); // TODO: wtf?
+  if (lbDirSuffix.startsWith(Path.SEPARATOR)) {
+    lbDirSuffix = lbDirSuffix.substring(1);
+  }
   String[] dirNames = lbDirSuffix.split(Path.SEPARATOR);
-  for (String dirName : dirNames) {
-    if ((dirName != null) && (dirName.length() > 0)) {
-      // Construct skewed-value to location map except default directory.
-      // why? query logic knows default-dir structure and don't need to get from map
-        if (!dirName
-            .equalsIgnoreCase(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME)) {
-        String[] kv = dirName.split("=");
-        if (kv.length == 2) {
-          skewedValue.add(kv[1]);
-        }
+  int keysFound = 0, dirsToTake = 0;
+  int colCount = skewedInfo.getSkewedColNames().size();
+  while (dirsToTake < dirNames.length && keysFound < colCount) {
+    String dirName = dirNames[dirsToTake++];
+    // Construct skewed-value to location map except default directory.
+    // why? query logic knows default-dir structure and don't need to get from map
+    if (dirName.equalsIgnoreCase(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME)) {
+      ++keysFound;
+    } else {
+      String[] kv = dirName.split("=");
+      if (kv.length == 2) {
+        skewedValue.add(kv[1]);
+        ++keysFound;
+      } else {
+        // TODO: we should really probably throw. Keep the existing logic for now.
+        LOG.warn("Skipping unknown directory " + dirName
+            + " when expecting LB keys or default directory (from " + lbDirName + ")");
       }
     }
   }
-  if ((skewedValue.size() > 0) && (skewedValue.size() == skewedInfo.getSkewedColNames().size())
+  for (int i = 0; i < (dirNames.length - dirsToTake); ++i) {
+    lbdPath = lbdPath.getParent();
+  }
+  Utilities.LOG14535.info("Saving LB location " + lbdPath + " based on "
+      + colCount + " keys and " + fSta.getPath());
+  if ((skewedValue.size() > 0) && (skewedValue.size() == colCount)
       && !skewedColValueLocationMaps.containsKey(skewedValue)) {
     skewedColValueLocationMaps.put(skewedValue, lbdPath.toString());
   }
@@ -1830,10 +1849,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   private Map<List<String>, String> constructListBucketingLocationMap(Path newPartPath,
       SkewedInfo skewedInfo) throws IOException, FileNotFoundException {
+    Utilities.LOG14535.info("Constructing list bucketing map for " + newPartPath);
     Map<List<String>, String> skewedColValueLocationMaps = new HashMap<List<String>, String>();
     FileSystem fSys = newPartPath.getFileSystem(conf);
-    walkDirTree(fSys.getFileStatus(newPartPath), fSys, skewedColValueLocationMaps, newPartPath,
-        skewedInfo);
+    walkDirTree(fSys.getFileStatus(newPartPath),
+        fSys, skewedColValueLocationMaps, newPartPath, skewedInfo);
     return skewedColValueLocationMaps;
   }
 

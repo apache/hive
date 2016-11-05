@@ -77,7 +77,7 @@ public class FSStatsPublisher implements StatsPublisher {
 
   @Override
   public boolean publishStat(String partKV, Map<String, String> stats) {
-    LOG.debug("Putting in map : " + partKV + "\t" + stats);
+    Utilities.LOG14535.info("Putting in map : " + partKV + "\t" + stats);
     // we need to do new hashmap, since stats object is reused across calls.
     Map<String,String> cpy = new HashMap<String, String>(stats);
     Map<String,String> statMap = statsMap.get(partKV);

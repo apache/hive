@@ -1386,28 +1386,14 @@ public final class GenMapRedUtils {
     // MM directory, the original MoveTask still commits based on the parent. Note that this path
     // can only be triggered for a merge that's part of insert for now; MM tables do not support
     // concatenate. Keeping the old logic for non-MM tables with temp directories and stuff.
+    // TODO# is this correct?
     Path fsopPath = srcMmWriteId != null ? fsInputDesc.getFinalDirName() : finalName;
-    linkMoveTask(fsopPath, cndTsk, mvTasks, conf, dependencyTask);
-  }
-
-  /**
-   * Make the move task in the GenMRProcContext following the FileSinkOperator a dependent of all
-   * possible subtrees branching from the ConditionalTask.
-   *
-   * @param newOutput
-   * @param cndTsk
-   * @param mvTasks
-   * @param hconf
-   * @param dependencyTask
-   */
-  private static void linkMoveTask(Path fsopPath,
-      ConditionalTask cndTsk, List<Task<MoveWork>> mvTasks, HiveConf hconf,
-      DependencyCollectionTask dependencyTask) {
-
-    Task<MoveWork> mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(mvTasks, fsopPath);
+    Utilities.LOG14535.info("Looking for MoveTask to make it dependant on the conditional tasks");
+    Task<MoveWork> mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(
+        mvTasks, fsopPath, fsInputDesc.isMmTable());
 
     for (Task<? extends Serializable> tsk : cndTsk.getListTasks()) {
-      linkMoveTask(mvTask, tsk, hconf, dependencyTask);
+      linkMoveTask(mvTask, tsk, conf, dependencyTask);
     }
   }
 
@@ -1726,18 +1712,25 @@ public final class GenMapRedUtils {
   }
 
   public static Task<MoveWork> findMoveTaskForFsopOutput(
-      List<Task<MoveWork>> mvTasks, Path fsopFinalDir) {
+      List<Task<MoveWork>> mvTasks, Path fsopFinalDir, boolean isMmFsop) {
     // find the move task
     for (Task<MoveWork> mvTsk : mvTasks) {
       MoveWork mvWork = mvTsk.getWork();
+      if (mvWork.isNoop()) continue;
       Path srcDir = null;
+      boolean isLfd = false;
       if (mvWork.getLoadFileWork() != null) {
         srcDir = mvWork.getLoadFileWork().getSourcePath();
+        isLfd = true;
+        if (isMmFsop) {
+          srcDir = srcDir.getParent();
+        }
       } else if (mvWork.getLoadTableWork() != null) {
-        srcDir = mvWork.getLoadTableWork().getSourcePath();
+        srcDir = mvWork.getLoadTableWork().getSourcePath(); // TODO# THIS
       }
       Utilities.LOG14535.info("Observing MoveWork " + System.identityHashCode(mvWork)
-          + " with " + srcDir + " while looking for " + fsopFinalDir);
+          + " with " + srcDir + "(from " + (isLfd ? "LFD" : "LTD") + ") while looking for "
+          + fsopFinalDir + "(mm = " + isMmFsop + ")");
 
       if ((srcDir != null) && srcDir.equals(fsopFinalDir)) {
         return mvTsk;
@@ -1748,23 +1741,16 @@ public final class GenMapRedUtils {
 
   /**
    * Returns true iff the fsOp requires a merge
-   * @param mvTasks
-   * @param hconf
-   * @param fsOp
-   * @param currTask
-   * @param isInsertTable
-   * @return
    */
-  public static boolean isMergeRequired(List<Task<MoveWork>> mvTasks, HiveConf hconf, FileSinkOperator fsOp,
-      Task<? extends Serializable> currTask, boolean isInsertTable) {
-
+  public static boolean isMergeRequired(List<Task<MoveWork>> mvTasks, HiveConf hconf,
+      FileSinkOperator fsOp, Task<? extends Serializable> currTask, boolean isInsertTable) {
     // Has the user enabled merging of files for map-only jobs or for all jobs
     if (mvTasks == null  || mvTasks.isEmpty()) return false;
 
     // no need of merging if the move is to a local file system
     // We are looking based on the original FSOP, so use the original path as is.
     MoveTask mvTask = (MoveTask) GenMapRedUtils.findMoveTaskForFsopOutput(
-        mvTasks, fsOp.getConf().getFinalDirName());
+        mvTasks, fsOp.getConf().getFinalDirName(), fsOp.getConf().isMmTable());
 
     // TODO: wtf? wtf?!! why is this in this method?
     if (mvTask != null && isInsertTable && hconf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
@@ -1864,7 +1850,10 @@ public final class GenMapRedUtils {
     Task<MoveWork> mvTask = null;
 
     if (!chDir) {
-      mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(mvTasks, fsOp.getConf().getFinalDirName());
+      // TODO# is it correct to always use MM dir in MM case here? Where does MoveTask point?
+      Utilities.LOG14535.info("Looking for MoveTask from createMoveTask");
+      mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(
+          mvTasks, fsOp.getConf().getFinalDirName(), fsOp.getConf().isMmTable());
     }
 
     // Set the move task to be dependent on the current task

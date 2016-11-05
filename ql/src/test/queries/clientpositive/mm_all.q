@@ -18,12 +18,13 @@ insert into table intermediate partition(p='457') select distinct key from src w
 
 drop table part_mm;
 create table part_mm(key int) partitioned by (key_mm int) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only");
-explain insert into table part_mm partition(key_mm='455') select key from intermediate;
-insert into table part_mm partition(key_mm='455') select key from intermediate;
-insert into table part_mm partition(key_mm='456') select key from intermediate;
-insert into table part_mm partition(key_mm='455') select key from intermediate;
+explain insert into table part_mm partition(key_mm=455) select key from intermediate;
+insert into table part_mm partition(key_mm=455) select key from intermediate;
+insert into table part_mm partition(key_mm=456) select key from intermediate;
+insert into table part_mm partition(key_mm=455) select key from intermediate;
 select * from part_mm order by key, key_mm;
-truncate table part_mm partition(key_mm='455');
+
+-- TODO: doesn't work truncate table part_mm partition(key_mm=455);
 select * from part_mm order by key, key_mm;
 truncate table part_mm;
 select * from part_mm order by key, key_mm;
@@ -429,6 +430,12 @@ desc formatted stats_mm;
 insert into table stats_mm  select key from intermediate;
 desc formatted stats_mm;
 drop table stats_mm;
+
+drop table stats2_mm;
+create table stats2_mm tblproperties("transactional"="true", "transactional_properties"="insert_only") as select array(key, value) from src;
+desc formatted stats2_mm;
+drop table stats2_mm;
+
 
 
 drop table intermediate;

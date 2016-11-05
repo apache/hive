@@ -3052,12 +3052,23 @@ public final class Utilities {
     Set<Path> pathsProcessed = new HashSet<Path>();
     List<Path> pathsToAdd = new LinkedList<Path>();
     // AliasToWork contains all the aliases
-    for (String alias : work.getAliasToWork().keySet()) {
+    Collection<String> aliasToWork = work.getAliasToWork().keySet();
+    if (!skipDummy) {
+      // ConcurrentModification otherwise if adding dummy.
+      aliasToWork = new ArrayList<>(aliasToWork);
+    }
+    for (String alias : aliasToWork) {
       LOG.info("Processing alias " + alias);
 
       // The alias may not have any path
+      Collection<Map.Entry<Path, ArrayList<String>>> pathToAliases =
+          work.getPathToAliases().entrySet();
+      if (!skipDummy) {
+        // ConcurrentModification otherwise if adding dummy.
+        pathToAliases = new ArrayList<>(pathToAliases);
+      }
       Path path = null;
-      for (Map.Entry<Path, ArrayList<String>> e : work.getPathToAliases().entrySet()) {
+      for (Map.Entry<Path, ArrayList<String>> e : pathToAliases) {
         Path file = e.getKey();
         List<String> aliases = e.getValue();
         if (aliases.contains(alias)) {
@@ -3072,11 +3083,8 @@ public final class Utilities {
           pathsProcessed.add(path);
 
           LOG.info("Adding input file " + path);
-          if (!skipDummy
-              && isEmptyPath(job, path, ctx)) {
-            path = createDummyFileForEmptyPartition(path, job, work,
-                 hiveScratchDir);
-
+          if (!skipDummy && isEmptyPath(job, path, ctx)) {
+            path = createDummyFileForEmptyPartition(path, job, work, hiveScratchDir);
           }
           pathsToAdd.add(path);
         }

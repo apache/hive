@@ -14,59 +14,22 @@ insert into table intermediate partition(p='455') select distinct key from src w
 insert into table intermediate partition(p='456') select distinct key from src where key is not null order by key asc limit 2;
 
 
-drop table multi0_1_mm;
-drop table multi0_2_mm;
-create table multi0_1_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only");
-create table multi0_2_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only");
+drop table intermmediate_nonpart;
+create table intermmediate_nonpart(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only");
+insert into intermmediate_nonpart select * from intermediate;
 
-from intermediate
-insert overwrite table multi0_1_mm select key, p
-insert overwrite table multi0_2_mm select p, key;
+set hive.exim.test.mode=true;
 
-select * from multi0_1_mm order by key, key2;
-select * from multi0_2_mm order by key, key2;
+export table intermmediate_nonpart to 'ql/test/data/exports/intermmediate_nonpart';
+drop table intermmediate_nonpart;
 
-set hive.merge.mapredfiles=true;
-set hive.merge.sparkfiles=true;
-set hive.merge.tezfiles=true;
+-- MM export into new MM table, non-part and part
 
-from intermediate
-insert into table multi0_1_mm select p, key
-insert overwrite table multi0_2_mm select key, p;
-select * from multi0_1_mm order by key, key2;
-select * from multi0_2_mm order by key, key2;
-
-set hive.merge.mapredfiles=false;
-set hive.merge.sparkfiles=false;
-set hive.merge.tezfiles=false;
-
-drop table multi0_1_mm;
-drop table multi0_2_mm;
-
-
-drop table multi1_mm;
-create table multi1_mm (key int, key2 int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only");
-from intermediate
-insert into table multi1_mm partition(p=1) select p, key
-insert into table multi1_mm partition(p=2) select key, p;
-select * from multi1_mm order by key, key2, p;
-from intermediate
-insert into table multi1_mm partition(p=2) select p, key
-insert overwrite table multi1_mm partition(p=1) select key, p;
-select * from multi1_mm order by key, key2, p;
-
-from intermediate
-insert into table multi1_mm partition(p) select p, key, p
-insert into table multi1_mm partition(p=1) select key, p;
-select key, key2, p from multi1_mm order by key, key2, p;
-
-from intermediate
-insert into table multi1_mm partition(p) select p, key, 1
-insert into table multi1_mm partition(p=1) select key, p;
-select key, key2, p from multi1_mm order by key, key2, p;
-drop table multi1_mm;
-
-
+drop table import2_mm;
+import table import2_mm from 'ql/test/data/exports/intermmediate_nonpart';
+desc import2_mm;
+select * from import2_mm order by key, p;
+drop table import2_mm;
 
 drop table intermediate;
 
