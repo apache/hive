@@ -151,7 +151,7 @@ public class HiveSparkClientFactory {
         LOG.info(String.format(
           "load yarn property from hive configuration in %s mode (%s -> %s).",
           sparkMaster, propertyName, LogUtils.maskIfPassword(propertyName,value)));
-      } else if (propertyName.equals(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY)) {
+      } else if (propertyName.equals(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY) && ! sparkConf.containsKey("spark.hadoop." + propertyName)) {
         String value = hiveConf.get(propertyName);
         if (value != null && !value.isEmpty()) {
           sparkConf.put("spark.hadoop." + propertyName, value);
