@@ -52,7 +52,7 @@ public class HiveSparkClientFactory {
   protected static final transient Logger LOG = LoggerFactory.getLogger(HiveSparkClientFactory.class);
 
   private static final String SPARK_DEFAULT_CONF_FILE = "spark-defaults.conf";
-  private static final String SPARK_DEFAULT_MASTER = "yarn-cluster";
+  private static final String SPARK_DEFAULT_MASTER = "yarn";
   private static final String SPARK_DEFAULT_APP_NAME = "Hive on Spark";
   private static final String SPARK_DEFAULT_SERIALIZER = "org.apache.spark.serializer.KryoSerializer";
   private static final String SPARK_DEFAULT_REFERENCE_TRACKING = "false";
@@ -128,9 +128,11 @@ public class HiveSparkClientFactory {
     if (SessionState.get() != null && SessionState.get().getConf() != null) {
       SessionState.get().getConf().set("spark.master", sparkMaster);
     }
+    /*
     if (sparkMaster.equals("yarn-cluster")) {
       sparkConf.put("spark.yarn.maxAppAttempts", "1");
     }
+    */
     for (Map.Entry<String, String> entry : hiveConf) {
       String propertyName = entry.getKey();
       if (propertyName.startsWith("spark")) {
@@ -139,8 +141,8 @@ public class HiveSparkClientFactory {
         LOG.info(String.format(
           "load spark property from hive configuration (%s -> %s).",
           propertyName, LogUtils.maskIfPassword(propertyName,value)));
-      } else if (propertyName.startsWith("yarn") &&
-        (sparkMaster.equals("yarn-client") || sparkMaster.equals("yarn-cluster"))) {
+      } else if (propertyName.startsWith("yarn") /* &&
+        (sparkMaster.equals("yarn-client") || sparkMaster.equals("yarn-cluster")) */) {
         String value = hiveConf.get(propertyName);
         // Add spark.hadoop prefix for yarn properties as SparkConf only accept properties
         // started with spark prefix, Spark would remove spark.hadoop prefix lately and add
