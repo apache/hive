@@ -240,6 +240,7 @@ public class TestBeelineArgParsing {
       Assert.assertNull(bl.findLocalDriver(connectionString));
     } else {
       // no need to add for the default supported local jar driver
+      Assert.assertNotNull(bl.findLocalDriver(connectionString));
       Assert.assertEquals(bl.findLocalDriver(connectionString).getClass().getName(), driverClazzName);
     }
   }
