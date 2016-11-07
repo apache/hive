@@ -293,8 +293,8 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
       LOGGER.info("Starting expired delegation token remover thread, "
           + "tokenRemoverScanInterval=" + tokenRemoverScanInterval
           / (60 * 1000) + " min(s)");
-      try {
-        while (running) {
+      while (running) {
+        try {
           long now = System.currentTimeMillis();
           if (lastMasterKeyUpdate + keyUpdateInterval < now) {
             try {
@@ -313,13 +313,21 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
             Thread.sleep(5000); // 5 seconds
           } catch (InterruptedException ie) {
             LOGGER
-            .error("InterruptedExcpetion recieved for ExpiredTokenRemover thread "
+            .error("InterruptedException received for ExpiredTokenRemover thread "
                 + ie);
           }
+        } catch (Throwable t) {
+          LOGGER.error("ExpiredTokenRemover thread received unexpected exception. "
+                           + t, t);
+          // Wait 5 seconds too in case of an exception, so we do not end up in busy waiting for
+          // the solution for this exception
+          try {
+            Thread.sleep(5000); // 5 seconds
+          } catch (InterruptedException ie) {
+            LOGGER.error("InterruptedException received for ExpiredTokenRemover thread during " +
+                "wait in exception sleep " + ie);
+          }
         }
-      } catch (Throwable t) {
-        LOGGER.error("ExpiredTokenRemover thread received unexpected exception. "
-            + t, t);
       }
     }
   }
