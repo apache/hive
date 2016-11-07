@@ -19,10 +19,14 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.parquet.bytes.BytesInput;
 import org.apache.parquet.bytes.BytesUtils;
@@ -48,6 +52,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.apache.parquet.column.ValuesType.DEFINITION_LEVEL;
 import static org.apache.parquet.column.ValuesType.REPETITION_LEVEL;
@@ -57,9 +62,9 @@ import static org.apache.parquet.column.ValuesType.VALUES;
  * It's column level Parquet reader which is used to read a batch of records for a column,
  * part of the code is referred from Apache Spark and Apache Parquet.
  */
-public class VectorizedColumnReader {
+public class VectorizedPrimitiveColumnReader implements VectorizedParquetColumnReader{
 
-  private static final Logger LOG = LoggerFactory.getLogger(VectorizedColumnReader.class);
+  private static final Logger LOG = LoggerFactory.getLogger(VectorizedPrimitiveColumnReader.class);
 
   private boolean skipTimestampConversion = false;
 
@@ -108,7 +113,7 @@ public class VectorizedColumnReader {
   private final ColumnDescriptor descriptor;
   private final Type type;
 
-  public VectorizedColumnReader(
+  public VectorizedPrimitiveColumnReader(
     ColumnDescriptor descriptor,
     PageReader pageReader,
     boolean skipTimestampConversion,
@@ -133,11 +138,10 @@ public class VectorizedColumnReader {
     }
   }
 
-  void readBatch(
+  public void readBatch(
     int total,
     ColumnVector column,
     TypeInfo columnType) throws IOException {
-
     int rowId = 0;
     while (total > 0) {
       // Compute the number of values we want to read in this page.
@@ -155,45 +159,93 @@ public class VectorizedColumnReader {
         decodeDictionaryIds(rowId, num, column, dictionaryIds);
       } else {
         // assign values in vector
-        PrimitiveTypeInfo primitiveColumnType = (PrimitiveTypeInfo) columnType;
-        switch (primitiveColumnType.getPrimitiveCategory()) {
-        case INT:
-        case BYTE:
-        case SHORT:
-          readIntegers(num, (LongColumnVector) column, rowId);
-          break;
-        case DATE:
-        case INTERVAL_YEAR_MONTH:
-        case LONG:
-          readLongs(num, (LongColumnVector) column, rowId);
-          break;
-        case BOOLEAN:
-          readBooleans(num, (LongColumnVector) column, rowId);
-          break;
-        case DOUBLE:
-          readDoubles(num, (DoubleColumnVector) column, rowId);
-          break;
-        case BINARY:
-        case STRING:
-        case CHAR:
-        case VARCHAR:
-          readBinaries(num, (BytesColumnVector) column, rowId);
-          break;
-        case FLOAT:
-          readFloats(num, (DoubleColumnVector) column, rowId);
-          break;
-        case DECIMAL:
-          readDecimal(num, (DecimalColumnVector) column, rowId);
-          break;
-        case INTERVAL_DAY_TIME:
-        case TIMESTAMP:
-        default:
-          throw new IOException(
-            "Unsupported type category: " + primitiveColumnType.getPrimitiveCategory());
-        }
+        readBatchHelper(num, column, columnType, rowId);
       }
       rowId += num;
       total -= num;
+    }
+  }
+
+  private void readBatchHelper(
+    int num,
+    ColumnVector column,
+    TypeInfo columnType,
+    int rowId) throws IOException {
+    switch (columnType.getCategory()) {
+    case PRIMITIVE:
+      PrimitiveTypeInfo primitiveColumnType = (PrimitiveTypeInfo) columnType;
+      readBatchForPrimitiveType(num, column, primitiveColumnType, rowId);
+      break;
+    case LIST:
+//      ListTypeInfo listColumnType = (ListTypeInfo) columnType;
+//      ListColumnVector listColumn = (ListColumnVector) column;
+//      int offset = listColumn.childCount;
+//      listColumn.offsets[rowId] = offset;
+//      listColumn.lengths[]
+//      TypeInfo listTypeInfos = listColumnType.getListElementTypeInfo();
+//      listColumn.childCount = ;
+      break;
+    case MAP:
+      MapTypeInfo mapColumnType = (MapTypeInfo) columnType;
+      MapColumnVector mapColumn = (MapColumnVector) column;
+//      for(){
+//
+//      }
+      readBatchHelper(num, mapColumn.keys, mapColumnType.getMapKeyTypeInfo(), rowId);
+      readBatchHelper(num, mapColumn.values, mapColumnType.getMapKeyTypeInfo(), rowId);
+      break;
+    case STRUCT:
+      StructTypeInfo structTypeInfo = (StructTypeInfo) columnType;
+      StructColumnVector structColumn = (StructColumnVector) column;
+      List<TypeInfo> typeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+      for (int i = 0; i < typeInfos.size(); i++) {
+        readBatch(num, structColumn.fields[i], typeInfos.get(i));
+      }
+      break;
+    case UNION:
+      break;
+    default:
+      throw new IOException("Unsupported category " + columnType.getCategory().name());
+    }
+  }
+
+  private void readBatchForPrimitiveType(
+    int num,
+    ColumnVector column,
+    PrimitiveTypeInfo primitiveColumnType,
+    int rowId) throws IOException {
+    switch (primitiveColumnType.getPrimitiveCategory()) {
+    case INT:
+    case BYTE:
+    case SHORT:
+      readIntegers(num, (LongColumnVector) column, rowId);
+      break;
+    case DATE:
+    case INTERVAL_YEAR_MONTH:
+    case LONG:
+      readLongs(num, (LongColumnVector) column, rowId);
+      break;
+    case BOOLEAN:
+      readBooleans(num, (LongColumnVector) column, rowId);
+      break;
+    case DOUBLE:
+      readDoubles(num, (DoubleColumnVector) column, rowId);
+      break;
+    case BINARY:
+    case STRING:
+    case CHAR:
+    case VARCHAR:
+      readBinaries(num, (BytesColumnVector) column, rowId);
+      break;
+    case FLOAT:
+      readFloats(num, (DoubleColumnVector) column, rowId);
+      break;
+    case DECIMAL:
+      readDecimal(num, (DecimalColumnVector) column, rowId);
+    case INTERVAL_DAY_TIME:
+    case TIMESTAMP:
+    default:
+      throw new IOException("Unsupported");
     }
   }
 
