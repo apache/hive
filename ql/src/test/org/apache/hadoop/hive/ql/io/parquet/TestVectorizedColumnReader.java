@@ -23,11 +23,13 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ArrayWritableObjectInspector;
+import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetColumnReader;
 import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -73,8 +75,8 @@ public class TestVectorizedColumnReader {
   private static String[] uniqueStrs = new String[nElements];
   private static boolean[] isNulls = new boolean[nElements];
   private static Random random = new Random();
-  protected static final MessageType schema = parseMessageType(
-    "message test { "
+  private static final MessageType schema = parseMessageType(
+    "message hive_schema { "
       + "required int32 int32_field; "
       + "required int64 int64_field; "
       + "required int96 int96_field; "
@@ -86,6 +88,21 @@ public class TestVectorizedColumnReader {
       + "optional fixed_len_byte_array(1) all_null_field; "
       + "optional binary binary_field; "
       + "optional binary binary_field_non_repeating; "
+      + "optional group struct_field {"
+      + "  optional int32 a;\n"
+      + "  optional double b;\n"
+      + "}\n"
+      + "optional group map_field (MAP) {\n"
+      + "  repeated group map (MAP_KEY_VALUE) {\n"
+      + "    required binary key;\n"
+      + "    optional binary value;\n"
+      + "  }\n"
+      + "}\n"
+      + "optional group array_list (LIST) {\n"
+      + "  repeated group bag {\n"
+      + "    optional int32 array_element;\n"
+      + "  }\n"
+      + "}\n"
       + "} ");
 
   @AfterClass
@@ -103,16 +120,18 @@ public class TestVectorizedColumnReader {
     boolean dictionaryEnabled = true;
     boolean validating = false;
     GroupWriteSupport.setSchema(schema, conf);
-    SimpleGroupFactory f = new SimpleGroupFactory(schema);
     ParquetWriter<Group> writer = new ParquetWriter<Group>(
       file,
       new GroupWriteSupport(),
       GZIP, 1024*1024, 1024, 1024*1024,
       dictionaryEnabled, validating, PARQUET_1_0, conf);
-    writeData(f, writer);
+    writeData(writer);
   }
 
-  protected static void writeData(SimpleGroupFactory f, ParquetWriter<Group> writer) throws IOException {
+  private static void writeData(ParquetWriter<Group> writer) throws
+    IOException {
+    SimpleGroupFactory f = new SimpleGroupFactory(schema);
+
     initialStrings(uniqueStrs);
     for (int i = 0; i < nElements; i++) {
       Group group = f.newGroup()
@@ -128,15 +147,35 @@ public class TestVectorizedColumnReader {
         group.append("some_null_field", "x");
       }
 
+      int binaryLen = i % 10;
+      Binary binaryValue = Binary.fromString(new String(new char[binaryLen]).replace("\0", "x"));
       if (i % 13 != 1) {
-        int binaryLen = i % 10;
-        group.append("binary_field",
-          Binary.fromString(new String(new char[binaryLen]).replace("\0", "x")));
+        group.append("binary_field", binaryValue);
       }
 
       if (uniqueStrs[i] != null) {
         group.append("binary_field_non_repeating", Binary.fromString(uniqueStrs[i]));
       }
+
+      Group structGroup = group.addGroup("struct_field")
+        .append("a", i)
+        .append("b", i * 1.0);
+
+      Group mapGroup = group.addGroup("map_field");
+      if (i % 13 != 1) {
+        mapGroup.addGroup("map").append("key", binaryValue).append("value", "abc");
+      } else {
+        mapGroup.addGroup("map").append("key", binaryValue);
+      }
+
+      Group arrayGroup = group.addGroup("array_list");
+      for (int j = 0; j < i % 4; j++) {
+        arrayGroup.addGroup("bag").append("array_element", i + j);
+      }
+
+      group.add("struct_field", structGroup);
+      group.add("map_field", mapGroup);
+      group.add("array_list", arrayGroup);
       writer.write(group);
     }
     writer.close();
@@ -426,4 +465,118 @@ public class TestVectorizedColumnReader {
       reader.close();
     }
   }
+
+  @Test
+  public void testStructRead() throws Exception {
+    Configuration conf = new Configuration();
+    conf.set(IOConstants.COLUMNS,"struct_field");
+    conf.set(IOConstants.COLUMNS_TYPES, "struct<a:int,b:double>");
+    conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    String schema =
+      "message hive_schema {\n"
+      + "group map_field (MAP) {\n"
+      + "  repeated group map (MAP_KEY_VALUE) {\n"
+      + "    required binary key;\n"
+      + "    optional binary value;\n"
+      + "  }\n"
+      + "}\n"
+      + "}\n";
+    VectorizedParquetRecordReader reader = createParquetReader(schema, conf);
+    VectorizedRowBatch previous = reader.createValue();
+    int c = 0;
+    try {
+      while (reader.next(NullWritable.get(), previous)) {
+        StructColumnVector vector = (StructColumnVector) previous.cols[0];
+        for(int k = 0; k < vector.fields.length; k++){
+          // check each column
+        }
+//        assertEquals("No Null check failed at " + c, , vector.noNulls);
+        assertFalse(vector.isRepeating);
+      }
+      assertEquals("It doesn't exit at expected position", nElements, c);
+    } finally {
+      reader.close();
+    }
+  }
+
+  private void checkColumn(){
+
+  }
+
+  @Test
+  public void testMapRead() throws Exception {
+    Configuration conf = new Configuration();
+    conf.set(IOConstants.COLUMNS, "struct_field");
+    conf.set(IOConstants.COLUMNS_TYPES, "struct<a:int,b:double>");
+    conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    String schema =
+      "message hive_schema {\n"
+      + "group map_field (MAP) {\n"
+      + "  repeated group map (MAP_KEY_VALUE) {\n"
+      + "    required binary key;\n"
+      + "    optional binary value;\n"
+      + "  }\n"
+      + "}\n"
+      + "}\n";
+    VectorizedParquetRecordReader reader = createParquetReader(schema, conf);
+    VectorizedRowBatch previous = reader.createValue();
+    int c = 0;
+    try {
+      while (reader.next(NullWritable.get(), previous)) {
+        BytesColumnVector vector = (BytesColumnVector) previous.cols[0];
+        boolean noNull = true;
+        for (int i = 0; i < vector.vector.length; i++) {
+          if(c == nElements){
+            break;
+          }
+          String actual;
+          assertEquals("Null assert failed at " + c, isNulls[c], vector.isNull[i]);
+          if (!vector.isNull[i]) {
+            actual = new String(ArrayUtils
+              .subarray(vector.vector[i], vector.start[i], vector.start[i] + vector.length[i]));
+            assertEquals("failed at " + c, uniqueStrs[c], actual);
+          }else{
+            noNull = false;
+          }
+          c++;
+        }
+        assertEquals("No Null check failed at " + c, noNull, vector.noNulls);
+        assertFalse(vector.isRepeating);
+      }
+      assertEquals("It doesn't exit at expected position", nElements, c);
+    } finally {
+      reader.close();
+    }
+  }
+
+//  @Test
+//  public void testVectorizedReaderBuilder() {
+//    Configuration conf = new Configuration();
+//    conf.set(IOConstants.COLUMNS, "struct_field");
+//    conf.set(IOConstants.COLUMNS_TYPES, "struct<a:int,b:double>");
+//    conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+//    conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+//    String schema =
+//      "message hive_schema {\n"
+//        + "group map_field (MAP) {\n"
+//        + "  repeated group map (MAP_KEY_VALUE) {\n"
+//        + "    required binary key;\n"
+//        + "    optional binary value;\n"
+//        + "  }\n"
+//        + "}\n"
+//        + "}\n";
+//    VectorizedParquetRecordReader reader = createParquetReader(schema, conf);
+//    reader.buildVectorizedParquetReader()
+//  }
+//
+//  private VectorizedParquetColumnReader build(String types, String colNames){
+//
+//    List<String> columnNamesList = DataWritableReadSupport.getColumnNames("int32_field");
+//    List<TypeInfo> columnTypesList = DataWritableReadSupport.getColumnTypes("int");
+//    TypeInfo rowTypeInfo = TypeInfoFactory.getStructTypeInfo(columnNamesList, columnTypesList);
+//    schema.getFields();
+//    VectorizedParquetRecordReader.buildVectorizedParquetReader(rowTypeInfo);
+//  }
 }

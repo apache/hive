@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
@@ -35,7 +36,9 @@ import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetInputSplit;
 import org.apache.parquet.hadoop.metadata.BlockMetaData;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
+import org.apache.parquet.schema.GroupType;
 import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +46,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.apache.parquet.filter2.compat.RowGroupFilter.filterRowGroups;
@@ -73,7 +78,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
    * For each request column, the reader to read this column. This is NULL if this column
    * is missing from the file, in which case we populate the attribute with NULL.
    */
-  private VectorizedColumnReader[] columnReaders;
+  private VectorizedParquetColumnReader[] columnReaders;
 
   /**
    * The number of rows that have been returned.
@@ -278,12 +283,101 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     }
     List<ColumnDescriptor> columns = requestedSchema.getColumns();
     List<Type> types = requestedSchema.getFields();
-    columnReaders = new VectorizedColumnReader[columns.size()];
-    for (int i = 0; i < columns.size(); ++i) {
-      columnReaders[i] =
-        new VectorizedColumnReader(columns.get(i), pages.getPageReader(columns.get(i)),
-          skipTimestampConversion, types.get(i));
+    columnReaders = new VectorizedParquetColumnReader[columns.size()];
+//    Map<Type, List<ColumnDescriptor>> res = getColDesMap(types, columns);
+    for (int i = 0; i < columnTypesList.size(); ++i) {
+      columnReaders[i] = buildVectorizedParquetReader(columnTypesList.get(i), types.get(i), pages,
+        requestedSchema, skipTimestampConversion);
+//        new VectorizedListReader(res.get(types.get(i)), pages, skipTimestampConversion, types.get(i));
     }
     totalCountLoadedSoFar += pages.getRowCount();
+  }
+
+  public List<ColumnDescriptor> getAllColumnDescriptorByType(
+    int depth,
+    Type type,
+    List<ColumnDescriptor> columns) {
+    List<ColumnDescriptor> res = new ArrayList<>();
+    for (ColumnDescriptor descriptor : columns) {
+      if (type.getName().equals(descriptor.getPath()[depth])) {
+        res.add(descriptor);
+      }
+    }
+    return res;
+  }
+
+  /**
+   * Build VectorizedParquetColumnReader via Hive typeInfo and Parquet schema
+   * @param typeInfo
+   * @param pages
+   * @param schema
+   * @return
+   */
+  public VectorizedParquetColumnReader buildVectorizedParquetReader(
+    TypeInfo typeInfo,
+    Type type,
+    PageReadStore pages,
+    MessageType schema,
+    boolean skipTimestampConversion) throws IOException {
+    return buildVectorizedParquetReader(typeInfo, type, pages, schema.getColumns(), skipTimestampConversion,
+      0);
+  }
+
+  public VectorizedParquetColumnReader buildVectorizedParquetReader(
+    TypeInfo typeInfo,
+    Type type,
+    PageReadStore pages,
+    List<ColumnDescriptor> columnDescriptors,
+    boolean skipTimestampConversion,
+    int depth) throws IOException {
+    List<ColumnDescriptor> descriptors = getAllColumnDescriptorByType(depth, type, columnDescriptors);
+    switch (typeInfo.getCategory()) {
+    case PRIMITIVE:
+      if (columnDescriptors == null || columnDescriptors.isEmpty()) {
+        return null;
+      } else {
+        return new VectorizedPrimitiveColumnReader(descriptors.get(0),
+          pages.getPageReader(descriptors.get(0)), skipTimestampConversion, type);
+      }
+    case STRUCT:
+      StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+      List<VectorizedParquetColumnReader> fieldReaders = new ArrayList<>();
+      List<TypeInfo> fieldTypes = structTypeInfo.getAllStructFieldTypeInfos();
+      List<Type> types = type.asGroupType().getFields();
+      for (int i = 0; i < fieldTypes.size(); i++) {
+        VectorizedParquetColumnReader r =
+          buildVectorizedParquetReader(fieldTypes.get(i), types.get(i), pages, descriptors,
+            skipTimestampConversion, depth + 1);
+        if (r != null) {
+          fieldReaders.add(r);
+        }
+      }
+      if (fieldReaders.size() > 0) {
+        return new VectorizedStructReader(fieldReaders);
+      } else {
+        return null;
+      }
+    case LIST:
+    case MAP:
+    case UNION:
+    default:
+      throw new RuntimeException("Unsupported category " + typeInfo.getCategory().name());
+    }
+  }
+
+  private boolean containsPath(
+    Type t,
+    String[] path,
+    int depth) {
+    if (t instanceof PrimitiveType) {
+      return (path.length == depth) && t.getName().equals(path[path.length - 1]);
+    } else {
+      GroupType groupType = (GroupType) t;
+      if (depth == path.length) {
+        return false;
+      }
+      return groupType.containsField(path[depth]) && containsPath(groupType.getType(path[depth]),
+        path, depth + 1);
+    }
   }
 }
