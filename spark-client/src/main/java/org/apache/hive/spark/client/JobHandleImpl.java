@@ -24,8 +24,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 import io.netty.util.concurrent.Promise;
 
 import org.apache.hive.spark.counter.SparkCounters;
@@ -40,19 +39,26 @@ class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
   private final MetricsCollection metrics;
   private final Promise<T> promise;
   private final List<Integer> sparkJobIds;
-  private final List<Listener> listeners;
+  private final List<Listener<T>> listeners;
   private volatile State state;
   private volatile SparkCounters sparkCounters;
 
-  JobHandleImpl(SparkClientImpl client, Promise<T> promise, String jobId) {
+  JobHandleImpl(SparkClientImpl client, Promise<T> promise, String jobId,
+                    List<Listener<T>> listeners) {
     this.client = client;
     this.jobId = jobId;
     this.promise = promise;
-    this.listeners = Lists.newLinkedList();
+    this.listeners = ImmutableList.copyOf(listeners);
     this.metrics = new MetricsCollection();
     this.sparkJobIds = new CopyOnWriteArrayList<Integer>();
     this.state = State.SENT;
     this.sparkCounters = null;
+
+    synchronized (this.listeners) {
+      for (Listener<T> listener : this.listeners) {
+        initializeListener(listener);
+      }
+    }
   }
 
   /** Requests a running job to be cancelled. */
@@ -122,29 +128,6 @@ class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
     return state;
   }
 
-  @Override
-  public void addListener(Listener l) {
-    synchronized (listeners) {
-      listeners.add(l);
-      // If current state is a final state, notify of Spark job IDs before notifying about the
-      // state transition.
-      if (state.ordinal() >= State.CANCELLED.ordinal()) {
-        for (Integer i : sparkJobIds) {
-          l.onSparkJobStarted(this, i);
-        }
-      }
-
-      fireStateChange(state, l);
-
-      // Otherwise, notify about Spark jobs after the state notification.
-      if (state.ordinal() < State.CANCELLED.ordinal()) {
-        for (Integer i : sparkJobIds) {
-          l.onSparkJobStarted(this, i);
-        }
-      }
-    }
-  }
-
   public void setSparkCounters(SparkCounters sparkCounters) {
     this.sparkCounters = sparkCounters;
   }
@@ -179,8 +162,8 @@ class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
     synchronized (listeners) {
       if (newState.ordinal() > state.ordinal() && state.ordinal() < State.CANCELLED.ordinal()) {
         state = newState;
-        for (Listener l : listeners) {
-          fireStateChange(newState, l);
+        for (Listener<T> listener : listeners) {
+          fireStateChange(newState, listener);
         }
         return true;
       }
@@ -191,31 +174,50 @@ class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
   void addSparkJobId(int sparkJobId) {
     synchronized (listeners) {
       sparkJobIds.add(sparkJobId);
-      for (Listener l : listeners) {
-        l.onSparkJobStarted(this, sparkJobId);
+      for (Listener<T> listener : listeners) {
+        listener.onSparkJobStarted(this, sparkJobId);
       }
     }
   }
 
-  private void fireStateChange(State s, Listener l) {
-    switch (s) {
+  private void initializeListener(Listener<T> listener) {
+    // If current state is a final state, notify of Spark job IDs before notifying about the
+    // state transition.
+    if (state.ordinal() >= State.CANCELLED.ordinal()) {
+      for (Integer id : sparkJobIds) {
+        listener.onSparkJobStarted(this, id);
+      }
+    }
+
+    fireStateChange(state, listener);
+
+    // Otherwise, notify about Spark jobs after the state notification.
+    if (state.ordinal() < State.CANCELLED.ordinal()) {
+      for (Integer id : sparkJobIds) {
+        listener.onSparkJobStarted(this, id);
+      }
+    }
+  }
+
+  private void fireStateChange(State newState, Listener<T> listener) {
+    switch (newState) {
     case SENT:
       break;
     case QUEUED:
-      l.onJobQueued(this);
+      listener.onJobQueued(this);
       break;
     case STARTED:
-      l.onJobStarted(this);
+      listener.onJobStarted(this);
       break;
     case CANCELLED:
-      l.onJobCancelled(this);
+      listener.onJobCancelled(this);
       break;
     case FAILED:
-      l.onJobFailed(this, promise.cause());
+      listener.onJobFailed(this, promise.cause());
       break;
     case SUCCEEDED:
       try {
-        l.onJobSucceeded(this, promise.get());
+        listener.onJobSucceeded(this, promise.get());
       } catch (Exception e) {
         // Shouldn't really happen.
         throw new IllegalStateException(e);
