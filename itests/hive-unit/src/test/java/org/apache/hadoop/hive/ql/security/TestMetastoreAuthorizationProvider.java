@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.security;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -298,7 +299,20 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
 
     allowDropOnTable(tblName, userName, tbl.getSd().getLocation());
     allowDropOnDb(dbName,userName,db.getLocationUri());
-    driver.run("drop database if exists "+getTestDbName()+" cascade");
+    ret = driver.run("drop database if exists "+getTestDbName()+" cascade");
+    assertEquals(0,ret.getResponseCode());
+
+    InjectableDummyAuthenticator.injectUserName(userName);
+    InjectableDummyAuthenticator.injectGroupNames(Arrays.asList(ugi.getGroupNames()));
+    InjectableDummyAuthenticator.injectMode(true);
+    allowCreateDatabase(userName);
+    driver.run("create database " + dbName);
+    allowCreateInDb(dbName, userName, dbLocn);
+    tbl.setTableType("EXTERNAL_TABLE");
+    msc.createTable(tbl);
+    disallowDropOnTable(tblName, userName, tbl.getSd().getLocation());
+    ret = driver.run("drop table "+tbl.getTableName());
+    assertEquals(1,ret.getResponseCode());
 
   }
 
@@ -336,6 +350,11 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
   protected void allowDropOnTable(String tblName, String userName, String location)
       throws Exception {
     driver.run("grant drop on table "+tblName+" to user "+userName);
+  }
+
+  protected void disallowDropOnTable(String tblName, String userName, String location)
+      throws Exception {
+    driver.run("revoke drop on table "+tblName+" from user "+userName);
   }
 
   protected void allowDropOnDb(String dbName, String userName, String location)
