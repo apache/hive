@@ -151,15 +151,5 @@ STAGE PLANS:
     Fetch Operator
       limit: 0
       Processor Tree:
-        TableScan
-          alias: loc_orc
-          Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
-          Select Operator
-            expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
-            Limit
-              Number of rows: 0
-              Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE
-              ListSink
+        ListSink
 
