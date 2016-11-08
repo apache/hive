@@ -1,1 +1,1 @@
-Parse Error: line 2:0 cannot recognize input near 'INSERT' 'TABLE' 'dest1' in insert clause
+Parse Error: line 2:7 cannot recognize input near 'INSERT' 'TABLE' 'dest1' in insert clause
