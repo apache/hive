@@ -51,6 +51,8 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractOutputStreamAppender;
 import org.apache.logging.log4j.core.appender.FileManager;
 import org.apache.logging.log4j.core.appender.OutputStreamManager;
+import org.eclipse.jetty.rewrite.handler.RewriteHandler;
+import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandler.Context;
@@ -386,9 +388,21 @@ public class HttpServer {
     connector.setPort(b.port);
     webServer.addConnector(connector);
 
+    RewriteHandler rwHandler = new RewriteHandler();
+    rwHandler.setRewriteRequestURI(true);
+    rwHandler.setRewritePathInfo(false);
+
+    RewriteRegexRule rootRule = new RewriteRegexRule();
+    rootRule.setRegex("^/$");
+    rootRule.setReplacement("/hiveserver2.jsp");
+    rootRule.setTerminating(true);
+
+    rwHandler.addRule(rootRule);
+    rwHandler.setHandler(webAppContext);
+
     // Configure web application contexts for the web server
     ContextHandlerCollection contexts = new ContextHandlerCollection();
-    contexts.addHandler(webAppContext);
+    contexts.addHandler(rwHandler);
     webServer.setHandler(contexts);
 
     addServlet("jmx", "/jmx", JMXJsonServlet.class);
