@@ -770,6 +770,11 @@ public class HiveConf extends Configuration {
         "for operations like drop-partition (disallow the drop-partition if the user in\n" +
         "question doesn't have permissions to delete the corresponding directory\n" +
         "on the storage)."),
+    METASTORE_AUTHORIZATION_EXTERNALTABLE_DROP_CHECK("hive.metastore.authorization.storage.check.externaltable.drop", true,
+        "Should StorageBasedAuthorization check permission of the storage before dropping external table.\n" +
+        "StorageBasedAuthorization already does this check for managed table. For external table however,\n" +
+        "anyone who has read permission of the directory could drop external table, which is surprising.\n" +
+        "The flag is set to false by default to maintain backward compatibility."),
     METASTORE_EVENT_CLEAN_FREQ("hive.metastore.event.clean.freq", "0s",
         new TimeValidator(TimeUnit.SECONDS),
         "Frequency at which timer task runs to purge expired events in metastore."),
