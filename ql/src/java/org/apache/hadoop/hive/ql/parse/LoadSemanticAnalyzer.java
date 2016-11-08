@@ -211,12 +211,18 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     if(ts.tableHandle.isStoredAsSubDirectories()) {
       throw new SemanticException(ErrorMsg.LOAD_INTO_STORED_AS_DIR.getMsg());
     }
-
     List<FieldSchema> parts = ts.tableHandle.getPartitionKeys();
     if ((parts != null && parts.size() > 0)
         && (ts.partSpec == null || ts.partSpec.size() == 0)) {
       throw new SemanticException(ErrorMsg.NEED_PARTITION_ERROR.getMsg());
     }
+    /* TODO# enable later - fails srcbucket creation in 14990
+    List<String> bucketCols = ts.tableHandle.getBucketCols();
+    if (bucketCols != null && !bucketCols.isEmpty()
+        && MetaStoreUtils.isInsertOnlyTable(ts.tableHandle.getMetadata())) {
+      throw new SemanticException("Cannot load into a bucketed insert-only table. Please load into"
+          + " an intermediate table and use insert... select to allow Hive to enforce bucketing.");
+    }*/
 
     // make sure the arguments make sense
     List<FileStatus> files = applyConstraintsAndGetFiles(fromURI, fromTree, isLocal);

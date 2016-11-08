@@ -6445,7 +6445,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public GetNextWriteIdResult get_next_write_id(GetNextWriteIdRequest req) throws TException {
       RawStore ms = getMS();
-      String dbName = req.getDbName(), tblName = req.getTblName();
+      String dbName = HiveStringUtils.normalizeIdentifier(req.getDbName()),
+          tblName = HiveStringUtils.normalizeIdentifier(req.getTblName());
       startFunction("get_next_write_id", " : db=" + dbName + " tbl=" + tblName);
       Exception exception = null;
       long writeId = -1;
@@ -6503,7 +6504,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public FinalizeWriteIdResult finalize_write_id(FinalizeWriteIdRequest req) throws TException {
       RawStore ms = getMS();
-      String dbName = req.getDbName(), tblName = req.getTblName();
+      String dbName =  HiveStringUtils.normalizeIdentifier(req.getDbName()),
+          tblName = HiveStringUtils.normalizeIdentifier(req.getTblName());
       long writeId = req.getWriteId();
       boolean commit = req.isCommit();
       startFunction("finalize_write_id", " : db=" + dbName + " tbl=" + tblName
@@ -6514,6 +6516,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ms.openTransaction();
         try {
           MTableWrite tw = getActiveTableWrite(ms, dbName, tblName, writeId);
+          if (tw == null) {
+            throw new MetaException("Write ID " + writeId + " for " + dbName + "." + tblName
+                + " does not exist or is not active");
+          }
           tw.setState(String.valueOf(commit ? MM_WRITE_COMMITTED : MM_WRITE_ABORTED));
           ms.updateTableWrite(tw);
           ok = true;
@@ -6541,7 +6547,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public HeartbeatWriteIdResult heartbeat_write_id(HeartbeatWriteIdRequest req)
         throws TException {
       RawStore ms = getMS();
-      String dbName = req.getDbName(), tblName = req.getTblName();
+      String dbName = HiveStringUtils.normalizeIdentifier(req.getDbName()),
+          tblName = HiveStringUtils.normalizeIdentifier(req.getTblName());
       long writeId = req.getWriteId();
       startFunction("heartbeat_write_id", " : db="
           + dbName + " tbl=" + tblName + " writeId=" + writeId);
