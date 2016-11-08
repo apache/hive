@@ -12025,8 +12025,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         TypeCheckProcFactory.genExprNode(expr, tcCtx);
     ExprNodeDesc desc = nodeOutputs.get(expr);
     if (desc == null) {
-      String errMsg = tcCtx.getError();
-      if (errMsg == null) {
+        String tableOrCol = BaseSemanticAnalyzer.unescapeIdentifier(expr
+            .getChild(0).getText());
+        ColumnInfo colInfo = input.get(null, tableOrCol);
+        String errMsg;
+        if (colInfo == null && input.getIsExprResolver()){
+            errMsg = ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(expr);
+        } else {
+            errMsg = tcCtx.getError();
+        }
+        if (errMsg == null) {
         errMsg = "Error in parsing ";
       }
       throw new SemanticException(errMsg);
