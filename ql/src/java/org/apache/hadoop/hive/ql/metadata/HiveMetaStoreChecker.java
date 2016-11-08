@@ -420,7 +420,9 @@ public class HiveMetaStoreChecker {
           + ((ThreadPoolExecutor) pool).getPoolSize());
     }
     checkPartitionDirs(pool, basePaths, dirSet, basePath.getFileSystem(conf), maxDepth, maxDepth);
-    pool.shutdown();
+    if (pool != null) {
+      pool.shutdown();
+    }
     allDirs.addAll(dirSet);
   }
 
