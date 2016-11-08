@@ -391,7 +391,9 @@ public class HiveMetaStoreChecker {
           + ((ThreadPoolExecutor) pool).getPoolSize());
     }
     getAllLeafDirs(pool, basePaths, dirSet, basePath.getFileSystem(conf));
-    pool.shutdown();
+    if (pool != null) {
+      pool.shutdown();
+    }
     allDirs.addAll(dirSet.keySet());
   }
 
