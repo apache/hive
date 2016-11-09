@@ -1,11 +1,11 @@
-PREHOOK: query: create table decimal_tbl_txt (dec decimal(10,0)) 
+PREHOOK: query: create table decimal_tbl_txt (`dec` decimal(10,0)) 
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_tbl_txt
-POSTHOOK: query: create table decimal_tbl_txt (dec decimal(10,0)) 
+POSTHOOK: query: create table decimal_tbl_txt (`dec` decimal(10,0)) 
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
@@ -29,10 +29,10 @@ POSTHOOK: Input: default@decimal_tbl_txt
 #### A masked pattern was here ####
 101
 PREHOOK: query: explain vectorization expression
-select dec, round(dec, -1) from decimal_tbl_txt order by dec
+select `dec`, round(`dec`, -1) from decimal_tbl_txt order by `dec`
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select dec, round(dec, -1) from decimal_tbl_txt order by dec
+select `dec`, round(`dec`, -1) from decimal_tbl_txt order by `dec`
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -121,20 +121,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select dec, round(dec, -1) from decimal_tbl_txt order by dec
+PREHOOK: query: select `dec`, round(`dec`, -1) from decimal_tbl_txt order by `dec`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_tbl_txt
 #### A masked pattern was here ####
-POSTHOOK: query: select dec, round(dec, -1) from decimal_tbl_txt order by dec
+POSTHOOK: query: select `dec`, round(`dec`, -1) from decimal_tbl_txt order by `dec`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_tbl_txt
 #### A masked pattern was here ####
 101	100
 PREHOOK: query: explain vectorization expression
-select dec, round(dec, -1) from decimal_tbl_txt order by round(dec, -1)
+select `dec`, round(`dec`, -1) from decimal_tbl_txt order by round(`dec`, -1)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select dec, round(dec, -1) from decimal_tbl_txt order by round(dec, -1)
+select `dec`, round(`dec`, -1) from decimal_tbl_txt order by round(`dec`, -1)
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -223,21 +223,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select dec, round(dec, -1) from decimal_tbl_txt order by round(dec, -1)
+PREHOOK: query: select `dec`, round(`dec`, -1) from decimal_tbl_txt order by round(`dec`, -1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_tbl_txt
 #### A masked pattern was here ####
-POSTHOOK: query: select dec, round(dec, -1) from decimal_tbl_txt order by round(dec, -1)
+POSTHOOK: query: select `dec`, round(`dec`, -1) from decimal_tbl_txt order by round(`dec`, -1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_tbl_txt
 #### A masked pattern was here ####
 101	100
-PREHOOK: query: create table decimal_tbl_rc (dec decimal(10,0))
+PREHOOK: query: create table decimal_tbl_rc (`dec` decimal(10,0))
 row format serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe' stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_tbl_rc
-POSTHOOK: query: create table decimal_tbl_rc (dec decimal(10,0))
+POSTHOOK: query: create table decimal_tbl_rc (`dec` decimal(10,0))
 row format serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe' stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -259,10 +259,10 @@ POSTHOOK: Input: default@decimal_tbl_rc
 #### A masked pattern was here ####
 101
 PREHOOK: query: explain vectorization expression
-select dec, round(dec, -1) from decimal_tbl_rc order by dec
+select `dec`, round(`dec`, -1) from decimal_tbl_rc order by `dec`
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select dec, round(dec, -1) from decimal_tbl_rc order by dec
+select `dec`, round(`dec`, -1) from decimal_tbl_rc order by `dec`
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -335,20 +335,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select dec, round(dec, -1) from decimal_tbl_rc order by dec
+PREHOOK: query: select `dec`, round(`dec`, -1) from decimal_tbl_rc order by `dec`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_tbl_rc
 #### A masked pattern was here ####
-POSTHOOK: query: select dec, round(dec, -1) from decimal_tbl_rc order by dec
+POSTHOOK: query: select `dec`, round(`dec`, -1) from decimal_tbl_rc order by `dec`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_tbl_rc
 #### A masked pattern was here ####
 101	100
 PREHOOK: query: explain vectorization expression
-select dec, round(dec, -1) from decimal_tbl_rc order by round(dec, -1)
+select `dec`, round(`dec`, -1) from decimal_tbl_rc order by round(`dec`, -1)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select dec, round(dec, -1) from decimal_tbl_rc order by round(dec, -1)
+select `dec`, round(`dec`, -1) from decimal_tbl_rc order by round(`dec`, -1)
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -421,21 +421,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select dec, round(dec, -1) from decimal_tbl_rc order by round(dec, -1)
+PREHOOK: query: select `dec`, round(`dec`, -1) from decimal_tbl_rc order by round(`dec`, -1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_tbl_rc
 #### A masked pattern was here ####
-POSTHOOK: query: select dec, round(dec, -1) from decimal_tbl_rc order by round(dec, -1)
+POSTHOOK: query: select `dec`, round(`dec`, -1) from decimal_tbl_rc order by round(`dec`, -1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_tbl_rc
 #### A masked pattern was here ####
 101	100
-PREHOOK: query: create table decimal_tbl_orc (dec decimal(10,0))
+PREHOOK: query: create table decimal_tbl_orc (`dec` decimal(10,0))
 stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_tbl_orc
-POSTHOOK: query: create table decimal_tbl_orc (dec decimal(10,0))
+POSTHOOK: query: create table decimal_tbl_orc (`dec` decimal(10,0))
 stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -457,10 +457,10 @@ POSTHOOK: Input: default@decimal_tbl_orc
 #### A masked pattern was here ####
 101
 PREHOOK: query: explain vectorization expression
-select dec, round(dec, -1) from decimal_tbl_orc order by dec
+select `dec`, round(`dec`, -1) from decimal_tbl_orc order by `dec`
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select dec, round(dec, -1) from decimal_tbl_orc order by dec
+select `dec`, round(`dec`, -1) from decimal_tbl_orc order by `dec`
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -549,20 +549,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select dec, round(dec, -1) from decimal_tbl_orc order by dec
+PREHOOK: query: select `dec`, round(`dec`, -1) from decimal_tbl_orc order by `dec`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_tbl_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select dec, round(dec, -1) from decimal_tbl_orc order by dec
+POSTHOOK: query: select `dec`, round(`dec`, -1) from decimal_tbl_orc order by `dec`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_tbl_orc
 #### A masked pattern was here ####
 101	100
 PREHOOK: query: explain vectorization expression
-select dec, round(dec, -1) from decimal_tbl_orc order by round(dec, -1)
+select `dec`, round(`dec`, -1) from decimal_tbl_orc order by round(`dec`, -1)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select dec, round(dec, -1) from decimal_tbl_orc order by round(dec, -1)
+select `dec`, round(`dec`, -1) from decimal_tbl_orc order by round(`dec`, -1)
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -651,11 +651,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select dec, round(dec, -1) from decimal_tbl_orc order by round(dec, -1)
+PREHOOK: query: select `dec`, round(`dec`, -1) from decimal_tbl_orc order by round(`dec`, -1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_tbl_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select dec, round(dec, -1) from decimal_tbl_orc order by round(dec, -1)
+POSTHOOK: query: select `dec`, round(`dec`, -1) from decimal_tbl_orc order by round(`dec`, -1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_tbl_orc
 #### A masked pattern was here ####

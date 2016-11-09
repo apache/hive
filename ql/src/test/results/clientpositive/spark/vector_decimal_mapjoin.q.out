@@ -7,7 +7,7 @@ PREHOOK: query: CREATE TABLE over1k(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
@@ -23,7 +23,7 @@ POSTHOOK: query: CREATE TABLE over1k(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
@@ -38,45 +38,45 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@over1k
-PREHOOK: query: CREATE TABLE t1(dec decimal(4,2)) STORED AS ORC
+PREHOOK: query: CREATE TABLE t1(`dec` decimal(4,2)) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
-POSTHOOK: query: CREATE TABLE t1(dec decimal(4,2)) STORED AS ORC
+POSTHOOK: query: CREATE TABLE t1(`dec` decimal(4,2)) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
-PREHOOK: query: INSERT INTO TABLE t1 select dec from over1k
+PREHOOK: query: INSERT INTO TABLE t1 select `dec` from over1k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k
 PREHOOK: Output: default@t1
-POSTHOOK: query: INSERT INTO TABLE t1 select dec from over1k
+POSTHOOK: query: INSERT INTO TABLE t1 select `dec` from over1k
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k
 POSTHOOK: Output: default@t1
 POSTHOOK: Lineage: t1.dec SIMPLE [(over1k)over1k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-PREHOOK: query: CREATE TABLE t2(dec decimal(4,0)) STORED AS ORC
+PREHOOK: query: CREATE TABLE t2(`dec` decimal(4,0)) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t2
-POSTHOOK: query: CREATE TABLE t2(dec decimal(4,0)) STORED AS ORC
+POSTHOOK: query: CREATE TABLE t2(`dec` decimal(4,0)) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
-PREHOOK: query: INSERT INTO TABLE t2 select dec from over1k
+PREHOOK: query: INSERT INTO TABLE t2 select `dec` from over1k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k
 PREHOOK: Output: default@t2
-POSTHOOK: query: INSERT INTO TABLE t2 select dec from over1k
+POSTHOOK: query: INSERT INTO TABLE t2 select `dec` from over1k
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k
 POSTHOOK: Output: default@t2
 POSTHOOK: Lineage: t2.dec EXPRESSION [(over1k)over1k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 PREHOOK: query: explain vectorization expression
-select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec)
+select t1.`dec`, t2.`dec` from t1 join t2 on (t1.`dec`=t2.`dec`)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec)
+select t1.`dec`, t2.`dec` from t1 join t2 on (t1.`dec`=t2.`dec`)
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -205,12 +205,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec)
+PREHOOK: query: select t1.`dec`, t2.`dec` from t1 join t2 on (t1.`dec`=t2.`dec`)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-POSTHOOK: query: select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec)
+POSTHOOK: query: select t1.`dec`, t2.`dec` from t1 join t2 on (t1.`dec`=t2.`dec`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2

@@ -1,9 +1,9 @@
-PREHOOK: query: create table decimal_tbl_1_orc (dec decimal(38,18)) 
+PREHOOK: query: create table decimal_tbl_1_orc (`dec` decimal(38,18)) 
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_tbl_1_orc
-POSTHOOK: query: create table decimal_tbl_1_orc (dec decimal(38,18)) 
+POSTHOOK: query: create table decimal_tbl_1_orc (`dec` decimal(38,18)) 
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -26,16 +26,16 @@ POSTHOOK: Input: default@decimal_tbl_1_orc
 55555.000000000000000000
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT
-  round(dec) as d, round(dec, 0), round(dec, 1), round(dec, 2), round(dec, 3),
-  round(dec, -1), round(dec, -2), round(dec, -3), round(dec, -4),
-  round(dec, -5), round(dec, -6), round(dec, -7), round(dec, -8)
+  round(`dec`) as d, round(`dec`, 0), round(`dec`, 1), round(`dec`, 2), round(`dec`, 3),
+  round(`dec`, -1), round(`dec`, -2), round(`dec`, -3), round(`dec`, -4),
+  round(`dec`, -5), round(`dec`, -6), round(`dec`, -7), round(`dec`, -8)
 FROM decimal_tbl_1_orc ORDER BY d
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT
-  round(dec) as d, round(dec, 0), round(dec, 1), round(dec, 2), round(dec, 3),
-  round(dec, -1), round(dec, -2), round(dec, -3), round(dec, -4),
-  round(dec, -5), round(dec, -6), round(dec, -7), round(dec, -8)
+  round(`dec`) as d, round(`dec`, 0), round(`dec`, 1), round(`dec`, 2), round(`dec`, 3),
+  round(`dec`, -1), round(`dec`, -2), round(`dec`, -3), round(`dec`, -4),
+  round(`dec`, -5), round(`dec`, -6), round(`dec`, -7), round(`dec`, -8)
 FROM decimal_tbl_1_orc ORDER BY d
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -108,17 +108,17 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT
-  round(dec) as d, round(dec, 0), round(dec, 1), round(dec, 2), round(dec, 3),
-  round(dec, -1), round(dec, -2), round(dec, -3), round(dec, -4),
-  round(dec, -5), round(dec, -6), round(dec, -7), round(dec, -8)
+  round(`dec`) as d, round(`dec`, 0), round(`dec`, 1), round(`dec`, 2), round(`dec`, 3),
+  round(`dec`, -1), round(`dec`, -2), round(`dec`, -3), round(`dec`, -4),
+  round(`dec`, -5), round(`dec`, -6), round(`dec`, -7), round(`dec`, -8)
 FROM decimal_tbl_1_orc ORDER BY d
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_tbl_1_orc
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT
-  round(dec) as d, round(dec, 0), round(dec, 1), round(dec, 2), round(dec, 3),
-  round(dec, -1), round(dec, -2), round(dec, -3), round(dec, -4),
-  round(dec, -5), round(dec, -6), round(dec, -7), round(dec, -8)
+  round(`dec`) as d, round(`dec`, 0), round(`dec`, 1), round(`dec`, 2), round(`dec`, 3),
+  round(`dec`, -1), round(`dec`, -2), round(`dec`, -3), round(`dec`, -4),
+  round(`dec`, -5), round(`dec`, -6), round(`dec`, -7), round(`dec`, -8)
 FROM decimal_tbl_1_orc ORDER BY d
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_tbl_1_orc
@@ -263,12 +263,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_tbl_2_orc
 #### A masked pattern was here ####
 125	125	125.3	125.32	125.315	125.3150	130	100	0	0	-125	-125	-125.3	-125.32	-125.315	-125.3150	-130	-100	0	0
-PREHOOK: query: create table decimal_tbl_3_orc (dec decimal(38,18)) 
+PREHOOK: query: create table decimal_tbl_3_orc (`dec` decimal(38,18)) 
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_tbl_3_orc
-POSTHOOK: query: create table decimal_tbl_3_orc (dec decimal(38,18)) 
+POSTHOOK: query: create table decimal_tbl_3_orc (`dec` decimal(38,18)) 
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -291,44 +291,44 @@ POSTHOOK: Input: default@decimal_tbl_3_orc
 3.141592653589793000
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT
-  round(dec, -15) as d, round(dec, -16),
-  round(dec, -13), round(dec, -14),
-  round(dec, -11), round(dec, -12),
-  round(dec, -9), round(dec, -10),
-  round(dec, -7), round(dec, -8),
-  round(dec, -5), round(dec, -6),
-  round(dec, -3), round(dec, -4),
-  round(dec, -1), round(dec, -2),
-  round(dec, 0), round(dec, 1),
-  round(dec, 2), round(dec, 3),
-  round(dec, 4), round(dec, 5),
-  round(dec, 6), round(dec, 7),
-  round(dec, 8), round(dec, 9),
-  round(dec, 10), round(dec, 11),
-  round(dec, 12), round(dec, 13),
-  round(dec, 13), round(dec, 14),
-  round(dec, 15), round(dec, 16)
+  round(`dec`, -15) as d, round(`dec`, -16),
+  round(`dec`, -13), round(`dec`, -14),
+  round(`dec`, -11), round(`dec`, -12),
+  round(`dec`, -9), round(`dec`, -10),
+  round(`dec`, -7), round(`dec`, -8),
+  round(`dec`, -5), round(`dec`, -6),
+  round(`dec`, -3), round(`dec`, -4),
+  round(`dec`, -1), round(`dec`, -2),
+  round(`dec`, 0), round(`dec`, 1),
+  round(`dec`, 2), round(`dec`, 3),
+  round(`dec`, 4), round(`dec`, 5),
+  round(`dec`, 6), round(`dec`, 7),
+  round(`dec`, 8), round(`dec`, 9),
+  round(`dec`, 10), round(`dec`, 11),
+  round(`dec`, 12), round(`dec`, 13),
+  round(`dec`, 13), round(`dec`, 14),
+  round(`dec`, 15), round(`dec`, 16)
 FROM decimal_tbl_3_orc ORDER BY d
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT
-  round(dec, -15) as d, round(dec, -16),
-  round(dec, -13), round(dec, -14),
-  round(dec, -11), round(dec, -12),
-  round(dec, -9), round(dec, -10),
-  round(dec, -7), round(dec, -8),
-  round(dec, -5), round(dec, -6),
-  round(dec, -3), round(dec, -4),
-  round(dec, -1), round(dec, -2),
-  round(dec, 0), round(dec, 1),
-  round(dec, 2), round(dec, 3),
-  round(dec, 4), round(dec, 5),
-  round(dec, 6), round(dec, 7),
-  round(dec, 8), round(dec, 9),
-  round(dec, 10), round(dec, 11),
-  round(dec, 12), round(dec, 13),
-  round(dec, 13), round(dec, 14),
-  round(dec, 15), round(dec, 16)
+  round(`dec`, -15) as d, round(`dec`, -16),
+  round(`dec`, -13), round(`dec`, -14),
+  round(`dec`, -11), round(`dec`, -12),
+  round(`dec`, -9), round(`dec`, -10),
+  round(`dec`, -7), round(`dec`, -8),
+  round(`dec`, -5), round(`dec`, -6),
+  round(`dec`, -3), round(`dec`, -4),
+  round(`dec`, -1), round(`dec`, -2),
+  round(`dec`, 0), round(`dec`, 1),
+  round(`dec`, 2), round(`dec`, 3),
+  round(`dec`, 4), round(`dec`, 5),
+  round(`dec`, 6), round(`dec`, 7),
+  round(`dec`, 8), round(`dec`, 9),
+  round(`dec`, 10), round(`dec`, 11),
+  round(`dec`, 12), round(`dec`, 13),
+  round(`dec`, 13), round(`dec`, 14),
+  round(`dec`, 15), round(`dec`, 16)
 FROM decimal_tbl_3_orc ORDER BY d
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -401,45 +401,45 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT
-  round(dec, -15) as d, round(dec, -16),
-  round(dec, -13), round(dec, -14),
-  round(dec, -11), round(dec, -12),
-  round(dec, -9), round(dec, -10),
-  round(dec, -7), round(dec, -8),
-  round(dec, -5), round(dec, -6),
-  round(dec, -3), round(dec, -4),
-  round(dec, -1), round(dec, -2),
-  round(dec, 0), round(dec, 1),
-  round(dec, 2), round(dec, 3),
-  round(dec, 4), round(dec, 5),
-  round(dec, 6), round(dec, 7),
-  round(dec, 8), round(dec, 9),
-  round(dec, 10), round(dec, 11),
-  round(dec, 12), round(dec, 13),
-  round(dec, 13), round(dec, 14),
-  round(dec, 15), round(dec, 16)
+  round(`dec`, -15) as d, round(`dec`, -16),
+  round(`dec`, -13), round(`dec`, -14),
+  round(`dec`, -11), round(`dec`, -12),
+  round(`dec`, -9), round(`dec`, -10),
+  round(`dec`, -7), round(`dec`, -8),
+  round(`dec`, -5), round(`dec`, -6),
+  round(`dec`, -3), round(`dec`, -4),
+  round(`dec`, -1), round(`dec`, -2),
+  round(`dec`, 0), round(`dec`, 1),
+  round(`dec`, 2), round(`dec`, 3),
+  round(`dec`, 4), round(`dec`, 5),
+  round(`dec`, 6), round(`dec`, 7),
+  round(`dec`, 8), round(`dec`, 9),
+  round(`dec`, 10), round(`dec`, 11),
+  round(`dec`, 12), round(`dec`, 13),
+  round(`dec`, 13), round(`dec`, 14),
+  round(`dec`, 15), round(`dec`, 16)
 FROM decimal_tbl_3_orc ORDER BY d
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_tbl_3_orc
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT
-  round(dec, -15) as d, round(dec, -16),
-  round(dec, -13), round(dec, -14),
-  round(dec, -11), round(dec, -12),
-  round(dec, -9), round(dec, -10),
-  round(dec, -7), round(dec, -8),
-  round(dec, -5), round(dec, -6),
-  round(dec, -3), round(dec, -4),
-  round(dec, -1), round(dec, -2),
-  round(dec, 0), round(dec, 1),
-  round(dec, 2), round(dec, 3),
-  round(dec, 4), round(dec, 5),
-  round(dec, 6), round(dec, 7),
-  round(dec, 8), round(dec, 9),
-  round(dec, 10), round(dec, 11),
-  round(dec, 12), round(dec, 13),
-  round(dec, 13), round(dec, 14),
-  round(dec, 15), round(dec, 16)
+  round(`dec`, -15) as d, round(`dec`, -16),
+  round(`dec`, -13), round(`dec`, -14),
+  round(`dec`, -11), round(`dec`, -12),
+  round(`dec`, -9), round(`dec`, -10),
+  round(`dec`, -7), round(`dec`, -8),
+  round(`dec`, -5), round(`dec`, -6),
+  round(`dec`, -3), round(`dec`, -4),
+  round(`dec`, -1), round(`dec`, -2),
+  round(`dec`, 0), round(`dec`, 1),
+  round(`dec`, 2), round(`dec`, 3),
+  round(`dec`, 4), round(`dec`, 5),
+  round(`dec`, 6), round(`dec`, 7),
+  round(`dec`, 8), round(`dec`, 9),
+  round(`dec`, 10), round(`dec`, 11),
+  round(`dec`, 12), round(`dec`, 13),
+  round(`dec`, 13), round(`dec`, 14),
+  round(`dec`, 15), round(`dec`, 16)
 FROM decimal_tbl_3_orc ORDER BY d
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_tbl_3_orc

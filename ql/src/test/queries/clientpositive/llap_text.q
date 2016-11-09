@@ -42,7 +42,7 @@ create table text_llap2(
           bo boolean,
           s string,
           ts timestamp, 
-          dec decimal,  
+          `dec` decimal,  
           bin binary)
 row format delimited fields terminated by '|'
 stored as inputformat "org.apache.hadoop.mapred.TextInputFormat" 

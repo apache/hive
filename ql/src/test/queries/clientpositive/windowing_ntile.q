@@ -10,7 +10,7 @@ create table over10k(
            bo boolean,
            s string,
 	   ts timestamp, 
-           dec decimal(4,2),  
+           `dec` decimal(4,2),  
            bin binary)
        row format delimited
        fields terminated by '|';
@@ -23,6 +23,6 @@ select s, ntile(100) over (partition by i order by s) from over10k limit 100;
 
 select f, ntile(4) over (partition by d order by f) from over10k limit 100;
 
-select d, ntile(1000) over (partition by dec order by d) from over10k limit 100;
+select d, ntile(1000) over (partition by `dec` order by d) from over10k limit 100;
 
 

@@ -5,7 +5,9 @@ create table t (
 	i int,
 	ii integer,
 	si smallint,
-	bi bigint
+	bi bigint,
+        de  dec,
+        dc  dec(3,2)
 	);
 describe t;
 

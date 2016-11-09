@@ -12,7 +12,7 @@ create table over10k(
            bo boolean,
            s string,
            ts timestamp, 
-           dec decimal,  
+           `dec` decimal,  
            bin binary)
        row format delimited
        fields terminated by '|';
@@ -29,7 +29,7 @@ create table stats_tbl(
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal,  
+           `dec` decimal,  
            bin binary);
 
 create table stats_tbl_part(
@@ -42,7 +42,7 @@ create table stats_tbl_part(
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal,  
+           `dec` decimal,  
            bin binary) partitioned by (dt string);
 
 
