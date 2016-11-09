@@ -27,6 +27,10 @@ public class VectorizedStructReader implements VectorizedParquetColumnReader{
     for (int i = 0; i < vectors.length; i++) {
       fieldReaders.get(i)
         .readBatch(total, vectors[i], structTypeInfo.getAllStructFieldTypeInfos().get(i));
+      structColumnVector.isRepeating = structColumnVector.isRepeating && vectors[i].isRepeating;
+      for (int j = 0; j < vectors[i].isNull.length; j++) {
+        structColumnVector.isNull[i] = structColumnVector.isNull[i] && vectors[i].isNull[i];
+      }
     }
   }
 }

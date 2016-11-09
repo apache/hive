@@ -6,8 +6,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-public class TestVectorizedColumnReader extends TestVectorizedColumnReaderBase{
-  static boolean isDictionaryEncoding = false;
+public class TestVectorizedDictionaryEncodingColumnReader extends TestVectorizedColumnReaderBase {
+  static boolean isDictionaryEncoding = true;
 
   @BeforeClass
   public static void setup() throws IOException {

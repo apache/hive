@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.NullWritable;
@@ -284,16 +285,14 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     List<ColumnDescriptor> columns = requestedSchema.getColumns();
     List<Type> types = requestedSchema.getFields();
     columnReaders = new VectorizedParquetColumnReader[columns.size()];
-//    Map<Type, List<ColumnDescriptor>> res = getColDesMap(types, columns);
     for (int i = 0; i < columnTypesList.size(); ++i) {
       columnReaders[i] = buildVectorizedParquetReader(columnTypesList.get(i), types.get(i), pages,
         requestedSchema, skipTimestampConversion);
-//        new VectorizedListReader(res.get(types.get(i)), pages, skipTimestampConversion, types.get(i));
     }
     totalCountLoadedSoFar += pages.getRowCount();
   }
 
-  public List<ColumnDescriptor> getAllColumnDescriptorByType(
+  private List<ColumnDescriptor> getAllColumnDescriptorByType(
     int depth,
     Type type,
     List<ColumnDescriptor> columns) {
@@ -306,14 +305,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     return res;
   }
 
-  /**
-   * Build VectorizedParquetColumnReader via Hive typeInfo and Parquet schema
-   * @param typeInfo
-   * @param pages
-   * @param schema
-   * @return
-   */
-  public VectorizedParquetColumnReader buildVectorizedParquetReader(
+  // Build VectorizedParquetColumnReader via Hive typeInfo and Parquet schema
+  private VectorizedParquetColumnReader buildVectorizedParquetReader(
     TypeInfo typeInfo,
     Type type,
     PageReadStore pages,
@@ -323,7 +316,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       0);
   }
 
-  public VectorizedParquetColumnReader buildVectorizedParquetReader(
+  private VectorizedParquetColumnReader buildVectorizedParquetReader(
     TypeInfo typeInfo,
     Type type,
     PageReadStore pages,
@@ -362,22 +355,6 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     case UNION:
     default:
       throw new RuntimeException("Unsupported category " + typeInfo.getCategory().name());
-    }
-  }
-
-  private boolean containsPath(
-    Type t,
-    String[] path,
-    int depth) {
-    if (t instanceof PrimitiveType) {
-      return (path.length == depth) && t.getName().equals(path[path.length - 1]);
-    } else {
-      GroupType groupType = (GroupType) t;
-      if (depth == path.length) {
-        return false;
-      }
-      return groupType.containsField(path[depth]) && containsPath(groupType.getType(path[depth]),
-        path, depth + 1);
     }
   }
 }
