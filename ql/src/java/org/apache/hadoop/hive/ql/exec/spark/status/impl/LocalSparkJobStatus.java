@@ -36,13 +36,7 @@ import org.apache.spark.SparkJobInfo;
 import org.apache.spark.SparkStageInfo;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.executor.ShuffleReadMetrics;
-import org.apache.spark.executor.ShuffleWriteMetrics;
 import org.apache.spark.executor.TaskMetrics;
-
-import scala.Option;
-
-import com.google.common.collect.Maps;
 
 public class LocalSparkJobStatus implements SparkJobStatus {
 
@@ -132,22 +126,21 @@ public class LocalSparkJobStatus implements SparkJobStatus {
     sparkStatisticsBuilder.add(sparkCounters);
     // add spark job metrics.
     String jobIdentifier = "Spark Job[" + jobId + "] Metrics";
-    Map<String, List<TaskMetrics>> jobMetric = jobMetricsListener.getJobMetric(jobId);
+    Map<Integer, List<TaskMetrics>> jobMetric = jobMetricsListener.getJobMetric(jobId);
     if (jobMetric == null) {
       return null;
     }
 
     MetricsCollection metricsCollection = new MetricsCollection();
-    Set<String> stageIds = jobMetric.keySet();
-    for (String stageId : stageIds) {
+    Set<Integer> stageIds = jobMetric.keySet();
+    for (int stageId : stageIds) {
       List<TaskMetrics> taskMetrics = jobMetric.get(stageId);
       for (TaskMetrics taskMetric : taskMetrics) {
         Metrics metrics = new Metrics(taskMetric);
-        metricsCollection.addMetrics(jobId, Integer.parseInt(stageId), 0, metrics);
+        metricsCollection.addMetrics(jobId, stageId, 0, metrics);
       }
     }
-    SparkJobUtils sparkJobUtils = new SparkJobUtils();
-    Map<String, Long> flatJobMetric = sparkJobUtils.collectMetrics(metricsCollection
+    Map<String, Long> flatJobMetric = SparkMetricsUtils.collectMetrics(metricsCollection
         .getAllMetrics());
     for (Map.Entry<String, Long> entry : flatJobMetric.entrySet()) {
       sparkStatisticsBuilder.add(jobIdentifier, entry.getKey(), Long.toString(entry.getValue()));

@@ -23,7 +23,7 @@ import java.util.Map;
 import org.apache.hive.spark.client.metrics.Metrics;
 import org.apache.hive.spark.client.metrics.ShuffleReadMetrics;
 
-public class SparkJobUtils {
+final class SparkMetricsUtils {
 
   private final static String EXECUTOR_DESERIALIZE_TIME = "ExecutorDeserializeTime";
   private final static String EXECUTOR_RUN_TIME = "ExecutorRunTime";
@@ -31,7 +31,7 @@ public class SparkJobUtils {
   private final static String JVM_GC_TIME = "JvmGCTime";
   private final static String RESULT_SERIALIZATION_TIME = "ResultSerializationTime";
   private final static String MEMORY_BYTES_SPLIED = "MemoryBytesSpilled";
-  private final static String DISK_BYTES_SPLIED = "DiskBytesSpilled";
+  private final static String DISK_BYTES_SPILLED = "DiskBytesSpilled";
   private final static String BYTES_READ = "BytesRead";
   private final static String REMOTE_BLOCKS_FETCHED = "RemoteBlocksFetched";
   private final static String LOCAL_BLOCKS_FETCHED = "LocalBlocksFetched";
@@ -41,7 +41,9 @@ public class SparkJobUtils {
   private final static String SHUFFLE_BYTES_WRITTEN = "ShuffleBytesWritten";
   private final static String SHUFFLE_WRITE_TIME = "ShuffleWriteTime";
 
-  public Map<String, Long> collectMetrics(Metrics allMetrics) {
+  private SparkMetricsUtils(){}
+
+  static Map<String, Long> collectMetrics(Metrics allMetrics) {
     Map<String, Long> results = new LinkedHashMap<String, Long>();
     results.put(EXECUTOR_DESERIALIZE_TIME, allMetrics.executorDeserializeTime);
     results.put(EXECUTOR_RUN_TIME, allMetrics.executorRunTime);
@@ -49,7 +51,7 @@ public class SparkJobUtils {
     results.put(JVM_GC_TIME, allMetrics.jvmGCTime);
     results.put(RESULT_SERIALIZATION_TIME, allMetrics.resultSerializationTime);
     results.put(MEMORY_BYTES_SPLIED, allMetrics.memoryBytesSpilled);
-    results.put(DISK_BYTES_SPLIED, allMetrics.diskBytesSpilled);
+    results.put(DISK_BYTES_SPILLED, allMetrics.diskBytesSpilled);
     if (allMetrics.inputMetrics != null) {
       results.put(BYTES_READ, allMetrics.inputMetrics.bytesRead);
     }
