@@ -106,7 +106,12 @@
         </exclusion>
       </exclusions>
     </dependency>
-
+    <!-- @TODO maybe include to shading-->
+    <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+      <version>2.8.2</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.calcite</groupId>
       <artifactId>calcite-druid</artifactId>

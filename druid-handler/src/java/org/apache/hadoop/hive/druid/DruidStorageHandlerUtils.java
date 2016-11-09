@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.druid;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -93,7 +94,7 @@ public final class DruidStorageHandlerUtils {
   public static final IndexMergerV9 INDEX_MERGER_V9 = new IndexMergerV9(JSON_MAPPER, DruidStorageHandlerUtils.INDEX_IO);
 
   static {
-    JSON_MAPPER.registerSubtypes(LinearShardSpec.class);
+    JSON_MAPPER.registerSubtypes(new NamedType(LinearShardSpec.class, "linear"));
     try {
       EmittingLogger.registerEmitter(
               new ServiceEmitter("druid-hive-indexer", InetAddress.getLocalHost().getHostName(),

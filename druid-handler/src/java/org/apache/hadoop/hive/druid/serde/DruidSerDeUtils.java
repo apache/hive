@@ -31,14 +31,16 @@ public final class DruidSerDeUtils {
   private static final Logger LOG = LoggerFactory.getLogger(DruidSerDeUtils.class);
 
   protected static final String FLOAT_TYPE = "FLOAT";
+
   protected static final String LONG_TYPE = "LONG";
+
   protected static final String STRING_TYPE = "STRING";
 
   /* This method converts from the String representation of Druid type
    * to the corresponding Hive type */
   public static PrimitiveTypeInfo convertDruidToHiveType(String typeName) {
     typeName = typeName.toUpperCase();
-    switch(typeName) {
+    switch (typeName) {
       case FLOAT_TYPE:
         return TypeInfoFactory.floatTypeInfo;
       case LONG_TYPE:
@@ -61,7 +63,7 @@ public final class DruidSerDeUtils {
    * to the String representation of the corresponding Hive type */
   public static String convertDruidToHiveTypeString(String typeName) {
     typeName = typeName.toUpperCase();
-    switch(typeName) {
+    switch (typeName) {
       case FLOAT_TYPE:
         return serdeConstants.FLOAT_TYPE_NAME;
       case LONG_TYPE:
