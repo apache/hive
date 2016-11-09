@@ -129,9 +129,8 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
     addIfService(executorService);
 
-    // 80% of memory considered for accounted buffers. Rest for objects.
-    // TODO Tune this based on the available size.
-    this.memoryPerExecutor = (long)(totalMemoryAvailableBytes * 0.8 / (float) numExecutors);
+    // Distribute the available memory between the tasks.
+    this.memoryPerExecutor = (long)(totalMemoryAvailableBytes / (float) numExecutors);
     this.metrics = metrics;
 
     confParams = new TaskRunnerCallable.ConfParams(
