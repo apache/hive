@@ -539,6 +539,14 @@ public final class FileUtils {
     }
   }
 
+  public static Path makeAbsolute(FileSystem fileSystem, Path path) throws IOException {
+    if (path.isAbsolute()) {
+      return path;
+    } else {
+      return new Path(fileSystem.getWorkingDirectory(), path);
+    }
+  }
+
   /**
    * Copies files between filesystems.
    */

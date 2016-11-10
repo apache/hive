@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
+import org.apache.hadoop.fs.LocalFileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Assert;
 import org.junit.Test;
@@ -46,7 +48,7 @@ public class TestFileUtils extends TestCase {
     try {
       org.apache.commons.io.FileUtils.touch(jarFile1);
       Set<String> jars = FileUtils.getJarFilesByPath(tmpDir.getAbsolutePath(), conf);
-      Assert.assertEquals(Sets.newHashSet("file://" + jarFileName1),jars);
+      Assert.assertEquals(Sets.newHashSet("file://" + jarFileName1), jars);
 
       jars = FileUtils.getJarFilesByPath("/folder/not/exist", conf);
       Assert.assertTrue(jars.isEmpty());
@@ -62,5 +64,18 @@ public class TestFileUtils extends TestCase {
     } finally {
       org.apache.commons.io.FileUtils.deleteQuietly(tmpDir);
     }
+  }
+
+  @Test
+  public void testRelativePathToAbsolutePath() throws IOException {
+    LocalFileSystem localFileSystem = new LocalFileSystem();
+    Path actualPath = FileUtils.makeAbsolute(localFileSystem, new Path("relative/path"));
+    Path expectedPath = new Path(localFileSystem.getWorkingDirectory(), "relative/path");
+    assertEquals(expectedPath.toString(), actualPath.toString());
+
+    Path absolutePath = new Path("/absolute/path");
+    Path unchangedPath = FileUtils.makeAbsolute(localFileSystem, new Path("/absolute/path"));
+
+    assertEquals(unchangedPath.toString(), absolutePath.toString());
   }
 }
