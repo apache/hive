@@ -17,10 +17,14 @@
  */
 package org.apache.hadoop.hive.conf;
 
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.valcoersion.JavaIOTmpdirVariableCoercion;
+import org.apache.hadoop.hive.conf.valcoersion.VariableCoercion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +32,11 @@ public class SystemVariables {
 
   private static final Logger l4j = LoggerFactory.getLogger(SystemVariables.class);
   protected static Pattern varPat = Pattern.compile("\\$\\{[^\\}\\$\u0020]+\\}");
+  private static final SystemVariables INSTANCE = new SystemVariables();
+  private static final Map<String, VariableCoercion> COERCIONS =
+      ImmutableMap.<String, VariableCoercion>builder()
+          .put(JavaIOTmpdirVariableCoercion.INSTANCE.getName(), JavaIOTmpdirVariableCoercion.INSTANCE)
+          .build();
 
   public static final String ENV_PREFIX = "env:";
   public static final String SYSTEM_PREFIX = "system:";
@@ -36,22 +45,34 @@ public class SystemVariables {
   public static final String METACONF_PREFIX = "metaconf:";
   public static final String SET_COLUMN_NAME = "set";
 
-  protected String getSubstitute(Configuration conf, String var) {
-    String val = null;
+  protected String getSubstitute(Configuration conf, String variableName) {
     try {
-      if (var.startsWith(SYSTEM_PREFIX)) {
-        val = System.getProperty(var.substring(SYSTEM_PREFIX.length()));
+      if (variableName.startsWith(SYSTEM_PREFIX)) {
+        String propertyName = variableName.substring(SYSTEM_PREFIX.length());
+        String originalValue = System.getProperty(propertyName);
+        return applyCoercion(variableName, originalValue);
       }
     } catch(SecurityException se) {
       l4j.warn("Unexpected SecurityException in Configuration", se);
     }
-    if (val == null && var.startsWith(ENV_PREFIX)) {
-      val = System.getenv(var.substring(ENV_PREFIX.length()));
+
+    if (variableName.startsWith(ENV_PREFIX)) {
+      return System.getenv(variableName.substring(ENV_PREFIX.length()));
     }
-    if (val == null && conf != null && var.startsWith(HIVECONF_PREFIX)) {
-      val = conf.get(var.substring(HIVECONF_PREFIX.length()));
+
+    if (conf != null && variableName.startsWith(HIVECONF_PREFIX)) {
+      return conf.get(variableName.substring(HIVECONF_PREFIX.length()));
     }
-    return val;
+
+    return null;
+  }
+
+  private String applyCoercion(String variableName, String originalValue) {
+    if (COERCIONS.containsKey(variableName)) {
+      return COERCIONS.get(variableName).getCoerced(originalValue);
+    } else {
+      return originalValue;
+    }
   }
 
   public static boolean containsVar(String expr) {
@@ -59,11 +80,11 @@ public class SystemVariables {
   }
 
   static String substitute(String expr) {
-    return expr == null ? null : new SystemVariables().substitute(null, expr, 1);
+    return expr == null ? null : INSTANCE.substitute(null, expr, 1);
   }
 
   static String substitute(Configuration conf, String expr) {
-    return expr == null ? null : new SystemVariables().substitute(conf, expr, 1);
+    return expr == null ? null : INSTANCE.substitute(conf, expr, 1);
   }
 
   protected final String substitute(Configuration conf, String expr, int depth) {
