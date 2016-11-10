@@ -53,12 +53,18 @@ INSERT OVERWRITE TABLE parquet_types
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
 unhex(cbinary), m1, l1, st1, d FROM parquet_types_staging;
 
-SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
-hex(cbinary), m1, l1, st1, d FROM parquet_types;
-
-SELECT cchar, LENGTH(cchar), cvarchar, LENGTH(cvarchar) FROM parquet_types;
-
 -- test types in group by
+
+EXPLAIN SELECT ctinyint,
+  MAX(cint),
+  MIN(csmallint),
+  COUNT(cstring1),
+  ROUND(AVG(cfloat), 5),
+  ROUND(STDDEV_POP(cdouble),5)
+FROM parquet_types
+GROUP BY ctinyint
+ORDER BY ctinyint
+;
 
 SELECT ctinyint,
   MAX(cint),
@@ -71,14 +77,20 @@ GROUP BY ctinyint
 ORDER BY ctinyint
 ;
 
+EXPLAIN SELECT cfloat, count(*) FROM parquet_types GROUP BY cfloat ORDER BY cfloat;
 SELECT cfloat, count(*) FROM parquet_types GROUP BY cfloat ORDER BY cfloat;
 
+EXPLAIN SELECT cchar, count(*) FROM parquet_types GROUP BY cchar ORDER BY cchar;
 SELECT cchar, count(*) FROM parquet_types GROUP BY cchar ORDER BY cchar;
 
+EXPLAIN SELECT cvarchar, count(*) FROM parquet_types GROUP BY cvarchar ORDER BY cvarchar;
 SELECT cvarchar, count(*) FROM parquet_types GROUP BY cvarchar ORDER BY cvarchar;
 
+EXPLAIN SELECT cstring1, count(*) FROM parquet_types GROUP BY cstring1 ORDER BY cstring1;
 SELECT cstring1, count(*) FROM parquet_types GROUP BY cstring1 ORDER BY cstring1;
 
+EXPLAIN SELECT t, count(*) FROM parquet_types GROUP BY t ORDER BY t;
 SELECT t, count(*) FROM parquet_types GROUP BY t ORDER BY t;
 
+EXPLAIN SELECT hex(cbinary), count(*) FROM parquet_types GROUP BY cbinary;
 SELECT hex(cbinary), count(*) FROM parquet_types GROUP BY cbinary;
