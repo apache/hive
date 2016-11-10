@@ -151,7 +151,6 @@ enum EventRequestType {
     DELETE = 3,
 }
 
-
 struct HiveObjectRef{
   1: HiveObjectType objectType,
   2: string dbName,
@@ -897,6 +896,35 @@ struct GetAllFunctionsResponse {
   1: optional list<Function> functions
 }
 
+enum ClientCapability {
+  TEST_CAPABILITY = 1
+}
+
+
+struct ClientCapabilities {
+  1: required list<ClientCapability> values
+}
+
+struct GetTableRequest {
+  1: required string dbName,
+  2: required string tblName,
+  3: optional ClientCapabilities capabilities
+}
+
+struct GetTableResult {
+  1: required Table table
+}
+
+struct GetTablesRequest {
+  1: required string dbName,
+  2: optional list<string> tblNames,
+  3: optional ClientCapabilities capabilities
+}
+
+struct GetTablesResult {
+  1: required list<Table> tables
+}
+
 struct TableMeta {
   1: required string dbName;
   2: required string tableName;
@@ -1041,6 +1069,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   Table get_table(1:string dbname, 2:string tbl_name)
                        throws (1:MetaException o1, 2:NoSuchObjectException o2)
   list<Table> get_table_objects_by_name(1:string dbname, 2:list<string> tbl_names)
+  GetTableResult get_table_req(1:GetTableRequest req)
+                       throws (1:MetaException o1, 2:NoSuchObjectException o2)
+  GetTablesResult get_table_objects_by_name_req(1:GetTablesRequest req)
+
+
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
 
   // Get a list of table names that match a filter.
