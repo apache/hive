@@ -114,7 +114,7 @@ resources = """
       "yarn.role.priority": "1",
       "yarn.component.instances": "%(instances)d",
       "yarn.memory": "%(container.mb)d",
-      "yarn.component.placement.policy" : "4"
+      "yarn.component.placement.policy" : "%(placement)"
     }
   }
 }
