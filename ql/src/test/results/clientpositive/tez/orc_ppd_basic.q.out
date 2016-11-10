@@ -704,12 +704,6 @@ select count(*) from orc_ppd where f=74.72
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
-Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 21496
-   HDFS_BYTES_WRITTEN: 101
-   HDFS_READ_OPS: 4
-   HDFS_LARGE_READ_OPS: 0
-   HDFS_WRITE_OPS: 2
 Stage-1 HIVE COUNTERS:
    CREATED_FILES: 1
    DESERIALIZE_ERRORS: 0
@@ -721,12 +715,6 @@ PREHOOK: query: select count(*) from orc_ppd where f=74.72
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
-Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 23556
-   HDFS_BYTES_WRITTEN: 101
-   HDFS_READ_OPS: 4
-   HDFS_LARGE_READ_OPS: 0
-   HDFS_WRITE_OPS: 2
 Stage-1 HIVE COUNTERS:
    CREATED_FILES: 1
    DESERIALIZE_ERRORS: 0
@@ -738,12 +726,6 @@ PREHOOK: query: select count(*) from orc_ppd where f=74.72
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
-Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 21496
-   HDFS_BYTES_WRITTEN: 101
-   HDFS_READ_OPS: 4
-   HDFS_LARGE_READ_OPS: 0
-   HDFS_WRITE_OPS: 2
 Stage-1 HIVE COUNTERS:
    CREATED_FILES: 1
    DESERIALIZE_ERRORS: 0
@@ -755,12 +737,6 @@ PREHOOK: query: select count(*) from orc_ppd where f=74.72
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
-Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 23556
-   HDFS_BYTES_WRITTEN: 101
-   HDFS_READ_OPS: 4
-   HDFS_LARGE_READ_OPS: 0
-   HDFS_WRITE_OPS: 2
 Stage-1 HIVE COUNTERS:
    CREATED_FILES: 1
    DESERIALIZE_ERRORS: 0
