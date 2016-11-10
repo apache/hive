@@ -459,6 +459,8 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
         .sourceStateUpdated(vertexStateUpdate.getVertexName(), vertexStateUpdate.getVertexState());
   }
 
+  // TODO HIVE-15163. Handle cases where nodes go down and come back on the same port. Historic information
+  // can prevent updates from being sent out to the new node.
   public void sendStateUpdate(final LlapNodeId nodeId,
                               final SourceStateUpdatedRequestProto request) {
     communicator.sendSourceStateUpdate(request, nodeId,

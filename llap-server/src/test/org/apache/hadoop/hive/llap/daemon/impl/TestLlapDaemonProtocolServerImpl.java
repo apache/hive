@@ -38,15 +38,14 @@ public class TestLlapDaemonProtocolServerImpl {
 
 
   @Test(timeout = 10000)
-  public void test() throws ServiceException, IOException {
+  public void testSimpleCall() throws ServiceException, IOException {
     LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
-    int rpcPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_PORT);
     int numHandlers = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_NUM_HANDLERS);
     ContainerRunner containerRunnerMock = mock(ContainerRunner.class);
     LlapProtocolServerImpl server =
         new LlapProtocolServerImpl(null, numHandlers, containerRunnerMock,
            new AtomicReference<InetSocketAddress>(), new AtomicReference<InetSocketAddress>(),
-           rpcPort, rpcPort + 1, null);
+           0, 0, null);
     when(containerRunnerMock.submitWork(any(SubmitWorkRequestProto.class))).thenReturn(
         SubmitWorkResponseProto
             .newBuilder()
