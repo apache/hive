@@ -69,6 +69,7 @@ explain select state,locid from loc_orc group by state,locid with cube;
 -- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 24
 -- Case 8: column stats, grouping sets - cardinality = 24
 explain select state,locid from loc_orc group by state,locid with rollup;
+explain select state,locid from loc_orc group by rollup (state,locid);
 
 -- Case 6: column stats, NO hash aggregation, grouping sets - cardinality = 8
 -- Case 8: column stats, grouping sets - cardinality = 8
@@ -113,6 +114,7 @@ explain select state,locid from loc_orc group by state,locid with cube;
 -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 24
 -- Case 7: NO column stats - cardinality = 12
 explain select state,locid from loc_orc group by state,locid with rollup;
+explain select state,locid from loc_orc group by rollup (state,locid);
 
 -- Case 2: NO column stats, NO hash aggregation, NO grouping sets - cardinality = 8
 -- Case 7: NO column stats - cardinality = 4

@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
-explain 
+
+explain
 select  *
 from (select i_category
             ,i_class
@@ -24,11 +25,11 @@ from (select i_category
                 ,date_dim
                 ,store
                 ,item
-       where  store_sales.ss_sold_date_sk=date_dim.d_date_sk
-          and store_sales.ss_item_sk=item.i_item_sk
-          and store_sales.ss_store_sk = store.s_store_sk
-          and d_month_seq between 1193 and 1193+11
-       group by i_category, i_class, i_brand, i_product_name, d_year, d_qoy, d_moy,s_store_id with rollup)dw1) dw2
+       where  ss_sold_date_sk=d_date_sk
+          and ss_item_sk=i_item_sk
+          and ss_store_sk = s_store_sk
+          and d_month_seq between 1212 and 1212+11
+       group by  rollup(i_category, i_class, i_brand, i_product_name, d_year, d_qoy, d_moy,s_store_id))dw1) dw2
 where rk <= 100
 order by i_category
         ,i_class
@@ -41,5 +42,4 @@ order by i_category
         ,sumsales
         ,rk
 limit 100;
-
 

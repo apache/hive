@@ -2942,7 +2942,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 4. Walk through Window Expressions & Construct RexNodes for those,
       // Update out_rwsch
+      final QBParseInfo qbp = getQBParseInfo(qb);
+      final String selClauseName = qbp.getClauseNames().iterator().next();
+      final boolean cubeRollupGrpSetPresent = (!qbp.getDestRollups().isEmpty()
+              || !qbp.getDestGroupingSets().isEmpty() || !qbp.getDestCubes().isEmpty());
       for (WindowExpressionSpec wExprSpec : windowExpressions) {
+        if (cubeRollupGrpSetPresent) {
+          // Special handling of grouping function
+          wExprSpec.setExpression(rewriteGroupingFunctionAST(
+                  getGroupByForClause(qbp, selClauseName), wExprSpec.getExpression()));
+        }
         if (out_rwsch.getExpression(wExprSpec.getExpression()) == null) {
           Pair<RexNode, TypeInfo> wtp = genWindowingProj(qb, wExprSpec, srcRel);
           projsForWindowSelOp.add(wtp.getKey());
@@ -3044,6 +3053,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       QBParseInfo qbp = getQBParseInfo(qb);
       String selClauseName = qbp.getClauseNames().iterator().next();
       ASTNode selExprList = qbp.getSelForClause(selClauseName);
+
+      final boolean cubeRollupGrpSetPresent = (!qbp.getDestRollups().isEmpty()
+              || !qbp.getDestGroupingSets().isEmpty() || !qbp.getDestCubes().isEmpty());
 
       // 2.Row resolvers for input, output
       RowResolver out_rwsch = new RowResolver();
@@ -3216,6 +3228,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
           TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR);
           // We allow stateful functions in the SELECT list (but nowhere else)
           tcCtx.setAllowStatefulFunctions(true);
+          if (cubeRollupGrpSetPresent) {
+            // Special handling of grouping function
+            expr = rewriteGroupingFunctionAST(getGroupByForClause(qbp, selClauseName), expr);
+          }
           ExprNodeDesc exp = genExprNodeDesc(expr, inputRR, tcCtx);
           String recommended = recommendName(exp, colAlias);
           if (recommended != null && out_rwsch.get(null, recommended) == null) {
@@ -3584,6 +3600,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         throws SemanticException {
       RelNode gbFilter = null;
       QBParseInfo qbp = getQBParseInfo(qb);
+      String destClauseName = qbp.getClauseNames().iterator().next();
       ASTNode havingClause = qbp.getHavingForClause(qbp.getClauseNames().iterator().next());
 
       if (havingClause != null) {
@@ -3592,9 +3609,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
           throw new CalciteSemanticException("Having clause without any group-by.",
               UnsupportedFeature.Having_clause_without_any_groupby);
         }
-        validateNoHavingReferenceToAlias(qb, (ASTNode) havingClause.getChild(0));
-        gbFilter = genFilterRelNode(qb, (ASTNode) havingClause.getChild(0), srcRel, aliasToRel,
-            null, null, true);
+        ASTNode targetNode = (ASTNode) havingClause.getChild(0);
+        validateNoHavingReferenceToAlias(qb, targetNode);
+        final boolean cubeRollupGrpSetPresent = (!qbp.getDestRollups().isEmpty()
+                || !qbp.getDestGroupingSets().isEmpty() || !qbp.getDestCubes().isEmpty());
+        if (cubeRollupGrpSetPresent) {
+          // Special handling of grouping function
+          targetNode = rewriteGroupingFunctionAST(getGroupByForClause(qbp, destClauseName), targetNode);
+        }
+        gbFilter = genFilterRelNode(qb, targetNode, srcRel, aliasToRel, null, null, true);
       }
 
       return gbFilter;

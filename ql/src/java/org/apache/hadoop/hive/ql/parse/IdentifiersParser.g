@@ -47,6 +47,7 @@ catch (RecognitionException e) {
 }
 
 //-----------------------------------------------------------------------------------
+
 expressionsInParenthese
     :
     LPAREN expression (COMMA expression)* RPAREN -> expression+
@@ -626,7 +627,7 @@ nonReserved
 //The following SQL2011 reserved keywords are used as cast function name only, but not as identifiers.
 sql11ReservedKeywordsUsedAsCastFunctionName
     :
-    KW_BIGINT | KW_BINARY | KW_BOOLEAN | KW_CURRENT_DATE | KW_CURRENT_TIMESTAMP | KW_DATE | KW_DOUBLE | KW_FLOAT | KW_INT | KW_SMALLINT | KW_TIMESTAMP
+    KW_BIGINT | KW_BINARY | KW_BOOLEAN | KW_CURRENT_DATE | KW_CURRENT_TIMESTAMP | KW_DATE | KW_DOUBLE | KW_FLOAT | KW_GROUPING | KW_INT | KW_SMALLINT | KW_TIMESTAMP
     ;
 
 //The following SQL2011 reserved keywords are used as identifiers in many q tests, they may be added back due to backward compatibility.

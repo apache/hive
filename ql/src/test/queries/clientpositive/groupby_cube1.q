@@ -10,6 +10,8 @@ LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1;
 
 EXPLAIN
 SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube;
+EXPLAIN
+SELECT key, val, count(1) FROM T1 GROUP BY CUBE(key, val);
 
 SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube;
 

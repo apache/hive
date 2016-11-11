@@ -73,6 +73,11 @@ select key, value, avg(key + 1) from src
 group by value, key with rollup
 order by key, value limit 20;
 
+explain
+select key, value, avg(key + 1) from src
+group by rollup(value, key)
+order by key, value limit 20;
+
 select key, value, avg(key + 1) from src
 group by value, key with rollup
 order by key, value limit 20;
