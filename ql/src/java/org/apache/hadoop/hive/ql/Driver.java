@@ -1729,7 +1729,7 @@ public class Driver implements CommandProcessor {
 
       SessionState ss = SessionState.get();
       hookContext = new HookContext(plan, queryState, ctx.getPathToCS(), ss.getUserName(),
-          ss.getUserIpAddress(), operationId);
+          ss.getUserIpAddress(), operationId, ss.getSessionId());
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
       for (Hook peh : getHooks(HiveConf.ConfVars.PREEXECHOOKS)) {
