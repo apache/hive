@@ -393,12 +393,12 @@ POSTHOOK: Output: default@T3
 PREHOOK: query: EXPLAIN
 FROM T1
 INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with rollup
-INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by key, val with rollup
+INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by rollup(key, val)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM T1
 INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with rollup
-INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by key, val with rollup
+INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by rollup(key, val)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage

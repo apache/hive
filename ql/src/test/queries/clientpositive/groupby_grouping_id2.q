@@ -7,17 +7,31 @@ set hive.groupby.skewindata = true;
 -- SORT_QUERY_RESULTS
 
 SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY key, value WITH ROLLUP;
+SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY ROLLUP (key, value);
 
 SELECT GROUPING__ID, count(*)
 FROM
 (
 SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY key, value WITH ROLLUP
-) t 
+) t
 GROUP BY GROUPING__ID;
+
+SELECT GROUPING__ID, count(*)
+FROM
+(
+SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY ROLLUP(key, value)
+) t
+GROUP BY GROUPING__ID;
+
 
 SELECT t1.GROUPING__ID, t2.GROUPING__ID FROM (SELECT GROUPING__ID FROM T1  GROUP BY key,value WITH ROLLUP) t1
 JOIN 
 (SELECT GROUPING__ID FROM T1 GROUP BY key, value WITH ROLLUP) t2
+ON t1.GROUPING__ID = t2.GROUPING__ID;
+
+SELECT t1.GROUPING__ID, t2.GROUPING__ID FROM (SELECT GROUPING__ID FROM T1  GROUP BY ROLLUP(key,value)) t1
+JOIN
+(SELECT GROUPING__ID FROM T1 GROUP BY ROLLUP(key, value)) t2
 ON t1.GROUPING__ID = t2.GROUPING__ID;
 
 

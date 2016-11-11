@@ -39,7 +39,7 @@ CREATE TABLE T3(key1 STRING, key2 STRING, val INT) STORED AS TEXTFILE;
 EXPLAIN
 FROM T1
 INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with rollup
-INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by key, val with rollup;
+INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by rollup(key, val);
 
 
 FROM T1

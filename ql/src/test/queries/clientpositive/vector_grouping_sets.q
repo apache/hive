@@ -62,3 +62,8 @@ select s_store_id, GROUPING__ID
 select s_store_id, GROUPING__ID
  from store
  group by s_store_id with rollup;
+
+ explain
+select s_store_id, GROUPING__ID
+ from store
+ group by rollup(s_store_id);

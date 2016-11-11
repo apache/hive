@@ -5,6 +5,7 @@ LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1;
 SELECT * FROM T1;
 
 SELECT a, b, count(*) from T1 group by a, b with cube;
+SELECT a, b, count(*) from T1 group by cube(a, b);
 
 SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ());
 

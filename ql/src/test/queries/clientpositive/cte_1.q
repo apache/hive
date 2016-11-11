@@ -44,6 +44,11 @@ with q1 as (select * from alltypesorc)
            from q1
            select cint, cstring1, avg(csmallint)
            group by cint, cstring1 with rollup;
+--standard rollup syntax
+with q1 as (select * from alltypesorc)
+           from q1
+           select cint, cstring1, avg(csmallint)
+           group by rollup (cint, cstring1);
 
 drop table if exists cte9_t1;
 create table cte9_t1 as
