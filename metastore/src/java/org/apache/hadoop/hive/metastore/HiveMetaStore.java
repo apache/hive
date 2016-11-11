@@ -138,6 +138,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.security.PrivilegedExceptionAction;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
@@ -2384,18 +2385,33 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             continue;
           }
 
-
+          final UserGroupInformation ugi;
+          try {
+            ugi = UserGroupInformation.getCurrentUser();
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
           partFutures.add(threadPool.submit(new Callable() {
             @Override
             public Partition call() throws Exception {
-              boolean madeDir = createLocationForAddedPartition(table, part);
-              if (addedPartitions.put(new PartValEqWrapper(part), madeDir) != null) {
-                // Technically, for ifNotExists case, we could insert one and discard the other
-                // because the first one now "exists", but it seems better to report the problem
-                // upstream as such a command doesn't make sense.
-                throw new MetaException("Duplicate partitions in the list: " + part);
-              }
-              initializeAddedPartition(table, part, madeDir);
+              ugi.doAs(new PrivilegedExceptionAction<Object>() {
+                @Override
+                public Object run() throws Exception {
+                  try {
+                    boolean madeDir = createLocationForAddedPartition(table, part);
+                    if (addedPartitions.put(new PartValEqWrapper(part), madeDir) != null) {
+                      // Technically, for ifNotExists case, we could insert one and discard the other
+                      // because the first one now "exists", but it seems better to report the problem
+                      // upstream as such a command doesn't make sense.
+                      throw new MetaException("Duplicate partitions in the list: " + part);
+                    }
+                    initializeAddedPartition(table, part, madeDir);
+                  } catch (MetaException e) {
+                    throw new IOException(e.getMessage(), e);
+                  }
+                  return null;
+                }
+              });
               return part;
             }
           }));
@@ -2547,16 +2563,33 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             LOG.info("Not adding partition " + part + " as it already exists");
             continue;
           }
+
+          final UserGroupInformation ugi;
+          try {
+            ugi = UserGroupInformation.getCurrentUser();
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
           partFutures.add(threadPool.submit(new Callable() {
             @Override public Object call() throws Exception {
-              boolean madeDir = createLocationForAddedPartition(table, part);
-              if (addedPartitions.put(new PartValEqWrapperLite(part), madeDir) != null) {
-                // Technically, for ifNotExists case, we could insert one and discard the other
-                // because the first one now "exists", but it seems better to report the problem
-                // upstream as such a command doesn't make sense.
-                throw new MetaException("Duplicate partitions in the list: " + part);
-              }
-              initializeAddedPartition(table, part, madeDir);
+              ugi.doAs(new PrivilegedExceptionAction<Object>() {
+                @Override
+                public Object run() throws Exception {
+                  try {
+                    boolean madeDir = createLocationForAddedPartition(table, part);
+                    if (addedPartitions.put(new PartValEqWrapperLite(part), madeDir) != null) {
+                      // Technically, for ifNotExists case, we could insert one and discard the other
+                      // because the first one now "exists", but it seems better to report the problem
+                      // upstream as such a command doesn't make sense.
+                      throw new MetaException("Duplicate partitions in the list: " + part);
+                    }
+                    initializeAddedPartition(table, part, madeDir);
+                  } catch (MetaException e) {
+                    throw new IOException(e.getMessage(), e);
+                  }
+                  return null;
+                }
+              });
               return part;
             }
           }));
