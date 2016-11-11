@@ -98,6 +98,7 @@ public class SparkTask extends Task<SparkWork> {
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
 
       addToHistory(jobRef);
+      this.jobID = jobRef.getSparkJobStatus().getAppID();
       rc = jobRef.monitorJob();
       SparkJobStatus sparkJobStatus = jobRef.getSparkJobStatus();
       if (rc == 0) {
@@ -112,6 +113,9 @@ public class SparkTask extends Task<SparkWork> {
         // ideally also cancel the app request here. But w/o facilities from Spark or YARN,
         // it's difficult to do it on hive side alone. See HIVE-12650.
         jobRef.cancelJob();
+      }
+      if (this.jobID == null) {
+        this.jobID = sparkJobStatus.getAppID();
       }
       sparkJobStatus.cleanup();
     } catch (Exception e) {
