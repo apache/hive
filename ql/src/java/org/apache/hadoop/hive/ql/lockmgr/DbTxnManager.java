@@ -321,6 +321,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
       if(t != null && AcidUtils.isAcidTable(t)) {
         compBuilder.setIsAcid(true);
       }
+      compBuilder.setIsDynamicPartitionWrite(output.isDynamicPartitionWrite());
       LockComponent comp = compBuilder.build();
       LOG.debug("Adding lock component to lock request " + comp.toString());
       rqstBuilder.addLockComponent(comp);
@@ -335,9 +336,6 @@ public class DbTxnManager extends HiveTxnManagerImpl {
     }
 
     List<HiveLock> locks = new ArrayList<HiveLock>(1);
-    if(isTxnOpen()) {
-      statementId++;
-    }
     LockState lockState = lockMgr.lock(rqstBuilder.build(), queryId, isBlocking, locks);
     ctx.setHiveLocks(locks);
     return lockState;
@@ -650,8 +648,9 @@ public class DbTxnManager extends HiveTxnManagerImpl {
     return txnId;
   }
   @Override
-  public int getStatementId() {
-    return statementId;
+  public int getWriteIdAndIncrement() {
+    assert isTxnOpen();
+    return statementId++;
   }
 
   private static long getHeartbeatInterval(Configuration conf) throws LockException {

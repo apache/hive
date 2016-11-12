@@ -64,12 +64,15 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TODO: this should be merged with TestTxnCommands once that is checked in
  * specifically the tests; the supporting code here is just a clone of TestTxnCommands
  */
 public class TestTxnCommands2 {
+  static final private Logger LOG = LoggerFactory.getLogger(TestTxnCommands2.class);
   protected static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
     File.separator + TestTxnCommands2.class.getCanonicalName()
     + "-" + System.currentTimeMillis()
@@ -86,7 +89,9 @@ public class TestTxnCommands2 {
     ACIDTBL("acidTbl"),
     ACIDTBLPART("acidTblPart"),
     NONACIDORCTBL("nonAcidOrcTbl"),
-    NONACIDPART("nonAcidPart");
+    NONACIDPART("nonAcidPart"),
+    NONACIDPART2("nonAcidPart2"),
+    ACIDNESTEDPART("acidNestedPart");
 
     private final String name;
     @Override
@@ -126,11 +131,17 @@ public class TestTxnCommands2 {
     }
     SessionState.start(new SessionState(hiveConf));
     d = new Driver(hiveConf);
+    d.setMaxRows(10000);
     dropTables();
     runStatementOnDriver("create table " + Table.ACIDTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES (" + tableProperties + ")");
     runStatementOnDriver("create table " + Table.ACIDTBLPART + "(a int, b int) partitioned by (p string) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES (" + tableProperties + ")");
     runStatementOnDriver("create table " + Table.NONACIDORCTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='false')");
     runStatementOnDriver("create table " + Table.NONACIDPART + "(a int, b int) partitioned by (p string) stored as orc TBLPROPERTIES ('transactional'='false')");
+    runStatementOnDriver("create table " + Table.NONACIDPART2 +
+      "(a2 int, b2 int) partitioned by (p2 string) stored as orc TBLPROPERTIES ('transactional'='false')");
+    runStatementOnDriver("create table " + Table.ACIDNESTEDPART +
+      "(a int, b int) partitioned by (p int, q int) clustered by (a) into " + BUCKET_COUNT +
+      " buckets stored as orc TBLPROPERTIES (" + tableProperties + ")");
   }
 
   protected void dropTables() throws Exception {
@@ -1333,6 +1344,409 @@ public class TestTxnCommands2 {
     String[] expectedResult = { "1\tfoo\tNULL", "2\tbar\tNULL" };
     Assert.assertEquals(Arrays.asList(expectedResult), rs);
   }
+  /**
+   * Test that ACID works with multi-insert statement
+   */
+  @Test
+  public void testMultiInsertStatement() throws Exception {
+    int[][] sourceValsOdd = {{5,5},{11,11}};
+    int[][] sourceValsEven = {{2,2}};
+    //populate source
+    runStatementOnDriver("insert into " + Table.NONACIDPART2 + " PARTITION(p2='odd') " + makeValuesClause(sourceValsOdd));
+    runStatementOnDriver("insert into " + Table.NONACIDPART2 + " PARTITION(p2='even') " + makeValuesClause(sourceValsEven));
+    int[][] targetValsOdd = {{5,6},{7,8}};
+    int[][] targetValsEven = {{2,1},{4,3}};
+    //populate target
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " PARTITION(p='odd') " + makeValuesClause(targetValsOdd));
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " PARTITION(p='even') " + makeValuesClause(targetValsEven));
+    List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBLPART + " order by a,b");
+    int[][] targetVals = {{2,1},{4,3},{5,6},{7,8}};
+    Assert.assertEquals(stringifyValues(targetVals), r);
+    //currently multi-insrt doesn't allow same table/partition in > 1 output branch
+    String s = "from " + Table.ACIDTBLPART + "  target right outer join " +
+      Table.NONACIDPART2 + " source on target.a = source.a2 " +
+      " INSERT INTO TABLE " + Table.ACIDTBLPART + " PARTITION(p='even') select source.a2, source.b2 where source.a2=target.a " +
+      " insert into table " + Table.ACIDTBLPART + " PARTITION(p='odd') select source.a2,source.b2 where target.a is null";
+    //r = runStatementOnDriver("explain formatted " + s);
+    //LOG.info("Explain formatted: " + r.toString());
+    runStatementOnDriver(s);
+    r = runStatementOnDriver("select a,b from " + Table.ACIDTBLPART + " where p='even' order by a,b");
+    int[][] rExpected = {{2,1},{2,2},{4,3},{5,5}};
+    Assert.assertEquals(stringifyValues(rExpected), r);
+    r = runStatementOnDriver("select a,b from " + Table.ACIDTBLPART + " where p='odd' order by a,b");
+    int[][] rExpected2 = {{5,6},{7,8},{11,11}};
+    Assert.assertEquals(stringifyValues(rExpected2), r);
+  }
+  /**
+   * check that we can specify insert columns
+   *
+   * Need to figure out semantics: what if a row from base expr ends up in both Update and Delete clauses we'll write
+   * Update event to 1 delta and Delete to another.  Given that we collapse events for same current txn for different stmt ids
+   * to the latest one, delete will win.
+   * In Acid 2.0 we'll end up with 2 Delete events for the same PK.  Logically should be OK, but may break Vectorized reader impl.... need to check
+   *
+   * 1:M from target to source results in ambiguous write to target - SQL Standard expects an error.  (I have an argument on how
+   * to solve this with minor mods to Join operator written down somewhere)
+   *
+   * Only need 1 Stats task for MERGE (currently we get 1 per branch).
+   * Should also eliminate Move task - that's a general ACID task
+   */
+  private void logResuts(List<String> r, String header, String prefix) {
+    LOG.info(prefix + " " + header);
+    StringBuilder sb = new StringBuilder();
+    int numLines = 0;
+    for(String line : r) {
+      numLines++;
+      sb.append(prefix).append(line).append("\n");
+    }
+    LOG.info(sb.toString());
+    LOG.info(prefix + " Printed " + numLines + " lines");
+  }
+
+
+  /**
+   * This tests that we handle non-trivial ON clause correctly
+   * @throws Exception
+   */
+  @Test
+  public void testMerge() throws Exception {
+    int[][] baseValsOdd = {{5,5},{11,11}};
+    runStatementOnDriver("insert into " + Table.NONACIDPART2 + " PARTITION(p2='odd') " + makeValuesClause(baseValsOdd));
+    int[][] vals = {{2,1},{4,3},{5,6},{7,8}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(vals));
+    List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    Assert.assertEquals(stringifyValues(vals), r);
+    String query = "merge into " + Table.ACIDTBL + 
+      " using " + Table.NONACIDPART2 + " source ON " + Table.ACIDTBL + ".a = a2 and b + 1 = source.b2 + 1 " +
+      "WHEN MATCHED THEN UPDATE set b = source.b2 " +
+      "WHEN NOT MATCHED THEN INSERT VALUES(source.a2, source.b2)";
+    runStatementOnDriver(query);
+
+    r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] rExpected = {{2,1},{4,3},{5,5},{5,6},{7,8},{11,11}};
+    Assert.assertEquals(stringifyValues(rExpected), r);
+  }
+  @Test
+  public void testMergeWithPredicate() throws Exception {
+    int[][] baseValsOdd = {{2,2},{5,5},{8,8},{11,11}};
+    runStatementOnDriver("insert into " + Table.NONACIDPART2 + " PARTITION(p2='odd') " + makeValuesClause(baseValsOdd));
+    int[][] vals = {{2,1},{4,3},{5,6},{7,8}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(vals));
+    List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    Assert.assertEquals(stringifyValues(vals), r);
+    String query = "merge into " + Table.ACIDTBL +
+      " t using " + Table.NONACIDPART2 + " s ON t.a = s.a2 " +
+      "WHEN MATCHED AND t.b between 1 and 3 THEN UPDATE set b = s.b2 " +
+      "WHEN NOT MATCHED and s.b2 >= 11 THEN INSERT VALUES(s.a2, s.b2)";
+    runStatementOnDriver(query);
+
+    r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] rExpected = {{2,2},{4,3},{5,6},{7,8},{11,11}};
+    Assert.assertEquals(stringifyValues(rExpected), r);
+  }
+
+  /**
+   * Test combines update + insert clauses
+   * @throws Exception
+   */
+  @Test
+  public void testMerge2() throws Exception {
+    int[][] baseValsOdd = {{5,5},{11,11}};
+    int[][] baseValsEven = {{2,2},{4,44}};
+    runStatementOnDriver("insert into " + Table.NONACIDPART2 + " PARTITION(p2='odd') " + makeValuesClause(baseValsOdd));
+    runStatementOnDriver("insert into " + Table.NONACIDPART2 + " PARTITION(p2='even') " + makeValuesClause(baseValsEven));
+    int[][] vals = {{2,1},{4,3},{5,6},{7,8}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(vals));
+    List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    Assert.assertEquals(stringifyValues(vals), r);
+    String query = "merge into " + Table.ACIDTBL +
+      " using " + Table.NONACIDPART2 + " source ON " + Table.ACIDTBL + ".a = source.a2 " +
+      "WHEN MATCHED THEN UPDATE set b = source.b2 " +
+      "WHEN NOT MATCHED THEN INSERT VALUES(source.a2, source.b2) ";//AND b < 1
+    r = runStatementOnDriver(query);
+    //r = runStatementOnDriver("explain  " + query);
+    //logResuts(r, "Explain logical1", "");
+
+    r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] rExpected = {{2,2},{4,44},{5,5},{7,8},{11,11}};
+    Assert.assertEquals(stringifyValues(rExpected), r);
+  }
+
+  /**
+   * test combines delete + insert clauses
+   * @throws Exception
+   */
+  @Test
+  public void testMerge3() throws Exception {
+    int[][] baseValsOdd = {{5,5},{11,11}};
+    int[][] baseValsEven = {{2,2},{4,44}};
+    runStatementOnDriver("insert into " + Table.NONACIDPART2 + " PARTITION(p2='odd') " + makeValuesClause(baseValsOdd));
+    runStatementOnDriver("insert into " + Table.NONACIDPART2 + " PARTITION(p2='even') " + makeValuesClause(baseValsEven));
+    int[][] vals = {{2,1},{4,3},{5,6},{7,8}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(vals));
+    List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    Assert.assertEquals(stringifyValues(vals), r);
+    String query = "merge into " + Table.ACIDTBL +
+      " using " + Table.NONACIDPART2 + " source ON " + Table.ACIDTBL + ".a = source.a2 " +
+      "WHEN MATCHED THEN DELETE " +
+      "WHEN NOT MATCHED THEN INSERT VALUES(source.a2, source.b2) ";
+    runStatementOnDriver(query);
+
+    r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] rExpected = {{7,8},{11,11}};
+    Assert.assertEquals(stringifyValues(rExpected), r);
+  }
+  /**
+   * https://hortonworks.jira.com/browse/BUG-66580
+   * @throws Exception
+   */
+  @Ignore
+  @Test
+  public void testMultiInsert() throws Exception {
+    runStatementOnDriver("create table if not exists  srcpart (a int, b int, c int) " +
+      "partitioned by (z int) clustered by (a) into 2 buckets " +
+      "stored as orc tblproperties('transactional'='true')");
+    runStatementOnDriver("create temporary table if not exists data1 (x int)");
+//    runStatementOnDriver("create temporary table if not exists data2 (x int)");
+
+    runStatementOnDriver("insert into data1 values (1),(2),(3)");
+//    runStatementOnDriver("insert into data2 values (4),(5),(6)");
+    d.destroy();
+    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    d = new Driver(hiveConf);
+    List<String> r = runStatementOnDriver(" from data1 " +
+      "insert into srcpart partition(z) select 0,0,1,x  " +
+      "insert into srcpart partition(z=1) select 0,0,1");
+  }
+  /**
+   * Investigating DP and WriteEntity, etc
+   * @throws Exception
+   */
+  @Test
+  @Ignore
+  public void testDynamicPartitions() throws Exception {
+    d.destroy();
+    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    //In DbTxnManager.acquireLocks() we have
+    // 1 ReadEntity: default@values__tmp__table__1
+    // 1 WriteEntity: default@acidtblpart Type=TABLE WriteType=INSERT isDP=false
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1'),(3,3,'p1'),(4,4,'p2')");
+    
+    List<String> r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
+    Assert.assertEquals("4", r1.get(0));
+    //In DbTxnManager.acquireLocks() we have
+    // 2 ReadEntity: [default@acidtblpart@p=p1, default@acidtblpart]
+    // 1 WriteEntity: default@acidtblpart Type=TABLE WriteType=INSERT isDP=false
+    //todo: side note on the above: LockRequestBuilder combines the both default@acidtblpart entries to 1
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) select * from " + Table.ACIDTBLPART + " where p='p1'");
+    
+    //In DbTxnManager.acquireLocks() we have
+    // 2 ReadEntity: [default@acidtblpart@p=p1, default@acidtblpart]
+    // 1 WriteEntity: default@acidtblpart@p=p2 Type=PARTITION WriteType=INSERT isDP=false
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p2') select a,b from " + Table.ACIDTBLPART + " where p='p1'");
+    
+    //In UpdateDeleteSemanticAnalyzer, after super analyze
+    // 3 ReadEntity: [default@acidtblpart, default@acidtblpart@p=p1, default@acidtblpart@p=p2]
+    // 1 WriteEntity: [default@acidtblpart TABLE/INSERT]
+    //after UDSA
+    // Read [default@acidtblpart, default@acidtblpart@p=p1, default@acidtblpart@p=p2]
+    // Write [default@acidtblpart@p=p1, default@acidtblpart@p=p2] - PARTITION/UPDATE, PARTITION/UPDATE
+    //todo: Why acquire per partition locks - if you have many partitions that's hugely inefficient.
+    //could acquire 1 table level Shared_write intead
+    runStatementOnDriver("update " + Table.ACIDTBLPART + " set b = 1");
+    
+    //In UpdateDeleteSemanticAnalyzer, after super analyze
+    // Read [default@acidtblpart, default@acidtblpart@p=p1]
+    // Write default@acidtblpart TABLE/INSERT
+    //after UDSA
+    // Read [default@acidtblpart, default@acidtblpart@p=p1]
+    // Write [default@acidtblpart@p=p1] PARTITION/UPDATE
+    //todo: this causes a Read lock on the whole table - clearly overkill
+    //for Update/Delete we always write exactly (at most actually) the partitions we read
+    runStatementOnDriver("update " + Table.ACIDTBLPART + " set b = 1 where p='p1'");
+  }
+  @Test
+  public void testDynamicPartitionsMerge() throws Exception {
+    d.destroy();
+    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1'),(3,3,'p1'),(4,4,'p2')");
+
+    List<String> r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
+    Assert.assertEquals("4", r1.get(0));
+    int[][] sourceVals = {{2,15},{4,44},{5,5},{11,11}};
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + " " + makeValuesClause(sourceVals));
+    runStatementOnDriver("merge into " + Table.ACIDTBLPART + " using " + Table.NONACIDORCTBL +
+      " as s ON " + Table.ACIDTBLPART + ".a = s.a " +
+      "when matched then update set b = s.b " +
+      "when not matched then insert values(s.a, s.b, 'new part')");
+    r1 = runStatementOnDriver("select p,a,b from " + Table.ACIDTBLPART + " order by p, a, b");
+    String result= r1.toString();
+    Assert.assertEquals("[new part\t5\t5, new part\t11\t11, p1\t1\t1, p1\t2\t15, p1\t3\t3, p2\t4\t44]", result);
+  }
+  /**
+   * Using nested partitions and thus DummyPartition
+   * @throws Exception
+   */
+  @Test
+  public void testDynamicPartitionsMerge2() throws Exception {
+    d.destroy();
+    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    int[][] targetVals = {{1,1,1},{2,2,2},{3,3,1},{4,4,2}};
+    runStatementOnDriver("insert into " + Table.ACIDNESTEDPART + " partition(p=1,q) " + makeValuesClause(targetVals));
+
+    List<String> r1 = runStatementOnDriver("select count(*) from " + Table.ACIDNESTEDPART);
+    Assert.assertEquals("4", r1.get(0));
+    int[][] sourceVals = {{2,15},{4,44},{5,5},{11,11}};
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + " " + makeValuesClause(sourceVals));
+    runStatementOnDriver("merge into " + Table.ACIDNESTEDPART + " using " + Table.NONACIDORCTBL +
+      " as s ON " + Table.ACIDNESTEDPART + ".a = s.a " +
+      "when matched then update set b = s.b " +
+      "when not matched then insert values(s.a, s.b, 3,4)");
+    r1 = runStatementOnDriver("select p,q,a,b from " + Table.ACIDNESTEDPART + " order by p,q, a, b");
+    Assert.assertEquals(stringifyValues(new int[][] {{1,1,1,1},{1,1,3,3},{1,2,2,15},{1,2,4,44},{3,4,5,5},{3,4,11,11}}), r1);
+  }
+  @Ignore("Covered elsewhere")
+  @Test
+  public void testMergeAliasedTarget() throws Exception {
+    int[][] baseValsOdd = {{2,2},{4,44},{5,5},{11,11}};
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + " " + makeValuesClause(baseValsOdd));
+    int[][] vals = {{2,1},{4,3},{5,6},{7,8}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(vals));
+    String query = "merge into " + Table.ACIDTBL +
+      " as target using " + Table.NONACIDORCTBL + " source ON target.a = source.a " +
+      "WHEN MATCHED THEN update set b = 0 " +
+      "WHEN NOT MATCHED THEN INSERT VALUES(source.a, source.b) ";
+    runStatementOnDriver(query);
+
+    List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] rExpected = {{2,0},{4,0},{5,0},{7,8},{11,11}};
+    Assert.assertEquals(stringifyValues(rExpected), r);
+  }
+  @Test
+  public void testMergeUpdateDelete() throws Exception {
+    int[][] baseValsOdd = {{2,2},{4,44},{5,5},{11,11}};
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + " " + makeValuesClause(baseValsOdd));
+    int[][] vals = {{2,1},{4,3},{5,6},{7,8}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(vals));
+    String query = "merge into " + Table.ACIDTBL +
+      " as t using " + Table.NONACIDORCTBL + " s ON t.a = s.a " +
+      "WHEN MATCHED AND s.a < 3 THEN update set b = 0 " +
+      "WHEN MATCHED and t.a > 3 and t.a < 5 THEN DELETE " +
+      "WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b) ";
+    runStatementOnDriver(query);
+
+    List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] rExpected = {{2,0},{5,6},{7,8},{11,11}};
+    Assert.assertEquals(stringifyValues(rExpected), r);
+  }
+  @Test
+  public void testMergeDeleteUpdate() throws Exception {
+    int[][] sourceVals = {{2,2},{4,44},{5,5},{11,11}};
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + " " + makeValuesClause(sourceVals));
+    int[][] targetVals = {{2,1},{4,3},{5,6},{7,8}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(targetVals));
+    String query = "merge into " + Table.ACIDTBL +
+      " as t using " + Table.NONACIDORCTBL + " s ON t.a = s.a " +
+      "WHEN MATCHED and s.a < 5 THEN DELETE " +
+      "WHEN MATCHED AND s.a < 3 THEN update set b = 0 " +
+      "WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b) ";
+    runStatementOnDriver(query);
+
+    List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] rExpected = {{5,6},{7,8},{11,11}};
+    Assert.assertEquals(stringifyValues(rExpected), r);
+  }
+
+  /**
+   * https://www.linkedin.com/pulse/how-load-slowly-changing-dimension-type-2-using-oracle-padhy
+   */
+  @Test
+  public void testMergeType2SCD01() throws Exception {
+    runStatementOnDriver("drop table if exists target");
+    runStatementOnDriver("drop table if exists source");
+    runStatementOnDriver("drop table if exists splitTable");
+
+    runStatementOnDriver("create table splitTable(op int)");
+    runStatementOnDriver("insert into splitTable values (0),(1)");
+    runStatementOnDriver("create table source (key int, data int)");
+    runStatementOnDriver("create table target (key int, data int, cur int) clustered by (key) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    int[][] targetVals = {{1, 5, 1}, {2, 6, 1}, {1, 18, 0}};
+    runStatementOnDriver("insert into target " + makeValuesClause(targetVals));
+    int[][] sourceVals = {{1, 7}, {3, 8}};
+    runStatementOnDriver("insert into source " + makeValuesClause(sourceVals));
+    //augment source with a col which has 1 if it will cause an update in target, 0 otherwise
+    String curMatch = "select s.*, case when t.cur is null then 0 else 1 end m from source s left outer join (select * from target where target.cur=1) t on s.key=t.key";
+    //split each row (duplicate) which will cause an update into 2 rows and augment with 'op' col which has 0 to insert, 1 to update
+    String teeCurMatch = "select curMatch.*, case when splitTable.op is null or splitTable.op = 0 then 0 else 1 end op from (" + curMatch + ") curMatch left outer join splitTable on curMatch.m=1";
+    if(false) {
+      //this is just for debug
+      List<String> r1 = runStatementOnDriver(curMatch);
+      List<String> r2 = runStatementOnDriver(teeCurMatch);
+    }
+    String stmt = "merge into target t using (" + teeCurMatch + ") s on t.key=s.key and t.cur=1 and s.op=1 " +
+      "when matched then update set cur=0 " +
+      "when not matched then insert values(s.key,s.data,1)";
+
+    runStatementOnDriver(stmt);
+    int[][] resultVals = {{1,5,0},{1,7,1},{1,18,0},{2,6,1},{3,8,1}};
+    List<String> r = runStatementOnDriver("select * from target order by key,data,cur");
+    Assert.assertEquals(stringifyValues(resultVals), r);
+  }
+  /**
+   * https://www.linkedin.com/pulse/how-load-slowly-changing-dimension-type-2-using-oracle-padhy
+   * Same as testMergeType2SCD01 but with a more intuitive "source" expression
+   */
+  @Test
+  public void testMergeType2SCD02() throws Exception {
+    runStatementOnDriver("drop table if exists target");
+    runStatementOnDriver("drop table if exists source");
+    runStatementOnDriver("create table source (key int, data int)");
+    runStatementOnDriver("create table target (key int, data int, cur int) clustered by (key) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    int[][] targetVals = {{1, 5, 1}, {2, 6, 1}, {1, 18, 0}};
+    runStatementOnDriver("insert into target " + makeValuesClause(targetVals));
+    int[][] sourceVals = {{1, 7}, {3, 8}};
+    runStatementOnDriver("insert into source " + makeValuesClause(sourceVals));
+
+    String baseSrc =  "select source.*, 0 c from source " +
+    "union all " +
+      "select source.*, 1 c from source " +
+      "inner join target " +
+      "on source.key=target.key where target.cur=1";
+    if(false) {
+      //this is just for debug
+      List<String> r1 = runStatementOnDriver(baseSrc);
+      List<String> r2 = runStatementOnDriver(
+        "select t.*, s.* from target t right outer join (" + baseSrc + ") s " +
+          "\non t.key=s.key and t.cur=s.c and t.cur=1");
+    }
+    String stmt = "merge into target t using " +
+      "(" + baseSrc + ") s " +
+      "on t.key=s.key and t.cur=s.c and t.cur=1 " +
+      "when matched then update set cur=0 " +
+      "when not matched then insert values(s.key,s.data,1)";
+
+    runStatementOnDriver(stmt);
+    int[][] resultVals = {{1,5,0},{1,7,1},{1,18,0},{2,6,1},{3,8,1}};
+    List<String> r = runStatementOnDriver("select * from target order by key,data,cur");
+    Assert.assertEquals(stringifyValues(resultVals), r);
+  }
+
+  @Test
+  @Ignore("Values clause with table constructor not yet supported")
+  public void testValuesSource() throws Exception {
+    int[][] targetVals = {{2,1},{4,3},{5,6},{7,8}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(targetVals));
+    String query = "merge into " + Table.ACIDTBL +
+      " as t using (select * from (values (2,2),(4,44),(5,5),(11,11)) as F(a,b)) s ON t.a = s.a " +
+      "WHEN MATCHED and s.a < 5 THEN DELETE " +
+      "WHEN MATCHED AND s.a < 3 THEN update set b = 0 " +
+      "WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b) ";
+    runStatementOnDriver(query);
+
+    List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] rExpected = {{5,6},{7,8},{11,11}};
+    Assert.assertEquals(stringifyValues(rExpected), r);
+  }
 
   /**
    * takes raw data and turns it into a string as if from Driver.getResults()
@@ -1389,6 +1803,7 @@ public class TestTxnCommands2 {
   }
 
   protected List<String> runStatementOnDriver(String stmt) throws Exception {
+    LOG.info("+runStatementOnDriver(" + stmt + ")");
     CommandProcessorResponse cpr = d.run(stmt);
     if(cpr.getResponseCode() != 0) {
       throw new RuntimeException(stmt + " failed: " + cpr);

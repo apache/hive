@@ -18,21 +18,16 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
-import org.apache.hadoop.hive.ql.io.HiveInputFormat;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -545,4 +540,10 @@ public class TestTxnCommands2WithSplitUpdate extends TestTxnCommands2 {
     resultCount = 2;
     Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
   }
+  @Test
+  @Ignore
+  public void testMergeType2SCD01() throws Exception {}
+  @Test
+  @Ignore
+  public void testMergeType2SCD02() throws Exception {}
 }

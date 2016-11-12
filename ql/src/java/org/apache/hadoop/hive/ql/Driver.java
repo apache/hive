@@ -1111,7 +1111,9 @@ public class Driver implements CommandProcessor {
       if (haveAcidWrite()) {
         for (FileSinkDesc desc : acidSinks) {
           desc.setTransactionId(txnMgr.getCurrentTxnId());
-          desc.setStatementId(txnMgr.getStatementId());
+          //it's possible to have > 1 FileSink writing to the same table/partition
+          //e.g. Merge stmt, multi-insert stmt when mixing DP and SP writes
+          desc.setStatementId(txnMgr.getWriteIdAndIncrement());
         }
       }
       /*Note, we have to record snapshot after lock acquisition to prevent lost update problem

@@ -417,6 +417,7 @@ public class TestCompactionTxnHandler {
     long txnId = openTxns.getTxn_ids().get(0);
     // lock a table, as in dynamic partitions
     LockComponent lc = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, dbName);
+    lc.setIsDynamicPartitionWrite(true);
     lc.setTablename(tableName);
     DataOperationType dop = DataOperationType.UPDATE; 
     lc.setOperationType(dop);

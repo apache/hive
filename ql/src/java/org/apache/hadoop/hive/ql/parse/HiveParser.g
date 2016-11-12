@@ -20,7 +20,7 @@ options
 {
 tokenVocab=HiveLexer;
 output=AST;
-ASTLabelType=CommonTree;
+ASTLabelType=ASTNode;
 backtrack=false;
 k=3;
 }
@@ -384,6 +384,11 @@ TOK_ROLLBACK;
 TOK_SET_AUTOCOMMIT;
 TOK_CACHE_METADATA;
 TOK_ABORT_TRANSACTIONS;
+TOK_MERGE;
+TOK_MATCHED;
+TOK_NOT_MATCHED;
+TOK_UPDATE;
+TOK_DELETE;
 }
 
 
@@ -737,6 +742,7 @@ execStatement
     | deleteStatement
     | updateStatement
     | sqlTransactionStatement
+    | mergeStatement
     ;
 
 loadStatement
@@ -2670,3 +2676,55 @@ abortTransactionStatement
   :
   KW_ABORT KW_TRANSACTIONS ( Number )+ -> ^(TOK_ABORT_TRANSACTIONS ( Number )+)
   ;
+
+
+/*
+BEGIN SQL Merge statement
+*/
+mergeStatement
+@init { pushMsg("MERGE statement", state); }
+@after { popMsg(state); }
+   :
+   KW_MERGE KW_INTO tableName (KW_AS? identifier)? KW_USING fromSource KW_ON expression whenClauses ->
+    ^(TOK_MERGE ^(TOK_TABREF tableName identifier?) fromSource expression whenClauses)
+   ;
+/*
+Allow 0,1 or 2 WHEN MATCHED clauses and 0 or 1 WHEN NOT MATCHED
+Each WHEN clause may have AND <boolean predicate>.
+If 2 WHEN MATCHED clauses are present, 1 must be UPDATE the other DELETE and the 1st one
+must have AND <boolean predicate>
+*/
+whenClauses
+   :
+   (whenMatchedAndClause|whenMatchedThenClause)* whenNotMatchedClause?
+   ;
+whenNotMatchedClause
+@init { pushMsg("WHEN NOT MATCHED clause", state); }
+@after { popMsg(state); }
+   :
+  KW_WHEN KW_NOT KW_MATCHED (KW_AND expression)? KW_THEN KW_INSERT KW_VALUES valueRowConstructor ->
+    ^(TOK_NOT_MATCHED ^(TOK_INSERT valueRowConstructor) expression?)
+  ;
+whenMatchedAndClause
+@init { pushMsg("WHEN MATCHED AND clause", state); }
+@after { popMsg(state); }
+  :
+  KW_WHEN KW_MATCHED KW_AND expression KW_THEN updateOrDelete ->
+    ^(TOK_MATCHED updateOrDelete expression)
+  ;
+whenMatchedThenClause
+@init { pushMsg("WHEN MATCHED THEN clause", state); }
+@after { popMsg(state); }
+  :
+  KW_WHEN KW_MATCHED KW_THEN updateOrDelete ->
+     ^(TOK_MATCHED updateOrDelete)
+  ;
+updateOrDelete
+   :
+   KW_UPDATE setColumnsClause -> ^(TOK_UPDATE setColumnsClause)
+   |
+   KW_DELETE -> TOK_DELETE
+   ;
+/*
+END SQL Merge statement
+*/
