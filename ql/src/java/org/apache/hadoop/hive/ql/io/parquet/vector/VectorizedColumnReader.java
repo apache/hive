@@ -351,17 +351,13 @@ public class VectorizedColumnReader {
     BytesColumnVector c,
     int rowId) throws IOException {
     int left = total;
-    byte[] bytes = null;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        Binary binary = dataColumn.readBytes();
-        c.setVal(rowId, binary.getBytesUnsafe());
+        c.setVal(rowId, dataColumn.readBytes().getBytesUnsafe());
         c.isNull[rowId] = false;
-        if (bytes == null) {
-          bytes = ArrayUtils.subarray(c.vector[0], c.start[0], c.length[0]);
-        }
-        c.isRepeating = c.isRepeating && Arrays.equals(binary.getBytesUnsafe(), bytes);
+        // TODO figure out a better way to set repeat for Binary type
+        c.isRepeating = false;
       } else {
         c.isNull[rowId] = true;
         c.isRepeating = false;
