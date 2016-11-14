@@ -18,6 +18,27 @@
 
 package org.apache.hadoop.hive.conf;
 
+import com.google.common.base.Joiner;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.conf.Validator.PatternSet;
+import org.apache.hadoop.hive.conf.Validator.RangeValidator;
+import org.apache.hadoop.hive.conf.Validator.RatioValidator;
+import org.apache.hadoop.hive.conf.Validator.StringSet;
+import org.apache.hadoop.hive.conf.Validator.TimeValidator;
+import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.Shell;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hive.common.HiveCompat;
+
+import javax.security.auth.login.LoginException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -35,28 +56,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.security.auth.login.LoginException;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
-import org.apache.hadoop.hive.conf.Validator.PatternSet;
-import org.apache.hadoop.hive.conf.Validator.RangeValidator;
-import org.apache.hadoop.hive.conf.Validator.RatioValidator;
-import org.apache.hadoop.hive.conf.Validator.StringSet;
-import org.apache.hadoop.hive.conf.Validator.TimeValidator;
-import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.Shell;
-import org.apache.hive.common.HiveCompat;
-
-import com.google.common.base.Joiner;
 import java.util.Set;
 
 /**
@@ -153,6 +152,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS,
       HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX,
       HiveConf.ConfVars.METASTORE_EVENT_LISTENERS,
+      HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS,
       HiveConf.ConfVars.METASTORE_EVENT_CLEAN_FREQ,
       HiveConf.ConfVars.METASTORE_EVENT_EXPIRY_DURATION,
       HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
@@ -508,7 +508,13 @@ public class HiveConf extends Configuration {
         "An init hook is specified as the name of Java class which extends org.apache.hadoop.hive.metastore.MetaStoreInitListener."),
     METASTORE_PRE_EVENT_LISTENERS("hive.metastore.pre.event.listeners", "",
         "List of comma separated listeners for metastore events."),
-    METASTORE_EVENT_LISTENERS("hive.metastore.event.listeners", "", ""),
+    METASTORE_EVENT_LISTENERS("hive.metastore.event.listeners", "",
+        "A comma separated list of Java classes that implement the org.apache.hadoop.hive.metastore.MetaStoreEventListener" +
+            " interface. The metastore event and corresponding listener method will be invoked in separate JDO transactions. " +
+            "Alternatively, configure hive.metastore.transactional.event.listeners to ensure both are invoked in same JDO transaction."),
+    METASTORE_TRANSACTIONAL_EVENT_LISTENERS("hive.metastore.transactional.event.listeners", "",
+        "A comma separated list of Java classes that implement the org.apache.hadoop.hive.metastore.MetaStoreEventListener" +
+            " interface. Both the metastore event and corresponding listener method will be invoked in the same JDO transaction."),
     METASTORE_EVENT_DB_LISTENER_TTL("hive.metastore.event.db.listener.timetolive", "86400s",
         new TimeValidator(TimeUnit.SECONDS),
         "time after which events will be removed from the database listener queue"),

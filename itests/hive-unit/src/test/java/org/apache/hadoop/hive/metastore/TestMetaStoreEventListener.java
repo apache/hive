@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -445,5 +444,4 @@ public class TestMetaStoreEventListener extends TestCase {
     assertEquals("true", event.getOldValue());
     assertEquals("false", event.getNewValue());
   }
-
 }
