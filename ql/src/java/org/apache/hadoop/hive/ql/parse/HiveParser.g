@@ -388,7 +388,11 @@ TOK_MERGE;
 TOK_MATCHED;
 TOK_NOT_MATCHED;
 TOK_UPDATE;
-TOK_DELETE;
+TOK_DELETE;TOK_REPL_DUMP;
+TOK_REPL_LOAD;
+TOK_REPL_STATUS;
+TOK_BATCH;
+TOK_TO;
 }
 
 
@@ -738,6 +742,9 @@ execStatement
     | loadStatement
     | exportStatement
     | importStatement
+    | replDumpStatement
+    | replLoadStatement
+    | replStatusStatement
     | ddlStatement
     | deleteStatement
     | updateStatement
@@ -778,6 +785,35 @@ importStatement
          tableLocation?
     -> ^(TOK_IMPORT $path $tab? $ext? tableLocation?)
     ;
+
+replDumpStatement
+@init { pushMsg("replication dump statement", state); }
+@after { popMsg(state); }
+      : KW_REPL KW_DUMP
+        (dbName=identifier) (DOT tblName=identifier)?
+        (KW_FROM (eventId=Number)
+          (KW_TO (rangeEnd=Number))?
+          (KW_BATCH (batchSize=Number))?
+        )?
+    -> ^(TOK_REPL_DUMP $dbName $tblName? ^(TOK_FROM $eventId (TOK_TO $rangeEnd)? (TOK_BATCH $batchSize)?)? )
+    ;
+
+replLoadStatement
+@init { pushMsg("replication load statement", state); }
+@after { popMsg(state); }
+      : KW_REPL KW_LOAD
+        ((dbName=identifier) (DOT tblName=identifier)?)?
+        KW_FROM (path=StringLiteral)
+      -> ^(TOK_REPL_LOAD $path $dbName? $tblName?)
+      ;
+
+replStatusStatement
+@init { pushMsg("replication load statement", state); }
+@after { popMsg(state); }
+      : KW_REPL KW_STATUS
+        (dbName=identifier) (DOT tblName=identifier)?
+      -> ^(TOK_REPL_STATUS $dbName $tblName?)
+      ;
 
 ddlStatement
 @init { pushMsg("ddl statement", state); }

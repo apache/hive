@@ -338,6 +338,10 @@ KW_EXTRACT: 'EXTRACT';
 KW_FLOOR: 'FLOOR';
 KW_MERGE: 'MERGE';
 KW_MATCHED: 'MATCHED';
+KW_REPL: 'REPL';
+KW_DUMP: 'DUMP';
+KW_BATCH: 'BATCH';
+KW_STATUS: 'STATUS';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

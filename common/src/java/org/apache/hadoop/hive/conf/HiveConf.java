@@ -211,6 +211,7 @@ public class HiveConf extends Configuration {
    */
   public static final HiveConf.ConfVars[] metaVars = {
       HiveConf.ConfVars.METASTOREWAREHOUSE,
+      HiveConf.ConfVars.REPLDIR,
       HiveConf.ConfVars.METASTOREURIS,
       HiveConf.ConfVars.METASTORE_SERVER_PORT,
       HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES,
@@ -432,6 +433,8 @@ public class HiveConf extends Configuration {
         "HDFS root scratch dir for Hive jobs which gets created with write all (733) permission. " +
         "For each connecting user, an HDFS scratch dir: ${hive.exec.scratchdir}/<username> is created, " +
         "with ${hive.scratch.dir.permission}."),
+    REPLDIR("hive.repl.rootdir","/user/hive/repl/",
+        "HDFS root dir for all replication dumps."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
@@ -2062,7 +2065,7 @@ public class HiveConf extends Configuration {
         "When true the HDFS location stored in the index file will be ignored at runtime.\n" +
         "If the data got moved or the name of the cluster got changed, the index data should still be usable."),
 
-    HIVE_EXIM_URI_SCHEME_WL("hive.exim.uri.scheme.whitelist", "hdfs,pfile",
+    HIVE_EXIM_URI_SCHEME_WL("hive.exim.uri.scheme.whitelist", "hdfs,pfile,file",
         "A comma separated list of acceptable URI schemes for import and export."),
     // temporary variable for testing. This is added just to turn off this feature in case of a bug in
     // deployment. It has not been documented in hive-default.xml intentionally, this should be removed

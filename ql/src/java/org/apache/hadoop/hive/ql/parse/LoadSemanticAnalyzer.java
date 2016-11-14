@@ -69,7 +69,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       @Override
       public boolean accept(Path p) {
         String name = p.getName();
-        return name.equals("_metadata") ? true : !name.startsWith("_") && !name.startsWith(".");
+        return name.equals(EximUtil.METADATA_NAME) ? true : !name.startsWith("_") && !name.startsWith(".");
       }
     });
     if ((srcs != null) && srcs.length == 1) {

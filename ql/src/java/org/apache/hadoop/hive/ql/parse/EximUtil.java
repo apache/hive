@@ -20,6 +20,14 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Function;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -45,10 +53,12 @@ import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +73,72 @@ import java.util.TreeMap;
  */
 public class EximUtil {
 
+  public static final String METADATA_NAME="_metadata";
+
   private static final Logger LOG = LoggerFactory.getLogger(EximUtil.class);
+
+  /**
+   * Wrapper class for common BaseSemanticAnalyzer non-static members
+   * into static generic methods without having the fn signatures
+   * becoming overwhelming, with passing each of these into every function.
+   *
+   * Note, however, that since this is constructed with args passed in,
+   * parts of the context, such as the tasks or inputs, might have been
+   * overridden with temporary context values, rather than being exactly
+   * 1:1 equivalent to BaseSemanticAnalyzer.getRootTasks() or BSA.getInputs().
+   */
+  public static class SemanticAnalyzerWrapperContext {
+    private HiveConf conf;
+    private Hive db;
+    private HashSet<ReadEntity> inputs;
+    private HashSet<WriteEntity> outputs;
+    private List<Task<? extends Serializable>> tasks;
+    private Logger LOG;
+    private Context ctx;
+
+    public HiveConf getConf() {
+      return conf;
+    }
+
+    public Hive getHive() {
+      return db;
+    }
+
+    public HashSet<ReadEntity> getInputs() {
+      return inputs;
+    }
+
+    public HashSet<WriteEntity> getOutputs() {
+      return outputs;
+    }
+
+    public List<Task<? extends Serializable>> getTasks() {
+      return tasks;
+    }
+
+    public Logger getLOG() {
+      return LOG;
+    }
+
+    public Context getCtx() {
+      return ctx;
+    }
+
+    public SemanticAnalyzerWrapperContext(HiveConf conf, Hive db,
+                                          HashSet<ReadEntity> inputs,
+                                          HashSet<WriteEntity> outputs,
+                                          List<Task<? extends Serializable>> tasks,
+                                          Logger LOG, Context ctx){
+      this.conf = conf;
+      this.db = db;
+      this.inputs = inputs;
+      this.outputs = outputs;
+      this.tasks = tasks;
+      this.LOG = LOG;
+      this.ctx = ctx;
+    }
+  }
+
 
   private EximUtil() {
   }
@@ -162,9 +237,40 @@ public class EximUtil {
   }
 
   /* major version number should match for backward compatibility */
-  public static final String METADATA_FORMAT_VERSION = "0.1";
+  public static final String METADATA_FORMAT_VERSION = "0.2";
+
   /* If null, then the major version number should match */
   public static final String METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION = null;
+
+  public static void createDbExportDump(
+      FileSystem fs, Path metadataPath, Database dbObj,
+      ReplicationSpec replicationSpec) throws IOException, SemanticException {
+
+    // WARNING NOTE : at this point, createDbExportDump lives only in a world where ReplicationSpec is in replication scope
+    // If we later make this work for non-repl cases, analysis of this logic might become necessary. Also, this is using
+    // Replv2 semantics, i.e. with listFiles laziness (no copy at export time)
+
+    OutputStream out = fs.create(metadataPath);
+    JsonGenerator jgen = (new JsonFactory()).createJsonGenerator(out);
+    jgen.writeStartObject();
+    jgen.writeStringField("version",METADATA_FORMAT_VERSION);
+    dbObj.putToParameters(ReplicationSpec.KEY.CURR_STATE_ID.toString(), replicationSpec.getCurrentReplicationState());
+
+    if (METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION != null) {
+      jgen.writeStringField("fcversion",METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION);
+    }
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    try {
+      jgen.writeStringField("db", serializer.toString(dbObj, "UTF-8"));
+    } catch (TException e) {
+      throw new SemanticException(
+          ErrorMsg.ERROR_SERIALIZE_METASTORE
+              .getMsg(), e);
+    }
+
+    jgen.writeEndObject();
+    jgen.close(); // JsonGenerator owns the OutputStream, so it closes it when we call close.
+  }
 
   public static void createExportDump(FileSystem fs, Path metadataPath,
       org.apache.hadoop.hive.ql.metadata.Table tableHandle,
@@ -255,17 +361,23 @@ public class EximUtil {
    * Utility class to help return complex value from readMetaData function
    */
   public static class ReadMetaData {
+    private final Database db;
     private final Table table;
     private final Iterable<Partition> partitions;
     private final ReplicationSpec replicationSpec;
 
     public ReadMetaData(){
-      this(null,null,new ReplicationSpec());
+      this(null,null,null,new ReplicationSpec());
     }
-    public ReadMetaData(Table table, Iterable<Partition> partitions, ReplicationSpec replicationSpec){
+    public ReadMetaData(Database db, Table table, Iterable<Partition> partitions, ReplicationSpec replicationSpec){
+      this.db = db;
       this.table = table;
       this.partitions = partitions;
       this.replicationSpec = replicationSpec;
+    }
+
+    public Database getDatabase(){
+      return db;
     }
 
     public Table getTable() {
@@ -298,12 +410,21 @@ public class EximUtil {
       String version = jsonContainer.getString("version");
       String fcversion = getJSONStringEntry(jsonContainer, "fcversion");
       checkCompatibility(version, fcversion);
+
+      String dbDesc = getJSONStringEntry(jsonContainer, "db");
       String tableDesc = getJSONStringEntry(jsonContainer,"table");
+      TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
+
+      Database db = null;
+      if (dbDesc != null){
+        db = new Database();
+        deserializer.deserialize(db, dbDesc, "UTF-8");
+      }
+
       Table table = null;
       List<Partition> partitionsList = null;
       if (tableDesc != null){
         table = new Table();
-        TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
         deserializer.deserialize(table, tableDesc, "UTF-8");
         // TODO : jackson-streaming-iterable-redo this
         JSONArray jsonPartitions = new JSONArray(jsonContainer.getString("partitions"));
@@ -316,7 +437,7 @@ public class EximUtil {
         }
       }
 
-      return new ReadMetaData(table, partitionsList,readReplicationSpec(jsonContainer));
+      return new ReadMetaData(db, table, partitionsList,readReplicationSpec(jsonContainer));
     } catch (JSONException e) {
       throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METADATA.getMsg(), e);
     } catch (TException e) {
@@ -437,5 +558,19 @@ public class EximUtil {
       return false;
     }
     return true;
+  }
+
+  public static PathFilter getDirectoryFilter(final FileSystem fs) {
+    // TODO : isn't there a prior impl of an isDirectory utility PathFilter so users don't have to write their own?
+    return new PathFilter() {
+      @Override
+      public boolean accept(Path p) {
+        try {
+          return fs.isDirectory(p);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
   }
 }

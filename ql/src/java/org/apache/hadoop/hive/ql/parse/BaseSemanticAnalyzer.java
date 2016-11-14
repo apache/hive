@@ -1607,8 +1607,12 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   protected WriteEntity toWriteEntity(Path location) throws SemanticException {
+    return toWriteEntity(location,conf);
+  }
+
+  public static WriteEntity toWriteEntity(Path location, HiveConf conf) throws SemanticException {
     try {
-      Path path = tryQualifyPath(location);
+      Path path = tryQualifyPath(location,conf);
       return new WriteEntity(path, FileUtils.isLocalFile(conf, path.toUri()));
     } catch (Exception e) {
       throw new SemanticException(e);
@@ -1620,8 +1624,12 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   protected ReadEntity toReadEntity(Path location) throws SemanticException {
+    return toReadEntity(location, conf);
+  }
+
+  public static ReadEntity toReadEntity(Path location, HiveConf conf) throws SemanticException {
     try {
-      Path path = tryQualifyPath(location);
+      Path path = tryQualifyPath(location, conf);
       return new ReadEntity(path, FileUtils.isLocalFile(conf, path.toUri()));
     } catch (Exception e) {
       throw new SemanticException(e);
@@ -1629,6 +1637,10 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   private Path tryQualifyPath(Path path) throws IOException {
+    return tryQualifyPath(path,conf);
+  }
+
+  public static Path tryQualifyPath(Path path, HiveConf conf) throws IOException {
     try {
       return path.getFileSystem(conf).makeQualified(path);
     } catch (IOException e) {

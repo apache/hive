@@ -128,6 +128,10 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_COMMIT, HiveOperation.COMMIT);
     commandType.put(HiveParser.TOK_ROLLBACK, HiveOperation.ROLLBACK);
     commandType.put(HiveParser.TOK_SET_AUTOCOMMIT, HiveOperation.SET_AUTOCOMMIT);
+    commandType.put(HiveParser.TOK_REPL_DUMP, HiveOperation.EXPORT); // piggyback on EXPORT security handling for now
+    commandType.put(HiveParser.TOK_REPL_LOAD, HiveOperation.IMPORT); // piggyback on IMPORT security handling for now
+    commandType.put(HiveParser.TOK_REPL_STATUS, HiveOperation.SHOW_TBLPROPERTIES); // TODO : also actually DESCDATABASE
+
   }
 
   static {
@@ -185,6 +189,12 @@ public final class SemanticAnalyzerFactory {
         return new ExportSemanticAnalyzer(queryState);
       case HiveParser.TOK_IMPORT:
         return new ImportSemanticAnalyzer(queryState);
+      case HiveParser.TOK_REPL_DUMP:
+        return new ReplicationSemanticAnalyzer(queryState);
+      case HiveParser.TOK_REPL_LOAD:
+        return new ReplicationSemanticAnalyzer(queryState);
+      case HiveParser.TOK_REPL_STATUS:
+        return new ReplicationSemanticAnalyzer(queryState);
       case HiveParser.TOK_ALTERTABLE: {
         Tree child = tree.getChild(1);
         switch (child.getType()) {

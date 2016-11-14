@@ -762,6 +762,7 @@ nonReserved
     | KW_KEY
     | KW_MERGE
     | KW_MATCHED
+    | KW_REPL | KW_DUMP | KW_BATCH | KW_STATUS
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.
