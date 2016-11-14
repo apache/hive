@@ -254,10 +254,11 @@
   <value>llap</value>
 </property>
 
-<property>
+<!--property>
+     This is determined by the cluster type, and is set in code - HadoopShims, etc.
   <name>hive.llap.execution.mode</name>
   <value>all</value>
-</property>
+</property-->
 
 <property>
   <name>hive.tez.java.opts</name>

@@ -2865,7 +2865,7 @@ public class HiveConf extends Configuration {
     LLAP_ALLOW_PERMANENT_FNS("hive.llap.allow.permanent.fns", true,
         "Whether LLAP decider should allow permanent UDFs."),
     LLAP_EXECUTION_MODE("hive.llap.execution.mode", "none",
-        new StringSet("auto", "none", "all", "map"),
+        new StringSet("auto", "none", "all", "map", "only"),
         "Chooses whether query fragments will run in container or in llap"),
     LLAP_OBJECT_CACHE_ENABLED("hive.llap.object.cache.enabled", true,
         "Cache objects (plans, hashtables, etc) in llap"),

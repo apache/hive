@@ -662,7 +662,8 @@ public class QTestUtil {
       if (EnumSet.of(MiniClusterType.llap_local, MiniClusterType.tez_local).contains(clusterType)) {
         mr = shims.getLocalMiniTezCluster(conf, clusterType == MiniClusterType.llap_local);
       } else {
-        mr = shims.getMiniTezCluster(conf, numTrackers, uriString);
+        mr = shims.getMiniTezCluster(conf, numTrackers, uriString,
+            EnumSet.of(MiniClusterType.llap, MiniClusterType.llap_local).contains(clusterType));
       }
     } else if (clusterType == MiniClusterType.miniSparkOnYarn) {
       mr = shims.getMiniSparkCluster(conf, 2, uriString, 1);

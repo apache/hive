@@ -224,7 +224,7 @@ public class MiniHS2 extends AbstractHiveService {
       switch (miniClusterType) {
       case TEZ:
         // TODO: This should be making use of confDir to load configs setup for Tez, etc.
-        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 2, uriString);
+        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 2, uriString, false);
         break;
       case LLAP:
         if (usePortsFromConf) {
@@ -232,7 +232,7 @@ public class MiniHS2 extends AbstractHiveService {
         }
         llapCluster = LlapItUtils.startAndGetMiniLlapCluster(hiveConf, null, null);
 
-        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 2, uriString);
+        mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 2, uriString, true);
         break;
       case MR:
         mr = ShimLoader.getHadoopShims().getMiniMrCluster(hiveConf, 2, uriString, 1);
