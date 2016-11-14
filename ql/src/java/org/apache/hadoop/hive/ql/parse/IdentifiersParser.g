@@ -675,6 +675,7 @@ nonReserved
     | KW_VALIDATE
     | KW_NOVALIDATE
     | KW_KEY
+    | KW_REPL | KW_DUMP | KW_BATCH | KW_STATUS
 ;
 
 //The following SQL2011 reserved keywords are used as cast function name only, but not as identifiers.

@@ -328,6 +328,10 @@ KW_RELY: 'RELY';
 KW_NORELY: 'NORELY';
 KW_KEY: 'KEY';
 KW_ABORT: 'ABORT';
+KW_REPL: 'REPL';
+KW_DUMP: 'DUMP';
+KW_BATCH: 'BATCH';
+KW_STATUS: 'STATUS';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.
