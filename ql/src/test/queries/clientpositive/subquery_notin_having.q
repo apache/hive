@@ -56,3 +56,19 @@ having b.p_mfgr not in
   having max(p_retailprice) - min(p_retailprice) > 600
   )
 ;
+
+--nullability tests
+CREATE TABLE t1 (c1 INT, c2 CHAR(100));
+INSERT INTO t1 VALUES (null,null), (1,''), (2,'abcde'), (100,'abcdefghij');
+
+CREATE TABLE t2 (c1 INT);
+INSERT INTO t2 VALUES (null), (2), (100);
+
+explain SELECT c1 FROM t1 group by c1 having c1 NOT IN (SELECT c1 FROM t2);
+SELECT c1 FROM t1 group by c1 having c1 NOT IN (SELECT c1 FROM t2);
+
+explain SELECT c1 FROM t1 group by c1 having c1 NOT IN (SELECT c1 FROM t2 where t1.c1=t2.c1);
+SELECT c1 FROM t1 group by c1 having c1 NOT IN (SELECT c1 FROM t2 where t1.c1=t2.c1);
+
+DROP TABLE t1;
+DROP TABLE t2;

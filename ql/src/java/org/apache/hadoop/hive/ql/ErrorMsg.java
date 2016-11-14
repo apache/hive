@@ -451,6 +451,7 @@ public enum ErrorMsg {
   INVALID_PK_SYNTAX(10326, "Invalid Primary Key syntax"),
   ACID_NOT_ENOUGH_HISTORY(10327, "Not enough history available for ({0},{1}).  " +
     "Oldest available base: {2}", true),
+  INVALID_COLUMN_NAME(10328, "Invalid column name"),
   UPDATE_DELETE_VIEW(10402, "You cannot update or delete records in a view"),
   MERGE_PREDIACTE_REQUIRED(10404, "MERGE statement with both UPDATE and DELETE clauses " +
     "requires \"AND <boolean>\" on the 1st WHEN MATCHED clause of <{0}>", true),

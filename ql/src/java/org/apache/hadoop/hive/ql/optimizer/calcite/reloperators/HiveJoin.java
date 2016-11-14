@@ -35,6 +35,7 @@ import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.ImmutableBitSet;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCostModel.JoinAlgorithm;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel.DefaultJoinAlgorithm;
@@ -229,5 +231,13 @@ public class HiveJoin extends Join implements HiveRelNode {
                 "none" : joinAlgorithm)
         .item("cost", joinCost == null ?
                 "not available" : joinCost);
+  }
+
+  //required for HiveRelDecorrelator
+  public RelNode accept(RelShuttle shuttle) {
+    if (shuttle instanceof HiveRelShuttle) {
+      return ((HiveRelShuttle)shuttle).visit(this);
+    }
+    return shuttle.visit(this);
   }
 }

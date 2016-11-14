@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10249]: Line 4:53 Unsupported SubQuery Expression 'p_name': SubQuery expression refers to both Parent and SubQuery expressions and is not a valid join condition.
