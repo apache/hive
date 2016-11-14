@@ -32,12 +32,14 @@ import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.sql.SqlCollation;
 import org.apache.calcite.sql.SqlIntervalQualifier;
 import org.apache.calcite.sql.SqlKind;
@@ -54,6 +56,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
@@ -68,6 +71,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeSubQueryDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
@@ -117,9 +121,26 @@ public class RexNodeConverter {
   private final ImmutableList<InputCtx> inputCtxs;
   private final boolean                 flattenExpr;
 
+  //outerRR belongs to outer query and is required to resolve correlated references
+  private final RowResolver             outerRR;
+  private final ImmutableMap<String, Integer> outerNameToPosMap;
+  private int correlatedId;
+
   //Constructor used by HiveRexExecutorImpl
   public RexNodeConverter(RelOptCluster cluster) {
     this(cluster, new ArrayList<InputCtx>(), false);
+  }
+
+  //subqueries will need outer query's row resolver
+  public RexNodeConverter(RelOptCluster cluster, RelDataType inpDataType,
+                          ImmutableMap<String, Integer> outerNameToPosMap,
+      ImmutableMap<String, Integer> nameToPosMap, RowResolver hiveRR, RowResolver outerRR, int offset, boolean flattenExpr, int correlatedId) {
+    this.cluster = cluster;
+    this.inputCtxs = ImmutableList.of(new InputCtx(inpDataType, nameToPosMap, hiveRR , offset));
+    this.flattenExpr = flattenExpr;
+    this.outerRR = outerRR;
+    this.outerNameToPosMap = outerNameToPosMap;
+    this.correlatedId = correlatedId;
   }
 
   public RexNodeConverter(RelOptCluster cluster, RelDataType inpDataType,
@@ -127,12 +148,16 @@ public class RexNodeConverter {
     this.cluster = cluster;
     this.inputCtxs = ImmutableList.of(new InputCtx(inpDataType, nameToPosMap, null, offset));
     this.flattenExpr = flattenExpr;
+    this.outerRR = null;
+    this.outerNameToPosMap = null;
   }
 
   public RexNodeConverter(RelOptCluster cluster, List<InputCtx> inpCtxLst, boolean flattenExpr) {
     this.cluster = cluster;
     this.inputCtxs = ImmutableList.<InputCtx> builder().addAll(inpCtxLst).build();
     this.flattenExpr = flattenExpr;
+    this.outerRR  = null;
+    this.outerNameToPosMap = null;
   }
 
   public RexNode convert(ExprNodeDesc expr) throws SemanticException {
@@ -144,10 +169,40 @@ public class RexNodeConverter {
       return convert((ExprNodeColumnDesc) expr);
     } else if (expr instanceof ExprNodeFieldDesc) {
       return convert((ExprNodeFieldDesc) expr);
+    } else if(expr instanceof  ExprNodeSubQueryDesc) {
+      return convert((ExprNodeSubQueryDesc) expr);
     } else {
       throw new RuntimeException("Unsupported Expression");
     }
     // TODO: handle ExprNodeColumnListDesc
+  }
+
+  private RexNode convert(final ExprNodeSubQueryDesc subQueryDesc) throws  SemanticException {
+    if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.IN) {
+     /*
+      * Check.5.h :: For In and Not In the SubQuery must implicitly or
+      * explicitly only contain one select item.
+      */
+      if(subQueryDesc.getRexSubQuery().getRowType().getFieldCount() > 1) {
+        throw new SemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+                "SubQuery can contain only 1 item in Select List."));
+      }
+      //create RexNode for LHS
+      RexNode rexNodeLhs = convert(subQueryDesc.getSubQueryLhs());
+
+      //create RexSubQuery node
+      RexNode rexSubQuery = RexSubQuery.in(subQueryDesc.getRexSubQuery(),
+                                              ImmutableList.<RexNode>of(rexNodeLhs) );
+      return  rexSubQuery;
+    }
+    else if( subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.EXISTS) {
+      RexNode subQueryNode = RexSubQuery.exists(subQueryDesc.getRexSubQuery());
+      return subQueryNode;
+    }
+    else {
+      throw new SemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+              "Currently only IN and EXISTS type of subqueries are supported"));
+    }
   }
 
   private RexNode convert(final ExprNodeFieldDesc fieldDesc) throws SemanticException {
@@ -420,7 +475,7 @@ public class RexNodeConverter {
   private InputCtx getInputCtx(ExprNodeColumnDesc col) throws SemanticException {
     InputCtx ctxLookingFor = null;
 
-    if (inputCtxs.size() == 1) {
+    if (inputCtxs.size() == 1 && inputCtxs.get(0).hiveRR == null) {
       ctxLookingFor = inputCtxs.get(0);
     } else {
       String tableAlias = col.getTabAlias();
@@ -443,7 +498,21 @@ public class RexNodeConverter {
   }
 
   protected RexNode convert(ExprNodeColumnDesc col) throws SemanticException {
+    //if this is co-rrelated we need to make RexCorrelVariable(with id and type)
+    // id and type should be retrieved from outerRR
     InputCtx ic = getInputCtx(col);
+    if(ic == null) {
+      // we have correlated column, build data type from outer rr
+      RelDataType rowType = TypeConverter.getType(cluster, this.outerRR, null);
+      if (this.outerNameToPosMap.get(col.getColumn()) == null) {
+        throw new SemanticException(ErrorMsg.INVALID_COLUMN_NAME.getMsg(col.getColumn()));
+      }
+
+      int pos = this.outerNameToPosMap.get(col.getColumn());
+      CorrelationId colCorr = new CorrelationId(this.correlatedId);
+      RexNode corExpr = cluster.getRexBuilder().makeCorrel(rowType, colCorr);
+      return cluster.getRexBuilder().makeFieldAccess(corExpr, pos);
+    }
     int pos = ic.hiveNameToPosMap.get(col.getColumn());
     return cluster.getRexBuilder().makeInputRef(
         ic.calciteInpDataType.getFieldList().get(pos).getType(), pos + ic.offsetInCalciteSchema);

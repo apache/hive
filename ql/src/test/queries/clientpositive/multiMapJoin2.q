@@ -3,6 +3,7 @@ set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecutePrinter,org.
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=6000;
+set hive.enable.semijoin.conversion=true;
 
 -- we will generate one MR job.
 EXPLAIN

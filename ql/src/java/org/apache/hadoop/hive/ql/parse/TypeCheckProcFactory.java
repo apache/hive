@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.calcite.rel.RelNode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -43,7 +44,6 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.lib.ExpressionWalker;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
@@ -60,6 +61,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeSubQueryDesc;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
@@ -134,7 +136,10 @@ public class TypeCheckProcFactory {
     ASTNode expr = (ASTNode) nd;
     TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
 
-    if (!ctx.isUseCaching()) {
+    // bypass only if outerRR is not null. Otherwise we need to look for expressions in outerRR for
+    // subqueries e.g. select min(b.value) from table b group by b.key
+    //                                  having key in (select .. where a = min(b.value)
+    if (!ctx.isUseCaching() && ctx.getOuterRR() == null) {
       return null;
     }
 
@@ -147,6 +152,12 @@ public class TypeCheckProcFactory {
 
     // If the current subExpression is pre-calculated, as in Group-By etc.
     ColumnInfo colInfo = input.getExpression(expr);
+
+    // try outer row resolver
+    RowResolver outerRR = ctx.getOuterRR();
+    if(colInfo == null && outerRR != null) {
+        colInfo = outerRR.getExpression(expr);
+    }
     if (colInfo != null) {
       desc = new ExprNodeColumnDesc(colInfo);
       ASTNode source = input.getExpressionSource(expr);
@@ -201,14 +212,14 @@ public class TypeCheckProcFactory {
         + HiveParser.TOK_INTERVAL_SECOND_LITERAL + "%"), tf.getIntervalExprProcessor());
     opRules.put(new RuleRegExp("R7", HiveParser.TOK_TABLE_OR_COL + "%"),
         tf.getColumnExprProcessor());
-    opRules.put(new RuleRegExp("R8", HiveParser.TOK_SUBQUERY_OP + "%"),
+    opRules.put(new RuleRegExp("R8", HiveParser.TOK_SUBQUERY_EXPR + "%"),
         tf.getSubQueryExprProcessor());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(tf.getDefaultExprProcessor(),
         opRules, tcCtx);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    GraphWalker ogw = new ExpressionWalker(disp);
 
     // Create a list of top nodes
     ArrayList<Node> topNodes = Lists.<Node>newArrayList(expr);
@@ -617,6 +628,13 @@ public class TypeCheckProcFactory {
 
       boolean isTableAlias = input.hasTableAlias(tableOrCol);
       ColumnInfo colInfo = input.get(null, tableOrCol);
+
+      // try outer row resolver
+      if(ctx.getOuterRR() != null && colInfo == null && !isTableAlias) {
+        RowResolver outerRR = ctx.getOuterRR();
+        isTableAlias = outerRR.hasTableAlias(tableOrCol);
+        colInfo = outerRR.get(null, tableOrCol);
+      }
 
       if (isTableAlias) {
         if (colInfo != null) {
@@ -1158,6 +1176,12 @@ public class TypeCheckProcFactory {
       }
       ColumnInfo colInfo = input.get(tableAlias, colName);
 
+      // Try outer Row resolver
+      if(colInfo == null && ctx.getOuterRR() != null) {
+        RowResolver outerRR = ctx.getOuterRR();
+        colInfo = outerRR.get(tableAlias, colName);
+      }
+
       if (colInfo == null) {
         ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr.getChild(1)), expr);
         return null;
@@ -1219,6 +1243,10 @@ public class TypeCheckProcFactory {
           throw new SemanticException(SemanticAnalyzer.generateErrorMessage(expr,
               ErrorMsg.INVALID_FUNCTION.getMsg("Windowing is not supported in the context")));
 
+        return null;
+      }
+
+      if(expr.getType() == HiveParser.TOK_SUBQUERY_OP || expr.getType() == HiveParser.TOK_QUERY) {
         return null;
       }
 
@@ -1379,11 +1407,47 @@ public class TypeCheckProcFactory {
         return desc;
       }
 
+      //TOK_SUBQUERY_EXPR should have either 2 or 3 children
+      assert(expr.getChildren().size() == 3 || expr.getChildren().size() == 2);
+      //First child should be operand
+      assert(expr.getChild(0).getType() == HiveParser.TOK_SUBQUERY_OP);
+
+      ASTNode subqueryOp = (ASTNode) expr.getChild(0);
+
+      boolean isIN = (subqueryOp.getChild(0).getType() == HiveParser.KW_IN
+              || subqueryOp.getChild(0).getType() == HiveParser.TOK_SUBQUERY_OP_NOTIN);
+      boolean isEXISTS = (subqueryOp.getChild(0).getType() == HiveParser.KW_EXISTS
+              || subqueryOp.getChild(0).getType() == HiveParser.TOK_SUBQUERY_OP_NOTEXISTS);
+
+      // subqueryToRelNode might be null if subquery expression anywhere other than
+      //  as expected in filter (where/having). We should throw an appropriate error
+      // message
+
+      Map<ASTNode, RelNode> subqueryToRelNode = ctx.getSubqueryToRelNode();
+      if(subqueryToRelNode == null) {
+        throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+                        " Currently SubQuery expressions are only allowed as " +
+                                "Where and Having Clause predicates"));
+      }
+
+      //For now because subquery is only supported in filter
+      // we will create subquery expression of boolean type
+      if(isEXISTS) {
+        return new ExprNodeSubQueryDesc(TypeInfoFactory.booleanTypeInfo, subqueryToRelNode.get(expr),
+                ExprNodeSubQueryDesc.SubqueryType.EXISTS);
+      }
+      if(isIN) {
+        assert(nodeOutputs[2] != null);
+        ExprNodeDesc lhs = (ExprNodeDesc)nodeOutputs[2];
+        return new ExprNodeSubQueryDesc(TypeInfoFactory.booleanTypeInfo, subqueryToRelNode.get(expr),
+                ExprNodeSubQueryDesc.SubqueryType.IN, lhs);
+      }
+
       /*
        * Restriction.1.h :: SubQueries only supported in the SQL Where Clause.
        */
       ctx.setError(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(sqNode,
-          "Currently SubQuery expressions are only allowed as Where Clause predicates"),
+          "Currently only IN & EXISTS SubQuery expressions are allowed"),
           sqNode);
       return null;
     }

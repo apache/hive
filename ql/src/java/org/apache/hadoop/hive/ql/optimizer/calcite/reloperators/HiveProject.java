@@ -25,6 +25,7 @@ import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -37,6 +38,7 @@ import org.apache.calcite.util.mapping.MappingType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -186,6 +188,14 @@ public class HiveProject extends Project implements HiveRelNode {
 
   public boolean isSynthetic() {
     return isSysnthetic;
+  }
+
+  //required for HiveRelDecorrelator
+  @Override public RelNode accept(RelShuttle shuttle) {
+    if(shuttle instanceof HiveRelShuttle) {
+      return ((HiveRelShuttle)shuttle).visit(this);
+    }
+    return shuttle.visit(this);
   }
 
 }

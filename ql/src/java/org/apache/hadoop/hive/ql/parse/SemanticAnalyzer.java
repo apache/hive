@@ -51,6 +51,7 @@ import org.antlr.runtime.tree.TreeVisitor;
 import org.antlr.runtime.tree.TreeVisitorAction;
 import org.antlr.runtime.tree.TreeWizard;
 import org.antlr.runtime.tree.TreeWizard.ContextVisitor;
+import org.apache.calcite.rel.RelNode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -11324,6 +11325,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // use default settings.
     return genExprNodeDesc(expr, input, true, false);
   }
+
+  public ExprNodeDesc genExprNodeDesc(ASTNode expr, RowResolver input,
+                                      RowResolver outerRR, Map<ASTNode, RelNode> subqueryToRelNode,
+                                      boolean useCaching) throws SemanticException {
+
+    TypeCheckCtx tcCtx = new TypeCheckCtx(input, useCaching, false);
+    tcCtx.setOuterRR(outerRR);
+    tcCtx.setSubqueryToRelNode(subqueryToRelNode);
+    return genExprNodeDesc(expr, input, tcCtx);
+  }
+
 
   public ExprNodeDesc genExprNodeDesc(ASTNode expr, RowResolver input, boolean useCaching)
       throws SemanticException {

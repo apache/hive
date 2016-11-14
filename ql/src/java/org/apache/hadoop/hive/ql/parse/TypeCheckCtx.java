@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.calcite.rel.RelNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import java.util.Map;
 
 /**
  * This class implements the context information that is used for typechecking
@@ -34,6 +36,19 @@ public class TypeCheckCtx implements NodeProcessorCtx {
    * expression descriptors from the expression ASTs.
    */
   private RowResolver inputRR;
+
+  /**
+   * RowResolver of outer query. This is used to resolve co-rrelated columns in Filter
+   * TODO:
+   *  this currently will only be able to resolve reference to parent query's column
+   *  this will not work for references to grand-parent column
+   */
+  private RowResolver outerRR;
+
+  /**
+   * Map from astnode of a subquery to it's logical plan.
+   */
+  private Map<ASTNode, RelNode> subqueryToRelNode;
 
   private final boolean useCaching;
 
@@ -50,7 +65,7 @@ public class TypeCheckCtx implements NodeProcessorCtx {
   private String error;
 
   /**
-   * The node that generated the potential typecheck error
+   * The node that generated the potential typecheck error.
    */
   private ASTNode errorSrcNode;
 
@@ -104,6 +119,8 @@ public class TypeCheckCtx implements NodeProcessorCtx {
     this.allowWindowing = allowWindowing;
     this.allowIndexExpr = allowIndexExpr;
     this.allowSubQueryExpr = allowSubQueryExpr;
+    this.outerRR = null;
+    this.subqueryToRelNode = null;
   }
 
   /**
@@ -119,6 +136,36 @@ public class TypeCheckCtx implements NodeProcessorCtx {
    */
   public RowResolver getInputRR() {
     return inputRR;
+  }
+
+  /**
+   * @param outerRR
+   *          the outerRR to set
+   */
+  public void setOuterRR(RowResolver outerRR) {
+    this.outerRR = outerRR;
+  }
+
+  /**
+   * @return the outerRR
+   */
+  public RowResolver getOuterRR() {
+    return outerRR;
+  }
+
+  /**
+   * @param subqueryToRelNode
+   *          the subqueryToRelNode to set
+   */
+  public void setSubqueryToRelNode(Map<ASTNode, RelNode> subqueryToRelNode) {
+    this.subqueryToRelNode = subqueryToRelNode;
+  }
+
+  /**
+   * @return the outerRR
+   */
+  public Map<ASTNode, RelNode> getSubqueryToRelNode() {
+    return subqueryToRelNode;
   }
 
   /**
