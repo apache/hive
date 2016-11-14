@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -43,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.ipc.RemoteException;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -75,7 +78,15 @@ public class HiveAlterHandler implements AlterHandler {
 
   @Override
   public void alterTable(RawStore msdb, Warehouse wh, String dbname,
-      String name, Table newt, EnvironmentContext environmentContext) throws InvalidOperationException, MetaException {
+    String name, Table newt, EnvironmentContext environmentContext)
+      throws InvalidOperationException, MetaException {
+    alterTable(msdb, wh, dbname, name, newt, environmentContext, null);
+  }
+
+  @Override
+  public void alterTable(RawStore msdb, Warehouse wh, String dbname,
+      String name, Table newt, EnvironmentContext environmentContext,
+      HMSHandler handler) throws InvalidOperationException, MetaException {
     final boolean cascade = environmentContext != null
         && environmentContext.isSetProperties()
         && StatsSetupConst.TRUE.equals(environmentContext.getProperties().get(
@@ -103,6 +114,10 @@ public class HiveAlterHandler implements AlterHandler {
     boolean rename = false;
     Table oldt = null;
     List<ObjectPair<Partition, String>> altps = new ArrayList<ObjectPair<Partition, String>>();
+    List<MetaStoreEventListener> transactionalListeners = null;
+    if (handler != null) {
+      transactionalListeners = handler.getTransactionalListeners();
+    }
 
     try {
       msdb.openTransaction();
@@ -252,6 +267,13 @@ public class HiveAlterHandler implements AlterHandler {
       }
 
       alterTableUpdateTableColumnStats(msdb, oldt, newt);
+      if (transactionalListeners != null && transactionalListeners.size() > 0) {
+        AlterTableEvent alterTableEvent = new AlterTableEvent(oldt, newt, true, handler);
+        alterTableEvent.setEnvironmentContext(environmentContext);
+        for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+          transactionalListener.onAlterTable(alterTableEvent);
+        }
+      }
       // commit the changes
       success = msdb.commitTransaction();
     } catch (InvalidObjectException e) {
@@ -268,6 +290,7 @@ public class HiveAlterHandler implements AlterHandler {
       if (!success) {
         msdb.rollbackTransaction();
       }
+
       if (success && moveData) {
         // change the file name in hdfs
         // check that src exists otherwise there is no need to copy the data
@@ -329,20 +352,32 @@ public class HiveAlterHandler implements AlterHandler {
     }
     return ex.getMessage();
   }
+
   @Override
   public Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,
-      final String name, final List<String> part_vals, final Partition new_part, EnvironmentContext environmentContext)
-      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException,
-      MetaException {
-    boolean success = false;
+    final String name, final List<String> part_vals, final Partition new_part,
+    EnvironmentContext environmentContext)
+      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
+    return alterPartition(msdb, wh, dbname, name, part_vals, new_part, environmentContext, null);
+  }
 
+  @Override
+  public Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,
+    final String name, final List<String> part_vals, final Partition new_part,
+    EnvironmentContext environmentContext, HMSHandler handler)
+      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
+    boolean success = false;
     Path srcPath = null;
     Path destPath = null;
     FileSystem srcFs = null;
-    FileSystem destFs = null;
+    FileSystem destFs;
     Partition oldPart = null;
     String oldPartLoc = null;
     String newPartLoc = null;
+    List<MetaStoreEventListener> transactionalListeners = null;
+    if (handler != null) {
+      transactionalListeners = handler.getTransactionalListeners();
+    }
 
     // Set DDL time to now if not specified
     if (new_part.getParameters() == null ||
@@ -353,23 +388,44 @@ public class HiveAlterHandler implements AlterHandler {
     }
 
     Table tbl = msdb.getTable(dbname, name);
+    if (tbl == null) {
+      throw new InvalidObjectException(
+          "Unable to alter partition because table or database does not exist.");
+    }
+
     //alter partition
     if (part_vals == null || part_vals.size() == 0) {
       try {
+        msdb.openTransaction();
         oldPart = msdb.getPartition(dbname, name, new_part.getValues());
         if (MetaStoreUtils.requireCalStats(hiveConf, oldPart, new_part, tbl, environmentContext)) {
           MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true, environmentContext);
         }
+
         updatePartColumnStats(msdb, dbname, name, new_part.getValues(), new_part);
         msdb.alterPartition(dbname, name, new_part.getValues(), new_part);
+        if (transactionalListeners != null && transactionalListeners.size() > 0) {
+          AlterPartitionEvent alterPartitionEvent =
+              new AlterPartitionEvent(oldPart, new_part, tbl, true, handler);
+          alterPartitionEvent.setEnvironmentContext(environmentContext);
+          for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+            transactionalListener.onAlterPartition(alterPartitionEvent);
+          }
+        }
+        success = msdb.commitTransaction();
       } catch (InvalidObjectException e) {
         throw new InvalidOperationException("alter is not possible");
       } catch (NoSuchObjectException e){
         //old partition does not exist
         throw new InvalidOperationException("alter is not possible");
+      } finally {
+        if(!success) {
+          msdb.rollbackTransaction();
+        }
       }
       return oldPart;
     }
+
     //rename partition
     try {
       msdb.openTransaction();
@@ -380,20 +436,18 @@ public class HiveAlterHandler implements AlterHandler {
         throw new InvalidObjectException(
             "Unable to rename partition because old partition does not exist");
       }
-      Partition check_part = null;
+
+      Partition check_part;
       try {
         check_part = msdb.getPartition(dbname, name, new_part.getValues());
       } catch(NoSuchObjectException e) {
         // this means there is no existing partition
         check_part = null;
       }
+
       if (check_part != null) {
         throw new AlreadyExistsException("Partition already exists:" + dbname + "." + name + "." +
             new_part.getValues());
-      }
-      if (tbl == null) {
-        throw new InvalidObjectException(
-            "Unable to rename partition because table or database do not exist");
       }
 
       // if the external partition is renamed, the file should not change
@@ -420,24 +474,24 @@ public class HiveAlterHandler implements AlterHandler {
             "Unable to change partition or table. Database " + dbname + " does not exist"
               + " Check metastore logs for detailed stack." + e.getMessage());
         }
+
         if (destPath != null) {
           newPartLoc = destPath.toString();
           oldPartLoc = oldPart.getSd().getLocation();
-
-          srcPath = new Path(oldPartLoc);
-
           LOG.info("srcPath:" + oldPartLoc);
           LOG.info("descPath:" + newPartLoc);
+          srcPath = new Path(oldPartLoc);
           srcFs = wh.getFs(srcPath);
           destFs = wh.getFs(destPath);
           // check that src and dest are on the same file system
           if (!FileUtils.equalsFileSystem(srcFs, destFs)) {
-            throw new InvalidOperationException("table new location " + destPath
+            throw new InvalidOperationException("New table location " + destPath
               + " is on a different file system than the old location "
-              + srcPath + ". This operation is not supported");
+              + srcPath + ". This operation is not supported.");
           }
+
           try {
-            srcFs.exists(srcPath); // check that src exists and also checks
+            srcFs.exists(srcPath);
             if (newPartLoc.compareTo(oldPartLoc) != 0 && destFs.exists(destPath)) {
               throw new InvalidOperationException("New location for this table "
                 + tbl.getDbName() + "." + tbl.getTableName()
@@ -448,10 +502,12 @@ public class HiveAlterHandler implements AlterHandler {
               + destPath + " for partition " + tbl.getDbName() + "."
               + tbl.getTableName() + " " + new_part.getValues());
           }
+
           new_part.getSd().setLocation(newPartLoc);
           if (MetaStoreUtils.requireCalStats(hiveConf, oldPart, new_part, tbl, environmentContext)) {
             MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true, environmentContext);
           }
+
           String oldPartName = Warehouse.makePartName(tbl.getPartitionKeys(), oldPart.getValues());
           try {
             //existing partition column stats is no longer valid, remove
@@ -461,7 +517,17 @@ public class HiveAlterHandler implements AlterHandler {
           } catch (InvalidInputException iie) {
             throw new InvalidOperationException("Unable to update partition stats in table rename." + iie);
           }
+
           msdb.alterPartition(dbname, name, part_vals, new_part);
+        }
+      }
+
+      if (transactionalListeners != null && transactionalListeners.size() > 0) {
+        AlterPartitionEvent alterPartitionEvent =
+            new AlterPartitionEvent(oldPart, new_part, tbl, true, handler);
+        alterPartitionEvent.setEnvironmentContext(environmentContext);
+        for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+          transactionalListener.onAlterPartition(alterPartitionEvent);
         }
       }
 
@@ -470,6 +536,7 @@ public class HiveAlterHandler implements AlterHandler {
       if (!success) {
         msdb.rollbackTransaction();
       }
+
       if (success && newPartLoc != null && newPartLoc.compareTo(oldPartLoc) != 0) {
         //rename the data directory
         try{
@@ -479,21 +546,35 @@ public class HiveAlterHandler implements AlterHandler {
             if (!wh.mkdirs(destParentPath, true)) {
                 throw new IOException("Unable to create path " + destParentPath);
             }
+
             wh.renameDir(srcPath, destPath, true);
-            LOG.info("rename done!");
+            LOG.info("Partition directory rename from " + srcPath + " to " + destPath + " done.");
           }
-        } catch (IOException e) {
+        } catch (IOException ex) {
+          LOG.error("Cannot rename partition directory from " + srcPath + " to " +
+              destPath, ex);
           boolean revertMetaDataTransaction = false;
           try {
             msdb.openTransaction();
             msdb.alterPartition(dbname, name, new_part.getValues(), oldPart);
+            if (transactionalListeners != null && transactionalListeners.size() > 0) {
+              AlterPartitionEvent alterPartitionEvent =
+                  new AlterPartitionEvent(new_part, oldPart, tbl, true, handler);
+              alterPartitionEvent.setEnvironmentContext(environmentContext);
+              for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+                transactionalListener.onAlterPartition(alterPartitionEvent);
+              }
+            }
+
             revertMetaDataTransaction = msdb.commitTransaction();
-          } catch (Exception e1) {
-            LOG.error("Reverting metadata opeation failed During HDFS operation failed", e1);
+          } catch (Exception ex2) {
+            LOG.error("Attempt to revert partition metadata change failed. The revert was attempted " +
+                "because associated filesystem rename operation failed with exception " + ex.getMessage(), ex2);
             if (!revertMetaDataTransaction) {
               msdb.rollbackTransaction();
             }
           }
+
           throw new InvalidOperationException("Unable to access old location "
               + srcPath + " for partition " + tbl.getDbName() + "."
               + tbl.getTableName() + " " + part_vals);
@@ -505,13 +586,33 @@ public class HiveAlterHandler implements AlterHandler {
 
   @Override
   public List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String dbname,
-      final String name, final List<Partition> new_parts, EnvironmentContext environmentContext)
-      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException,
-      MetaException {
+    final String name, final List<Partition> new_parts,
+    EnvironmentContext environmentContext)
+      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
+    return alterPartitions(msdb, wh, dbname, name, new_parts, environmentContext, null);
+  }
+
+    @Override
+  public List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String dbname,
+    final String name, final List<Partition> new_parts, EnvironmentContext environmentContext,
+    HMSHandler handler)
+      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     List<Partition> oldParts = new ArrayList<Partition>();
     List<List<String>> partValsList = new ArrayList<List<String>>();
+    List<MetaStoreEventListener> transactionalListeners = null;
+    if (handler != null) {
+      transactionalListeners = handler.getTransactionalListeners();
+    }
+
     Table tbl = msdb.getTable(dbname, name);
+    if (tbl == null) {
+      throw new InvalidObjectException(
+          "Unable to alter partitions because table or database does not exist.");
+    }
+
+    boolean success = false;
     try {
+      msdb.openTransaction();
       for (Partition tmpPart: new_parts) {
         // Set DDL time to now if not specified
         if (tmpPart.getParameters() == null ||
@@ -530,10 +631,36 @@ public class HiveAlterHandler implements AlterHandler {
         }
         updatePartColumnStats(msdb, dbname, name, oldTmpPart.getValues(), tmpPart);
       }
+
       msdb.alterPartitions(dbname, name, partValsList, new_parts);
+      Iterator<Partition> oldPartsIt = oldParts.iterator();
+      for (Partition newPart : new_parts) {
+        Partition oldPart;
+        if (oldPartsIt.hasNext()) {
+          oldPart = oldPartsIt.next();
+        } else {
+          throw new InvalidOperationException("Missing old partition corresponding to new partition " +
+              "when invoking MetaStoreEventListener for alterPartitions event.");
+        }
+
+        if (transactionalListeners != null && transactionalListeners.size() > 0) {
+          AlterPartitionEvent alterPartitionEvent =
+              new AlterPartitionEvent(oldPart, newPart, tbl, true, handler);
+          for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+            transactionalListener.onAlterPartition(alterPartitionEvent);
+          }
+        }
+      }
+
+      success = msdb.commitTransaction();
     } catch (InvalidObjectException | NoSuchObjectException e) {
-      throw new InvalidOperationException("Alter partition operation fails: " + e);
+      throw new InvalidOperationException("Alter partition operation failed: " + e);
+    } finally {
+      if(!success) {
+        msdb.rollbackTransaction();
+      }
     }
+
     return oldParts;
   }
 
