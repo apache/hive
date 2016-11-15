@@ -39,7 +39,7 @@ import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
@@ -97,7 +97,7 @@ public class RowContainer<ROW extends List<Object>>
   private int itrCursor; // iterator cursor in the currBlock
   private int readBlockSize; // size of current read block
   private int addCursor; // append cursor in the lastBlock
-  private SerDe serde; // serialization/deserialization for the row
+  private AbstractSerDe serde; // serialization/deserialization for the row
   private ObjectInspector standardOI; // object inspector for the row
 
   private List<Object> keyObject;
@@ -160,7 +160,7 @@ public class RowContainer<ROW extends List<Object>>
   }
 
 
-  public void setSerDe(SerDe sd, ObjectInspector oi) {
+  public void setSerDe(AbstractSerDe sd, ObjectInspector oi) {
     this.serde = sd;
     this.standardOI = oi;
   }

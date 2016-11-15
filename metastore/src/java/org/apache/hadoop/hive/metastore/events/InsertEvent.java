@@ -18,6 +18,12 @@
 
 package org.apache.hadoop.hive.metastore.events;
 
+import org.apache.hadoop.hive.metastore.api.ClientCapabilities;
+
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
+
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -51,7 +57,10 @@ public class InsertEvent extends ListenerEvent {
     this.db = db;
     this.table = table;
     this.files = files;
-    Table t = handler.get_table(db,table);
+    // TODO: why does this use the handler directly?
+    GetTableRequest req = new GetTableRequest(db, table);
+    req.setCapabilities(HiveMetaStoreClient.TEST_VERSION);
+    Table t = handler.get_table_req(req).getTable();
     keyValues = new LinkedHashMap<String, String>();
     if (partVals != null) {
       for (int i = 0; i < partVals.size(); i++) {

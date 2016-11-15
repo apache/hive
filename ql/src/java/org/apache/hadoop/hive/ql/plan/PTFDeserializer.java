@@ -49,7 +49,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeadLag;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionResolver;
 import org.apache.hadoop.hive.ql.udf.ptf.WindowingTableFunction.WindowingTableFunctionResolver;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -265,8 +265,8 @@ public class PTFDeserializer {
       serDeProps.setProperty(serdeName, serdePropsMap.get(serdeName));
     }
     try {
-      SerDe serDe =  ReflectionUtils.newInstance(hConf.getClassByName(serdeClassName).
-          asSubclass(SerDe.class), hConf);
+      AbstractSerDe serDe =  ReflectionUtils.newInstance(hConf.getClassByName(serdeClassName).
+          asSubclass(AbstractSerDe.class), hConf);
       SerDeUtils.initializeSerDe(serDe, hConf, serDeProps, null);
       shp.setSerde(serDe);
       StructObjectInspector outOI = PTFPartition.setupPartitionOutputOI(serDe, OI);

@@ -23,7 +23,7 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerdeRandomRowSource;
 import org.apache.hadoop.hive.serde2.VerifyFast;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestClass;
@@ -39,8 +39,8 @@ public class TestLazyBinaryFast extends TestCase {
 
   private void testLazyBinaryFast(
       SerdeRandomRowSource source, Object[][] rows,
-      SerDe serde, StructObjectInspector rowOI,
-      SerDe serde_fewer, StructObjectInspector writeRowOI,
+      AbstractSerDe serde, StructObjectInspector rowOI,
+      AbstractSerDe serde_fewer, StructObjectInspector writeRowOI,
       PrimitiveTypeInfo[] primitiveTypeInfos,
       boolean useIncludeColumns, boolean doWriteFewerColumns, Random r) throws Throwable {
 
@@ -242,9 +242,9 @@ public class TestLazyBinaryFast extends TestCase {
     String fieldNames = ObjectInspectorUtils.getFieldNames(rowStructObjectInspector);
     String fieldTypes = ObjectInspectorUtils.getFieldTypes(rowStructObjectInspector);
 
-    SerDe serde = TestLazyBinarySerDe.getSerDe(fieldNames, fieldTypes);
+    AbstractSerDe serde = TestLazyBinarySerDe.getSerDe(fieldNames, fieldTypes);
 
-    SerDe serde_fewer = null;
+    AbstractSerDe serde_fewer = null;
     if (doWriteFewerColumns) {
       String partialFieldNames = ObjectInspectorUtils.getFieldNames(writeRowStructObjectInspector);
       String partialFieldTypes = ObjectInspectorUtils.getFieldTypes(writeRowStructObjectInspector);

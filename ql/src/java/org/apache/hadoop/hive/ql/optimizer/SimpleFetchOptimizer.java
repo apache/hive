@@ -136,6 +136,10 @@ public class SimpleFetchOptimizer extends Transform {
 
     boolean aggressive = "more".equals(mode);
     final int limit = pctx.getQueryProperties().getOuterQueryLimit();
+    // limit = 0 means that we do not need any task.
+    if (limit == 0) {
+      return null;
+    }
     FetchData fetch = checkTree(aggressive, pctx, alias, source);
     if (fetch != null && checkThreshold(fetch, limit, pctx)) {
       FetchWork fetchWork = fetch.convertToWork();

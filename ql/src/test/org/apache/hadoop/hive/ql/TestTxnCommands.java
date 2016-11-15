@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.AcidHouseKeeperService;
@@ -583,5 +584,39 @@ public class TestTxnCommands {
     runStatementOnDriver("CREATE TABLE ex2.exchange_part_test2 (f1 string) PARTITIONED BY (ds STRING)");
     runStatementOnDriver("ALTER TABLE ex2.exchange_part_test2 ADD PARTITION (ds='2013-04-05')");
     runStatementOnDriver("ALTER TABLE ex1.exchange_part_test1 EXCHANGE PARTITION (ds='2013-04-05') WITH TABLE ex2.exchange_part_test2");
+  }
+  @Test
+  public void testMergeNegative() throws Exception {
+    CommandProcessorResponse cpr = runStatementOnDriverNegative("MERGE INTO " + Table.ACIDTBL +
+      " target USING " + Table.NONACIDORCTBL +
+      " source\nON target.a = source.a " +
+      "\nWHEN MATCHED THEN UPDATE set b = 1 " +
+      "\nWHEN MATCHED THEN DELETE " +
+      "\nWHEN NOT MATCHED AND a < 1 THEN INSERT VALUES(1,2)");
+    Assert.assertEquals(ErrorMsg.MERGE_PREDIACTE_REQUIRED, ((HiveException)cpr.getException()).getCanonicalErrorMsg());
+  }
+  @Test
+  public void testMergeNegative2() throws Exception {
+    CommandProcessorResponse cpr = runStatementOnDriverNegative("MERGE INTO "+ Table.ACIDTBL +
+      " target USING " + Table.NONACIDORCTBL + "\n source ON target.pk = source.pk " +
+      "\nWHEN MATCHED THEN UPDATE set t = 1 " +
+      "\nWHEN MATCHED THEN UPDATE set b=a");
+    Assert.assertEquals(ErrorMsg.MERGE_TOO_MANY_UPDATE, ((HiveException)cpr.getException()).getCanonicalErrorMsg());
+  }
+  @Ignore
+  @Test
+  public void testSpecialChar() throws Exception {
+    String target = "`aci/d_u/ami`";
+    String src = "`src/name`";
+    runStatementOnDriver("drop table if exists " + target);
+    runStatementOnDriver("drop table if exists " + src);
+    runStatementOnDriver("create table " + target + "(i int," +
+      "`d?*de e` decimal(5,2)," +
+      "vc varchar(128)) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("create table " + src + "(`g/h` int, j decimal(5,2), k varchar(128))");
+    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on i=`g/h` " +
+      "\nwhen matched and i > 5 then delete " +
+      "\nwhen matched then update set vc=`∆∋` " +
+      "\nwhen not matched then insert values(`a/b`.`g/h`,`a/b`.j,`a/b`.k)");
   }
 }

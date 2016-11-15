@@ -27,7 +27,7 @@ import java.util.HashMap;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS,
                           serdeConstants.LIST_COLUMN_TYPES})
 
-public class HCatRecordSerDe implements SerDe {
+public class HCatRecordSerDe extends AbstractSerDe {
 
   private static final Logger LOG = LoggerFactory.getLogger(HCatRecordSerDe.class);
 

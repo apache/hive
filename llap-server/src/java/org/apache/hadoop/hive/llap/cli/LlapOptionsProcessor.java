@@ -55,7 +55,7 @@ public class LlapOptionsProcessor {
   public static final String OPTION_LLAP_QUEUE = "queue"; // forward via config.json
   public static final String OPTION_IO_THREADS = "iothreads"; // llap-daemon-site
 
-  // Options for the pythin script that are here because our option parser cannot ignore the unknown ones
+  // Options for the python script that are here because our option parser cannot ignore the unknown ones
   public static final String OPTION_ARGS = "args"; // forward as arg
   public static final String OPTION_LOGLEVEL = "loglevel"; // forward as arg
   public static final String OPTION_LOGGER = "logger"; // forward as arg
@@ -63,6 +63,7 @@ public class LlapOptionsProcessor {
   public static final String OPTION_SLIDER_KEYTAB_DIR = "slider-keytab-dir";
   public static final String OPTION_SLIDER_KEYTAB = "slider-keytab";
   public static final String OPTION_SLIDER_PRINCIPAL = "slider-principal";
+  public static final String OPTION_SLIDER_PLACEMENT = "slider-placement";
   public static final String OPTION_SLIDER_DEFAULT_KEYTAB = "slider-default-keytab";
   public static final String OPTION_OUTPUT_DIR = "output";
 
@@ -208,6 +209,10 @@ public class LlapOptionsProcessor {
 
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SLIDER_PRINCIPAL).withLongOpt(OPTION_SLIDER_PRINCIPAL)
         .withDescription("Slider AM principal; should be the user running the cluster, e.g. hive@EXAMPLE.COM").create());
+
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SLIDER_PLACEMENT).withLongOpt(OPTION_SLIDER_PLACEMENT)
+        .withDescription("Slider placement policy; see slider documentation at https://slider.incubator.apache.org/docs/placement.html."
+          + " 4 means anti-affinity (the default; unnecessary if LLAP is going to take more than half of the YARN capacity of a node), 0 is normal.").create());
 
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_EXECUTORS).withLongOpt(OPTION_EXECUTORS)
         .withDescription("executor per instance").create('e'));

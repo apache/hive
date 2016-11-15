@@ -138,7 +138,7 @@ public class ATSHook implements ExecuteWithHookContext {
               explain.initialize(queryState, plan, null, null);
               String query = plan.getQueryStr();
               JSONObject explainPlan = explain.getJSONPlan(null, work);
-              String logID = conf.getLogIdVar(SessionState.get().getSessionId());
+              String logID = conf.getLogIdVar(hookContext.getSessionId());
               fireAndForget(conf, createPreHookEvent(queryId, query, explainPlan, queryStartTime,
                 user, requestuser, numMrJobs, numTezJobs, opId, logID));
               break;

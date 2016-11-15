@@ -64,7 +64,6 @@ public abstract class Operation {
   private final OperationHandle opHandle;
   public static final FetchOrientation DEFAULT_FETCH_ORIENTATION = FetchOrientation.FETCH_NEXT;
   public static final Logger LOG = LoggerFactory.getLogger(Operation.class.getName());
-  public static final long DEFAULT_FETCH_MAX_ROWS = 100; // TODO# remove this
   protected boolean hasResultSet;
   protected volatile HiveSQLException operationException;
   protected volatile Future<?> backgroundHandle;

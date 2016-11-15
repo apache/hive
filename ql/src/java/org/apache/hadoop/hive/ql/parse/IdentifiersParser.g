@@ -19,7 +19,7 @@ parser grammar IdentifiersParser;
 options
 {
 output=AST;
-ASTLabelType=CommonTree;
+ASTLabelType=ASTNode;
 backtrack=false;
 k=3;
 }
@@ -50,17 +50,43 @@ groupByClause
 @init { gParent.pushMsg("group by clause", state); }
 @after { gParent.popMsg(state); }
     :
-    KW_GROUP KW_BY
+    KW_GROUP KW_BY groupby_expression
+    -> groupby_expression
+    ;
+
+// support for new and old rollup/cube syntax
+groupby_expression :
+ rollupStandard |
+ rollupOldSyntax
+;
+
+// standard rollup syntax
+rollupStandard
+@init { gParent.pushMsg("standard rollup syntax", state); }
+@after { gParent.popMsg(state); }
+    :
+    (rollup=KW_ROLLUP | cube=KW_CUBE)
+    LPAREN expression ( COMMA expression)* RPAREN
+    -> {rollup != null}? ^(TOK_ROLLUP_GROUPBY expression+)
+    -> ^(TOK_CUBE_GROUPBY expression+)
+    ;
+
+// old hive rollup syntax
+rollupOldSyntax
+@init { gParent.pushMsg("rollup old syntax", state); }
+@after { gParent.popMsg(state); }
+    :
     expression
     ( COMMA expression)*
     ((rollup=KW_WITH KW_ROLLUP) | (cube=KW_WITH KW_CUBE)) ?
-    (sets=KW_GROUPING KW_SETS 
+    (sets=KW_GROUPING KW_SETS
     LPAREN groupingSetExpression ( COMMA groupingSetExpression)*  RPAREN ) ?
     -> {rollup != null}? ^(TOK_ROLLUP_GROUPBY expression+)
     -> {cube != null}? ^(TOK_CUBE_GROUPBY expression+)
     -> {sets != null}? ^(TOK_GROUPING_SETS expression+ groupingSetExpression+)
     -> ^(TOK_GROUPBY expression+)
     ;
+
 
 groupingSetExpression
 @init {gParent.pushMsg("grouping set expression", state); }
@@ -357,7 +383,7 @@ intervalQualifiers
 
 expression
 @init { gParent.pushMsg("expression specification", state); }
-@after { gParent.popMsg(state); }
+@after { $expression.tree.matchedText = $expression.text; gParent.popMsg(state); }
     :
     precedenceOrExpression
     ;
@@ -433,6 +459,7 @@ precedencePlusOperator
     ;
 
 precedencePlusExpression
+@after { $precedencePlusExpression.tree.matchedText = $precedencePlusExpression.text; }
     :
     precedenceStarExpression (precedencePlusOperator^ precedenceStarExpression)*
     ;
@@ -733,6 +760,9 @@ nonReserved
     | KW_VALIDATE
     | KW_NOVALIDATE
     | KW_KEY
+    | KW_MERGE
+    | KW_MATCHED
+    | KW_REPL | KW_DUMP | KW_BATCH | KW_STATUS
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.

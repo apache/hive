@@ -79,6 +79,7 @@ def main(args):
 	parser.add_argument("--slider-principal", default="")
 	parser.add_argument("--slider-default-keytab", dest='slider_default_keytab', action='store_true')
 	parser.set_defaults(slider_default_keytab=False)
+	parser.add_argument("--slider-placement", type=int, default=4)
 	# Unneeded here for now: parser.add_argument("--hiveconf", action='append')
 	#parser.add_argument("--size") parser.add_argument("--xmx") parser.add_argument("--cache") parser.add_argument("--executors")
 	(args, unknown_args) = parser.parse_known_args(args)
@@ -130,7 +131,8 @@ def main(args):
 		"slider_am_jvm_heapsize" : slider_am_jvm_heapsize,
 		"slider_keytab_dir" : slider_keytab_dir,
 		"slider_keytab" : slider_keytab,
-		"slider_principal" : slider_principal
+		"slider_principal" : slider_principal,
+		"placement" : args.slider_placement
 	}
 	
 	if not exists(output):

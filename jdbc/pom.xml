@@ -258,6 +258,60 @@
                   <exclude>xmlenc:*</exclude>
                 </excludes>
               </artifactSet>
+              <relocations>
+                <relocation>
+                  <pattern>org.apache.http</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.http</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.thrift</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.thrift</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.google.common</pattern>
+                  <shadedPattern>org.apache.hive.com.google.common</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.commons</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.commons</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.log4j</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.log4j</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.logging</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.logging</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.slf4j</pattern>
+                  <shadedPattern>org.apache.hive.org.slf4j</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.facebook</pattern>
+                  <shadedPattern>org.apache.hive.com.facebook</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.hadoop</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.hadoop</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.beust</pattern>
+                  <shadedPattern>org.apache.hive.com.beust</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.lmax</pattern>
+                  <shadedPattern>org.apache.hive.com.lmax</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.jamon</pattern>
+                  <shadedPattern>org.apache.hive.org.jamon</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>javolution</pattern>
+                  <shadedPattern>org.apache.hive.javolution</shadedPattern>
+                </relocation>
+              </relocations>
             </configuration>
           </execution>
         </executions>

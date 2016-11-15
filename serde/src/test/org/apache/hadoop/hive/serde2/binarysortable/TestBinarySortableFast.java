@@ -24,7 +24,7 @@ import java.util.Random;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerdeRandomRowSource;
 import org.apache.hadoop.hive.serde2.VerifyFast;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeserializeRead;
@@ -45,8 +45,8 @@ public class TestBinarySortableFast extends TestCase {
   private void testBinarySortableFast(
           SerdeRandomRowSource source, Object[][] rows,
           boolean[] columnSortOrderIsDesc, byte[] columnNullMarker, byte[] columnNotNullMarker,
-          SerDe serde, StructObjectInspector rowOI,
-          SerDe serde_fewer, StructObjectInspector writeRowOI,
+          AbstractSerDe serde, StructObjectInspector rowOI,
+          AbstractSerDe serde_fewer, StructObjectInspector writeRowOI,
           boolean ascending, PrimitiveTypeInfo[] primitiveTypeInfos,
           boolean useIncludeColumns, boolean doWriteFewerColumns, Random r) throws Throwable {
 
@@ -311,9 +311,9 @@ public class TestBinarySortableFast extends TestCase {
     order = StringUtils.leftPad("", columnCount, '+');
     String nullOrder;
     nullOrder = StringUtils.leftPad("", columnCount, 'a');
-    SerDe serde_ascending = TestBinarySortableSerDe.getSerDe(fieldNames, fieldTypes, order, nullOrder);
+    AbstractSerDe serde_ascending = TestBinarySortableSerDe.getSerDe(fieldNames, fieldTypes, order, nullOrder);
 
-    SerDe serde_ascending_fewer = null;
+    AbstractSerDe serde_ascending_fewer = null;
     if (doWriteFewerColumns) {
       String partialFieldNames = ObjectInspectorUtils.getFieldNames(writeRowStructObjectInspector);
       String partialFieldTypes = ObjectInspectorUtils.getFieldTypes(writeRowStructObjectInspector);
@@ -323,9 +323,9 @@ public class TestBinarySortableFast extends TestCase {
 
     order = StringUtils.leftPad("", columnCount, '-');
     nullOrder = StringUtils.leftPad("", columnCount, 'z');
-    SerDe serde_descending = TestBinarySortableSerDe.getSerDe(fieldNames, fieldTypes, order, nullOrder);
+    AbstractSerDe serde_descending = TestBinarySortableSerDe.getSerDe(fieldNames, fieldTypes, order, nullOrder);
 
-    SerDe serde_descending_fewer = null;
+    AbstractSerDe serde_descending_fewer = null;
     if (doWriteFewerColumns) {
       String partialFieldNames = ObjectInspectorUtils.getFieldNames(writeRowStructObjectInspector);
       String partialFieldTypes = ObjectInspectorUtils.getFieldTypes(writeRowStructObjectInspector);

@@ -23,7 +23,7 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
@@ -59,9 +59,9 @@ public interface HiveStorageHandler extends Configurable {
   public Class<? extends OutputFormat> getOutputFormatClass();
 
   /**
-   * @return Class providing an implementation of {@link SerDe}
+   * @return Class providing an implementation of {@link AbstractSerDe}
    */
-  public Class<? extends SerDe> getSerDeClass();
+  public Class<? extends AbstractSerDe> getSerDeClass();
 
   /**
    * @return metadata hook implementation, or null if this

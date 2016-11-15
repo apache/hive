@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -276,13 +276,13 @@ public class JoinUtil {
     return spillTableDesc[alias];
   }
 
-  public static SerDe getSpillSerDe(byte alias, TableDesc[] spillTableDesc,
+  public static AbstractSerDe getSpillSerDe(byte alias, TableDesc[] spillTableDesc,
       JoinDesc conf, boolean noFilter) {
     TableDesc desc = getSpillTableDesc(alias, spillTableDesc, conf, noFilter);
     if (desc == null) {
       return null;
     }
-    SerDe sd = (SerDe) ReflectionUtil.newInstance(desc.getDeserializerClass(),
+    AbstractSerDe sd = (AbstractSerDe) ReflectionUtil.newInstance(desc.getDeserializerClass(),
         null);
     try {
       SerDeUtils.initializeSerDe(sd, null, desc.getProperties(), null);
@@ -344,7 +344,7 @@ public class JoinUtil {
       JoinDesc conf,boolean noFilter, Reporter reporter) throws HiveException {
 
     TableDesc tblDesc = JoinUtil.getSpillTableDesc(alias,spillTableDesc,conf, noFilter);
-    SerDe serde = JoinUtil.getSpillSerDe(alias, spillTableDesc, conf, noFilter);
+    AbstractSerDe serde = JoinUtil.getSpillSerDe(alias, spillTableDesc, conf, noFilter);
 
     if (serde == null) {
       containerSize = -1;

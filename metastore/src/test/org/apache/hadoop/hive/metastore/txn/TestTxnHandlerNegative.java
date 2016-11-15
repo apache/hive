@@ -17,12 +17,13 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
-import org.apache.tools.ant.RuntimeConfigurable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.junit.Test;
+
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 
 public class TestTxnHandlerNegative {
   static final private Logger LOG = LoggerFactory.getLogger(TestTxnHandlerNegative.class);
@@ -44,6 +45,10 @@ public class TestTxnHandlerNegative {
       LOG.info("Expected error: " + ex.getMessage(), ex);
       e = ex;
     }
-    assert e != null && e.getMessage().contains("No suitable driver found for blah") : "did not get exception";
+    assertNotNull(e);
+    assertTrue(
+        e.getMessage().contains("No suitable driver found for blah")
+        || e.getMessage().contains("Failed to get driver instance for jdbcUrl=blah")
+    );
   }
 }

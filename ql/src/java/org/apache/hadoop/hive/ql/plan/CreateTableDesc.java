@@ -520,7 +520,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
           }
         }
         if (!found) {
-          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg());
+          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(" \'" + bucketCol + "\'"));
         }
       }
     }
@@ -540,7 +540,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
           }
         }
         if (!found) {
-          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg());
+          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(" \'" + sortCol + "\'"));
         }
       }
     }

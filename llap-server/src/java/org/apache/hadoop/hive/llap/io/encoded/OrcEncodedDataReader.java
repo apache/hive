@@ -30,6 +30,7 @@ import org.apache.orc.OrcUtils;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.DataReaderProperties;
 import org.apache.orc.impl.OrcIndex;
+import org.apache.orc.impl.OrcTail;
 import org.apache.orc.impl.SchemaEvolution;
 import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
@@ -589,6 +590,13 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     LlapIoImpl.ORC_LOGGER.trace("Creating reader for {} ({})", path, split.getPath());
     long startTime = counters.startTimeCounter();
     ReaderOptions opts = OrcFile.readerOptions(conf).filesystem(fs).fileMetadata(fileMetadata);
+    if (split instanceof OrcSplit) {
+      OrcTail orcTail = ((OrcSplit) split).getOrcTail();
+      if (orcTail != null) {
+        LlapIoImpl.ORC_LOGGER.debug("Setting OrcTail. path={}", path);
+        opts.orcTail(orcTail);
+      }
+    }
     orcReader = EncodedOrcFile.createReader(path, opts);
     counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
   }

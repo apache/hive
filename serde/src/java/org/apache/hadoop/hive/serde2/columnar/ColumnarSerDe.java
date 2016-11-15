@@ -88,7 +88,7 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
   /**
    * Initialize the SerDe given the parameters.
    *
-   * @see SerDe#initialize(Configuration, Properties)
+   * @see AbstractSerDe#initialize(Configuration, Properties)
    */
   @Override
   public void initialize(Configuration conf, Properties tbl) throws SerDeException {
@@ -123,7 +123,7 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
    * @param objInspector
    *          The ObjectInspector for the row object
    * @return The serialized Writable object
-   * @see SerDe#serialize(Object, ObjectInspector)
+   * @see AbstractSerDe#serialize(Object, ObjectInspector)
    */
   @Override
   public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {

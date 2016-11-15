@@ -75,7 +75,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -1144,7 +1144,7 @@ public class TestInputOutputFormat {
           ObjectInspectorFactory.getReflectionObjectInspector(MyRow.class,
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
-    SerDe serde = new OrcSerde();
+    AbstractSerDe serde = new OrcSerde();
     HiveOutputFormat<?, ?> outFormat = new OrcOutputFormat();
     org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter writer =
         outFormat.getHiveRecordWriter(conf, testFilePath, MyRow.class, true,
@@ -1278,7 +1278,7 @@ public class TestInputOutputFormat {
           ObjectInspectorFactory.getReflectionObjectInspector(NestedRow.class,
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
-    SerDe serde = new OrcSerde();
+    AbstractSerDe serde = new OrcSerde();
     OutputFormat<?, ?> outFormat = new OrcOutputFormat();
     RecordWriter writer =
         outFormat.getRecordWriter(fs, conf, testFilePath.toString(),
@@ -1337,7 +1337,7 @@ public class TestInputOutputFormat {
         outFormat.getHiveRecordWriter(conf, testFilePath, MyRow.class, true,
             properties, Reporter.NULL);
     writer.close(true);
-    SerDe serde = new OrcSerde();
+    AbstractSerDe serde = new OrcSerde();
     SerDeUtils.initializeSerDe(serde, conf, properties, null);
     InputFormat<?,?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
@@ -1403,7 +1403,7 @@ public class TestInputOutputFormat {
           ObjectInspectorFactory.getReflectionObjectInspector(StringRow.class,
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
-    SerDe serde = new OrcSerde();
+    AbstractSerDe serde = new OrcSerde();
     HiveOutputFormat<?, ?> outFormat = new OrcOutputFormat();
     org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter writer =
         outFormat.getHiveRecordWriter(conf, testFilePath, StringRow.class,
@@ -1957,7 +1957,7 @@ public class TestInputOutputFormat {
           ObjectInspectorFactory.getReflectionObjectInspector(NestedRow.class,
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
-    SerDe serde = new OrcSerde();
+    AbstractSerDe serde = new OrcSerde();
     OutputFormat<?, ?> outFormat = new OrcOutputFormat();
     conf.setInt("mapred.max.split.size", 50);
     RecordWriter writer =
@@ -1991,7 +1991,7 @@ public class TestInputOutputFormat {
   public void testSplitEliminationNullStats() throws Exception {
     Properties properties = new Properties();
     StructObjectInspector inspector = createSoi();
-    SerDe serde = new OrcSerde();
+    AbstractSerDe serde = new OrcSerde();
     OutputFormat<?, ?> outFormat = new OrcOutputFormat();
     conf.setInt("mapred.max.split.size", 50);
     RecordWriter writer =
@@ -3094,7 +3094,7 @@ public class TestInputOutputFormat {
     conf.setLong(HiveConf.ConfVars.HIVE_ORC_DEFAULT_STRIPE_SIZE.varname, newStripeSize);
     conf.setLong(HiveConf.ConfVars.MAPREDMAXSPLITSIZE.varname, newMaxSplitSize);
 
-    SerDe serde = new OrcSerde();
+    AbstractSerDe serde = new OrcSerde();
     HiveOutputFormat<?, ?> outFormat = new OrcOutputFormat();
     org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter writer =
       outFormat.getHiveRecordWriter(conf, testFilePath, MyRow.class, true,

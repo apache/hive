@@ -15,21 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.conf.valcoersion;
 
-package org.apache.hadoop.hive.serde2;
+import org.apache.hadoop.conf.Configuration;
 
 /**
- * A union of HiveDeserializer and HiveSerializer interface.
- *
- * If a developer wants his hive table to be read-only, then he just want to
- * return
- *
- * both readable and writable, then
- *
- * All serdes should extend the abstract class AbstractSerDe, and eventually SerDe interface
- * should be removed
+ * VariableCoercions are used to enforce rules related to system variables.
+ * These rules may transform the value of system properties returned by the
+ * {@link org.apache.hadoop.hive.conf.SystemVariables SystemVariables} utility class
  */
-@Deprecated
-public interface SerDe extends Deserializer, Serializer {
+public abstract class VariableCoercion {
+  private final String name;
 
+  public VariableCoercion(String name) {
+    this.name = name;
+  }
+
+  public String getName() { return this.name; }
+
+  /**
+   * Coerce the original value of the variable
+   * @param originalValue the unmodified value
+   * @return transformed value
+   */
+  public abstract String getCoerced(String originalValue);
 }

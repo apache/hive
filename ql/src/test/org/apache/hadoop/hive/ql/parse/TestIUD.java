@@ -32,7 +32,6 @@ import org.junit.Test;
  */
 public class TestIUD {
   private static HiveConf conf;
-
   private ParseDriver pd;
 
   @BeforeClass
@@ -47,6 +46,9 @@ public class TestIUD {
   }
 
   ASTNode parse(String query) throws ParseException {
+    return parse(query, pd, conf);
+  }
+  static ASTNode parse(String query, ParseDriver pd, HiveConf conf) throws ParseException {
     ASTNode nd = null;
     try {
       nd = pd.parse(query, new Context(conf));

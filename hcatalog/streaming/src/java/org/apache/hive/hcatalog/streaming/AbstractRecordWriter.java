@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -152,7 +152,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
    * @return serde
    * @throws SerializationError
    */
-  public abstract SerDe getSerde() throws SerializationError;
+  public abstract AbstractSerDe getSerde() throws SerializationError;
 
   /**
    * Encode a record as an Object that Hive can read with the ObjectInspector associated with the

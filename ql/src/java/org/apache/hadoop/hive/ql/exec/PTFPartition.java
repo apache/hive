@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.persistence.PTFRowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
@@ -42,20 +42,20 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 public class PTFPartition {
   protected static Logger LOG = LoggerFactory.getLogger(PTFPartition.class);
 
-  SerDe serDe;
+  AbstractSerDe serDe;
   StructObjectInspector inputOI;
   StructObjectInspector outputOI;
   private final PTFRowContainer<List<Object>> elems;
 
   protected PTFPartition(Configuration cfg,
-      SerDe serDe, StructObjectInspector inputOI,
+      AbstractSerDe serDe, StructObjectInspector inputOI,
       StructObjectInspector outputOI)
       throws HiveException {
     this(cfg, serDe, inputOI, outputOI, true);
   }
   
   protected PTFPartition(Configuration cfg,
-      SerDe serDe, StructObjectInspector inputOI,
+      AbstractSerDe serDe, StructObjectInspector inputOI,
       StructObjectInspector outputOI,
       boolean createElemContainer)
       throws HiveException {
@@ -76,7 +76,7 @@ public class PTFPartition {
     elems.clearRows();
   }
 
-  public SerDe getSerDe() {
+  public AbstractSerDe getSerDe() {
     return serDe;
   }
 
@@ -239,7 +239,7 @@ public class PTFPartition {
   }
 
   public static PTFPartition create(Configuration cfg,
-      SerDe serDe,
+      AbstractSerDe serDe,
       StructObjectInspector inputOI,
       StructObjectInspector outputOI)
       throws HiveException {
@@ -247,7 +247,7 @@ public class PTFPartition {
   }
   
   public static PTFRollingPartition createRolling(Configuration cfg,
-      SerDe serDe,
+      AbstractSerDe serDe,
       StructObjectInspector inputOI,
       StructObjectInspector outputOI,
       int precedingSpan,
@@ -256,7 +256,7 @@ public class PTFPartition {
     return new PTFRollingPartition(cfg, serDe, inputOI, outputOI, precedingSpan, followingSpan);
   }
 
-  public static StructObjectInspector setupPartitionOutputOI(SerDe serDe,
+  public static StructObjectInspector setupPartitionOutputOI(AbstractSerDe serDe,
       StructObjectInspector tblFnOI) throws SerDeException {
     return (StructObjectInspector) ObjectInspectorUtils.getStandardObjectInspector(tblFnOI,
         ObjectInspectorCopyOption.WRITABLE);

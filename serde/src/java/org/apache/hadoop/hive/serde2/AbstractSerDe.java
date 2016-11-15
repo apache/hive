@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
  * new methods can be added in the underlying interface, SerDe, and only implementations
  * that need those methods overwrite it.
  */
-public abstract class AbstractSerDe implements SerDe {
+public abstract class AbstractSerDe implements Deserializer, Serializer {
 
   protected String configErrors;
 

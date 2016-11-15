@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -119,7 +119,7 @@ public class MapJoinKeyObject extends MapJoinKey {
   @Override
   public void write(MapJoinObjectSerDeContext context, ObjectOutputStream out)
       throws IOException, SerDeException {
-    SerDe serde = context.getSerDe();
+    AbstractSerDe serde = context.getSerDe();
     ObjectInspector objectInspector = context.getStandardOI();
     Writable container = serde.serialize(key, objectInspector);
     container.write(out);

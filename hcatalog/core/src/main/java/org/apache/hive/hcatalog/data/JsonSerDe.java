@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -89,7 +89,7 @@ import org.slf4j.LoggerFactory;
                           serdeConstants.LIST_COLUMN_TYPES,
                           serdeConstants.TIMESTAMP_FORMATS})
 
-public class JsonSerDe implements SerDe {
+public class JsonSerDe extends AbstractSerDe {
 
   private static final Logger LOG = LoggerFactory.getLogger(JsonSerDe.class);
   private List<String> columnNames;

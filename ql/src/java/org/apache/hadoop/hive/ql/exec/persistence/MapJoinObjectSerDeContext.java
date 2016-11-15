@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.persistence;
 
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -26,10 +26,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
 @SuppressWarnings("deprecation")
 public class MapJoinObjectSerDeContext {
   private final ObjectInspector standardOI;
-  private final SerDe serde;
+  private final AbstractSerDe serde;
   private final boolean hasFilter;
 
-  public MapJoinObjectSerDeContext(SerDe serde, boolean hasFilter)
+  public MapJoinObjectSerDeContext(AbstractSerDe serde, boolean hasFilter)
       throws SerDeException {
     this.serde = serde;
     this.hasFilter = hasFilter;
@@ -47,7 +47,7 @@ public class MapJoinObjectSerDeContext {
   /**
    * @return the serde
    */
-  public SerDe getSerDe() {
+  public AbstractSerDe getSerDe() {
     return serde;
   }
 

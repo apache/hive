@@ -31,7 +31,7 @@ import java.util.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -69,7 +69,7 @@ public class FlatRowContainer extends AbstractCollection<Object>
   /** Called when loading the hashtable. */
   public void add(MapJoinObjectSerDeContext context,
       BytesWritable value) throws HiveException {
-    SerDe serde = context.getSerDe();
+    AbstractSerDe serde = context.getSerDe();
     isAliasFilterSet = !context.hasFilterTag(); // has tag => need to set later
     if (rowLength == UNKNOWN) {
       try {
@@ -197,7 +197,7 @@ public class FlatRowContainer extends AbstractCollection<Object>
     }
   }
 
-  private void read(SerDe serde, Writable writable, int rowOffset) throws HiveException {
+  private void read(AbstractSerDe serde, Writable writable, int rowOffset) throws HiveException {
     try {
       ObjectInspectorUtils.copyStructToArray(
           serde.deserialize(writable), serde.getObjectInspector(),

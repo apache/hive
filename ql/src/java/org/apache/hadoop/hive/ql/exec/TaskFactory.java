@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
+import org.apache.hadoop.hive.ql.plan.ReplCopyWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.StatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
@@ -77,6 +78,7 @@ public final class TaskFactory {
     taskvec.add(new TaskTuple<MoveWork>(MoveWork.class, MoveTask.class));
     taskvec.add(new TaskTuple<FetchWork>(FetchWork.class, FetchTask.class));
     taskvec.add(new TaskTuple<CopyWork>(CopyWork.class, CopyTask.class));
+    taskvec.add(new TaskTuple<ReplCopyWork>(ReplCopyWork.class, ReplCopyTask.class));
     taskvec.add(new TaskTuple<DDLWork>(DDLWork.class, DDLTask.class));
     taskvec.add(new TaskTuple<FunctionWork>(FunctionWork.class,
         FunctionTask.class));

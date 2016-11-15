@@ -24,7 +24,7 @@ import java.util.Random;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestPrimitiveClass.ExtraTypeInfo;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -62,7 +62,7 @@ public class TestBinarySortableSerDe extends TestCase {
     return sb.toString();
   }
 
-  public static SerDe getSerDe(String fieldNames, String fieldTypes, String order, String nullOrder)
+  public static AbstractSerDe getSerDe(String fieldNames, String fieldTypes, String order, String nullOrder)
       throws Throwable {
     Properties schema = new Properties();
     schema.setProperty(serdeConstants.LIST_COLUMNS, fieldNames);
@@ -76,7 +76,7 @@ public class TestBinarySortableSerDe extends TestCase {
   }
 
   private void testBinarySortableSerDe(Object[] rows, ObjectInspector rowOI,
-      SerDe serde, boolean ascending) throws Throwable {
+      AbstractSerDe serde, boolean ascending) throws Throwable {
 
     ObjectInspector serdeOI = serde.getObjectInspector();
 

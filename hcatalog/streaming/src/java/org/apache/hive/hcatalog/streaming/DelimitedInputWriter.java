@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
@@ -270,7 +270,7 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
   }
 
   @Override
-  public SerDe getSerde() {
+  public AbstractSerDe getSerde() {
     return serde;
   }
 

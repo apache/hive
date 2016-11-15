@@ -434,14 +434,7 @@ STAGE PLANS:
     Fetch Operator
       limit: 0
       Processor Tree:
-        TableScan
-          alias: alltypesorc
-          Select Operator
-            expressions: ctinyint (type: tinyint), cdouble (type: double)
-            outputColumnNames: _col0, _col1
-            Limit
-              Number of rows: 0
-              ListSink
+        ListSink
 
 PREHOOK: query: select ctinyint,cdouble from alltypesorc order by ctinyint limit 0
 PREHOOK: type: QUERY

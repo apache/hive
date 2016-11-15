@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.events.PreEventContext.PreEventType;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
+
 /**
  * This class listens for drop events and, if set, exports the table's metadata as JSON to the trash
  * of the user performing the drop
@@ -83,7 +83,7 @@ public class MetaDataExportListener extends MetaStorePreEventListener {
     } catch (IOException e) {
       throw new MetaException(e.getMessage());
     }
-    Path outFile = new Path(metaPath, name + ImportSemanticAnalyzer.METADATA_NAME);
+    Path outFile = new Path(metaPath, name + EximUtil.METADATA_NAME);
     try {
       SessionState.getConsole().printInfo("Beginning metadata export");
       EximUtil.createExportDump(fs, outFile, mTbl, null, null);

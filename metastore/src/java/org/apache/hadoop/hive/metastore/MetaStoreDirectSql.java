@@ -1181,44 +1181,46 @@ class MetaStoreDirectSql {
       LOG.debug("Columns is empty or partNames is empty : Short-circuiting stats eval");
       return new AggrStats(new ArrayList<ColumnStatisticsObj>(), 0); // Nothing to aggregate
     }
-    long partsFound = partsFoundForPartitions(dbName, tableName, partNames, colNames);
+    long partsFound = 0;
     List<ColumnStatisticsObj> colStatsList;
     // Try to read from the cache first
-    if (isAggregateStatsCacheEnabled) {
+    if (isAggregateStatsCacheEnabled
+        && (partNames.size() < aggrStatsCache.getMaxPartsPerCacheNode())) {
       AggrColStats colStatsAggrCached;
       List<ColumnStatisticsObj> colStatsAggrFromDB;
       int maxPartsPerCacheNode = aggrStatsCache.getMaxPartsPerCacheNode();
       float fpp = aggrStatsCache.getFalsePositiveProbability();
-      int partitionsRequested = partNames.size();
-      if (partitionsRequested > maxPartsPerCacheNode) {
-        colStatsList = columnStatisticsObjForPartitions(dbName, tableName, partNames, colNames,
-            partsFound, useDensityFunctionForNDVEstimation);
-      } else {
-        colStatsList = new ArrayList<ColumnStatisticsObj>();
-        // Bloom filter for the new node that we will eventually add to the cache
-        BloomFilter bloomFilter = createPartsBloomFilter(maxPartsPerCacheNode, fpp, partNames);
-        for (String colName : colNames) {
-          // Check the cache first
-          colStatsAggrCached = aggrStatsCache.get(dbName, tableName, colName, partNames);
-          if (colStatsAggrCached != null) {
-            colStatsList.add(colStatsAggrCached.getColStats());
-          } else {
-            List<String> colNamesForDB = new ArrayList<String>();
-            colNamesForDB.add(colName);
-            // Read aggregated stats for one column
-            colStatsAggrFromDB =
-                columnStatisticsObjForPartitions(dbName, tableName, partNames, colNamesForDB,
-                    partsFound, useDensityFunctionForNDVEstimation);
-            if (!colStatsAggrFromDB.isEmpty()) {
-              ColumnStatisticsObj colStatsAggr = colStatsAggrFromDB.get(0);
-              colStatsList.add(colStatsAggr);
-              // Update the cache to add this new aggregate node
-              aggrStatsCache.add(dbName, tableName, colName, partsFound, colStatsAggr, bloomFilter);
-            }
+      colStatsList = new ArrayList<ColumnStatisticsObj>();
+      // Bloom filter for the new node that we will eventually add to the cache
+      BloomFilter bloomFilter = createPartsBloomFilter(maxPartsPerCacheNode, fpp, partNames);
+      boolean computePartsFound = true;
+      for (String colName : colNames) {
+        // Check the cache first
+        colStatsAggrCached = aggrStatsCache.get(dbName, tableName, colName, partNames);
+        if (colStatsAggrCached != null) {
+          colStatsList.add(colStatsAggrCached.getColStats());
+          partsFound = colStatsAggrCached.getNumPartsCached();
+        } else {
+          if (computePartsFound) {
+            partsFound = partsFoundForPartitions(dbName, tableName, partNames, colNames);
+            computePartsFound = false;
+          }
+          List<String> colNamesForDB = new ArrayList<String>();
+          colNamesForDB.add(colName);
+          // Read aggregated stats for one column
+          colStatsAggrFromDB =
+              columnStatisticsObjForPartitions(dbName, tableName, partNames, colNamesForDB,
+                  partsFound, useDensityFunctionForNDVEstimation);
+          if (!colStatsAggrFromDB.isEmpty()) {
+            ColumnStatisticsObj colStatsAggr = colStatsAggrFromDB.get(0);
+            colStatsList.add(colStatsAggr);
+            // Update the cache to add this new aggregate node
+            aggrStatsCache.add(dbName, tableName, colName, partsFound, colStatsAggr, bloomFilter);
           }
         }
       }
     } else {
+      partsFound = partsFoundForPartitions(dbName, tableName, partNames, colNames);
       colStatsList =
           columnStatisticsObjForPartitions(dbName, tableName, partNames, colNames, partsFound,
               useDensityFunctionForNDVEstimation);

@@ -27,7 +27,7 @@ import java.util.Random;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -47,7 +47,7 @@ public class TestPTFRowContainer {
   private static final String COL_NAMES = "x,y,z,a,b,v";
   private static final String COL_TYPES = "int,string,double,int,string,string";
 
-  static SerDe serDe;
+  static AbstractSerDe serDe;
   static Configuration cfg;
 
   @BeforeClass

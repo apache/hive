@@ -25,6 +25,7 @@ import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -44,13 +45,13 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager.Heartbeater;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
@@ -107,11 +108,6 @@ public class Context {
   // Transaction manager for this query
   protected HiveTxnManager hiveTxnManager;
 
-  // Used to track what type of acid operation (insert, update, or delete) we are doing.  Useful
-  // since we want to change where bucket columns are accessed in some operators and
-  // optimizations when doing updates and deletes.
-  private AcidUtils.Operation acidOperation = AcidUtils.Operation.NOT_ACID;
-
   private boolean needLockMgr;
 
   private AtomicInteger sequencer = new AtomicInteger();
@@ -129,6 +125,53 @@ public class Context {
   private Heartbeater heartbeater;
 
   private boolean skipTableMasking;
+  /**
+   * This determines the prefix of the
+   * {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.Phase1Ctx#dest}
+   * name for a given subtree of the AST.  Most of the times there is only 1 destination in a
+   * given tree but multi-insert has several and multi-insert representing MERGE must use
+   * different prefixes to encode the purpose of different Insert branches
+   */
+  private Map<ASTNode, DestClausePrefix> tree2DestNamePrefix;
+  public enum DestClausePrefix {
+    INSERT("insclause-"), UPDATE("updclause-"), DELETE("delclause-");
+    private final String prefix;
+    DestClausePrefix(String prefix) {
+      this.prefix = prefix;
+    }
+    public String toString() {
+      return prefix;
+    }
+  }
+  /**
+   * The suffix is always relative to a given ASTNode
+   */
+  public DestClausePrefix getDestNamePrefix(ASTNode curNode) {
+    //if there is no mapping, we want to default to "old" naming
+    assert curNode != null : "must supply curNode";
+    if(tree2DestNamePrefix == null || tree2DestNamePrefix.isEmpty()) {
+      return DestClausePrefix.INSERT;
+    }
+    do {
+      DestClausePrefix prefix = tree2DestNamePrefix.get(curNode);
+      if(prefix != null) {
+        return prefix;
+      }
+      curNode = (ASTNode) curNode.parent;
+    } while(curNode != null);
+    return DestClausePrefix.INSERT;
+  }
+  /**
+   * Will make SemanticAnalyzer.Phase1Ctx#dest in subtree rooted at 'tree' use 'prefix'
+   * @param tree
+   * @return previous prefix for 'tree' or null
+   */
+  public DestClausePrefix addDestNamePrefix(ASTNode tree, DestClausePrefix prefix) {
+    if(tree2DestNamePrefix == null) {
+      tree2DestNamePrefix = new IdentityHashMap<>();
+    }
+    return tree2DestNamePrefix.put(tree, prefix);
+  }
 
   public Context(Configuration conf) throws IOException {
     this(conf, generateExecutionId());
@@ -759,14 +802,6 @@ public class Context {
 
   public void setTryCount(int tryCount) {
     this.tryCount = tryCount;
-  }
-
-  public void setAcidOperation(AcidUtils.Operation op) {
-    acidOperation = op;
-  }
-
-  public AcidUtils.Operation getAcidOperation() {
-    return acidOperation;
   }
 
   public String getCboInfo() {

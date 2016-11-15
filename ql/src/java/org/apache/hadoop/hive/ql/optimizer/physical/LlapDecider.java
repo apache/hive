@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.all;
 import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.auto;
+import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.only;
 import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.map;
 import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.none;
 
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -35,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -94,8 +97,9 @@ public class LlapDecider implements PhysicalPlanResolver {
 
   public enum LlapMode {
     map, // map operators only
-    all, // all operators
+    all, // all operators. Launch containers if user code etc prevents running inside llap.
     none, // no operators
+    only, // Try running everything in llap, fail if that is not possible (non blessed user code, script, etc)
     auto // please hive, choose for me
   }
 
@@ -107,6 +111,7 @@ public class LlapDecider implements PhysicalPlanResolver {
     private final boolean arePermanentFnsAllowed;
     private final boolean shouldUber;
     private List<MapJoinOperator> mapJoinOpList;
+    private final Map<Rule, NodeProcessor> rules;
 
     public LlapDecisionDispatcher(PhysicalContext pctx, LlapMode mode) {
       conf = pctx.getConf();
@@ -115,6 +120,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       // Don't user uber in "all" mode - everything can go into LLAP, which is better than uber.
       shouldUber = HiveConf.getBoolVar(conf, ConfVars.LLAP_AUTO_ALLOW_UBER) && (mode != all);
       mapJoinOpList = new ArrayList<MapJoinOperator>();
+      rules = getRules();
     }
 
     @Override
@@ -175,6 +181,7 @@ public class LlapDecider implements PhysicalPlanResolver {
         return false;
       }
 
+
       // first we check if we *can* run in llap. If we need to use
       // user code to do so (script/udf) we don't.
       /*if (work instanceof MapWork && ((MapWork)work).isUseOneNullRowInputFormat()) {
@@ -184,14 +191,19 @@ public class LlapDecider implements PhysicalPlanResolver {
 
       if (!evaluateOperators(work)) {
         LOG.info("some operators cannot be run in llap");
+        if (mode == only) {
+          throw new RuntimeException("Cannot run all parts of query in llap. Failing since " +
+              ConfVars.LLAP_EXECUTION_MODE.varname + " is set to " + only.name());
+        }
+
         return false;
       }
 
       // --- From here on out we choose whether we *want* to run in llap
 
       // if mode is all just run it
-      if (mode == all) {
-        LOG.info("LLAP mode set to 'all' so can convert any work.");
+      if (EnumSet.of(all, only).contains(mode)) {
+        LOG.info("LLAP mode set to '" + mode + "' so can convert any work.");
         return true;
       }
 
@@ -201,7 +213,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       }
 
       // --- From here we evaluate the auto mode
-      assert mode == auto;
+      assert mode == auto : "Mode must be " + auto.name() + " at this point";
 
       // if parents aren't in llap neither should the child
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_AUTO_ENFORCE_TREE)
@@ -388,7 +400,7 @@ public class LlapDecider implements PhysicalPlanResolver {
     private boolean evaluateOperators(BaseWork work) throws SemanticException {
       // lets take a look at the operators. we're checking for user
       // code in those. we will not run that in llap.
-      Dispatcher disp = new DefaultRuleDispatcher(null, getRules(), null);
+      Dispatcher disp = new DefaultRuleDispatcher(null, rules, null);
       GraphWalker ogw = new DefaultGraphWalker(disp);
 
       ArrayList<Node> topNodes = new ArrayList<Node>();
@@ -400,7 +412,6 @@ public class LlapDecider implements PhysicalPlanResolver {
       for (Node n : nodeOutput.keySet()) {
         if (nodeOutput.get(n) != null) {
           if (!((Boolean)nodeOutput.get(n))) {
-            LOG.info("Cannot run in LLAP mode.");
             return false;
           }
         }
@@ -472,6 +483,8 @@ public class LlapDecider implements PhysicalPlanResolver {
     this.conf = pctx.getConf();
 
     this.mode = LlapMode.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_EXECUTION_MODE));
+    Preconditions.checkState(this.mode != null, "Unrecognized LLAP mode configuration: " +
+        HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_EXECUTION_MODE));
     LOG.info("llap mode: " + this.mode);
 
     if (mode == none) {

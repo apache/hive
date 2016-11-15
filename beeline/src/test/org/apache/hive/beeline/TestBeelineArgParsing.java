@@ -188,6 +188,23 @@ public class TestBeelineArgParsing {
   }
 
   @Test
+  public void testBeelineAutoCommit() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String[] args = {};
+    bl.initArgs(args);
+    Assert.assertTrue(bl.getOpts().getAutoCommit());
+
+    args = new String[] {"--autoCommit=false"};
+    bl.initArgs(args);
+    Assert.assertFalse(bl.getOpts().getAutoCommit());
+
+    args = new String[] {"--autoCommit=true"};
+    bl.initArgs(args);
+    Assert.assertTrue(bl.getOpts().getAutoCommit());
+    bl.close();
+  }
+
+  @Test
   public void testBeelineShowDbInPromptOptsDefault() throws Exception {
     TestBeeline bl = new TestBeeline();
     String args[] = new String[] { "-u", "url" };

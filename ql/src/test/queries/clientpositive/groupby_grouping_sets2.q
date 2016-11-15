@@ -8,6 +8,9 @@ LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1;
 -- Since 4 grouping sets would be generated for the query below, an additional MR job should be created
 EXPLAIN
 SELECT a, b, count(*) from T1 group by a, b with cube;
+
+EXPLAIN
+SELECT a, b, count(*) from T1 group by cube(a, b);
 SELECT a, b, count(*) from T1 group by a, b with cube;
 
 EXPLAIN

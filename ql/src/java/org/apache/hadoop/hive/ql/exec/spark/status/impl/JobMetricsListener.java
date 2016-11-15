@@ -38,26 +38,24 @@ public class JobMetricsListener extends SparkListener {
 
   private final Map<Integer, int[]> jobIdToStageId = Maps.newHashMap();
   private final Map<Integer, Integer> stageIdToJobId = Maps.newHashMap();
-  private final Map<Integer, Map<String, List<TaskMetrics>>> allJobMetrics = Maps.newHashMap();
+  private final Map<Integer, Map<Integer, List<TaskMetrics>>> allJobMetrics = Maps.newHashMap();
 
   @Override
   public synchronized void onTaskEnd(SparkListenerTaskEnd taskEnd) {
     int stageId = taskEnd.stageId();
-    int stageAttemptId = taskEnd.stageAttemptId();
-    String stageIdentifier = stageId + "_" + stageAttemptId;
     Integer jobId = stageIdToJobId.get(stageId);
     if (jobId == null) {
       LOG.warn("Can not find job id for stage[" + stageId + "].");
     } else {
-      Map<String, List<TaskMetrics>> jobMetrics = allJobMetrics.get(jobId);
+      Map<Integer, List<TaskMetrics>> jobMetrics = allJobMetrics.get(jobId);
       if (jobMetrics == null) {
         jobMetrics = Maps.newHashMap();
         allJobMetrics.put(jobId, jobMetrics);
       }
-      List<TaskMetrics> stageMetrics = jobMetrics.get(stageIdentifier);
+      List<TaskMetrics> stageMetrics = jobMetrics.get(stageId);
       if (stageMetrics == null) {
         stageMetrics = Lists.newLinkedList();
-        jobMetrics.put(stageIdentifier, stageMetrics);
+        jobMetrics.put(stageId, stageMetrics);
       }
       stageMetrics.add(taskEnd.taskMetrics());
     }
@@ -76,7 +74,7 @@ public class JobMetricsListener extends SparkListener {
     jobIdToStageId.put(jobId, intStageIds);
   }
 
-  public synchronized  Map<String, List<TaskMetrics>> getJobMetric(int jobId) {
+  public synchronized  Map<Integer, List<TaskMetrics>> getJobMetric(int jobId) {
     return allJobMetrics.get(jobId);
   }
 

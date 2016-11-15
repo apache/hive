@@ -207,6 +207,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
 
     Context ctx = driverContext.getCtx();
+    if(ctx.getHiveTxnManager().supportsAcid()) {
+      //Acid LM doesn't maintain getOutputLockObjects(); this 'if' just makes it more explicit
+      return;
+    }
     HiveLockManager lockMgr = ctx.getHiveTxnManager().getLockManager();
     WriteEntity output = ctx.getLoadTableOutputMap().get(ltd);
     List<HiveLockObj> lockObjects = ctx.getOutputLockObjects().get(output);

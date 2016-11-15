@@ -12,6 +12,10 @@ EXPLAIN
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1 group by a, b) subq1 group by a, b with cube;
 
+EXPLAIN
+SELECT a, b, count(*) FROM
+(SELECT a, b, count(1) from T1 group by a, b) subq1 group by cube(a, b);
+
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1 group by a, b) subq1 group by a, b with cube;
 

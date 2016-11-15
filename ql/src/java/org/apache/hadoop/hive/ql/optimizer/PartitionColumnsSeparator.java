@@ -64,7 +64,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
  */
 public class PartitionColumnsSeparator extends Transform {
 
-  private static final Log LOG = LogFactory.getLog(PointLookupOptimizer.class);
+  private static final Log LOG = LogFactory.getLog(PartitionColumnsSeparator.class);
   private static final String IN_UDF =
     GenericUDFIn.class.getAnnotation(Description.class).name();
   private static final String STRUCT_UDF =

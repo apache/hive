@@ -20,9 +20,11 @@ package org.apache.hive.service.server;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -83,6 +85,27 @@ public class TestHS2HttpServer {
       }
     }
     Assert.assertTrue(contents);
+  }
+
+  @Test
+  public void testContextRootUrlRewrite() throws Exception {
+    String baseURL = "http://localhost:" + webUIPort + "/";
+    URL url = new URL(baseURL);
+    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    Assert.assertEquals(HttpURLConnection.HTTP_OK, conn.getResponseCode());
+    StringWriter writer = new StringWriter();
+    IOUtils.copy(conn.getInputStream(), writer, "UTF-8");
+    String contextRootContent = writer.toString();
+
+    String jspUrl = "http://localhost:" + webUIPort + "/hiveserver2.jsp";
+    url = new URL(jspUrl);
+    conn = (HttpURLConnection) url.openConnection();
+    Assert.assertEquals(HttpURLConnection.HTTP_OK, conn.getResponseCode());
+    writer = new StringWriter();
+    IOUtils.copy(conn.getInputStream(), writer, "UTF-8");
+    String jspContent = writer.toString();
+
+    Assert.assertEquals(contextRootContent, jspContent);
   }
 
   @Test

@@ -1116,7 +1116,9 @@ public class Driver implements CommandProcessor {
       if (haveAcidWrite()) {
         for (FileSinkDesc desc : acidSinks) {
           desc.setTransactionId(txnMgr.getCurrentTxnId());
-          desc.setStatementId(txnMgr.getStatementId());
+          //it's possible to have > 1 FileSink writing to the same table/partition
+          //e.g. Merge stmt, multi-insert stmt when mixing DP and SP writes
+          desc.setStatementId(txnMgr.getWriteIdAndIncrement());
         }
       }
       /*Note, we have to record snapshot after lock acquisition to prevent lost update problem
@@ -1774,7 +1776,7 @@ public class Driver implements CommandProcessor {
 
       SessionState ss = SessionState.get();
       hookContext = new HookContext(plan, queryState, ctx.getPathToCS(), ss.getUserName(),
-          ss.getUserIpAddress(), operationId);
+          ss.getUserIpAddress(), operationId, ss.getSessionId());
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
       for (Hook peh : getHooks(HiveConf.ConfVars.PREEXECHOOKS)) {

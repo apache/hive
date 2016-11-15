@@ -62,7 +62,7 @@
   </modules>
 
   <properties>
-    <hive.version.shortname>2.1.0</hive.version.shortname>
+    <hive.version.shortname>2.2.0</hive.version.shortname>
 
     <!-- Build Properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -91,7 +91,7 @@
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <datanucleus.maven.plugin.version>3.3.0-release</datanucleus.maven.plugin.version>
-    <maven.test.jvm.args>-Xmx2048m -XX:MaxPermSize=256M</maven.test.jvm.args>
+    <maven.test.jvm.args>-Xmx1024m -XX:MaxPermSize=256M</maven.test.jvm.args>
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
     <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
     <maven.checkstyle.plugin.version>2.12.1</maven.checkstyle.plugin.version>
@@ -100,7 +100,7 @@
     <maven.install.plugin.version>2.4</maven.install.plugin.version>
     <maven.jar.plugin.version>2.4</maven.jar.plugin.version>
     <maven.javadoc.plugin.version>2.4</maven.javadoc.plugin.version>
-    <maven.shade.plugin.version>2.2</maven.shade.plugin.version>
+    <maven.shade.plugin.version>2.4.3</maven.shade.plugin.version>
     <maven.surefire.plugin.version>2.19.1</maven.surefire.plugin.version>
     <maven.war.plugin.version>2.4</maven.war.plugin.version>
     <maven.dependency.plugin.version>2.8</maven.dependency.plugin.version>
@@ -144,6 +144,7 @@
     <hbase.version>1.1.1</hbase.version>
     <!-- required for logging test to avoid including hbase which pulls disruptor transitively -->
     <disruptor.version>3.3.0</disruptor.version>
+    <hikaricp.version>2.5.1</hikaricp.version>
     <!-- httpcomponents are not always in version sync -->
     <httpcomponents.client.version>4.4</httpcomponents.client.version>
     <httpcomponents.core.version>4.4</httpcomponents.core.version>
@@ -287,6 +288,11 @@
         <groupId>com.jolbox</groupId>
         <artifactId>bonecp</artifactId>
         <version>${bonecp.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.zaxxer</groupId>
+        <artifactId>HikariCP</artifactId>
+        <version>${hikaricp.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.parquet</groupId>

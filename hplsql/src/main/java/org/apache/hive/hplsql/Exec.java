@@ -615,9 +615,20 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     }
     ArrayList<String> sql = new ArrayList<String>();
     String dir = Utils.getExecDir();
-    sql.add("ADD JAR " + dir + "hplsql.jar");
-    sql.add("ADD JAR " + dir + "antlr-runtime-4.5.jar");
-    sql.add("ADD FILE " + dir + Conf.SITE_XML);
+    String hplsqlJarName = "hplsql.jar";
+    for(String jarName: new java.io.File(dir).list()) {
+      if(jarName.startsWith("hive-hplsql") && jarName.endsWith(".jar")) {
+        hplsqlJarName = jarName;
+        break;
+      }
+    }
+    sql.add("ADD JAR " + dir + hplsqlJarName);
+    sql.add("ADD JAR " + dir + "antlr4-runtime-4.5.jar");
+    if(!conf.getLocation().equals("")) {
+      sql.add("ADD FILE " + conf.getLocation());
+    } else {
+      sql.add("ADD FILE " + dir + Conf.SITE_XML);
+    }
     if (dotHplsqlrcExists) {
       sql.add("ADD FILE " + dir + Conf.DOT_HPLSQLRC);
     }

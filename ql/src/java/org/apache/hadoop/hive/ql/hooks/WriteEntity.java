@@ -38,6 +38,7 @@ public class WriteEntity extends Entity implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(WriteEntity.class);
 
   private boolean isTempURI = false;
+  private transient boolean isDynamicPartitionWrite = false;
 
   public static enum WriteType {
     DDL_EXCLUSIVE, // for use in DDL statements that require an exclusive lock,
@@ -221,6 +222,15 @@ public class WriteEntity extends Entity implements Serializable {
       default:
         throw new RuntimeException("Unknown operation " + op.toString());
     }
+  }
+  public boolean isDynamicPartitionWrite() {
+    return isDynamicPartitionWrite;
+  }
+  public void setDynamicPartitionWrite(boolean t) {
+    isDynamicPartitionWrite = t;
+  }
+  public String toDetailedString() {
+    return toString() + " Type=" + getTyp() + " WriteType=" + getWriteType() + " isDP=" + isDynamicPartitionWrite();
   }
 
 }

@@ -158,6 +158,14 @@ struct FileMetadataExprType {
 
 extern const std::map<int, const char*> _FileMetadataExprType_VALUES_TO_NAMES;
 
+struct ClientCapability {
+  enum type {
+    TEST_CAPABILITY = 1
+  };
+};
+
+extern const std::map<int, const char*> _ClientCapability_VALUES_TO_NAMES;
+
 class Version;
 
 class FieldSchema;
@@ -401,6 +409,16 @@ class GetValidWriteIdsRequest;
 class GetValidWriteIdsResult;
 
 class GetAllFunctionsResponse;
+
+class ClientCapabilities;
+
+class GetTableRequest;
+
+class GetTableResult;
+
+class GetTablesRequest;
+
+class GetTablesResult;
 
 class TableMeta;
 
@@ -7627,6 +7645,245 @@ class GetAllFunctionsResponse {
 void swap(GetAllFunctionsResponse &a, GetAllFunctionsResponse &b);
 
 inline std::ostream& operator<<(std::ostream& out, const GetAllFunctionsResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class ClientCapabilities {
+ public:
+
+  ClientCapabilities(const ClientCapabilities&);
+  ClientCapabilities& operator=(const ClientCapabilities&);
+  ClientCapabilities() {
+  }
+
+  virtual ~ClientCapabilities() throw();
+  std::vector<ClientCapability::type>  values;
+
+  void __set_values(const std::vector<ClientCapability::type> & val);
+
+  bool operator == (const ClientCapabilities & rhs) const
+  {
+    if (!(values == rhs.values))
+      return false;
+    return true;
+  }
+  bool operator != (const ClientCapabilities &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ClientCapabilities & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ClientCapabilities &a, ClientCapabilities &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ClientCapabilities& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _GetTableRequest__isset {
+  _GetTableRequest__isset() : capabilities(false) {}
+  bool capabilities :1;
+} _GetTableRequest__isset;
+
+class GetTableRequest {
+ public:
+
+  GetTableRequest(const GetTableRequest&);
+  GetTableRequest& operator=(const GetTableRequest&);
+  GetTableRequest() : dbName(), tblName() {
+  }
+
+  virtual ~GetTableRequest() throw();
+  std::string dbName;
+  std::string tblName;
+  ClientCapabilities capabilities;
+
+  _GetTableRequest__isset __isset;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tblName(const std::string& val);
+
+  void __set_capabilities(const ClientCapabilities& val);
+
+  bool operator == (const GetTableRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (__isset.capabilities != rhs.__isset.capabilities)
+      return false;
+    else if (__isset.capabilities && !(capabilities == rhs.capabilities))
+      return false;
+    return true;
+  }
+  bool operator != (const GetTableRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetTableRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetTableRequest &a, GetTableRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetTableRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class GetTableResult {
+ public:
+
+  GetTableResult(const GetTableResult&);
+  GetTableResult& operator=(const GetTableResult&);
+  GetTableResult() {
+  }
+
+  virtual ~GetTableResult() throw();
+  Table table;
+
+  void __set_table(const Table& val);
+
+  bool operator == (const GetTableResult & rhs) const
+  {
+    if (!(table == rhs.table))
+      return false;
+    return true;
+  }
+  bool operator != (const GetTableResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetTableResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetTableResult &a, GetTableResult &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetTableResult& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _GetTablesRequest__isset {
+  _GetTablesRequest__isset() : tblNames(false), capabilities(false) {}
+  bool tblNames :1;
+  bool capabilities :1;
+} _GetTablesRequest__isset;
+
+class GetTablesRequest {
+ public:
+
+  GetTablesRequest(const GetTablesRequest&);
+  GetTablesRequest& operator=(const GetTablesRequest&);
+  GetTablesRequest() : dbName() {
+  }
+
+  virtual ~GetTablesRequest() throw();
+  std::string dbName;
+  std::vector<std::string>  tblNames;
+  ClientCapabilities capabilities;
+
+  _GetTablesRequest__isset __isset;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tblNames(const std::vector<std::string> & val);
+
+  void __set_capabilities(const ClientCapabilities& val);
+
+  bool operator == (const GetTablesRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (__isset.tblNames != rhs.__isset.tblNames)
+      return false;
+    else if (__isset.tblNames && !(tblNames == rhs.tblNames))
+      return false;
+    if (__isset.capabilities != rhs.__isset.capabilities)
+      return false;
+    else if (__isset.capabilities && !(capabilities == rhs.capabilities))
+      return false;
+    return true;
+  }
+  bool operator != (const GetTablesRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetTablesRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetTablesRequest &a, GetTablesRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetTablesRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class GetTablesResult {
+ public:
+
+  GetTablesResult(const GetTablesResult&);
+  GetTablesResult& operator=(const GetTablesResult&);
+  GetTablesResult() {
+  }
+
+  virtual ~GetTablesResult() throw();
+  std::vector<Table>  tables;
+
+  void __set_tables(const std::vector<Table> & val);
+
+  bool operator == (const GetTablesResult & rhs) const
+  {
+    if (!(tables == rhs.tables))
+      return false;
+    return true;
+  }
+  bool operator != (const GetTablesResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetTablesResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetTablesResult &a, GetTablesResult &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetTablesResult& obj)
 {
   obj.printTo(out);
   return out;

@@ -50,5 +50,5 @@
 # Hive Configuration Directory can be controlled by:
 # export HIVE_CONF_DIR=
 
-# Folder containing extra ibraries required for hive compilation/execution can be controlled by:
+# Folder containing extra libraries required for hive compilation/execution can be controlled by:
 # export HIVE_AUX_JARS_PATH=

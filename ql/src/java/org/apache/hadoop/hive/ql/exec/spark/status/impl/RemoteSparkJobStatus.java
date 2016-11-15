@@ -24,8 +24,6 @@ import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.spark.client.MetricsCollection;
-import org.apache.hive.spark.client.metrics.Metrics;
-import org.apache.hive.spark.client.metrics.ShuffleReadMetrics;
 import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkStageProgress;
@@ -40,7 +38,6 @@ import org.apache.spark.api.java.JavaFutureAction;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -125,8 +122,8 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     // add spark job metrics.
     String jobIdentifier = "Spark Job[" + jobHandle.getClientJobId() + "] Metrics";
 
-    SparkJobUtils sparkJobUtils = new SparkJobUtils();
-    Map<String, Long> flatJobMetric = sparkJobUtils.collectMetrics(metricsCollection.getAllMetrics());
+    Map<String, Long> flatJobMetric = SparkMetricsUtils.collectMetrics(
+        metricsCollection.getAllMetrics());
     for (Map.Entry<String, Long> entry : flatJobMetric.entrySet()) {
       sparkStatisticsBuilder.add(jobIdentifier, entry.getKey(), Long.toString(entry.getValue()));
     }

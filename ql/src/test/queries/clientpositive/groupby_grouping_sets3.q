@@ -15,6 +15,9 @@ set hive.new.job.grouping.set.cardinality = 30;
 -- hive.new.job.grouping.set.cardinality is more than 4.
 EXPLAIN
 SELECT a, b, avg(c), count(*) from T1 group by a, b with cube;
+
+EXPLAIN
+SELECT a, b, avg(c), count(*) from T1 group by cube(a, b);
 SELECT a, b, avg(c), count(*) from T1 group by a, b with cube;
 
 set hive.new.job.grouping.set.cardinality=2;
