@@ -28,6 +28,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
@@ -37,6 +38,8 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.beeline.HiveSchemaHelper.NestedScriptParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableMap;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -51,6 +54,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class HiveSchemaTool {
   private String userName = null;
@@ -293,6 +297,74 @@ public class HiveSchemaTool {
     }
   }
 
+  public void doValidate() throws HiveMetaException {
+    System.out.print("Starting metastore validation");
+    validateSequences();
+
+    System.out.print("Done with metastore validation");
+  }
+
+  boolean validateSequences() throws HiveMetaException {
+    Map<String, Pair<String, String>> seqNameToTable =
+        new ImmutableMap.Builder<String, Pair<String, String>>()
+        .put("MDatabase", Pair.of("DBS", "DB_ID"))
+        .put("MRole", Pair.of("ROLES", "ROLE_ID"))
+        .put("MGlobalPrivilege", Pair.of("GLOBAL_PRIVS", "USER_GRANT_ID"))
+        .put("MTable", Pair.of("TBLS","TBL_ID"))
+        .put("MStorageDescriptor", Pair.of("SDS", "SD_ID"))
+        .put("MSerDeInfo", Pair.of("SERDES", "SERDE_ID"))
+        .put("MColumnDescriptor", Pair.of("CDS", "CD_ID"))
+        .put("MTablePrivilege", Pair.of("TBL_PRIVS", "TBL_GRANT_ID"))
+        .put("MTableColumnStatistics", Pair.of("TAB_COL_STATS", "CS_ID"))
+        .put("MPartition", Pair.of("PARTITIONS", "PART_ID"))
+        .put("MPartitionColumnStatistics", Pair.of("PART_COL_STATS", "CS_ID"))
+        .put("MFunction", Pair.of("FUNCS", "FUNC_ID"))
+        .put("MIndex", Pair.of("IDXS", "INDEX_ID"))
+        .put("MStringList", Pair.of("SKEWED_STRING_LIST", "STRING_LIST_ID"))
+        .build();
+
+    System.out.println("Validating sequence number for SEQUENCE_TABLE");
+    Connection conn = getConnectionToMetastore(true);
+    boolean isValid = true;
+    try {
+      Statement stmt = conn.createStatement();
+      for (String seqName : seqNameToTable.keySet()) {
+        String tableName = seqNameToTable.get(seqName).getLeft();
+        String tableKey = seqNameToTable.get(seqName).getRight();
+        String seqQuery = getDbCommandParser(dbType).needsQuotedIdentifier() ?
+            ("select t.\"NEXT_VAL\" from \"SEQUENCE_TABLE\" t WHERE t.\"SEQUENCE_NAME\"='org.apache.hadoop.hive.metastore.model." + seqName + "'")
+            : ("select t.NEXT_VAL from SEQUENCE_TABLE t WHERE t.SEQUENCE_NAME='org.apache.hadoop.hive.metastore.model." + seqName + "'");
+        String maxIdQuery = getDbCommandParser(dbType).needsQuotedIdentifier() ?
+            ("select max(\"" + tableKey + "\") from \"" + tableName + "\"")
+            : ("select max(" + tableKey + ") from " + tableName);
+
+          ResultSet res = stmt.executeQuery(maxIdQuery);
+          if (res.next()) {
+             long maxId = res.getLong(1);
+             if (maxId > 0) {
+               ResultSet resSeq = stmt.executeQuery(seqQuery);
+               if (!resSeq.next() || resSeq.getLong(1) < maxId) {
+                 isValid = false;
+                 System.err.println("Incorrect sequence number: table - " + tableName);
+               }
+             }
+          }
+      }
+
+      return isValid;
+    } catch(SQLException e) {
+        throw new HiveMetaException("Failed to validate sequence number for SEQUENCE_TABLE", e);
+    } finally {
+      if (conn != null) {
+        try {
+          conn.close();
+        } catch (SQLException e) {
+          throw new HiveMetaException("Failed to close metastore connection", e);
+        }
+      }
+    }
+  }
+
   /**
    *  Run pre-upgrade scripts corresponding to a given upgrade script,
    *  if any exist. The errors from pre-upgrade are ignored.
@@ -404,11 +476,12 @@ public class HiveSchemaTool {
                 withDescription("Schema initialization to a version").
                 create("initSchemaTo");
     Option infoOpt = new Option("info", "Show config and schema details");
+    Option validateOpt = new Option("validate", "Validate the database");
 
     OptionGroup optGroup = new OptionGroup();
     optGroup.addOption(upgradeOpt).addOption(initOpt).
                 addOption(help).addOption(upgradeFromOpt).
-                addOption(initToOpt).addOption(infoOpt);
+                addOption(initToOpt).addOption(infoOpt).addOption(validateOpt);
     optGroup.setRequired(true);
 
     Option userNameOpt = OptionBuilder.withArgName("user")
@@ -506,6 +579,8 @@ public class HiveSchemaTool {
       } else if (line.hasOption("initSchemaTo")) {
         schemaVer = line.getOptionValue("initSchemaTo");
         schemaTool.doInit(schemaVer);
+      } else if (line.hasOption("validate")) {
+        schemaTool.doValidate();
       } else {
         System.err.println("no valid option supplied");
         printAndExit(cmdLineOptions);

@@ -70,6 +70,40 @@ public class TestSchemaTool extends TestCase {
   }
 
   /**
+   * Test the sequence validation functionality
+   * @throws Exception
+   */
+  public void testValidateSequences() throws Exception {
+    schemaTool.doInit();
+
+    // Test empty database
+    boolean isValid = (boolean)schemaTool.validateSequences();
+    assertTrue(isValid);
+
+    // Test valid case
+    String[] scripts = new String[] {
+        "insert into SEQUENCE_TABLE values('org.apache.hadoop.hive.metastore.model.MDatabase', 100)",
+        "insert into DBS values(99, 'test db1', 'hdfs:///tmp', 'db1', 'test', 'test')"
+    };
+    File scriptFile = generateTestScript(scripts);
+    schemaTool.runBeeLine(scriptFile.getPath());
+    isValid = schemaTool.validateSequences();
+    assertTrue(isValid);
+
+    // Test invalid case
+    scripts = new String[] {
+        "delete from SEQUENCE_TABLE",
+        "delete from DBS",
+        "insert into SEQUENCE_TABLE values('org.apache.hadoop.hive.metastore.model.MDatabase', 100)",
+        "insert into DBS values(102, 'test db1', 'hdfs:///tmp', 'db1', 'test', 'test')"
+    };
+    scriptFile = generateTestScript(scripts);
+    schemaTool.runBeeLine(scriptFile.getPath());
+    isValid = schemaTool.validateSequences();
+    assertFalse(isValid);
+  }
+
+  /**
    * Test dryrun of schema initialization
    * @throws Exception
    */
