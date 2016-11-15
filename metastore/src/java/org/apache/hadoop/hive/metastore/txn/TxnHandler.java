@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.metastore.txn;
 import com.google.common.annotations.VisibleForTesting;
 import com.jolbox.bonecp.BoneCPConfig;
 import com.jolbox.bonecp.BoneCPDataSource;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
@@ -2939,6 +2942,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       PoolableConnectionFactory poolConnFactory =
           new PoolableConnectionFactory(connFactory, objectPool, null, null, false, true);
       connPool = new PoolingDataSource(objectPool);
+    } else if ("hikaricp".equals(connectionPooler)) {
+      HikariConfig config = new HikariConfig();
+      config.setJdbcUrl(driverUrl);
+      config.setUsername(user);
+      config.setPassword(passwd);
+
+      connPool = new HikariDataSource(config);
     } else if ("none".equals(connectionPooler)) {
       LOG.info("Choosing not to pool JDBC connections");
       connPool = new NoPoolConnectionPool(conf);

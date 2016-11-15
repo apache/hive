@@ -717,7 +717,8 @@ public class HiveConf extends Configuration {
         "Defaults to all permissions for the hiveserver2/metastore process user."),
     METASTORE_CACHE_PINOBJTYPES("hive.metastore.cache.pinobjtypes", "Table,StorageDescriptor,SerDeInfo,Partition,Database,Type,FieldSchema,Order",
         "List of comma separated metastore object types that should be pinned in the cache"),
-    METASTORE_CONNECTION_POOLING_TYPE("datanucleus.connectionPoolingType", "BONECP",
+    METASTORE_CONNECTION_POOLING_TYPE("datanucleus.connectionPoolingType", "BONECP", new StringSet("BONECP", "DBCP",
+      "HikariCP", "NONE"),
         "Specify connection pool library for datanucleus"),
     // Workaround for DN bug on Postgres:
     // http://www.datanucleus.org/servlet/forum/viewthread_thread,7985_offset
