@@ -16,43 +16,56 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hive.ql.parse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.io.*;
-import java.util.*;
-
+import java.io.Serializable;
+import java.util.List;
+import org.apache.hadoop.hive.cli.control.AbstractCliConfig;
+import org.apache.hadoop.hive.cli.control.CliAdapter;
+import org.apache.hadoop.hive.cli.control.CliConfigs;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.BeforeClass;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+public class CoreParseNegative extends CliAdapter{
 
-public class $className {
-
-  private static final String HIVE_ROOT = QTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
   private static QTestUtil qt;
- 
-  static {
 
-    MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
-    String initScript = "$initScript";
-    String cleanupScript = "$cleanupScript";
+  static CliConfigs.ParseNegativeConfig cliConfig = new CliConfigs.ParseNegativeConfig();
+
+  public CoreParseNegative(AbstractCliConfig testCliConfig) {
+    super(testCliConfig);
+  }
+
+  @Override
+  @BeforeClass
+  public void beforeClass() {
+    MiniClusterType miniMR = cliConfig.getClusterType();
+    String initScript = cliConfig.getInitScript();
+    String cleanupScript = cliConfig.getCleanupScript();
 
     try {
-      String hadoopVer = "$hadoopVersion";
-      qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR, null, hadoopVer,
+      String hadoopVer = cliConfig.getHadoopVersion();
+      qt = new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR, null,
+          hadoopVer,
        initScript, cleanupScript, false, false);
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      fail("Unexpected exception in static initialization");
+      throw new RuntimeException("Unexpected exception in static initialization",e);
     }
   }
 
+  @Override
+  public void setUp() {
+  }
+
+  @Override
   @After
   public void tearDown() {
     try {
@@ -65,34 +78,25 @@ public class $className {
     }
   }
 
+  @Override
   @AfterClass
-  public static void shutdown() throws Exception {
+  public void shutdown() throws Exception {
     try {
       qt.shutdown();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      fail("Unexpected exception in shutdown");
+      throw new RuntimeException("Unexpected exception in shutdown",e);
     }
   }
 
   static String debugHint = "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
      + "or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.";
 
-#foreach ($qf in $qfiles)
-  #set ($fname = $qf.getName())
-  #set ($eidx = $fname.indexOf('.'))
-  #set ($tname = $fname.substring(0, $eidx))
-  #set ($fpath = $qfilesMap.get($fname))
-  @Test
-  public void testParseNegative_$tname() throws Exception {
-    runTest("$tname", "$fname", (HIVE_ROOT + "$fpath"));
-  }
 
-#end
-
-  private void runTest(String tname, String fname, String fpath) throws Exception {
+  @Override
+  public void runTest(String tname, String fname, String fpath) throws Exception {
     long startTime = System.currentTimeMillis();
     try {
       System.err.println("Begin query: " + fname);
@@ -124,4 +128,5 @@ public class $className {
     System.err.println("Done query: " + fname + " elapsedTime=" + elapsedTime/1000 + "s");
     assertTrue("Test passed", true);
   }
+
 }
