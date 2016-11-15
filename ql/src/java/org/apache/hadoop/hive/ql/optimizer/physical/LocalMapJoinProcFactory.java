@@ -209,7 +209,7 @@ public final class LocalMapJoinProcFactory {
 
         if (parent.getSchema() == null) {
           if (parent instanceof TableScanOperator) {
-            tbl = ((TableScanOperator) parent).getTableDesc();
+            tbl = ((TableScanOperator) parent).getTableDescSkewJoin();
           } else {
             throw new SemanticException("Expected parent operator of type TableScanOperator." +
               "Found " + parent.getClass().getName() + " instead.");

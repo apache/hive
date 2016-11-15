@@ -238,7 +238,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
    * @param tblPath not NULL
    * @throws IOException
    */
-  // Duplicates logic in TextMetaDataFormatter
+  // Duplicates logic in TextMetaDataFormatter TODO: wtf?!!
   private void putFileSystemsStats(MapBuilder builder, List<Path> locations,
       HiveConf conf, Path tblPath)
           throws IOException {

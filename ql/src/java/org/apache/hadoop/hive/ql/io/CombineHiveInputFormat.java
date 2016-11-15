@@ -111,12 +111,16 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
             getInputFormatFromCache(inputFormatClass, conf);
         boolean isAvoidSplitCombine = inputFormat instanceof AvoidSplitCombination &&
             ((AvoidSplitCombination) inputFormat).shouldSkipCombine(paths[i + start], conf);
+        TableDesc tbl = part.getTableDesc();
+        boolean isMmNonMerge = false;
+        if (tbl != null) {
+          isMmNonMerge = !isMerge && MetaStoreUtils.isInsertOnlyTable(tbl.getProperties());
+        } else {
+          // This would be the case for obscure tasks like truncate column (unsupported for MM).
+          Utilities.LOG14535.warn("Assuming not insert-only; no table in partition spec " + part);
+        }
 
-        // Combined splits are not supported for MM tables right now.
-        // However, the merge for MM always combines one directory and should ignore that it's MM.
-        boolean isMmTableNonMerge = !isMerge
-            && MetaStoreUtils.isInsertOnlyTable(part.getTableDesc().getProperties());
-        if (isAvoidSplitCombine || isMmTableNonMerge) {
+        if (isAvoidSplitCombine || isMmNonMerge) {
           //if (LOG.isDebugEnabled()) {
             Utilities.LOG14535.info("The path [" + paths[i + start] +
                 "] is being parked for HiveInputFormat.getSplits");

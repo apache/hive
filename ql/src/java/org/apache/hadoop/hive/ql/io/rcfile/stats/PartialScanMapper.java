@@ -88,8 +88,9 @@ public class PartialScanMapper extends MapReduceBase implements
     }
 
     try {
-      //CombineHiveInputFormat is set in PartialScanTask.
-      RCFileKeyBufferWrapper key = (RCFileKeyBufferWrapper) ((CombineHiveKey) k).getKey();
+      //CombineHiveInputFormat may be set in PartialScanTask.
+      RCFileKeyBufferWrapper key = (RCFileKeyBufferWrapper)
+          ((k instanceof CombineHiveKey) ?  ((CombineHiveKey) k).getKey() : k);
 
       // calculate rawdatasize
       KeyBuffer keyBuffer = key.getKeyBuffer();

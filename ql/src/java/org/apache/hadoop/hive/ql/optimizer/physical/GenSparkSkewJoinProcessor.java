@@ -231,7 +231,7 @@ public class GenSparkSkewJoinProcessor {
       for (int k = 0; k < tags.length; k++) {
         Operator<? extends OperatorDesc> ts = GenMapRedUtils.createTemporaryTableScanOperator(
             joinOp.getCompilationOpContext(), rowSchemaList.get((byte) k));
-        ((TableScanOperator) ts).setTableDesc(tableDescList.get((byte) k));
+        ((TableScanOperator) ts).setTableDescSkewJoin(tableDescList.get((byte) k));
         parentOps[k] = ts;
       }
 
@@ -362,7 +362,7 @@ public class GenSparkSkewJoinProcessor {
     HashTableDummyDesc desc = new HashTableDummyDesc();
     HashTableDummyOperator dummyOp = (HashTableDummyOperator) OperatorFactory.get(
         tableScan.getCompilationOpContext(), desc);
-    dummyOp.getConf().setTbl(tableScan.getTableDesc());
+    dummyOp.getConf().setTbl(tableScan.getTableDescSkewJoin());
     MapJoinOperator mapJoinOp = (MapJoinOperator) tableScan.getChildOperators().get(0);
     mapJoinOp.replaceParent(tableScan, dummyOp);
     List<Operator<? extends OperatorDesc>> mapJoinChildren =

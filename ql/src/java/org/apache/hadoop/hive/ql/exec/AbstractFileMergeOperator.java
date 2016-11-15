@@ -123,7 +123,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
       outPath = new Path(ttp, Utilities.toTempPath(taskId));
     }
     Utilities.LOG14535.info("Paths for merge " + taskId + ": tmp " + tmpPath + ", task "
-        + taskTmpPath + ", final " + finalPath + ", out " + outPath, new Exception());
+        + taskTmpPath + ", final " + finalPath + ", out " + outPath);
   }
 
   /**
@@ -297,7 +297,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
         // We don't expect missing buckets from mere (actually there should be no buckets),
         // so just pass null as bucketing context. Union suffix should also be accounted for.
         Utilities.handleMmTableFinalPath(outputDir.getParent(), null, hconf, success,
-            dpLevels, lbLevels, null, mmWriteId, reporter);
+            dpLevels, lbLevels, null, mmWriteId, reporter, false);
       }
 
     } catch (IOException e) {

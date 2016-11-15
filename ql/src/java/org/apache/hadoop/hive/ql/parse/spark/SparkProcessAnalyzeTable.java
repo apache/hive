@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.stats.PartialScanWork;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -174,7 +175,8 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
     aggregationKey = aggregationKeyBuffer.toString();
 
     // scan work
-    PartialScanWork scanWork = new PartialScanWork(inputPaths);
+    PartialScanWork scanWork = new PartialScanWork(inputPaths,
+        Utilities.getTableDesc(tableScan.getConf().getTableMetadata()));
     scanWork.setMapperCannotSpanPartns(true);
     scanWork.setAggKey(aggregationKey);
     scanWork.setStatsTmpDir(tableScan.getConf().getTmpStatsDir(), parseContext.getConf());

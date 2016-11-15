@@ -350,7 +350,7 @@ public class PartialScanTask extends Task<PartialScanWork> implements
     }
 
     QueryState queryState = new QueryState(new HiveConf(conf, PartialScanTask.class));
-    PartialScanWork mergeWork = new PartialScanWork(inputPaths);
+    PartialScanWork mergeWork = new PartialScanWork(inputPaths, null);
     DriverContext driverCxt = new DriverContext();
     PartialScanTask taskExec = new PartialScanTask();
     taskExec.initialize(queryState, null, driverCxt, new CompilationOpContext());

@@ -78,11 +78,11 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   private String schemaEvolutionColumns;
   private String schemaEvolutionColumnsTypes;
 
-  public TableDesc getTableDesc() {
+  public TableDesc getTableDescSkewJoin() {
     return tableDesc;
   }
 
-  public void setTableDesc(TableDesc tableDesc) {
+  public void setTableDescSkewJoin(TableDesc tableDesc) {
     this.tableDesc = tableDesc;
   }
 

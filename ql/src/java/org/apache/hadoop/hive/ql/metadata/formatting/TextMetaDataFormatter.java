@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.metadata.formatting;
 
 import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -280,28 +281,30 @@ class TextMetaDataFormatter implements MetaDataFormatter {
     } catch (IOException e) {
       throw new HiveException(e);
     }
-          }
+  }
 
+  private static class FileData {
+    public long totalFileSize = 0;
+    public long maxFileSize = 0;
+    public long minFileSize = Long.MAX_VALUE;
+    public long lastAccessTime = 0;
+    public long lastUpdateTime = 0;
+    public int numOfFiles = 0;
+  }
+
+  // TODO: why is this in text formatter? grrr
   private void writeFileSystemStats(DataOutputStream outStream,
       HiveConf conf,
       List<Path> locations,
-      Path tblPath, boolean partSpecified, int indent)
-          throws IOException
-          {
-    long totalFileSize = 0;
-    long maxFileSize = 0;
-    long minFileSize = Long.MAX_VALUE;
-    long lastAccessTime = 0;
-    long lastUpdateTime = 0;
-    int numOfFiles = 0;
-
+      Path tblPath, boolean partSpecified, int indent) throws IOException {
+    FileData fd = new FileData();
     boolean unknown = false;
     FileSystem fs = tblPath.getFileSystem(conf);
     // in case all files in locations do not exist
     try {
       FileStatus tmpStatus = fs.getFileStatus(tblPath);
-      lastAccessTime = tmpStatus.getAccessTime();
-      lastUpdateTime = tmpStatus.getModificationTime();
+      fd.lastAccessTime = tmpStatus.getAccessTime();
+      fd.lastUpdateTime = tmpStatus.getModificationTime();
       if (partSpecified) {
         // check whether the part exists or not in fs
         tmpStatus = fs.getFileStatus(locations.get(0));
@@ -316,42 +319,12 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       for (Path loc : locations) {
         try {
           FileStatus status = fs.getFileStatus(tblPath);
-          FileStatus[] files = fs.listStatus(loc);
-          long accessTime = status.getAccessTime();
-          long updateTime = status.getModificationTime();
           // no matter loc is the table location or part location, it must be a
           // directory.
           if (!status.isDir()) {
             continue;
           }
-          if (accessTime > lastAccessTime) {
-            lastAccessTime = accessTime;
-          }
-          if (updateTime > lastUpdateTime) {
-            lastUpdateTime = updateTime;
-          }
-          for (FileStatus currentStatus : files) {
-            if (currentStatus.isDir()) {
-              continue;
-            }
-            numOfFiles++;
-            long fileLen = currentStatus.getLen();
-            totalFileSize += fileLen;
-            if (fileLen > maxFileSize) {
-              maxFileSize = fileLen;
-            }
-            if (fileLen < minFileSize) {
-              minFileSize = fileLen;
-            }
-            accessTime = currentStatus.getAccessTime();
-            updateTime = currentStatus.getModificationTime();
-            if (accessTime > lastAccessTime) {
-              lastAccessTime = accessTime;
-            }
-            if (updateTime > lastUpdateTime) {
-              lastUpdateTime = updateTime;
-            }
-          }
+          processDir(status, fs, fd);
         } catch (IOException e) {
           // ignore
         }
@@ -363,29 +336,29 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       outStream.write(Utilities.INDENT.getBytes("UTF-8"));
     }
     outStream.write("totalNumberFiles:".getBytes("UTF-8"));
-    outStream.write((unknown ? unknownString : "" + numOfFiles).getBytes("UTF-8"));
+    outStream.write((unknown ? unknownString : "" + fd.numOfFiles).getBytes("UTF-8"));
     outStream.write(terminator);
 
     for (int k = 0; k < indent; k++) {
       outStream.write(Utilities.INDENT.getBytes("UTF-8"));
     }
     outStream.write("totalFileSize:".getBytes("UTF-8"));
-    outStream.write((unknown ? unknownString : "" + totalFileSize).getBytes("UTF-8"));
+    outStream.write((unknown ? unknownString : "" + fd.totalFileSize).getBytes("UTF-8"));
     outStream.write(terminator);
 
     for (int k = 0; k < indent; k++) {
       outStream.write(Utilities.INDENT.getBytes("UTF-8"));
     }
     outStream.write("maxFileSize:".getBytes("UTF-8"));
-    outStream.write((unknown ? unknownString : "" + maxFileSize).getBytes("UTF-8"));
+    outStream.write((unknown ? unknownString : "" + fd.maxFileSize).getBytes("UTF-8"));
     outStream.write(terminator);
 
     for (int k = 0; k < indent; k++) {
       outStream.write(Utilities.INDENT.getBytes("UTF-8"));
     }
     outStream.write("minFileSize:".getBytes("UTF-8"));
-    if (numOfFiles > 0) {
-      outStream.write((unknown ? unknownString : "" + minFileSize).getBytes("UTF-8"));
+    if (fd.numOfFiles > 0) {
+      outStream.write((unknown ? unknownString : "" + fd.minFileSize).getBytes("UTF-8"));
     } else {
       outStream.write((unknown ? unknownString : "" + 0).getBytes("UTF-8"));
     }
@@ -395,17 +368,52 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       outStream.write(Utilities.INDENT.getBytes("UTF-8"));
     }
     outStream.write("lastAccessTime:".getBytes("UTF-8"));
-    outStream.writeBytes((unknown || lastAccessTime < 0) ? unknownString : ""
-        + lastAccessTime);
+    outStream.writeBytes((unknown || fd.lastAccessTime < 0) ? unknownString : ""
+        + fd.lastAccessTime);
     outStream.write(terminator);
 
     for (int k = 0; k < indent; k++) {
       outStream.write(Utilities.INDENT.getBytes("UTF-8"));
     }
     outStream.write("lastUpdateTime:".getBytes("UTF-8"));
-    outStream.write((unknown ? unknownString : "" + lastUpdateTime).getBytes("UTF-8"));
+    outStream.write((unknown ? unknownString : "" + fd.lastUpdateTime).getBytes("UTF-8"));
     outStream.write(terminator);
-          }
+  }
+
+  private void processDir(FileStatus status, FileSystem fs, FileData fd) throws IOException {
+    long accessTime = status.getAccessTime();
+    long updateTime = status.getModificationTime();
+    if (accessTime > fd.lastAccessTime) {
+      fd.lastAccessTime = accessTime;
+    }
+    if (updateTime > fd.lastUpdateTime) {
+      fd.lastUpdateTime = updateTime;
+    }
+    FileStatus[] files = fs.listStatus(status.getPath());
+    for (FileStatus currentStatus : files) {
+      if (currentStatus.isDir()) {
+        processDir(currentStatus, fs, fd);
+        continue;
+      }
+      fd.numOfFiles++;
+      long fileLen = currentStatus.getLen();
+      fd.totalFileSize += fileLen;
+      if (fileLen > fd.maxFileSize) {
+        fd.maxFileSize = fileLen;
+      }
+      if (fileLen < fd.minFileSize) {
+        fd.minFileSize = fileLen;
+      }
+      accessTime = currentStatus.getAccessTime();
+      updateTime = currentStatus.getModificationTime();
+      if (accessTime > fd.lastAccessTime) {
+        fd.lastAccessTime = accessTime;
+      }
+      if (updateTime > fd.lastUpdateTime) {
+        fd.lastUpdateTime = updateTime;
+      }
+    }
+  }
 
   /**
    * Show the table partitions.

@@ -31,6 +31,7 @@ public class ValidWriteIds {
   public static final ValidWriteIds NO_WRITE_IDS = new ValidWriteIds(-1, -1, false, null);
 
   public static final String MM_PREFIX = "mm";
+  private static final String CURRENT_SUFFIX = ".current";
 
   private final static Logger LOG = LoggerFactory.getLogger(ValidWriteIds.class);
 
@@ -53,9 +54,11 @@ public class ValidWriteIds {
   }
 
   public static ValidWriteIds createFromConf(Configuration conf, String fullTblName) {
-    String idStr = conf.get(createConfKey(fullTblName), null);
+    String key = createConfKey(fullTblName);
+    String idStr = conf.get(key, null);
+    String current = conf.get(key + CURRENT_SUFFIX, null);
     if (idStr == null || idStr.isEmpty()) return null;
-    return new ValidWriteIds(idStr);
+    return new ValidWriteIds(idStr, current);
   }
 
   private static String createConfKey(String dbName, String tblName) {
@@ -66,7 +69,7 @@ public class ValidWriteIds {
     return VALID_WRITEIDS_PREFIX + fullName;
   }
 
-  private ValidWriteIds(String src) {
+  private ValidWriteIds(String src, String current) {
     // TODO: lifted from ACID config implementation... optimize if needed? e.g. ranges, base64
     String[] values = src.split(":");
     highWatermark = Long.parseLong(values[0]);
@@ -77,25 +80,48 @@ public class ValidWriteIds {
       for(int i = 3; i < values.length; ++i) {
         ids.add(Long.parseLong(values[i]));
       }
+      if (current != null) {
+        long currentId = Long.parseLong(current);
+        if (areIdsValid) {
+          ids.add(currentId);
+        } else {
+          ids.remove(currentId);
+        }
+      }
+    } else if (current != null) {
+        long currentId = Long.parseLong(current);
+        areIdsValid = true;
+        ids = new HashSet<Long>();
+        ids.add(currentId);
     } else {
       areIdsValid = false;
       ids = null;
     }
   }
 
+  public static void addCurrentToConf(
+      Configuration conf, String dbName, String tblName, long mmWriteId) {
+    String key = createConfKey(dbName, tblName) + CURRENT_SUFFIX;
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Setting " + key + " => " + mmWriteId);
+    }
+    conf.set(key, Long.toString(mmWriteId));
+  }
+
   public void addToConf(Configuration conf, String dbName, String tblName) {
     if (source == null) {
       source = toString();
     }
+    String key = createConfKey(dbName, tblName);
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Setting " + createConfKey(dbName, tblName) + " => " + source);
+      LOG.debug("Setting " + key + " => " + source
+          + " (old value was " + conf.get(key, null) + ")");
     }
-    conf.set(createConfKey(dbName, tblName), source);
+    conf.set(key, source);
   }
 
   public static void clearConf(HiveConf conf, String dbName, String tblName) {
     if (LOG.isDebugEnabled()) {
-      // TODO# remove
       LOG.debug("Unsetting " + createConfKey(dbName, tblName));
     }
     conf.unset(createConfKey(dbName, tblName));
@@ -188,4 +214,5 @@ public class ValidWriteIds {
     }
     return writeId;
   }
+
 }

@@ -1603,6 +1603,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (MetaStoreUtils.isInsertOnlyTable(tblObj.getParameters())) {
         throw new SemanticException("Merge is not supported for MM tables");
       }
+      mergeDesc.setTableDesc(Utilities.getTableDesc(tblObj));
 
       List<String> bucketCols = null;
       Class<? extends InputFormat> inputFormatClass = null;

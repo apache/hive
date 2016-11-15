@@ -79,6 +79,8 @@ public class PartitionDesc implements Serializable, Cloneable {
   public PartitionDesc() {
   }
 
+  private final static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(PartitionDesc.class);
+
   public PartitionDesc(final TableDesc table, final LinkedHashMap<String, String> partSpec) {
     this.tableDesc = table;
     this.partSpec = partSpec;
@@ -324,5 +326,14 @@ public class PartitionDesc implements Serializable, Cloneable {
 
   public VectorPartitionDesc getVectorPartitionDesc() {
     return vectorPartitionDesc;
+  }
+
+  @Override
+  public String toString() {
+    return "PartitionDesc [tableDesc=" + tableDesc + ", partSpec=" + partSpec
+        + ", inputFileFormatClass=" + inputFileFormatClass
+        + ", outputFileFormatClass=" + outputFileFormatClass + ", properties="
+        + properties + ", baseFileName=" + baseFileName
+        + ", vectorPartitionDesc=" + vectorPartitionDesc + "]";
   }
 }

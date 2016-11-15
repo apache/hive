@@ -1598,7 +1598,7 @@ public final class GenMapRedUtils {
     Utilities.LOG14535.info("creating mergefilework from " + inputDirs + " to " + finalName);
     // create the merge file work
     MergeFileWork work = new MergeFileWork(inputDirs, finalName,
-        hasDynamicPartitions, tblDesc.getInputFileFormatClass().getName());
+        hasDynamicPartitions, tblDesc.getInputFileFormatClass().getName(), tblDesc);
     LinkedHashMap<Path, ArrayList<String>> pathToAliases = new LinkedHashMap<>();
     pathToAliases.put(inputDir, inputDirstr);
     work.setMapperCannotSpanPartns(true);

@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.mapred.Mapper;
 
 /**
@@ -47,15 +48,18 @@ public class PartialScanWork extends MapWork implements Serializable {
   private transient List<Path> inputPaths;
   private String aggKey;
   private String statsTmpDir;
+  private TableDesc tblDesc;
 
   public PartialScanWork() {
   }
 
-  public PartialScanWork(List<Path> inputPaths) {
+  public PartialScanWork(List<Path> inputPaths, TableDesc tblDesc) {
     super();
     this.inputPaths = inputPaths;
+    this.tblDesc = tblDesc;
     PartitionDesc partDesc = new PartitionDesc();
     partDesc.setInputFileFormatClass(RCFileBlockMergeInputFormat.class);
+    partDesc.setTableDesc(tblDesc);
     for(Path path: this.inputPaths) {
       this.addPathToPartitionInfo(path, partDesc);
     }

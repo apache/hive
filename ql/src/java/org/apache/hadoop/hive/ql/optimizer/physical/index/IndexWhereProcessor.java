@@ -118,7 +118,7 @@ public class IndexWhereProcessor implements NodeProcessor {
     // get potential reentrant index queries from each index
     Map<Index, HiveIndexQueryContext> queryContexts = new HashMap<Index, HiveIndexQueryContext>();
     // make sure we have an index on the table being scanned
-    TableDesc tblDesc = operator.getTableDesc();
+    TableDesc tblDesc = operator.getTableDescSkewJoin();
 
     Map<String, List<Index>> indexesByType = new HashMap<String, List<Index>>();
     for (Index indexOnTable : indexes) {

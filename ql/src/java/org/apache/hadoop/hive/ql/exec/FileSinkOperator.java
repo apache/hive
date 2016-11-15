@@ -1230,7 +1230,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           MissingBucketsContext mbc = new MissingBucketsContext(
               conf.getTableInfo(), numBuckets, conf.getCompressed());
           Utilities.handleMmTableFinalPath(specPath, unionSuffix, hconf, success,
-              dpLevels, lbLevels, mbc, conf.getMmWriteId(), reporter);
+              dpLevels, lbLevels, mbc, conf.getMmWriteId(), reporter, conf.isMmCtas());
         }
       }
     } catch (IOException e) {

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.Driver;
@@ -43,6 +44,7 @@ import java.util.Set;
 public class IndexUpdater {
   private List<LoadTableDesc> loadTableWork;
   private HiveConf conf;
+  private Configuration parentConf;
   // Assumes one instance of this + single-threaded compilation for each query.
   private Hive hive;
   private List<Task<? extends Serializable>> tasks;
@@ -52,6 +54,7 @@ public class IndexUpdater {
   public IndexUpdater(List<LoadTableDesc> loadTableWork, Set<ReadEntity> inputs, Configuration conf) {
     this.loadTableWork = loadTableWork;
     this.inputs = inputs;
+    this.parentConf = conf;
     this.conf = new HiveConf(conf, IndexUpdater.class);
     this.tasks = new LinkedList<Task<? extends Serializable>>();
   }
@@ -60,6 +63,7 @@ public class IndexUpdater {
       Configuration conf) {
     this.loadTableWork = new LinkedList<LoadTableDesc>();
     this.loadTableWork.add(loadTableWork);
+    this.parentConf = conf;
     this.conf = new HiveConf(conf, IndexUpdater.class);
     this.tasks = new LinkedList<Task<? extends Serializable>>();
     this.inputs = inputs;
@@ -75,16 +79,15 @@ public class IndexUpdater {
       Map<String, String> partSpec = ltd.getPartitionSpec();
       if (partSpec == null || partSpec.size() == 0) {
         //unpartitioned table, update whole index
-        doIndexUpdate(tblIndexes);
+        doIndexUpdate(tblIndexes, ltd.getMmWriteId());
       } else {
-        doIndexUpdate(tblIndexes, partSpec);
+        doIndexUpdate(tblIndexes, partSpec, ltd.getMmWriteId());
       }
     }
     return tasks;
   }
 
-  private void doIndexUpdate(List<Index> tblIndexes) throws HiveException {
-    Driver driver = new Driver(this.conf);
+  private void doIndexUpdate(List<Index> tblIndexes, Long mmWriteId) throws HiveException {
     for (Index idx : tblIndexes) {
       StringBuilder sb = new StringBuilder();
       sb.append("ALTER INDEX ");
@@ -93,23 +96,21 @@ public class IndexUpdater {
       sb.append(idx.getDbName()).append('.');
       sb.append(idx.getOrigTableName());
       sb.append(" REBUILD");
-      driver.compile(sb.toString(), false);
-      tasks.addAll(driver.getPlan().getRootTasks());
-      inputs.addAll(driver.getPlan().getInputs());
+      compileRebuild(sb.toString(), idx, mmWriteId);
     }
   }
 
   private void doIndexUpdate(List<Index> tblIndexes, Map<String, String>
-      partSpec) throws HiveException {
+      partSpec, Long mmWriteId) throws HiveException {
     for (Index index : tblIndexes) {
       if (containsPartition(index, partSpec)) {
-        doIndexUpdate(index, partSpec);
+        doIndexUpdate(index, partSpec, mmWriteId);
       }
     }
   }
 
-  private void doIndexUpdate(Index index, Map<String, String> partSpec) throws
-    HiveException {
+  private void doIndexUpdate(Index index, Map<String, String> partSpec, Long mmWriteId)
+      throws HiveException {
     StringBuilder ps = new StringBuilder();
     boolean first = true;
     ps.append("(");
@@ -133,14 +134,25 @@ public class IndexUpdater {
     sb.append(" PARTITION ");
     sb.append(ps.toString());
     sb.append(" REBUILD");
+    compileRebuild(sb.toString(), index, mmWriteId);
+  }
+
+  private void compileRebuild(String query, Index index, Long mmWriteId)
+      throws HiveException {
     Driver driver = new Driver(this.conf);
-    driver.compile(sb.toString(), false);
+    driver.compile(query, false);
+    if (mmWriteId != null) {
+      // TODO: this is rather fragile
+      ValidWriteIds.addCurrentToConf(
+          parentConf, index.getDbName(), index.getOrigTableName(), mmWriteId);
+    }
     tasks.addAll(driver.getPlan().getRootTasks());
     inputs.addAll(driver.getPlan().getInputs());
   }
 
-  private boolean containsPartition(Index index, Map<String, String> partSpec)
-      throws HiveException {
+
+  private boolean containsPartition(Index index,
+      Map<String, String> partSpec) throws HiveException {
     String[] qualified = Utilities.getDbTableName(index.getDbName(), index.getIndexTableName());
     Table indexTable = hive.getTable(qualified[0], qualified[1]);
     List<Partition> parts = hive.getPartitions(indexTable, partSpec);
