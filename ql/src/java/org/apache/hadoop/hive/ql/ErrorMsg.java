@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
  * List of all error messages.
@@ -70,9 +69,9 @@ public enum ErrorMsg {
   INVALID_ARGUMENT(10014, "Wrong arguments"),
   INVALID_ARGUMENT_LENGTH(10015, "Arguments length mismatch", "21000"),
   INVALID_ARGUMENT_TYPE(10016, "Argument type mismatch"),
-  INVALID_JOIN_CONDITION_1(10017, "Both left and right aliases encountered in JOIN"),
-  INVALID_JOIN_CONDITION_2(10018, "Neither left nor right aliases encountered in JOIN"),
-  INVALID_JOIN_CONDITION_3(10019, "OR not supported in JOIN currently"),
+  @Deprecated INVALID_JOIN_CONDITION_1(10017, "Both left and right aliases encountered in JOIN"),
+  @Deprecated INVALID_JOIN_CONDITION_2(10018, "Neither left nor right aliases encountered in JOIN"),
+  @Deprecated INVALID_JOIN_CONDITION_3(10019, "OR not supported in JOIN currently"),
   INVALID_TRANSFORM(10020, "TRANSFORM with other SELECT columns not supported"),
   UNSUPPORTED_MULTIPLE_DISTINCTS(10022, "DISTINCT on different columns not supported" +
       " with skew in data"),
@@ -460,6 +459,7 @@ public enum ErrorMsg {
     "requires \"AND <boolean>\" on the 1st WHEN MATCHED clause of <{0}>", true),
   MERGE_TOO_MANY_DELETE(10405, "MERGE statment can have at most 1 WHEN MATCHED ... DELETE clause: <{0}>", true),
   MERGE_TOO_MANY_UPDATE(10406, "MERGE statment can have at most 1 WHEN MATCHED ... UPDATE clause: <{0}>", true),
+  INVALID_JOIN_CONDITION(10407, "Complex condition not supported for (LEFT|RIGHT|FULL) OUTER JOIN"),
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
