@@ -412,20 +412,32 @@ public class RelOptHiveTable extends RelOptAbstractTable {
 
   public List<ColStatistics> getColStat(List<Integer> projIndxLst, boolean allowNullColumnForMissingStats) {
     List<ColStatistics> colStatsBldr = Lists.newArrayList();
-
+    Set<Integer> projIndxSet = new HashSet<Integer>(projIndxLst);
     if (projIndxLst != null) {
-      updateColStats(new HashSet<Integer>(projIndxLst), allowNullColumnForMissingStats);
       for (Integer i : projIndxLst) {
-        colStatsBldr.add(hiveColStatsMap.get(i));
+        if (hiveColStatsMap.get(i) != null) {
+          colStatsBldr.add(hiveColStatsMap.get(i));
+          projIndxSet.remove(i);
+        }
+      }
+      if (!projIndxSet.isEmpty()) {
+        updateColStats(projIndxSet, allowNullColumnForMissingStats);
+        for (Integer i : projIndxSet) {
+          colStatsBldr.add(hiveColStatsMap.get(i));
+        }
       }
     } else {
       List<Integer> pILst = new ArrayList<Integer>();
       for (Integer i = 0; i < noOfNonVirtualCols; i++) {
-        pILst.add(i);
+        if (hiveColStatsMap.get(i) == null) {
+          pILst.add(i);
+        }
       }
-      updateColStats(new HashSet<Integer>(pILst), allowNullColumnForMissingStats);
-      for (Integer pi : pILst) {
-        colStatsBldr.add(hiveColStatsMap.get(pi));
+      if (!pILst.isEmpty()) {
+        updateColStats(new HashSet<Integer>(pILst), allowNullColumnForMissingStats);
+        for (Integer pi : pILst) {
+          colStatsBldr.add(hiveColStatsMap.get(pi));
+        }
       }
     }
 
