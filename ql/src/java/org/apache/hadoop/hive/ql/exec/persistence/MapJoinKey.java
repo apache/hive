@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
@@ -56,7 +56,7 @@ public abstract class MapJoinKey {
   @SuppressWarnings("deprecation")
   public static MapJoinKey read(Output output, MapJoinObjectSerDeContext context,
       Writable writable) throws SerDeException, HiveException {
-    SerDe serde = context.getSerDe();
+    AbstractSerDe serde = context.getSerDe();
     Object obj = serde.deserialize(writable);
     MapJoinKeyObject result = new MapJoinKeyObject();
     result.read(serde.getObjectInspector(), obj);

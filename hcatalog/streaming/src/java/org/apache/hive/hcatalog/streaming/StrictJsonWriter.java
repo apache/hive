@@ -21,7 +21,7 @@ package org.apache.hive.hcatalog.streaming;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -98,7 +98,7 @@ public class StrictJsonWriter extends AbstractRecordWriter {
   }
 
   @Override
-  public SerDe getSerde() {
+  public AbstractSerDe getSerde() {
     return serde;
   }
 

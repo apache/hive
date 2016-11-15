@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.druid;
 
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 
 /**
  * Storage handler for Druid to be used in tests. It cannot connect to
@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.serde2.SerDe;
 public class QTestDruidStorageHandler extends DruidStorageHandler {
 
   @Override
-  public Class<? extends SerDe> getSerDeClass() {
+  public Class<? extends AbstractSerDe> getSerDeClass() {
     return QTestDruidSerDe.class;
   }
 

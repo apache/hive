@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -117,7 +117,7 @@ public class HBaseSerDe extends AbstractSerDe {
 
   /**
    * Initialize the SerDe given parameters.
-   * @see SerDe#initialize(Configuration, Properties)
+   * @see AbstractSerDe#initialize(Configuration, Properties)
    */
   @Override
   public void initialize(Configuration conf, Properties tbl)
@@ -268,7 +268,7 @@ public class HBaseSerDe extends AbstractSerDe {
    * Deserialize a row from the HBase Result writable to a LazyObject
    * @param result the HBase Result Writable containing the row
    * @return the deserialized object
-   * @see SerDe#deserialize(Writable)
+   * @see AbstractSerDe#deserialize(Writable)
    */
   @Override
   public Object deserialize(Writable result) throws SerDeException {

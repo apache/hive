@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.accumulo.AccumuloHiveRow;
 import org.apache.hadoop.hive.accumulo.LazyAccumuloRow;
 import org.apache.hadoop.hive.accumulo.columns.ColumnMapping;
 import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloRowIdColumnMapping;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * Deserialization from Accumulo to LazyAccumuloRow for Hive.
  *
  */
-public class AccumuloSerDe implements SerDe {
+public class AccumuloSerDe extends AbstractSerDe {
 
   private AccumuloSerDeParameters accumuloSerDeParameters;
   private LazyAccumuloRow cachedRow;

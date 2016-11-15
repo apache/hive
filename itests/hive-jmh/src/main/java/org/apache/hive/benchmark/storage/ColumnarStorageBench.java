@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ArrayWritableObjectInspector;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -248,12 +248,12 @@ public class ColumnarStorageBench {
    * methods.
    */
   private class StorageFormatTest {
-    private SerDe serDe;
+    private AbstractSerDe serDe;
     private JobConf jobConf;
     private HiveOutputFormat outputFormat;
     private InputFormat inputFormat;
 
-    public StorageFormatTest(SerDe serDeImpl, HiveOutputFormat outputFormatImpl, InputFormat inputFormatImpl) throws SerDeException {
+    public StorageFormatTest(AbstractSerDe serDeImpl, HiveOutputFormat outputFormatImpl, InputFormat inputFormatImpl) throws SerDeException {
       jobConf = new JobConf();
       serDe = serDeImpl;
       outputFormat = outputFormatImpl;

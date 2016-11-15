@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.PartitionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeadLag;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
@@ -403,7 +403,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
       ObjectInspector inputOI = conf.getStartOfChain() == tabDef ?
           inputObjInspectors[0] : inputDef.getOutputShape().getOI();
 
-      SerDe serde = conf.isMapSide() ? tabDef.getInput().getOutputShape().getSerde() :
+      AbstractSerDe serde = conf.isMapSide() ? tabDef.getInput().getOutputShape().getSerde() :
         tabDef.getRawInputShape().getSerde();
       StructObjectInspector outputOI = conf.isMapSide() ? tabDef.getInput().getOutputShape().getOI() :
         tabDef.getRawInputShape().getOI();

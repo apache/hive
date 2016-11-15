@@ -27,7 +27,7 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
@@ -56,7 +56,7 @@ class DynamicPartitionFileRecordWriterContainer extends FileRecordWriterContaine
   private int maxDynamicPartitions;
 
   private final Map<String, RecordWriter<? super WritableComparable<?>, ? super Writable>> baseDynamicWriters;
-  private final Map<String, SerDe> baseDynamicSerDe;
+  private final Map<String, AbstractSerDe> baseDynamicSerDe;
   private final Map<String, org.apache.hadoop.mapred.OutputCommitter> baseDynamicCommitters;
   private final Map<String, org.apache.hadoop.mapred.TaskAttemptContext> dynamicContexts;
   private final Map<String, ObjectInspector> dynamicObjectInspectors;
@@ -81,7 +81,7 @@ class DynamicPartitionFileRecordWriterContainer extends FileRecordWriterContaine
           + "HCatOutputFormat. Please make sure that method is called.");
     }
 
-    this.baseDynamicSerDe = new HashMap<String, SerDe>();
+    this.baseDynamicSerDe = new HashMap<String, AbstractSerDe>();
     this.baseDynamicWriters =
         new HashMap<String, RecordWriter<? super WritableComparable<?>, ? super Writable>>();
     this.baseDynamicCommitters = new HashMap<String, org.apache.hadoop.mapred.OutputCommitter>();
@@ -159,7 +159,7 @@ class DynamicPartitionFileRecordWriterContainer extends FileRecordWriterContaine
       localJobInfo = HCatBaseOutputFormat.getJobInfo(currTaskContext.getConfiguration());
 
       // Setup serDe.
-      SerDe currSerDe =
+      AbstractSerDe currSerDe =
           ReflectionUtils.newInstance(storageHandler.getSerDeClass(), currTaskContext.getJobConf());
       try {
         InternalUtil.initializeOutputSerDe(currSerDe, currTaskContext.getConfiguration(),

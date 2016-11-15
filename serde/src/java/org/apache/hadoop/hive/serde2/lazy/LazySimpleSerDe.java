@@ -105,7 +105,7 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
    * ","-separated column names columns.types: ",", ":", or ";"-separated column
    * types
    *
-   * @see SerDe#initialize(Configuration, Properties)
+   * @see AbstractSerDe#initialize(Configuration, Properties)
    */
   @Override
   public void initialize(Configuration job, Properties tbl)
@@ -141,7 +141,7 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
    * @param field
    *          the Writable that contains the data
    * @return The deserialized row Object.
-   * @see SerDe#deserialize(Writable)
+   * @see AbstractSerDe#deserialize(Writable)
    */
   @Override
   public Object doDeserialize(Writable field) throws SerDeException {
@@ -167,7 +167,7 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
   /**
    * Returns the Writable Class after serialization.
    *
-   * @see SerDe#getSerializedClass()
+   * @see AbstractSerDe#getSerializedClass()
    */
   @Override
   public Class<? extends Writable> getSerializedClass() {
@@ -186,7 +186,7 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
    *          The ObjectInspector for the row object
    * @return The serialized Writable object
    * @throws IOException
-   * @see SerDe#serialize(Object, ObjectInspector)
+   * @see AbstractSerDe#serialize(Object, ObjectInspector)
    */
   @Override
   public Writable doSerialize(Object obj, ObjectInspector objInspector)

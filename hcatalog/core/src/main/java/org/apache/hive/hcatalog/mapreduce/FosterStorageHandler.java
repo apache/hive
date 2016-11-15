@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -62,17 +62,17 @@ public class FosterStorageHandler extends DefaultStorageHandler {
 
   private Class<? extends InputFormat> ifClass;
   private Class<? extends OutputFormat> ofClass;
-  private Class<? extends SerDe> serDeClass;
+  private Class<? extends AbstractSerDe> serDeClass;
 
   public FosterStorageHandler(String ifName, String ofName, String serdeName) throws ClassNotFoundException {
     this((Class<? extends InputFormat>) JavaUtils.loadClass(ifName),
       (Class<? extends OutputFormat>) JavaUtils.loadClass(ofName),
-      (Class<? extends SerDe>) JavaUtils.loadClass(serdeName));
+      (Class<? extends AbstractSerDe>) JavaUtils.loadClass(serdeName));
   }
 
   public FosterStorageHandler(Class<? extends InputFormat> ifClass,
                 Class<? extends OutputFormat> ofClass,
-                Class<? extends SerDe> serDeClass) {
+                Class<? extends AbstractSerDe> serDeClass) {
     this.ifClass = ifClass;
     this.ofClass = ofClass;
     this.serDeClass = serDeClass;
@@ -89,7 +89,7 @@ public class FosterStorageHandler extends DefaultStorageHandler {
   }
 
   @Override
-  public Class<? extends SerDe> getSerDeClass() {
+  public Class<? extends AbstractSerDe> getSerDeClass() {
     return serDeClass;  //To change body of implemented methods use File | Settings | File Templates.
   }
 

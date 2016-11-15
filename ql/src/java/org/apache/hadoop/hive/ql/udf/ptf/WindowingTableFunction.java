@@ -56,7 +56,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer;
 import org.apache.hadoop.hive.ql.udf.generic.ISupportStreamingModeForWindowing;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -1618,7 +1618,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     StreamingState(Configuration cfg, StructObjectInspector inputOI,
         boolean isMapSide, WindowTableFunctionDef tabDef, int precedingSpan,
         int followingSpan) throws HiveException {
-      SerDe serde = isMapSide ? tabDef.getInput().getOutputShape().getSerde()
+      AbstractSerDe serde = isMapSide ? tabDef.getInput().getOutputShape().getSerde()
           : tabDef.getRawInputShape().getSerde();
       StructObjectInspector outputOI = isMapSide ? tabDef.getInput()
           .getOutputShape().getOI() : tabDef.getRawInputShape().getOI();

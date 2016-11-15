@@ -35,24 +35,24 @@ import org.apache.hive.common.util.ReflectionUtil;
  */
 public class DefaultFetchFormatter<T> implements FetchFormatter<String> {
 
-  private SerDe mSerde;
+  private AbstractSerDe mSerde;
 
   @Override
   public void initialize(Configuration hconf, Properties props) throws SerDeException {
     mSerde = initializeSerde(hconf, props);
   }
 
-  private SerDe initializeSerde(Configuration conf, Properties props) throws SerDeException {
+  private AbstractSerDe initializeSerde(Configuration conf, Properties props) throws SerDeException {
     String serdeName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE);
-    Class<? extends SerDe> serdeClass;
+    Class<? extends AbstractSerDe> serdeClass;
     try {
       serdeClass =
-          Class.forName(serdeName, true, JavaUtils.getClassLoader()).asSubclass(SerDe.class);
+          Class.forName(serdeName, true, JavaUtils.getClassLoader()).asSubclass(AbstractSerDe.class);
     } catch (ClassNotFoundException e) {
       throw new SerDeException(e);
     }
     // cast only needed for Hadoop 0.17 compatibility
-    SerDe serde = ReflectionUtil.newInstance(serdeClass, null);
+    AbstractSerDe serde = ReflectionUtil.newInstance(serdeClass, null);
     Properties serdeProps = new Properties();
     if (serde instanceof DelimitedJSONSerDe) {
       serdeProps.put(SERIALIZATION_FORMAT, props.getProperty(SERIALIZATION_FORMAT));

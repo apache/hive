@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
@@ -154,14 +154,14 @@ public class MapJoinBytesTableContainer
   }
 
   private static class KeyValueWriter implements KeyValueHelper {
-    private final SerDe keySerDe, valSerDe;
+    private final AbstractSerDe keySerDe, valSerDe;
     private final StructObjectInspector keySoi, valSoi;
     private final List<ObjectInspector> keyOis, valOis;
     private final Object[] keyObjs, valObjs;
     private final boolean hasFilterTag;
 
     public KeyValueWriter(
-        SerDe keySerDe, SerDe valSerDe, boolean hasFilterTag) throws SerDeException {
+        AbstractSerDe keySerDe, AbstractSerDe valSerDe, boolean hasFilterTag) throws SerDeException {
       this.keySerDe = keySerDe;
       this.valSerDe = valSerDe;
       keySoi = (StructObjectInspector)keySerDe.getObjectInspector();
@@ -221,10 +221,10 @@ public class MapJoinBytesTableContainer
   static class LazyBinaryKvWriter implements KeyValueHelper {
     private final LazyBinaryStruct.SingleFieldGetter filterGetter;
     private Writable key, value;
-    private final SerDe keySerDe;
+    private final AbstractSerDe keySerDe;
     private Boolean hasTag = null; // sanity check - we should not receive keys with tags
 
-    public LazyBinaryKvWriter(SerDe keySerDe, LazyBinaryStructObjectInspector valSoi,
+    public LazyBinaryKvWriter(AbstractSerDe keySerDe, LazyBinaryStructObjectInspector valSoi,
         boolean hasFilterTag) throws SerDeException {
       this.keySerDe = keySerDe;
       if (hasFilterTag) {
@@ -366,7 +366,7 @@ public class MapJoinBytesTableContainer
   @Override
   public void setSerde(MapJoinObjectSerDeContext keyContext, MapJoinObjectSerDeContext valueContext)
       throws SerDeException {
-    SerDe keySerde = keyContext.getSerDe(), valSerde = valueContext.getSerDe();
+    AbstractSerDe keySerde = keyContext.getSerDe(), valSerde = valueContext.getSerDe();
     if (writeHelper == null) {
       LOG.info("Initializing container with " + keySerde.getClass().getName() + " and "
           + valSerde.getClass().getName());

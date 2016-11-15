@@ -137,7 +137,7 @@ public class TestStatsSerde extends TestCase {
     }
   }
 
-  private void deserializeAndSerializeLazyBinary(SerDe serDe, Object[] rows, ObjectInspector rowOI)
+  private void deserializeAndSerializeLazyBinary(AbstractSerDe serDe, Object[] rows, ObjectInspector rowOI)
       throws Throwable {
 
     BytesWritable bytes[] = new BytesWritable[rows.length];

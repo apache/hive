@@ -81,7 +81,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeadLag;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionResolver;
 import org.apache.hadoop.hive.ql.udf.ptf.WindowingTableFunction.WindowingTableFunctionResolver;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
@@ -643,7 +643,7 @@ public class PTFTranslator {
       List<String> columnNames,
       RowResolver rr) throws SemanticException {
     Map<String, String> serdePropsMap = new LinkedHashMap<String, String>();
-    SerDe serde = null;
+    AbstractSerDe serde = null;
     ShapeDetails shp = new ShapeDetails();
 
     try {
@@ -806,13 +806,13 @@ public class PTFTranslator {
    * OI & Serde helper methods
    */
 
-  protected static SerDe createLazyBinarySerDe(Configuration cfg,
+  protected static AbstractSerDe createLazyBinarySerDe(Configuration cfg,
       StructObjectInspector oi, Map<String, String> serdePropsMap) throws SerDeException {
     serdePropsMap = serdePropsMap == null ? new LinkedHashMap<String, String>() : serdePropsMap;
 
     PTFDeserializer.addOIPropertiestoSerDePropsMap(oi, serdePropsMap);
 
-    SerDe serDe = new LazyBinarySerDe();
+    AbstractSerDe serDe = new LazyBinarySerDe();
     Properties p = new Properties();
     p.setProperty(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS,
         serdePropsMap.get(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS));

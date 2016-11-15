@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.llap.FieldDesc;
 import org.apache.hadoop.hive.llap.Schema;
 import org.apache.hadoop.hive.llap.TypeDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
@@ -60,7 +60,7 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
   protected final Configuration conf;
   protected final RecordReader<NullWritable, Text> reader;
   protected final Schema schema;
-  protected final SerDe serde;
+  protected final AbstractSerDe serde;
   protected final Text textData = new Text();
 
   public LlapRowRecordReader(Configuration conf, Schema schema, RecordReader<NullWritable, Text> reader) throws IOException {
@@ -147,7 +147,7 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
     return schema;
   }
 
-  protected SerDe initSerDe(Configuration conf) throws SerDeException {
+  protected AbstractSerDe initSerDe(Configuration conf) throws SerDeException {
     Properties props = new Properties();
     StringBuffer columnsBuffer = new StringBuffer();
     StringBuffer typesBuffer = new StringBuffer();
@@ -166,7 +166,7 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
     props.put(serdeConstants.LIST_COLUMNS, columns);
     props.put(serdeConstants.LIST_COLUMN_TYPES, types);
     props.put(serdeConstants.ESCAPE_CHAR, "\\");
-    SerDe serde = new LazySimpleSerDe();
+    AbstractSerDe serde = new LazySimpleSerDe();
     serde.initialize(conf, props);
 
     return serde;

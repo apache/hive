@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -83,7 +83,7 @@ public class SkewJoinHandler {
 
   private int skewKeyDefinition = -1;
   private Map<Byte, StructObjectInspector> skewKeysTableObjectInspector = null;
-  private Map<Byte, SerDe> tblSerializers = null;
+  private Map<Byte, AbstractSerDe> tblSerializers = null;
   private Map<Byte, TableDesc> tblDesc = null;
 
   private Map<Byte, Boolean> bigKeysExistingMap = null;
@@ -113,7 +113,7 @@ public class SkewJoinHandler {
     skewKeysTableObjectInspector = new HashMap<Byte, StructObjectInspector>(
         numAliases);
     tblDesc = desc.getSkewKeysValuesTables();
-    tblSerializers = new HashMap<Byte, SerDe>(numAliases);
+    tblSerializers = new HashMap<Byte, AbstractSerDe>(numAliases);
     bigKeysExistingMap = new HashMap<Byte, Boolean>(numAliases);
     taskId = Utilities.getTaskId(hconf);
 
@@ -137,7 +137,7 @@ public class SkewJoinHandler {
           .getStandardStructObjectInspector(keyColNames, skewTableKeyInspectors);
 
       try {
-        SerDe serializer = (SerDe) ReflectionUtils.newInstance(tblDesc.get(
+        AbstractSerDe serializer = (AbstractSerDe) ReflectionUtils.newInstance(tblDesc.get(
             alias).getDeserializerClass(), null);
         SerDeUtils.initializeSerDe(serializer, null, tblDesc.get(alias).getProperties(), null);
         tblSerializers.put((byte) i, serializer);

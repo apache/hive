@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.VectorMapJoinFastTableContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
@@ -66,8 +66,8 @@ public class MapJoinTableContainerSerDe {
    */
   public MapJoinPersistableTableContainer load(ObjectInputStream in)
       throws HiveException {
-    SerDe keySerDe = keyContext.getSerDe();
-    SerDe valueSerDe = valueContext.getSerDe();
+    AbstractSerDe keySerDe = keyContext.getSerDe();
+    AbstractSerDe valueSerDe = valueContext.getSerDe();
     MapJoinPersistableTableContainer tableContainer;
     try {
       String name = in.readUTF();
@@ -120,8 +120,8 @@ public class MapJoinTableContainerSerDe {
         return getDefaultEmptyContainer(keyContext, valueContext);
       }
 
-      SerDe keySerDe = keyContext.getSerDe();
-      SerDe valueSerDe = valueContext.getSerDe();
+      AbstractSerDe keySerDe = keyContext.getSerDe();
+      AbstractSerDe valueSerDe = valueContext.getSerDe();
       Writable keyContainer = keySerDe.getSerializedClass().newInstance();
       Writable valueContainer = valueSerDe.getSerializedClass().newInstance();
 
@@ -225,8 +225,8 @@ public class MapJoinTableContainerSerDe {
 
         FileStatus[] fileStatuses = fs.listStatus(folder);
         if (fileStatuses != null && fileStatuses.length > 0) {
-          SerDe keySerDe = keyContext.getSerDe();
-          SerDe valueSerDe = valueContext.getSerDe();
+          AbstractSerDe keySerDe = keyContext.getSerDe();
+          AbstractSerDe valueSerDe = valueContext.getSerDe();
           Writable key = keySerDe.getSerializedClass().newInstance();
           Writable value = valueSerDe.getSerializedClass().newInstance();
 
